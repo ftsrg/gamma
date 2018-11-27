@@ -15,7 +15,7 @@ Gamma is tested to work with Eclipse Photon.
 - When starting Eclipse for the first time, you might need to start it with the `-clean_` flag.
 - Check if the plugin installed successfully in _Help > About Eclipse_ and by clicking _Installation Details_. On the _Plug-ins_ tab, sort the entries by _Plugin-in Id_ and look for entries starting with _hu.bme.mit.gamma_.
 
-![VIATRA components](images/viatra-update-site.png)
+![VIATRA components](images/viatra-update-site.png "VIATRA components")
 
 ![Yakindu components](images/yakindu-update-site.png "Yakindu components")
 
