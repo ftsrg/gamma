@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Scope Provied UI
+Bundle-SymbolicName: hu.bme.mit.gamma.statechart.scoping.ui;singleton:=true
+Bundle-Version: 2.0.3.qualifier
+Bundle-Activator: hu.bme.mit.gamma.statechart.scoping.ui.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ hu.bme.mit.gamma.statechart.scoping,
+ org.eclipse.xtext.ui,
+ hu.bme.mit.gamma.statechart.model.editor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.xtext.ui.shared
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.statechart.scoping.ui

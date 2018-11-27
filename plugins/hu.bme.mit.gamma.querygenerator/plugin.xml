@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.querygenerator.patterns.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.querygenerator.patterns.Patterns" id="hu.bme.mit.gamma.querygenerator.patterns.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.simpleInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.instanceVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.substatesOfCompositeState"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.instanceStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.instanceRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.instanceContainer"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.subregions"/>
+    </group>
+  </extension>
+  <extension id="hu.bme.mit.gamma.querygenerator.patterns.SingleStatechartPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.querygenerator.patterns.SingleStatechartPatterns" id="hu.bme.mit.gamma.querygenerator.patterns.SingleStatechartPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.simpleStatechartVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.simpleStatechartStates"/>
+    </group>
+  </extension>
+</plugin>

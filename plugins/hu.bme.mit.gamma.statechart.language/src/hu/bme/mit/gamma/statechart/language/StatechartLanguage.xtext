@@ -1,0 +1,459 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage with hu.bme.mit.gamma.constraint.language.ConstraintLanguage
+
+import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
+import "http://www.mit.bme.hu/gamma/statechart/Model" 
+import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
+
+Package returns Package:
+	'package' name=ID
+	('import' imports+=[Package | STRING])*	
+	(
+		constantDeclarations+=ConstantDeclaration |
+		functionDeclarations+=FunctionDeclaration |
+		typeDeclarations+=TypeDeclaration |
+		components+=Component |
+		interfaces+=Interface
+	)*
+;
+
+TimeoutDeclaration returns TimeoutDeclaration:
+	'timeout' name=ID
+;
+
+enum And returns BinaryType:
+	AND='&&'
+;
+
+enum Or returns BinaryType:
+	OR='||'
+;
+
+enum Equal returns BinaryType:
+	EQUAL='=='
+;
+
+enum Xor returns BinaryType:
+	XOR='^'
+;
+
+enum Imply returns BinaryType:
+	IMPLY='->'
+;
+
+Trigger returns Trigger:
+	AnyTrigger |
+	ComplexTrigger
+;
+
+/**
+ * Used by ControlSpecification.
+ * The other trigger rules have precedence rules and defined according to left recursion.
+ */
+SimpleTrigger returns SimpleTrigger:
+	AnyTrigger |
+	EventTrigger
+;
+
+ComplexTrigger returns Trigger:
+	BinaryTrigger 
+;
+
+BinaryTrigger returns Trigger:
+	EqualTrigger
+;
+
+EqualTrigger returns Trigger:
+	ImplyTrigger ({BinaryTrigger.leftOperand=current} type=Equal rightOperand=EqualTrigger)?
+;
+
+ImplyTrigger returns Trigger:
+	OrTrigger ({BinaryTrigger.leftOperand=current} type=Imply rightOperand=ImplyTrigger)?
+;
+
+OrTrigger returns Trigger:
+	XorTrigger ({BinaryTrigger.leftOperand=current} type=Or rightOperand=OrTrigger)?
+;
+
+XorTrigger returns Trigger:
+	AndTrigger ({BinaryTrigger.leftOperand=current} type=Xor rightOperand=XorTrigger)?
+;
+
+AndTrigger returns Trigger:
+	BinaryOperand ({BinaryTrigger.leftOperand=current} type=And rightOperand=AndTrigger)?
+;
+
+BinaryOperand returns Trigger:
+	UnaryTrigger | ParenthesesTrigger
+;
+
+enum Not returns UnaryType:
+	NOT='!'
+;
+
+UnaryTrigger returns Trigger:
+	NotTrigger | EventTrigger
+;
+
+NotTrigger returns UnaryTrigger:
+	((type=Not) (operand=ParenthesesTrigger))
+;
+
+ParenthesesTrigger returns Trigger:
+	'('EqualTrigger')'
+;
+
+AnyTrigger returns AnyTrigger:
+	{AnyTrigger} 'any'
+;
+
+EventTrigger returns EventTrigger:
+	eventReference=EventReference ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+;
+
+EventReference returns EventReference:
+	ClockTickReference | 
+	TimeoutEventReference |
+	AnyPortEventReference | 
+	PortEventReference
+;
+
+ClockTickReference returns ClockTickReference:
+	clock=[Clock]
+;
+
+TimeoutEventReference returns TimeoutEventReference:
+	'timeout' timeout=[TimeoutDeclaration]
+;
+
+AnyPortEventReference returns AnyPortEventReference:
+	port=[Port] '.' 'any'
+;
+
+PortEventReference returns PortEventReference:
+	port=[Port] '.' event=[InterfaceModel::Event]
+;
+
+Action:
+	RaiseEventAction |
+	SetTimeoutAction |
+	DeactivateTimeoutAction |
+	AssignmentAction
+;
+
+RaiseEventAction returns RaiseEventAction:
+	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+;
+
+SetTimeoutAction returns SetTimeoutAction:
+	'set' timeoutDeclaration=[TimeoutDeclaration] ':=' time=TimeSpecification
+;
+
+DeactivateTimeoutAction returns DeactivateTimeoutAction:
+	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
+;
+
+AssignmentAction returns AssignmentAction:
+	lhs=ReferenceExpression ':=' rhs=Expression
+;
+
+Port returns Port:
+	'port' name=ID ':' interfaceRealization=InterfaceRealization
+;
+
+InterfaceRealization returns InterfaceRealization:
+	realizationMode=RealizationMode interface=[InterfaceModel::Interface]
+;
+
+enum RealizationMode returns RealizationMode:
+	PROVIDED = 'provides' | REQUIRED = 'requires'
+;
+
+StatechartDefinition returns StatechartDefinition:
+	'statechart' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		'{'
+			(
+				variableDeclarations+=VariableDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration |
+				transitions+=Transition
+			)*
+			regions+=Region
+			(
+				variableDeclarations+=VariableDeclaration |
+				timeoutDeclarations+=TimeoutDeclaration |
+				transitions+=Transition |
+				regions+=Region
+			)*
+		'}'
+;
+
+StatechartReference returns StatechartReference:
+	{StatechartReference}
+	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((parameters+=Expression)(',' parameters+=Expression)*)? ')')?
+;
+
+Region returns Region:
+	'region' name=ID '{'
+		(stateNodes+=StateNode)*
+	'}'
+;
+
+Transition returns Transition:
+	('@' annotation=ID)?
+	'transition'
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
+	(
+		('when' trigger=Trigger)?
+		('[' guard=Expression ']')?
+		('/' (effects+=Action) (';' effects+=Action)*)?
+	)
+;
+
+StateNode returns StateNode:
+	State |
+	PseudoState
+;
+
+State returns State:
+	('@' annotation=ID)?
+	'state' name=ID
+	(
+		'{'
+		(
+			(
+				('invariant' invariants+=Expression)*
+				('entry' '/' (entryActions+=Action)(';' entryActions+=Action)* )?
+				('exit' '/' (exitActions+=Action)(';' exitActions+=Action)* )?
+			)
+			(regions+=Region)*
+		)
+		'}'
+	)?
+;
+
+PseudoState returns PseudoState:
+	EntryState |
+	ForkState |
+	JoinState |
+	ChoiceState |
+	MergeState
+;
+
+MergeState returns MergeState:
+	'merge' name=ID
+;
+
+ChoiceState returns ChoiceState:
+	'choice' name=ID
+;
+
+JoinState returns JoinState:
+	'join' name=ID
+;
+
+ForkState returns ForkState:
+	'fork' name=ID
+;
+
+EntryState:
+	InitialState |
+	ShallowHistoryState |
+	DeepHistoryState
+;
+
+InitialState returns InitialState:
+	'initial' name=ID
+;
+
+ShallowHistoryState returns ShallowHistoryState:
+	'shallow' 'history' name=ID
+;
+
+DeepHistoryState returns DeepHistoryState:
+	'deep' 'history' name=ID
+;
+
+// Composition language 
+ 
+Component returns Component:
+	SynchronousComponent |
+	AsynchronousComponent
+;
+
+SynchronousComponent returns CompositeModel::SynchronousComponent:
+	StatechartDefinition |
+	AbstractSynchronousComponent
+;
+
+AbstractSynchronousComponent returns CompositeModel::AbstractSynchronousCompositeComponent:
+	CascadeCompositeComponent |
+	SynchronousCompositeComponent
+;
+
+CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
+	'cascade' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		'{'
+			(
+				components+=SynchronousComponentInstance |
+				portBindings+=PortBinding |
+				channels+=Channel |
+				'execute' executionList+=[CompositeModel::SynchronousComponentInstance] (',' executionList+=[CompositeModel::SynchronousComponentInstance])*
+			)*
+		'}'
+;
+
+SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeComponent:
+	'sync' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		'{'			
+			(
+				components+=SynchronousComponentInstance |
+				portBindings+=PortBinding |
+				channels+=Channel
+			)*
+		'}'
+;
+
+AsynchronousComponent returns CompositeModel::AsynchronousComponent:
+	AsynchronousCompositeComponent |
+	SynchronousComponentWrapper
+;
+
+AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
+	'async' name=ID 
+	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		'{'
+			(
+				components+=AsynchronousComponentInstance |			
+				portBindings+=PortBinding |
+				channels+=Channel
+			)*			
+		'}'
+;
+
+SynchronousComponentWrapper returns CompositeModel::SynchronousComponentWrapper:
+	'async' name=ID 'of' wrappedComponent=[CompositeModel::SynchronousComponent]
+		('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		'{'
+			(
+				clocks+=ClockDeclaration |
+				controlSpecifications+=ControlSpecificaiton |
+				messageQueues+=MessageQueue
+			)*
+
+		'}'
+;
+
+ClockDeclaration returns Clock:
+	'clock' name=ID '(' 'rate' '=' timeSpecification=TimeSpecification')'
+;
+
+TimeSpecification returns TimeSpecification:
+	value=AdditiveExpression unit=TimeUnit
+;
+
+enum TimeUnit returns TimeUnit:
+	MILLISECOND = 'ms' | SECOND = 's'
+;	
+
+
+ControlSpecificaiton returns CompositeModel::ControlSpecification:
+	 'when' trigger=SimpleTrigger '/' controlFunction=ControlFunction
+;
+
+enum ControlFunction returns CompositeModel::ControlFunction:
+	RUN_ONCE = 'run' | RUN_TO_COMPLETION = 'full step' | RESET = 'reset'
+;
+
+MessageQueue returns CompositeModel::MessageQueue:
+	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression) ')' '{'
+	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
+	'}'
+;
+
+PortBinding returns CompositeModel::PortBinding:
+	'bind' compositeSystemPort=[Port] '->' instancePortReference=InstancePortReference
+;
+
+InstancePortReference returns CompositeModel::InstancePortReference:
+	instance=[CompositeModel::ComponentInstance] '.' port=[Port] 
+;
+
+ComponentInstance returns CompositeModel::ComponentInstance:
+	SynchronousComponentInstance | AsynchronousComponentInstance
+;
+
+SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
+	'component' name=ID ':' type=[CompositeModel::SynchronousComponent]
+;
+
+AsynchronousComponentInstance returns CompositeModel::AsynchronousComponentInstance:
+	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent]
+;
+
+Channel returns CompositeModel::Channel:
+	SimpleChannel | BroadcastChannel
+;
+
+SimpleChannel returns CompositeModel::SimpleChannel:
+	// This is the channel's point of view: input is the input of the channel, i.e. the out port signals of statecharts
+	'channel' '[' providedPort=InstancePortReference ']' '-o)-' '[' requiredPort=InstancePortReference ']'
+;
+
+BroadcastChannel returns CompositeModel::BroadcastChannel:
+	// This is the channel's point of view: input is the input of the channel, i.e. the out port signals of statecharts
+	'channel' '[' providedPort=InstancePortReference ']' '-o)-' '[' (requiredPorts+=InstancePortReference) (',' requiredPorts+=InstancePortReference)+ ']'
+;
+
+// Interface
+
+Interface returns InterfaceModel::Interface:
+	{InterfaceModel::Interface}
+	'interface' name=ID ('extends' (parents+=[InterfaceModel::Interface]) (',' (parents+=[InterfaceModel::Interface]))*  )? '{'
+		((events+=EventDeclaration))*
+	'}'
+;
+
+enum EventDirection returns InterfaceModel::EventDirection:
+	IN = 'in' | OUT = 'out' | INOUT = 'inout'
+;
+
+EventDeclaration returns InterfaceModel::EventDeclaration:
+	{InterfaceModel::EventDeclaration}
+	(direction=EventDirection) (event=Event) 
+;
+
+Event returns InterfaceModel::Event:
+	{InterfaceModel::Event}
+	'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')?
+;
+
+// Overriding it for the sake of EventParameterReferenceExpression
+@Override 
+PrimaryExpression returns ConstraintModel::Expression:
+	LiteralExpression | ReferenceExpression | EventParameterReferenceExpression | '(' Expression ')'
+;
+
+EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
+	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+
+	

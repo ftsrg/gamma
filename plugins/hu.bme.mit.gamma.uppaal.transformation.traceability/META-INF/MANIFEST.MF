@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Traceability Metamodel of Gamma to UPPAAL Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.transformation.traceability;singleton:=true
+Bundle-Version: 2.0.3.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: BME-FTSRG
+Bundle-Localization: plugin
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: hu.bme.mit.gamma.uppaal.transformation.traceability,
+ hu.bme.mit.gamma.uppaal.transformation.traceability.impl,
+ hu.bme.mit.gamma.uppaal.transformation.traceability.util
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ hu.bme.mit.gamma.constraint.model;visibility:=reexport,
+ hu.bme.mit.gamma.statechart.model;visibility:=reexport,
+ de.uni_paderborn.uppaal;visibility:=reexport
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: hu.bme.mit.gamma.uppaal.transformation.traceability

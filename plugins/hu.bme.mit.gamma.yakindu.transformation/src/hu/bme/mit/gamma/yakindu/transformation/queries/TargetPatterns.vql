@@ -1,0 +1,60 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.yakindu.transformation.queries
+
+import "platform:/resource/org.yakindu.base.types/model/types.ecore" as types
+import "http://www.yakindu.org/base/base/2.0.0" as base
+import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
+import "platform:/resource/org.yakindu.sct.model.stext/model/SText.ecore" as stext
+
+import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/yakindu/Genmodel/" as genmodel
+
+
+pattern nonEntryNonChoiceTransitions(transition : Transition) {
+	StatechartDefinition.transitions(_, transition);
+	neg find transitionsOfEntryStates(_, transition);
+	neg find transitionsOfChoiceStates(_, transition);
+}
+
+pattern interfaceToInterface(mapping : InterfaceMapping, yakinduIf : InterfaceScope, realizationMode : RealizationMode, gammaIf : Interface) {
+	InterfaceMapping.yakinduInterface(mapping, yakinduIf); 
+	InterfaceMapping.realizationMode(mapping, realizationMode);
+	InterfaceMapping.gammaInterface(mapping, gammaIf); 
+}
+
+pattern eventToEvent(eventMapping : EventMapping, yakinduEvent : types::Event, gammaEvent : Event) {
+	EventMapping.yakinduEvent(eventMapping, yakinduEvent);
+	EventMapping.gammaEvent(eventMapping, gammaEvent);
+}
+
+/** This is for exploring events of mapped Yakindu and Gamma interfaces with the same name */
+pattern eventMapping(yakinduEvent : types::Event, gammaEvent : Event) {
+	types::Event.name(yakinduEvent, name);
+	InterfaceScope.members(yakinduIf, yakinduEvent);
+	InterfaceMapping.yakinduInterface(eventMapping, yakinduIf);
+	InterfaceMapping.gammaInterface(eventMapping, gammaIf);
+	Interface.events(gammaIf, gammaEventDeclaration);
+	EventDeclaration.event(gammaEventDeclaration, gammaEvent);
+	Event.name(gammaEvent, name);
+}
+
+private pattern transitionsOfEntryStates(entry : EntryState, transition : Transition) {
+	Transition.sourceState(transition, entry);
+	EntryState(entry);
+}
+
+private pattern transitionsOfChoiceStates(choice : ChoiceState, transition : Transition) {
+	Transition.sourceState(transition, choice);
+	ChoiceState(choice);
+}

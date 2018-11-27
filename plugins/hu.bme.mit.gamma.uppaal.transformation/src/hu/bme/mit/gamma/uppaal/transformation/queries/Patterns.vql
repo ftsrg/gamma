@@ -1,0 +1,364 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.uppaal.transformation.queries
+
+import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+
+pattern namedElements(element : NamedElement, name : java String) {
+	NamedElement.name(element, name);
+}
+
+pattern variableDeclarations(variable : VariableDeclaration, name : java String, type) {
+	VariableDeclaration.name(variable, name); 
+	VariableDeclaration.type(variable, type);
+}
+
+pattern constantDeclarationsWithoutInit(constant : ConstantDeclaration, name : java String, type) {
+	ConstantDeclaration.name(constant, name);
+	ConstantDeclaration.type(constant, type);
+	neg find constantDeclarations(constant, name, type, _);
+}
+
+pattern constantDeclarations(constant : ConstantDeclaration, name : java String, type, initValue : Expression) {
+	ConstantDeclaration.name(constant, name);
+	ConstantDeclaration.type(constant, type);
+	ConstantDeclaration.expression(constant, initValue);
+}
+
+pattern declarationInitializations(declaration : DefinableDeclaration, initValue : Expression) {
+	VariableDeclaration.expression(declaration, initValue);
+} or {
+	ConstantDeclaration.expression(declaration, initValue);
+}
+
+private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {
+	 EventDeclaration.direction(eventDeclaration, direction);
+}
+
+pattern events(port : Port, event : Event, name : java String) {
+	Port.interfaceRealization.interface(port, interface);
+	Interface.events.event(interface, event);
+	Event.name(event, name);
+}
+
+pattern inEvents(port : Port, event : Event, name : java String) {
+	Port.interfaceRealization(port, realization);
+	InterfaceRealization.realizationMode(realization, ::PROVIDED);
+	InterfaceRealization.interface(realization, interface);
+	Interface.events(interface, declaration);
+	// OUT events are NOT returned
+	neg find eventDirection(declaration, EventDirection::OUT);
+	EventDeclaration.event(declaration, event);
+	Event.name(event, name);
+} or {
+	Port.interfaceRealization(port, realization);
+	InterfaceRealization.realizationMode(realization, ::REQUIRED);
+	InterfaceRealization.interface(realization, interface);
+	Interface.events(interface, declaration);
+	// OUT events are NOT returned
+	neg find eventDirection(declaration, EventDirection::IN);
+	EventDeclaration.event(declaration, event);
+	Event.name(event, name);
+}
+
+pattern eventParameters(event : Event, param : ParameterDeclaration) {
+	EventTrigger.parameters(trigger, reference);
+	ReferenceExpression.declaration(reference, param);
+	EventTrigger.eventReference(trigger, portEventReference);
+	PortEventReference.event(portEventReference, event);
+	Event.parameterDeclarations(event, param);
+}
+
+pattern topRegions(gammaPackage : Package, statechart : StatechartDefinition, topRegion : Region, name : java String) {
+	Package.components(gammaPackage, statechart);
+	StatechartDefinition.regions(statechart, topRegion);
+	Region.name(topRegion, name);
+}
+
+pattern subregions(region : Region, name : java String) {
+	State.regions(_, region);
+	Region.name(region, name);
+}
+
+pattern regions(region: Region, name : java String) {
+	find topRegions(_, _def, region, name);
+} or {
+	find subregions(region, name);
+}
+
+pattern entries(entry : EntryState, region : Region) {
+	Region.stateNodes(region, entry);
+	EntryState(entry); 
+}
+
+pattern simpleStates(state : State, region : Region, name : java String) {
+	Region.stateNodes(region, state);
+	State.name(state, name);
+	neg find compositeStates(state, region, name);
+}
+
+pattern compositeStates(compositeState : State, region : Region, name : java String) {
+	Region.stateNodes(region, compositeState);
+	State.regions(compositeState, _);
+	State.name(compositeState, name);
+}
+
+pattern states(state : State, region : Region, name : java String) {
+	Region.stateNodes(region, state);
+	State.name(state, name);
+}
+
+pattern choices(choice : ChoiceState, region : Region) {
+	Region.stateNodes(region, choice);
+	ChoiceState(choice);
+}
+
+private pattern dynamicChoices(choice : ChoiceState) {
+	// Guard references variable from previous update
+	find choiceToChoice+(choice, choice2);
+	find referencesOfChoiceTransitions(choice, choice2);
+} or {
+	find referencesOfChoiceTransitions(choice, choice);
+} or {
+	// If there is a circle, it is dynamic
+	find choiceToChoice+(choice, choice);
+}
+private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : ChoiceState) {
+	Transition.targetState(inTransition, choice);
+	Transition.sourceState(outTransition, choice2);
+	// Assignment action of input transition
+	find updatesOfTransitions(inTransition, assignmentAction);
+	AssignmentAction.lhs(assignmentAction, referenceExpression);
+	ReferenceExpression.declaration(referenceExpression, variable);
+	// Guard of output transition refers to the updated variable
+	Transition.guard(outTransition, guard);
+	find expressionToExpression+(guard, referenceExpression2);
+	ReferenceExpression.declaration(referenceExpression2, variable);	
+}
+
+private pattern choiceToChoice(choice1 : ChoiceState, choice2 : ChoiceState) {
+	Transition.sourceState(transition, choice1);
+	Transition.targetState(transition, choice2);
+}
+
+// Pattern for the elimination of choices - Dynamic choices are not eliminated
+pattern eliminatableChoices(choice : ChoiceState) {
+	// So dynamic choices are not returned
+	neg find dynamicChoices(choice);
+}
+
+private pattern elseGuardedTransitions(transition : Transition) {
+	Transition.guard(transition, elseExpression);
+	ElseExpression(elseExpression);
+}
+
+pattern defaultTransitionsOfChoices(choice : ChoiceState, defaultTransition : Transition, otherTransition : Transition) {
+	Transition.sourceState(defaultTransition, choice);
+	find elseGuardedTransitions(defaultTransition);
+	Transition.sourceState(otherTransition, choice);
+	neg find elseGuardedTransitions(otherTransition);
+}
+
+pattern transitions(transition : Transition, source : StateNode, target : StateNode, region : Region) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+	Region.stateNodes(region, source);
+}
+
+pattern sameRegionTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	Region.stateNodes(region, source);
+	Region.stateNodes(region, target);
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+}
+
+pattern toHigherTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+	find substatesOfCompositeState+(sourceAncestor, source);
+	Region.stateNodes(region, sourceAncestor);
+	Region.stateNodes(region, target);
+}
+
+pattern toLowerTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+	find substatesOfCompositeState+(targetAncestor, target);
+	Region.stateNodes(region, targetAncestor);
+	Region.stateNodes(region, source);
+}
+
+pattern regionsWithShallowHistory(region : Region) {
+	Region.stateNodes(region, shallowHistory);
+	ShallowHistoryState(shallowHistory);
+}
+
+pattern regionsWithDeepHistory(region : Region) {
+	Region.stateNodes(region, deepHistory);
+	DeepHistoryState(deepHistory);
+}
+
+pattern outgoingTransitionsOfCompositeStates(compositeState : State, region : Region, outgoingTransition : Transition) {
+	find compositeStates(compositeState, region, _);
+	Transition.sourceState(outgoingTransition, compositeState);
+}
+
+private pattern substatesOfCompositeState(compositeState : State, substate : StateNode) {
+	State.regions(compositeState, region);
+	Region.stateNodes(region, substate);
+}
+
+pattern allSubregionsOfCompositeStates(compositeState : State, region : Region) {
+	State.regions(compositeState, region);
+} or {
+	find substatesOfCompositeState+(compositeState, substate);
+	State.regions(substate, region);
+}
+
+pattern eventTriggersOfTransitions(transition : Transition, trigger : Trigger) {
+	Transition.trigger(transition, trigger);
+	neg find timeTriggers(trigger, _, _);
+}
+
+pattern simpleEventTriggersOfTransitions(transition : Transition, trigger : EventTrigger, port : Port, event : Event) {
+	Transition.trigger(transition, trigger);
+	EventTrigger.eventReference(trigger, eventReference);
+	PortEventReference.port(eventReference, port);
+	PortEventReference.event(eventReference, event);
+}
+
+private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : TimeoutEventReference,
+		timeoutDeclaration : TimeoutDeclaration) {
+	EventTrigger.eventReference(trigger, timeoutEventReference);
+	TimeoutEventReference.timeout(timeoutEventReference, timeoutDeclaration);
+}
+
+pattern timeTriggersOfTransitions(state : State, transition : Transition, timeoutEventReference : TimeoutEventReference,
+	timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification, name : java String) {
+	State.entryActions(state, timeoutAction);
+	SetTimeoutAction.timeoutDeclaration(timeoutAction, clockDeclaration);
+	TimeoutDeclaration.name(clockDeclaration, name);
+	SetTimeoutAction.time(timeoutAction, time);
+	Transition.sourceState(transition, state);
+	Transition.trigger(transition, trigger);
+	find timeTriggers(trigger, timeoutEventReference, timeoutDeclaration);
+}
+
+pattern guardsOfTransitions(transition : Transition, guard : Expression) {
+	Transition.guard(transition, guard);
+}
+
+pattern updatesOfTransitions(transition : Transition, assignmentAction : AssignmentAction) {
+	Transition.effects(transition, assignmentAction);
+	AssignmentAction(assignmentAction);
+}
+
+pattern entryAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {
+	State.entryActions(state, assignmentAction);
+	AssignmentAction(assignmentAction);
+}
+
+pattern entryTimeoutActionsOfStates(state : State, setTimeoutAction : SetTimeoutAction) {
+	State.entryActions(state, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+pattern exitAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {	
+	State.exitActions(state, assignmentAction);
+	AssignmentAction(assignmentAction);
+}
+
+pattern exitAssignmentsOfStatesWithTransitions(outgoingTransition : Transition, assignmentAction : AssignmentAction) {
+	Transition.sourceState(outgoingTransition, state);
+	find exitAssignmentsOfStates(state, assignmentAction);
+}
+
+pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {
+	Transition.effects(transition, raiseEventAction);
+	RaiseEventAction(raiseEventAction);
+}
+
+private pattern transitionParameterAndGuard(transition : Transition, port : Port, event : Event,
+		parameter : ParameterDeclaration, guard : Expression) {
+	Transition.trigger(transition, trigger);
+	EventTrigger.eventReference(trigger, eventReference);
+	PortEventReference.port(eventReference, port);
+	PortEventReference.event(eventReference, event);
+	Event.parameterDeclarations(event, parameter);
+	Transition.guard(transition, guard);
+} or {
+	Transition.trigger(transition, trigger);
+	find triggerToTrigger+(trigger, containedTrigger);
+	EventTrigger.eventReference(containedTrigger, eventReference);
+	PortEventReference.port(eventReference, port);
+	PortEventReference.event(eventReference, event);
+	Event.parameterDeclarations(event, parameter);
+	Transition.guard(transition, guard);
+}
+
+private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Trigger) {
+	BinaryTrigger.leftOperand(trigger, containedTrigger);
+} or {
+	BinaryTrigger.rightOperand(trigger, containedTrigger);
+} or {
+	UnaryTrigger.operand(trigger, containedTrigger);
+}
+
+private pattern expressionToExpression(from : Expression, to : Expression) {
+	UnaryExpression.operand(from, to);
+} or {
+	BinaryExpression.leftOperand(from, to);
+} or {
+	BinaryExpression.rightOperand(from, to);
+} or {
+	MultiaryExpression.operands(from, to);
+}
+
+private pattern parameterValue(rootExpression : EqualityExpression, port : Port, event : Event, 
+		parameter : ParameterDeclaration, valueExpression : Expression) {
+	EqualityExpression.leftOperand(rootExpression, lhs);
+	EventParameterReferenceExpression.port(lhs, port);
+	EventParameterReferenceExpression.event(lhs, event);
+	EventParameterReferenceExpression.parameter(lhs, parameter);
+	EqualityExpression.rightOperand(rootExpression, valueExpression);
+} or {
+	EqualityExpression.rightOperand(rootExpression, rhs);
+	EventParameterReferenceExpression.port(rhs, port);
+	EventParameterReferenceExpression.event(rhs, event);
+	EventParameterReferenceExpression.parameter(rhs, parameter);
+	EqualityExpression.leftOperand(rootExpression, valueExpression);
+}
+
+pattern valuesOfEventParameters(port : Port, event : Event, expression : Expression) {
+	find transitionParameterAndGuard(_, port, event, parameter, equalityExpression);
+	find parameterValue(equalityExpression, port, event, parameter, expression);
+} or {
+	find transitionParameterAndGuard(_, port, event, parameter, guard);		
+	find expressionToExpression+(guard, equalityExpression);
+	find parameterValue(equalityExpression, port, event, parameter, expression);
+} 
+
+pattern entryRaisingActionsOfStates(state : State, raiseEventAction : RaiseEventAction) {
+	State.entryActions(state, raiseEventAction);
+	RaiseEventAction(raiseEventAction);
+}
+
+pattern exitRaisingActionsOfStates(state : State, raiseEventAction : RaiseEventAction) {
+	State.exitActions(state, raiseEventAction);
+	RaiseEventAction(raiseEventAction);
+}
+
+pattern exitRaisingActionsOfStatesWithTransitions(state : State, outgoingTransition : Transition, raiseEventAction : RaiseEventAction) {
+	Transition.sourceState(outgoingTransition, state);
+	find exitRaisingActionsOfStates(state, raiseEventAction); 
+}

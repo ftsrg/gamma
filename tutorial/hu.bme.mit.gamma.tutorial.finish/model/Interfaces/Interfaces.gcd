@@ -1,0 +1,16 @@
+package Interfaces
+interface Executable {
+	in event ^execute
+}
+interface Control {
+	out event toggle
+}
+interface LightCommands {
+	out event displayRed
+	out event displayNone
+	out event displayYellow
+	out event displayGreen
+}
+interface PoliceInterrupt {
+	out event police
+}

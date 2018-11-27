@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.uppaal.transformation.traceability/src"
+    modelPluginID="hu.bme.mit.gamma.uppaal.transformation.traceability" modelName="Traceability"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../de.uni_paderborn.uppaal/model/uppaal.genmodel#//uppaal"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>traceability.ecore</foreignModel>
+  <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.uppaal.transformation"
+      disposableProviderFactory="true" fileExtensions="g2u" ecorePackage="traceability.ecore#/">
+    <genClasses ecoreClass="traceability.ecore#//G2UTrace">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference traceability.ecore#//G2UTrace/traces"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//G2UTrace/gammaPackage"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//G2UTrace/nta"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="traceability.ecore#//AbstractTrace"/>
+    <genClasses ecoreClass="traceability.ecore#//Trace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Trace/from"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Trace/to"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ExpressionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ExpressionTrace/from"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ExpressionTrace/to"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//InstanceTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//InstanceTrace/owner"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//InstanceTrace/element"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//PortTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PortTrace/port"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PortTrace/declarations"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//MessageQueueTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/queue"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/peekFunction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/shiftFunction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/pushFunction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/isFullFunction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/sizeConst"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/capacityVar"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MessageQueueTrace/array"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//EventRepresentation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//EventRepresentation/port"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//EventRepresentation/event"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="traceability.ecore#//AbstractEventRepresentation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//AbstractEventRepresentation/constantRepresentation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//AbstractEventRepresentation/wrapper"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ClockRepresentation">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ClockRepresentation/clock"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

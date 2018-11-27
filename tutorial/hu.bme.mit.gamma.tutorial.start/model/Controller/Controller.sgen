@@ -1,0 +1,17 @@
+GeneratorModel for yakindu::java {
+
+	statechart Controller {
+
+		feature Outlet {
+			targetProject = "hu.bme.mit.gamma.tutorial.start"
+			targetFolder = "src-gen"
+		}
+
+		feature GeneralFeatures {
+			RuntimeService = true
+			TimerService = true
+			InterfaceObserverSupport = true
+		}
+		
+	}
+}

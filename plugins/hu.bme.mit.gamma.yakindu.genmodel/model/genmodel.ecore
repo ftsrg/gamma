@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="genmodel" nsURI="http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
+    nsPrefix="hu.bme.mit.gamma.yakindu.genmodel">
+  <eClassifiers xsi:type="ecore:EClass" name="GenModel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartImports" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceImports" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceMappings" upperBound="-1"
+        eType="#//InterfaceMapping" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
+        eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RealizationMode"
+        defaultValueLiteral="PROVIDED"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaInterface" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Interface"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduInterface" lowerBound="1"
+        eType="ecore:EClass platform:/plugin/org.yakindu.sct.model.stext/model/SText.ecore#//InterfaceScope"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventMappings" upperBound="-1"
+        eType="#//EventMapping" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventMapping">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduEvent" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.base.types/model/types.ecore#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaEvent" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Event"/>
+  </eClassifiers>
+</ecore:EPackage>

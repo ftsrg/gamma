@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model"
+            class="hu.bme.mit.gamma.statechart.model.StatechartModelPackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+            class="hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+            class="hu.bme.mit.gamma.statechart.model.composite.CompositePackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
+</plugin>

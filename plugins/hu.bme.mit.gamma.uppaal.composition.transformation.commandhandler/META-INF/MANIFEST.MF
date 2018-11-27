@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Commandhandler of Gamma Composite System to UPPAAL Transformer
+Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler;singleton:=true
+Bundle-Version: 2.0.3.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.core.commands,
+ org.eclipse.jface,
+ org.eclipse.ui.workbench,
+ org.eclipse.core.resources,
+ org.eclipse.emf.ecore,
+ org.eclipse.core.runtime;bundle-version="3.12.0",
+ hu.bme.mit.gamma.uppaal.composition.transformation,
+ de.uni_paderborn.uppaal,
+ hu.bme.mit.gamma.uppaal.transformation,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.uppaal.serializer,
+ hu.bme.mit.gamma.uppaal.transformation.traceability,
+ hu.bme.mit.gamma.yakindu.transformation,
+ hu.bme.mit.gamma.dialog
+Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler

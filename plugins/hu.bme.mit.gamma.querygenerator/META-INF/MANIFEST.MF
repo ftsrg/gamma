@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: UPPAAL Query Generator
+Bundle-SymbolicName: hu.bme.mit.gamma.querygenerator;singleton:=true
+Bundle-Version: 2.0.3.qualifier
+Bundle-Vendor: BME-FTSRG
+Export-Package: hu.bme.mit.gamma.querygenerator.application,
+  hu.bme.mit.gamma.querygenerator.patterns
+Require-Bundle: hu.bme.mit.gamma.statechart.model,
+  hu.bme.mit.gamma.constraint.model,
+  org.eclipse.emf.ecore,
+  org.eclipse.viatra.query.runtime,
+  org.eclipse.xtext.xbase.lib,
+  hu.bme.mit.gamma.uppaal.backannotation,
+  org.eclipse.core.resources,
+  org.eclipse.core.runtime;bundle-version="3.13.0",
+  hu.bme.mit.gamma.dialog,
+  hu.bme.mit.gamma.trace.model,
+  hu.bme.mit.gamma.trace.language.ui,
+  com.google.inject;bundle-version="3.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
+Import-Package: org.apache.log4j

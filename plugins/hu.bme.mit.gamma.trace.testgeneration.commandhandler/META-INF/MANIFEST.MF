@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Unit Test Generator
+Bundle-SymbolicName: hu.bme.mit.gamma.trace.testgeneration.commandhandler;singleton:=true
+Bundle-Version: 2.0.3.qualifier
+Bundle-Vendor: BME-FTSRG
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.resources,
+ org.eclipse.equinox.registry,
+ org.eclipse.emf.ecore,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.querygenerator,
+ hu.bme.mit.gamma.uppaal.backannotation,
+ hu.bme.mit.gamma.dialog
+Export-Package: hu.bme.mit.gamma.trace.testgeneration.commandhandler
+Import-Package: hu.bme.mit.gamma.trace.model
+Automatic-Module-Name: hu.bme.mit.gamma.trace.testgeneration.commandhandler

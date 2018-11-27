@@ -1,0 +1,46 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.uppaal.backannotation.patterns
+
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+import "http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability"
+import "http://www.uni-paderborn.de/uppaal/declarations/0.4.0"
+
+// IMPORTANT: If the engine is not set on the ReosurceSet, the from/to/instance/element MUST NOT have a static type in the parameter list
+
+pattern traces(trace : Trace, from, to) { 
+	Trace.from(trace, from);
+	Trace.to(trace, to); 
+}
+
+pattern expressionTraces(trace : ExpressionTrace, from, to) {
+	ExpressionTrace.from(trace, from);
+	ExpressionTrace.to(trace, to);
+}
+
+pattern instanceTraces(trace : InstanceTrace, instance : ComponentInstance, element) {
+	InstanceTrace.owner(trace, instance);
+	InstanceTrace.element(trace, element);
+}
+
+pattern portTraces(trace : PortTrace, port, declaration) {
+	PortTrace.port(trace, port);
+	PortTrace.declarations(trace, declaration);
+}
+
+pattern eventRepresentations(wrapper : SynchronousComponentWrapper, port : Port, event : Event, representation : DataVariableDeclaration) {
+	EventRepresentation.wrapper(trace, wrapper);
+	EventRepresentation.constantRepresentation(trace, representation);
+	EventRepresentation.port(trace, port);
+	EventRepresentation.event(trace, event);
+}

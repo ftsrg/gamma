@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.constraint="http://www.mit.bme.hu/gamma/constraint/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="monitoredcrossroadView">
+  <components xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousCompositeComponent" name="MonitoredCrossroad">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="monitorOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <portBindings compositeSystemPort="//@components.0/@ports.0">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.0"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.1">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.2">
+      <instancePortReference instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.0/@ports.3">
+      <instancePortReference instance="//@components.0/@components.1" port="//@components.5/@ports.0"/>
+    </portBindings>
+    <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
+      <providedPort instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+      <requiredPort instance="//@components.0/@components.1" port="//@components.5/@ports.1"/>
+    </channels>
+    <components name="crossroad" type="//@components.1"/>
+    <components name="monitor" type="//@components.5"/>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousCompositeComponent" name="Crossroad">
+    <ports name="police">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="priorityOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="secondaryOutput">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <portBindings compositeSystemPort="//@components.1/@ports.0">
+      <instancePortReference instance="//@components.1/@components.0" port="//@components.2/@ports.2"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.1/@ports.1">
+      <instancePortReference instance="//@components.1/@components.1" port="//@components.3/@ports.0"/>
+    </portBindings>
+    <portBindings compositeSystemPort="//@components.1/@ports.2">
+      <instancePortReference instance="//@components.1/@components.2" port="//@components.4/@ports.0"/>
+    </portBindings>
+    <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
+      <providedPort instance="//@components.1/@components.0" port="//@components.2/@ports.1"/>
+      <requiredPort instance="//@components.1/@components.1" port="//@components.3/@ports.1"/>
+    </channels>
+    <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
+      <providedPort instance="//@components.1/@components.0" port="//@components.2/@ports.0"/>
+      <requiredPort instance="//@components.1/@components.2" port="//@components.4/@ports.1"/>
+    </channels>
+    <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
+      <providedPort instance="//@components.1/@components.0" port="//@components.2/@ports.4"/>
+      <requiredPort instance="//@components.1/@components.1" port="//@components.3/@ports.2"/>
+    </channels>
+    <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
+      <providedPort instance="//@components.1/@components.0" port="//@components.2/@ports.3"/>
+      <requiredPort instance="//@components.1/@components.2" port="//@components.4/@ports.2"/>
+    </channels>
+    <components name="crossroad_controller" type="//@components.2"/>
+    <components name="crossroad_prior" type="//@components.3"/>
+    <components name="crossroad_secondary" type="//@components.4"/>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="ControllerStatechart">
+    <ports name="SecondaryControl">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityControl">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PoliceInterrupt">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="SecondaryPolice">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PriorityPolice">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="main_region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Operating">
+        <regions name="operating">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ShallowHistoryState" name="Entry0"/>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="SecondaryPrepares">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.1">
+              <time unit="SECOND">
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="1"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Priority">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.2">
+              <time unit="SECOND">
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Secondary">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.3">
+              <time unit="SECOND">
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Init">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.0">
+              <time unit="SECOND">
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="PriorityPrepares">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.4">
+              <time unit="SECOND">
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="1"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+        </regions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry1"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Interrupted"/>
+    </regions>
+    <timeoutDeclarations name="InitTimeout2"/>
+    <timeoutDeclarations name="SecondaryPreparesTimeout3"/>
+    <timeoutDeclarations name="PriorityTimeout4"/>
+    <timeoutDeclarations name="SecondaryTimeout5"/>
+    <timeoutDeclarations name="PriorityPreparesTimeout6"/>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.2/@timeoutDeclarations.1"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.2/@timeoutDeclarations.0"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.2/@timeoutDeclarations.4"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.1" targetState="//@components.2/@regions.0/@stateNodes.0"/>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.2/@timeoutDeclarations.3"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4"/>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.2" targetState="//@components.2/@regions.0/@stateNodes.0">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.2/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.3">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0" targetState="//@components.2/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.2/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.3">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.4">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2" targetState="//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.2/@timeoutDeclarations.2"/>
+      </trigger>
+    </transitions>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="TrafficLightCtrlStatechart">
+    <ports name="LightCommands">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="Control">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PoliceInterrupt">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="main_region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Normal">
+        <regions name="normal">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ShallowHistoryState" name="Entry1"/>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Green">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Yellow">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Red">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </entryActions>
+          </stateNodes>
+        </regions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Interrupted">
+        <regions name="interrupted">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry0"/>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="BlinkingYellow">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.3/@timeoutDeclarations.1">
+              <time>
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Black">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.3/@timeoutDeclarations.0">
+              <time>
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+        </regions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry2"/>
+    </regions>
+    <timeoutDeclarations name="BlackTimeout3"/>
+    <timeoutDeclarations name="BlinkingYellowTimeout4"/>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.0"/>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.3/@timeoutDeclarations.1"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.0">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.3/@timeoutDeclarations.0"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+    <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="TrafficLightCtrlStatechart">
+    <ports name="LightCommands">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="Control">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="PoliceInterrupt">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="main_region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Normal">
+        <regions name="normal">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:ShallowHistoryState" name="Entry1"/>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Green">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Yellow">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Red">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+            </entryActions>
+          </stateNodes>
+        </regions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Interrupted">
+        <regions name="interrupted">
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry0"/>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="BlinkingYellow">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.4/@timeoutDeclarations.1">
+              <time>
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+            </entryActions>
+          </stateNodes>
+          <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Black">
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.4/@timeoutDeclarations.0">
+              <time>
+                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+              </time>
+            </entryActions>
+            <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
+              <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+            </entryActions>
+          </stateNodes>
+        </regions>
+      </stateNodes>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry2"/>
+    </regions>
+    <timeoutDeclarations name="BlackTimeout3"/>
+    <timeoutDeclarations name="BlinkingYellowTimeout4"/>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2" targetState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.4/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" targetState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.4/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.2" targetState="//@components.4/@regions.0/@stateNodes.0"/>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1" targetState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.4/@timeoutDeclarations.1"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.1" targetState="//@components.4/@regions.0/@stateNodes.0">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.4/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0" targetState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.0" targetState="//@components.4/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.4/@ports.2">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2" targetState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.4/@timeoutDeclarations.0"/>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.0" targetState="//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+    <transitions sourceState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3" targetState="//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.4/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+  </components>
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="MonitorStatechart">
+    <ports name="Monitor">
+      <interfaceRealization>
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="LightInputs">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <regions name="main_region">
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:InitialState" name="Entry0"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Red"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Error"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Other"/>
+      <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Green"/>
+    </regions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.4" targetState="//@components.5/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.3" targetState="//@components.5/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.4" targetState="//@components.5/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.3" targetState="//@components.5/@regions.0/@stateNodes.4">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.1" targetState="//@components.5/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.0" targetState="//@components.5/@regions.0/@stateNodes.3"/>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.4" targetState="//@components.5/@regions.0/@stateNodes.1">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.1" targetState="//@components.5/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.5/@ports.0">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.1" targetState="//@components.5/@regions.0/@stateNodes.3">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.4" targetState="//@components.5/@regions.0/@stateNodes.2">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+        </eventReference>
+      </trigger>
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.5/@ports.0">
+        <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+      </effects>
+    </transitions>
+    <transitions sourceState="//@components.5/@regions.0/@stateNodes.1" targetState="//@components.5/@regions.0/@stateNodes.4">
+      <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.5/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+        </eventReference>
+      </trigger>
+    </transitions>
+  </components>
+</hu.bme.mit.gamma.statechart:Package>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.xtext.extension_resourceServiceProvider">
+      <resourceServiceProvider
+            class="hu.bme.mit.gamma.statechart.scoping.ui.ExecutableExtensionFactory:org.eclipse.xtext.ui.resource.generic.EmfResourceUIServiceProvider"
+            uriExtension="gsm">
+      </resourceServiceProvider>
+   </extension>
+
+</plugin>
+

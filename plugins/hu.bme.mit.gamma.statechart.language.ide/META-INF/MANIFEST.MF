@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Statechart Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.0.3.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.statechart.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.constraint.language,
+ hu.bme.mit.gamma.statechart.language,
+ hu.bme.mit.gamma.statechart.model,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr.internal,
+ hu.bme.mit.gamma.statechart.language.ide.contentassist.antlr
+Automatic-Module-Name: hu.bme.mit.gamma.statechart.language.ide
+

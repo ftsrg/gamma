@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/0.4.0"
+            class="uppaal.UppaalPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="uppaal"
+            class="uppaal.util.UppaalResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/core/0.4.0"
+            class="uppaal.core.CorePackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/types/0.4.0"
+            class="uppaal.types.TypesPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="types"
+            class="uppaal.types.util.TypesResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/declarations/0.4.0"
+            class="uppaal.declarations.DeclarationsPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="declarations"
+            class="uppaal.declarations.util.DeclarationsResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/declarations/global"
+            class="uppaal.declarations.global.GlobalPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="global"
+            class="uppaal.declarations.global.util.GlobalResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/declarations/system"
+            class="uppaal.declarations.system.SystemPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="system"
+            class="uppaal.declarations.system.util.SystemResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/templates/0.4.0"
+            class="uppaal.templates.TemplatesPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="templates"
+            class="uppaal.templates.util.TemplatesResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/statements/0.4.0"
+            class="uppaal.statements.StatementsPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="statements"
+            class="uppaal.statements.util.StatementsResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/expressions/0.4.0"
+            class="uppaal.expressions.ExpressionsPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated uppaal -->
+      <parser
+            type="expressions"
+            class="uppaal.expressions.util.ExpressionsResourceFactoryImpl"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated uppaal -->
+      <package
+            uri="http://www.uni-paderborn.de/uppaal/visuals/0.4.0"
+            class="uppaal.visuals.VisualsPackage"
+            genModel="model/uppaal.genmodel"/>
+   </extension>
+</plugin>

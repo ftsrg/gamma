@@ -1,0 +1,59 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.yakindu.transformation.queries
+
+import "http://www.yakindu.org/sct/sgraph/2.0.0"
+import "http://www.yakindu.org/sct/statechart/SText"
+import epackage "http://www.yakindu.org/base/expressions/Expressions"
+import "http://www.yakindu.org/base/base/2.0.0"
+import "http://www.yakindu.org/base/types/2.0.0"
+
+private pattern localReactionWithGuard(state : State, trigger : EventSpec) {
+	State.localReactions(state, localReaction);
+	Reaction.trigger(localReaction, reactionTrigger);
+	ReactionTrigger.triggers(reactionTrigger, trigger);	
+	ReactionTrigger.guard(reactionTrigger, _guard);
+}
+
+/**
+ * Returns states of entry/exit events with guards.
+ */
+pattern entryOrExitReactionWithGuards(state : State) {	
+	find localReactionWithGuard(state, entryEvent);
+	EntryEvent(entryEvent);
+} or {
+	find localReactionWithGuard(state, exitEvent);
+	ExitEvent(exitEvent);
+}
+
+pattern statesWithSameName(lhs : State, rhs : State, name : java String) {	
+ 	State.name(lhs, name);
+ 	State.name(rhs, name);
+ 	lhs != rhs;
+}
+
+pattern raisedInEvents(event : EventDefinition) {
+	EventRaisingExpression.event(_, eventReference);
+	ElementReferenceExpression.reference(eventReference, event);
+	EventDefinition.direction(event, ::IN);
+}
+
+pattern raisedOutEvents(event : EventDefinition) {
+	ReactionTrigger.triggers(_reactionTrigger, trigger);
+	RegularEventSpec.event(trigger, elementReference);
+	ElementReferenceExpression.reference(elementReference, event);
+	EventDefinition.direction(event, ::OUT);
+} or {
+	ReactionTrigger.triggers(_reactionTrigger, trigger);
+	RegularEventSpec.event(trigger, featureCall);
+	FeatureCall.feature(featureCall, event);
+	EventDefinition.direction(event, ::OUT);
+}

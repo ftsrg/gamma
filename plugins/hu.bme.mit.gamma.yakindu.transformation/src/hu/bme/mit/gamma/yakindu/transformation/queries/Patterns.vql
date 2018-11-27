@@ -1,0 +1,361 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.yakindu.transformation.queries
+
+import "http://www.yakindu.org/sct/sgraph/2.0.0"
+import "http://www.yakindu.org/base/base/2.0.0"
+import "http://www.yakindu.org/base/expressions/Expressions"
+import "http://www.yakindu.org/sct/statechart/SText"
+import "http://www.yakindu.org/base/types/2.0.0"
+
+import "http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability"
+
+pattern traces(trace : Trace, from, to) {
+	Trace.from(trace, from);
+	Trace.to(trace, to);
+}
+
+pattern expressionTraces(trace : ExpressionTrace, from, to) {
+	ExpressionTrace.from(trace, from); 
+	ExpressionTrace.to(trace, to);
+}
+
+pattern statecharts(statechart : Statechart) {
+	Statechart(statechart);
+}
+
+pattern topRegions(statechart : Statechart, region : Region, name : java String) {
+	Statechart.regions(statechart, region);
+	Region.name(region, name);
+}
+
+private pattern compositeStates(compositeState : State, compositeStateName : java String, parentRegion : Region, subregion : Region) {
+	State.regions(compositeState, subregion);
+	State.parentRegion(compositeState, parentRegion);
+	State.name(compositeState, compositeStateName);
+}
+
+pattern compositeStateRegions(subregion : Region, compositeState : State, parentRegion : Region, compositeStateName : java String, regionName : java String) {
+	find compositeStates(compositeState, compositeStateName, parentRegion, subregion);
+	Region.name(subregion, regionName);
+}
+
+pattern entries(entry : Entry, parentRegion : Region, kind : EntryKind) {
+	Entry.parentRegion(entry, parentRegion);
+	Entry.kind(entry, kind);
+}
+
+pattern simpleStates(simpleState : State, stateName : java String, parentRegion : Region) {
+	State.parentRegion(simpleState, parentRegion);
+	State.name(simpleState, stateName);
+	neg find compositeStates(simpleState, stateName, parentRegion, _);
+}
+
+pattern choices(choice : Choice, parentRegion : Region) {
+	Choice.parentRegion(choice, parentRegion);
+	neg find merges(choice, parentRegion);
+}
+
+pattern merges(merge : Choice, parentRegion : Region) {
+	incomingTransitions == count find incomingTransitions(merge, _);
+	check (incomingTransitions > 1);
+	count find outgoingTransitions(merge, _) == 1;
+	Choice.parentRegion(merge, parentRegion);
+}
+
+private pattern incomingTransitions(vertex : Vertex, incomingTransition : Transition) {
+	Transition.target(incomingTransition, vertex);
+}
+
+private pattern outgoingTransitions(vertex : Vertex, outgoingTransition : Transition) {
+	Transition.source(outgoingTransition, vertex);
+}
+
+pattern forks(fork : Synchronization, parentRegion : Region) {
+	Synchronization.parentRegion(fork, parentRegion);
+	count find incomingTransitions(fork, _incomingTransition) == 1;
+	outgoingTransitions == count find outgoingTransitions(fork, _outgoingTransition);
+	check (outgoingTransitions >= 1);
+}
+
+pattern joins(join : Synchronization, parentRegion : Region) {
+	Synchronization.parentRegion(join, parentRegion);
+	count find outgoingTransitions(join, _outgoingTransition) == 1;
+	incomingTransitions == count find incomingTransitions(join, _incomingTransition);
+	check (incomingTransitions >= 1);
+}
+
+pattern finalStates(finalState : FinalState, parentRegion : Region) {
+	FinalState.parentRegion(finalState, parentRegion);
+}
+
+private pattern stateToStatechart(state : State, topRegion : Region, statechart : Statechart) {
+	Statechart(statechart);	
+	State.parentRegion.composite(state, statechart);
+	State.parentRegion(state, topRegion);
+}
+
+pattern stateToComposite(state : State, composite : CompositeElement) {	
+	State.parentRegion.composite(state, composite);	
+}
+
+pattern topRegionsOfFinalStates(finalState : FinalState, topRegion : Region) {
+	find stateToStatechart(state, topRegion, _statechart);
+	find stateToComposite+(parentState, state);
+	FinalState.parentRegion.composite(finalState, parentState);
+	FinalState(finalState);
+} or {
+	find stateToStatechart(state, topRegion, _statechart);
+	FinalState.parentRegion.composite(finalState, state);
+} or {	
+	Statechart(statechart);
+	FinalState.parentRegion.composite(finalState, statechart);
+	FinalState.parentRegion(finalState, topRegion);
+}
+
+private pattern triggeredTransitions(transition : Transition) {
+	Transition.trigger(transition, _);
+}
+
+/**
+ * So the plain transition mapping does not re-map these already  mapped transitions.
+ */
+private pattern mappedExitNodeTransitions(transition : Transition) {	
+	Exit.incomingTransitions(_exitNode, transition);
+} or {
+	find defaultTransitionsOfExitNodes(_exitNode, transition);
+}
+
+pattern defaultTransitionsOfExitNodes(exitNode : Exit, defaultTransition : Transition) {
+	Exit.parentRegion.composite(exitNode, parentState);
+	State.outgoingTransitions(parentState, defaultTransition);
+	neg find triggeredTransitions(defaultTransition);
+}
+
+pattern exitNodeTransitions(source : Vertex, incomingTransition : Transition,
+	exitNode : Exit, defaultTransition : Transition, target : Vertex) {
+	Vertex.outgoingTransitions(source, incomingTransition);
+	Exit.incomingTransitions(exitNode, incomingTransition);
+	find defaultTransitionsOfExitNodes(exitNode, defaultTransition);
+	Vertex.incomingTransitions(target, defaultTransition);
+}
+
+pattern transitions(source : Vertex, noExitTransition : Transition, target : Vertex) {
+	Transition.source(noExitTransition, source);
+	Transition.target(noExitTransition, target);
+	neg find mappedExitNodeTransitions(noExitTransition);
+}
+
+// VIATRA does not return matches, if Type is written after the type reference
+
+pattern variables(variable : VariableDefinition, name : java String, type, isReadOnly : java Boolean) {
+	VariableDefinition.name(variable, name);
+	VariableDefinition.typeSpecifier.type(variable, type);
+	VariableDefinition.const(variable, isReadOnly);
+}
+
+pattern variableInits(variable : VariableDefinition, initialValue : Expression) {
+	VariableDefinition.initialValue(variable, initialValue);
+}
+
+pattern transitionsWithGuards(transition : Transition, guard : Guard, expression : Expression) {
+	Transition.trigger(transition, trigger);
+	ReactionTrigger.guard(trigger, guard);
+	Guard.expression(guard, expression);
+}
+
+pattern events(event : EventDefinition, direction : Direction) {
+	EventDefinition.direction(event, direction);
+}
+
+// If name is added, default interface is not returned
+pattern interfaces(interface : InterfaceScope) {
+	InterfaceScope(interface);
+}
+
+
+private pattern transitionToReference(transition : Transition, trigger : RegularEventSpec, elementReference : Expression) {
+	Transition.trigger(transition, reactionTrigger); 
+	ReactionTrigger.triggers(reactionTrigger, trigger);
+	RegularEventSpec.event(trigger, elementReference);
+}
+
+pattern transitionsWithEventTriggers(transition : Transition, trigger : RegularEventSpec, event : EventDefinition) {
+	find transitionToReference(transition, trigger, elementReference);
+	ElementReferenceExpression.reference(elementReference, event);
+} or {
+	find transitionToReference(transition, trigger, featureCall);
+	FeatureCall.feature(featureCall, event);
+}
+
+/**
+ * Returns the left or right operand operand (or the operand if there is only one) of the initial expression.
+ */
+pattern recursiveExpressions(expression : Expression, nextExpression : Expression) {
+	LogicalRelationExpression.leftOperand(expression, nextExpression);
+} or {
+	LogicalRelationExpression.rightOperand(expression, nextExpression);
+} or {
+	LogicalAndExpression.leftOperand(expression, nextExpression);
+} or {
+	LogicalAndExpression.rightOperand(expression, nextExpression);
+} or {
+	LogicalOrExpression.leftOperand(expression, nextExpression);
+} or {
+	LogicalOrExpression.rightOperand(expression, nextExpression);
+} or {
+	LogicalNotExpression.operand(expression, nextExpression);
+} or { 
+	ParenthesizedExpression.expression(expression, nextExpression);
+} or {
+	NumericalAddSubtractExpression.leftOperand(expression, nextExpression);
+} or {
+	NumericalAddSubtractExpression.rightOperand(expression, nextExpression);
+} or {
+	NumericalMultiplyDivideExpression.leftOperand(expression, nextExpression);
+} or {
+	NumericalMultiplyDivideExpression.rightOperand(expression, nextExpression);
+}
+
+private pattern transitionToElementReference(transition : Transition, eventValueReference : EventValueReferenceExpression, elementReference : Expression) {
+	Transition.trigger(transition, reactionTrigger);
+	find reactionTriggerToElementReference(reactionTrigger, eventValueReference, elementReference);
+}
+
+private pattern reactionTriggerToElementReference(reactionTrigger : ReactionTrigger, eventValueReference : EventValueReferenceExpression, elementReference : Expression) {
+	ReactionTrigger.guard(reactionTrigger, guard);
+	Guard.expression(guard, rootExpression);
+	find recursiveExpressions+(rootExpression, eventValueReference);	
+	EventValueReferenceExpression.value(eventValueReference, elementReference);
+}
+
+pattern transitionsWithValueOfTriggers(transition : Transition, eventValueReference : EventValueReferenceExpression, event : EventDefinition) {
+	find transitionToElementReference(transition, eventValueReference, featureCall);
+	FeatureCall.feature(featureCall, event);
+} or {
+	find transitionToElementReference(transition, eventValueReference, elementReference);
+	ElementReferenceExpression.reference(elementReference, event);
+}
+
+pattern transitionsWithDefaultTriggers(transition : Transition, trigger : DefaultTrigger) {
+	Transition.trigger(transition, trigger); 
+	DefaultTrigger(trigger);
+}
+
+pattern transitionsWithAlwaysTriggers(transition : Transition, trigger : AlwaysEvent) {
+	Transition.trigger(transition, reactionTrigger); 
+	ReactionTrigger.triggers(reactionTrigger, trigger);
+	AlwaysEvent(trigger);
+}
+
+/**
+ * The source must be a state since in pseudostates time cannot elapse.
+ */
+pattern transitionsWithTimeTriggers(source : State, transition : Transition, trigger : TimeEventSpec, expression : Expression, unit : TimeUnit) {
+	Transition.source(transition, source);
+	Transition.trigger(transition, reactionTrigger); 
+	ReactionTrigger.triggers(reactionTrigger, trigger);
+	TimeEventSpec.type(trigger, ::after);
+	TimeEventSpec.value(trigger, expression); 
+	TimeEventSpec.unit(trigger, unit);
+}
+
+pattern transitionsWithEffect(transition : Transition, action : Expression) {
+	Transition.effect(transition, effect);
+	ReactionEffect.actions(effect, action);
+}
+
+private pattern statesWithLocalReactions(state : State, trigger : EventSpec, action : Expression) {
+	find reactionToTrigger(state, reaction, trigger);
+	Reaction.effect(reaction, effect);
+	ReactionEffect.actions(effect, action);
+}
+
+pattern statesWithEntryEvents(state : State, trigger : EntryEvent, action : Expression) {
+	find statesWithLocalReactions(state, trigger, action);
+	EntryEvent(trigger);
+}
+
+pattern statesWithExitEvents(state : State, trigger : ExitEvent, action : Expression) {
+	find statesWithLocalReactions(state, trigger, action);
+	ExitEvent(trigger);
+}
+
+private pattern reactionToTrigger(state : State, reaction : Reaction, trigger : EventSpec) {	
+	State.localReactions(state, reaction);
+	Reaction.trigger(reaction, reactionTrigger);
+	ReactionTrigger.triggers(reactionTrigger, trigger);
+}
+
+private pattern entryOrExitReaction(reaction : Reaction) {
+	find reactionToTrigger(_, reaction, trigger);
+	EntryEvent(trigger);
+} or {
+	find reactionToTrigger(_, reaction, trigger);
+	ExitEvent(trigger);
+}
+
+pattern statesWithRegularLocalReactions(state : State, reaction : Reaction) {
+	State.localReactions(state, reaction);
+	neg find entryOrExitReaction(reaction);
+}
+
+private pattern reactionToEvent(reaction : Reaction, trigger : RegularEventSpec, event : Expression) {
+	Reaction.trigger(reaction, reactionTrigger);
+	ReactionTrigger.triggers(reactionTrigger, trigger);
+	RegularEventSpec.event(trigger, event);
+}
+
+pattern triggersOfRegularLocalReactions(reaction : Reaction, trigger : RegularEventSpec, event : EventDefinition) {
+	find statesWithRegularLocalReactions(_, reaction);
+	find reactionToEvent(reaction, trigger, elementReference);
+	ElementReferenceExpression.reference(elementReference, event);
+} or {
+	find statesWithRegularLocalReactions(_, reaction);
+	find reactionToEvent(reaction, trigger, featureCall);
+	FeatureCall.feature(featureCall, event);
+}
+
+pattern triggersOfTimedLocalReactions(reaction : Reaction, timeTrigger : TimeEventSpec, event : Expression, unit : TimeUnit) {
+	find statesWithRegularLocalReactions(_, reaction); 
+	Reaction.trigger(reaction, reactionTrigger);
+	ReactionTrigger.triggers(reactionTrigger, timeTrigger);
+	TimeEventSpec.type(timeTrigger, ::every);
+	TimeEventSpec.value(timeTrigger, event);
+	TimeEventSpec.unit(timeTrigger, unit);
+}
+
+private pattern reactionToElementReference(reaction : LocalReaction, eventValueReference : EventValueReferenceExpression, elementReference : Expression) {
+	find statesWithRegularLocalReactions(_, reaction);
+	LocalReaction.trigger(reaction, reactionTrigger);
+	find reactionTriggerToElementReference(reactionTrigger, eventValueReference, elementReference);	
+}
+
+pattern valueOfLocalReactions(reaction : LocalReaction, eventValueReference : EventValueReferenceExpression, event : EventDefinition) {
+	find reactionToElementReference(reaction, eventValueReference, elementReference);
+	FeatureCall.feature(elementReference, event);
+} or {
+	find reactionToElementReference(reaction, eventValueReference, elementReference);
+	ElementReferenceExpression.reference(elementReference, event);
+}
+
+pattern guardsOfRegularLocalReactions(reaction : Reaction, expression : Expression) {
+	find statesWithRegularLocalReactions(_, reaction);
+	Reaction.trigger(reaction, reactionTrigger);
+	ReactionTrigger.guard(reactionTrigger, guard);
+	Guard.expression(guard, expression);
+}
+
+pattern actionsOfRegularLocalReactions(reaction : Reaction, action : Expression) {
+	find statesWithRegularLocalReactions(_, reaction);
+	Reaction.effect(reaction, effect);
+	ReactionEffect.actions(effect, action);
+}

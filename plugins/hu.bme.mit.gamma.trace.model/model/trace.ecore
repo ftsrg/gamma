@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/trace/Model" nsPrefix="hu.bme.mit.gamma.trace.model">
+  <eClassifiers xsi:type="ecore:EClass" name="ExecutionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
+        eType="#//Step" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="import" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Step">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outEvents" upperBound="-1"
+        eType="#//RaiseEventAct" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
+        eType="#//Act" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instanceStates" upperBound="-1"
+        eType="#//InstanceState" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Act" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceStateConfiguration" eSuperTypes="#//InstanceState">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAct" eSuperTypes="#//Act ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RaiseEventAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TimeElapse" eSuperTypes="#//Act">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="elapsedTime" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Schedule" abstract="true" eSuperTypes="#//Act"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceSchedule" eSuperTypes="#//Schedule">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="scheduledInstance" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/AsynchronousComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentSchedule" eSuperTypes="#//Schedule"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableState" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/SynchronousComponentInstance"/>
+  </eClassifiers>
+</ecore:EPackage>

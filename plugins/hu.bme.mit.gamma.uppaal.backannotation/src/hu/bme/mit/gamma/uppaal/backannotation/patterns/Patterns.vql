@@ -1,0 +1,339 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.uppaal.backannotation.patterns
+
+import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+import "http://www.uni-paderborn.de/uppaal/core/0.4.0"
+import "http://www.uni-paderborn.de/uppaal/templates/0.4.0"
+import "http://www.uni-paderborn.de/uppaal/expressions/0.4.0" as uppaalExp
+import "http://www.uni-paderborn.de/uppaal/types/0.4.0"
+import "http://www.uni-paderborn.de/uppaal/declarations/0.4.0"
+
+pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
+	SynchronousComponentInstance.type(instance, statechart); 
+}
+
+pattern asynchronousSimpleInstances(instance : AsynchronousComponentInstance, type : SynchronousComponentWrapper) {
+	AsynchronousComponentInstance.type(instance, type);
+}
+
+/**
+ * Used to determine containment hierarchy.
+ */
+pattern instanceContainer(containerInstace : ComponentInstance, instance : ComponentInstance) {
+	SynchronousComponentInstance.type(containerInstace, type);
+	AbstractSynchronousCompositeComponent.components(type, instance);
+} or {
+	AsynchronousComponentInstance.type(containerInstace, type);
+	AsynchronousCompositeComponent.components(type, instance);
+}
+
+pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncComposite : AbstractSynchronousCompositeComponent, syncIntance : SynchronousComponentInstance) {
+	find asynchronousSimpleInstances(wrapperInstance, wrapper);
+	find wrappers(wrapper, syncComposite);
+	AbstractSynchronousCompositeComponent.components(syncComposite, syncIntance);
+}
+
+private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {
+	 EventDeclaration.direction(eventDeclaration, direction);
+}
+
+private pattern componentDeclarationEvents(type : Component, port : Port, realizationMode : RealizationMode, eventDeclaration : EventDeclaration, event : Event) {
+	Component.ports(type, port);
+	Port.interfaceRealization(port, interfaceRealization);
+	InterfaceRealization.realizationMode(interfaceRealization, realizationMode);
+	InterfaceRealization.interface(interfaceRealization, interface);
+	Interface.events(interface, eventDeclaration);
+	EventDeclaration.event(eventDeclaration, event);
+}
+
+pattern inputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find simpleInstances(instance, statechart);
+	find componentDeclarationEvents(statechart, port, RealizationMode::PROVIDED, eventDeclaration, event);
+	// OUT events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::OUT);
+} or {
+	find simpleInstances(instance, statechart);
+	find componentDeclarationEvents(statechart, port, RealizationMode::REQUIRED, eventDeclaration, event);
+	// IN events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::IN);
+}
+
+pattern outputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find simpleInstances(instance, statechart);
+	find componentDeclarationEvents(statechart, port, RealizationMode::PROVIDED, eventDeclaration, event);
+	// OUT events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::IN);
+} or {
+	find simpleInstances(instance, statechart);
+	find componentDeclarationEvents(statechart, port, RealizationMode::REQUIRED, eventDeclaration, event);
+	// IN events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::OUT);
+}
+
+/**
+ * Needed in the traversal of the port binding hierarchy, so traversal is made through the correct instances only.
+ */
+private pattern instPortRefToInstPortRef(superInstPortRef : InstancePortReference, instPortRef : InstancePortReference) {
+	InstancePortReference.instance(superInstPortRef, _instance);
+	InstancePortReference.port(superInstPortRef, superPort);
+	PortBinding.compositeSystemPort(binding, superPort);
+	PortBinding.instancePortReference(binding, instPortRef);
+}
+
+pattern parameteredEvents(event : Event, param : ParameterDeclaration) {
+	Event.parameterDeclarations(event, param);
+}
+
+private pattern portBindings(composite : CompositeComponent, systemPort : Port, instance : ComponentInstance, instancePort : Port) {
+	CompositeComponent.portBindings(composite, portBinding);
+	PortBinding.compositeSystemPort(portBinding, systemPort);
+	PortBinding.instancePortReference(portBinding, instancePortRef);
+	InstancePortReference.instance(instancePortRef, instance);
+	InstancePortReference.port(instancePortRef, instancePort);
+}
+
+// This should be used instead of only portToPort
+private pattern portToInstancePort(systemPort : Port, instance : ComponentInstance, port : Port) {
+	PortBinding.compositeSystemPort(binding, systemPort);
+	PortBinding.instancePortReference(binding, superInstancePortRef);
+	find instPortRefToInstPortRef+(superInstancePortRef, instancePortRef);
+	InstancePortReference.instance(instancePortRef, instance);
+	InstancePortReference.port(instancePortRef, port);
+} or {
+	// Needed here?
+	find portBindings(_, systemPort, instance, port);
+}
+
+private pattern syncSystemInEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
+	instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find portBindings(composite, systemPort, instance, port);
+	find inputInstanceEvents(instance, port, event);
+} or {
+	// Finding embedded composite systems and the port of simple instances
+	AbstractSynchronousCompositeComponent.ports(composite, systemPort);
+	find portToInstancePort(systemPort, instance, port);
+	find inputInstanceEvents(instance, port, event);
+}
+
+pattern topSyncSystemInEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
+	instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find topSyncComponents(composite);
+	find syncSystemInEvents(composite, systemPort, instance, port, event);
+}
+
+private pattern syncSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
+	instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find portBindings(composite, systemPort, instance, port);
+	find outputInstanceEvents(instance, port, event);
+} or {
+	// Finding embedded composite systems and the port of simple instances
+	AbstractSynchronousCompositeComponent.ports(composite, systemPort);
+	find portToInstancePort(systemPort, instance, port);
+	find outputInstanceEvents(instance, port, event);
+}
+
+pattern topSyncSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
+	instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find topSyncComponents(composite);
+	find syncSystemOutEvents(composite, systemPort, instance, port, event);
+}
+
+pattern variableToSimpleEvent(event : Event, variableDeclaration : VariableDeclaration) {	
+	find traces(_trace, event, variableDeclaration);
+	neg find variableToParameteredEvent(event, _param, variableDeclaration);
+}
+
+pattern variableToParameteredEvent(event : Event, parameter : ParameterDeclaration, variableDeclaration : VariableDeclaration) {	
+	Event.parameterDeclarations(event, parameter);
+	find traces(_trace, event, variableDeclaration);
+}
+
+pattern valueOfVariableToParameter(parameter : ParameterDeclaration, variableDeclaration : VariableDeclaration) {
+	find traces(_trace, parameter, variableDeclaration);
+}
+
+pattern variableToEvent(event : Event, variableDeclaration : VariableDeclaration) {
+	find variableToSimpleEvent(event, variableDeclaration);
+} or {
+	find variableToParameteredEvent(event, _param, variableDeclaration);
+}
+
+pattern locationToState(location : Location, state : State) {
+	find traces(_trace, state, location);
+}
+
+pattern functions(function : FunctionDeclaration, name : java String) {
+	FunctionDeclaration.function.name(function, name);
+}
+
+pattern constantDeclarations(name : java String, initValue : uppaalExp::Expression) {
+	DataVariableDeclaration.prefix(declaration, ::CONST);
+	DataVariableDeclaration.variable(declaration, variable);
+	Variable.name(variable, name);
+	Variable.initializer(variable, initializer);
+	ExpressionInitializer.expression(initializer, initValue);
+}
+
+private pattern binaryToExpression(from : BinaryExpression, to : Expression) {
+	BinaryExpression.firstExpr(from, to);
+} or {
+	BinaryExpression.secondExpr(from, to);
+}
+
+private pattern compareClock(compareExpression : CompareExpression, clockValue : Expression) {	
+	CompareExpression.operator(compareExpression, ::GREATER_OR_EQUAL);
+	CompareExpression.firstExpr(compareExpression, clockIdentifier);
+	IdentifierExpression.identifier(clockIdentifier, clockVariable);
+	ClockVariableDeclaration.variable(_, clockVariable);
+	CompareExpression.secondExpr(compareExpression, clockValue);
+}
+
+pattern edgesWithClock(edge : Edge, clockValue : Expression) {
+	Edge.guard(edge, compareExpression);
+	find compareClock(compareExpression, clockValue);
+} or {
+	Edge.guard(edge, guard);
+	find binaryToExpression+(guard, compareExpression);	
+	find compareClock(compareExpression, clockValue);
+}
+
+pattern templates(template : Template, templateName: java String) {
+	Template.name(template, templateName);
+}
+
+pattern locations(template : Template, templateName : java String, location : Location, locationName : java String) {
+	Template.name(template, templateName);
+	Template.location(template, location);
+	Location.name(location, locationName);
+}
+
+private pattern typeDeclarations(typeDeclaration : TypeDeclaration, declaration : DataVariableDeclaration) {
+	TypeDeclaration.typeDefinition(typeDeclaration, structType);
+	StructTypeSpecification.declaration(structType, declaration);
+}
+
+pattern variableDelcarations(variableDeclaration : VariableDeclaration, variableName : java String) {
+	Declarations.declaration(_, variableDeclaration); // Only declared variables are returned (and no parameters)
+	VariableDeclaration.variable(variableDeclaration, variable);
+	Variable.name(variable, variableName);
+} or {
+	Declarations.declaration(_, typeDeclaration); // Only declared variables are returned (and no parameters)
+	find typeDeclarations(typeDeclaration, variableDeclaration);
+	VariableDeclaration.variable(variableDeclaration, variable);
+	Variable.name(variable, variableName);
+}
+
+pattern isActiveVariables(templateName : java String, isActiveVariableDeclaration : VariableDeclaration) {
+	Template.name(template, templateName);
+	Template.declarations.declaration(template, isActiveVariableDeclaration);
+	VariableDeclaration.variable(isActiveVariableDeclaration, variable);
+	Variable.name(variable, "isActive");
+}
+ 
+// Choosing the top level components: sync, wrapper and async
+
+private pattern synchronousInstances(instance : SynchronousComponentInstance, type : SynchronousComponent) {
+	SynchronousComponentInstance.type(instance, type);
+}
+
+private pattern asynchronousInstances(instance : AsynchronousComponentInstance, type : AsynchronousComponent) {
+	AsynchronousComponentInstance.type(instance, type);
+}
+ 
+pattern topSyncComponents(syncComposite : AbstractSynchronousCompositeComponent) {
+	neg find synchronousInstances(_, syncComposite);
+}
+
+pattern topAsyncCompositeComponents(asyncComposite : AsynchronousCompositeComponent) {
+	neg find asynchronousInstances(_, asyncComposite);
+}
+
+private pattern wrappers(wrapper : SynchronousComponentWrapper, sync : SynchronousComponent) {
+	SynchronousComponentWrapper.wrappedComponent(wrapper, sync);
+}
+
+// In/out events of wrappers
+
+pattern distinctWrapperInEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+	// This is not delegated, these events and ports are on the wrapper
+	find wrappers(wrapper, _composite);
+	find componentDeclarationEvents(wrapper, port, RealizationMode::PROVIDED, eventDeclaration, event);
+	// OUT events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::OUT);
+} or {
+	// This is not delegated, these events and ports are on the wrapper
+	find wrappers(wrapper, _composite);
+	find componentDeclarationEvents(wrapper, port, RealizationMode::REQUIRED, eventDeclaration, event);
+	// IN events are NOT returned
+	neg find eventDirection(eventDeclaration, EventDirection::IN);
+}
+
+pattern wrapperInEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+	// This is delegated down to the events and ports of sync instances
+	find wrappers(wrapper, composite);
+	find syncSystemInEvents(composite, port, _instance, _instancePort, event);
+} or {
+	find distinctWrapperInEvents(wrapper, port, event);
+}
+
+pattern wrapperOutEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+	// This is delegated down to the events and ports of sync instances
+	find wrappers(wrapper, composite);
+	find syncSystemOutEvents(composite, port, _instance, _instancePort, event);
+}
+
+pattern wrapperInstanceInEvents(instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find asynchronousSimpleInstances(instance, wrapper);
+	find wrapperInEvents(wrapper, port, event);
+}
+
+pattern wrapperInstanceOutEvents(instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find asynchronousSimpleInstances(instance, wrapper);
+	find wrapperOutEvents(wrapper, port, event);
+}
+
+private pattern asyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+	instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find portBindings(composite, systemPort, instance, port);
+	find wrapperInstanceInEvents(instance, port, event);
+} or {
+	// Finding embedded composite systems and the port of simple instances
+	AsynchronousCompositeComponent.ports(composite, systemPort);
+	find portToInstancePort(systemPort, instance, port);
+	find wrapperInstanceInEvents(instance, port, event);
+}
+
+private pattern asyncSystemOutEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+	instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find portBindings(composite, systemPort, instance, port);
+	find wrapperInstanceOutEvents(instance, port, event);
+} or {
+	// Finding embedded composite systems and the port of simple instances
+	AsynchronousCompositeComponent.ports(composite, systemPort);
+	find portToInstancePort(systemPort, instance, port);
+	find wrapperInstanceOutEvents(instance, port, event);
+}
+
+pattern topAsyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+	instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find topAsyncCompositeComponents(composite);
+	find asyncSystemInEvents(composite, systemPort, instance, port, event);
+}
+
+pattern topAsyncSystemOutEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
+	instance : AsynchronousComponentInstance, port : Port, event : Event) {
+	find topAsyncCompositeComponents(composite);
+	find asyncSystemOutEvents(composite, systemPort, instance, port, event);
+}

@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Execution Trace Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.0.3.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.trace.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.constraint.language,
+ hu.bme.mit.gamma.trace.language,
+ hu.bme.mit.gamma.trace.model,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: hu.bme.mit.gamma.trace.language.ide.contentassist.antlr,
+ hu.bme.mit.gamma.trace.language.ide.contentassist.antlr.internal
+Automatic-Module-Name: hu.bme.mit.gamma.trace.language.ide
+

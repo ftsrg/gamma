@@ -1,0 +1,1680 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="uppaal" nsURI="http://www.uni-paderborn.de/uppaal/0.4.0" nsPrefix="uppaal">
+  <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+    <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+  </eAnnotations>
+  <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+    <details key="documentation" value="Contains Uppaal-specific sub-packages."/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="NTA" eSuperTypes="#//core/NamedElement #//core/CommentableElement">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="name" value="NTA"/>
+      <details key="kind" value="elementOnly"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="A 'Network of Timed Automata' as basic input to Uppaal."/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+      <details key="MatchingIntDetails" value="(not self.int.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;((self.int.type = types::BuiltInType::INT) and (self.int.name.equalsIgnoreCase('int')))"/>
+      <details key="MatchingBoolDetails" value="(not self.bool.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;((self.bool.type = types::BuiltInType::BOOL) and (self.bool.name.equalsIgnoreCase('bool')))"/>
+      <details key="MatchingClockDetails" value="(not self.clock.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;((self.clock.type = types::BuiltInType::CLOCK) and (self.clock.name.equalsIgnoreCase('clock')))"/>
+      <details key="MatchingChanDetails" value="(not self.chan.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;((self.chan.type = types::BuiltInType::CHAN) and (self.chan.name.equalsIgnoreCase('chan')))"/>
+      <details key="MatchingVoidDetails" value="(not self.void.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;((self.void.type = types::BuiltInType::VOID) and (self.void.name.equalsIgnoreCase('void')))"/>
+      <details key="UniqueTemplateNames" value="self.template->isUnique(name)"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="constraints" value="MatchingIntDetails MatchingBoolDetails MatchingClockDetails MatchingChanDetails MatchingVoidDetails UniqueTemplateNames"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="globalDeclarations" eType="#//declarations/GlobalDeclarations"
+        containment="true">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="kind" value="element"/>
+        <details key="name" value="globalDeclarations"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The global declarations for the NTA."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="template" lowerBound="1"
+        upperBound="-1" eType="#//templates/Template" containment="true">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="kind" value="element"/>
+        <details key="name" value="template"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The Timed Automata templates of the NTA."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="systemDeclarations" lowerBound="1"
+        eType="#//declarations/SystemDeclarations" containment="true">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="kind" value="element"/>
+        <details key="name" value="systemDeclarations"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The declarations of process instantiations."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="int" lowerBound="1" eType="#//types/PredefinedType"
+        containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The predefined type 'int'."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bool" lowerBound="1" eType="#//types/PredefinedType"
+        containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The predefined type 'bool'."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="#//types/PredefinedType"
+        containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The predefined type 'clock'."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="chan" lowerBound="1" eType="#//types/PredefinedType"
+        containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The predefined type 'chan'."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="void" lowerBound="1" eType="#//types/PredefinedType"
+        containment="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The predefined dummy type 'void'."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eSubpackages name="core" nsURI="http://www.uni-paderborn.de/uppaal/core/0.4.0"
+      nsPrefix="core">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Contains abstract general purpose classes."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for named model elements."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NoWhitespace" value="self.name.characters()->excludes(' ')"/>
+        <details key="NoDigitStart" value="Set{0..9}->excludes(self.name.characters()->first())"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NoWhitespace NoDigitStart"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The name of the model element.."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="CommentableElement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for commentable model elements."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="comment" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The comment for the model element.&#xD;&#xA;\todocg{Change cardinality to 1..1?}"/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="types" nsURI="http://www.uni-paderborn.de/uppaal/types/0.4.0"
+      nsPrefix="types">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Provides support for built-in and user-defined types."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="#//core/NamedElement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for all types."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="index" upperBound="-1"
+          eType="#//declarations/Index" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of array indexes for the type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="baseType" eType="#//types/BuiltInType"
+          changeable="false" volatile="true" transient="true" derived="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="derivation" value="if self.oclIsKindOf(DeclaredType)&#xD;&#xA;then &#xD;&#xA;&#x9;if self.oclAsType(DeclaredType).typeDefinition.oclIsUndefined()&#xD;&#xA;&#x9;then null&#xD;&#xA;&#x9;else self.oclAsType(DeclaredType).typeDefinition.baseType&#xD;&#xA;&#x9;endif&#xD;&#xA;else &#xD;&#xA;&#x9;if self.oclIsKindOf(PredefinedType)&#xD;&#xA;&#x9;then self.oclAsType(PredefinedType).type&#xD;&#xA;&#x9;else null&#xD;&#xA;&#x9;endif&#xD;&#xA;endif"/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="PredefinedType" eSuperTypes="#//types/Type">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="One of the predefined types 'int', 'bool', 'chan', 'clock' or 'void'."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1"
+          eType="#//types/BuiltInType">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Stores the concrete literal that represents the predefined type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="BuiltInType">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="All built-in types."/>
+      </eAnnotations>
+      <eLiterals name="INT" literal="int"/>
+      <eLiterals name="CLOCK" value="1" literal="clock"/>
+      <eLiterals name="CHAN" value="2" literal="chan"/>
+      <eLiterals name="BOOL" value="3" literal="bool"/>
+      <eLiterals name="VOID" value="4" literal="void"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="DeclaredType" eSuperTypes="#//types/Type">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A user-declared type."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclaration" lowerBound="1"
+          eType="#//declarations/TypeDeclaration" eOpposite="#//declarations/TypeDeclaration/type">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The declaration that declares this type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDefinition" lowerBound="1"
+          eType="#//types/TypeDefinition" changeable="false" volatile="true" transient="true"
+          derived="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="derivation" value="if self.typeDeclaration.oclIsUndefined()&#xD;&#xA;then null&#xD;&#xA;else self.typeDeclaration.typeDefinition&#xD;&#xA;endif"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The definition of the declared type. Usually a type specification, but can also be a type reference to a &quot;renamed&quot; type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="TypeDefinition" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for type definitions of all typed elements. Type definitions are either references to types defined elsewhere, or in place specifications of new types."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="baseType" eType="#//types/BuiltInType"
+          changeable="false" volatile="true" transient="true" derived="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="derivation" value="if self.oclIsKindOf(TypeReference)&#xD;&#xA;then &#xD;&#xA;&#x9;if self.oclAsType(TypeReference).referredType.oclIsUndefined()&#xD;&#xA;&#x9;then null&#xD;&#xA;&#x9;else self.oclAsType(TypeReference).referredType.baseType&#xD;&#xA;&#x9;endif&#xD;&#xA;else &#xD;&#xA;&#x9;if self.oclIsKindOf(ScalarTypeSpecification) or self.oclIsKindOf(RangeTypeSpecification)&#xD;&#xA;&#x9;then BuiltInType::INT&#xD;&#xA;&#x9;else null&#xD;&#xA;&#x9;endif&#xD;&#xA;endif"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The built-in base type this type definition relies on. Can be 'null' in case of a 'struct' type definition involved."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="TypeReference" eSuperTypes="#//types/TypeDefinition">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A reference to a type defined elsewhere."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="referredType" lowerBound="1"
+          eType="#//types/Type">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The referred type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="TypeSpecification" abstract="true"
+        eSuperTypes="#//types/TypeDefinition">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for the specification of new types, using either the 'struct' or 'scalar' keywords, or restricting a type to a range of values."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ScalarTypeSpecification" eSuperTypes="#//types/TypeSpecification">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A specification of a 'scalar' type."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="sizeExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An integer-based expression that represents the size of the scalar type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="StructTypeSpecification" eSuperTypes="#//types/TypeSpecification">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A specification of a 'struct' type."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueFieldNames" value="self.declaration->collect(variable)->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueFieldNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" lowerBound="1"
+          upperBound="-1" eType="#//declarations/DataVariableDeclaration" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The variable declarations representing the fields of the 'struct' type."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="RangeTypeSpecification" eSuperTypes="#//types/TypeSpecification">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A type specification restricting the 'int' type to a range of values."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="bounds" lowerBound="1"
+          eType="#//types/IntegerBounds" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The bounds that restrict the type specification."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="IntegerBounds">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="IntegerBounds"/>
+        <details key="kind" value="empty"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Used to restrict the 'int' type to a range of values."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="lowerBound" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An integer-based expression representing the lower bound."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="upperBound" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An integer-based expression representing the upper bound."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="declarations" nsURI="http://www.uni-paderborn.de/uppaal/declarations/0.4.0"
+      nsPrefix="declarations">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Support for all kinds of declarations, e.g. types, functions, or variables."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="Declarations" abstract="true">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="Declarations"/>
+        <details key="kind" value="elementOnly"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueFunctionNames" value="self.declaration->select(oclIsKindOf(FunctionDeclaration)).oclAsType(FunctionDeclaration)->collect(function)->isUnique(name)"/>
+        <details key="UniqueVariableNames" value="self.declaration->select(oclIsKindOf(VariableDeclaration)).oclAsType(VariableDeclaration)->collect(variable)->isUnique(name)"/>
+        <details key="UniqueTypeNames" value="self.declaration->select(oclIsKindOf(TypeDeclaration)).oclAsType(TypeDeclaration)->collect(type)->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Represents a set of variable, type, function, or template declarations, that are either global, local to a template, local to a block, or system declarations."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueFunctionNames UniqueVariableNames UniqueTypeNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" upperBound="-1"
+          eType="#//declarations/Declaration" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The single declarations."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="GlobalDeclarations" eSuperTypes="#//declarations/Declarations">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NoTemplateDeclarations" value="not self.declaration->exists(oclIsKindOf(system::TemplateDeclaration))"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NoTemplateDeclarations"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Global declarations of an NTA."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="channelPriority" eType="#//declarations/global/ChannelPriority"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The declaration of the synchronization channel priorities."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="LocalDeclarations" eSuperTypes="#//declarations/Declarations">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NoTemplateDeclarations" value="not self.declaration->exists(oclIsKindOf(system::TemplateDeclaration))"/>
+        <details key="NoChannelDeclarations" value="not self.declaration->exists(oclIsKindOf(ChannelVariableDeclaration))"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NoTemplateDeclarations NoChannelDeclarations"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Local declarations inside a template or block of statements."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="SystemDeclarations" eSuperTypes="#//declarations/Declarations">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueTemplateNames" value="self.declaration->select(oclIsKindOf(system::TemplateDeclaration)).oclAsType(system::TemplateDeclaration)->collect(declaredTemplate)->isUnique(name)"/>
+        <details key="NoChannelDeclarations" value="not self.declaration->exists(oclIsKindOf(ChannelVariableDeclaration))"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueTemplateNames NoChannelDeclarations"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="System declarations consisting of process instantiations."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="system" lowerBound="1"
+          eType="#//declarations/system/System" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The system section describing the process instantiations."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="progressMeasure" eType="#//declarations/system/ProgressMeasure"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The optional progress measure section."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Declaration" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class representing a variable, function, or type declaration."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="exp" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" abstract="true"
+        eSuperTypes="#//declarations/Declaration #//declarations/VariableContainer">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="VariableDeclaration"/>
+        <details key="kind" value="elementOnly"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A declaration of one or more variables."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ChannelVariableDeclaration" eSuperTypes="#//declarations/VariableDeclaration">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="MatchingType" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.typeDefinition.baseType = types::BuiltInType::CHAN"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A declaration of synchronization channel variables."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="MatchingType"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="urgent" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="false">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies the urgency of the declared synchronization channels."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="broadcast" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+          defaultValueLiteral="false">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies whether the declared synchronization channels use broadcast."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ClockVariableDeclaration" eSuperTypes="#//declarations/VariableDeclaration">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="MatchingType" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.typeDefinition.baseType = types::BuiltInType::CLOCK"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A declaration of clock variables."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="MatchingType"/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="DataVariableDeclaration" eSuperTypes="#//declarations/VariableDeclaration">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="MatchingType" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;(self.typeDefinition.baseType &lt;> types::BuiltInType::CHAN&#xD;&#xA;and&#xD;&#xA;self.typeDefinition.baseType &lt;> types::BuiltInType::CLOCK)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A declaration of data variables."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="MatchingType"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="prefix" lowerBound="1"
+          eType="#//declarations/DataVariablePrefix">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The prefix of the data variable declaration."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="DataVariablePrefix">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Prefixes for data variables with base type 'int' or 'bool'."/>
+      </eAnnotations>
+      <eLiterals name="NONE" literal=""/>
+      <eLiterals name="CONST" value="1" literal="const"/>
+      <eLiterals name="META" value="2" literal="meta"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//declarations/Declaration">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Declaration of a single function."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="function" lowerBound="1"
+          eType="#//declarations/Function" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The return type of this function."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Function" eSuperTypes="#//core/NamedElement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="ValidReturnType" value="(not returnType.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;(returnType.baseType = types::BuiltInType::VOID or&#xD;&#xA; returnType.baseType = types::BuiltInType::INT or&#xD;&#xA; returnType.baseType = types::BuiltInType::BOOL)"/>
+        <details key="UniqueParameterNames" value="self.parameter->collect(variableDeclaration)->collect(variable)->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A function with a return type and optional parameters."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="ValidReturnType UniqueParameterNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="returnType" lowerBound="1"
+          eType="#//types/TypeDefinition" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The return type of this function."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="block" lowerBound="1"
+          eType="#//statements/Block" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The block of statements representing the function body."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" upperBound="-1"
+          eType="#//declarations/Parameter" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The function's parameters."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//declarations/Declaration">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A declaration of one or more types."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueTypeNames" value="self.type->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueTypeNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
+          upperBound="-1" eType="#//types/DeclaredType" containment="true" eOpposite="#//types/DeclaredType/typeDeclaration">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The types declared by this type declaration."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDefinition" lowerBound="1"
+          eType="#//types/TypeDefinition" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The type definition for declared types."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Variable" eSuperTypes="#//core/NamedElement">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="Variable"/>
+        <details key="kind" value="empty"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A typed variable."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NoInitializerForClockAndChannelVariables" value="((not self.typeDefinition.oclIsUndefined()) and&#xD;&#xA;(self.typeDefinition.baseType = types::BuiltInType::CHAN or&#xD;&#xA; self.typeDefinition.baseType = types::BuiltInType::CLOCK))&#xD;&#xA; implies self.initializer.oclIsUndefined()"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NoInitializerForClockAndChannelVariables"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="index" upperBound="-1"
+          eType="#//declarations/Index" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of array indexes for the variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="container" lowerBound="1"
+          eType="#//declarations/VariableContainer" eOpposite="#//declarations/VariableContainer/variable">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The container of this variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDefinition" lowerBound="1"
+          eType="#//types/TypeDefinition" changeable="false" volatile="true" transient="true"
+          derived="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="derivation" value="if self.container.oclIsUndefined()&#xD;&#xA;then null &#xD;&#xA;else &#xD;&#xA;self.container.typeDefinition &#xD;&#xA;endif"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The type definition of this variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="initializer" eType="#//declarations/Initializer"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Represents the variable's initial value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Index" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base-class for indexing variables or types."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ValueIndex" eSuperTypes="#//declarations/Index">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An index specified by an expression value."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="sizeExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An integer-based expression representing size and range of the indexed type or variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="TypeIndex" eSuperTypes="#//declarations/Index">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An index specified by a bounded integer-based type."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="IntegerBasedIndex" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.typeDefinition.baseType = types::BuiltInType::INT"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="IntegerBasedIndex"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDefinition" lowerBound="1"
+          eType="#//types/TypeDefinition" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An integer-based type representing size and range of the indexed type or variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="VariableContainer" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for objects containing variables like variable declarations, iterations, quantifications or selections."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NoVoidVariables" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.typeDefinition.baseType &lt;> types::BuiltInType::VOID"/>
+        <details key="UniqueVariableNames" value="self.variable->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NoVoidVariables UniqueVariableNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="typeDefinition" lowerBound="1"
+          eType="#//types/TypeDefinition" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The type definition for the contained variables."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+          upperBound="-1" eType="#//declarations/Variable" containment="true" eOpposite="#//declarations/Variable/container">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="element"/>
+          <details key="name" value="variable"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The contained variables."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Parameter">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="SingleVariable" value="(not self.variableDeclaration.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.variableDeclaration.variable->size() &lt;= 1"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A parameter of a function or template."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="SingleVariable"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
+          lowerBound="1" eType="#//declarations/VariableDeclaration" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A variable declaration containing the variable that represents the parameter."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="callType" eType="#//declarations/CallType"
+          defaultValueLiteral="CALL_BY_VALUE">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies whether call-by-value or call-by-reference semantics should be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="CallType">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Represents call-by-value or call-by-reference parameters."/>
+      </eAnnotations>
+      <eLiterals name="CALL_BY_VALUE"/>
+      <eLiterals name="CALL_BY_REFERENCE" value="1" literal="CALL_BY_REFERENCE"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Initializer" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An initializer specifies a variable's initial value."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ExpressionInitializer" eSuperTypes="#//declarations/Initializer">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An initializer that represents a single initial value by means of an expression."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression representing the initial value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ArrayInitializer" eSuperTypes="#//declarations/Initializer">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An initializer for array variables, referring to multiple sub-initializers."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="initializer" lowerBound="1"
+          upperBound="-1" eType="#//declarations/Initializer" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A number of sub-initializers, each one representing the initial value for one array index."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eSubpackages name="global" nsURI="http://www.uni-paderborn.de/uppaal/declarations/global"
+        nsPrefix="global">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+        <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+        <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Contains special classes that are relevant for the global declarations."/>
+      </eAnnotations>
+      <eClassifiers xsi:type="ecore:EClass" name="ChannelPriority">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A priority ordering for synchronization channels."/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="AtMostOneDefaultItem" value="self.item->select(oclIsKindOf(DefaultChannelPriority))->size() &lt;= 1"/>
+          <details key="EachChannelContainedAtMostOnce" value="self.item->select(oclIsKindOf(ChannelList)).oclAsType(ChannelList)->collect(channelExpression)->isUnique(variable)"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+          <details key="constraints" value="AtMostOneDefaultItem EachChannelContainedAtMostOnce"/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="item" lowerBound="1"
+            upperBound="-1" eType="#//declarations/global/ChannelPriorityItem" containment="true">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="The items of the channel priority ordering."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="ChannelPriorityItem" abstract="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Abstract base class for items inside a channel priority."/>
+        </eAnnotations>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="ChannelList" eSuperTypes="#//declarations/global/ChannelPriorityItem">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A list of synchronization channel variables, used to assign these channels a common priority."/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="ChannelVariablesOnly" value="self.channelExpression->forAll(&#xD;&#xA;&#x9;(not identifier.typeDefinition.oclIsUndefined()) implies identifier.typeDefinition.baseType = types::BuiltInType::CHAN&#xD;&#xA;)"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+          <details key="constraints" value="ChannelVariablesOnly"/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="channelExpression"
+            lowerBound="1" upperBound="-1" eType="#//expressions/IdentifierExpression">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="The variable expressions representing the synchronization channels inside the channel list."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="DefaultChannelPriority" eSuperTypes="#//declarations/global/ChannelPriorityItem">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A 'default' item inside a channel priority, representing all channels not listed explicitly."/>
+        </eAnnotations>
+      </eClassifiers>
+    </eSubpackages>
+    <eSubpackages name="system" nsURI="http://www.uni-paderborn.de/uppaal/declarations/system"
+        nsPrefix="system">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+        <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+        <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Contains special classes that are relevant for the system declarations."/>
+      </eAnnotations>
+      <eClassifiers xsi:type="ecore:EClass" name="TemplateDeclaration" eSuperTypes="#//declarations/Declaration">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="NumberOfArgumentsMatchesDeclaration" value="(not self.declaredTemplate.oclIsUndefined() and not self.declaredTemplate.referredTemplate.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.argument->size() = self.declaredTemplate.referredTemplate.parameter->size()"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+          <details key="constraints" value="NumberOfArgumentsMatchesDeclaration"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A declaration of a template redefinition."/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="declaredTemplate" lowerBound="1"
+            eType="#//templates/RedefinedTemplate" containment="true" eOpposite="#//templates/RedefinedTemplate/declaration">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="The template being declared."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="argument" upperBound="-1"
+            eType="#//expressions/Expression" containment="true">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="A number of arguments that describe how the referred template's parameters should be mapped towards the declared template's parameters."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="System">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="name" value="System"/>
+          <details key="kind" value="elementOnly"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A system contains declarations of template instantiations."/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="EachTemplateReferencedAtMostOnce" value="self.instantiationList->collect(template)->isUnique(t : templates::AbstractTemplate | t)"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+          <details key="constraints" value="EachTemplateReferencedAtMostOnce"/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="instantiationList"
+            lowerBound="1" upperBound="-1" eType="#//declarations/system/InstantiationList"
+            containment="true">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="A list of process instantiation sublists, ordered by a decreasing priority. The templates referenced inside the sublists are instantiated to be part of the system at runtime."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="InstantiationList">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Represents a list of templates to be instantiated on the same priority level."/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+          <details key="OnlyLegalParamsForPartialInstantiation" value="self.template->forAll(&#xD;&#xA;&#x9;parameter->forAll(&#xD;&#xA;&#x9;&#x9;callType = declarations::CallType::CALL_BY_VALUE&#xD;&#xA;&#x9;&#x9;and&#xD;&#xA;&#x9;&#x9;((not variableDeclaration.oclIsUndefined())&#xD;&#xA;&#x9;&#x9;&#x9;implies&#xD;&#xA;&#x9;&#x9; (variableDeclaration.typeDefinition.oclIsKindOf(types::RangeTypeSpecification) or&#xD;&#xA;&#x9;&#x9;  variableDeclaration.typeDefinition.oclIsKindOf(types::ScalarTypeSpecification)))&#xD;&#xA;&#x9;)&#xD;&#xA;)"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+          <details key="constraints" value="OnlyLegalParamsForPartialInstantiation"/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="template" lowerBound="1"
+            upperBound="-1" eType="#//templates/AbstractTemplate">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="The list of instantiations."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xsi:type="ecore:EClass" name="ProgressMeasure">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A progress measure consisting of monotonically increasing expressions."/>
+        </eAnnotations>
+        <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+            upperBound="-1" eType="#//expressions/Expression" containment="true">
+          <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+            <details key="documentation" value="The progress measure expressions."/>
+          </eAnnotations>
+        </eStructuralFeatures>
+      </eClassifiers>
+    </eSubpackages>
+  </eSubpackages>
+  <eSubpackages name="templates" nsURI="http://www.uni-paderborn.de/uppaal/templates/0.4.0"
+      nsPrefix="templates">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Support for Timed Automata templates consisting of locations and edges."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="AbstractTemplate" abstract="true"
+        eSuperTypes="#//core/NamedElement #//core/CommentableElement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for ordinary timed automata templates as well as redefined templates."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueParameterNames" value="self.parameter->collect(variableDeclaration)->collect(variable)->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueParameterNames"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" upperBound="-1"
+          eType="#//declarations/Parameter" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The parameter declarations of the template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Template" eSuperTypes="#//templates/AbstractTemplate">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="Template"/>
+        <details key="kind" value="elementOnly"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueLocationNames" value="self.location->isUnique(name)"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueLocationNames"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An Uppaal template representing a single timed automaton."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" eType="#//declarations/LocalDeclarations"
+          containment="true">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="element"/>
+          <details key="name" value="declarations"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The local declarations of the template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="location" lowerBound="1"
+          upperBound="-1" eType="#//templates/Location" containment="true" eOpposite="#//templates/Location/parentTemplate">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="element"/>
+          <details key="name" value="location"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The locations inside this template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="edge" upperBound="-1"
+          eType="#//templates/Edge" containment="true" eOpposite="#//templates/Edge/parentTemplate">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="element"/>
+          <details key="name" value="edge"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The edges inside this template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="init" lowerBound="1"
+          eType="#//templates/Location">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="attribute"/>
+          <details key="name" value="init"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The initial location of this template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="RedefinedTemplate" eSuperTypes="#//templates/AbstractTemplate">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A template resulting from redefinition of another referred template, altering its name and parametrization."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="referredTemplate" lowerBound="1"
+          eType="#//templates/AbstractTemplate">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The template that serves as basis for redefinition."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" lowerBound="1"
+          eType="#//declarations/system/TemplateDeclaration" eOpposite="#//declarations/system/TemplateDeclaration/declaredTemplate">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The declaration of this template."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Location" eSuperTypes="#//core/NamedElement #//core/CommentableElement #//visuals/PlanarElement #//visuals/ColoredElement">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="Location"/>
+        <details key="kind" value="empty"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A location inside a template."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parentTemplate" lowerBound="1"
+          eType="#//templates/Template" eOpposite="#//templates/Template/location">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The parent template containing the location."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="invariant" eType="#//expressions/Expression"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A boolean expression representing the location's invariant."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="locationTimeKind" lowerBound="1"
+          eType="#//templates/LocationKind">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies the kind of location (default, urgent, or committed)."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="LocationKind">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Location types."/>
+      </eAnnotations>
+      <eLiterals name="NORMAL"/>
+      <eLiterals name="URGENT" value="1"/>
+      <eLiterals name="COMMITED" value="2"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Edge" eSuperTypes="#//visuals/LinearElement #//core/CommentableElement #//visuals/ColoredElement">
+      <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+        <details key="name" value="Edge"/>
+        <details key="kind" value="empty"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An edge connecting two locations inside a template."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="UniqueParentTemplate" value="(not (self.source.oclIsUndefined() or self.target.oclIsUndefined()))&#xD;&#xA;implies&#xD;&#xA;self.source.parentTemplate = self.target.parentTemplate"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="UniqueParentTemplate"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+          eType="#//templates/Location">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="attribute"/>
+          <details key="name" value="source"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The source location of the edge."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+          eType="#//templates/Location">
+        <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+          <details key="kind" value="attribute"/>
+          <details key="name" value="target"/>
+        </eAnnotations>
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The target location of the edge."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parentTemplate" lowerBound="1"
+          eType="#//templates/Template" eOpposite="#//templates/Template/edge">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The parent template containing the edge."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="#//expressions/Expression"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The guard expression of the edge."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="update" upperBound="-1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of update expressions for the edge, evaluated if the edge fires."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="synchronization" eType="#//templates/Synchronization"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A synchronization performed when the edge fires."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="selection" upperBound="-1"
+          eType="#//templates/Selection" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of non-deterministic value selections."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Synchronization">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A sent or received synchronization between two templates using a specific synchronization channel."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="ChannelVariablesOnly" value="(not self.channelExpression.oclIsUndefined())&#xD;&#xA;and&#xD;&#xA;(not self.channelExpression.identifier.oclIsUndefined())&#xD;&#xA;and&#xD;&#xA;(self.channelExpression.identifier.oclIsKindOf(declarations::Variable))&#xD;&#xA;and&#xD;&#xA;(not self.channelExpression.identifier.oclAsType(declarations::Variable).typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.channelExpression.identifier.oclAsType(declarations::Variable).typeDefinition.baseType = types::BuiltInType::CHAN"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="ChannelVariablesOnly"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="channelExpression" lowerBound="1"
+          eType="#//expressions/IdentifierExpression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An expression representing the channel variable used for synchronization."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" lowerBound="1"
+          eType="#//templates/SynchronizationKind">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The kind of synchronization (sent or received)."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="SynchronizationKind">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing the type of synchronization."/>
+      </eAnnotations>
+      <eLiterals name="RECEIVE" literal="?"/>
+      <eLiterals name="SEND" value="1" literal="!"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Selection" eSuperTypes="#//declarations/VariableContainer">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="SingleVariable" value="self.variable->size() &lt;= 1"/>
+        <details key="IntegerBasedType" value="(not self.typeDefinition.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.typeDefinition.baseType = types::BuiltInType::INT"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="SingleVariable IntegerBasedType"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A non-deterministic selection of a value from a range. The range is specified by a bounded type."/>
+      </eAnnotations>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="statements" nsURI="http://www.uni-paderborn.de/uppaal/statements/0.4.0"
+      nsPrefix="statements">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Support for statements inside functions."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base-class for all statements inside a function's body."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Block" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A block of one or more statements."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="DataVariableDeclarationsOnly" value="(not self.declarations.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;(self.declarations.declaration->forAll(oclIsKindOf(declarations::DataVariableDeclaration)))"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="DataVariableDeclarationsOnly"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" eType="#//declarations/LocalDeclarations"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The local declarations for the function's body."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statement" lowerBound="1"
+          upperBound="-1" eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The statements inside the funtion's body."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="EmptyStatement" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An empty statement represented by a semicolon only."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ForLoop" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A for-loop statement."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="initialization" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The initialization expression of the for loop."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The condition of the for loop, represented by a boolean expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="iteration" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The iteration statements of the for loop."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statement" lowerBound="1"
+          eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The statement to be evaluated for every value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Iteration" eSuperTypes="#//statements/Statement #//declarations/VariableContainer">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="SingleVariable" value="self.variable->size() &lt;= 1"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="SingleVariable"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An iteration over all possible values of a bounded type using the 'for' keyword."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statement" lowerBound="1"
+          eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The statement to be evaluated for every value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="WhileLoop" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A while-loop statement."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A boolean expression for the while loop."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statement" lowerBound="1"
+          eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The statement to be evaluated for every value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="DoWhileLoop" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A do-while-loop statement."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statement" lowerBound="1"
+          eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The statement to be evaluated for every value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A boolean expression for the while loop."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="IfStatement" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An if-then-else statement."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="ifExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The boolean if-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="thenStatement" lowerBound="1"
+          eType="#//statements/Statement" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The then-statement."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="elseStatement" eType="#//statements/Statement"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The else-statement."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ReturnStatement" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A statement used to return from a function's body, optionally carrying a return value."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="returnExpression" eType="#//expressions/Expression"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression representing the return value."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ExpressionStatement" eSuperTypes="#//statements/Statement">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A statement that refers to an arbitrary expression."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression this statement refers to."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="expressions" nsURI="http://www.uni-paderborn.de/uppaal/expressions/0.4.0"
+      nsPrefix="expressions">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Introduces all kinds of expressions."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="Expression" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for all kinds of expressions."/>
+      </eAnnotations>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="NegationExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A negation of an expression."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="negatedExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression negated by this negation."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="PlusExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A confirmation of an integer-based expression using the '+' token."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="confirmedExpression"
+          lowerBound="1" eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression negated by this negation."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="MinusExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An inversion of an integer-based expression using the '-' token."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="invertedExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression negated by this negation."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="BinaryExpression" abstract="true"
+        eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Abstract base class for all binary expressions connecting two sub-expressions."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="firstExpr" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The first sub-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="secondExpr" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The second sub-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="AssignmentExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A binary assignment expression using a specific assignment operator."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/AssignmentOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The operator for the assignment."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="AssignmentOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all assignment operators."/>
+      </eAnnotations>
+      <eLiterals name="EQUAL" literal="="/>
+      <eLiterals name="PLUS_EQUAL" value="1" literal="+="/>
+      <eLiterals name="MINUS_EQUAL" value="2" literal="-="/>
+      <eLiterals name="TIMES_EQUAL" value="3" literal="*="/>
+      <eLiterals name="DIVIDE_EQUAL" value="4" literal="/="/>
+      <eLiterals name="MODULO_EQUAL" value="5" literal="%="/>
+      <eLiterals name="BIT_AND_EQUAL" value="6" literal="&amp;="/>
+      <eLiterals name="BIT_OR_EQUAL" value="7" literal="|="/>
+      <eLiterals name="BIT_LEFT_EQUAL" value="8" literal="&lt;&lt;="/>
+      <eLiterals name="BIT_RIGHT_EQUAL" value="9" literal=">>="/>
+      <eLiterals name="BIT_XOR_EQUAL" value="10" literal="^="/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="IdentifierExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression referring to a variable."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="identifier" lowerBound="1"
+          eType="#//core/NamedElement">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The referred variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="index" upperBound="-1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of expressions that refer to the array indexes of the variable."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="LiteralExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression referring to a literal of any type."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="text" lowerBound="1"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The textual description of the literal."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ArithmeticExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A binary expression representing an arithemtic operation."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/ArithmeticOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The arithmetic operator to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="ArithmeticOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all arithmetic operators."/>
+      </eAnnotations>
+      <eLiterals name="ADD" literal="+"/>
+      <eLiterals name="SUBTRACT" value="1" literal="-"/>
+      <eLiterals name="MULTIPLICATE" value="2" literal="*"/>
+      <eLiterals name="DIVIDE" value="3" literal="/"/>
+      <eLiterals name="MODULO" value="4" literal="%"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="LogicalExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A logical expression."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/LogicalOperator"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="LogicalOperator">
+      <eLiterals name="AND" literal="and"/>
+      <eLiterals name="OR" value="1" literal="or"/>
+      <eLiterals name="IMPLY" value="2" literal="imply"/>
+      <eLiterals name="XOR" value="3" literal="xor"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="FunctionCallExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression representing a call to a function."/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="NumberOfArgumentsMatchesDeclaration" value="(not self.function.oclIsUndefined())&#xD;&#xA;implies&#xD;&#xA;self.argument->size() = self.function.parameter->size()"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="NumberOfArgumentsMatchesDeclaration"/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="function" lowerBound="1"
+          eType="#//declarations/Function">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The function to be called."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="argument" upperBound="-1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="A set of expressions representing the argument values for the function call. Must conform to the parameters of the function declaration."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="CompareExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A comparison between two expression values using a specific comparison operator."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/CompareOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The comparison operator to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="CompareOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all comparison operators."/>
+      </eAnnotations>
+      <eLiterals name="EQUAL" literal="=="/>
+      <eLiterals name="GREATER" value="1" literal=">"/>
+      <eLiterals name="GREATER_OR_EQUAL" value="2" literal=">="/>
+      <eLiterals name="LESS" value="3" literal="&lt;"/>
+      <eLiterals name="LESS_OR_EQUAL" value="4" literal="&lt;="/>
+      <eLiterals name="UNEQUAL" value="5" literal="!="/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ConditionExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression representing a conditional redirection to one of the sub-expressions. Uses tokens '?' and ':' for delimitation."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="ifExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The boolean if-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="thenExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The then-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="elseExpression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The else-expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ScopedIdentifierExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression used to access a scoped identifier. Uses a dot for delimination between scope and identifier."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="scope" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An expression that refers to a certain identifier scope."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="identifier" lowerBound="1"
+          eType="#//expressions/IdentifierExpression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="An expression that refers to a member of the scope."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="Quantifier">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing existential and universal quantification."/>
+      </eAnnotations>
+      <eLiterals name="EXISTENTIAL" literal="∃"/>
+      <eLiterals name="UNIVERSAL" value="1" literal="∀"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="QuantificationExpression" eSuperTypes="#//expressions/Expression #//declarations/VariableContainer">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
+        <details key="SingleVariable" value="self.variable->size() &lt;= 1"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+        <details key="constraints" value="SingleVariable"/>
+      </eAnnotations>
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A quantification expression introducing a quantified variable."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="quantifier" lowerBound="1"
+          eType="#//expressions/Quantifier">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The quantifier to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The quantified expression."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="IncrementDecrementExpression" eSuperTypes="#//expressions/Expression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="An expression describing increment (++) or decrement (---) of an integer-based expression. "/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+          eType="#//expressions/Expression" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The expression to be incremented or decremented."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="position" lowerBound="1"
+          eType="#//expressions/IncrementDecrementPosition">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies pre- or post-evaluation."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/IncrementDecrementOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="Specifies increment or decrement."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="IncrementDecrementOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing increment and decrement operators."/>
+      </eAnnotations>
+      <eLiterals name="INCREMENT" literal="++"/>
+      <eLiterals name="DECREMENT" value="1" literal="--"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="IncrementDecrementPosition">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing pre- or post-processing inside increment/decrement expressions."/>
+      </eAnnotations>
+      <eLiterals name="PRE" literal="PRE"/>
+      <eLiterals name="POST" value="1" literal="POST"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="BitShiftExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A binary expression representing an arithemtic operation."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/BitShiftOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The arithmetic operator to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="BitShiftOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all arithmetic operators."/>
+      </eAnnotations>
+      <eLiterals name="LEFT" literal="&lt;&lt;"/>
+      <eLiterals name="RIGHT" value="1" literal=">>"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="MinMaxExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A binary expression representing an arithemtic operation."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/MinMaxOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The arithmetic operator to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="MinMaxOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all arithmetic operators."/>
+      </eAnnotations>
+      <eLiterals name="MIN" literal="&lt;?"/>
+      <eLiterals name="MAX" value="1" literal=">?"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="BitwiseExpression" eSuperTypes="#//expressions/BinaryExpression">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A binary expression representing an arithemtic operation."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+          eType="#//expressions/BitwiseOperator">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The arithmetic operator to be applied."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="BitwiseOperator">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Representing all arithmetic operators."/>
+      </eAnnotations>
+      <eLiterals name="AND" literal="&amp;"/>
+      <eLiterals name="XOR" value="1" literal="^"/>
+      <eLiterals name="OR" value="2" literal="|"/>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="visuals" nsURI="http://www.uni-paderborn.de/uppaal/visuals/0.4.0"
+      nsPrefix="visuals">
+    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
+    </eAnnotations>
+    <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+      <details key="documentation" value="Provides support for the visual representation of model elements."/>
+    </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="ColoredElement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A model element that has an optional color."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="color" eType="#//visuals/ColorKind">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The color of the model element. It is either a standard uppaal color (default, white, light grey, dark grey, black, blue, cyan, green, magenta, orange, pink, red, yellow) or a self-defined color. Edges should not be white.&#xD;&#xA;&#xD;&#xA;\todosd{We need an OCL-Constraint: Edges should not be white.}&#xD;&#xA;\todosd{We need an OCL-Constraint: If self defined is choosen then a color code must be specified.}"/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="colorCode" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The hexadecimal color code of the model element that must be defined if a self-defined color should be used."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="PlanarElement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A planar model element that has an optional position."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="position" eType="#//visuals/Point"
+          containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The planar position of the model element."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="LinearElement" abstract="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="A linear model element that has a set of bend points."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="bendPoint" upperBound="-1"
+          eType="#//visuals/Point" containment="true">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The bend points of the linear model element."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Point">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Represents a point in the two-dimensional space."/>
+      </eAnnotations>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="x" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+          defaultValueLiteral="0">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The horizontal component of the point."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="y" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+          defaultValueLiteral="0">
+        <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+          <details key="documentation" value="The vertical component of the point."/>
+        </eAnnotations>
+      </eStructuralFeatures>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="ColorKind">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="The color kinds of an element. They are the standard colors of uppaal or a self-defined color."/>
+      </eAnnotations>
+      <eLiterals name="DEFAULT" literal="Default"/>
+      <eLiterals name="WHITE" value="1" literal="White"/>
+      <eLiterals name="LIGHTGREY" value="2" literal="LightGrey"/>
+      <eLiterals name="DARKGREY" value="3" literal="DarkGrey"/>
+      <eLiterals name="BLACK" value="4" literal="Black"/>
+      <eLiterals name="BLUE" value="5" literal="Blue"/>
+      <eLiterals name="CYAN" value="6" literal="Cyan"/>
+      <eLiterals name="GREEN" value="7" literal="Green"/>
+      <eLiterals name="MAGENTA" value="8" literal="Magenta"/>
+      <eLiterals name="ORANGE" value="9" literal="Orange"/>
+      <eLiterals name="PINK" value="10" literal="Pink"/>
+      <eLiterals name="RED" value="11" literal="Red"/>
+      <eLiterals name="YELLOW" value="12" literal="Yellow"/>
+      <eLiterals name="SELF_DEFINED" value="13" literal="Self_Defined"/>
+    </eClassifiers>
+  </eSubpackages>
+</ecore:EPackage>

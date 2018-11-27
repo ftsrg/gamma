@@ -1,0 +1,72 @@
+import "monitoredcrossroadView"
+component MonitoredCrossroad
+step {
+	assert {
+		raise priorityOutput.displayRed
+		raise secondaryOutput.displayRed
+		states {
+			monitor.Other,
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_secondary.Red,
+			crossroad_secondary.Normal,
+			crossroad_prior.Red,
+			crossroad_controller.Init
+		}
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayGreen
+		states {
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_secondary.Red,
+			crossroad_secondary.Normal,
+			monitor.Red,
+			crossroad_prior.Green,
+			crossroad_controller.PriorityPrepares
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayYellow
+		states {
+			crossroad_prior.Normal,
+			crossroad_prior.Yellow,
+			crossroad_controller.Secondary,
+			crossroad_controller.Operating,
+			crossroad_secondary.Red,
+			crossroad_secondary.Normal,
+			monitor.Green
+		}
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayGreen
+		raise priorityOutput.displayRed
+		states {
+			monitor.Other,
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_controller.SecondaryPrepares,
+			crossroad_secondary.Normal,
+			crossroad_prior.Red,
+			crossroad_secondary.Green
+		}
+	}
+}

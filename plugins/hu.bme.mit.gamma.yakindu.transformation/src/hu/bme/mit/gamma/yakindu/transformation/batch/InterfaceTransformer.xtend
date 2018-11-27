@@ -1,0 +1,209 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.yakindu.transformation.batch
+
+import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
+import hu.bme.mit.gamma.constraint.model.NamedElement
+import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
+import hu.bme.mit.gamma.constraint.model.ParametricElement
+import hu.bme.mit.gamma.statechart.model.Package
+import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
+import hu.bme.mit.gamma.yakindu.transformation.queries.Events
+import hu.bme.mit.gamma.yakindu.transformation.queries.Interfaces
+import hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityFactory
+import hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace
+import java.util.AbstractMap.SimpleEntry
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.viatra.query.runtime.api.IPatternMatch
+import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
+import org.eclipse.viatra.query.runtime.api.ViatraQueryMatcher
+import org.eclipse.viatra.query.runtime.emf.EMFScope
+import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
+import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.SimpleModelManipulations
+import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
+import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRuleFactory
+import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
+import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
+import org.yakindu.sct.model.sgraph.Statechart
+
+class InterfaceTransformer {
+
+	/* Transformation-related extensions */
+	extension BatchTransformation transformation
+	extension BatchTransformationStatements statements
+
+	/* Transformation rule-related extensions */
+	extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	extension IModelManipulations manipulation
+
+	protected ViatraQueryEngine engine
+	// Yakindu sct
+	protected Resource resource
+	// The container of interfaces
+	protected Package statechartInterfaces
+	// The trace
+	protected Y2GTrace traceRoot
+
+	// Packages of the metamodels
+	extension StatechartModelPackage sctPackage = StatechartModelPackage.eINSTANCE
+	extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
+	extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+	extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+
+	extension ExpressionTransformer expTransf
+
+	// Transformation rules
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> interfaceRule
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> eventsRule
+
+	new(Resource resource) {
+		this.resource = resource
+		// Create EMF scope and EMF IncQuery engine based on the resource
+		val scope = new EMFScope(resource.resourceSet)
+		engine = ViatraQueryEngine.on(scope);
+		val yakinduStatechart = resource.contents.head as Statechart
+		statechartInterfaces = StatechartModelFactory.eINSTANCE.createPackage=> [
+			it.name = yakinduStatechart.name
+		]
+		traceRoot = TraceabilityFactory.eINSTANCE.createY2GTrace => [
+			it.yakinduStatechart = yakinduStatechart
+		]
+		createTransformation
+	}
+
+	def execute() {
+		getInterfaceRule.fireAllCurrent
+		getEventsRule.fireAllCurrent
+		// The created EMF models are returned
+		return new SimpleEntry<Package, Y2GTrace>(statechartInterfaces, traceRoot)
+	}
+
+	private def createTransformation() {
+		// Create VIATRA model manipulations
+		this.manipulation = new SimpleModelManipulations(engine)
+		// Create VIATRA Batch transformation
+		transformation = BatchTransformation.forEngine(engine).build
+		// Initialize batch transformation statements
+		statements = transformation.transformationStatements
+		// No genmodel here in the ExpressionTransformer, as this transformation takes place before it
+		expTransf = new ExpressionTransformer(this.manipulation, this.traceRoot, ViatraQueryEngine.on(new EMFScope(traceRoot)), null)
+	}
+
+	protected def getInterfaceRule() {
+		if (interfaceRule === null) {
+			interfaceRule = createRule.name("InterfacesRule").precondition(Interfaces.instance).action [
+				val yInterface = it.interface
+				if (yInterface.name === null) {
+					throw new IllegalArgumentException("The interface must have a name! " + yInterface)
+				}
+				val interfaceName = switch yInterface.name { case null: "Default" default: yInterface.name }
+				// Creating the interface
+				val interface = statechartInterfaces.createChild(package_Interfaces, ifPackage.interface) as Interface => [
+					it.name = interfaceName
+				]
+				// Creating the trace
+				addToTrace(yInterface, #{interface}, trace)
+			].build
+		}
+		return interfaceRule
+	}
+
+	protected def getEventsRule() {
+		if (eventsRule === null) {
+			eventsRule = createRule.name("EventsRule").precondition(Events.instance).action [
+				val yEvent = it.event
+				val dir = it.direction
+				// Placing it into its interface
+				if ((yEvent.eContainer).allValuesOfTo.size != 1) {
+					throw new IllegalArgumentException("Not one created interface: " + yEvent.eContainer + " : " +
+						(yEvent.eContainer).allValuesOfTo.size)
+				}
+				val interface = (yEvent.eContainer).allValuesOfTo.head
+				var EventDirection eventDirection
+				switch (dir) {
+					case IN:
+						eventDirection = EventDirection.IN
+					case OUT:
+						eventDirection = EventDirection.OUT
+					case LOCAL:
+						throw new IllegalArgumentException("Local direction: " + yEvent)
+				}
+				val eventDeclaration = interface.createChild(interface_Events, eventDeclaration) as EventDeclaration
+				eventDeclaration.direction = eventDirection
+				var event = eventDeclaration.createChild(eventDeclaration_Event, ifPackage.event) as Event => [
+					it.name = yEvent.name
+				]
+				// Adding a parameter if the Yakindu event has a type
+				var ParameterDeclaration eventParam = null
+				if (yEvent.type !== null) {
+					switch yEvent.type.name {
+						case "boolean":
+							eventParam = event.createEventType(booleanTypeDefinition, event.eventParameterName)
+						case "integer":
+							eventParam = event.createEventType(integerTypeDefinition, event.eventParameterName)
+						case "string":
+							eventParam = event.createEventType(integerTypeDefinition, event.eventParameterName)
+						case "real":
+							eventParam = event.createEventType(realTypeDefinition, event.eventParameterName)
+						case "void":
+							event.createEventType(null, event.eventParameterName)
+						default:
+							throw new IllegalArgumentException("This type cannot be transformed: " + yEvent.type.name + "!")
+					}
+					addToTrace(yEvent.type, #{eventParam.type}, trace)
+				}
+				// Creating the trace
+				if (eventParam !== null) {
+					addToTrace(yEvent, #{event, eventParam}, trace)
+				} else {
+					addToTrace(yEvent, #{event}, trace)
+				}
+			].build
+		}
+		return eventsRule
+	}
+	
+	/**
+     * Creates the parameter for an event with a type.
+     */
+    private def createEventType(ParametricElement parametricElement, EClass type, String name) {
+    	if (type === null) {
+    		return null
+    	}
+    	return parametricElement.createChild(parametricElement_ParameterDeclarations, parameterDeclaration) as ParameterDeclaration => [
+    		it.name = name
+    		it.createChild(typeDeclaration_Type, type)
+    	]
+    }
+    
+    /**
+     * Returns the name of the value of the given signal.
+     */
+    private def String getEventParameterName(NamedElement element) {
+    	return element.name + "Value"
+    }
+
+	def dispose() {
+		if (transformation !== null) {
+			transformation.ruleEngine.dispose
+		}
+		transformation = null
+		return
+	}
+}

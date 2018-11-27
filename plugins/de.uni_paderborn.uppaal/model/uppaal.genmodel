@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/de.uni_paderborn.uppaal/src" modelPluginID="de.uni_paderborn.uppaal"
+    modelName="Uppaal" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="7.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>uppaal.ecore</foreignModel>
+  <genPackages prefix="Uppaal" resource="XML" disposableProviderFactory="true" ecorePackage="uppaal.ecore#/">
+    <genClasses ecoreClass="uppaal.ecore#//NTA">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/globalDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/template"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/systemDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/int"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/bool"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/clock"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/chan"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//NTA/void"/>
+    </genClasses>
+    <nestedGenPackages prefix="Core" basePackage="uppaal" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//core">
+      <genClasses image="false" ecoreClass="uppaal.ecore#//core/NamedElement">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//core/NamedElement/name"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//core/CommentableElement">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//core/CommentableElement/comment"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Types" basePackage="uppaal" resource="XML" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//types">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//types/BuiltInType">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//types/BuiltInType/INT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//types/BuiltInType/CLOCK"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//types/BuiltInType/CHAN"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//types/BuiltInType/BOOL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//types/BuiltInType/VOID"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//types/Type">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/Type/index"/>
+        <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//types/Type/baseType"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/PredefinedType">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//types/PredefinedType/type"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/DeclaredType">
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//types/DeclaredType/typeDeclaration"/>
+        <genFeatures property="Readonly" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//types/DeclaredType/typeDefinition"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//types/TypeDefinition">
+        <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//types/TypeDefinition/baseType"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/TypeReference">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//types/TypeReference/referredType"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//types/TypeSpecification"/>
+      <genClasses ecoreClass="uppaal.ecore#//types/ScalarTypeSpecification">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/ScalarTypeSpecification/sizeExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/StructTypeSpecification">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/StructTypeSpecification/declaration"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/RangeTypeSpecification">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/RangeTypeSpecification/bounds"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//types/IntegerBounds">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/IntegerBounds/lowerBound"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//types/IntegerBounds/upperBound"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Declarations" basePackage="uppaal" resource="XML" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//declarations">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//declarations/DataVariablePrefix">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//declarations/DataVariablePrefix/NONE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//declarations/DataVariablePrefix/CONST"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//declarations/DataVariablePrefix/META"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//declarations/CallType">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//declarations/CallType/CALL_BY_VALUE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//declarations/CallType/CALL_BY_REFERENCE"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/Declarations">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Declarations/declaration"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/GlobalDeclarations">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/GlobalDeclarations/channelPriority"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/LocalDeclarations"/>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/SystemDeclarations">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/SystemDeclarations/system"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/SystemDeclarations/progressMeasure"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/Declaration">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//declarations/Declaration/exp"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/VariableDeclaration"/>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/ChannelVariableDeclaration">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//declarations/ChannelVariableDeclaration/urgent"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//declarations/ChannelVariableDeclaration/broadcast"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/ClockVariableDeclaration"/>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/DataVariableDeclaration">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//declarations/DataVariableDeclaration/prefix"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/FunctionDeclaration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/FunctionDeclaration/function"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/Function">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Function/returnType"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Function/block"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Function/parameter"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/TypeDeclaration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/TypeDeclaration/type"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/TypeDeclaration/typeDefinition"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/Variable">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Variable/index"/>
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Variable/container"/>
+        <genFeatures property="Readonly" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Variable/typeDefinition"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Variable/initializer"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/Index"/>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/ValueIndex">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/ValueIndex/sizeExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/TypeIndex">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/TypeIndex/typeDefinition"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/VariableContainer">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/VariableContainer/typeDefinition"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/VariableContainer/variable"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/Parameter">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/Parameter/variableDeclaration"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//declarations/Parameter/callType"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/Initializer"/>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/ExpressionInitializer">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/ExpressionInitializer/expression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//declarations/ArrayInitializer">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/ArrayInitializer/initializer"/>
+      </genClasses>
+      <nestedGenPackages prefix="Global" basePackage="uppaal.declarations" resource="XML"
+          disposableProviderFactory="true" ecorePackage="uppaal.ecore#//declarations/global">
+        <genClasses ecoreClass="uppaal.ecore#//declarations/global/ChannelPriority">
+          <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/global/ChannelPriority/item"/>
+        </genClasses>
+        <genClasses image="false" ecoreClass="uppaal.ecore#//declarations/global/ChannelPriorityItem"/>
+        <genClasses ecoreClass="uppaal.ecore#//declarations/global/ChannelList">
+          <genFeatures notify="false" createChild="false" propertySortChoices="true"
+              ecoreFeature="ecore:EReference uppaal.ecore#//declarations/global/ChannelList/channelExpression"/>
+        </genClasses>
+        <genClasses ecoreClass="uppaal.ecore#//declarations/global/DefaultChannelPriority"/>
+      </nestedGenPackages>
+      <nestedGenPackages prefix="System" basePackage="uppaal.declarations" resource="XML"
+          disposableProviderFactory="true" ecorePackage="uppaal.ecore#//declarations/system">
+        <genClasses ecoreClass="uppaal.ecore#//declarations/system/TemplateDeclaration">
+          <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/system/TemplateDeclaration/declaredTemplate"/>
+          <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/system/TemplateDeclaration/argument"/>
+        </genClasses>
+        <genClasses ecoreClass="uppaal.ecore#//declarations/system/System">
+          <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/system/System/instantiationList"/>
+        </genClasses>
+        <genClasses ecoreClass="uppaal.ecore#//declarations/system/InstantiationList">
+          <genFeatures notify="false" createChild="false" propertySortChoices="true"
+              ecoreFeature="ecore:EReference uppaal.ecore#//declarations/system/InstantiationList/template"/>
+        </genClasses>
+        <genClasses ecoreClass="uppaal.ecore#//declarations/system/ProgressMeasure">
+          <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//declarations/system/ProgressMeasure/expression"/>
+        </genClasses>
+      </nestedGenPackages>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Templates" basePackage="uppaal" resource="XML" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//templates">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//templates/LocationKind">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//templates/LocationKind/NORMAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//templates/LocationKind/URGENT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//templates/LocationKind/COMMITED"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//templates/SynchronizationKind">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//templates/SynchronizationKind/RECEIVE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//templates/SynchronizationKind/SEND"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//templates/AbstractTemplate">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/AbstractTemplate/parameter"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/Template">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Template/declarations"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Template/location"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Template/edge"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//templates/Template/init"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/RedefinedTemplate">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//templates/RedefinedTemplate/referredTemplate"/>
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//templates/RedefinedTemplate/declaration"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/Location">
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Location/parentTemplate"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Location/invariant"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//templates/Location/locationTimeKind"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/Edge">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/source"/>
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/target"/>
+        <genFeatures property="None" notify="false" createChild="false" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/parentTemplate"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/guard"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/update"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/synchronization"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Edge/selection"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/Synchronization">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//templates/Synchronization/channelExpression"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//templates/Synchronization/kind"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//templates/Selection"/>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Statements" basePackage="uppaal" resource="XML" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//statements">
+      <genClasses image="false" ecoreClass="uppaal.ecore#//statements/Statement"/>
+      <genClasses ecoreClass="uppaal.ecore#//statements/Block">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/Block/declarations"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/Block/statement"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/EmptyStatement"/>
+      <genClasses ecoreClass="uppaal.ecore#//statements/ForLoop">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ForLoop/initialization"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ForLoop/condition"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ForLoop/iteration"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ForLoop/statement"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/Iteration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/Iteration/statement"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/WhileLoop">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/WhileLoop/expression"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/WhileLoop/statement"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/DoWhileLoop">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/DoWhileLoop/statement"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/DoWhileLoop/expression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/IfStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/IfStatement/ifExpression"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/IfStatement/thenStatement"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/IfStatement/elseStatement"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/ReturnStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ReturnStatement/returnExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//statements/ExpressionStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//statements/ExpressionStatement/expression"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Expressions" basePackage="uppaal" resource="XML" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//expressions">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/AssignmentOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/PLUS_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/MINUS_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/TIMES_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/DIVIDE_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/MODULO_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/BIT_AND_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/BIT_OR_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/BIT_LEFT_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/BIT_RIGHT_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/AssignmentOperator/BIT_XOR_EQUAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/ArithmeticOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/ArithmeticOperator/ADD"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/ArithmeticOperator/SUBTRACT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/ArithmeticOperator/MULTIPLICATE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/ArithmeticOperator/DIVIDE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/ArithmeticOperator/MODULO"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/LogicalOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/LogicalOperator/AND"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/LogicalOperator/OR"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/LogicalOperator/IMPLY"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/LogicalOperator/XOR"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/CompareOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/GREATER"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/GREATER_OR_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/LESS"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/LESS_OR_EQUAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/CompareOperator/UNEQUAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/Quantifier">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/Quantifier/EXISTENTIAL"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/Quantifier/UNIVERSAL"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/IncrementDecrementOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/IncrementDecrementOperator/INCREMENT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/IncrementDecrementOperator/DECREMENT"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/IncrementDecrementPosition">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/IncrementDecrementPosition/PRE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/IncrementDecrementPosition/POST"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/BitShiftOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/BitShiftOperator/LEFT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/BitShiftOperator/RIGHT"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/MinMaxOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/MinMaxOperator/MIN"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/MinMaxOperator/MAX"/>
+      </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//expressions/BitwiseOperator">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/BitwiseOperator/AND"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/BitwiseOperator/XOR"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//expressions/BitwiseOperator/OR"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//expressions/Expression"/>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/NegationExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/NegationExpression/negatedExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/PlusExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/PlusExpression/confirmedExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/MinusExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/MinusExpression/invertedExpression"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//expressions/BinaryExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/BinaryExpression/firstExpr"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/BinaryExpression/secondExpr"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/AssignmentExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/AssignmentExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/IdentifierExpression">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//expressions/IdentifierExpression/identifier"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/IdentifierExpression/index"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/LiteralExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/LiteralExpression/text"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/ArithmeticExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/ArithmeticExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/LogicalExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/LogicalExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/FunctionCallExpression">
+        <genFeatures notify="false" createChild="false" propertySortChoices="true"
+            ecoreFeature="ecore:EReference uppaal.ecore#//expressions/FunctionCallExpression/function"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/FunctionCallExpression/argument"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/CompareExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/CompareExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/ConditionExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ConditionExpression/ifExpression"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ConditionExpression/thenExpression"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ConditionExpression/elseExpression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/ScopedIdentifierExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ScopedIdentifierExpression/scope"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ScopedIdentifierExpression/identifier"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/QuantificationExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/QuantificationExpression/quantifier"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/QuantificationExpression/expression"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/IncrementDecrementExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/IncrementDecrementExpression/expression"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/IncrementDecrementExpression/position"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/IncrementDecrementExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/BitShiftExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/BitShiftExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/MinMaxExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/MinMaxExpression/operator"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/BitwiseExpression">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/BitwiseExpression/operator"/>
+      </genClasses>
+    </nestedGenPackages>
+    <nestedGenPackages prefix="Visuals" basePackage="uppaal" disposableProviderFactory="true"
+        ecorePackage="uppaal.ecore#//visuals">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="uppaal.ecore#//visuals/ColorKind">
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/DEFAULT"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/WHITE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/LIGHTGREY"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/DARKGREY"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/BLACK"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/BLUE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/CYAN"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/GREEN"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/MAGENTA"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/ORANGE"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/PINK"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/RED"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/YELLOW"/>
+        <genEnumLiterals ecoreEnumLiteral="uppaal.ecore#//visuals/ColorKind/SELF_DEFINED"/>
+      </genEnums>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//visuals/ColoredElement">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//visuals/ColoredElement/color"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//visuals/ColoredElement/colorCode"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//visuals/PlanarElement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//visuals/PlanarElement/position"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="uppaal.ecore#//visuals/LinearElement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//visuals/LinearElement/bendPoint"/>
+      </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//visuals/Point">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//visuals/Point/x"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//visuals/Point/y"/>
+      </genClasses>
+    </nestedGenPackages>
+  </genPackages>
+</genmodel:GenModel>

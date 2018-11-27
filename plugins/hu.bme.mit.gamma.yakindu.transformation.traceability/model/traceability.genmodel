@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.transformation.traceability/src"
+    modelPluginID="hu.bme.mit.gamma.yakindu.transformation.traceability" modelName="Traceability"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>traceability.ecore</foreignModel>
+  <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.yakindu.transformation"
+      disposableProviderFactory="true" fileExtensions="y2g" ecorePackage="traceability.ecore#/">
+    <genClasses ecoreClass="traceability.ecore#//Y2GTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Y2GTrace/yakinduStatechart"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Y2GTrace/gammaStatechart"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference traceability.ecore#//Y2GTrace/traces"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="traceability.ecore#//AbstractTrace"/>
+    <genClasses ecoreClass="traceability.ecore#//ExpressionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ExpressionTrace/from"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ExpressionTrace/to"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//Trace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Trace/from"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//Trace/to"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

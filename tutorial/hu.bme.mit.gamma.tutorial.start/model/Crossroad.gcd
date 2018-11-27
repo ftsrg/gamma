@@ -1,0 +1,19 @@
+package tutorial
+
+import "Interfaces/Interfaces.gcd"
+import "Controller/Controller.gcd"
+import "TrafficLight/TrafficLightCtrl.gcd"
+
+sync Crossroad [
+	// Component ports
+	port police : requires PoliceInterrupt,
+	port priorityOutput : provides LightCommands,
+	port secondaryOutput : provides LightCommands
+] {
+	// Components of the composite model
+	
+	// Binding system ports to the ports of the components
+	
+	// Connecting ports of components using channels
+	
+}

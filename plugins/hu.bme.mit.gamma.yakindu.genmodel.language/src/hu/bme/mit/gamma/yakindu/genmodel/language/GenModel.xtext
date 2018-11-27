@@ -1,0 +1,46 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.yakindu.genmodel.language.GenModel with org.eclipse.xtext.common.Terminals
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://www.mit.bme.hu/gamma/statechart/Model" as model
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as interface
+import "http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
+
+import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
+import "http://www.yakindu.org/sct/statechart/SText" as stext
+import "http://www.yakindu.org/base/types/2.0.0" as types
+
+GenModel returns GenModel:
+	('import' 
+		(interfaceImports+=[model::Package | STRING] |
+		'external' statechartImports+=[sgraph::Statechart| STRING])
+	)*
+	
+	'statechart' statechart=[sgraph::Statechart]
+	'mappings' '{'
+		(interfaceMappings+=InterfaceMapping)*
+	'}'
+;
+
+InterfaceMapping  returns InterfaceMapping:
+	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
+		eventMappings+=EventMapping*
+	'}')?
+;
+
+EventMapping returns EventMapping:
+	'map' yakinduEvent=[types::Event] '=' gammaEvent=[interface::Event] 
+;
+
+enum RealizationMode returns model::RealizationMode:
+	PROVIDED = 'provided' | REQUIRED = 'required'
+;

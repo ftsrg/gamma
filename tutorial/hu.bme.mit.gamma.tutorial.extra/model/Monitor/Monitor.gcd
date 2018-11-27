@@ -1,0 +1,25 @@
+package Monitor
+import "Interfaces"
+statechart MonitorStatechart [
+	port Monitor : provides Monitor,
+	port LightInputs : requires LightCommands
+] {
+	transition from Green to Other when LightInputs.displayNone
+	transition from Other to Red when LightInputs.displayRed
+	transition from Green to Other when LightInputs.displayYellow
+	transition from Other to Green when LightInputs.displayGreen
+	transition from Red to Other when LightInputs.displayYellow
+	transition from Entry0 to Other
+	transition from Green to Red when LightInputs.displayRed
+	transition from Red to Error when LightInputs.displayRed / raise Monitor.error
+	transition from Red to Other when LightInputs.displayNone
+	transition from Green to Error when LightInputs.displayGreen / raise Monitor.error
+	transition from Red to Green when LightInputs.displayGreen
+	region main_region {
+		initial Entry0
+		state Red
+		state Error
+		state Other
+		state Green
+	}
+}

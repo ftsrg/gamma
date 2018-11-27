@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.yakindu.if.transformation" name="Compile Interface"/>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
+       <menu id="gammaProjectMenu"
+             label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+         <!-- Compiling Yakindu interfaces -->	    
+	    <command commandId="hu.bme.mit.gamma.yakindu.if.transformation" label="Compile Interface" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test
+				    	property="org.eclipse.core.resources.name"
+				        value="*.sct">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+     </menu>
+    </menuContribution>
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+      <menu id="gammaPackageMenu"
+            label="Gamma Commands"
+             icon="icons/gamma-icon-16.png">
+        <!-- Compiling Yakindu interfaces -->	    
+	    <command commandId="hu.bme.mit.gamma.yakindu.if.transformation" label="Compile Interface" style="push">
+	    	<visibleWhen checkEnabled="false">
+            	<iterate ifEmpty="false" operator="or">
+					<test
+				    	property="org.eclipse.core.resources.name"
+				        value="*.sct">
+				    </test>
+    			</iterate>
+            </visibleWhen>  
+	    </command>
+      </menu>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+    <handler class="hu.bme.mit.gamma.yakinduif.transformation.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.yakindu.if.transformation"/>
+  </extension>
+</plugin>

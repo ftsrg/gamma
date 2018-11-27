@@ -1,0 +1,122 @@
+import "monitoredcrossroadView"
+component Crossroad
+/**
+ * Note, that this is no longer a valid trace due to the fix in Controller.sct.
+ */
+step {
+	assert {
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayRed
+		states {
+			crossroad_secondary.Red,
+			crossroad_controller.Init,
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_prior.Red,
+			crossroad_secondary.Normal
+		}
+	}
+}
+step {
+	act {
+		raise police.police
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayGreen
+		states {
+			crossroad_secondary.Red,
+			crossroad_controller.Init,
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_secondary.Normal,
+			crossroad_prior.Green
+		}
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise priorityOutput.displayYellow
+		raise secondaryOutput.displayYellow
+		states {
+			crossroad_secondary.Interrupted,
+			crossroad_secondary.BlinkingYellow,
+			crossroad_controller.Operating,
+			crossroad_prior.BlinkingYellow,
+			crossroad_controller.PriorityPrepares,
+			crossroad_prior.Interrupted
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayNone
+		raise priorityOutput.displayNone
+		states {
+			crossroad_secondary.Interrupted,
+			crossroad_secondary.Black,
+			crossroad_controller.Operating,
+			crossroad_prior.Black,
+			crossroad_controller.Secondary,
+			crossroad_prior.Interrupted
+		}
+	}
+}
+step {
+	act {
+		raise police.police
+		schedule component
+	}
+	assert {
+		states {
+			crossroad_secondary.Interrupted,
+			crossroad_secondary.Black,
+			crossroad_controller.Operating,
+			crossroad_prior.Black,
+			crossroad_controller.Secondary,
+			crossroad_prior.Interrupted
+		}
+	}
+}
+step {
+	act {
+		elapse 2000
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayRed
+		raise priorityOutput.displayGreen
+		states {
+			crossroad_secondary.Red,
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_secondary.Normal,
+			crossroad_prior.Green,
+			crossroad_controller.SecondaryPrepares
+		}
+	}
+}
+step {
+	act {
+		schedule component
+	}
+	assert {
+		raise secondaryOutput.displayGreen
+		states {
+			crossroad_prior.Normal,
+			crossroad_controller.Operating,
+			crossroad_secondary.Normal,
+			crossroad_prior.Green,
+			crossroad_secondary.Green,
+			crossroad_controller.SecondaryPrepares
+		}
+	}
+}

@@ -1,0 +1,76 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.querygenerator.patterns
+
+import "http://www.mit.bme.hu/gamma/constraint/Model" 
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+
+pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
+	SynchronousComponentInstance.type(instance, statechart); 
+}
+
+pattern instanceVariables(instance : SynchronousComponentInstance, variable : VariableDeclaration) {
+	// Composite systems
+	find simpleInstances(instance, statechart);
+	StatechartDefinition.variableDeclarations(statechart, variable);
+}
+
+pattern substatesOfCompositeState(compositeState : State, substate : StateNode) {
+	State.regions(compositeState, region);
+	Region.stateNodes(region, substate);
+}
+
+pattern instanceStates(instance : SynchronousComponentInstance, instanceName : java String,
+	parentRegion : Region, regionName : java String, state : State, stateName : java String) {
+	find simpleInstances(instance, statechart);
+	ComponentInstance.name(instance, instanceName);
+	StatechartDefinition.regions(statechart, parentRegion);
+	Region.stateNodes(parentRegion, state);
+	Region.name(parentRegion, regionName);
+	State.name(state, stateName);
+} or {
+	find simpleInstances(instance, statechart);
+	ComponentInstance.name(instance, instanceName);
+	StatechartDefinition.regions(statechart, topRegion);
+	Region.stateNodes(topRegion, composite);
+	find substatesOfCompositeState+(composite, state);
+	State.name(state, stateName);
+	Region.stateNodes(parentRegion, state);	
+	Region.name(parentRegion, regionName);
+}
+
+private pattern instanceTopRegions(instance : SynchronousComponentInstance, topRegion : Region) {
+	find simpleInstances(instance, statechart);
+	StatechartDefinition.regions(statechart, topRegion);
+}
+
+private pattern regionToSubregion(region : Region, subregion : Region) {
+	Region.stateNodes(region, state);
+	State.regions(state, subregion);
+}
+
+pattern instanceRegions(instance : SynchronousComponentInstance, region : Region) {
+	find instanceTopRegions(instance, region);
+} or {
+	find instanceTopRegions(instance, topRegion);
+	find regionToSubregion+(topRegion, region);
+}
+
+pattern instanceContainer(containerInstace : SynchronousComponentInstance, instance : SynchronousComponentInstance) {
+	SynchronousComponentInstance.type(containerInstace, type);
+	AbstractSynchronousCompositeComponent.components(type, instance);
+}
+
+pattern subregions(region : Region, name : java String) {
+	State.regions(_, region);
+	Region.name(region, name);
+}

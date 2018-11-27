@@ -1,0 +1,668 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.validation
+
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/constraint/Model"
+
+// 1. Unused events
+
+private pattern referencedEvents(event : Event) {
+	PortEventReference.event(_, event);
+} or {
+	RaiseEventAction.event(_, event);
+}
+
+/** 
+ * Returns unused events.
+ */
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID",
+	message = "Unused events: $event.name$.", 
+	severity = "warning", 
+	key = {event}
+)
+pattern unusedEvents(event : Event) {
+	neg find referencedEvents(event);
+}
+
+// 2. Unused variables and constants
+
+private pattern referencedVariables(variable : Declaration) {
+	ReferenceExpression.declaration(_, variable);
+	VariableDeclaration(variable);
+} or {
+	ReferenceExpression.declaration(_, variable);
+	ConstantDeclaration(variable);
+} or {
+	ReferenceExpression.declaration(_, variable);
+	ParameterDeclaration(variable);
+}
+
+private pattern eventParameters(parameter : ParameterDeclaration) {
+	EventDeclaration.event.parameterDeclarations(_, parameter);
+}
+
+/** 
+ * Returns unused variable and constant declarations.
+ */
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Unused variable: $variable.name$.", 
+	severity = "warning", 
+	key = {variable}
+)
+pattern unusedVariables(variable : Declaration) {
+	neg find referencedVariables(variable);
+	neg find eventParameters(variable); 
+}
+
+// 3. Untriggered transitions
+
+private pattern triggeredTransitions(transition : Transition) {
+	Transition.trigger(transition, _);
+}
+
+private pattern noTriggerNeededTransitions(transition : Transition) {
+	Transition.sourceState(transition, entry);
+	EntryState(entry);
+} or {
+	Transition.sourceState(transition, choice);
+	ChoiceState(choice);
+}
+
+/** 
+ * Returns untriggered transitions.
+ */
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following transition has no trigger: $source.name$ -> $target.name$.", 
+	severity = "warning", 
+	key = {transition, source, target}
+)
+pattern untriggeredTransitions(transition : Transition, source : StateNode, target : StateNode) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+	neg find triggeredTransitions(transition);
+	neg find noTriggerNeededTransitions(transition);
+}
+
+// 4. Unreachable nodes
+
+private pattern entriesOfRegions(region : Region, entry : EntryState) {
+	Region.stateNodes(region, entry);
+}
+
+private pattern nodeToParentState(node : StateNode, parentState : State) {
+	State.regions(parentState, region);
+	Region.stateNodes(region, node);
+}
+
+private pattern reachableCompositeStates(compositeState : State) {
+	find nodeToParentState+(target, compositeState);
+	Transition.targetState(_, target);	
+}
+
+private pattern nodesWithIncomingTransitions(node : StateNode) {
+	Transition.targetState(_, node);
+}
+
+/** 
+ * Returns the unreachable nodes.
+ */
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following node is unreachable: $node.name$.", 
+	severity = "error", 
+	key = {node}
+)
+pattern unreachableNodes(node : StateNode) {
+	neg find entriesOfRegions(_, node);
+	neg find reachableCompositeStates(node);
+	neg find nodesWithIncomingTransitions(node);
+}
+
+// 5. Final states with outgoing transitions
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following node is a final state and should have no outgoing transitions: $node.name$.", 
+	severity = "warning", 
+	key = {node}
+)
+pattern finalStatesWithOutgoingTransitions(node : State) {
+	Transition.sourceState(_, node);
+	State.name(node, name);
+	check (name.startsWith("FinalState"));
+}
+
+// 6. Entry states with incoming transitions
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following entry state should have no incoming transitions.", 
+	severity = "warning", 
+	key = {entry, transition}
+)
+pattern entryStatesWithIncomingTransitions(entry : EntryState, transition : Transition) {	
+	Transition.targetState(transition, entry);
+}
+
+// 7. Entry states with more than one outgoing transition
+
+private pattern transitionsOfEntryStates(entry : EntryState, transition : Transition) {
+	Transition.sourceState(transition, entry);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following entry state has more than one outgoing transition.", 
+	severity = "error", 
+	key = {entry}
+)
+pattern entryStatesWithMoreOutgoingTransitions(entry : EntryState) {	
+	find transitionsOfEntryStates(entry, transition1);
+	find transitionsOfEntryStates(entry, transition2);
+	transition1 != transition2;
+}
+
+// 8. Outgoing transitions of entries with trigger or guard
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Outgoing transitions of entry states must not contain a trigger or guard.", 
+	severity = "error", 
+	key = {entry, transition}
+)
+pattern entryStatesWithTriggeredOutgoingTransitions(entry : EntryState, transition : Transition) {	
+	Transition.trigger(transition, _);
+	find transitionsOfEntryStates(entry, transition);
+} or {
+	Transition.guard(transition, _);
+	find transitionsOfEntryStates(entry, transition);
+}
+
+// 9. Semantic out events in triggers
+
+private pattern componentDeclarationEvents(type : Component, port : Port, realizationMode : RealizationMode, eventDeclaration : EventDeclaration, event : Event) {
+	Component.ports(type, port);
+	Port.interfaceRealization(port, interfaceRealization);
+	InterfaceRealization.realizationMode(interfaceRealization, realizationMode);
+	InterfaceRealization.interface(interfaceRealization, interface);
+	Interface.events(interface, eventDeclaration);
+	EventDeclaration.event(eventDeclaration, event);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Triggers must contain events that ''come into'' the port. Through $port.name$ $event.name$ goes out.", 
+	severity = "error", 
+	key = {eventTrigger, port, event}
+)
+pattern semanticOutEventsOfTriggers(eventTrigger : PortEventReference, port : Port, event : Event) {	
+	PortEventReference.event(eventTrigger, event);
+	PortEventReference.port(eventTrigger, port);
+	find componentDeclarationEvents(_type, port, RealizationMode::PROVIDED, eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, EventDirection::OUT);
+} or {
+	PortEventReference.event(eventTrigger, event);
+	PortEventReference.port(eventTrigger, port);
+	find componentDeclarationEvents(_type, port, RealizationMode::REQUIRED, eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, EventDirection::IN);
+}
+
+// 10. Semantic in events in event raisings
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Raise event actions must contain events that ''go out'' of the port. Through $port.name$ $event.name$ comes in.", 
+	severity = "error", 
+	key = {raiseEventAction, port, event}
+)
+pattern semanticInEventsOfActions(raiseEventAction : RaiseEventAction, port : Port, event : Event) {	
+	RaiseEventAction.event(raiseEventAction, event);
+	RaiseEventAction.port(raiseEventAction, port);
+	find componentDeclarationEvents(_type, port, RealizationMode::PROVIDED, eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, EventDirection::IN);
+} or {
+	RaiseEventAction.event(raiseEventAction, event);
+	RaiseEventAction.port(raiseEventAction, port);
+	find componentDeclarationEvents(_type, port, RealizationMode::REQUIRED, eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, EventDirection::OUT);
+}
+
+// 11. Choices with less than two outgoing transitions
+
+private pattern choicesWithEnoughOutgoingTransitions(choice : ChoiceState) {
+	Transition.sourceState(transition1, choice);
+	Transition.sourceState(transition2, choice);	
+	transition1 != transition2;
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Choices should have at least two outgoing transitions.", 
+	severity = "warning", 
+	key = {choice}
+)
+pattern choicesWithFewOutgoingTransitions(choice : ChoiceState) {
+	neg find choicesWithEnoughOutgoingTransitions(choice);
+}
+
+// 12. Outgoing transitions of choices with triggers 
+
+private pattern transitionsWithElseExpression(transition : Transition) {
+	Transition.guard(transition, elseExpression);
+	ElseExpression(elseExpression);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Outgoing transitions of choices must not have triggers apart from default triggers.", 
+	severity = "error", 
+	key = {choice, transition}
+)
+pattern choicesWithTriggeredOutgoingTransitions(choice : ChoiceState, transition : Transition) {
+	Transition.sourceState(transition, choice);
+	Transition.trigger(transition, _);	
+	neg find transitionsWithElseExpression(transition);
+}
+
+// 13. Outgoing transitions of choices without a guard (in case of default triggers no guard is needed)
+
+private pattern transitionsWithGuard(transition : Transition) {
+	Transition.guard(transition, _);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Outgoing transitions of choices must have a guard if the transition does not have a default trigger.", 
+	severity = "error", 
+	key = {choice, transition}
+)
+pattern choicesWithUnguardedOutgoingTransitions(choice : ChoiceState, transition : Transition) {
+	Transition.sourceState(transition, choice);
+	neg find transitionsWithGuard(transition);
+}
+
+// 14. Else guard with other expressions
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "An else expression must be a single guard expression.", 
+	severity = "error", 
+	key = {elseExpression}
+)
+pattern notTopElseExpression(elseExpression : ElseExpression) {
+	neg find normalElseExpressions(elseExpression);
+}
+
+private pattern normalElseExpressions(elseExpression : ElseExpression) {
+	Transition.guard(_transition, elseExpression);
+}
+
+// 15. Time event specifications occluding one other
+
+private pattern transitionsWithTimeEventSpecs(source : State, transition : Transition) {
+	Transition.sourceState(transition, source);
+	Transition.trigger(transition, trigger);
+	EventTrigger.eventReference(trigger, timeoutTrigger);
+	TimeoutEventReference.timeout(timeoutTrigger, timeoutDeclaration);	
+	State.entryActions(source, entryAction);
+	SetTimeoutAction.timeoutDeclaration(entryAction, timeoutDeclaration);
+}
+
+private pattern guardlessTimeTriggeredTransitions(source : State, transition : Transition) {
+	find transitionsWithTimeEventSpecs(source, transition);
+	neg find transitionsWithGuard(transition);
+}
+
+private pattern guardedTimeTriggeredTransitions(source : State, transition : Transition, declaration : Declaration) {
+	find transitionsWithTimeEventSpecs(source, transition);
+	find guardToSimpleReference(transition, declaration);
+}
+
+private pattern guardToSimpleReference(transition : Transition, declaration : Declaration) {
+	Transition.guard(transition, guard);
+	ReferenceExpression.declaration(guard, declaration); 
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Transitions go out of the same state and have time event specifications.", 
+	severity = "warning",
+	symmetric = {transition1, transition2}, 
+	key = {transition1, transition2}
+)
+pattern occludingTimeEventSpecs(transition1 : Transition, transition2 : Transition) {
+	find guardlessTimeTriggeredTransitions(source, transition1);
+	find guardlessTimeTriggeredTransitions(source, transition2);
+	transition1 != transition2;
+} or {
+	find guardedTimeTriggeredTransitions(source, transition1, declaration);
+	find guardedTimeTriggeredTransitions(source, transition2, declaration);
+	transition1 != transition2;
+}
+
+// 16. Determinism: transitions of same source and same trigger
+
+private pattern triggerDeclarationFromSource(source : StateNode, transition : Transition, port : Port, event : Event) {
+	Transition.sourceState(transition, source);
+	Transition.trigger(transition, eventTrigger);
+	EventTrigger.eventReference(eventTrigger, portEventTrigger);
+	PortEventReference.event(portEventTrigger, event);
+	PortEventReference.port(portEventTrigger, port);
+}
+
+private pattern guardlessTriggeredTransitions(source : StateNode, transition : Transition, port : Port, event : Event) {
+	find triggerDeclarationFromSource(source, transition, port, event);
+	neg find transitionsWithGuard(transition);
+}
+
+private pattern guardedTriggeredTransitions(source : StateNode, transition : Transition, port : Port, event : Event, guard : Expression) {
+	find triggerDeclarationFromSource(source, transition, port, event);
+	Transition.guard(transition, guard);
+}
+
+private pattern declarationOfTriggeredGuardedTransitions(node : StateNode, transition : Transition, port : Port, event : Event, declaration : Declaration) {
+	find guardedTriggeredTransitions(node, transition, port, event, guard);
+	NotExpression.operand(guard, reference);
+	ReferenceExpression.declaration(reference, declaration);
+	
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "Same trigger used on outgoing transitions.", 
+	severity = "warning",
+	symmetric = {transition1, transition2},
+	key = {transition1, transition2}
+)
+pattern transitionsOfSameSourceAndTrigger(transition1 : Transition, transition2 : Transition) {
+	find guardlessTriggeredTransitions(source, transition1, port, event);
+	find guardlessTriggeredTransitions(source, transition2, port, event);
+	transition1 != transition2;
+} or {
+	find declarationOfTriggeredGuardedTransitions(source, transition1, port, event, declaration);
+	find declarationOfTriggeredGuardedTransitions(source, transition2, port, event, declaration);
+	transition1 != transition2;
+}
+
+// 17. Occlusion of outgoing transitions of composite states
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The transition is covered by a transition that is in higher hierarchy and is triggered by the same event." ,
+	severity = "warning", 
+	key = {transition1, transition2}
+)
+pattern occludedTransitions(transition1 : Transition, transition2 : Transition) {
+	find nodeToParentState+(node, parentState);
+	find guardlessTriggeredTransitions(node, transition1, port, event);
+	find guardlessTriggeredTransitions(parentState, transition2, port, event);
+	transition1 != transition2;
+} or {
+	find nodeToParentState+(node, parentState);
+	find declarationOfTriggeredGuardedTransitions(node, transition1, port, event, declaration);
+	find declarationOfTriggeredGuardedTransitions(parentState, transition2, port, event, declaration);
+	transition1 != transition2;
+}
+
+// 18. Same trigger in parallel regions
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The transition has the same trigger as another one in a parallel region." ,
+	severity = "warning", 
+	symmetric = {transition1, transition2},
+	key = {transition1, transition2}
+)
+pattern sameTrigger(transition1 : Transition, transition2 : Transition) {
+	find guardlessTriggeredTransitions(node1, transition1, port, event);
+	find guardlessTriggeredTransitions(node2, transition2, port, event);
+	find orthogonalRegions(region1, region2);
+	Region.stateNodes(region1, node1);
+	Region.stateNodes(region2, node2);
+}
+
+// 19. Same trigger in parallel regions with assignments to the same variable
+
+private pattern transitionsWithAssignment(transition : Transition, variableDeclaration : Declaration) {	
+	Transition.effects(transition, assignmentAction);
+	AssignmentAction.lhs(assignmentAction, reference);
+	ReferenceExpression.declaration(reference, variableDeclaration);
+}
+
+private pattern guardlessTriggeredTransitionsWithAssignment(region : Region, transition : Transition, port : Port, event : Event, variableDeclaration : VariableDeclaration) {
+	Region.stateNodes(region, node);
+	find guardlessTriggeredTransitions(node, transition, port, event); 
+	find transitionsWithAssignment(transition, variableDeclaration);
+}
+
+private pattern guardedTriggeredTransitionsWithAssignment(region : Region, transition : Transition, port : Port, event : Event, variableDeclaration : VariableDeclaration, guardReference : Declaration) {
+	Region.stateNodes(region, node);
+	find declarationOfTriggeredGuardedTransitions(node, transition, port, event, guardReference); 
+	find transitionsWithAssignment(transition, variableDeclaration);
+}
+
+private pattern orthogonalRegions(region1 : Region, region2 : Region) {
+	State.regions(state, region1);
+	State.regions(state, region2);	
+	region1 != region2;
+} or {
+	StatechartDefinition.regions(statechart, region1);
+	StatechartDefinition.regions(statechart, region2);
+	region1 != region2;
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The transition has the same trigger as another one in a parallel region, and assigns a value to the same variable as the other transition." ,
+	severity = "warning", 
+	symmetric = {transition1, transition2},
+	key = {transition1, transition2}
+)
+pattern sameTriggerDifferentAssignment(transition1 : Transition, transition2 : Transition, variable : VariableDeclaration) {	
+	find orthogonalRegions(region1, region2);
+	find guardlessTriggeredTransitionsWithAssignment(region1, transition1, port, event, variable);
+	find guardlessTriggeredTransitionsWithAssignment(region2, transition2, port, event, variable);
+	transition1 != transition2;
+} or {
+	find orthogonalRegions(region1, region2);
+	find guardedTriggeredTransitionsWithAssignment(region1, transition1, port, event, variable, guardReference);
+	find guardedTriggeredTransitionsWithAssignment(region2, transition2, port, event, variable, guardReference);
+	transition1 != transition2;
+}
+
+// 20. Same trigger in parallel regions with raising the same event
+
+private pattern transitionsWithEventRaise(transition : Transition, port : Port, event : Event) {	
+	Transition.effects(transition, raiseEventAction);
+	RaiseEventAction.port(raiseEventAction, port);
+	RaiseEventAction.event(raiseEventAction, event); 
+}
+
+private pattern guardlessTriggeredTransitionsWithEventRaise(region : Region, transition : Transition, port : Port, event : Event, raisedPort : Port, raisedEvent : Event) {
+	Region.stateNodes(region, node);
+	find guardlessTriggeredTransitions(node, transition, port, event);
+	find transitionsWithEventRaise(transition, raisedPort, raisedEvent); 
+}
+
+private pattern guardedTriggeredTransitionsWithEventRaise(region : Region, transition : Transition, port : Port, event : Event, raisedPort : Port, raisedEvent : Event, guardReference : Declaration) {
+	Region.stateNodes(region, node);
+	find declarationOfTriggeredGuardedTransitions(node, transition, port, event, guardReference); 
+	find transitionsWithEventRaise(transition, raisedPort, raisedEvent);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The transition has the same trigger as another one in a parallel region, and raises the same event as the other transition." ,
+	severity = "warning",
+	symmetric = {transition1, transition2}, 
+	key = {transition1, transition2}
+)
+pattern sameTriggerSameEvent(transition1 : Transition, transition2 : Transition, raisedEvent : Event) {
+	find orthogonalRegions(region1, region2);
+	find guardlessTriggeredTransitionsWithEventRaise(region1, transition1, port, event, raisedPort, raisedEvent);
+	find guardlessTriggeredTransitionsWithEventRaise(region2, transition2, port, event, raisedPort, raisedEvent);
+	transition1 != transition2;
+} or {
+	find orthogonalRegions(region1, region2);
+	// FinalStatesEndVariable is a variable created during the final state transformation rule
+	find guardedTriggeredTransitionsWithEventRaise(region1, transition1, port, event, raisedPort, raisedEvent, finalStatesEndVariable);
+	find guardedTriggeredTransitionsWithEventRaise(region2, transition2, port, event, raisedPort, raisedEvent, finalStatesEndVariable);
+	transition1 != transition2;
+}
+
+// 21. Regions without an entry
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following region does not have an entry state: $region.name$" ,
+	severity = "error", 
+	key = {region}
+)
+pattern regionsWithoutEntry(region : Region) {
+	neg find entriesOfRegions(region, _);
+}
+
+// 22. Regions with more than one entry
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following region has more than one entry state: $region.name$" ,
+	severity = "error", 
+	key = {region}
+)
+pattern regionsWithMoreEntries(region : Region) {
+	find entriesOfRegions(region, entry1);
+	find entriesOfRegions(region, entry2);
+	entry1 != entry2;
+}
+
+// 23. Transitions across orthogonal regions
+
+private pattern regionToSubregion(region : Region, subregion : Region) {
+	Region.stateNodes(region, compositeState);
+	State.regions(compositeState, subregion);
+}
+
+private pattern nodesOfOrthogonalRegions(node1 : StateNode, node2 : StateNode) {	
+	find oneLevelOrthogonalRegions(region1, region2);
+	find regionToSubregion+(region1, subregion1);
+	find regionToSubregion+(region2, subregion2);
+	Region.stateNodes(subregion1, node1);
+	Region.stateNodes(subregion2, node2);
+} or {	
+	find oneLevelOrthogonalRegions(region1, region2);
+	find regionToSubregion+(region2, subregion2);
+	Region.stateNodes(region1, node1);
+	Region.stateNodes(subregion2, node2);
+} or {	
+	find oneLevelOrthogonalRegions(region1, region2);
+	find regionToSubregion+(region1, subregion1);
+	Region.stateNodes(subregion1, node1);
+	Region.stateNodes(region2, node2);
+} or {
+	find oneLevelOrthogonalRegions(region1, region2);
+	Region.stateNodes(region1, node1);
+	Region.stateNodes(region2, node2);
+}
+
+private pattern oneLevelOrthogonalRegions(region1 : Region, region2 : Region) {
+	State.regions(compositeState, region1);
+	State.regions(compositeState, region2);	
+	region1 != region2;	
+} or {
+	StatechartDefinition.regions(statechart, region1);
+	StatechartDefinition.regions(statechart, region2);	
+	region1 != region2;	
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following transition connects nodes from orthogonal regions: $source.name$ -> $target.name$" ,
+	severity = "error", 
+	key = {transition, source, target}
+)
+pattern transitionsAcrossOrthogonalRegions(transition : Transition, source : StateNode, target : StateNode) {
+	find sourceAndTargetOfTransitions(transition, source, target);
+	find nodesOfOrthogonalRegions(source, target);
+}
+
+// 24. Transitions into orthogonal regions
+
+private pattern sourceAndTargetOfTransitions(transition : Transition, source : StateNode, target : StateNode) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, target);
+}
+
+private pattern acrossRegionsTransitions(transition : Transition, source : StateNode, target : StateNode, sourceRegion : Region, targetRegion : Region) {
+	find sourceAndTargetOfTransitions(transition, source, target);
+	Region.stateNodes(sourceRegion, source);
+	Region.stateNodes(targetRegion, target);
+	sourceRegion != targetRegion;
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following transition goes into a state of an orthogonal region: $source.name$ -> $target.name$" ,
+	severity = "warning", 
+	key = {transition, source, target}
+)
+pattern transitionsIntoOrthogonalRegions(transition : Transition, source : StateNode, target : StateNode) {	
+	find acrossRegionsTransitions(transition, source, target, _, targetRegion);
+	find oneLevelOrthogonalRegions(targetRegion, _);
+	neg find transitionsAcrossOrthogonalRegions(transition, source, target);
+} or {
+	find acrossRegionsTransitions(transition, source, target, _, targetRegion);
+	find regionToSubregion+(targetAncestorRegion, targetRegion);
+	find oneLevelOrthogonalRegions(targetAncestorRegion, _);
+	neg find transitionsAcrossOrthogonalRegions(transition, source, target);
+}
+
+// 25. Transitions coming out and going into a subregion
+
+private pattern sameRegionTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	Region.stateNodes(region, source);
+	Region.stateNodes(region, target);
+	find sourceAndTargetOfTransitions(transition, source, target);
+}
+
+private pattern substatesOfCompositeState(compositeState : State, substate : StateNode) {
+	State.regions(compositeState, region);
+	Region.stateNodes(region, substate);
+}
+
+private pattern toHigherTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	find sourceAndTargetOfTransitions(transition, source, target);
+	find substatesOfCompositeState+(sourceAncestor, source);
+	Region.stateNodes(region, sourceAncestor);
+	Region.stateNodes(region, target);
+}
+
+private pattern toLowerTransitions(source : StateNode, target : StateNode, transition : Transition, region : Region) {
+	find sourceAndTargetOfTransitions(transition, source, target);
+	find substatesOfCompositeState+(targetAncestor, target);
+	Region.stateNodes(region, targetAncestor);
+	Region.stateNodes(region, source);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+	message = "The following transition comes out of a subregion and goes into a subregion: $source.name$ -> $target.name$" ,
+	severity = "error", 
+	key = {transition, source, target}
+)
+pattern inOutTransitions(transition : Transition, source : StateNode, target : StateNode) {
+	find sourceAndTargetOfTransitions(transition, source, target);	
+	neg find sameRegionTransitions(source, target, transition, _);
+	neg find toHigherTransitions(source, target, transition, _);
+	neg find toLowerTransitions(source, target, transition, _);
+}
+
+// 26. Event value references
+
+private pattern eventParameter(transition : Transition, event : Event, valueOfParameter : ParameterDeclaration) {
+    Transition.trigger(transition, trigger);    
+	EventTrigger.eventReference(trigger, portEventTrigger);
+	PortEventReference.event(portEventTrigger, event);
+    Event.parameterDeclarations(event, valueOfParameter);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
+    message = "The following transition contains assignment expressions where the right hand value is a parameter declaration of a non-specified event value." ,
+    severity = "error",
+    key = {transition}
+)
+pattern prohibitedEventParameterReferences(transition : Transition) {
+    Transition.effects(transition, assignment);
+    AssignmentAction.rhs(assignment, reference);
+    ReferenceExpression.declaration(reference, valueOfParameter2);
+    find eventParameter(transition, _event2, valueOfParameter);
+    valueOfParameter != valueOfParameter2;
+}
