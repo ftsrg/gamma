@@ -15,13 +15,13 @@ Gamma is tested to work with Eclipse Photon.
 - When starting Eclipse for the first time, you might need to start it with the `-clean_` flag.
 - Check if the plugin installed successfully in _Help > About Eclipse_ and by clicking _Installation Details_. On the _Plug-ins_ tab, sort the entries by _Plugin-in Id_ and look for entries starting with _hu.bme.mit.gamma_.
 
-![VIATRA components](tutorial/images/viatra-update-site.png)
+![VIATRA components](images/viatra-update-site.png)
 
-![Yakindu components](https://github.com/FTSRG/gamma/tree/master/tutorial/images/yakindu-update-site.png "Yakindu components")
+![Yakindu components](images/yakindu-update-site.png "Yakindu components")
 
 _Tip: It is advised to turn on automatic refreshing for the workspace. The other option is to refresh it manually with F5 after every Gamma command._
 
-![Workspace settings](https://github.com/FTSRG/gamma/tree/master/tutorial/images/workspace-settings.png "Workspace settings")
+![Workspace settings](images/workspace-settings.png "Workspace settings")
 
 For formal verification, download and extract [UPPAAL](http://www.uppaal.org/) 4.1.19. In order to let Gamma find the UPPAAL executables, add the bin-Win32 or bin-Linux folder to the path environment variable (depending on the operating system being used).
 
@@ -31,14 +31,14 @@ Download the [Gamma tutorial](http://inf.mit.bme.hu/sites/default/files/gamma/2_
 
 In this tutorial, we are going to design the controller of traffic lights in a crossroad. In each direction, the traffic lights are the standard 3-phase lights looping through the red-green-yellow-red sequence. As an extra, there is an interrupted mode that may be triggered by the police – in this state, the traffic lights will be blinking in yellow.
 
-![Crossroad states](https://github.com/FTSRG/gamma/tree/master/tutorial/images/crossroad-states.png "Crossroad states")
+![Crossroad states](images/crossroad-states.png "Crossroad states")
 
 - Import the skeleton of the crossroad model from `hu.bme.mit.gamma.tutorial.start.zip` as an existing project (browse the archive file then click _Finish_).
 - You will see a number of existing artifacts, including a JUnit test file in the `/test` folder and various models in subfolders of `/model`.
 
 At this point, the project should contain errors that have to be fixed in the tutorial.
 
-![Start project](https://github.com/FTSRG/gamma/tree/master/tutorial/images/start-project.png "Start project")
+![Start project](images/start-project.png "Start project")
 
 To reduce the complexity of the models, we divide the controller into submodules. For each road, the lights will be controlled by an instance of the _traffic light controller_ statechart (`/model/TrafficLight/TrafficLightCtrl.sct`), while a separate _crossroad controller_ (`/model/Controller/Controller.sct`) will be responsible for the coordination of the flow of traffic.
 
@@ -56,7 +56,7 @@ With the interfaces defined and components modeled, the last thing is to describ
 
 To interpret the syntax, observe the following figure, which illustrates the schematic structure of the system. After importing the components, the file declares that we are specifying the _Crossroad_ system, which will consist of a _CrossroadComponent_ defined as follows.
 
-![Crossroad component](https://github.com/FTSRG/gamma/tree/master/tutorial/images/crossroad-component.png "Crossroad component")
+![Crossroad component](images/crossroad-component.png "Crossroad component")
 
 * First, we define the ports of the system. In this case, we wish to _send_ police interrupt signals from the environment (we _require_ someone who implements this interface) and observe the output of the lights of the primary road (we _provide_ the opportunity to observe the lights).
 * Then we define the structure of the composite component in three parts:
@@ -82,7 +82,7 @@ Additionally, Gamma supports cascade (also in the synchronous domain) and asynch
 Yakindu serves as a frontend to the formal modeling language of Gamma. Therefore, Yakindu statecharts have to be _compiled_. To compile a Yakindu statechart, Gamma first needs the definition of interfaces used in the system.
 To generate the interface definitions from the existing empty Yakindu statechart, right-click `/model/Interfaces/Interfaces.sct` and select _Gamma Commands > Compile Interface_. This should generate a new file called _Interfaces.gcd_. Press _F5_ if you do not see the new file or turn on automatic refreshing of the workspace.
 
-![Menu: compile interface](https://github.com/FTSRG/gamma/tree/master/tutorial/images/menu-compile-interface.png "Menu: compile interface")
+![Menu: compile interface](images/menu-compile-interface.png "Menu: compile interface")
 
 To compile the Yakindu statecharts modeling the two types of controllers, Gamma needs to know how to interpret the interfaces found in them. To specify this, we will use Gamma generator models (_.ggen_).
 
@@ -106,7 +106,7 @@ The project already contains the Yakindu generator models (_.sgen_) necessary to
 
 When Yakindu has finished code generation, let us generate the implementation of the composite system. Right-click on `/model/Crossroad.gcd` and select _Gamma Commands > Generate Source Code > Generate Java Code_.
 
-![Menu: generate Java code](https://github.com/FTSRG/gamma/tree/master/tutorial/images/java-code-generation.png "Menu: generate Java code")
+![Menu: generate Java code](images/java-code-generation.png "Menu: generate Java code")
 
 After building the workspace, the last errors should vanish and the implementation of the crossroad should be in the `/src-gen` folder in various packages.
 
@@ -149,7 +149,7 @@ To specify the requirement, we need to use _temporal logics_. As temporal logic 
 
 Right-click `/model/Crossroad.gcd` and select _Gamma Commands > Open Query Generator_ to open the requirement specification window. The top-left part of the window will let you select a template. There are five types of templates: _might eventually_, _must eventually_, _might always_, _must always_ and _leads to_. Upon selecting one, the textbox below will show the corresponding temporal logic operator and an English sentence describing the requirement. There is also an example requirement that would be typically formalized this way. The middle part contains one or two textboxes to formalize the condition mentioned in the patterns. The top-right part helps in assembling the condition formula: select something from the drop-down to insert it at the end of the textbox that last had focus. Note that the textboxes are editable, and the user has to take case of parentheses.
 
-![Query generator GUI](https://github.com/FTSRG/gamma/tree/master/tutorial/images/query-generator-gui.png "Query generator GUI")
+![Query generator GUI](images/query-generator-gui.png "Query generator GUI")
 
 The bottom part contains the _Verify_ button – click it after filling the conditions and UPPAAL will check if the model satisfies your requirement or not. Be aware that model checking is performance-intensive, so this operation might take long.
 Let us specify the requirement of not having green light in both directions. Using the presented controls, select the _Must always template_ and specify the condition as "not (green for priority and green for secondary at the same time)".
