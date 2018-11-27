@@ -4,7 +4,8 @@ This content is produced and maintained by the contributors to the Gamma project
 See the [CONTRIBUTORS.md](https://github.com/FTSRG/gamma/blob/master/CONTRIBUTORS.md) file for the list of contributors.
 See the [README.md](https://github.com/FTSRG/gamma/blob/master/README.md) file for more information about the project and the content of this repository.
 
-* Project home page: https://github.com/FTSRG/gamma/
+* Project home page: http://gamma.inf.mit.bme.hu
+* Project repository: https://github.com/FTSRG/gamma/
   
 ## Copyright
 
