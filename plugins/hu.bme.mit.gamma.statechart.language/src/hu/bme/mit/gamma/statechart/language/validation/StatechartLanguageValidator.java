@@ -24,23 +24,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.constraint.model.ArithmeticExpression;
-import hu.bme.mit.gamma.constraint.model.BooleanExpression;
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ConstantDeclaration;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.DefinableDeclaration;
-import hu.bme.mit.gamma.constraint.model.ElseExpression;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.Expression;
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.NamedElement;
-import hu.bme.mit.gamma.constraint.model.NaturalTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.PredicateExpression;
-import hu.bme.mit.gamma.constraint.model.RealTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.Type;
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
@@ -99,97 +86,6 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface;
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 	
-	// Constraint
-	
-	@Check
-	public void checkNameUniqueness(NamedElement element) {
-		Collection<? extends NamedElement> namedElements = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(element), element.getClass());
-		namedElements.remove(element);
-		for (NamedElement elem : namedElements) {
-			if (element.getName().equals(elem.getName())) {
-				error("Names must be unique!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-			}
-		}
-	}
-	
-	private boolean isReferrableByBooleanVariable(Expression expression) {
-		if (expression instanceof BooleanExpression || expression instanceof PredicateExpression || expression instanceof ElseExpression) {
-			return true;
-		}
-		if (expression instanceof ReferenceExpression) {
-			if (((ReferenceExpression) expression).getDeclaration().getType() instanceof BooleanTypeDefinition) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private boolean isArithmeticExpression(Expression expression) {
-		return expression instanceof ArithmeticExpression;
-	}
-	
-	private boolean isReferrableByNaturalVariable(Expression expression) {
-		if (isArithmeticExpression(expression)) {
-			return true;
-		}
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) expression;
-			Type referredType = reference.getDeclaration().getType();
-			return referredType instanceof NaturalTypeDefinition;
-		}
-		// Extensible with further rules 
-		return false;
-	}
-	
-	private boolean isReferrableByIntegerVariable(Expression expression) {
-		if (isArithmeticExpression(expression)) {
-			return true;
-		}
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) expression;
-			Type referredType = reference.getDeclaration().getType();
-			return referredType instanceof IntegerTypeDefinition || referredType instanceof NaturalTypeDefinition;
-		}
-		// Extensible with further rules 
-		return false;
-	}
-	
-	private boolean isReferrableByDecimalVariable(Expression expression) {
-		if (isArithmeticExpression(expression)) {
-			return true;
-		}
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) expression;
-			Type referredType = reference.getDeclaration().getType();
-			return referredType instanceof RealTypeDefinition || referredType instanceof IntegerTypeDefinition || referredType instanceof NaturalTypeDefinition;
-		}
-		// Extensible with further rules 
-		return false;
-	}
-	
-	private boolean isReferrableByRationalVariable(Expression expression) {
-		if (isArithmeticExpression(expression)) {
-			return true;
-		}
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) expression;
-			Type referredType = reference.getDeclaration().getType();
-			return referredType instanceof RealTypeDefinition || referredType instanceof IntegerTypeDefinition || referredType instanceof NaturalTypeDefinition;
-		}
-		// Extensible with further rules 
-		return false;
-	}
-	
-	private boolean isReferrableByEnumVariable(Declaration enumVariable, Expression rhs) {
-		if (rhs instanceof EnumerationLiteralExpression) {
-			EnumerationLiteralExpression enumLiteralExpression = (EnumerationLiteralExpression) rhs;
-			EnumerationLiteralDefinition enumLiteralDefinition = enumLiteralExpression.getReference();
-			EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) enumVariable.getType();
-			return enumerationTypeDefinition.getLiterals().contains(enumLiteralDefinition);
-		}
-		return false;
-	}
-	
 	// Interfaces
 	
 	@Check
@@ -234,7 +130,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 			if (component instanceof CompositeComponent) {
 				Collection<? extends ComponentInstance> derivedComponents = StatechartModelDerivedFeatures
-					.getDerivedComponents((CompositeComponent) component);
+						.getDerivedComponents((CompositeComponent) component);
 				for (ComponentInstance componentInstance : derivedComponents) {
 					usedComponents.add(StatechartModelDerivedFeatures.getDerivedType(componentInstance));
 				}
@@ -276,29 +172,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			return;
 		}
 		boolean isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
-				.stream().anyMatch(it -> it.getDeclaration() == declaration);
+								.stream().anyMatch(it -> it.getDeclaration() == declaration);
 		if (!isReferred) {
 			warning("This declaration is not used.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-		}
-	}
-	
-	@Check
-	public void checkDeclarationInitializations(DefinableDeclaration declaration) {
-		Expression initExpression = declaration.getExpression();
-		if (initExpression == null) {
-			return;
-		}
-		// The declaration has an initial value
-		if (initExpression instanceof ReferenceExpression) {
-			ReferenceExpression referenceExpression = (ReferenceExpression) initExpression;
-			Declaration referredDeclaration = referenceExpression.getDeclaration();
-			if (referredDeclaration == declaration) {
-				warning("This assignment has no effect.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-			}
-		}
-		String errorMsg = checkAssignmentRhs(declaration, initExpression);
-		if (errorMsg != null) {
-			error(errorMsg, ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
 		}
 	}
 	
@@ -353,7 +229,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkTransitionGuards(Transition transition) {
 		if (transition.getGuard() != null) {
 			Expression guard = transition.getGuard();
-			if (!isReferrableByBooleanVariable(guard)) {
+			if (!typeDeterminator.isBoolean(guard)) {
 				error("This guard is not a boolean expression.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
@@ -372,53 +248,28 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkAssignmentsToConstants(AssignmentAction assignment) {
-		if (assignment.getLhs() instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
-			// Constant
-			if (reference.getDeclaration() instanceof ConstantDeclaration) {
-				error("Constants cannot be assigned a value.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
-			}
-			// Other assignment type checking
-			if (reference.getDeclaration() instanceof VariableDeclaration) {
-				Expression rhs = assignment.getRhs();
-				Declaration declaration = reference.getDeclaration();
-				String errorMsg = checkAssignmentRhs(declaration, rhs);
-				if (errorMsg != null) {
-					error(errorMsg, StatechartModelPackage.Literals.ASSIGNMENT_ACTION__RHS);
-				}
+	public void checkAssignmentActions(AssignmentAction assignment) {
+		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
+		// Constant
+		if (reference.getDeclaration() instanceof ConstantDeclaration) {
+			error("Constants cannot be assigned a value.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
+		}
+		// Other assignment type checking
+		if (reference.getDeclaration() instanceof VariableDeclaration) {
+			VariableDeclaration variableDeclaration = (VariableDeclaration) reference.getDeclaration();
+			try {
+				Type variableDeclarationType = variableDeclaration.getType();
+				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(assignment.getRhs());
+				if (!typeDeterminator.equals(variableDeclarationType, rightHandSideExpressionType)) {
+					error("The type of the variable declaration and the right hand side expression are not the same: " +
+							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
+							rightHandSideExpressionType.toString().toLowerCase() + ".",
+							StatechartModelPackage.Literals.ASSIGNMENT_ACTION__RHS);
+				} 
+			} catch (Exception exception) {
+				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
-	}
-
-	private String checkAssignmentRhs(Declaration declaration, Expression rhs) {
-		Type type = declaration.getType();
-		if (type instanceof BooleanTypeDefinition) {
-			if (!isReferrableByBooleanVariable(rhs)) {
-				return "The right hand side of the assignment expression is not a boolean expression.";
-			}
-		}
-		else if (type instanceof NaturalTypeDefinition) {
-			if (!isReferrableByNaturalVariable(rhs)) {
-				return "The right hand side of the assignment expression is not a natural arithmetic expression.";
-			}
-		}
-		else if (type instanceof IntegerTypeDefinition) {
-			if (!isReferrableByIntegerVariable(rhs)) {
-				return "The right hand side of the assignment expression is not an integer arithmetic expression.";
-			}
-		}
-		else if (type instanceof RealTypeDefinition) {
-			if (!isReferrableByDecimalVariable(rhs)) {
-				return "The right hand side of the assignment expression is not an arithmetic expression.";
-			}
-		}
-		else if (type instanceof EnumerationTypeDefinition) {
-			if (!isReferrableByEnumVariable(declaration, rhs)) {
-				return "The right hand side of the assignment expression is not valid enum literal in case of this declaration.";
-			}
-		}
-		return null;
 	}
 	
 	@Check
@@ -1285,7 +1136,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}			
 		}
 	}
-	
 	
 	private Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
 		Collection<Event> events = new HashSet<Event>();
