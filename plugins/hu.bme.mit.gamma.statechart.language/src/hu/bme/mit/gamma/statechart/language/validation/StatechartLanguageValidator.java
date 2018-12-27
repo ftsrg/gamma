@@ -261,7 +261,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				Type variableDeclarationType = variableDeclaration.getType();
 				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(assignment.getRhs());
 				if (!typeDeterminator.equals(variableDeclarationType, rightHandSideExpressionType)) {
-					error("The type of the variable declaration and the right hand side expression are not the same: " +
+					error("The types of the variable declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 							rightHandSideExpressionType.toString().toLowerCase() + ".",
 							StatechartModelPackage.Literals.ASSIGNMENT_ACTION__RHS);
@@ -1030,17 +1030,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkWrapperPort(Port port) {
-		if (port.eContainer() instanceof SynchronousComponentWrapper) {
-			for (Event event : getSemanticEvents(Collections.singleton(port), EventDirection.IN)) {
-				if (!isContainedInQueue(port, event, (SynchronousComponentWrapper) port.eContainer())) {
-					warning("Event " + event.getName() + " of this port ", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-				}
-			}
-		}
-	}
-	
-	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(SynchronousComponentWrapper wrapper) {
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
@@ -1115,6 +1104,22 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					error("Event " + containedEvent.getName() + " is an out event and can not be used in a control specification.", CompositePackage.Literals.CONTROL_SPECIFICATION__TRIGGER);
 				}
 			}	 
+		}
+	}
+	
+	@Check
+	public void checkMessageQueuePriorities(SynchronousComponentWrapper wrapper) {
+		Set<Integer> priorityValues = new HashSet<Integer>();
+		for (int i = 0; i < wrapper.getMessageQueues().size(); ++i) {
+			MessageQueue queue = wrapper.getMessageQueues().get(i);
+			int priorityValue = queue.getPriority().intValue();
+			if (priorityValues.contains(priorityValue)) {
+				warning("Another queue with the same priority is already defined.", queue,
+						CompositePackage.Literals.MESSAGE_QUEUE__PRIORITY);
+			}
+			else {
+				priorityValues.add(priorityValue);
+			}
 		}
 	}
 	

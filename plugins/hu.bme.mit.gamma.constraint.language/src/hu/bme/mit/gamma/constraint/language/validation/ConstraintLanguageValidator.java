@@ -197,7 +197,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			Type variableDeclarationType = declaration.getType();
 			ExpressionType initialExpressionType = typeDeterminator.getType(declaration.getExpression());
 			if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
-				error("The type of the declaration and the right hand side expression are not the same: " +
+				error("The types of the declaration and the right hand side expression are not the same: " +
 						typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 						initialExpressionType.toString().toLowerCase() + ".",
 						ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);

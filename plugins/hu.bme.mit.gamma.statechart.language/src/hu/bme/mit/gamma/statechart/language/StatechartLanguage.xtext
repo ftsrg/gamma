@@ -33,23 +33,23 @@ TimeoutDeclaration returns TimeoutDeclaration:
 ;
 
 enum And returns BinaryType:
-	AND='&&'
+	AND = '&&'
 ;
 
 enum Or returns BinaryType:
-	OR='||'
+	OR = '||'
 ;
 
 enum Equal returns BinaryType:
-	EQUAL='=='
+	EQUAL = '=='
 ;
 
 enum Xor returns BinaryType:
-	XOR='^'
+	XOR = '^'
 ;
 
 enum Imply returns BinaryType:
-	IMPLY='->'
+	IMPLY = '->'
 ;
 
 Trigger returns Trigger:
@@ -183,7 +183,7 @@ enum RealizationMode returns RealizationMode:
 StatechartDefinition returns StatechartDefinition:
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
 				variableDeclarations+=VariableDeclaration |
@@ -307,7 +307,7 @@ AbstractSynchronousComponent returns CompositeModel::AbstractSynchronousComposit
 CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 	'cascade' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
 				components+=SynchronousComponentInstance |
@@ -321,7 +321,7 @@ CascadeCompositeComponent returns CompositeModel::CascadeCompositeComponent:
 SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeComponent:
 	'sync' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'			
 			(
 				components+=SynchronousComponentInstance |
@@ -339,7 +339,7 @@ AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
 	'async' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
 				components+=AsynchronousComponentInstance |			
@@ -352,7 +352,7 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 SynchronousComponentWrapper returns CompositeModel::SynchronousComponentWrapper:
 	'async' name=ID 'of' wrappedComponent=[CompositeModel::SynchronousComponent]
 		('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)(',' ports+=Port)*)? ']')?
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(
 				clocks+=ClockDeclaration |
