@@ -21,10 +21,12 @@ import hu.bme.mit.gamma.constraint.language.validation.ExpressionTypeDeterminato
 import hu.bme.mit.gamma.constraint.model.AddExpression;
 import hu.bme.mit.gamma.constraint.model.ArithmeticExpression;
 import hu.bme.mit.gamma.constraint.model.BinaryExpression;
+import hu.bme.mit.gamma.constraint.model.BooleanExpression;
 import hu.bme.mit.gamma.constraint.model.BooleanLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.DecimalLiteralExpression;
+import hu.bme.mit.gamma.constraint.model.DefinableDeclaration;
 import hu.bme.mit.gamma.constraint.model.DivExpression;
 import hu.bme.mit.gamma.constraint.model.DivideExpression;
 import hu.bme.mit.gamma.constraint.model.Expression;
@@ -34,6 +36,7 @@ import hu.bme.mit.gamma.constraint.model.ModExpression;
 import hu.bme.mit.gamma.constraint.model.MultiaryExpression;
 import hu.bme.mit.gamma.constraint.model.MultiplyExpression;
 import hu.bme.mit.gamma.constraint.model.NaturalTypeDefinition;
+import hu.bme.mit.gamma.constraint.model.PredicateExpression;
 import hu.bme.mit.gamma.constraint.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
@@ -42,7 +45,6 @@ import hu.bme.mit.gamma.constraint.model.Type;
 import hu.bme.mit.gamma.constraint.model.UnaryExpression;
 import hu.bme.mit.gamma.constraint.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.constraint.model.UnaryPlusExpression;
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
 
 /**
  * This class contains custom validation rules. 
@@ -54,57 +56,110 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 	protected ExpressionTypeDeterminator typeDeterminator = new ExpressionTypeDeterminator();
 	
 	@Check
-	public void checkArithmeticExpression(ArithmeticExpression expression) {
-		try {
-			if (expression instanceof UnaryExpression) {
-				// + or -
-				UnaryExpression unaryExpression = (UnaryExpression) expression;
-				if (!typeDeterminator.isNumber(unaryExpression.getOperand())) {
-					error("The operand of the unary arithemtic operator is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
+	public void checkBooleanExpression(BooleanExpression expression) {
+		if (expression instanceof UnaryExpression) {
+			// not
+			UnaryExpression unaryExpression = (UnaryExpression) expression;
+			if (!typeDeterminator.isBoolean(unaryExpression.getOperand())) {
+				error("The operand of the unary arithemtic operator is evaluated as a non-boolean value.",
+						ConstraintModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
+			}
+		}
+		else if (expression instanceof BinaryExpression) {
+			// equal and imply
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
+				error("The left operand of the binary arithemtic operator is evaluated as a non-boolean value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+			}
+			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
+				error("The right operand of the binary arithemtic operator is evaluated as a non-boolean value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+			}
+		}
+		else if (expression instanceof MultiaryExpression) {
+			// and or or or xor
+			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
+			for (int i = 0; i < multiaryExpression.getOperands().size(); ++i) {
+				Expression operand = multiaryExpression.getOperands().get(i);
+				if (!typeDeterminator.isBoolean(operand)) {
+					error("The operand of the multiary arithemtic operator is evaluated as a non-boolean value.",
+							ConstraintModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
 				}
 			}
-			else if (expression instanceof BinaryExpression) {
-				// - or / or mod or div
-				BinaryExpression binaryExpression = (BinaryExpression) expression;
-				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
-					error("The left operand of the binary arithemtic operator is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
-				}
-				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
-					error("The right operand of the binary arithemtic operator is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
-				}
-			}
-			else if (expression instanceof MultiaryExpression) {
-				// + or *
-				MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
-				for (int i = 0; i < multiaryExpression.getOperands().size(); ++i) {
-					Expression operand = multiaryExpression.getOperands().get(i);
-					if (!typeDeterminator.isNumber(operand)) {
-						error("The operand of the multiary arithemtic operator is evaluated as a non-number value.",
-								ConstraintModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
-					}
-				}
-			}
-		} catch (Exception exception) {
-			// There is a type error on a lower level, no need to display the error message on this level too
 		}
 	}
 	
 	@Check
-	public void checkVariableDeclaration(VariableDeclaration variableDeclaration) {
-		if (variableDeclaration.getExpression() == null) {
-			return;
+	public void checkPredicateExpression(PredicateExpression expression) {
+		if (expression instanceof UnaryExpression) {
+			// in expression, semantics not known
 		}
-		final Type variableDeclarationType = variableDeclaration.getType();
-		final ExpressionType initialExpressionType = typeDeterminator.getType(variableDeclaration.getExpression());
-		if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
-			error("The type of the variable declaration and the initial expression are not the same.",
-					ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
+		else if (expression instanceof BinaryExpression) {
+			// equivalence and comparison
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
+				error("The left operand of the binary arithemtic operator is evaluated as a non-boolean value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+			}
+			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
+				error("The right operand of the binary arithemtic operator is evaluated as a non-boolean value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+			}
+		}	
+	}
+	
+	@Check
+	public void checkArithmeticExpression(ArithmeticExpression expression) {
+		if (expression instanceof UnaryExpression) {
+			// + or -
+			UnaryExpression unaryExpression = (UnaryExpression) expression;
+			if (!typeDeterminator.isNumber(unaryExpression.getOperand())) {
+				error("The operand of the unary arithemtic operator is evaluated as a non-number value.",
+						ConstraintModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
+			}
+		}
+		else if (expression instanceof BinaryExpression) {
+			// - or / or mod or div
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
+				error("The left operand of the binary arithemtic operator is evaluated as a non-number value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+			}
+			if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
+				error("The right operand of the binary arithemtic operator is evaluated as a non-number value.",
+						ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+			}
+		}
+		else if (expression instanceof MultiaryExpression) {
+			// + or *
+			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
+			for (int i = 0; i < multiaryExpression.getOperands().size(); ++i) {
+				Expression operand = multiaryExpression.getOperands().get(i);
+				if (!typeDeterminator.isNumber(operand)) {
+					error("The operand of the multiary arithemtic operator is evaluated as a non-number value.",
+							ConstraintModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
+				}
+			}
 		}
 	}
 	
+	@Check
+	public void checkDefinableDeclaration(DefinableDeclaration variableDeclaration) {
+		try {
+			if (variableDeclaration.getExpression() == null) {
+				return;
+			}
+			final Type variableDeclarationType = variableDeclaration.getType();
+			final ExpressionType initialExpressionType = typeDeterminator.getType(variableDeclaration.getExpression());
+			if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
+				error("The type of the variable declaration and the initial expression are not the same.",
+						ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
+			} 
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+	}
 }
 
 class ExpressionTypeDeterminator {
@@ -183,10 +238,6 @@ class ExpressionTypeDeterminator {
 		return transform(declarationType);
 	}
 	
-	// Predicates
-	
-	// Booleans
-	
 	// Arithmetics
 	
 	private ExpressionType getArithmeticType(Collection<ExpressionType> collection) {
@@ -229,14 +280,6 @@ class ExpressionTypeDeterminator {
 		return getArithmeticType(types);
 	}
 	
-//	private ExpressionType getType(SubtractExpression expression) {
-//		return getArithmeticBinaryType(expression);
-//	}
-//	
-//	private ExpressionType getType(DivideExpression expression) {
-//		return getArithmeticBinaryType(expression);
-//	}
-	
 	/**
 	 * Modulo and div.
 	 */
@@ -247,22 +290,6 @@ class ExpressionTypeDeterminator {
 		}
 		throw new IllegalArgumentException("Type not suitable type for expression: " + type + System.lineSeparator() + expression);
 	}
-	
-//	private ExpressionType getType(ModExpression expression) {
-//		ExpressionType type = getArithmeticBinaryType(expression);
-//		if (type == ExpressionType.NATURAL || type ==  ExpressionType.INTEGER) {
-//			return type;
-//		}
-//		throw new IllegalArgumentException("Type not suitable for modulo: " + type);
-//	}
-//	
-//	private ExpressionType getType(DivExpression expression) {
-//		ExpressionType type = getArithmeticBinaryType(expression);
-//		if (type == ExpressionType.NATURAL || type ==  ExpressionType.INTEGER) {
-//			return type;
-//		}
-//		throw new IllegalArgumentException("Type not suitable for div: " + type);
-//	}
 	
 	// Multiary
 	
@@ -275,22 +302,10 @@ class ExpressionTypeDeterminator {
 		return getArithmeticType(types);
 	}
 	
-//	private ExpressionType getType(AddExpression expression) {
-//		return getArithmeticMultiaryType(expression);
-//	}
-//	
-//	private ExpressionType getType(MultiplyExpression expression) {
-//		return getArithmeticMultiaryType(expression);
-//	}
-	
 	// Easy determination of boolean and number types
 	
-	private boolean isBoolean(ExpressionType type) {
-		return type == ExpressionType.BOOLEAN;
-	}
-	
 	public boolean isBoolean(Expression	expression) {
-		return isBoolean(getType(expression));
+		return expression instanceof BooleanExpression || expression instanceof PredicateExpression;
 	}
 	
 	private boolean isNumber(ExpressionType type) {
@@ -300,7 +315,7 @@ class ExpressionTypeDeterminator {
 	}
 	
 	public boolean isNumber(Expression expression) {
-		return isNumber(getType(expression));
+		return expression instanceof ArithmeticExpression;
 	}
 	
 	// Transform type
@@ -330,6 +345,5 @@ class ExpressionTypeDeterminator {
 				type instanceof NaturalTypeDefinition && expressionType == ExpressionType.NATURAL; 
 				
 	}
-	
 	
 }
