@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.ui.contentassist;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,6 +33,8 @@ import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
@@ -43,6 +46,29 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface;
  * on how to customize the content assistant.
  */
 public class StatechartLanguageProposalProvider extends AbstractStatechartLanguageProposalProvider {
+	
+	public void completeMessageQueue_Priority(MessageQueue model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+        SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) model.eContainer();
+        if (wrapper.getMessageQueues().size() <= 1) {
+        	acceptor.accept(createCompletionProposal("1", context));
+        	return;
+        }
+        Collection<BigInteger> priorities = wrapper.getMessageQueues().stream()
+        		.map(it -> it.getPriority())
+        		.filter(it -> it != null)
+        		.collect(Collectors.toSet());
+        Integer next = priorities.stream().max((a, b) -> a.compareTo(b)).get().intValue() + 1;
+        Integer previous = priorities.stream().min((a, b) -> a.compareTo(b)).get().intValue() - 1;
+        acceptor.accept(createCompletionProposal(next.toString(), context));
+        acceptor.accept(createCompletionProposal(previous.toString(), context));
+	}
+	
+	public void completeMessageQueue_Capacity(MessageQueue model, Assignment assignment,
+			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+        for (Integer value : new Integer[] {4, 8, 16})
+		acceptor.accept(createCompletionProposal(value.toString(), context));
+	}
 	
 	/**
 	 * If the model is a CompositeComponent, the default scoping does not work well.
