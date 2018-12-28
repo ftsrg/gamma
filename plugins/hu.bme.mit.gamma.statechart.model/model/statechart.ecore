@@ -209,11 +209,7 @@
           eType="#//composite/Channel" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ComponentInstance" abstract="true"
-        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="parameterDeclarations"
-          upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterDeclaration"
-          containment="true"/>
-    </eClassifiers>
+        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement"/>
     <eClassifiers xsi:type="ecore:EClass" name="PortBinding">
       <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort"
           lowerBound="1" eType="#//Port"/>

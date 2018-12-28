@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.model.Action;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.model.AssignmentAction;
 import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Package;

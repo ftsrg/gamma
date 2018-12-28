@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.constraint.model.ConstantDeclaration;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.Expression;
+import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.Type;
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
@@ -772,6 +774,36 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				warning("Package " + importedPackage.getName() + " is already imported!", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
 			}
 			importedPackages.add(importedPackage);
+		}
+	}
+	
+	@Check
+	public void checkParameters(ComponentInstance instance) {
+		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+		if (instance.getParameters().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS);
+		}
+	}
+	
+	@Check
+	public void checkComponentInstanceArguments(ComponentInstance instance) {
+		try {
+			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+			EList<ParameterDeclaration> parameters = type.getParameterDeclarations();
+			for (int i = 0; i < parameters.size(); ++i) {
+				ParameterDeclaration parameter = parameters.get(i);
+				Expression argument = instance.getParameters().get(i);
+				Type declarationType = parameter.getType();
+				ExpressionType argumentType = typeDeterminator.getType(argument);
+				if (!typeDeterminator.equals(declarationType, argumentType)) {
+					error("The types of the declaration and the right hand side expression are not the same: " +
+							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
+							argumentType.toString().toLowerCase() + ".",
+							ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS, i);
+				} 
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
 		}
 	}
 	

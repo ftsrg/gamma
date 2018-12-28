@@ -78,7 +78,7 @@ class ModelUnfolder {
 			if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {
 				clonedComponent.copyComponents(gammaPackage, containerInstanceName + instance.name + "_") // Cloning the contained CompositeSystems recursively
 			}
-			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilites
+			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilities
 			instance.name = containerInstanceName + instance.name 
 		}
 	}
@@ -112,7 +112,7 @@ class ModelUnfolder {
 			fixChannelProvidedPorts(component, instance)
 			// Changing the requiredPort references of Channels
 			fixChannelRequiredPorts(component, instance)
-			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilites
+			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilities
 			instance.name = containerInstanceName + instance.name 
 		}
 	}

@@ -49,7 +49,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComp
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.WrapperInEvents
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
 import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
 import hu.bme.mit.gamma.constraint.model.Declaration
 import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition
@@ -222,6 +221,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredInstances
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -306,6 +306,7 @@ class CompositeToUppaalTransformer {
     	createMessageStructType
     	createFinalizeSyncVar
     	createIsStableVar
+		parametersRule.fireAllCurrent
     	constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
@@ -2102,7 +2103,8 @@ class CompositeToUppaalTransformer {
 		for (uppaalEvent : uppaalEvents) {
 			val owner = uppaalEvent.owner
 			val port = uppaalEvent.port
-			val eventValue = it.param.transformVariable(it.param.type, uppaalEvent.variable.head.valueOfName)
+			val eventValue = it.param.transformVariable(it.param.type, DataVariablePrefix.NONE,
+				uppaalEvent.variable.head.valueOfName)
 			// Parameter is now not connected to the Event
 			addToTrace(it.param, #{eventValue}, trace) // Connected to the port through name (getValueOfName - bad convention)
 			addToTrace(owner, #{eventValue}, instanceTrace)
@@ -2118,7 +2120,8 @@ class CompositeToUppaalTransformer {
      * It depends on initNTA.
      */
 	val variablesRule = createRule.name("VariablesRule").precondition(InstanceVariables.instance).action [
-		val variable = it.variable.transformVariable(it.variable.type, it.variable.name + "Of" + instance.name)
+		val variable = it.variable.transformVariable(it.variable.type, DataVariablePrefix.NONE,
+			it.variable.name + "Of" + instance.name)
 		addToTrace(it.instance, #{variable}, instanceTrace)		
 		// Traces are created in the transformVariable method
 	].build
@@ -2128,12 +2131,29 @@ class CompositeToUppaalTransformer {
      * It depends on initNTA.
      */
 	val constantsRule = createRule.name("ConstantsRule").precondition(ConstantDeclarations.instance).action [
-		it.constant.transformVariable(it.type, it.constant.name + "Of" + (it.constant.eContainer as Package).name)
+		it.constant.transformVariable(it.type, DataVariablePrefix.CONST, 
+			it.constant.name + "Of" + (it.constant.eContainer as Package).name)
 		// Traces are created in the createVariable method
-	].build	
+	].build
 	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable, EnumerationTypeDefinition type, String name) {
-		val uppaalVar = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration
+	// Type references, such as enums
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
+			hu.bme.mit.gamma.constraint.model.TypeDeclaration type, DataVariablePrefix prefix, String name) {
+		val declaredType = type.type
+		return variable.transformVariable(declaredType, prefix, name)	
+	}
+	
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
+			hu.bme.mit.gamma.constraint.model.TypeReference type, DataVariablePrefix prefix, String name) {
+		val referredType = type.reference
+		return variable.transformVariable(referredType, prefix, name)	
+	}
+	
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
+			EnumerationTypeDefinition type, DataVariablePrefix prefix, String name) {
+		val uppaalVar = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration  => [
+			it.prefix = prefix
+		]
 		uppaalVar.createIntTypeWithRangeAndVariable(
 			createLiteralExpression => [it.text = "0"],
 			createLiteralExpression => [it.text = (type.literals.size - 1).toString],
@@ -2144,47 +2164,23 @@ class CompositeToUppaalTransformer {
 		return uppaalVar	
 	}
 	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.constraint.model.TypeDeclaration type, String name) {
-		val declaredType = type.type
-		return variable.transformVariable(declaredType, name)	
-	}
-	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.constraint.model.TypeReference type, String name) {
-		val referredType = type.reference
-		return variable.transformVariable(referredType, name)	
-	}
-	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable, IntegerTypeDefinition type, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, DataVariablePrefix.NONE, target.int, name)
-		// Creating the trace
-		addToTrace(variable, #{uppaalVar}, trace)
-		return uppaalVar	
-	}
-	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable, BooleanTypeDefinition type, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, DataVariablePrefix.NONE, target.bool, name)
-		// Creating the trace
-		addToTrace(variable, #{uppaalVar}, trace)
-		return uppaalVar
-	}
-	
-	private def dispatch VariableDeclaration transformVariable(ConstantDeclaration variable, IntegerTypeDefinition type, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, DataVariablePrefix.CONST, target.int, name)
-		// Creating the trace
+	// Constant, variable and parameter declarations
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, IntegerTypeDefinition type,
+			DataVariablePrefix prefix, String name) {
+		val uppaalVar = createVariable(target.globalDeclarations, prefix, target.int, name)
 		addToTrace(variable, #{uppaalVar}, trace)	
 		return uppaalVar	 
 	}
 	
-	private def dispatch VariableDeclaration transformVariable(ConstantDeclaration variable, BooleanTypeDefinition type, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, DataVariablePrefix.CONST, target.bool, name)
-		// Creating the trace
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, BooleanTypeDefinition type,
+			DataVariablePrefix prefix, String name) {
+		val uppaalVar = createVariable(target.globalDeclarations, prefix, target.bool, name)
 		addToTrace(variable, #{uppaalVar}, trace)
 		return uppaalVar
 	}
 	
-	private def dispatch VariableDeclaration transformVariable(Declaration variable, Type type, String name) {
+	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, Type type,
+			DataVariablePrefix prefix, String name) {
 		throw new IllegalArgumentException("Not transformable variable type: " + type + "!")
 	}
 	
@@ -2260,6 +2256,27 @@ class CompositeToUppaalTransformer {
 		}
 		// Traces are created in the transformVariable method
 	].build
+	
+	/**
+     * This rule is responsible for transforming the bound parameters.
+     * It depends on initNTA.
+     */
+	val parametersRule = createRule.name("ParametersRule").precondition(ParameteredInstances.instance).action [
+		val instance = it.instance
+		val parameters = instance.derivedType.parameterDeclarations
+		val arguments = instance.parameters
+		checkState (parameters.size == arguments.size)
+		for (var i = 0; i < parameters.size; i++) {
+			val parameter = parameters.get(i)
+			val argument = arguments.get(i)
+			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
+				parameter.name + "Of" + instance.name)
+			uppaalVariable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
+				it.transform(expressionInitializer_Expression, argument, instance)
+			]
+		}
+		// Traces are created in the createVariable method
+	].build	
 	
 	/**
      * This rule is responsible for transforming all regions to templates. (Top regions and subregions.)

@@ -116,7 +116,7 @@ class ExpressionTransformer {
     def ComponentInstance getOwner(EObject object) {
     	val traces = InstanceTraces.Matcher.on(traceEngine).getAllValuesOfinstance(null, object)
 		if (traces.size != 1) {
-			throw new IllegalArgumentException("This number of owners of this object is not one! Object: " + object + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
+			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + object + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
 		}
 		return traces.head		
     }
@@ -124,7 +124,7 @@ class ExpressionTransformer {
     def getPort(VariableDeclaration variable) {
     	val traces = PortTraces.Matcher.on(traceEngine).getAllValuesOfport(null, variable)
 		if (traces.size != 1) {
-			throw new IllegalArgumentException("This number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
+			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
 		}
 		return traces.head		
     }
@@ -281,9 +281,9 @@ class ExpressionTransformer {
 		}
 		// Normal variables
 		else {
+			// TODO
 			declaration = expression.declaration.allValuesOfTo.filter(VariableDeclaration).filter[it.owner == owner].head.variable.head
 		}
-		
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
 			newExp.identifier = declaration
 		addToTrace(expression, #{newExp}, expressionTrace)

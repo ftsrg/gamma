@@ -177,9 +177,7 @@
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/CompositeComponent/portBindings"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/CompositeComponent/channels"/>
       </genClasses>
-      <genClasses ecoreClass="statechart.ecore#//composite/ComponentInstance">
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/ComponentInstance/parameterDeclarations"/>
-      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//composite/ComponentInstance"/>
       <genClasses ecoreClass="statechart.ecore#//composite/PortBinding">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
             ecoreFeature="ecore:EReference statechart.ecore#//composite/PortBinding/compositeSystemPort"/>

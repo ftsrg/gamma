@@ -403,11 +403,11 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::SynchronousComponent]
+	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
 ;
 
 AsynchronousComponentInstance returns CompositeModel::AsynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent]
+	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
 ;
 
 Channel returns CompositeModel::Channel:
