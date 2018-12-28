@@ -1652,7 +1652,7 @@ class GlueCodeGenerator {
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
-					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), «queue.capacity.serialize»);
+					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), (int) «queue.capacity.serialize»);
 					«queue.name» = __asyncQueue.getSubQueue("«queue.name»");
 				«ENDFOR»
 				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
