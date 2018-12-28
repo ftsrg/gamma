@@ -710,7 +710,7 @@ class GlueCodeGenerator {
 			private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»2 = new LinkedList<«EVENT_CLASS_NAME»>();
 			«component.generateParameterDeclarationFields»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 					this.«parameter.name» = «parameter.name»;
 				«ENDFOR»
@@ -852,7 +852,7 @@ class GlueCodeGenerator {
 	protected def CharSequence generateParameterDeclarationFields(Component component) '''
 		«IF !component.parameterDeclarations.empty»// Fields representing parameters«ENDIF»
 		«FOR parameter : component.parameterDeclarations»
-			private final «parameter.type.transformType.toFirstUpper» «parameter.name»;
+			private final «parameter.type.transformType» «parameter.name»;
 		«ENDFOR»
 	'''
 	
@@ -959,10 +959,6 @@ class GlueCodeGenerator {
 		switch (type) {
 			IntegerTypeDefinition: {
 				val types = type.getAllValuesOfFrom.filter(Type).toSet
-				if (types.empty) {
-					// Not transformed from Yakindu
-					return "integer"
-				}
 				val strings = types.filter[it.name.equals("string")]
 				val integers = types.filter[it.name.equals("integer")]
 				if (strings.size > 0 && integers.size > 0) {
@@ -1333,14 +1329,14 @@ class GlueCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init();
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				init();
 			}
@@ -1631,14 +1627,14 @@ class GlueCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				«IF !component.clocks.empty»this.timerService = new TimerService();«ENDIF»
 				init();
@@ -2091,14 +2087,14 @@ class GlueCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init(); // Init is not called in setTimer like in the wrapper as it would be unnecessary
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				init();
 			}

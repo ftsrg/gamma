@@ -34,33 +34,33 @@ class GenModelLinker extends DefaultLinkingService {
 		    		val root = context
 		    		val path = valueConverterService.toValue(node.getText(),
 		    				getLinkingHelper().getRuleNameFrom(node.getGrammarElement()), node).toString().replaceAll("\\s","")
-		    		val rootResource = root.eResource();
-		    		val resourceSet = rootResource.getResourceSet();
+		    		val rootResource = root.eResource()
+		    		val resourceSet = rootResource.getResourceSet()
 		    		// Adding the gcd extension, if needed
-		    		var finalPath = addExtensionIfNeeded(path);
+		    		var finalPath = addExtensionIfNeeded(path)
 		    		if (!isCorrectPath(finalPath)) {
 		    			// Path of the importer model
-		    			val rootResourceUri = rootResource.getURI().toString();
-		    			val pathBuilder = new StringBuilder(finalPath);
+		    			val rootResourceUri = rootResource.getURI().toString()
+		    			val pathBuilder = new StringBuilder(finalPath)
 		    			// If the path starts with a '/', we delete it
 		    			if (pathBuilder.charAt(0) == '/') {
-		    				pathBuilder.deleteCharAt(0);
+		    				pathBuilder.deleteCharAt(0)
 		    			}
-		    			val splittedRootResourceUri = rootResourceUri.split("/");
-		    			var originalCharacterIndex = 0;
+		    			val splittedRootResourceUri = rootResourceUri.split("/")
+		    			var originalCharacterIndex = 0
 		    			for (var i = 0; i < splittedRootResourceUri.length && !isCorrectPath(pathBuilder.toString()); i++) {
 		    				// Trying prepending the folders one by one
-		    				val prepension = splittedRootResourceUri.get(i) + "/";
-		    				pathBuilder.insert(originalCharacterIndex, prepension);
-		    				originalCharacterIndex += prepension.length();
+		    				val prepension = splittedRootResourceUri.get(i) + "/"
+		    				pathBuilder.insert(originalCharacterIndex, prepension)
+		    				originalCharacterIndex += prepension.length()
 		    			}
 		    			// Finished
-		    			finalPath = pathBuilder.toString();
+		    			finalPath = pathBuilder.toString()
 		    		}
-		    		val uri = URI.createURI(finalPath);
-		    		val importedResource = resourceSet.getResource(uri, true);
-		    		val importedPackage = importedResource.getContents().get(0);
-		    		return #[importedPackage];
+		    		val uri = URI.createURI(finalPath)
+		    		val importedResource = resourceSet.getResource(uri, true)
+		    		val importedPackage = importedResource.getContents().get(0)
+		    		return #[importedPackage]
 		 		} catch (Exception e) {
     				// Trivial case most of the time (during typing) the uri is not correct, thus the loading cannot be done
     			}
@@ -70,27 +70,30 @@ class GenModelLinker extends DefaultLinkingService {
     }
     
     private def isCorrectPath(String path) {
-    	val resourceSet = new ResourceSetImpl();
-		val uri = URI.createURI(path);
+    	if (!path.startsWith("platform:/resource/")) {
+    		return false
+    	}
+    	val resourceSet = new ResourceSetImpl()
+		val uri = URI.createURI(path)
 		try {
-	    	resourceSet.getResource(uri, true);
-	    	resourceSet.getResources().get(0).unload();
-	    	resourceSet.getResources().clear();
-	    	return true;
+	    	resourceSet.getResource(uri, true)
+	    	resourceSet.getResources().get(0).unload()
+	    	resourceSet.getResources().clear()
+	    	return true
 		} catch (Exception e) {
 			// Resource cannot be loaded due to invalid path
-			return false;
+			return false
 		}
     }
     
     private def addExtensionIfNeeded(String path) {
-    	val splittedPath = path.split("/");
-    	val fileName = splittedPath.get(splittedPath.length - 1);
-    	val splittedFileName = fileName.split("\\.");
+    	val splittedPath = path.split("/")
+    	val fileName = splittedPath.get(splittedPath.length - 1)
+    	val splittedFileName = fileName.split("\\.")
     	if (splittedFileName.length == 1) {
-    		return path + ".gcd";
+    		return path + ".gcd"
     	}
-    	return path;
+    	return path
     }
     
 }

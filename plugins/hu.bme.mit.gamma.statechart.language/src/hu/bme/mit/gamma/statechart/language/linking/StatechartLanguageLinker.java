@@ -77,6 +77,9 @@ public class StatechartLanguageLinker extends DefaultLinkingService {
     }
     
     private boolean isCorrectPath(String path) {
+    	if (!path.startsWith("platform:/resource/")) {
+    		return false;
+    	}
     	ResourceSet resourceSet = new ResourceSetImpl();
 		URI uri = URI.createURI(path);
 		try {
