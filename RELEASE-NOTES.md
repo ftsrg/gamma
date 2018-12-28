@@ -44,3 +44,13 @@
 * Type checking regarding statecharts while editing the models in the Xtext editor is greatly improved.
 * Content assist regarding the message queues of the asynchronous adapters is improved.
 * Validation rules regarding the priority of message queues of asynchronous adapters are extended.
+
+## 2018.12.28. - Version 2.1.0
+
+### What is New
+
+* Components are now parameterizable. Parameterization is supported by both formal verification and code generation functionalities.
+
+### Improvements
+
+* Bug regarding the linking of packages is fixed.
