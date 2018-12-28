@@ -23,20 +23,25 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.VariableDeclarations
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
+import hu.bme.mit.gamma.statechart.model.Component
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
 
 class ModelValidator {
 	
+	protected Component topComponent
 	protected ResourceSet resourceSet 
 	protected ViatraQueryEngine engine
 	
-	new(ResourceSet resourceSet) {
+	new(ResourceSet resourceSet, Component topComponent) {
         this.resourceSet = resourceSet
+        this.topComponent = topComponent
         // Create EMF scope and EMF IncQuery engine based on the TTMC resource
         val scope = new EMFScope(resourceSet)
         engine = ViatraQueryEngine.on(scope)
     }
     
     def checkModel() {
+    	checkTopComponentParamters
     	checkConstants
     	checkInOutTransitions
     	checkChoiceTransitions 
@@ -45,6 +50,21 @@ class ModelValidator {
     	checkNames
     	checkUppaalKeywords
     }
+    
+	/**
+	 * This method checks whether the top components has parameters. If so, it throws an exception.
+	 */
+	def checkTopComponentParamters() {
+		if (!topComponent.parameterDeclarations.empty) {
+			throw new IllegalArgumentException("The top component must not have parameters. " + topComponent.parameterDeclarations)
+		}
+		if (topComponent instanceof SynchronousComponentWrapper) {
+			val parameterDeclarations = topComponent.wrappedComponent.parameterDeclarations
+			if (!parameterDeclarations.empty) {
+				throw new IllegalArgumentException("The wrapped synchronous components must not have parameters. " + parameterDeclarations)
+			}
+		}
+	}
 	
     /**
 	 * This method checks whether there are constants without initialization. If so, it throws an exception.
@@ -100,7 +120,7 @@ class ModelValidator {
 		if (parameterValueMatches.size != 0) {
 			val transitions = new StringBuilder()
 			for (parameterValueMatch : parameterValueMatches) {
-				transitions.append(" " + parameterValueMatch.source.name + "->" + parameterValueMatch.target.name + ":" + parameterValueMatch.valueOfParameter.name)
+				transitions.append(parameterValueMatch.source.name + "->" + parameterValueMatch.target.name + ":" + parameterValueMatch.valueOfParameter.name + System.lineSeparator)
 			}
 			throw new IllegalArgumentException("An assignment expression must not have non-active parameter values on the right hand side:" + transitions.toString())
 		}

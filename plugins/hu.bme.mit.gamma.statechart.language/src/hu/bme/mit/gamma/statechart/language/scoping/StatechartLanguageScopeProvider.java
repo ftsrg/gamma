@@ -30,10 +30,7 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
-import hu.bme.mit.gamma.statechart.model.Action;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.model.AssignmentAction;
 import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Package;
@@ -41,7 +38,6 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
-import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
@@ -116,24 +112,24 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
 				return(Scopes.scopeFor(enumLiterals));
 			}
-			/* Without such scoping rules, the following exception happens:
+			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
 			 * contains invalid characters: '.' (0x2e) */
 			// Valueof
 			if (context instanceof EventParameterReferenceExpression
-					&& (reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT)) {
+					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 				Component component = StatechartModelDerivedFeatures.getContainingComponent(context);				
 				return Scopes.scopeFor(component.getPorts());
 			}
 			if (context instanceof EventParameterReferenceExpression
-					&& (reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT)) {
+					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
 				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
 				checkState(expression.getPort() != null);
 				Port port = expression.getPort();
 				return Scopes.scopeFor(getSemanticEvents(Collections.singleton(port), EventDirection.IN));
 			}
 			if (context instanceof EventParameterReferenceExpression
-					&& (reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER)) {
+					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
@@ -223,21 +219,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(events);
 			}
 			if (/*context instanceof EventTrigger && */reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
-				// Value of expressions only 
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<Declaration> declarations = getAllDeclarations(gammaPackage);
+				Component component = null;
+				try {
+					component = StatechartModelDerivedFeatures.getContainingComponent(context);
+				} catch (IllegalArgumentException exception) {
+					// The context is not contained by a component, we rely on default scoping
+					return super.getScope(context, reference);
+				}
+				Collection<Declaration> declarations = getAllParameterDeclarations(component);
 				// Important to add the normal declarations as well
 				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
 				declarations.addAll(normalDeclarations);
-				// Removing parameter declarations in case of actions
-				if (context.eContainer() instanceof Action ||
-					context instanceof Transition || context instanceof State) {
-					for (Declaration declaration : new HashSet<Declaration>(declarations)) {
-						if (declaration instanceof ParameterDeclaration) {
-							declarations.remove(declaration);
-						}
-					}
-				}
 				return Scopes.scopeFor(declarations);
 			}
 		} catch (NullPointerException e) {
@@ -331,24 +324,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
    		} 
    	}
 	
-	private Collection<Declaration> getAllDeclarations(Package gammaPackage) {
-		Set<Declaration> declarations = new HashSet<Declaration>();
-		// Own interfaces
-		Set<Package> interfaceRoots = new HashSet<Package>();
-		interfaceRoots.add(gammaPackage);
-		// Imported interfaces
-		interfaceRoots.addAll(gammaPackage.getImports());
-		for (Package interfaceRoot : interfaceRoots) {
-			for (Interface gammaInterface : interfaceRoot.getInterfaces()) {
-				for (Event event : getAllEvents(gammaInterface, EventDirection.IN)) {
-					for (Declaration declaration : event.getParameterDeclarations()) {
-						declarations.add(declaration);
-					}
+	private Collection<Declaration> getAllParameterDeclarations(Component component) {
+		Set<Declaration> declarations = new HashSet<Declaration>(component.getParameterDeclarations());
+		for (Interface gammaInterface : component.getPorts().stream()
+				.map(it -> it.getInterfaceRealization().getInterface()).collect(Collectors.toSet())) {
+			for (Event event : getAllEvents(gammaInterface, EventDirection.IN)) {
+				for (Declaration declaration : event.getParameterDeclarations()) {
+					declarations.add(declaration);
 				}
-				for (Event event : getAllEvents(gammaInterface, EventDirection.OUT)) {
-					for (Declaration declaration : event.getParameterDeclarations()) {
-						declarations.add(declaration);
-					}
+			}
+			for (Event event : getAllEvents(gammaInterface, EventDirection.OUT)) {
+				for (Declaration declaration : event.getParameterDeclarations()) {
+					declarations.add(declaration);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin>
   <extension id="hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns" id="hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns">
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameteredInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameterizedInstances"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.simpleInstances"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceContainer"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceVariables"/>

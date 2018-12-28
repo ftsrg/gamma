@@ -221,7 +221,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredInstances
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
+import uppaal.declarations.DeclarationsFactory
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -270,6 +271,7 @@ class CompositeToUppaalTransformer {
     protected extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
     protected extension SystemPackage sysPackage = SystemPackage.eINSTANCE
     
+    protected extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
     protected extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
     protected extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	
@@ -306,7 +308,9 @@ class CompositeToUppaalTransformer {
     	createMessageStructType
     	createFinalizeSyncVar
     	createIsStableVar
-		parametersRule.fireAllCurrent
+    	while (!areAllParametersTransformed) {
+			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
+		}
     	constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
@@ -2261,22 +2265,40 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the bound parameters.
      * It depends on initNTA.
      */
-	val parametersRule = createRule.name("ParametersRule").precondition(ParameteredInstances.instance).action [
+	val parametersRule = createRule.name("ParametersRule").precondition(ParameterizedInstances.instance).action [
 		val instance = it.instance
 		val parameters = instance.derivedType.parameterDeclarations
 		val arguments = instance.parameters
-		checkState (parameters.size == arguments.size)
+		checkState(parameters.size == arguments.size)
 		for (var i = 0; i < parameters.size; i++) {
 			val parameter = parameters.get(i)
 			val argument = arguments.get(i)
-			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
-				parameter.name + "Of" + instance.name)
-			uppaalVariable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
-				it.transform(expressionInitializer_Expression, argument, instance)
-			]
+			try {
+				/* Trying to create the initialization based on the argument
+					(succeeds if all referred parameters are already mapped) */
+				val initializer = createExpressionInitializer => [
+					it.transform(expressionInitializer_Expression, argument, instance)
+				]
+				// The initialization is created, variable has to be created
+				val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
+					parameter.name + "Of" + instance.name)
+				uppaalVariable.variable.head.initializer = initializer
+			} catch (Exception exception) {
+				// An argument refers to a not yet mapped parameter
+				// Waiting for next turn
+			}
 		}
 		// Traces are created in the createVariable method
-	].build	
+	].build
+	
+	private def areAllParametersTransformed() {
+		return ParameterizedInstances.Matcher.on(engine).allMatches
+				.forall[it.instance.areAllArgumentsTransformed]
+	}
+
+	private def areAllArgumentsTransformed(ComponentInstance instance) {
+		return instance.derivedType.parameterDeclarations.forall[it.traced]
+	}
 	
 	/**
      * This rule is responsible for transforming all regions to templates. (Top regions and subregions.)

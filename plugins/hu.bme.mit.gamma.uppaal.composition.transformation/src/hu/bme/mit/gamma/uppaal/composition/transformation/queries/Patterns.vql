@@ -15,7 +15,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
-pattern parameteredInstances(instance : ComponentInstance) {
+pattern parameterizedInstances(instance : ComponentInstance) {
 	ComponentInstance.parameters(instance, _); 
 }
 

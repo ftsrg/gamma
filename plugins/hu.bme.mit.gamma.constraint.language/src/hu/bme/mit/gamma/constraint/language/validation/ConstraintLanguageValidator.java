@@ -190,7 +190,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				ReferenceExpression referenceExpression = (ReferenceExpression) initialExpression;
 				Declaration referredDeclaration = referenceExpression.getDeclaration();
 				if (referredDeclaration == declaration) {
-					warning("This assignment has no effect.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+					error("Not known declaration.", ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
 					return;
 				}
 			}

@@ -25,7 +25,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.constraint.model.ConstantDeclaration;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.Expression;
@@ -253,8 +252,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkAssignmentActions(AssignmentAction assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 		// Constant
-		if (reference.getDeclaration() instanceof ConstantDeclaration) {
-			error("Constants cannot be assigned a value.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
+		if (!(reference.getDeclaration() instanceof VariableDeclaration)) {
+			error("Values can be assigned only to variables.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
 		}
 		// Other assignment type checking
 		if (reference.getDeclaration() instanceof VariableDeclaration) {

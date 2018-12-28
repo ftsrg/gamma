@@ -126,7 +126,7 @@ public class CommandHandler extends AbstractHandler {
 		// Needed because reading from disk means it is another model now
 		Component newTopComponent = getEquivalentComposite(resource, topComponent);
 		// Checking the model whether it contains forbidden elements
-		ModelValidator validator = new ModelValidator(resourceSet);
+		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent); // newTopComponent
