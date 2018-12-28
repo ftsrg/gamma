@@ -71,28 +71,29 @@ import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 
 class GlueCodeGenerator {
-    // Transformation-related extensions
-    extension BatchTransformation transformation 
-    extension BatchTransformationStatements statements    
-    // Transformation rule-related extensions
-    extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	// Transformation-related extensions
+	extension BatchTransformation transformation 
+	extension BatchTransformationStatements statements	
+	// Transformation rule-related extensions
+	extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Query engines and resources
-    protected final ViatraQueryEngine engine
-    protected final ResourceSet resSet
-    protected Component topComponent
+	protected final ViatraQueryEngine engine
+	protected final ResourceSet resSet
+	protected Component topComponent
 	// File URIs where the classes need to be saved
-    protected final String parentPackageUri
-    protected final String eventUri
-    protected final String channelUri
-    protected final String interfaceUri
-    protected final String timerUri
-    // The base of the package name: hu.bme.mit.gamma.impl
-    protected final String packageName
-    // The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
-    protected final String yakinduPackageName
-    // Attributes of the message class
+	protected final String parentPackageUri
+	protected final String eventUri
+	protected final String channelUri
+	protected final String interfaceUri
+	protected final String timerUri
+	// The base of the package name: hu.bme.mit.gamma.impl
+	protected final String packageName
+	// The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
+	protected final String yakinduPackageName
+	// Attributes of the message class
 	protected final String EVENT_CLASS_NAME = "Event"	
 	protected final String GET_EVENT_METHOD = "getEvent"	
 	protected final String GET_VALUE_METHOD = "getValue"	
@@ -108,31 +109,31 @@ class GlueCodeGenerator {
 	protected final String ITIMER_CALLBACK_INTERFACE_NAME = "ITimerCallback"
 	protected final String TIMER_SERVICE_CLASS_NAME = "TimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
-    // Expression serializer
-    protected final extension ExpressionSerializer serializer = new ExpressionSerializer
-    // Transformation rules
+	// Expression serializer
+	protected final extension ExpressionSerializer serializer = new ExpressionSerializer
+	// Transformation rules
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> portInterfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> synchronousCompositeComponentsRule
-    protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> synchronousComponentWrapperRule
-    protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> channelsRule
-    protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> asynchronousCompositeComponentsRule
-    
-    new(ResourceSet resourceSet, String basePackageName, String srcGenFolderUri) {
-    	this.packageName = basePackageName
-    	this.yakinduPackageName = basePackageName
-       	this.resSet = resourceSet
-       	this.resSet.loadModels
-        engine = ViatraQueryEngine.on(new EMFScope(resSet))
-        this.parentPackageUri = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
-        this.eventUri = this.parentPackageUri + File.separator + EVENT_INSTANCE_NAME
-        this.channelUri = this.parentPackageUri + File.separator + CHANNEL_NAME
-        this.interfaceUri = this.parentPackageUri + File.separator + INTERFACES_NAME
-        this.timerUri = this.parentPackageUri
-        setup
-    }
-    
-    /**
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> synchronousComponentWrapperRule
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> channelsRule
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> asynchronousCompositeComponentsRule
+	
+	new(ResourceSet resourceSet, String basePackageName, String srcGenFolderUri) {
+		this.packageName = basePackageName
+		this.yakinduPackageName = basePackageName
+		this.resSet = resourceSet
+		this.resSet.loadModels
+		engine = ViatraQueryEngine.on(new EMFScope(resSet))
+		this.parentPackageUri = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
+		this.eventUri = this.parentPackageUri + File.separator + EVENT_INSTANCE_NAME
+		this.channelUri = this.parentPackageUri + File.separator + CHANNEL_NAME
+		this.interfaceUri = this.parentPackageUri + File.separator + INTERFACES_NAME
+		this.timerUri = this.parentPackageUri
+		setup
+	}
+	
+	/**
 	 * Loads the the top component from the resource set. 
 	 */
 	private def loadModels(ResourceSet resourceSet) {
@@ -155,174 +156,174 @@ class GlueCodeGenerator {
 	 * Sets up the transformation infrastructure.
 	 */
 	protected def setup() {
-        //Create VIATRA Batch transformation
-        transformation = BatchTransformation.forEngine(engine).build
-        //Initialize batch transformation statements
-        statements = transformation.transformationStatements
-    }
+		//Create VIATRA Batch transformation
+		transformation = BatchTransformation.forEngine(engine).build
+		//Initialize batch transformation statements
+		statements = transformation.transformationStatements
+	}
 
 	/**
 	 * Executes the code generation.
 	 */
-    def execute() {
-    	checkUniqueInterfaceNames
+	def execute() {
+		checkUniqueInterfaceNames
 		generateEventClass
 		if (topComponent.needTimer) {				
 			// Virtual timer is generated only if there are timing specs (triggers) in the model
 			generateTimerClasses	
 		}	
 		getPortInterfaceRule.fireAllCurrent
-    	getSimpleComponentDeclarationRule.fireAllCurrent
-    	getSynchronousCompositeComponentsRule.fireAllCurrent
-    	if (hasSynchronousWrapper) {
-    		generateLinkedBlockingMultiQueueClasses
-    	}
-    	getSynchronousComponentWrapperRule.fireAllCurrent
-    	if (hasAsynchronousComposite) {
-    		getChannelsRule.fireAllCurrent
-    	}
-    	getAsynchronousCompositeComponentsRule.fireAllCurrent
-    }    
-    
-    /**
-     * Checks whether the ports are connected properly.
-     */
-    protected def checkUniqueInterfaceNames() {
-    	val interfaces = Interfaces.Matcher.on(engine).allValuesOfinterface
-    	val nameSet = new HashSet<String>
-    	for (name : interfaces.map[it.name.toLowerCase]) {
-    		if (nameSet.contains(name)) {
-    			throw new IllegalArgumentException("Same interface names: " + name + "! Interface names must differ in more than just their initial character!")
-    		}
-    		nameSet.add(name)
-    	}
-    }
-    
-    /**
-     * Returns the containing package of a component.
-     */
-    protected def getContainingPackage(Component component) {
-    	return component.eContainer as Package
-    }
+		getSimpleComponentDeclarationRule.fireAllCurrent
+		getSynchronousCompositeComponentsRule.fireAllCurrent
+		if (hasSynchronousWrapper) {
+			generateLinkedBlockingMultiQueueClasses
+		}
+		getSynchronousComponentWrapperRule.fireAllCurrent
+		if (hasAsynchronousComposite) {
+			getChannelsRule.fireAllCurrent
+		}
+		getAsynchronousCompositeComponentsRule.fireAllCurrent
+	}	
+	
+	/**
+	 * Checks whether the ports are connected properly.
+	 */
+	protected def checkUniqueInterfaceNames() {
+		val interfaces = Interfaces.Matcher.on(engine).allValuesOfinterface
+		val nameSet = new HashSet<String>
+		for (name : interfaces.map[it.name.toLowerCase]) {
+			if (nameSet.contains(name)) {
+				throw new IllegalArgumentException("Same interface names: " + name + "! Interface names must differ in more than just their initial character!")
+			}
+			nameSet.add(name)
+		}
+	}
+	
+	/**
+	 * Returns the containing package of a component.
+	 */
+	protected def getContainingPackage(Component component) {
+		return component.eContainer as Package
+	}
 
 	/**
 	 * Returns the Java package name of the class generated from the component.
 	 */
-    protected def componentPackageName (Component component) '''«packageName».«(component.containingPackage).name.toLowerCase»'''
+	protected def componentPackageName (Component component) '''«packageName».«(component.containingPackage).name.toLowerCase»'''
  	
  	/**
-   	 * Returns the name of the Java interface generated from the given Gamma interface. 
-   	 */
-   	protected def generateName(Interface anInterface) {
-   		return anInterface.name.toFirstUpper + "Interface"
-   	}
-   	
-   	/**
-   	 * Returns the name of the Java channel interface generated from the given Gamma interface. 
-   	 */
-   	protected def generateChannelName(Interface anInterface) {
-   		return anInterface.name.toFirstUpper + "Channel"
-   	}
-   	
-   	/**
-   	 * Returns the name of the Java channel interface generated from the given Gamma interface. 
-   	 */
-   	protected def generateChannelInterfaceName(Interface anInterface) {
-   		return anInterface.generateChannelName + "Interface"
-   	}
-   	
-   	/**
-     * Returns the name of the Java class of the component (the Yakindu statemachine wrapper).
-     */
-    protected def getComponentClassName(Component component) {
-    	return component.name.toFirstUpper
-    }
-        
-    /**
-     * Returns the name of the Yakindu statemachine the given component is transformed from.
-     * They use it for package namings. It does not contain the "Statemachine" suffix."
-     */
-    protected def getYakinduStatemachineName(Component component) {
-    	return component.containingPackage.name
-    }
-    
-    /**
-     * Returns the name of the statemachine class generated by Yakindu.
-     */
-    protected def getStatemachineClassName(Component component) {
-    	return component.yakinduStatemachineName + "Statemachine"
-    }
-    
-    /**
-     * Returns the name of the wrapped Yakindu statemachine instance.
-     */
-    protected def getStatemachineInstanceName(Component component) {
-    	return component.statemachineClassName.toFirstLower
-    }
-    
-    /**
-     * Returns the name of the wrapped Yakindu statemachine instance.
-     */
-    protected def getWrappedComponentName(SynchronousComponentWrapper wrapper) {
-    	return wrapper.wrappedComponent.name.toFirstLower
-    }
+		 * Returns the name of the Java interface generated from the given Gamma interface. 
+		 */
+		protected def generateName(Interface anInterface) {
+			return anInterface.name.toFirstUpper + "Interface"
+		}
+		
+		/**
+		 * Returns the name of the Java channel interface generated from the given Gamma interface. 
+		 */
+		protected def generateChannelName(Interface anInterface) {
+			return anInterface.name.toFirstUpper + "Channel"
+		}
+		
+		/**
+		 * Returns the name of the Java channel interface generated from the given Gamma interface. 
+		 */
+		protected def generateChannelInterfaceName(Interface anInterface) {
+			return anInterface.generateChannelName + "Interface"
+		}
+		
+		/**
+	 * Returns the name of the Java class of the component (the Yakindu statemachine wrapper).
+	 */
+	protected def getComponentClassName(Component component) {
+		return component.name.toFirstUpper
+	}
+		
+	/**
+	 * Returns the name of the Yakindu statemachine the given component is transformed from.
+	 * They use it for package namings. It does not contain the "Statemachine" suffix."
+	 */
+	protected def getYakinduStatemachineName(Component component) {
+		return component.containingPackage.name
+	}
+	
+	/**
+	 * Returns the name of the statemachine class generated by Yakindu.
+	 */
+	protected def getStatemachineClassName(Component component) {
+		return component.yakinduStatemachineName + "Statemachine"
+	}
+	
+	/**
+	 * Returns the name of the wrapped Yakindu statemachine instance.
+	 */
+	protected def getStatemachineInstanceName(Component component) {
+		return component.statemachineClassName.toFirstLower
+	}
+	
+	/**
+	 * Returns the name of the wrapped Yakindu statemachine instance.
+	 */
+	protected def getWrappedComponentName(SynchronousComponentWrapper wrapper) {
+		return wrapper.wrappedComponent.name.toFirstLower
+	}
  	
  	/**
  	 * Returns whether the given component is a simple component (statechart).
  	 */
-    protected def isSimple(Component component) {
-    	return SimpleComponents.Matcher.on(engine).hasMatch(component)
-    }
-    
-    protected def hasNamelessInterface(Component component) {
-    	if (!component.isSimple) {
-    		return false
-    	}
-    	val yakinduStatecharts = component.allValuesOfFrom
-    	if (yakinduStatecharts.size != 1) {
-    		throw new IllegalArgumentException("More than one Yakindu statechart: " + yakinduStatecharts)
-    	}
-    	return yakinduStatecharts.filter(Statechart).head
-    			.scopes.filter(InterfaceScope).exists[it.name === null]
-    }
-    
-    /**
-     * Returns whether there is a synchronous component wrapper in the model.
-     */
-    protected def hasSynchronousWrapper() {
-    	return SynchronousComponentWrappers.Matcher.on(engine).hasMatch
-    }
-    
-    /**
-     * Returns whether there is a synchronous component wrapper in the model.
-     */
-    protected def hasAsynchronousComposite() {
-    	return AsynchronousCompositeComponents.Matcher.on(engine).hasMatch
-    }
-        
-    /**
-     * Creates and saves the message class that is responsible for informing the statecharts about the event that has to be raised (with the given value).
-     */
-    protected def generateEventClass() {
-    	val code = createEventClassCode
-    	code.saveCode(eventUri + File.separator + EVENT_CLASS_NAME + ".java")
-    }
-    
-    /**
-     * Creates and saves the message class that is responsible for informing the statecharts about the event that has to be raised (with the given value).
-     */
-    protected def generateTimerClasses() {
-    	val virtualTimerClassCode = createVirtualTimerClassCode
-    	virtualTimerClassCode.saveCode(parentPackageUri + File.separator + VIRTUAL_TIMER_CLASS_NAME + ".java")
-    	val timerInterfaceCode = createITimerInterfaceCode
-    	timerInterfaceCode.saveCode(parentPackageUri + File.separator + ITIMER_INTERFACE_NAME + ".java")
-    	val timerCallbackInterface = createITimerCallbackInterfaceCode
-    	timerCallbackInterface.saveCode(parentPackageUri + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
-    	val timerServiceClass = createTimerServiceClassCode
-    	timerServiceClass.saveCode(parentPackageUri + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
-    }
-    
-    /**
+	protected def isSimple(Component component) {
+		return SimpleComponents.Matcher.on(engine).hasMatch(component)
+	}
+	
+	protected def hasNamelessInterface(Component component) {
+		if (!component.isSimple) {
+			return false
+		}
+		val yakinduStatecharts = component.allValuesOfFrom
+		if (yakinduStatecharts.size != 1) {
+			throw new IllegalArgumentException("More than one Yakindu statechart: " + yakinduStatecharts)
+		}
+		return yakinduStatecharts.filter(Statechart).head
+				.scopes.filter(InterfaceScope).exists[it.name === null]
+	}
+	
+	/**
+	 * Returns whether there is a synchronous component wrapper in the model.
+	 */
+	protected def hasSynchronousWrapper() {
+		return SynchronousComponentWrappers.Matcher.on(engine).hasMatch
+	}
+	
+	/**
+	 * Returns whether there is a synchronous component wrapper in the model.
+	 */
+	protected def hasAsynchronousComposite() {
+		return AsynchronousCompositeComponents.Matcher.on(engine).hasMatch
+	}
+		
+	/**
+	 * Creates and saves the message class that is responsible for informing the statecharts about the event that has to be raised (with the given value).
+	 */
+	protected def generateEventClass() {
+		val code = createEventClassCode
+		code.saveCode(eventUri + File.separator + EVENT_CLASS_NAME + ".java")
+	}
+	
+	/**
+	 * Creates and saves the message class that is responsible for informing the statecharts about the event that has to be raised (with the given value).
+	 */
+	protected def generateTimerClasses() {
+		val virtualTimerClassCode = createVirtualTimerClassCode
+		virtualTimerClassCode.saveCode(parentPackageUri + File.separator + VIRTUAL_TIMER_CLASS_NAME + ".java")
+		val timerInterfaceCode = createITimerInterfaceCode
+		timerInterfaceCode.saveCode(parentPackageUri + File.separator + ITIMER_INTERFACE_NAME + ".java")
+		val timerCallbackInterface = createITimerCallbackInterfaceCode
+		timerCallbackInterface.saveCode(parentPackageUri + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
+		val timerServiceClass = createTimerServiceClassCode
+		timerServiceClass.saveCode(parentPackageUri + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
+	}
+	
+	/**
 	 * Creates the virtual timer class for the timings in the generated test cases.
 	 */
 	protected def createVirtualTimerClassCode() '''
@@ -415,8 +416,8 @@ class GlueCodeGenerator {
 		
 		}
 	'''
-    
-    /**
+	
+	/**
 	 * Creates the ITimer interface for the timings.
 	 */
 	protected def createITimerInterfaceCode() '''
@@ -559,308 +560,325 @@ class GlueCodeGenerator {
 		}
 	'''
 	
-    /**
-     * Returns the code of the message class.
-     */
-    protected def createEventClassCode() '''
-	    package «packageName».«EVENT_INSTANCE_NAME»;
-	    
-	    public class «EVENT_CLASS_NAME» {
-	    
-	    	private String event;
-	    	
-	    	private Object value;
-	    	
-	    	public «EVENT_CLASS_NAME»(String event, Object value) {
-	    		this.event = event;
-	    		this.value = value;
-	    	}
-	    	
-	    	public String getEvent() {
-	    		return event;
-	    	}
-	    	
-	    	public Object getValue() {
-	    		return value;
-	    	}
-	    
-	    }
-    '''
-    
-    /**
-     * Creates a Java interface for each Port Interface.
-     */
-    protected def getPortInterfaceRule() {
-	    if (portInterfaceRule === null) {
-		     portInterfaceRule = createRule.name("PortInterfaceRule").precondition(Interfaces.instance).action [
-		    	val code = it.interface.generatePortInterfaces
-		    	code.saveCode(parentPackageUri + File.separator + INTERFACES_NAME + File.separator + it.interface.generateName + ".java")
-		    ].build	    
-	    }
-    	return portInterfaceRule
-    }
-    
-    protected def generatePortInterfaces(Interface anInterface) {
-	   	val interfaceCode = '''
-	   		package «packageName».«INTERFACES_NAME»;
-	   		
-	   		import java.util.List;
-	   		
-	   		public interface «anInterface.generateName» {
-	   			
-	   			interface Provided extends Listener.Required {
-	   				
-	   				«anInterface.generateIsRaisedInterfaceMethods(EventDirection.IN)»
-	   				
-	   				void registerListener(Listener.Provided listener);
-	   				List<Listener.Provided> getRegisteredListeners();
-	   			}
-	   			
-	   			interface Required extends Listener.Provided {
-	   				
-	   				«anInterface.generateIsRaisedInterfaceMethods(EventDirection.OUT)»
-	   				
-	   				void registerListener(Listener.Required listener);
-	   				List<Listener.Required> getRegisteredListeners();
-	   			}
-	   			
-	   			interface Listener {
-	   				
-	   				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Provided«ENDFOR»«ENDIF» {
-	   					«FOR event : anInterface.events.filter[it.direction != EventDirection.IN]»
-	   						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
-	   					«ENDFOR»	   					
-	   				}
-	   				
-	   				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Required«ENDFOR»«ENDIF»  {
-	   					«FOR event : anInterface.events.filter[it.direction != EventDirection.OUT]»
-	   						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
-	   					«ENDFOR»  					
-	   				}
-	   				
-	   			}
-	   		} 
-	   		'''
-	   		return interfaceCode
-   	}	
-   	
-   protected def generateIsRaisedInterfaceMethods(Interface anInterface, EventDirection oppositeDirection) '''
-   	«««		Simple flag checks
-	«FOR event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]»
-   		public boolean isRaised«event.name.toFirstUpper»();
-    	«««		ValueOf checks	
-   			«IF event.parameterDeclarations.size > 0»
-   				public «event.parameterDeclarations.eventParameterType» get«event.name.toFirstUpper»Value();
-   			«ENDIF»
-   	«ENDFOR»
-   	'''
-   	
-   	/**
-   	 * Returns the parameter type and name of the given event declaration, e.g., long value.
-   	 */
-   	protected def generateParameter(EventDeclaration eventDeclaration) '''
-   	«IF eventDeclaration.event.parameterDeclarations.size > 0»
-   		«eventDeclaration.event.parameterDeclarations.eventParameterType» «eventDeclaration.event.parameterDeclarations.eventParameterValue»«ENDIF»'''
-   	
-   	/**
-   	 * Returns the parameter name of the given event declaration, e.g., value.
-   	 */
-	protected def generateParameterValue(EventDeclaration eventDeclaration) '''
-   	«IF eventDeclaration.event.parameterDeclarations.size > 0»
-   		«eventDeclaration.event.parameterDeclarations.eventParameterValue»«ENDIF»'''
+	/**
+	 * Returns the code of the message class.
+	 */
+	protected def createEventClassCode() '''
+		package «packageName».«EVENT_INSTANCE_NAME»;
+		
+		public class «EVENT_CLASS_NAME» {
+		
+			private String event;
+			
+			private Object value;
+			
+			public «EVENT_CLASS_NAME»(String event, Object value) {
+				this.event = event;
+				this.value = value;
+			}
+			
+			public String getEvent() {
+				return event;
+			}
+			
+			public Object getValue() {
+				return value;
+			}
+		
+		}
+	'''
 	
 	/**
-     * Creates a Java class for each component given in the component model.
-     */
-    protected def getSimpleComponentDeclarationRule() {
-	    if (simpleComponentsRule === null) {
-		     simpleComponentsRule = createRule.name("SimpleComponents").precondition(SimpleComponents.instance).action [
-		    	val componentUri = parentPackageUri + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
-		    	val code = it.statechartDefinition.createSimpleComponentClass
-		    	code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
-		    	// Generating the interface for returning the Ports
-		    	val interfaceCode = it.statechartDefinition.generateComponentInterface
-		    	interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.portOwnerInterfaceName + ".java")
-		    ].build	    
-	    }
-    	return simpleComponentsRule
-    }
-        
-    /**
-     * Creates the Java code for the given component.
-     */
-    protected def createSimpleComponentClass(Component component) '''    	
-    	package «component.componentPackageName»;
-    	
-    	«component.generateSimpleComponentImports»
-    	
-    	public class «component.componentClassName» implements «component.portOwnerInterfaceName» {
-    		// The wrapped Yakindu statemachine
-    		private «component.statemachineClassName» «component.statemachineInstanceName» = new «component.statemachineClassName»();
-    		// Port instances
-    		«FOR port : component.ports»
-    			private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
-    		«ENDFOR»
-    		// Indicates which queues are active in this cycle
-    		private boolean «INSERT_QUEUE» = true;
-    		private boolean «PROCESS_QUEUE» = false;
-    		// Event queues for the synchronization of statecharts
-    		private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»1 = new LinkedList<«EVENT_CLASS_NAME»>();
-    		private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»2 = new LinkedList<«EVENT_CLASS_NAME»>();
-    		
-    		public «component.componentClassName»() {
-    			// Initializing and entering the wrapped statemachine
-    			«IF component.needTimer»«component.statemachineInstanceName».setTimer(new TimerService());«ENDIF»
-    		}
-    		
-    		/** Resets the statemachine. Should be used only be the container (composite system) class. */
-    		@Override
-    		public void reset() {
-    			«component.statemachineInstanceName».init();
-    			«component.statemachineInstanceName».enter();
-    		}
-    		
-    		/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
-    		public void change«EVENT_QUEUE.toFirstUpper»s() {
-    			«INSERT_QUEUE» = !«INSERT_QUEUE»;
-    			«PROCESS_QUEUE» = !«PROCESS_QUEUE»;
-    		}
-    		
-    		/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
-    		public void change«INSERT_QUEUE.toFirstUpper»() {
-    		    «INSERT_QUEUE» = !«INSERT_QUEUE»;
-    		}
-    		
-    		/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
-    		public boolean is«EVENT_QUEUE.toFirstUpper»Empty() {
-    			return getInsertQueue().isEmpty();
-    		}
-    		
-    		/** Returns the event queue into which events should be put in the particular cycle. */
-    		private Queue<«EVENT_CLASS_NAME»> getInsertQueue() {
-    			if («INSERT_QUEUE») {
-    				return «EVENT_QUEUE»1;
-    			}
-    			return «EVENT_QUEUE»2;
-    		}
-    		
-    		/** Returns the event queue from which events should be inspected in the particular cycle. */
-    		private Queue<«EVENT_CLASS_NAME»> getProcessQueue() {
-    			if («PROCESS_QUEUE») {
-    				return «EVENT_QUEUE»1;
-    			}
-    			return «EVENT_QUEUE»2;
-    		}
-    		
-    		/** Changes event queues and initiating a cycle run. */
-    		@Override
-    		public void runCycle() {
-    			change«EVENT_QUEUE.toFirstUpper»s();
-    			runComponent();
-    		}
-    		
-    		/** Changes the insert queue and initiates a run. */
-    		public void runAndRechangeInsertQueue() {
-    			// First the insert queue is changed back, so self-event sending can work
-    		    change«INSERT_QUEUE.toFirstUpper»();
-    		    runComponent();
-    		}
-    		
-    		/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
-    		Should be used only be the container (composite system) class. */
-    		public void runComponent() {
-    			Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE» = getProcessQueue();
-    			while (!«EVENT_QUEUE».isEmpty()) {
-    					«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME» = «EVENT_QUEUE».remove();
-    					switch («EVENT_INSTANCE_NAME».«GET_EVENT_METHOD»()) {
-    						«component.generateEventHandlers()»
-    						default:
-    							throw new IllegalArgumentException("No such event!");
-    					}
-    			}
-    			«component.statemachineInstanceName».runCycle();
-    		}    		
-    		
-    		// Inner classes representing Ports
-    		«FOR port : component.ports SEPARATOR "\n"»
-    			public class «port.name.toFirstUpper» implements «port.implementedJavaInterface» {
-    				private List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+	 * Creates a Java interface for each Port Interface.
+	 */
+	protected def getPortInterfaceRule() {
+		if (portInterfaceRule === null) {
+			 portInterfaceRule = createRule.name("PortInterfaceRule").precondition(Interfaces.instance).action [
+				val code = it.interface.generatePortInterfaces
+				code.saveCode(parentPackageUri + File.separator + INTERFACES_NAME + File.separator + it.interface.generateName + ".java")
+			].build		
+		}
+		return portInterfaceRule
+	}
+	
+	protected def generatePortInterfaces(Interface anInterface) {
+			val interfaceCode = '''
+				package «packageName».«INTERFACES_NAME»;
+				
+				import java.util.List;
+				
+				public interface «anInterface.generateName» {
+					
+					interface Provided extends Listener.Required {
+						
+						«anInterface.generateIsRaisedInterfaceMethods(EventDirection.IN)»
+						
+						void registerListener(Listener.Provided listener);
+						List<Listener.Provided> getRegisteredListeners();
+					}
+					
+					interface Required extends Listener.Provided {
+						
+						«anInterface.generateIsRaisedInterfaceMethods(EventDirection.OUT)»
+						
+						void registerListener(Listener.Required listener);
+						List<Listener.Required> getRegisteredListeners();
+					}
+					
+					interface Listener {
+						
+						interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Provided«ENDFOR»«ENDIF» {
+							«FOR event : anInterface.events.filter[it.direction != EventDirection.IN]»
+								void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
+							«ENDFOR»							
+						}
+						
+						interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Required«ENDFOR»«ENDIF» {
+							«FOR event : anInterface.events.filter[it.direction != EventDirection.OUT]»
+								void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
+							«ENDFOR»  					
+						}
+						
+					}
+				} 
+			'''
+			return interfaceCode
+		}	
+		
+	protected def generateIsRaisedInterfaceMethods(Interface anInterface, EventDirection oppositeDirection) '''
+		«««		Simple flag checks
+	«FOR event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]»
+			public boolean isRaised«event.name.toFirstUpper»();
+		«««		ValueOf checks	
+				«IF event.parameterDeclarations.size > 0»
+					public «event.parameterDeclarations.eventParameterType» get«event.name.toFirstUpper»Value();
+				«ENDIF»
+		«ENDFOR»
+		'''
+		
+		/**
+		 * Returns the parameter type and name of the given event declaration, e.g., long value.
+		 */
+		protected def generateParameter(EventDeclaration eventDeclaration) '''
+		«IF eventDeclaration.event.parameterDeclarations.size > 0»
+			«eventDeclaration.event.parameterDeclarations.eventParameterType» «eventDeclaration.event.parameterDeclarations.eventParameterValue»«ENDIF»'''
+		
+		/**
+		 * Returns the parameter name of the given event declaration, e.g., value.
+		 */
+	protected def generateParameterValue(EventDeclaration eventDeclaration) '''
+		«IF eventDeclaration.event.parameterDeclarations.size > 0»
+			«eventDeclaration.event.parameterDeclarations.eventParameterValue»«ENDIF»'''
+	
+	/**
+	 * Creates a Java class for each component given in the component model.
+	 */
+	protected def getSimpleComponentDeclarationRule() {
+		if (simpleComponentsRule === null) {
+			 simpleComponentsRule = createRule.name("SimpleComponents").precondition(SimpleComponents.instance).action [
+				val componentUri = parentPackageUri + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
+				val code = it.statechartDefinition.createSimpleComponentClass
+				code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
+				// Generating the interface for returning the Ports
+				val interfaceCode = it.statechartDefinition.generateComponentInterface
+				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.portOwnerInterfaceName + ".java")
+			].build		
+		}
+		return simpleComponentsRule
+	}
+		
+	/**
+	 * Creates the Java code for the given component.
+	 */
+	protected def createSimpleComponentClass(Component component) '''		
+		package «component.componentPackageName»;
+		
+		«component.generateSimpleComponentImports»
+		
+		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {
+			// The wrapped Yakindu statemachine
+			private «component.statemachineClassName» «component.statemachineInstanceName»;
+			// Port instances
+			«FOR port : component.ports»
+				private «port.name.toFirstUpper» «port.name.toFirstLower»;
+			«ENDFOR»
+			// Indicates which queues are active in this cycle
+			private boolean «INSERT_QUEUE» = true;
+			private boolean «PROCESS_QUEUE» = false;
+			// Event queues for the synchronization of statecharts
+			private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»1 = new LinkedList<«EVENT_CLASS_NAME»>();
+			private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»2 = new LinkedList<«EVENT_CLASS_NAME»>();
+			«component.generateParameterDeclarationFields»
+			
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+				«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
+					this.«parameter.name» = «parameter.name»;
+				«ENDFOR»
+				«component.statemachineInstanceName» = new «component.statemachineClassName»();
+				«FOR port : component.ports»
+					«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+				«ENDFOR»
+				«IF component.needTimer»«component.statemachineInstanceName».setTimer(new TimerService());«ENDIF»
+			}
+			
+			/** Resets the statemachine. Must be called to initialize the component. */
+			@Override
+			public void reset() {
+				«component.statemachineInstanceName».init();
+				«component.statemachineInstanceName».enter();
+			}
+			
+			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
+			public void change«EVENT_QUEUE.toFirstUpper»s() {
+				«INSERT_QUEUE» = !«INSERT_QUEUE»;
+				«PROCESS_QUEUE» = !«PROCESS_QUEUE»;
+			}
+			
+			/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
+			public void change«INSERT_QUEUE.toFirstUpper»() {
+				«INSERT_QUEUE» = !«INSERT_QUEUE»;
+			}
+			
+			/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
+			public boolean is«EVENT_QUEUE.toFirstUpper»Empty() {
+				return getInsertQueue().isEmpty();
+			}
+			
+			/** Returns the event queue into which events should be put in the particular cycle. */
+			private Queue<«EVENT_CLASS_NAME»> getInsertQueue() {
+				if («INSERT_QUEUE») {
+					return «EVENT_QUEUE»1;
+				}
+				return «EVENT_QUEUE»2;
+			}
+			
+			/** Returns the event queue from which events should be inspected in the particular cycle. */
+			private Queue<«EVENT_CLASS_NAME»> getProcessQueue() {
+				if («PROCESS_QUEUE») {
+					return «EVENT_QUEUE»1;
+				}
+				return «EVENT_QUEUE»2;
+			}
+			
+			/** Changes event queues and initiating a cycle run. */
+			@Override
+			public void runCycle() {
+				change«EVENT_QUEUE.toFirstUpper»s();
+				runComponent();
+			}
+			
+			/** Changes the insert queue and initiates a run. */
+			public void runAndRechangeInsertQueue() {
+				// First the insert queue is changed back, so self-event sending can work
+				change«INSERT_QUEUE.toFirstUpper»();
+				runComponent();
+			}
+			
+			/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
+			Should be used only be the container (composite system) class. */
+			public void runComponent() {
+				Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE» = getProcessQueue();
+				while (!«EVENT_QUEUE».isEmpty()) {
+						«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME» = «EVENT_QUEUE».remove();
+						switch («EVENT_INSTANCE_NAME».«GET_EVENT_METHOD»()) {
+							«component.generateEventHandlers()»
+							default:
+								throw new IllegalArgumentException("No such event!");
+						}
+				}
+				«component.statemachineInstanceName».runCycle();
+			}			
+			
+			// Inner classes representing Ports
+			«FOR port : component.ports SEPARATOR "\n"»
+				public class «port.name.toFirstUpper» implements «port.implementedJavaInterface» {
+					private List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 
-    				«port.generateRaisingMethods» 
+					«port.generateRaisingMethods» 
 
-    				«component.generateOutMethods(port)»
-    				@Override
-    				public void registerListener(final «port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
-    					registeredListeners.add(listener);
-    					«IF port.hasOutEvent»
-«««    						If the clearing of previous registration is ever needed
-«««    						«IF !port.interfaceRealization.isBroadcast»«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().clear();«ENDIF»
-    						«IF port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
-    							«component.registerListener(port, EventDirection.OUT)»
-    						«ELSE»
-    							«component.registerListener(port, EventDirection.IN)»
-    						«ENDIF»
-    					«ENDIF»
-    				}
-    				
-    				@Override
-    				public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-    					return registeredListeners;
-    				}
+					«component.generateOutMethods(port)»
+					@Override
+					public void registerListener(final «port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+						registeredListeners.add(listener);
+						«IF port.hasOutEvent»
+«««							If the clearing of previous registration is ever needed
+«««							«IF !port.interfaceRealization.isBroadcast»«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().clear();«ENDIF»
+							«IF port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
+								«component.registerListener(port, EventDirection.OUT)»
+							«ELSE»
+								«component.registerListener(port, EventDirection.IN)»
+							«ENDIF»
+						«ENDIF»
+					}
+					
+					@Override
+					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+						return registeredListeners;
+					}
 
-    			}
-    			
-    			@Override
-    			public «port.name.toFirstUpper» get«port.name.toFirstUpper»() {
-    				return «port.name.toFirstLower»;
-    			}
-    		«ENDFOR»
-    		
-    		
-    		«IF component.hasNamelessInterface»
-    			public SCInterface getInterface() {
-    			    return «component.statemachineInstanceName».getSCInterface();
-    			}
-    		«ENDIF»
-    		
-    		/** Checks whether the wrapped statemachine is in the given state. */
-    		public boolean isStateActive(State state) {
-    			return «component.statemachineInstanceName».isStateActive(state);
-    		}
-    		
-    		«IF component.needTimer»
-    			public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
-    				«component.statemachineInstanceName».setTimer(timer);
-    				reset();
-    			}
-    		«ENDIF»
-    		
-    	}
-    '''
-    
-    /**
-     * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
-     */
-    protected def getImplementedJavaInterface(Port port) '''«port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
-    
-    /**
-     * Returns the opposite realitation mode of the given realization mode.
-     */
-    protected def getOppositeRealizationMode(RealizationMode type) {
-    	switch (type) {
-    		case RealizationMode.PROVIDED:
-    			return RealizationMode.REQUIRED
-    		case RealizationMode.REQUIRED:
-    			return RealizationMode.PROVIDED
-    		default:
-    			throw new IllegalArgumentException("No such type: " + type)
-    	}
-    }
-    
-    /**
-     * Generates methods that for in-event raisings in case of simple components.
-     */
-    protected def CharSequence generateRaisingMethods(Port port) '''
+				}
+				
+				@Override
+				public «port.name.toFirstUpper» get«port.name.toFirstUpper»() {
+					return «port.name.toFirstLower»;
+				}
+			«ENDFOR»
+			
+			
+			«IF component.hasNamelessInterface»
+				public SCInterface getInterface() {
+					return «component.statemachineInstanceName».getSCInterface();
+				}
+			«ENDIF»
+			
+			/** Checks whether the wrapped statemachine is in the given state. */
+			public boolean isStateActive(State state) {
+				return «component.statemachineInstanceName».isStateActive(state);
+			}
+			
+			«IF component.needTimer»
+				public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
+					«component.statemachineInstanceName».setTimer(timer);
+					reset();
+				}
+			«ENDIF»
+			
+		}
+	'''
+	
+	/**
+	 * Generates fields for parameter declarations
+	 */
+	protected def CharSequence generateParameterDeclarationFields(Component component) '''
+		«IF !component.parameterDeclarations.empty»// Fields representing parameters«ENDIF»
+		«FOR parameter : component.parameterDeclarations»
+			private final «parameter.type.transformType.toFirstUpper» «parameter.name»;
+		«ENDFOR»
+	'''
+	
+	/**
+	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
+	 */
+	protected def getImplementedJavaInterface(Port port) '''«port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
+	
+	/**
+	 * Returns the opposite realitation mode of the given realization mode.
+	 */
+	protected def getOppositeRealizationMode(RealizationMode type) {
+		switch (type) {
+			case RealizationMode.PROVIDED:
+				return RealizationMode.REQUIRED
+			case RealizationMode.REQUIRED:
+				return RealizationMode.PROVIDED
+			default:
+				throw new IllegalArgumentException("No such type: " + type)
+		}
+	}
+	
+	/**
+	 * Generates methods that for in-event raisings in case of simple components.
+	 */
+	protected def CharSequence generateRaisingMethods(Port port) '''
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN) SEPARATOR "\n"»
 			@Override
 			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
@@ -870,8 +888,8 @@ class GlueCodeGenerator {
 	'''
 	
 	/**
-     * Generates methods that for in-event raisings in case of composite components.
-     */
+	 * Generates methods that for in-event raisings in case of composite components.
+	 */
 	protected def CharSequence delegateRaisingMethods(PortBinding connector) '''
 		«FOR event : Collections.singletonList(connector.instancePortReference.port).getSemanticEvents(EventDirection.IN) SEPARATOR "\n"»
 			@Override
@@ -905,26 +923,26 @@ class GlueCodeGenerator {
 	}
 	
 	/**
-     * Returns a "value" sting, if the given port refers to a typed event, "null" otherwise. Can be used, if the we want to create a message.
-     */
-    protected def valueOrNull(org.yakindu.base.types.Event event) {
-    	if (event.type !== null) {
-    		return event.type.eventParameterValue
-    	}
-    	return "null"
-    }
-    
-    /**
-     * Returns a "value" sting, if the given port refers to a typed event, "null" otherwise. Can be used, if the we want to create a message.
-     */
-    protected def valueOrNull(Event event) {
-    	if (!event.parameterDeclarations.empty) {
-    		return event.parameterDeclarations.head.eventParameterValue
-    	}
-    	return "null"
-    }
-    
-    /**
+	 * Returns a "value" sting, if the given port refers to a typed event, "null" otherwise. Can be used, if the we want to create a message.
+	 */
+	protected def valueOrNull(org.yakindu.base.types.Event event) {
+		if (event.type !== null) {
+			return event.type.eventParameterValue
+		}
+		return "null"
+	}
+	
+	/**
+	 * Returns a "value" sting, if the given port refers to a typed event, "null" otherwise. Can be used, if the we want to create a message.
+	 */
+	protected def valueOrNull(Event event) {
+		if (!event.parameterDeclarations.empty) {
+			return event.parameterDeclarations.head.eventParameterValue
+		}
+		return "null"
+	}
+	
+	/**
 	 * Returns the parameter name of an event, or an empty string if the event has no parameter (type is null).
 	 */
 	protected def getEventParameterValue(Object type) {
@@ -935,12 +953,16 @@ class GlueCodeGenerator {
 	}
 	
 	/**
-	 * Returns the Java type equivalent of the gamma type.
+	 * Returns the Java type equivalent of the Gamma type.
 	 */
 	protected def transformType(hu.bme.mit.gamma.constraint.model.Type type) {
 		switch (type) {
 			IntegerTypeDefinition: {
 				val types = type.getAllValuesOfFrom.filter(Type).toSet
+				if (types.empty) {
+					// Not transformed from Yakindu
+					return "integer"
+				}
 				val strings = types.filter[it.name.equals("string")]
 				val integers = types.filter[it.name.equals("integer")]
 				if (strings.size > 0 && integers.size > 0) {
@@ -990,9 +1012,9 @@ class GlueCodeGenerator {
 	}
 	
 	/**
-     * Generates methods for out-event checks in case of simple components.
-     */
-    protected def CharSequence generateOutMethods(Component component, Port port) '''
+	 * Generates methods for out-event checks in case of simple components.
+	 */
+	protected def CharSequence generateOutMethods(Component component, Port port) '''
 «««		Simple flag checks
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)»
 			@Override
@@ -1014,8 +1036,8 @@ class GlueCodeGenerator {
 	'''
 	
 	/**
-     * Generates methods for own out-event checks in case of composite components.
-     */
+	 * Generates methods for own out-event checks in case of composite components.
+	 */
 	protected def CharSequence implementOutMethods(PortBinding connector) '''
 «««		Simple flag checks
 		«FOR event : Collections.singletonList(connector.compositeSystemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
@@ -1034,8 +1056,8 @@ class GlueCodeGenerator {
 	'''
 	
 	/**
-     * Generates methods for out-event check delegations in case of composite components.
-     */
+	 * Generates methods for out-event check delegations in case of composite components.
+	 */
 	protected def CharSequence delegateOutMethods(PortBinding connector) '''
 «««		Simple flag checks
 		«FOR event : Collections.singletonList(connector.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
@@ -1064,209 +1086,210 @@ class GlueCodeGenerator {
 				public void on«event.event.toYakinduEvent(port).name.toFirstUpper»Raised(«event.generateParameter») {
 					listener.raise«event.event.name.toFirstUpper»(«event.generateParameterValue»);
 				}
-		    «ENDFOR»
+			«ENDFOR»
 		});
-	'''    
-    
-    /**
-     * Returns the imports needed for the simple component classes.
-     */
-    protected def generateSimpleComponentImports(Component component) '''
-    	import java.util.Queue;
-    	import java.util.List;
-    	import java.util.LinkedList;
-    	
-    	import «packageName».event.*;
-    	import «packageName».interfaces.*;
-    	// Yakindu listeners
-    	import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
-    	«IF component.needTimer»
-    		import «packageName».*;
-    	«ENDIF»
-    	import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
-    	import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
-    '''
-    
-    /**
-     * Returns whether there is a timing specification in any of the statecharts.
-     */
-    protected def boolean needTimer(StatechartDefinition statechart) {
-    	return statechart.timeoutDeclarations.size > 0
-    }
-    
-    /**
-     * Returns whether there is a time specification inside the given component.
-     */
-    protected def boolean needTimer(Component component) {
-    	if (component instanceof StatechartDefinition) {
-    		return component.needTimer
-    	}
-    	else if (component instanceof CompositeComponent) {
-    		val composite = component as CompositeComponent
-    		return composite.derivedComponents.map[it.derivedType.needTimer].contains(true)
-    	}
-    	else if (component instanceof SynchronousComponentWrapper) {
-    		val wrapper = component as SynchronousComponentWrapper
-    		return !wrapper.clocks.empty || wrapper.wrappedComponent.needTimer
-    	}
-    	else {
-    		throw new IllegalArgumentException("No such component: " + component)
-    	}
-    }
-   	
-   	/**
-   	 * Returns whether there is an out event in the given port.
-   	 */
-   	protected def hasOutEvent(Port port) {
-   		val interfaces = port.allValuesOfFrom.filter(InterfaceScope)
-   		if (interfaces.size != 1) {
-   			throw new IllegalArgumentException("Not one interface. Port: " + port.name + ". Interfaces:" + interfaces + ". Component: " + port.eContainer)
-   		}
-   		val anInterface = interfaces.head
-   		return anInterface.events.filter[it.direction == Direction.OUT].size > 0
-   	}
-   	
-   	/**
-   	 * Generates the Java interface code (implemented by the component) of the given component.
-   	 */
-   	protected def generateComponentInterface(Component component) {
-   		var ports = new HashSet<Port>
-   		if (component instanceof CompositeComponent) {
-   			val composite = component as CompositeComponent
-   			// Only bound ports are created
-   			ports += composite.portBindings.map[it.compositeSystemPort]
-   		}
-   		else if (component instanceof SynchronousComponentWrapper) {
-   			ports += component.allPorts
-   		}
-   		else {
-   			ports += component.ports
-   		}
-	   	val interfaceCode = '''
-	   		package «component.componentPackageName»;
-	   		
-	   		«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
-	   			import «packageName».«INTERFACES_NAME».«interfaceName»;
-	   		«ENDFOR»
-	   		
-	   		public interface «component.portOwnerInterfaceName» {
-	   			
-	   			«FOR port : ports»
-	   				«port.implementedJavaInterface» get«port.name.toFirstUpper»();
-	   			«ENDFOR»
-	   			
-	   			void reset();
-	   			
-	   			«IF component instanceof SynchronousComponent»void runCycle();«ENDIF»
-	   			«IF component instanceof AbstractSynchronousCompositeComponent»void runFullCycle();«ENDIF»
-	   			
-	   		} 
-	   	'''
-	   	return interfaceCode
-   	}
-   	
-   	/**
-   	 * Returns the interface name (implemented by the component) of the given component.
-   	 */
-   	protected def getPortOwnerInterfaceName(Component component) {
-   		return component.componentClassName + "Interface";
-   	}
-   
-   /**
-    * Generates event handlers for all in ports of the given component that is responsible for raising the correct Yakindu statemachine event based on the received message.
-    */
-   protected def generateEventHandlers(Component component) '''
+	'''	
+	
+	/**
+	 * Returns the imports needed for the simple component classes.
+	 */
+	protected def generateSimpleComponentImports(Component component) '''
+		import java.util.Queue;
+		import java.util.List;
+		import java.util.LinkedList;
+		
+		import «packageName».event.*;
+		import «packageName».interfaces.*;
+		// Yakindu listeners
+		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
+		«IF component.needTimer»
+			import «packageName».*;
+		«ENDIF»
+		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
+		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
+	'''
+	
+	/**
+	 * Returns whether there is a timing specification in any of the statecharts.
+	 */
+	protected def boolean needTimer(StatechartDefinition statechart) {
+		return statechart.timeoutDeclarations.size > 0
+	}
+	
+	/**
+	 * Returns whether there is a time specification inside the given component.
+	 */
+	protected def boolean needTimer(Component component) {
+		if (component instanceof StatechartDefinition) {
+			return component.needTimer
+		}
+		else if (component instanceof CompositeComponent) {
+			val composite = component as CompositeComponent
+			return composite.derivedComponents.map[it.derivedType.needTimer].contains(true)
+		}
+		else if (component instanceof SynchronousComponentWrapper) {
+			val wrapper = component as SynchronousComponentWrapper
+			return !wrapper.clocks.empty || wrapper.wrappedComponent.needTimer
+		}
+		else {
+			throw new IllegalArgumentException("No such component: " + component)
+		}
+	}
+		
+		/**
+		 * Returns whether there is an out event in the given port.
+		 */
+		protected def hasOutEvent(Port port) {
+			val interfaces = port.allValuesOfFrom.filter(InterfaceScope)
+			if (interfaces.size != 1) {
+				throw new IllegalArgumentException("Not one interface. Port: " + port.name + ". Interfaces:" + interfaces + ". Component: " + port.eContainer)
+			}
+			val anInterface = interfaces.head
+			return anInterface.events.filter[it.direction == Direction.OUT].size > 0
+		}
+		
+		/**
+		 * Generates the Java interface code (implemented by the component) of the given component.
+		 */
+		protected def generateComponentInterface(Component component) {
+			var ports = new HashSet<Port>
+			if (component instanceof CompositeComponent) {
+				val composite = component as CompositeComponent
+				// Only bound ports are created
+				ports += composite.portBindings.map[it.compositeSystemPort]
+			}
+			else if (component instanceof SynchronousComponentWrapper) {
+				ports += component.allPorts
+			}
+			else {
+				ports += component.ports
+			}
+			val interfaceCode = '''
+				package «component.componentPackageName»;
+				
+				«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
+					import «packageName».«INTERFACES_NAME».«interfaceName»;
+				«ENDFOR»
+				
+				public interface «component.portOwnerInterfaceName» {
+					
+					«FOR port : ports»
+						«port.implementedJavaInterface» get«port.name.toFirstUpper»();
+					«ENDFOR»
+					
+					void reset();
+					
+					«IF component instanceof SynchronousComponent»void runCycle();«ENDIF»
+					«IF component instanceof AbstractSynchronousCompositeComponent»void runFullCycle();«ENDIF»
+					«IF component instanceof AsynchronousComponent»void start();«ENDIF»
+					
+				} 
+			'''
+			return interfaceCode
+		}
+		
+		/**
+		 * Returns the interface name (implemented by the component) of the given component.
+		 */
+		protected def getPortOwnerInterfaceName(Component component) {
+			return component.componentClassName + "Interface";
+		}
+	
+	/**
+	* Generates event handlers for all in ports of the given component that is responsible for raising the correct Yakindu statemachine event based on the received message.
+	*/
+	protected def generateEventHandlers(Component component) '''
 ««« It is done this way, so all Yakindu interfaces mapped to the same gamma interface can process the same event
-   «FOR port : component.ports»
-   		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
-   			case "«port.name.toFirstUpper».«event.name.toFirstUpper»": 
-   				«event.toYakinduEvent(port).delegateCall(component, port)»
-   			break;
-   		«ENDFOR»
-   	«ENDFOR»
-   '''
-   	
-   	/** 
+	«FOR port : component.ports»
+			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
+				case "«port.name.toFirstUpper».«event.name.toFirstUpper»": 
+					«event.toYakinduEvent(port).delegateCall(component, port)»
+				break;
+			«ENDFOR»
+		«ENDFOR»
+	'''
+		
+		/** 
 	 * Returns all events of the given ports that go in the given direciton through the ports.
 	 */
-   	protected def getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
-   		val events =  new HashSet<Event>
-   		for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED].map[it.interfaceRealization.interface]) {
+		protected def getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
+			val events =  new HashSet<Event>
+			for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED].map[it.interfaceRealization.interface]) {
 			events.addAll(anInterface.getAllEvents(direction.oppositeDirection))
-   		}
-   		for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED].map[it.interfaceRealization.interface]) {
+			}
+			for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED].map[it.interfaceRealization.interface]) {
 			events.addAll(anInterface.getAllEvents(direction))
-   		}
-   		return events
-   	}
-   	
-   	/**
-   	 * Returns EventDirection.IN in case of EventDirection.OUT directions and vice versa.
-   	 */
-   	protected def getOppositeDirection(EventDirection direction) {
-   		switch (direction) {
-   			case EventDirection.IN:
-   				return EventDirection.OUT
-   			case EventDirection.OUT:
-   				return EventDirection.IN
-   			default:
-   				throw new IllegalArgumentException("Not known direction: " + direction)
-   		} 
-   	}
-   	
-   	/** 
-   	 * Returns all events of a given interface whose direction is not oppositeDirection.
-   	 * The parent interfaces are taken into considerations as well.
-   	 */ 
-   	 protected def Set<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
-   		if (anInterface === null) {
-   			return Collections.EMPTY_SET
-   		}
-   		val eventSet = new HashSet<Event>
-   		for (parentInterface : anInterface.parents) {
-   			eventSet.addAll(parentInterface.getAllEvents(oppositeDirection))
-   		}
-   		for (event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]) {
-   			eventSet.add(event)
-   		}
-   		return eventSet
-   	}
-   	
+			}
+			return events
+		}
+		
+		/**
+		 * Returns EventDirection.IN in case of EventDirection.OUT directions and vice versa.
+		 */
+		protected def getOppositeDirection(EventDirection direction) {
+			switch (direction) {
+				case EventDirection.IN:
+					return EventDirection.OUT
+				case EventDirection.OUT:
+					return EventDirection.IN
+				default:
+					throw new IllegalArgumentException("Not known direction: " + direction)
+			} 
+		}
+		
+		/** 
+		 * Returns all events of a given interface whose direction is not oppositeDirection.
+		 * The parent interfaces are taken into considerations as well.
+		 */ 
+		 protected def Set<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
+			if (anInterface === null) {
+				return Collections.EMPTY_SET
+			}
+			val eventSet = new HashSet<Event>
+			for (parentInterface : anInterface.parents) {
+				eventSet.addAll(parentInterface.getAllEvents(oppositeDirection))
+			}
+			for (event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]) {
+				eventSet.add(event)
+			}
+			return eventSet
+		}
+		
 	/**
 	 * Generates code raising the Yakindu statechart event "connected" to the given port and component.
 	 */
-   	protected def delegateCall(org.yakindu.base.types.Event event, Component component, Port port) '''
-   		«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().raise«event.name.toFirstUpper»(«event.castArgument»);
-   	'''
-   
-   /**
-    * Returns a string that contains a cast and the value of the event if needed. E.g.: (Long) event.getValue();
-    */
-   	protected def castArgument(org.yakindu.base.types.Event event) '''
-   		«IF event.type !== null»
-   			(«event.type.eventParameterType.toFirstUpper») «EVENT_INSTANCE_NAME».«GET_VALUE_METHOD»()«ENDIF»'''
-    
-    /**
-     * Returns the type name of the interface of the wrapped Yakindu statemachine.
-     */
-    protected def getYakinduRealizationModeName(Port port) {
-    	 if (port.name === null) {
-    	 	return "SCInterface"
-    	 }
-    	 return "SCI" + port.name.toFirstUpper
-    } 
+		protected def delegateCall(org.yakindu.base.types.Event event, Component component, Port port) '''
+			«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().raise«event.name.toFirstUpper»(«event.castArgument»);
+		'''
+	
+	/**
+	* Returns a string that contains a cast and the value of the event if needed. E.g.: (Long) event.getValue();
+	*/
+		protected def castArgument(org.yakindu.base.types.Event event) '''
+			«IF event.type !== null»
+				(«event.type.eventParameterType.toFirstUpper») «EVENT_INSTANCE_NAME».«GET_VALUE_METHOD»()«ENDIF»'''
+	
+	/**
+	 * Returns the type name of the interface of the wrapped Yakindu statemachine.
+	 */
+	protected def getYakinduRealizationModeName(Port port) {
+		 if (port.name === null) {
+		 	return "SCInterface"
+		 }
+		 return "SCI" + port.name.toFirstUpper
+	} 
 	
 	protected def getSynchronousCompositeComponentsRule() {
-	    if (synchronousCompositeComponentsRule === null) {
-		     synchronousCompositeComponentsRule = createRule.name("SynchronousCompositeComponentsRule").precondition(AbstractSynchronousCompositeComponents.instance).action [
-		    	val compositeSystemUri = parentPackageUri + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
-		    	val code = it.synchronousCompositeComponent.createSynchronousCompositeComponentClass
-		    	code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.componentClassName + ".java")
-		    	// Generating the interface that is able to return the Ports
-		    	val interfaceCode = it.synchronousCompositeComponent.generateComponentInterface
-		    	interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.portOwnerInterfaceName + ".java")
-		    ].build	    
-	    }
+		if (synchronousCompositeComponentsRule === null) {
+			 synchronousCompositeComponentsRule = createRule.name("SynchronousCompositeComponentsRule").precondition(AbstractSynchronousCompositeComponents.instance).action [
+				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
+				val code = it.synchronousCompositeComponent.createSynchronousCompositeComponentClass
+				code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.componentClassName + ".java")
+				// Generating the interface that is able to return the Ports
+				val interfaceCode = it.synchronousCompositeComponent.generateComponentInterface
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.portOwnerInterfaceName + ".java")
+			].build		
+		}
 		return synchronousCompositeComponentsRule
 	}
 
@@ -1301,25 +1324,28 @@ class GlueCodeGenerator {
 		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {			
 			// Component instances
 			«FOR instance : component.components»
-				private «instance.type.componentClassName» «instance.name» = new «instance.type.componentClassName»();
+				private «instance.type.componentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
 			«FOR port : component.portBindings.map[it.compositeSystemPort]»
-				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
-			«ENDFOR» 	
+				private «port.name.toFirstUpper» «port.name.toFirstLower»;
+			«ENDFOR»
+			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+					«component.createInstances»
 					setTimer(timer);
 					init();
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»() {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+				«component.createInstances»
 				init();
 			}
 			
-			/** Resets the contained statemachines recursively. Should be used only be the container (composite system) class. */
+			/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 			@Override
 			public void reset() {
 				«FOR instance : component.components»
@@ -1377,7 +1403,7 @@ class GlueCodeGenerator {
 							public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
 								isRaised«event.name.toFirstUpper» = true;
 								«IF !event.parameterDeclarations.empty»
-								   	«event.name.toFirstLower»Value = «event.parameterDeclarations.head.eventParameterValue»;
+										«event.name.toFirstLower»Value = «event.parameterDeclarations.head.eventParameterValue»;
 								«ENDIF»
 							}
 						«ENDFOR»
@@ -1516,20 +1542,33 @@ class GlueCodeGenerator {
 		}
 	'''
 	
+	/** Sets the parameters of the component and instantiates the necessary components with them. */
+	private def createInstances(CompositeComponent component) '''
+		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
+			this.«parameter.name» = «parameter.name»;
+		«ENDFOR»
+		«FOR instance : component.derivedComponents»
+			«instance.name» = new «instance.derivedType.componentClassName»(«FOR argument : instance.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+		«ENDFOR»
+		«FOR port : component.portBindings.map[it.compositeSystemPort]»
+			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+		«ENDFOR»
+	'''
+	
 	/**
-     * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-     * Note that in casacade commposite an instance might be scheduled multiple times.
-     */
-    private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
-    	return component.components
-    }
-    
-    private dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
-    	if (component.executionList.empty) {
-    		return component.components
-    	}
-    	return component.executionList
-    }
+	 * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
+	 * Note that in casacade commposite an instance might be scheduled multiple times.
+	 */
+	private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
+		return component.components
+	}
+	
+	private dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
+		if (component.executionList.empty) {
+			return component.components
+		}
+		return component.executionList
+	}
 	
 	protected def void generateLinkedBlockingMultiQueueClasses() {
 		val compositeSystemUri = parentPackageUri.substring(0, parentPackageUri.length - packageName.length) + File.separator + "lbmq"
@@ -1541,15 +1580,15 @@ class GlueCodeGenerator {
 	}
 	
 	protected def getSynchronousComponentWrapperRule() {
-	    if (synchronousComponentWrapperRule === null) {
-		     synchronousComponentWrapperRule = createRule.name("SynchronousComponentWrapperRule").precondition(SynchronousComponentWrappers.instance).action [
-		    	val compositeSystemUri = parentPackageUri + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
-		    	val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
-		    	code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.componentClassName + ".java")
-		    	 val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
-		    	 interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.portOwnerInterfaceName + ".java")
-		    ].build	    
-	    }
+		if (synchronousComponentWrapperRule === null) {
+			 synchronousComponentWrapperRule = createRule.name("SynchronousComponentWrapperRule").precondition(SynchronousComponentWrappers.instance).action [
+				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
+				val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
+				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.componentClassName + ".java")
+				val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.portOwnerInterfaceName + ".java")
+			].build		
+		}
 		return synchronousComponentWrapperRule
 	}
 	
@@ -1567,16 +1606,16 @@ class GlueCodeGenerator {
 			// Thread running this wrapper instance
 			private Thread thread;
 			// Wrapped synchronous instance
-			private «component.wrappedComponent.componentClassName» «component.wrappedComponentName» = new «component.wrappedComponent.componentClassName»();
+			private «component.wrappedComponent.componentClassName» «component.wrappedComponentName»;
 			// Control port instances
 			«FOR port : component.ports»
-				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
+				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			// Wrapped port instances
 			«FOR port : component.wrappedComponent.ports»
-				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
+				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
-			«IF component.needTimer»
+			«IF !component.clocks.empty»
 				// Clocks
 				private «ITIMER_INTERFACE_NAME» timerService;
 			«ENDIF»
@@ -1589,20 +1628,23 @@ class GlueCodeGenerator {
 			«FOR queue : component.messageQueues»
 				private LinkedBlockingMultiQueue<String, Event>.SubQueue «queue.name»;
 			«ENDFOR»
+			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»() {
-				«IF component.needTimer»timerService = new TimerService();«ENDIF»
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+				«component.createInstances»
+				«IF !component.clocks.empty»this.timerService = new TimerService();«ENDIF»
 				init();
 			}
 			
-			/** Resets the wrapped component. Should be used only be the container (composite system) class. */
+			/** Resets the wrapped component. Must be called to initialize the component. */
 			@Override
 			public void reset() {
 				«component.wrappedComponentName».reset();
@@ -1610,20 +1652,21 @@ class GlueCodeGenerator {
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {
+				«component.wrappedComponentName» = new «component.wrappedComponent.componentClassName»();
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
 					__asyncQueue.addSubQueue("«queue.name»", -(«queue.priority»), «queue.capacity.serialize»);
 					«queue.name» = __asyncQueue.getSubQueue("«queue.name»");
 				«ENDFOR»
-				// Creating clock callbacks for the single timer service
+				«IF !component.clocks.empty»// Creating clock callbacks for the single timer service«ENDIF»
 				«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 					 timerService.setTimer(createTimerCallback(), «match.clock.name», «match.clock.timeSpecification.valueInMs», true);
 				«ENDFOR»
 				// The thread has to be started manually
 			}
 			
-			«IF component.needTimer»
+			«IF !component.clocks.empty»
 				private «ITIMER_CALLBACK_INTERFACE_NAME» createTimerCallback() {
 					return new «ITIMER_CALLBACK_INTERFACE_NAME»() {
 						@Override
@@ -1777,6 +1820,7 @@ class GlueCodeGenerator {
 			}
 			
 			/** Starts this wrapper instance on a thread. */
+			@Override
 			public void start() {
 				thread = new Thread(this);
 				thread.start();
@@ -1796,8 +1840,8 @@ class GlueCodeGenerator {
 			}
 			
 			«IF component.needTimer»
-				public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» timer) {
-					timerService = timer;
+				public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
+					«IF !component.clocks.empty»timerService = timer;«ENDIF»
 					«IF component.wrappedComponent.needTimer»«component.wrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
 				}
@@ -1806,6 +1850,21 @@ class GlueCodeGenerator {
 		}
 		'''
 	}
+	
+	/** Sets the parameters of the component and instantiates the necessary components with them. */
+	private def createInstances(SynchronousComponentWrapper component) '''
+		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
+			this.«parameter.name» = «parameter.name»;
+		«ENDFOR»
+		«component.wrappedComponentName» = new «component.wrappedComponent.componentClassName»();
+		«FOR port : component.ports»
+			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+		«ENDFOR»
+		// Wrapped port instances
+		«FOR port : component.wrappedComponent.ports»
+			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
+		«ENDFOR»
+	'''
 	
 	/**
 	 * Serializes the value of the given time specification with respect to the time unit. 
@@ -1834,8 +1893,8 @@ class GlueCodeGenerator {
 	'''
 
 	/**
-     * Generates methods that for in-event raisings in case of composite components.
-     */
+	 * Generates methods that for in-event raisings in case of composite components.
+	 */
 	protected def CharSequence delegateWrapperRaisingMethods(Port port) '''
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
 			@Override
@@ -1848,8 +1907,8 @@ class GlueCodeGenerator {
 	'''
 	
 	/**
-     * Generates methods for out-event checks in case of control ports of wrapper components.
-     */
+	 * Generates methods for out-event checks in case of control ports of wrapper components.
+	 */
 	protected def CharSequence delegateWrapperControlOutMethods(Port port) '''
 «««		Simple flag checks
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
@@ -1870,8 +1929,8 @@ class GlueCodeGenerator {
 	'''
 
 	/**
-     * Generates methods for out-event checks in case of wrapped ports of wrapper components.
-     */
+	 * Generates methods for out-event checks in case of wrapped ports of wrapper components.
+	 */
 	protected def CharSequence delegateWrapperOutMethods(Port port, String instanceName) '''
 «««		Simple flag checks
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
@@ -1889,22 +1948,22 @@ class GlueCodeGenerator {
 		«ENDFOR»
 	'''
 
-   /**
-    * Generates event handlers for wrapped in ports of the given wrapper component .
-    */
-   protected def generateWrapperEventHandlers(SynchronousComponentWrapper component) '''
-   «FOR port : component.wrappedComponent.ports»
-   		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
-   			case "«port.name».«event.name»":
-   				«component.wrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
-   			break;
-   		«ENDFOR»
-   	«ENDFOR»
-   '''
-   
-   /**
-    * Generates a run cycle to the given instance based on the given control function. 
-    */
+	/**
+	* Generates event handlers for wrapped in ports of the given wrapper component .
+	*/
+	protected def generateWrapperEventHandlers(SynchronousComponentWrapper component) '''
+	«FOR port : component.wrappedComponent.ports»
+			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
+				case "«port.name».«event.name»":
+					«component.wrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
+				break;
+			«ENDFOR»
+		«ENDFOR»
+	'''
+	
+	/**
+	* Generates a run cycle to the given instance based on the given control function. 
+	*/
 	protected def generateRunCycle(ControlFunction controlFunction, String instanceName) {
 		switch (controlFunction) {
 			case ControlFunction.RUN_ONCE:
@@ -1916,92 +1975,92 @@ class GlueCodeGenerator {
 		}
 	}
 
-    /**
-     * Creates a Java interface for each Port Interface.
-     */
-    protected def getChannelsRule() {
-	    if (channelsRule === null) {
-		     channelsRule = createRule.name("ChannelsRule").precondition(Interfaces.instance).action [
-		    	val channelInterfaceCode = it.interface.createChannelInterfaceCode
-    			channelInterfaceCode.saveCode(channelUri + File.separator + it.interface.generateChannelInterfaceName + ".java")
-    			val channelClassCode = it.interface.createChannelClassCode
-    			channelClassCode.saveCode(channelUri + File.separator + it.interface.generateChannelName + ".java")	
-		    ].build	    
-	    }
-    	return channelsRule
-    }
-   
-     /**
-     * Returns the Java interface code of the Channel class.
-     */
-    protected def createChannelInterfaceCode(Interface anInterface) '''
-	    package «packageName».«CHANNEL_NAME»;
-	    
-	    import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
-	    
-	    public interface «anInterface.generateChannelInterfaceName» {	    	
-	    	
-	    	void registerPort(«anInterface.generateName».Provided providedPort);
-	    	
-	    	void registerPort(«anInterface.generateName».Required requiredPort);
-	    
-	    }
-    '''
-    
-     /**
-     * Returns the Java class code of the Channel class.
-     */
-    protected def createChannelClassCode(Interface anInterface) '''
-	    package «packageName».«CHANNEL_NAME»;
-	    
-	    import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
-	    import java.util.List;
-	    import java.util.LinkedList;
-	    
-	    public class «anInterface.generateChannelName» implements «anInterface.generateChannelInterfaceName» {
-	    	
-	    	private «anInterface.generateName».Provided providedPort;
-	    	private List<«anInterface.generateName».Required> requiredPorts = new LinkedList<«anInterface.generateName».Required>();
-	    	
-	    	public «anInterface.generateChannelName»() {}
-	    	
-	    	public «anInterface.generateChannelName»(«anInterface.generateName».Provided providedPort) {
-	    		this.providedPort = providedPort;
-	    	}
-	    	
-	    	public void registerPort(«anInterface.generateName».Provided providedPort) {
-	    		// Former port is forgotten
-	    		this.providedPort = providedPort;
-	    		// Registering the listeners
-	    		for («anInterface.generateName».Required requiredPort : requiredPorts) {
-	    			providedPort.registerListener(requiredPort);
-	    			requiredPort.registerListener(providedPort);
-	    		}
-	    	}
-	    	
-	    	public void registerPort(«anInterface.generateName».Required requiredPort) {
-	    		requiredPorts.add(requiredPort);
-	    		// Checking whether a provided port is already given
-	    		if (providedPort != null) {
-	    			providedPort.registerListener(requiredPort);
-	    			requiredPort.registerListener(providedPort);
-	    		}
-	    	}
-	    
-	    }
-    '''
+	/**
+	 * Creates a Java interface for each Port Interface.
+	 */
+	protected def getChannelsRule() {
+		if (channelsRule === null) {
+			 channelsRule = createRule.name("ChannelsRule").precondition(Interfaces.instance).action [
+				val channelInterfaceCode = it.interface.createChannelInterfaceCode
+				channelInterfaceCode.saveCode(channelUri + File.separator + it.interface.generateChannelInterfaceName + ".java")
+				val channelClassCode = it.interface.createChannelClassCode
+				channelClassCode.saveCode(channelUri + File.separator + it.interface.generateChannelName + ".java")	
+			].build		
+		}
+		return channelsRule
+	}
+	
+	 /**
+	 * Returns the Java interface code of the Channel class.
+	 */
+	protected def createChannelInterfaceCode(Interface anInterface) '''
+		package «packageName».«CHANNEL_NAME»;
+		
+		import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
+		
+		public interface «anInterface.generateChannelInterfaceName» {			
+			
+			void registerPort(«anInterface.generateName».Provided providedPort);
+			
+			void registerPort(«anInterface.generateName».Required requiredPort);
+		
+		}
+	'''
+	
+	 /**
+	 * Returns the Java class code of the Channel class.
+	 */
+	protected def createChannelClassCode(Interface anInterface) '''
+		package «packageName».«CHANNEL_NAME»;
+		
+		import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
+		import java.util.List;
+		import java.util.LinkedList;
+		
+		public class «anInterface.generateChannelName» implements «anInterface.generateChannelInterfaceName» {
+			
+			private «anInterface.generateName».Provided providedPort;
+			private List<«anInterface.generateName».Required> requiredPorts = new LinkedList<«anInterface.generateName».Required>();
+			
+			public «anInterface.generateChannelName»() {}
+			
+			public «anInterface.generateChannelName»(«anInterface.generateName».Provided providedPort) {
+				this.providedPort = providedPort;
+			}
+			
+			public void registerPort(«anInterface.generateName».Provided providedPort) {
+				// Former port is forgotten
+				this.providedPort = providedPort;
+				// Registering the listeners
+				for («anInterface.generateName».Required requiredPort : requiredPorts) {
+					providedPort.registerListener(requiredPort);
+					requiredPort.registerListener(providedPort);
+				}
+			}
+			
+			public void registerPort(«anInterface.generateName».Required requiredPort) {
+				requiredPorts.add(requiredPort);
+				// Checking whether a provided port is already given
+				if (providedPort != null) {
+					providedPort.registerListener(requiredPort);
+					requiredPort.registerListener(providedPort);
+				}
+			}
+		
+		}
+	'''
 	
 	protected def getAsynchronousCompositeComponentsRule() {
-	    if (asynchronousCompositeComponentsRule === null) {
-		     asynchronousCompositeComponentsRule = createRule.name("AsynchronousCompositeComponentsRule").precondition(AsynchronousCompositeComponents.instance).action [
-		    	val compositeSystemUri = parentPackageUri + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
-		    	// Main components
-		    	val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)
-		    	code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.componentClassName + ".java")
-		    	val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
-		    	interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.portOwnerInterfaceName + ".java")
-		    ].build	    
-	    }
+		if (asynchronousCompositeComponentsRule === null) {
+			 asynchronousCompositeComponentsRule = createRule.name("AsynchronousCompositeComponentsRule").precondition(AsynchronousCompositeComponents.instance).action [
+				val compositeSystemUri = parentPackageUri + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
+				// Main components
+				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)
+				code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.componentClassName + ".java")
+				val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.portOwnerInterfaceName + ".java")
+			].build		
+		}
 		return asynchronousCompositeComponentsRule
 	}
 	
@@ -2016,7 +2075,7 @@ class GlueCodeGenerator {
 		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {			
 			// Component instances
 			«FOR instance : component.components»
-				private «instance.type.componentClassName» «instance.name» = new «instance.type.componentClassName»();
+				private «instance.type.componentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
 			«FOR port : component.portBindings.map[it.compositeSystemPort]»
@@ -2029,19 +2088,22 @@ class GlueCodeGenerator {
 			«FOR channel : BroadcastChannels.Matcher.on(engine).getAllValuesOfbroadcastChannel(component, null, null)»
 				private «channel.providedPort.port.interfaceRealization.interface.generateChannelInterfaceName» channel«channel.providedPort.port.name.toFirstUpper»Of«channel.providedPort.instance.name.toFirstUpper»;
 			«ENDFOR»
+			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«ITIMER_CALLBACK_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+					«component.createInstances»
 					setTimer(timer);
 					init(); // Init is not called in setTimer like in the wrapper as it would be unnecessary
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»() {
+			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType.toFirstUpper» «parameter.name»«ENDFOR») {
+				«component.createInstances»
 				init();
 			}
 			
-			/** Resets the contained statemachines recursively. Should be used only be the container (composite system) class. */
+			/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 			@Override
 			public void reset() {
 				«FOR instance : component.components»
@@ -2050,7 +2112,7 @@ class GlueCodeGenerator {
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
-			private void init() {
+			private void init() {				
 				// Registration of simple channels
 				«FOR channelMatch : SimpleChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
 					channel«channelMatch.providedPort.port.name.toFirstUpper»Of«channelMatch.providedPort.instance.name.toFirstUpper» = new «channelMatch.providedPort.port.interfaceRealization.interface.generateChannelName»(«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»());
@@ -2093,6 +2155,7 @@ class GlueCodeGenerator {
 			«ENDFOR»
 			
 			/** Starts the running of the asynchronous component. */
+			@Override
 			public void start() {
 				«FOR instance : component.components»
 					«instance.name».start();
@@ -2105,7 +2168,7 @@ class GlueCodeGenerator {
 			
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */
-				public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» timer) {
+				public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
 					«FOR instance : component.components»
 						«IF instance.type.needTimer»
 							«instance.name».setTimer(timer);
@@ -2114,7 +2177,7 @@ class GlueCodeGenerator {
 				}
 			«ENDIF»
 			
-			/**  Getter for component instances, e.g. enabling to check their states. */
+			/**  Getter for component instances, e.g., enabling to check their states. */
 			«FOR instance : component.components SEPARATOR "\n"»
 				public «instance.type.componentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
@@ -2130,33 +2193,33 @@ class GlueCodeGenerator {
 	protected def saveCode(CharSequence code, String uri) {
 		new File(uri.substring(0, uri.lastIndexOf(File.separator))).mkdirs
 		val fw = new FileWriter(uri)
-    	fw.write(code.toString)
-    	fw.close
-    	return 
+		fw.write(code.toString)
+		fw.close
+		return 
 	}
 	
 	/**
-     * Returns a Set of EObjects that are created of the given "from" object.
-     */
-    protected def getAllValuesOfTo(EObject from) {
-    	return engine.getMatcher(Traces.instance).getAllValuesOfto(null, from)    	
-    }
-    
-    /**
-     * Returns a Set of EObjects that the given "to" object is created of.
-     */
-    protected def getAllValuesOfFrom(EObject to) {
-    	return engine.getMatcher(Traces.instance).getAllValuesOffrom(null, to)
-    }
+	 * Returns a Set of EObjects that are created of the given "from" object.
+	 */
+	protected def getAllValuesOfTo(EObject from) {
+		return engine.getMatcher(Traces.instance).getAllValuesOfto(null, from)		
+	}
+	
+	/**
+	 * Returns a Set of EObjects that the given "to" object is created of.
+	 */
+	protected def getAllValuesOfFrom(EObject to) {
+		return engine.getMatcher(Traces.instance).getAllValuesOffrom(null, to)
+	}
 
 	/**
 	 * Disposes of the code generator.
 	 */
-    def dispose() {
-        if (transformation !== null) {
-            transformation.dispose
-        }
-        transformation = null
-        return
-    }
+	def dispose() {
+		if (transformation !== null) {
+			transformation.dispose
+		}
+		transformation = null
+		return
+	}
 }
