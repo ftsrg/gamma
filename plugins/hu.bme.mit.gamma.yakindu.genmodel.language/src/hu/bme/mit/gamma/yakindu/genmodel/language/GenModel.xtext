@@ -34,12 +34,12 @@ Task returns Task:
 YakinduCompilation returns YakinduCompilation:
 	'statechart' statechart=[sgraph::Statechart] '{'
 		(
-			'fileName' '=' fileName=STRING & // The name of the generated file
-			'projectName' '=' targetProject=STRING & // The name of the project where the Gamma file is generated
-			'folderName' '=' targetFolder=STRING & // The location of the folder relative to the project
-			'statechartName' '=' statechartName=STRING & // Gamma statechart name
+			'fileName' '=' fileName=STRING | // The name of the generated file
+			'projectName' '=' targetProject=STRING | // The name of the project where the Gamma file is generated
+			'folderName' '=' targetFolder=STRING | // The location of the folder relative to the project
+			'statechartName' '=' statechartName=STRING | // Gamma statechart name
 			'packageName' '=' packageName=STRING // Gamma package name
-		)
+		)*
 		'mappings' '{'
 			(interfaceMappings+=InterfaceMapping)*
 		'}'

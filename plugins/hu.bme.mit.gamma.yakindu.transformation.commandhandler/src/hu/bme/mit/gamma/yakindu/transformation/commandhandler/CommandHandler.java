@@ -124,7 +124,8 @@ public class CommandHandler extends AbstractHandler {
 			yakinduCompilation.setTargetProject(project.getName());
 		}
 		if (yakinduCompilation.getTargetFolder() == null) {
-			String targetFolder = parentFolderUri.substring(workspaceLocation.length() + project.getName().length());
+			String targetFolder = parentFolderUri.substring((workspaceLocation + File.separator +
+					project.getName()).length());
 			yakinduCompilation.setTargetFolder(targetFolder);
 		}
 		if (yakinduCompilation.getPackageName() == null) {
