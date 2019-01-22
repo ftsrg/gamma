@@ -31,7 +31,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
 		// Setting the maximum size of lines
         c.setAutoLinewrap(130);
         // Line break after these rules
-        c.setLinewrap(1).after(f.getGenModelAccess().getInterfaceImportsAssignment_0_1_0());
+        c.setLinewrap(1).after(f.getGenModelAccess().getPackageImportsAssignment_0_1_0());
         c.setLinewrap(1).after(f.getGenModelAccess().getStatechartImportsAssignment_0_1_1_1());
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {

@@ -94,7 +94,7 @@ import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.SimpleMod
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRuleFactory
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
-import org.yakindu.base.expressions.expressions.Expression
+import org.yakindu.base.types.Expression
 import org.yakindu.sct.model.sgraph.EntryKind
 import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.EventDefinition
@@ -105,6 +105,7 @@ import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.Trigger
+import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -144,15 +145,20 @@ class YakinduToGammaTransformer {
     
     var id = 0
     
-    new(GenModel genmodel) {
-        this.yakinduStatechart = genmodel.statechart
+    new(YakinduCompilation yakinduCompilation) {
+    	val genmodel = yakinduCompilation.eContainer as GenModel
+        this.yakinduStatechart = yakinduCompilation.statechart
+        val statechartName = if (yakinduCompilation.statechartName === null) yakinduStatechart.name + "Statechart"
+        	else yakinduCompilation.statechartName
+    	val packageName = if (yakinduCompilation.packageName === null) yakinduStatechart.name
+    		else yakinduCompilation.packageName
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
-    		it.name = yakinduStatechart.name + "Statechart"
+    		it.name = statechartName
     	]
         gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
-    		it.name = yakinduStatechart.name
+    		it.name = packageName
     		it.components += gammaStatechart
-    		it.imports += genmodel.interfaceImports
+    		it.imports += genmodel.packageImports
     	]
     	traceRoot = TraceabilityFactory.eINSTANCE.createY2GTrace  => [
     		it.yakinduStatechart = yakinduStatechart

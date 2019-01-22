@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 
 /**
  * This class contains custom scoping description.
@@ -33,20 +34,23 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 
 	override getScope(EObject context, EReference reference) {
-		if (context instanceof GenModel && reference == GenmodelPackage.Literals.GEN_MODEL__STATECHART) {
-			val genmodel = context as GenModel
+		if (context instanceof YakinduCompilation && reference == GenmodelPackage.Literals.YAKINDU_COMPILATION__STATECHART) {
+			val yakinduCompilation = context as YakinduCompilation
+			val genmodel = yakinduCompilation.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.statechartImports)
 		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
-			val statechart = ((context as InterfaceMapping).eContainer as GenModel).statechart
+			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart
 			if (statechart !== null) {
 				return Scopes.scopeFor(statechart.scopes.filter(InterfaceScope))
 			}
 		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelPackage.Literals.INTERFACE_MAPPING__GAMMA_INTERFACE) {
-			val gammaInterfaceRoots = ((context as InterfaceMapping).eContainer as GenModel).interfaceImports
+			val yakinduCompilation = (context as InterfaceMapping).eContainer as YakinduCompilation
+			val genModel = yakinduCompilation.eContainer as GenModel
+			val gammaInterfaceRoots = genModel.packageImports
 			if (!gammaInterfaceRoots.empty) {
 				return Scopes.scopeFor(gammaInterfaceRoots.map[it.interfaces].flatten)
 			}

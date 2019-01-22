@@ -3,16 +3,21 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.genmodel/src" modelPluginID="hu.bme.mit.gamma.yakindu.genmodel"
     modelName="Genmodel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
-    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.base.expressions/model/Expressions.genmodel#//expressions ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types"
+    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
   <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.yakindu" disposableProviderFactory="true"
       fileExtensions="ggm" ecorePackage="genmodel.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//ProgrammingLanguage">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/JAVA"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//AnalysisLanguage">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/UPPAAL"/>
+    </genEnums>
     <genClasses ecoreClass="genmodel.ecore#//GenModel">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechartImports"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/interfaceImports"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechart"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/interfaceMappings"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/packageImports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/tasks"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>
@@ -23,6 +28,25 @@
     <genClasses ecoreClass="genmodel.ecore#//EventMapping">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventMapping/yakinduEvent"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventMapping/gammaEvent"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//YakinduCompilation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//YakinduCompilation/interfaceMappings"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//YakinduCompilation/statechart"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//YakinduCompilation/packageName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//YakinduCompilation/statechartName"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//Task">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/fileName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/targetProject"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Task/targetFolder"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//CodeGeneration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/language"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/packageName"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AnalysisModelTransformation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/language"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/component"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -14,7 +14,7 @@ To cite Gamma, please cite the following paper.
                Andr{\'{a}}s V{\"{o}}r{\"{o}}s and
                Istv{\'{a}}n Majzik and
                D{\'{a}}niel Varr{\'{o}}},
-  title     = {The Gamma statechart composition framework: : design, verification
+  title     = {The Gamma statechart composition framework: design, verification
                and code generation for component-based reactive systems},
   booktitle = {Proceedings of the 40th International Conference on Software Engineering:
                Companion Proceeedings, {ICSE} 2018, Gothenburg, Sweden, May 27 -
@@ -30,15 +30,15 @@ To cite Gamma, please cite the following paper.
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse Photon 1, Eclipse IDE for Java and DSL Developers bundle
+* Eclipse Photon 1, Eclipse IDE for Java and DSL Developers bundle.
 
 ##### 3rd-party Eclipse components (should be installed separately):
-* Xtext 2.15.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle)
-* VIATRA 2.0.2 (https://www.eclipse.org/viatra/)
-* Yakindu Statechart Tools 3.4.3 (https://www.itemis.com/en/yakindu/state-machine/)
+* Xtext 2.15.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
+* VIATRA 2.0.2 (https://www.eclipse.org/viatra/),
+* Yakindu Statechart Tools 3.4.3 (https://www.itemis.com/en/yakindu/state-machine/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
-* UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/)
+* UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/).
 
 ### Installation
 
@@ -51,7 +51,7 @@ To cite Gamma, please cite the following paper.
 
 ### Tutorials
 
-The tutorials for the framework can be found in the following [folder](https://github.com/FTSRG/gamma/blob/master/tutorial)
+The tutorials for the framework can be found in the following [folder](https://github.com/FTSRG/gamma/blob/master/tutorial).
 
 ## Contact
 
@@ -61,19 +61,19 @@ Contact us by sending an e-mail to `gamma [at] mit.bme.hu`.
 
 Supporters of the Gamma project:
 
-* [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/)
-* [Fault Tolerant Systems Research Group](https://inf.mit.bme.hu/en), [Department of Measurement and Information Systems](https://www.mit.bme.hu/eng/), [Budapest University of Technology and Economics](http://www.bme.hu/?language=en)
-* [Új Nemzeti Kiválóság Program 2017-2018](http://www.kormany.hu/hu/emberi-eroforrasok-miniszteriuma/oktatasert-felelos-allamtitkarsag/hirek/az-uj-nemzeti-kivalosag-program-2017-2018-tanevi-palyazati-kiirasai)
-* [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013)
+* [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/),
+* [Fault Tolerant Systems Research Group](https://inf.mit.bme.hu/en), [Department of Measurement and Information Systems](https://www.mit.bme.hu/eng/), [Budapest University of Technology and Economics](http://www.bme.hu/?language=en),
+* [Új Nemzeti Kiválóság Program 2017-2018](http://www.kormany.hu/hu/emberi-eroforrasok-miniszteriuma/oktatasert-felelos-allamtitkarsag/hirek/az-uj-nemzeti-kivalosag-program-2017-2018-tanevi-palyazati-kiirasai),
+* [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013).
 
 Special thanks to: 
 
-* András Vörös
-* Oszkár Semeráth
-* Kristóf Marussy 
-* Ákos Hajdu
-* Dániel Varró
-* István Ráth
-* Zoltán Micskei
-* István Majzik
+* András Vörös,
+* Oszkár Semeráth,
+* Kristóf Marussy,
+* Ákos Hajdu,
+* Dániel Varró,
+* István Ráth,
+* Zoltán Micskei,
+* István Majzik,
 * IncQuery Labs Ltd.

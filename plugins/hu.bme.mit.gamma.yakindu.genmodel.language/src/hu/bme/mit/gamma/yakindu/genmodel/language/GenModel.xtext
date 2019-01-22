@@ -21,14 +21,60 @@ import "http://www.yakindu.org/base/types/2.0.0" as types
 
 GenModel returns GenModel:
 	('import' 
-		(interfaceImports+=[model::Package | STRING] |
+		(packageImports+=[model::Package | STRING] |
 		'external' statechartImports+=[sgraph::Statechart| STRING])
 	)*
-	
-	'statechart' statechart=[sgraph::Statechart]
-	'mappings' '{'
-		(interfaceMappings+=InterfaceMapping)*
+	(tasks += Task)*
+;
+
+Task returns Task:
+	YakinduCompilation | CodeGeneration | AnalysisModelTransformation
+;
+
+YakinduCompilation returns YakinduCompilation:
+	'statechart' statechart=[sgraph::Statechart] '{'
+		(
+			'fileName' '=' fileName=STRING & // The name of the generated file
+			'projectName' '=' targetProject=STRING & // The name of the project where the Gamma file is generated
+			'folderName' '=' targetFolder=STRING & // The location of the folder relative to the project
+			'statechartName' '=' statechartName=STRING & // Gamma statechart name
+			'packageName' '=' packageName=STRING // Gamma package name
+		)
+		'mappings' '{'
+			(interfaceMappings+=InterfaceMapping)*
+		'}'
 	'}'
+;
+
+CodeGeneration returns CodeGeneration:
+	'code' '{'
+		(
+			'package' '=' packageName=STRING &
+			'project' '=' targetProject=STRING &
+			'folder' '=' targetFolder=STRING
+		)
+		'language' '=' language=ProgrammingLanguage
+	'}'
+;
+
+enum ProgrammingLanguage returns ProgrammingLanguage:
+	JAVA = 'java'
+;
+
+AnalysisModelTransformation:
+	'analysis' '{'
+		(
+			'name' '=' fileName=STRING &
+			'project' '=' targetProject=STRING &
+			'folder' '=' targetFolder=STRING &			
+			'language' '=' language=AnalysisLanguage &
+			'component' '=' component=[model::Component]
+		)
+	'}'
+;
+
+enum AnalysisLanguage returns AnalysisLanguage:
+	UPPAAL = "UPPAAL"
 ;
 
 InterfaceMapping  returns InterfaceMapping:

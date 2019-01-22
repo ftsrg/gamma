@@ -125,7 +125,7 @@ private pattern eventsOfPorts(port : Port, event : gif::Event) {
 }
 
 // Constants
-pattern constants(type : con::Type, name : java String, initExpression : Expression) {
+pattern constants(type : con::Type, name : java String, initExpression : con::Expression) {
 	ConstantDeclaration.type(constantDeclaration, type);
 	ConstantDeclaration.name(constantDeclaration, name);
 	ConstantDeclaration.expression(constantDeclaration, initExpression);

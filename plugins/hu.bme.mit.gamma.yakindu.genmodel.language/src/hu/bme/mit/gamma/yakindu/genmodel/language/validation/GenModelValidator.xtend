@@ -10,10 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.genmodel.language.validation
 
-import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
-import hu.bme.mit.gamma.yakindu.genmodel.GenModel
-import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
-import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
@@ -21,14 +17,18 @@ import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
+import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
+import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
+import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 import java.util.Collections
+import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
 import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import java.util.HashMap
 
 /**
  * This class contains custom validation rules. 
@@ -38,18 +38,18 @@ import java.util.HashMap
 class GenModelValidator extends AbstractGenModelValidator { 
 	
 	@Check
-	def checkIfAllInterfacesMapped(GenModel genmodel) {
-		val interfaces = genmodel.statechart.scopes.filter(InterfaceScope).toSet
-		val mappedInterfaces = genmodel.interfaceMappings.map[it.yakinduInterface].toSet
+	def checkIfAllInterfacesMapped(YakinduCompilation yakinduCompilation) {
+		val interfaces = yakinduCompilation.statechart.scopes.filter(InterfaceScope).toSet
+		val mappedInterfaces = yakinduCompilation.interfaceMappings.map[it.yakinduInterface].toSet
 		interfaces.removeAll(mappedInterfaces)
 		if (!interfaces.empty) {
 			val interfacesWithEvents = interfaces.filter[!it.events.empty].toSet
 			val interfacesWithoutEvents = interfaces.filter[it.events.empty].toSet
 			if (!interfacesWithEvents.empty) {
-				error("The following interfaces with events are not mapped: " + interfacesWithEvents.map[it.name] + ".", GenmodelPackage.Literals.GEN_MODEL__STATECHART)
+				error("The following interfaces with events are not mapped: " + interfacesWithEvents.map[it.name] + ".", GenmodelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
 			}
 			if (!interfacesWithoutEvents.empty) {
-				info("The following interfaces without events are not mapped: " + interfacesWithoutEvents.map[it.name] + ".", GenmodelPackage.Literals.GEN_MODEL__STATECHART)
+				info("The following interfaces without events are not mapped: " + interfacesWithoutEvents.map[it.name] + ".", GenmodelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
 			}
 		}
 	}
@@ -131,7 +131,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkYakinduInterfaceUniqueness(InterfaceMapping mapping) {
 		val interfaces = new HashSet<InterfaceScope>
-		for (interface : (mapping.eContainer as GenModel).interfaceMappings.map[it.yakinduInterface]) {
+		val yakinduCompilation = mapping.eContainer as YakinduCompilation
+		for (interface : yakinduCompilation.interfaceMappings.map[it.yakinduInterface]) {
 			if (interfaces.contains(interface)){
 				error("Each Yakindu event has to be mapped exactly once.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 			}
