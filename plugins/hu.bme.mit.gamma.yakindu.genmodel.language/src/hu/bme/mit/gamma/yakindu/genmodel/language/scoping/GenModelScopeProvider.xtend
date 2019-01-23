@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
+import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration
 
 /**
  * This class contains custom scoping description.
@@ -38,6 +39,12 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val yakinduCompilation = context as YakinduCompilation
 			val genmodel = yakinduCompilation.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.statechartImports)
+		}
+		if (context instanceof CodeGeneration && reference == GenmodelPackage.Literals.CODE_GENERATION__COMPONENT) {
+			val codeGeneration = context as CodeGeneration
+			val genmodel = codeGeneration.eContainer as GenModel
+			val components = genmodel.packageImports.map[it.components].flatten
+			return Scopes.scopeFor(components)
 		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {

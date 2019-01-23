@@ -32,6 +32,7 @@
     <genClasses ecoreClass="genmodel.ecore#//CodeGeneration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/language"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/packageName"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//CodeGeneration/component"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AnalysisModelTransformation">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/language"/>

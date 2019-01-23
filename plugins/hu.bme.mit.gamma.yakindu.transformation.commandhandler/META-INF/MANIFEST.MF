@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.ui,
  hu.bme.mit.gamma.dialog,
  hu.bme.mit.gamma.yakindu.transformation.traceability,
  hu.bme.mit.gamma.statechart.language,
- hu.bme.mit.gamma.statechart.language.ui
+ hu.bme.mit.gamma.statechart.language.ui,
+ hu.bme.mit.gamma.codegenerator.java
 Export-Package: hu.bme.mit.gamma.yakindu.transformation.commandhandler
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.yakindu.transformation.commandhandler

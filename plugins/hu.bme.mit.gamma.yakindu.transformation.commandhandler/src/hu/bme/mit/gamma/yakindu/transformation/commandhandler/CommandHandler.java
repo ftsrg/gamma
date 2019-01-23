@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.commandhandler;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
@@ -32,12 +34,19 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.google.inject.Injector;
 
+import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
+import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel;
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
+import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.Task;
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation;
@@ -79,12 +88,12 @@ public class CommandHandler extends AbstractHandler {
 								String parentFolderUri = fileUriSubstring.substring(0, fileUriSubstring.lastIndexOf("/"));	
 								// No file extension
 								String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
-								GenModel genmodel = (GenModel) resource.getContents().get(0);
 								String workspaceLocation = file.getWorkspace().getRoot().getLocation().toString();
+								GenModel genmodel = (GenModel) resource.getContents().get(0);
 								for (Task task : genmodel.getTasks()) {
 									setTask(task, file, parentFolderUri);
-									String targetFolderUri = workspaceLocation + File.separator +
-											task.getTargetProject() + File.separator + task.getTargetFolder();
+									String targetFolderUri = URI.decode(workspaceLocation + File.separator +
+											task.getTargetProject() + File.separator + task.getTargetFolder());
 									if (task instanceof YakinduCompilation) {
 										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
 										setYakinduCompilation(yakinduCompilation, fileName);
@@ -112,6 +121,23 @@ public class CommandHandler extends AbstractHandler {
 											transformer.dispose();
 											logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 										}
+									}
+									if (task instanceof CodeGeneration) {
+										CodeGeneration codeGeneration = (CodeGeneration) task;
+										checkArgument(codeGeneration.getLanguage() == ProgrammingLanguage.JAVA, 
+												"Currently only Java is supported.");
+										setCodeGeneration(codeGeneration, file.getProject().getName());
+										logger.log(Level.INFO, "Resource set content for Java code generation: " + resSet);
+										Component component = codeGeneration.getComponent();
+										ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
+										codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
+										loadStatechartTraces(codeGenerationResourceSet, component);
+										// TODO interfaces are not yet inside
+										GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
+												codeGeneration.getPackageName(), targetFolderUri);
+										generator.execute();
+										generator.dispose();
+										logger.log(Level.INFO, "The Java code generation has been finished.");
 									}
 								}
 							}
@@ -141,8 +167,13 @@ public class CommandHandler extends AbstractHandler {
 			task.setTargetProject(projectName);
 		}
 		if (task.getTargetFolder() == null) {
-			String targetFolder = parentFolderUri.substring((workspaceLocation + File.separator +
-					projectName).length());
+			String targetFolder = null;
+			if (task instanceof CodeGeneration) {
+				targetFolder = "src-gen";
+			}
+			else {
+				targetFolder = parentFolderUri.substring((workspaceLocation + File.separator +	projectName).length());
+			}
 			task.setTargetFolder(targetFolder);
 		}
 	}
@@ -156,6 +187,30 @@ public class CommandHandler extends AbstractHandler {
 	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
 		if (statechartCompilation.getStatechartName() == null) {
 			statechartCompilation.setStatechartName(statechartName);
+		}
+	}
+	
+	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {
+		if (codeGeneration.getPackageName() == null) {
+			codeGeneration.setPackageName(packageName);
+		}
+	}
+	
+	private void loadStatechartTraces(ResourceSet resourceSet, Component component) {
+		if (component instanceof CompositeComponent) {
+			CompositeComponent compositeComponent = (CompositeComponent) component;
+			for (ComponentInstance containedComponent : StatechartModelDerivedFeatures.getDerivedComponents(compositeComponent)) {
+				loadStatechartTraces(resourceSet, StatechartModelDerivedFeatures.getDerivedType(containedComponent));
+			}
+		}
+		else {
+			// E.g., /hu.bme.mit.gamma.tutorial.extra/model/TrafficLight/TrafficLightCtrl
+			String statechartUri = component.eResource().getURI().trimFileExtension().toPlatformString(true);
+			String statechartFileName = statechartUri.substring(statechartUri.lastIndexOf("/") + 1);
+			String traceUri = statechartUri.substring(0, statechartUri.lastIndexOf("/") + 1) + "." + statechartFileName + ".y2g";
+			if (resourceSet.getResources().stream().noneMatch(it -> it.getURI().toString().equals(traceUri))) {
+				resourceSet.getResource(URI.createPlatformResourceURI(traceUri, true), true);
+			}
 		}
 	}
 	
