@@ -75,7 +75,7 @@ public class CommandHandler extends AbstractHandler {
 								// No file extension
 								String fileName = fileURISubstring.substring(fileURISubstring.lastIndexOf("/") + 1, fileURISubstring.lastIndexOf("."));
 								logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resSet);
-								SimpleEntry<Package, Y2GTrace> resultModels = new InterfaceTransformer(resource).execute();
+								SimpleEntry<Package, Y2GTrace> resultModels = new InterfaceTransformer(statechart, statechart.getName()).execute();
 								saveModel(resultModels.getKey(), parentFolder, fileName + ".gcd");
 								saveModel(resultModels.getValue(), parentFolder, "." + fileName + ".y2g");
 								logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");

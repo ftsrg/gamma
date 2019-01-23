@@ -54,7 +54,7 @@ class InterfaceTransformer {
 
 	protected ViatraQueryEngine engine
 	// Yakindu sct
-	protected Resource resource
+	protected Statechart yakinduStatechart
 	// The container of interfaces
 	protected Package statechartInterfaces
 	// The trace
@@ -72,14 +72,12 @@ class InterfaceTransformer {
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> interfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> eventsRule
 
-	new(Resource resource) {
-		this.resource = resource
-		// Create EMF scope and EMF IncQuery engine based on the resource
-		val scope = new EMFScope(resource.resourceSet)
+	new(Statechart yakinduStatechart, String packageName) {
+		this.yakinduStatechart = yakinduStatechart
+		val scope = new EMFScope(yakinduStatechart)
 		engine = ViatraQueryEngine.on(scope);
-		val yakinduStatechart = resource.contents.head as Statechart
 		statechartInterfaces = StatechartModelFactory.eINSTANCE.createPackage=> [
-			it.name = yakinduStatechart.name
+			it.name = packageName
 		]
 		traceRoot = TraceabilityFactory.eINSTANCE.createY2GTrace => [
 			it.yakinduStatechart = yakinduStatechart

@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
-import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
+import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
@@ -38,9 +38,9 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 class GenModelValidator extends AbstractGenModelValidator { 
 	
 	@Check
-	def checkIfAllInterfacesMapped(YakinduCompilation yakinduCompilation) {
-		val interfaces = yakinduCompilation.statechart.scopes.filter(InterfaceScope).toSet
-		val mappedInterfaces = yakinduCompilation.interfaceMappings.map[it.yakinduInterface].toSet
+	def checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
+		val interfaces = statechartCompilation.statechart.scopes.filter(InterfaceScope).toSet
+		val mappedInterfaces = statechartCompilation.interfaceMappings.map[it.yakinduInterface].toSet
 		interfaces.removeAll(mappedInterfaces)
 		if (!interfaces.empty) {
 			val interfacesWithEvents = interfaces.filter[!it.events.empty].toSet
@@ -131,8 +131,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkYakinduInterfaceUniqueness(InterfaceMapping mapping) {
 		val interfaces = new HashSet<InterfaceScope>
-		val yakinduCompilation = mapping.eContainer as YakinduCompilation
-		for (interface : yakinduCompilation.interfaceMappings.map[it.yakinduInterface]) {
+		val statechartCompilation = mapping.eContainer as StatechartCompilation
+		for (interface : statechartCompilation.interfaceMappings.map[it.yakinduInterface]) {
 			if (interfaces.contains(interface)){
 				error("Each Yakindu event has to be mapped exactly once.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 			}

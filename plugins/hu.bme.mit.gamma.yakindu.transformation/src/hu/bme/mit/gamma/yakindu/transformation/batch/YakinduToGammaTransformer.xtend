@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.constraint.model.ReferenceExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.AssignmentAction
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
+import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
 import hu.bme.mit.gamma.statechart.model.DeepHistoryState
 import hu.bme.mit.gamma.statechart.model.EntryState
@@ -43,7 +44,9 @@ import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.model.Trigger
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel
+import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.ActionsOfRegularLocalReactions
 import hu.bme.mit.gamma.yakindu.transformation.queries.Choices
 import hu.bme.mit.gamma.yakindu.transformation.queries.CompositeStateRegions
@@ -103,9 +106,6 @@ import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import hu.bme.mit.gamma.statechart.model.BinaryType
-import hu.bme.mit.gamma.statechart.model.Trigger
-import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -145,13 +145,13 @@ class YakinduToGammaTransformer {
     
     var id = 0
     
-    new(YakinduCompilation yakinduCompilation) {
-    	val genmodel = yakinduCompilation.eContainer as GenModel
-        this.yakinduStatechart = yakinduCompilation.statechart
-        val statechartName = if (yakinduCompilation.statechartName === null) yakinduStatechart.name + "Statechart"
-        	else yakinduCompilation.statechartName
-    	val packageName = if (yakinduCompilation.packageName === null) yakinduStatechart.name
-    		else yakinduCompilation.packageName
+    new(StatechartCompilation statechartCompilation) {
+    	val genmodel = statechartCompilation.eContainer as GenModel
+        this.yakinduStatechart = statechartCompilation.statechart
+        val statechartName = if (statechartCompilation.statechartName === null) yakinduStatechart.name + "Statechart"
+        	else statechartCompilation.statechartName
+    	val packageName = if (statechartCompilation.packageName === null) yakinduStatechart.name
+    		else statechartCompilation.packageName
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
     	]

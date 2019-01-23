@@ -32,6 +32,21 @@ Task returns Task:
 ;
 
 YakinduCompilation returns YakinduCompilation:
+	StatechartCompilation | InterfaceCompilation
+;
+
+InterfaceCompilation returns InterfaceCompilation:
+	'interface' statechart=[sgraph::Statechart] '{'
+		(
+			'fileName' '=' fileName=STRING | // The name of the generated file
+			'projectName' '=' targetProject=STRING | // The name of the project where the Gamma file is generated
+			'folderName' '=' targetFolder=STRING | // The location of the folder relative to the project
+			'packageName' '=' packageName=STRING // Gamma package name
+		)*
+	'}'
+;
+
+StatechartCompilation returns StatechartCompilation:
 	'statechart' statechart=[sgraph::Statechart] '{'
 		(
 			'fileName' '=' fileName=STRING | // The name of the generated file

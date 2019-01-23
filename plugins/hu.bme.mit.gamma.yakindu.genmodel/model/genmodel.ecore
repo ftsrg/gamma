@@ -10,6 +10,29 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
         eType="#//Task" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetProject" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetFolder" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InterfaceCompilation" eSuperTypes="#//YakinduCompilation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartCompilation" eSuperTypes="#//YakinduCompilation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceMappings" upperBound="-1"
+        eType="#//InterfaceMapping" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="statechartName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
+        eType="#//ProgrammingLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
+        eType="#//AnalysisLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
         eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RealizationMode"
@@ -27,35 +50,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="gammaEvent" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Event"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" eSuperTypes="#//Task">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceMappings" upperBound="-1"
-        eType="#//InterfaceMapping" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
-        eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="statechartName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetProject" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetFolder" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//Task">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
-        eType="#//ProgrammingLanguage"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
-        eType="#//AnalysisLanguage"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ProgrammingLanguage">
     <eLiterals name="JAVA"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="AnalysisLanguage">
     <eLiterals name="UPPAAL"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
+      eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
   </eClassifiers>
 </ecore:EPackage>

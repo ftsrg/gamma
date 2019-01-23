@@ -13,17 +13,14 @@ package hu.bme.mit.gamma.yakindu.transformation.commandhandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -40,8 +37,11 @@ import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel;
+import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
+import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.Task;
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation;
+import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
 import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
@@ -63,7 +63,6 @@ public class CommandHandler extends AbstractHandler {
 				if (selection.getFirstElement() != null) {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
-						IProject project = file.getProject();
 						ResourceSet resSet = new ResourceSetImpl();
 						logger.log(Level.INFO, "Resource set for Yakindu to Gamma statechart generation: " + resSet);
 						URI fileURI = URI.createPlatformResourceURI(file.getFullPath().toString(), true);
@@ -81,25 +80,39 @@ public class CommandHandler extends AbstractHandler {
 								// No file extension
 								String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
 								GenModel genmodel = (GenModel) resource.getContents().get(0);
-								logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resSet);
-								Collection<Task> yakinduCompilationTasks = genmodel.getTasks().stream()
-										.filter(it -> it instanceof YakinduCompilation).collect(Collectors.toSet());
 								String workspaceLocation = file.getWorkspace().getRoot().getLocation().toString();
-								for (Task task : yakinduCompilationTasks) {
-									YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
-									setYakinduCompilation(project, parentFolderUri, fileName, workspaceLocation,
-											yakinduCompilation);
-									ModelValidator validator = new ModelValidator(yakinduCompilation.getStatechart());
-									validator.checkModel();
-									YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(yakinduCompilation);
-									SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
-									// Saving Xtext and EMF models
-									String targetParentFolderUri = workspaceLocation + File.separator +
-											yakinduCompilation.getTargetProject() + File.separator + yakinduCompilation.getTargetFolder();
-									saveModel(resultModels.getKey(), targetParentFolderUri, yakinduCompilation.getFileName() + ".gcd");
-									saveModel(resultModels.getValue(), targetParentFolderUri, "." + yakinduCompilation.getFileName() + ".y2g");
-									transformer.dispose();
-									logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
+								for (Task task : genmodel.getTasks()) {
+									setTask(task, file, parentFolderUri);
+									String targetFolderUri = workspaceLocation + File.separator +
+											task.getTargetProject() + File.separator + task.getTargetFolder();
+									if (task instanceof YakinduCompilation) {
+										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
+										setYakinduCompilation(yakinduCompilation, fileName);
+										if (task instanceof InterfaceCompilation) {
+											logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resSet);
+											InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
+											InterfaceTransformer transformer = new InterfaceTransformer(
+													interfaceCompilation.getStatechart(), interfaceCompilation.getPackageName());
+											SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
+											saveModel(resultModels.getKey(), targetFolderUri, interfaceCompilation.getFileName() + ".gcd");
+											saveModel(resultModels.getValue(), targetFolderUri, "." + interfaceCompilation.getFileName()  + ".y2g");
+											logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
+										}
+										else if (task instanceof StatechartCompilation) {
+											logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resSet);
+											StatechartCompilation statechartCompilation = (StatechartCompilation) task;
+											setStatechartCompilation(statechartCompilation, fileName + "Statechart");
+											ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
+											validator.checkModel();
+											YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
+											SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
+											// Saving Xtext and EMF models
+											saveModel(resultModels.getKey(), targetFolderUri, yakinduCompilation.getFileName() + ".gcd");
+											saveModel(resultModels.getValue(), targetFolderUri, "." + yakinduCompilation.getFileName() + ".y2g");
+											transformer.dispose();
+											logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
+										}
+									}
 								}
 							}
 						}
@@ -114,26 +127,40 @@ public class CommandHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
-	private void setYakinduCompilation(IProject project, String parentFolderUri, String fileName,
-			String workspaceLocation, YakinduCompilation yakinduCompilation) {
-		if (yakinduCompilation.getFileName() == null) {
-			yakinduCompilation.setFileName(fileName);
+	
+	private void setTask(Task task, IFile file, String parentFolderUri) {
+		String projectName = file.getProject().getName();
+		// No file extension
+		String fileName = getNameWithoutExtension(file);
+		// E.g., C:/Users/...
+		String workspaceLocation = file.getWorkspace().getRoot().getLocation().toString();
+		if (task.getFileName() == null) {
+			task.setFileName(fileName);
 		}
-		if (yakinduCompilation.getTargetProject() == null) {
-			yakinduCompilation.setTargetProject(project.getName());
+		if (task.getTargetProject() == null) {
+			task.setTargetProject(projectName);
 		}
-		if (yakinduCompilation.getTargetFolder() == null) {
+		if (task.getTargetFolder() == null) {
 			String targetFolder = parentFolderUri.substring((workspaceLocation + File.separator +
-					project.getName()).length());
-			yakinduCompilation.setTargetFolder(targetFolder);
+					projectName).length());
+			task.setTargetFolder(targetFolder);
 		}
+	}
+
+	private void setYakinduCompilation(YakinduCompilation yakinduCompilation, String packageName) {
 		if (yakinduCompilation.getPackageName() == null) {
-			yakinduCompilation.setPackageName(fileName);
+			yakinduCompilation.setPackageName(packageName);
 		}
-		if (yakinduCompilation.getStatechartName() == null) {
-			yakinduCompilation.setStatechartName(fileName + "Statechart");
+	}
+	
+	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
+		if (statechartCompilation.getStatechartName() == null) {
+			statechartCompilation.setStatechartName(statechartName);
 		}
+	}
+	
+	private String getNameWithoutExtension(IFile file) {
+		return file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
 	}
 	
 	/**
