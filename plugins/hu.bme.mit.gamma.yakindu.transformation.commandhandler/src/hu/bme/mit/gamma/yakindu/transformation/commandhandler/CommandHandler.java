@@ -88,12 +88,12 @@ public class CommandHandler extends AbstractHandler {
 								String parentFolderUri = fileUriSubstring.substring(0, fileUriSubstring.lastIndexOf("/"));	
 								// No file extension
 								String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
-								String workspaceLocation = file.getWorkspace().getRoot().getLocation().toString();
+								// WARNING: workspace location and imported project locations are not to be confused
+								String projectLocation = file.getProject().getLocation().toString();
 								GenModel genmodel = (GenModel) resource.getContents().get(0);
 								for (Task task : genmodel.getTasks()) {
 									setTask(task, file, parentFolderUri);
-									String targetFolderUri = URI.decode(workspaceLocation + File.separator +
-											task.getTargetProject() + File.separator + task.getTargetFolder());
+									String targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder());
 									if (task instanceof YakinduCompilation) {
 										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
 										setYakinduCompilation(yakinduCompilation, fileName);
@@ -122,7 +122,7 @@ public class CommandHandler extends AbstractHandler {
 											logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 										}
 									}
-									if (task instanceof CodeGeneration) {
+									else if (task instanceof CodeGeneration) {
 										CodeGeneration codeGeneration = (CodeGeneration) task;
 										checkArgument(codeGeneration.getLanguage() == ProgrammingLanguage.JAVA, 
 												"Currently only Java is supported.");
@@ -132,7 +132,8 @@ public class CommandHandler extends AbstractHandler {
 										ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
 										codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
 										loadStatechartTraces(codeGenerationResourceSet, component);
-										// TODO interfaces are not yet inside
+										// The presence of the top level component and statechart traces are sufficent in the resource set
+										// Contained composite components are automatically resolved by VIATRA
 										GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
 												codeGeneration.getPackageName(), targetFolderUri);
 										generator.execute();
@@ -155,16 +156,12 @@ public class CommandHandler extends AbstractHandler {
 	}
 	
 	private void setTask(Task task, IFile file, String parentFolderUri) {
-		String projectName = file.getProject().getName();
 		// No file extension
 		String fileName = getNameWithoutExtension(file);
 		// E.g., C:/Users/...
-		String workspaceLocation = file.getWorkspace().getRoot().getLocation().toString();
+		String projectLocation = file.getProject().getLocation().toString();
 		if (task.getFileName() == null) {
 			task.setFileName(fileName);
-		}
-		if (task.getTargetProject() == null) {
-			task.setTargetProject(projectName);
 		}
 		if (task.getTargetFolder() == null) {
 			String targetFolder = null;
@@ -172,7 +169,7 @@ public class CommandHandler extends AbstractHandler {
 				targetFolder = "src-gen";
 			}
 			else {
-				targetFolder = parentFolderUri.substring((workspaceLocation + File.separator +	projectName).length());
+				targetFolder = parentFolderUri.substring(projectLocation.length() + 1);
 			}
 			task.setTargetFolder(targetFolder);
 		}

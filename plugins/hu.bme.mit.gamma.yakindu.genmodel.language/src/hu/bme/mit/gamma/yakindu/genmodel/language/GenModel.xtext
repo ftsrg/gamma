@@ -39,7 +39,6 @@ InterfaceCompilation returns InterfaceCompilation:
 	'interface' statechart=[sgraph::Statechart] '{'
 		(
 			FILE_NAME '=' fileName=STRING | // The name of the generated file
-			PROJECT_NAME '=' targetProject=STRING | // The name of the project where the Gamma file is generated
 			FOLDER_NAME '=' targetFolder=STRING | // The location of the folder relative to the project
 			PACKAGE_NAME '=' packageName=STRING // Gamma package name
 		)*
@@ -50,7 +49,6 @@ StatechartCompilation returns StatechartCompilation:
 	'statechart' statechart=[sgraph::Statechart] '{'
 		(
 			FILE_NAME '=' fileName=STRING | // The name of the generated file
-			PROJECT_NAME '=' targetProject=STRING | // The name of the project where the Gamma file is generated
 			FOLDER_NAME '=' targetFolder=STRING | // The location of the folder relative to the project
 			PACKAGE_NAME '=' packageName=STRING | // Gamma package name
 			STATECHART_NAME '=' statechartName=STRING // Gamma statechart name
@@ -65,7 +63,6 @@ CodeGeneration returns CodeGeneration:
 	'code' component=[model::Component] '{'
 		(
 			PACKAGE_NAME '=' packageName=STRING |
-			PROJECT_NAME '=' targetProject=STRING |
 			FOLDER_NAME '=' targetFolder=STRING |
 			LANGUAGE_NAME '=' language=ProgrammingLanguage
 		)*
@@ -80,7 +77,6 @@ AnalysisModelTransformation:
 	'analysis' '{'
 		(
 			'name' '=' fileName=STRING &
-			'project' '=' targetProject=STRING &
 			'folder' '=' targetFolder=STRING &			
 			'language' '=' language=AnalysisLanguage &
 			'component' '=' component=[model::Component]
@@ -107,7 +103,6 @@ enum RealizationMode returns model::RealizationMode:
 ;
 
 terminal FILE_NAME: 'fileName' ;
-terminal PROJECT_NAME: 'projectName' ;
 terminal FOLDER_NAME: 'folderName' ;
 terminal PACKAGE_NAME: 'packageName' ;
 terminal STATECHART_NAME: 'statechartName' ;

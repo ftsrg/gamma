@@ -742,7 +742,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		for (Package referredStatechart : statechart.getImports()) {
 			Package parentStatechart = getReferredPackages(statechart, referredStatechart);
 			if (parentStatechart != null) {
-				error("This statechart is in a dependency circle, referred by " + parentStatechart.getName() + "!" 
+				error("This statechart is in a dependency circle, referred by " + parentStatechart.getName() + "! " 
 						+ "Composite systems must have an acyclical dependency hierarchy!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}

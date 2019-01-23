@@ -158,7 +158,7 @@ class YakinduToGammaTransformer {
         gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
     		it.name = packageName
     		it.components += gammaStatechart
-    		it.imports += genmodel.packageImports
+    		it.imports += genmodel.packageImports.filter[it.components.empty]
     	]
     	traceRoot = TraceabilityFactory.eINSTANCE.createY2GTrace  => [
     		it.yakinduStatechart = yakinduStatechart

@@ -222,10 +222,6 @@
               <styles xmi:type="notation:FontStyle" xmi:id="_Dj0JoR5XEem57Ol9CFi0_Q" fontColor="2697711" fontName="Segoe UI" fontHeight="8"/>
               <layoutConstraint xmi:type="notation:Location" xmi:id="_Dj0Joh5XEem57Ol9CFi0_Q"/>
             </children>
-            <children xmi:type="notation:Node" xmi:id="_GOgOQB5XEem57Ol9CFi0_Q" type="3010" element="_GOQWoB5XEem57Ol9CFi0_Q">
-              <styles xmi:type="notation:FontStyle" xmi:id="_GOgOQR5XEem57Ol9CFi0_Q" fontColor="2697711" fontName="Segoe UI" fontHeight="8"/>
-              <layoutConstraint xmi:type="notation:Location" xmi:id="_GOgOQh5XEem57Ol9CFi0_Q"/>
-            </children>
             <children xmi:type="notation:Node" xmi:id="_LqbrcB5XEem57Ol9CFi0_Q" type="3010" element="_LqLz0B5XEem57Ol9CFi0_Q">
               <styles xmi:type="notation:FontStyle" xmi:id="_LqbrcR5XEem57Ol9CFi0_Q" fontColor="2697711" fontName="Segoe UI" fontHeight="8"/>
               <layoutConstraint xmi:type="notation:Location" xmi:id="_Lqbrch5XEem57Ol9CFi0_Q"/>
@@ -963,14 +959,6 @@
         <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//Task/fileName"/>
         <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//Task/fileName"/>
         <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_EVjvoB5XEem57Ol9CFi0_Q" labelAlignment="LEFT">
-          <description xmi:type="style:BundledImageDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']/@style"/>
-        </ownedStyle>
-        <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
-      </ownedElements>
-      <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_GOQWoB5XEem57Ol9CFi0_Q" name="targetProject : EString" tooltipText="">
-        <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//Task/targetProject"/>
-        <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//Task/targetProject"/>
-        <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_JJwecB5XEem57Ol9CFi0_Q" labelAlignment="LEFT">
           <description xmi:type="style:BundledImageDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']/@style"/>
         </ownedStyle>
         <actualMapping xmi:type="description_1:NodeMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@subNodeMappings[name='EC%20EAttribute']"/>
