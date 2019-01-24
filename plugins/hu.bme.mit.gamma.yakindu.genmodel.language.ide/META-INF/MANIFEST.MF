@@ -5,7 +5,8 @@ Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.1.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.genmodel.language.ide; singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: hu.bme.mit.gamma.yakindu.genmodel.language,
+Require-Bundle: hu.bme.mit.gamma.constraint.language,
+ hu.bme.mit.gamma.yakindu.genmodel.language,
  hu.bme.mit.gamma.yakindu.genmodel,
  org.eclipse.xtext.ide,
  org.eclipse.xtext.xbase.ide,

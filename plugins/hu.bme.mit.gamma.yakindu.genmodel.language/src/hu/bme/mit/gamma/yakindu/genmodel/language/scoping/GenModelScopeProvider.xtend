@@ -24,7 +24,6 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
-import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration
 
 /**
  * This class contains custom scoping description.

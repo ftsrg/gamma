@@ -172,7 +172,8 @@ public class CommandHandler extends AbstractHandler {
 												new hu.bme.mit.gamma.uppaal.transformation.batch.ModelValidator(resourceSet, newTopComponent, false);
 										validator.checkModel();
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
-										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent); // newTopComponent
+										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
+												newTopComponent, analysisModelTransformation.getParameters()); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models

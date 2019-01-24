@@ -11,12 +11,14 @@
 package hu.bme.mit.gamma.yakindu.genmodel.language.validation
 
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.yakindu.genmodel.AnalysisModelTransformation
 import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
@@ -35,7 +37,37 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-class GenModelValidator extends AbstractGenModelValidator { 
+class GenModelValidator extends AbstractGenModelValidator {
+	
+	@Check
+	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {
+		val type = analysisModelTransformation.component
+		if (analysisModelTransformation.getParameters().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS)
+		}
+	}
+	
+	@Check
+	def checkComponentInstanceArguments(AnalysisModelTransformation analysisModelTransformation) {
+		try {
+			val type = analysisModelTransformation.component
+			val parameters = type.getParameterDeclarations();
+			for (var i = 0; i < parameters.size(); i++) {
+				val parameter = parameters.get(i);
+				val argument = analysisModelTransformation.getParameters().get(i);
+				val declarationType = parameter.getType();
+				val argumentType = typeDeterminator.getType(argument);
+				if (!typeDeterminator.equals(declarationType, argumentType)) {
+					error("The types of the declaration and the right hand side expression are not the same: " +
+							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
+							argumentType.toString().toLowerCase() + ".",
+							ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS, i);
+				} 
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+	}
 	
 	@Check
 	def checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
