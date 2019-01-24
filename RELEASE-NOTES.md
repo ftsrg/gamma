@@ -50,6 +50,7 @@
 ### What is New
 
 * Components are now parameterizable. Parameterization is supported by both formal verification and code generation functionalities.
+* Gamma interfaces, Java code and UPPAAL model (in addition to Gamma statecharts) can be generated using the generator model.
 
 ### Improvements
 
