@@ -4,7 +4,7 @@ Bundle-Name: Gamma Statechart Transformer to UPPAAL
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.transformation;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-Vendor: BME-FTSRG
-Export-Package: hu.bme.mit.gamma.uppaal.transformation.batch,
+Export-Package: hu.bme.mit.gamma.uppaal.transformation,
   hu.bme.mit.gamma.uppaal.transformation.queries
 Require-Bundle: hu.bme.mit.gamma.constraint.model,
   org.eclipse.viatra.transformation.runtime.emf,

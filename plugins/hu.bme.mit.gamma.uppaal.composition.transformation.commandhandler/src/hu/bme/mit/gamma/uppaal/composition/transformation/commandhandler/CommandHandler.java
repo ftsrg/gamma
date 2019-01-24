@@ -40,7 +40,7 @@ import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
-import hu.bme.mit.gamma.uppaal.transformation.batch.ModelValidator;
+import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import uppaal.NTA;
 

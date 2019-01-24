@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.transformation.batch
+package hu.bme.mit.gamma.uppaal.transformation
 
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations

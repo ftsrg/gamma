@@ -9,8 +9,8 @@
        <menu id="gammaProjectMenu"
              label="Gamma Commands"
              icon="icons/gamma-icon-16.png">
-        <!-- Compiling Yakindu statecharts -->	    
-	    <command commandId="hu.bme.mit.gamma.yakindu.transformation" label="Compile Statechart" style="push">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.yakindu.transformation" label="Generate Artefacts" style="push">
 	    	<visibleWhen checkEnabled="false">
             	<iterate ifEmpty="false" operator="or">
 					<test
@@ -26,8 +26,8 @@
       <menu id="gammaPackageMenu"
             label="Gamma Commands"
              icon="icons/gamma-icon-16.png">
-        <!-- Compiling Yakindu statecharts -->	    
-	    <command commandId="hu.bme.mit.gamma.yakindu.transformation" label="Compile Statechart" style="push">
+        <!-- Generating Gamma artefacts -->	    
+	    <command commandId="hu.bme.mit.gamma.yakindu.transformation" label="Generate Artefacts" style="push">
 	    	<visibleWhen checkEnabled="false">
             	<iterate ifEmpty="false" operator="or">
 					<test
