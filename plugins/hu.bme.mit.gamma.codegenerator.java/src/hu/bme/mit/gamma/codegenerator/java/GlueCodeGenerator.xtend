@@ -997,12 +997,12 @@ class GlueCodeGenerator {
 	}
 	
 	/**
-	 * Returns the Yakindu event the given gamma event is generated from.
+	 * Returns the Yakindu event the given Gamma event is generated from.
 	 */
 	protected def org.yakindu.base.types.Event toYakinduEvent(Event event, Port port) {
 		val yEvents = EventToEvent.Matcher.on(engine).getAllValuesOfyEvent(port, event)
 		if (yEvents.size != 1) {
-			throw new IllegalArgumentException("Not one Yakindu event mapped to gamma event. Gamma port: " + port.name + ". " + "Gamma event: " + event.name + ". Yakindu event size: " + yEvents.size + ". Yakindu events:" + yEvents)
+			throw new IllegalArgumentException("Not one Yakindu event mapped to Gamma event. Gamma port: " + port.name + ". " + "Gamma event: " + event.name + ". Yakindu event size: " + yEvents.size + ". Yakindu events:" + yEvents)
 		}
 		return yEvents.head
 	}
@@ -1195,7 +1195,7 @@ class GlueCodeGenerator {
 	* Generates event handlers for all in ports of the given component that is responsible for raising the correct Yakindu statemachine event based on the received message.
 	*/
 	protected def generateEventHandlers(Component component) '''
-««« It is done this way, so all Yakindu interfaces mapped to the same gamma interface can process the same event
+««« It is done this way, so all Yakindu interfaces mapped to the same Gamma interface can process the same event
 	«FOR port : component.ports»
 			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
 				case "«port.name.toFirstUpper».«event.name.toFirstUpper»": 
@@ -1211,10 +1211,10 @@ class GlueCodeGenerator {
 		protected def getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
 			val events =  new HashSet<Event>
 			for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED].map[it.interfaceRealization.interface]) {
-			events.addAll(anInterface.getAllEvents(direction.oppositeDirection))
+				events.addAll(anInterface.getAllEvents(direction.oppositeDirection))
 			}
 			for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED].map[it.interfaceRealization.interface]) {
-			events.addAll(anInterface.getAllEvents(direction))
+				events.addAll(anInterface.getAllEvents(direction))
 			}
 			return events
 		}

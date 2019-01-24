@@ -37,9 +37,6 @@ import java.io.File
  * 
  * @author Benedek Horvath, Bence Graics
  */
- 
-  
- 
 class UppaalModelSerializer {
 	
 	/**
@@ -110,7 +107,8 @@ class UppaalModelSerializer {
 		«ENDFOR»
 		
 		«FOR declaration : nta.globalDeclarations.declaration.filter(VariableDeclaration)
-				.sortBy[it.variable.head.name] SEPARATOR "\n"»
+//				.sortBy[it.variable.head.name] /* To ease debugging */ 
+				SEPARATOR "\n"»
 			«declaration.serializeVariable»
 		«ENDFOR»
 		
@@ -121,9 +119,9 @@ class UppaalModelSerializer {
 						«declaration.serializeVariable»
 					«ENDFOR»
 				«ENDIF»
-					«FOR statement : function.block.statement»
-						«statement.transformStatement»
-					«ENDFOR»
+				«FOR statement : function.block.statement»
+					«statement.transformStatement»
+				«ENDFOR»
 			}
 		«ENDFOR»
 		
@@ -147,7 +145,7 @@ class UppaalModelSerializer {
 		«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"»
 			«variableDeclaration.serializeVariable»
 		«ENDFOR»
-		</declaration>					
+		</declaration>
 		«FOR location : template.location SEPARATOR "\n"»
 		<location id="«location.name»">
 		<name>

@@ -15,7 +15,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,12 +101,21 @@ public class CommandHandler extends AbstractHandler {
 								// WARNING: workspace location and imported project locations are not to be confused
 								String projectLocation = file.getProject().getLocation().toString();
 								GenModel genmodel = (GenModel) resource.getContents().get(0);
-								for (Task task : genmodel.getTasks()) {
+								// Sorting: InterfaceCompilation < StatechartCompilarion < else
+								List<Task> sortedTaskList = new ArrayList<Task>(genmodel.getTasks());
+								sortedTaskList.sort( (a, b) -> {
+									if (a instanceof InterfaceCompilation) return -1;
+									if (b instanceof InterfaceCompilation) return 1;
+									if (a instanceof StatechartCompilation) return -1;
+									if (b instanceof StatechartCompilation) return 1;
+									return 0;
+								});
+								for (Task task : sortedTaskList) {
 									setTask(task, file, parentFolderUri);
 									String targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder());
 									if (task instanceof YakinduCompilation) {
 										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
-										setYakinduCompilation(yakinduCompilation, fileName);
+										setYakinduCompilation(yakinduCompilation);
 										if (task instanceof InterfaceCompilation) {
 											logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resSet);
 											InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
@@ -152,6 +163,7 @@ public class CommandHandler extends AbstractHandler {
 										AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
 										checkArgument(analysisModelTransformation.getLanguage() == AnalysisLanguage.UPPAAL, 
 												"Currently only UPPAAL is supported.");
+										setAnalysisModelTransformation(analysisModelTransformation);
 										// Unfolding the given system
 										Component component = analysisModelTransformation.getComponent();
 										Package gammaPackage = (Package) component.eContainer();
@@ -202,13 +214,8 @@ public class CommandHandler extends AbstractHandler {
 	}
 	
 	private void setTask(Task task, IFile file, String parentFolderUri) {
-		// No file extension
-		String fileName = getNameWithoutExtension(file);
 		// E.g., C:/Users/...
 		String projectLocation = file.getProject().getLocation().toString();
-		if (task.getFileName() == null) {
-			task.setFileName(fileName);
-		}
 		if (task.getTargetFolder() == null) {
 			String targetFolder = null;
 			if (task instanceof CodeGeneration) {
@@ -221,9 +228,13 @@ public class CommandHandler extends AbstractHandler {
 		}
 	}
 
-	private void setYakinduCompilation(YakinduCompilation yakinduCompilation, String packageName) {
+	private void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
+		String fileName = getNameWithoutExtension(getContainingFileName(yakinduCompilation.getStatechart()));
+		if (yakinduCompilation.getFileName() == null) {
+			yakinduCompilation.setFileName(fileName);
+		}
 		if (yakinduCompilation.getPackageName() == null) {
-			yakinduCompilation.setPackageName(packageName);
+			yakinduCompilation.setPackageName(fileName);
 		}
 	}
 	
@@ -236,6 +247,13 @@ public class CommandHandler extends AbstractHandler {
 	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {
 		if (codeGeneration.getPackageName() == null) {
 			codeGeneration.setPackageName(packageName);
+		}
+	}
+	
+	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
+		if (analysisModelTransformation.getFileName() == null) {
+			String fileName = getNameWithoutExtension(getContainingFileName(analysisModelTransformation.getComponent()));
+			analysisModelTransformation.setFileName(fileName);
 		}
 	}
 	
@@ -257,8 +275,12 @@ public class CommandHandler extends AbstractHandler {
 		}
 	}
 	
-	private String getNameWithoutExtension(IFile file) {
-		return file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
+	private String getContainingFileName(EObject object) {
+		return object.eResource().getURI().lastSegment();
+	}
+	
+	private String getNameWithoutExtension(String fileName) {
+		return fileName.substring(0, fileName.lastIndexOf("."));
 	}
 	
 	/**

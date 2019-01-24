@@ -33,6 +33,24 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         // Line break after these rules
         c.setLinewrap(1).after(f.getGenModelAccess().getPackageImportsAssignment_0_1_0());
         c.setLinewrap(1).after(f.getGenModelAccess().getStatechartImportsAssignment_0_1_1_1());
+        // Interface compilation
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_3_2_2());
+        // Statechart compilation
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getTargetFolderAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getFileNameAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getPackageNameAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartNameAssignment_3_3_2());
+        // Code generation
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getTargetFolderAssignment_3_0_2());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getPackageNameAssignment_3_1_2());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getLanguageAssignment_3_2_2());
+        // Analysis model transformation
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_4_0_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_4_1_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_4_2_2());
+        // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
 			c.setIndentation(pair.getFirst(), pair.getSecond());
@@ -45,6 +63,11 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
 			c.setNoSpace().before(comma);
 			c.setLinewrap().after(comma);
 		}
+        // No space around parentheses
+        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
+            c.setNoSpace().around(p.getFirst());
+            c.setNoSpace().before(p.getSecond());
+        }
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());
 		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule());
