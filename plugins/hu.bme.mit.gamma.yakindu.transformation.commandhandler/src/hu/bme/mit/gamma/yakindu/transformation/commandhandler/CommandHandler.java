@@ -28,6 +28,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -43,6 +44,12 @@ import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
+import hu.bme.mit.gamma.yakindu.genmodel.AnalysisLanguage;
+import hu.bme.mit.gamma.yakindu.genmodel.AnalysisModelTransformation;
 import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel;
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
@@ -54,6 +61,7 @@ import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
 import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
+import uppaal.NTA;
 
 /**
  * This class receives the transformation command, acquires the Yakindu model as a resource,
@@ -132,13 +140,50 @@ public class CommandHandler extends AbstractHandler {
 										ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
 										codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
 										loadStatechartTraces(codeGenerationResourceSet, component);
-										// The presence of the top level component and statechart traces are sufficent in the resource set
+										// The presence of the top level component and statechart traces are sufficient in the resource set
 										// Contained composite components are automatically resolved by VIATRA
 										GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
 												codeGeneration.getPackageName(), targetFolderUri);
 										generator.execute();
 										generator.dispose();
 										logger.log(Level.INFO, "The Java code generation has been finished.");
+									}
+									else if (task instanceof AnalysisModelTransformation) {
+										AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
+										checkArgument(analysisModelTransformation.getLanguage() == AnalysisLanguage.UPPAAL, 
+												"Currently only UPPAAL is supported.");
+										// Unfolding the given system
+										Component component = analysisModelTransformation.getComponent();
+										Package gammaPackage = (Package) component.eContainer();
+										SimpleEntry<Package, Component> packageWithTopComponent = new ModelUnfolder().unfold(gammaPackage);
+										Component topComponent = packageWithTopComponent.getValue();
+										// Saving the Package of the unfolded model
+										String flattenedModelFileName = "." + analysisModelTransformation.getFileName() + ".gsm";
+										normalSave(packageWithTopComponent.getKey(), targetFolderUri, flattenedModelFileName);
+										// Reading the model from disk as this is the only way it works
+										ResourceSet resourceSet = new ResourceSetImpl();
+										logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
+										Resource flattenedResource = resourceSet.getResource(
+												URI.createFileURI(targetFolderUri + File.separator + flattenedModelFileName), true);
+										// Needed because reading from disk means it is another model now
+										Component newTopComponent = getEquivalentComposite(flattenedResource, topComponent);
+										// Checking the model whether it contains forbidden elements
+										hu.bme.mit.gamma.uppaal.transformation.batch.ModelValidator validator = 
+												new hu.bme.mit.gamma.uppaal.transformation.batch.ModelValidator(resourceSet, newTopComponent, false);
+										validator.checkModel();
+										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
+										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent); // newTopComponent
+										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
+										NTA nta = resultModels.getKey();
+										// Saving the generated models
+										normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName() + ".uppaal");
+										normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName() + ".g2u");
+										// Serializing the NTA model to XML
+										UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName() + ".xml");
+										UppaalModelSerializer.createQueries(transformer.getTemplateLocationsMap(), "isStable", targetFolderUri,
+												analysisModelTransformation.getFileName() + ".q");
+										transformer.dispose();
+										logger.log(Level.INFO, "The composite system transformation has been finished.");
 									}
 								}
 							}
@@ -213,6 +258,26 @@ public class CommandHandler extends AbstractHandler {
 	
 	private String getNameWithoutExtension(IFile file) {
 		return file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
+	}
+	
+	/**
+	 * Returns the CompositeDefinition from the resource that equals to the given composite.
+	 */
+	private Component getEquivalentComposite(Resource resource, Component component) {
+		Package gammaPackage = (Package) resource.getContents().get(0);
+		Component foundComponent = (Component) gammaPackage.getComponents().get(0);
+		if (helperEquals(component, foundComponent)) {
+			return foundComponent;
+		}
+		throw new IllegalArgumentException("No equivalent component!");
+	}
+	
+	/**
+	 * Returns whether the given objects are equal with respect to ecore copies.
+	 */
+	private boolean helperEquals(EObject lhs, EObject rhs) {
+		EqualityHelper helper = new EqualityHelper();
+		return helper.equals(lhs, rhs);
 	}
 	
 	/**

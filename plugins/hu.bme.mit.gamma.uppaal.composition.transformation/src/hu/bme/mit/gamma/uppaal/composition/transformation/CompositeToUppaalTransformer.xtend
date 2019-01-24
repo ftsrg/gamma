@@ -236,6 +236,9 @@ class CompositeToUppaalTransformer {
 	// Logger
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
 	
+	// Arguments for the top level component
+	protected List<Expression> topComponentArguments = new ArrayList<Expression>
+	
 	// Engine on the gamma resource 
     protected ViatraQueryEngine engine
      // Engine on the trace resource 
@@ -303,11 +306,17 @@ class CompositeToUppaalTransformer {
         createTransformation 
     }
     
+    new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments) { 
+        this(resourceSet, component)
+        this.topComponentArguments.addAll(topComponentArguments)
+    }
+    
     def execute() {
     	initNta
     	createMessageStructType
     	createFinalizeSyncVar
     	createIsStableVar
+    	transformTopComponentArguments
     	while (!areAllParametersTransformed) {
 			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
 		}
@@ -2260,6 +2269,21 @@ class CompositeToUppaalTransformer {
 		}
 		// Traces are created in the transformVariable method
 	].build
+	
+	private def transformTopComponentArguments() {
+		for (var i = 0; i < topComponentArguments.size; i++) {
+			val parameter = component.parameterDeclarations.get(i)
+			val argument = topComponentArguments.get(i)
+			val initializer = createExpressionInitializer => [
+				it.transform(expressionInitializer_Expression, argument, null /*No instance associated*/)
+			]
+			// The initialization is created, variable has to be created
+			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
+				parameter.name + "Of" + component.name)
+			uppaalVariable.variable.head.initializer = initializer
+			// Traces are created in the createVariable method
+		}
+	}
 	
 	/**
      * This rule is responsible for transforming the bound parameters.

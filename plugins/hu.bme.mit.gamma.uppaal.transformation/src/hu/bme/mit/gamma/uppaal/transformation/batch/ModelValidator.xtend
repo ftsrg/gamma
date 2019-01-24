@@ -32,16 +32,25 @@ class ModelValidator {
 	protected ResourceSet resourceSet 
 	protected ViatraQueryEngine engine
 	
-	new(ResourceSet resourceSet, Component topComponent) {
+	boolean checkTopComponentParameters
+	
+	new(ResourceSet resourceSet, Component topComponent, boolean checkTopComponentParameters) {
         this.resourceSet = resourceSet
         this.topComponent = topComponent
+        this.checkTopComponentParameters = checkTopComponentParameters
         // Create EMF scope and EMF IncQuery engine based on the TTMC resource
         val scope = new EMFScope(resourceSet)
         engine = ViatraQueryEngine.on(scope)
     }
     
+    new(ResourceSet resourceSet, Component topComponent) {
+        this(resourceSet, topComponent, true)
+    }
+    
     def checkModel() {
-    	checkTopComponentParamters
+    	if (checkTopComponentParameters) {
+    		checkTopComponentParameters()
+    	}
     	checkConstants
     	checkInOutTransitions
     	checkChoiceTransitions 
@@ -54,7 +63,7 @@ class ModelValidator {
 	/**
 	 * This method checks whether the top components has parameters. If so, it throws an exception.
 	 */
-	def checkTopComponentParamters() {
+	def checkTopComponentParameters() {
 		if (!topComponent.parameterDeclarations.empty) {
 			throw new IllegalArgumentException("The top component must not have parameters. " + topComponent.parameterDeclarations)
 		}

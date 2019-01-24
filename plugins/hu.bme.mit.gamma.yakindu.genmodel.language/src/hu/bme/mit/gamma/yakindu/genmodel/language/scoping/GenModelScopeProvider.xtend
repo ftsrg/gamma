@@ -40,9 +40,9 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val genmodel = yakinduCompilation.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.statechartImports)
 		}
-		if (context instanceof CodeGeneration && reference == GenmodelPackage.Literals.CODE_GENERATION__COMPONENT) {
-			val codeGeneration = context as CodeGeneration
-			val genmodel = codeGeneration.eContainer as GenModel
+		if (reference == GenmodelPackage.Literals.CODE_GENERATION__COMPONENT ||
+				reference == GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COMPONENT) {
+			val genmodel = context.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}

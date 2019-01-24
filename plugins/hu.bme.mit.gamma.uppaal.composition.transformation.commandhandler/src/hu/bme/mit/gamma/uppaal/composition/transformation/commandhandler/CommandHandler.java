@@ -152,8 +152,7 @@ public class CommandHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Returns the CompositeDefinition from the resource that equals to the given
-	 * composite.
+	 * Returns the CompositeDefinition from the resource that equals to the given composite.
 	 */
 	private Component getEquivalentComposite(Resource resource, Component component) {
 		Package gammaPackage = (Package) resource.getContents().get(0);
