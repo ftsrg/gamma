@@ -22,6 +22,7 @@ import java.awt.event.FocusListener;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -71,6 +72,8 @@ public class View extends JFrame {
 	private JMenuBar menuBar;
 	private JMenu optionsMenu;
 	
+	private JMenu modelCheckingOptionsMenu;
+	
 	private JMenuItem traversalMenu;	
 	private ButtonGroup searchOrderGroup;
 	private JRadioButtonMenuItem breadthFirst;
@@ -95,6 +98,10 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem noSpaceStateReduction;
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
+	
+	private JMenu testSetGenerationOptionsMenu;
+	private JCheckBoxMenuItem stateCoverage;
+	private JCheckBoxMenuItem transitionCoverage;
 	
 	private JTextArea exampleTextArea;
 	private JTextArea helpTextArea;
@@ -139,6 +146,10 @@ public class View extends JFrame {
 		menuBar.add(optionsMenu);
 		setJMenuBar(menuBar);
 		
+		// Model checking options
+		modelCheckingOptionsMenu = new JMenu("Model Checking");
+		optionsMenu.add(modelCheckingOptionsMenu);
+		
 		// Setting the search order
 		traversalMenu = new JMenu("Search Order");
 		breadthFirst = new JRadioButtonMenuItem("Breadth First");
@@ -153,7 +164,7 @@ public class View extends JFrame {
 	    traversalMenu.add(depthFirst);
 	    traversalMenu.add(randomDepthFirst);
 		
-	    optionsMenu.add(traversalMenu);
+	    modelCheckingOptionsMenu.add(traversalMenu);
 	    
 	    // Setting the diagnostic trace
 	 	traceMenu = new JMenu("Diagnostic Trace");
@@ -169,7 +180,7 @@ public class View extends JFrame {
 	 	traceMenu.add(shortestTrace);
 	 	traceMenu.add(fastestTrace);
 	 		
-	 	optionsMenu.add(traceMenu);
+	 	modelCheckingOptionsMenu.add(traceMenu);
 	 	
 	    // Setting the hashtable size
 	 	hashtableSizeMenu = new JMenu("Hash Table Size");
@@ -188,7 +199,7 @@ public class View extends JFrame {
 	 	hashtableSizeMenu.add(size256M);
 	 	hashtableSizeMenu.add(size512M);
 	 		
-	 	optionsMenu.add(hashtableSizeMenu);
+	 	modelCheckingOptionsMenu.add(hashtableSizeMenu);
 	 	
 	    // Setting the state space reduction
 	 	spaceStateReductionMenu = new JMenu("State Space Reduction");
@@ -204,7 +215,19 @@ public class View extends JFrame {
 	 	spaceStateReductionMenu.add(conservativeSpaceStateReduction);
 	 	spaceStateReductionMenu.add(aggressiveSpaceStateReduction);
 	 		
-	 	optionsMenu.add(spaceStateReductionMenu);
+	 	modelCheckingOptionsMenu.add(spaceStateReductionMenu);
+	 	
+		// Test set generation options
+		testSetGenerationOptionsMenu = new JMenu("Test Generation");
+		
+		stateCoverage = new JCheckBoxMenuItem("State Coverage");
+		stateCoverage.setSelected(true);
+		transitionCoverage = new JCheckBoxMenuItem("Transition Coverage");
+		
+		testSetGenerationOptionsMenu.add(stateCoverage);
+		testSetGenerationOptionsMenu.add(transitionCoverage);
+		
+		optionsMenu.add(testSetGenerationOptionsMenu);
 	 	
 		// Setting the temporal logical operators using JComboBox		
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
