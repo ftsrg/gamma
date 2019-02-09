@@ -1,8 +1,10 @@
 import "Interfaces/Interfaces.gcd"
 import external "TrafficLightCtrl.sct"
 
-statechart TrafficLightCtrl mappings {
-	map Control = Control as required
-	map PoliceInterrupt = PoliceInterrupt as required
-	map LightCommands = LightCommands as provided
+statechart TrafficLightCtrl {
+	mappings {
+		map Control = Control as required
+		map PoliceInterrupt = PoliceInterrupt as required
+		map LightCommands = LightCommands as provided
+	}
 }
