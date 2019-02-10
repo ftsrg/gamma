@@ -19,7 +19,7 @@ import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ec
 
 ExecutionTrace returns ExecutionTrace:
 	'import' ^import=[StatechartModel::Package | STRING]
-	'component' component=[StatechartModel::Component]
+	'trace' name=ID 'of' component=[StatechartModel::Component]
 		steps+=Step (steps+=Step)*
 ;
 

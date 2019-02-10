@@ -74,10 +74,8 @@ public class CommandHandler extends AbstractHandler {
 									importedPackageName = importedPackageName.substring(0, importedPackageName.length() - "View".length());
 								} 
 								else {
-									logger.log(Level.WARNING, "The package name does not contain View at the end: " +
-											importedPackageName);
+									logger.log(Level.WARNING, "The package name does not contain View at the end: " + importedPackageName);
 								}
-									
 								String className = splittedPath[splittedPath.length - 1].split(".get")[0];
 								TestGenerator testGenerator = new TestGenerator(path, resSet, executionTrace,
 										file.getProject().getName(), className);
@@ -104,7 +102,6 @@ public class CommandHandler extends AbstractHandler {
 	
 	/**
 	 * Creates a Java class from the the given code at the location specified by the given URI.
-	 * @throws IOException 
 	 */
 	private void saveCode(String code, String uri) throws IOException {
 		new File(uri).getParentFile().mkdirs();

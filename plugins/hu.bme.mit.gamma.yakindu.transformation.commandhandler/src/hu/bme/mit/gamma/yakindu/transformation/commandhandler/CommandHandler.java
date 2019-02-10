@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.yakindu.transformation.commandhandler;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
@@ -58,6 +61,7 @@ import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.Task;
+import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration;
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation;
 import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
@@ -108,10 +112,16 @@ public class CommandHandler extends AbstractHandler {
 									if (b instanceof InterfaceCompilation) return 1;
 									if (a instanceof StatechartCompilation) return -1;
 									if (b instanceof StatechartCompilation) return 1;
+									if (a instanceof AnalysisModelTransformation) return -1;
+									if (b instanceof AnalysisModelTransformation) return 1;
+									if (a instanceof CodeGeneration) return -1;
+									if (b instanceof CodeGeneration) return 1;
+									if (a instanceof TestGeneration) return -1;
+									if (b instanceof TestGeneration) return 1;
 									return 0;
 								});
 								for (Task task : sortedTaskList) {
-									setTask(task, file, parentFolderUri);
+									setTargetFolder(task, file, parentFolderUri);
 									String targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder());
 									if (task instanceof YakinduCompilation) {
 										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
@@ -129,7 +139,7 @@ public class CommandHandler extends AbstractHandler {
 										else if (task instanceof StatechartCompilation) {
 											logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resSet);
 											StatechartCompilation statechartCompilation = (StatechartCompilation) task;
-											setStatechartCompilation(statechartCompilation, fileName + "Statechart");
+											setStatechartCompilation(statechartCompilation, yakinduCompilation.getPackageName() + "Statechart");
 											ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
 											validator.checkModel();
 											YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
@@ -206,6 +216,22 @@ public class CommandHandler extends AbstractHandler {
 										transformer.dispose();
 										logger.log(Level.INFO, "The composite system transformation has been finished.");
 									}
+									else if (task instanceof TestGeneration) {
+										TestGeneration testGeneration = (TestGeneration) task;
+										checkArgument(testGeneration.getLanguage() == ProgrammingLanguage.JAVA, 
+												"Currently only Java is supported.");
+										setTestGeneration(testGeneration, file.getProject().getName());
+										ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
+										ResourceSet testGenerationResourceSet = new ResourceSetImpl();
+										testGenerationResourceSet.getResource(testGeneration.eResource().getURI(), true);
+										logger.log(Level.INFO, "Resource set content for test generation: " + testGenerationResourceSet);
+										TestGenerator testGenerator = new TestGenerator(targetFolderUri, testGenerationResourceSet, executionTrace,
+												testGeneration.getPackageName(), testGeneration.getFileName());
+										String testClass = testGenerator.execute();
+										saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
+												testGeneration.getFileName() + ".java", testClass);
+										logger.log(Level.INFO, "The test generation has been finished.");
+									}
 								}
 							}
 						}
@@ -221,13 +247,16 @@ public class CommandHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private void setTask(Task task, IFile file, String parentFolderUri) {
+	private void setTargetFolder(Task task, IFile file, String parentFolderUri) {
 		// E.g., C:/Users/...
 		String projectLocation = file.getProject().getLocation().toString();
 		if (task.getTargetFolder() == null) {
 			String targetFolder = null;
 			if (task instanceof CodeGeneration) {
 				targetFolder = "src-gen";
+			}
+			else if (task instanceof TestGeneration) {
+				targetFolder = "test-gen";
 			}
 			else {
 				targetFolder = parentFolderUri.substring(projectLocation.length() + 1);
@@ -256,6 +285,7 @@ public class CommandHandler extends AbstractHandler {
 		if (codeGeneration.getPackageName() == null) {
 			codeGeneration.setPackageName(packageName);
 		}
+		// TargetFolder set in setTask
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
@@ -263,6 +293,16 @@ public class CommandHandler extends AbstractHandler {
 			String fileName = getNameWithoutExtension(getContainingFileName(analysisModelTransformation.getComponent()));
 			analysisModelTransformation.setFileName(fileName);
 		}
+	}
+	
+	private void setTestGeneration(TestGeneration testGeneration, String packageName) {
+		if (testGeneration.getPackageName() == null) {
+			testGeneration.setPackageName(packageName);
+		}
+		if (testGeneration.getFileName() == null) {
+			testGeneration.setFileName("ExecutionTraceSimulation");
+		}
+		// TargetFolder set in setTask
 	}
 	
 	private void loadStatechartTraces(ResourceSet resourceSet, Component component) {
@@ -348,6 +388,17 @@ public class CommandHandler extends AbstractHandler {
 				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_STATECHART_LANGUAGE_STATECHARTLANGUAGE);
 		StatechartLanguageSerializer serializer = injector.getInstance(StatechartLanguageSerializer.class);
 		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+	}
+	
+	/**
+	 * Creates a Java class from the the given code at the location specified by the given URI.
+	 */
+	private void saveCode(String parentFolder, String fileName, String code) throws IOException {
+		String path = parentFolder + File.separator + fileName;
+		new File(path).getParentFile().mkdirs();
+		try (FileWriter fileWriter = new FileWriter(path)) {
+			fileWriter.write(code);
+		}
 	}
 	
 }

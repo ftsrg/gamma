@@ -106,6 +106,7 @@ class StringTraceBackAnnotator {
 		val trace = createExecutionTrace => [
 			it.component = this.component
 			it.import = this.component.eContainer as Package
+			it.name = this.component.name + "Trace"
 		]	
 		var isFirstStep = true
 		// Collections to store the locations and variable values in

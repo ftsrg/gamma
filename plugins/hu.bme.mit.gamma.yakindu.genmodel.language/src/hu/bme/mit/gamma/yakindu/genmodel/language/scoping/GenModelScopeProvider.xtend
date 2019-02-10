@@ -45,6 +45,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
+		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE) {
+			val genmodel = context.eContainer as GenModel
+			return Scopes.scopeFor(genmodel.traceImports)
+		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
 			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart

@@ -21,9 +21,9 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 		// Setting the maximum size of lines
         c.setAutoLinewrap(130)
         // Line break between import and component keywords
-        c.setLinewrap(1).between(f.executionTraceAccess.importAssignment_1, f.executionTraceAccess.componentKeyword_2)
+        c.setLinewrap(1).between(f.executionTraceAccess.importAssignment_1, f.executionTraceAccess.traceKeyword_2)
         // Line breaks after these rules
-        c.setLinewrap(1).after(f.executionTraceAccess.componentAssignment_3)
+        c.setLinewrap(1).after(f.executionTraceAccess.componentAssignment_5)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
         c.setLinewrap(1).after(f.stepAccess.commaKeyword_7_3_0)

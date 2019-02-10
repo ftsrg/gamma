@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.ui,
  de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.uppaal.serializer,
- hu.bme.mit.gamma.uppaal.transformation;bundle-version="2.1.0"
+ hu.bme.mit.gamma.uppaal.transformation;bundle-version="2.1.0",
+ hu.bme.mit.gamma.uppaal.backannotation
 Export-Package: hu.bme.mit.gamma.yakindu.transformation.commandhandler
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.yakindu.transformation.commandhandler

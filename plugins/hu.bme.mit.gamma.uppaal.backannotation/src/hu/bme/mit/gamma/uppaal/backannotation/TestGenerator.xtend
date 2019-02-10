@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.WrapperInstanceContainer
-import java.io.File
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -54,8 +53,6 @@ class TestGenerator {
     protected final String packageName
 	protected final String className
 	protected final String componentClassName
-	// URI of the test class
-	protected final String testClassUri
 	
 	protected final ViatraQueryEngine engine
 	
@@ -80,8 +77,6 @@ class TestGenerator {
 		// Initializing the string variables
 		this.packageName = getPackageName
     	this.className = className
-		val packageUri = folderUri + File.separator + TEST_FOLDER + File.separator + packageName.replaceAll("\\.", "\\/")
-		this.testClassUri = packageUri + File.separator + packageUri.getFileName
 		this.componentClassName = component.name.toFirstUpper
 	}
 	
@@ -90,16 +85,6 @@ class TestGenerator {
 	 */
 	def String execute() {
 		return trace.generateTestClass(component, className).toString
-	}
-	
-	/**
-     * Returns the next valid name for the file containing the generated tests.
-     */
-	private def getFileName(String folderUri) {
-		val fileExtension = "java"
-    	val folder = new File(folderUri)
-    	folder.mkdirs
-		return className + "." + fileExtension;   
 	}
 	
 	def getPackageName() {

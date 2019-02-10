@@ -29,7 +29,8 @@ class GenModelLinker extends DefaultLinkingService {
     
     override getLinkedObjects(EObject context, EReference ref, INode node) {
     	if (context instanceof GenModel) {
-    		if (ref == genModel_StatechartImports || ref == genModel_PackageImports) {
+    		if (ref == genModel_StatechartImports || ref == genModel_PackageImports ||
+    				ref == genModel_TraceImports) {
     			try {
 		    		val root = context
 		    		val path = valueConverterService.toValue(node.getText(),
