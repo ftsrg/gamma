@@ -34,6 +34,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getGenModelAccess().getPackageImportsAssignment_0_1_0());
         c.setLinewrap(1).after(f.getGenModelAccess().getStatechartImportsAssignment_0_1_1_1());
         // Interface compilation
+        c.setLinewrap(1).after(f.getEventMappingRule());
         c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_3_1_2());
         c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_3_2_2());

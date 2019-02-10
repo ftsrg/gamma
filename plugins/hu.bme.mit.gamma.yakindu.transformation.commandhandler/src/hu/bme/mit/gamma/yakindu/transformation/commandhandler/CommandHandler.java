@@ -185,7 +185,7 @@ public class CommandHandler extends AbstractHandler {
 										validator.checkModel();
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-												newTopComponent, analysisModelTransformation.getParameters()); // newTopComponent
+												newTopComponent, analysisModelTransformation.getParameters(), analysisModelTransformation.isTransitionCoverage()); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models
@@ -193,8 +193,16 @@ public class CommandHandler extends AbstractHandler {
 										normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName() + ".g2u");
 										// Serializing the NTA model to XML
 										UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName() + ".xml");
-										UppaalModelSerializer.createQueries(transformer.getTemplateLocationsMap(), "isStable", targetFolderUri,
-												analysisModelTransformation.getFileName() + ".q");
+										// Creating a new query file
+										new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName() + ".q").delete();
+										if (analysisModelTransformation.isStateCoverage()) {
+											UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(),
+												transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName() + ".q");
+										}
+										if (analysisModelTransformation.isTransitionCoverage()) {
+											UppaalModelSerializer.createTransitionFireabilityQueries(transformer.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
+												"", targetFolderUri, analysisModelTransformation.getFileName() + ".q");
+										}
 										transformer.dispose();
 										logger.log(Level.INFO, "The composite system transformation has been finished.");
 									}

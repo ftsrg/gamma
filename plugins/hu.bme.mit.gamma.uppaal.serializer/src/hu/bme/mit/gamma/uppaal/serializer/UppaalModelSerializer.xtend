@@ -59,7 +59,7 @@ class UppaalModelSerializer {
 			// Information message, about the completion of the transformation.
 			Logger.getLogger("GammaLogger").log(Level.INFO, "The serialization has been finished.")
 		} catch (IOException ex) {
-			System.err.println("An error occurred, while creating the XML file. " + ex.message)
+			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the XML file. " + ex.message)
 		}
 	}
 	
@@ -71,20 +71,42 @@ class UppaalModelSerializer {
 	 *            The path for the output file. It contains the file name also,
 	 *            except for the file extension.
 	 */
-	def static createQueries(Map<String, String[]> states, String extra, String parentFolder, String fileName) {
+	def static createStateReachabilityQueries(Map<String, String[]> states, String suffix, String parentFolder, String fileName) {
 		try {
-			var fw = new FileWriter(parentFolder + File.separator + fileName)
+			var writer = new FileWriter(parentFolder + File.separator + fileName, true)
 			val deadlockQuery = createDeadlockQuery
-			val reachabilityQuery = createReachabilityQuery(states, extra)
-			fw.write(deadlockQuery.toString + reachabilityQuery.toString)
-			fw.close
+			val reachabilityQueries = createStateReachabilityQueries(states, suffix)
+			writer.append(deadlockQuery.toString + reachabilityQueries.toString)
+			writer.close
 			// information message, about the completion of the transformation.
 			Logger.getLogger("GammaLogger").log(Level.INFO, "Query generations have been finished.")
 		} catch (IOException ex) {
-			System.err.println("An error occurred, while creating the q file. " + ex.message)
+			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the q file. " + ex.message)
 		}
 	}
 	
+	
+	/**
+	 * Creates some easy temporal logical queries checking the fireability of the transitions.
+	 * The created q file can be loaded by the UPPAAL.
+	 * @param states The names of the states in the TTMC model.
+	 * @param filepath
+	 *            The path for the output file. It contains the file name also,
+	 *            except for the file extension.
+	 */
+	def static createTransitionFireabilityQueries(String variableName, int maxId, String suffix,
+			String parentFolder, String fileName) {
+		try {
+			var writer = new FileWriter(parentFolder + File.separator + fileName, true)
+			val fireabilityQueries = createTransitionFireabilityQueries(variableName, maxId, suffix)
+			writer.append(fireabilityQueries.toString)
+			writer.close
+			// information message, about the completion of the transformation.
+			Logger.getLogger("GammaLogger").log(Level.INFO, "Query generations have been finished.")
+		} catch (IOException ex) {
+			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the q file. " + ex.message)
+		}
+	}
 	/**
 	 * Create the header and the beginning of the XML file, that contains 
 	 * the declaration of the top-level UPPAAL module (NTA) and the global 
@@ -223,10 +245,10 @@ class UppaalModelSerializer {
 	 * Returns a set of queries that checks whether the location equivalent of states are reachable in the model.
 	 * It does not generate queries for LocalReactionStates.
 	 */
-	private def static createReachabilityQuery(Map<String, String[]> templateLocationsMap, String extra) '''
+	private def static createStateReachabilityQueries(Map<String, String[]> templateLocationsMap, String suffix) '''
 		«FOR templateLocations : templateLocationsMap.entrySet.sortBy[it.key]»
 			«FOR state : templateLocations.value.filter[!it.startsWith("LocalReactionState")].sort»
-				E<> «templateLocations.key.processNameOfTemplate».«state»«IF extra !== null» && «extra»«ENDIF»
+				E<> «templateLocations.key.processNameOfTemplate».«state»«IF suffix !== null»«IF !suffix.nullOrEmpty» && «suffix»«ENDIF»«ENDIF»
 			«ENDFOR»
 		«ENDFOR»
 	'''
@@ -236,5 +258,15 @@ class UppaalModelSerializer {
 	 */
 	private def static getProcessNameOfTemplate(String templateName) '''
 		P_«templateName»'''
+		
+	/**
+	 * Returns a set of queries that checks whether the location equivalent of states are reachable in the model.
+	 * It does not generate queries for LocalReactionStates.
+	 */
+	private def static createTransitionFireabilityQueries(String variableName, int maxId, String suffix) '''
+		«FOR i : 0 ..< maxId»
+			E<> «variableName» == «i»«IF !suffix.nullOrEmpty» && «suffix»«ENDIF»
+		«ENDFOR»
+	'''
 
 }

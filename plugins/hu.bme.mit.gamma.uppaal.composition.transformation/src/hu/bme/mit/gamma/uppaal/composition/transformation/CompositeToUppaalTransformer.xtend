@@ -253,7 +253,8 @@ class CompositeToUppaalTransformer {
 	protected G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
-	// isActive variable
+	// isStablevariable
+	protected final String isStableVarName = "isStable"
 	protected DataVariableDeclaration isStableVar
 	
 	// Message struct tpyes
@@ -282,22 +283,28 @@ class CompositeToUppaalTransformer {
     protected int id = 0
     // For the async event queue constants
     protected int constantVal = 1 // Starting from 1, as 0 means empty
-        
+    // Transition ids
+    protected boolean generateTransitionId = false
+    protected final String transitionIdVarName = "transitionId"
+    protected DataVariableDeclaration transitionIdVar
+    protected int transitionId = 0
+    
     protected extension ExpressionTransformer expTransf
     protected extension ExpressionCopier expCop
     protected extension ExpressionEvaluator expEval
 
-    new(ResourceSet resourceSet, Component component) { 
+    new(ResourceSet resourceSet, Component component, boolean generateTransitionId) { 
         this.resources = resourceSet
 		this.sourceRoot = component.eContainer as Package
         this.component = component
+        this.generateTransitionId = generateTransitionId
         this.target = UppaalFactory.eINSTANCE.createNTA
         // Connecting the two models in trace
         this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
         	it.gammaPackage = this.sourceRoot
         	it.nta = this.target
         ]
-        // Create EMF scope and EMF IncQuery engine based on the gamma resource
+        // Create EMF scope and EMF IncQuery engine based on the Gamma resource
         val scope = new EMFScope(resourceSet)
         engine = ViatraQueryEngine.on(scope);      
         // Create EMF scope and EMF IncQuery engine based on created root element of traces
@@ -306,8 +313,9 @@ class CompositeToUppaalTransformer {
         createTransformation 
     }
     
-    new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments) { 
-        this(resourceSet, component)
+    new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments,
+			boolean genereateTransitionId) { 
+        this(resourceSet, component, genereateTransitionId)
         this.topComponentArguments.addAll(topComponentArguments)
     }
     
@@ -316,6 +324,9 @@ class CompositeToUppaalTransformer {
     	createMessageStructType
     	createFinalizeSyncVar
     	createIsStableVar
+    	if (generateTransitionId) {
+    		createTransitionIdVar
+    	}
     	transformTopComponentArguments
     	while (!areAllParametersTransformed) {
 			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
@@ -479,11 +490,23 @@ class CompositeToUppaalTransformer {
     }
     
     /**
-     * Creates a bool variable that shows whether a cycle is in progress or a cycle ended.
+     * Creates a boolean variable that shows whether a cycle is in progress or a cycle ended.
      */
     private def createIsStableVar() {		
-    	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, "isStable")
+    	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVarName)
     	isStableVar.initVar(true)
+    }
+    
+    /**
+     * Creates an integer variable that stores the id of a particular transition.
+     */
+    private def createTransitionIdVar() {		
+    	transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVarName)
+    	transitionIdVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
+			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
+				it.text = "-1"
+			]
+		]
     }
     
     /**
@@ -2457,6 +2480,11 @@ class CompositeToUppaalTransformer {
 			val source = getEdgeSource(it.source).filter(Location).filter[it.parentTemplate == template].head
 			val target = getEdgeTarget(it.target).filter(Location).filter[it.parentTemplate == template].head
 			val edge = source.createEdge(target)
+			if (generateTransitionId) {
+				edge.createAssignmentExpression(edge_Update, transitionIdVar,
+					createLiteralExpression => [it.text = (transitionId++).toString]
+				)
+			}
 			// Creating the trace
 			addToTrace(it.transition, #{edge}, trace)			
 			addToTrace(owner, #{edge}, instanceTrace)			
@@ -2487,7 +2515,13 @@ class CompositeToUppaalTransformer {
 		if (tsource.eContainer == ttarget.eContainer) {
 			val targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head 
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
-			val toLowerEdge = sourceLoc.createEdge(targetLoc)
+			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
+			if (generateTransitionId) {
+				// For test generation
+				toLowerEdge.createAssignmentExpression(edge_Update, transitionIdVar,
+					createLiteralExpression => [it.text = (transitionId++).toString]
+				)
+			}
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
 			// Creating the sync edge
@@ -2606,7 +2640,13 @@ class CompositeToUppaalTransformer {
 			visitedRegions.add(region)
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head {		
 				// Creating a the transition equivalent edge
-				val toHigherEdge = sourceLoc.createEdge(sourceLoc)
+				val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
+				if (generateTransitionId) {
+					// For test generation
+					toHigherEdge.createAssignmentExpression(edge_Update, transitionIdVar,
+						createLiteralExpression => [it.text = (transitionId++).toString]
+					)
+				}
 				addToTrace(transition, #{toHigherEdge}, trace)
 				addToTrace(owner, #{toHigherEdge}, instanceTrace)
 				// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
@@ -3917,6 +3957,18 @@ class CompositeToUppaalTransformer {
 			templateName = (region.name + "OfStatechart")
 		}
 		return templateName.replaceAll(" ","")
+	}
+	
+	def getIsStableVarName() {
+		return isStableVarName
+	}
+	
+	def getTransitionIdVariableName() {
+		return transitionIdVarName
+	}
+	
+	def getTransitionIdVariableValue() {
+		return transitionId
 	}
 	
 	/**

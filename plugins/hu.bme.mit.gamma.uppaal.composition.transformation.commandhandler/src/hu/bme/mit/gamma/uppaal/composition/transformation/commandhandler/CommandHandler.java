@@ -129,7 +129,7 @@ public class CommandHandler extends AbstractHandler {
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
-		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent); // newTopComponent
+		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent, false); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models
@@ -137,7 +137,7 @@ public class CommandHandler extends AbstractHandler {
 		normalSave(resultModels.getValue(), parentFolder, "." + fileNameWithoutExtenstion + ".g2u");
 		// Serializing the NTA model to XML
 		UppaalModelSerializer.saveToXML(nta, parentFolder, fileNameWithoutExtenstion + ".xml");
-		UppaalModelSerializer.createQueries(transformer.getTemplateLocationsMap(), "isStable", parentFolder,
+		UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(), "isStable", parentFolder,
 				fileNameWithoutExtenstion + ".q");
 		transformer.dispose();
 		logger.log(Level.INFO, "The composite system transformation has been finished.");

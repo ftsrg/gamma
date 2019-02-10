@@ -700,7 +700,7 @@ public class Controller {
 	    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getGeneratedQueryFile())))) {
 	    		String uppaalQuery;
 	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
-	    			System.out.println("Checking " + uppaalQuery + "...");
+	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
 	    			verifier = new Verifier(uppaalQuery, false);
 	    			verifier.execute();
     				int elapsedTime = 0;
@@ -710,7 +710,10 @@ public class Controller {
     				}
     				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
     					String stateName = (uppaalQuery.equals("A[] not deadlock")) ? "" 
-    							: uppaalQuery.substring(6, uppaalQuery.length() - " && isStable".length());
+    							: uppaalQuery.substring("E<> ".length(), uppaalQuery.length() - " && isStable".length());
+    					if (stateName.startsWith("P_")) {
+    						stateName = stateName.substring("P_".length());
+    					}
     					String resultSentence = null;
     					ThreeStateBoolean result = verifier.get();
     					if (uppaalQuery.equals("A[] not deadlock")) {
@@ -723,7 +726,7 @@ public class Controller {
     								resultSentence = "There can be deadlock in the system.";
     							break;
     							case UNDEF:
-    								// Theoratically unreachable because of !cancelled
+    								// Theoretically unreachable because of !cancelled
     								resultSentence = "Not determined if there can be deadlock.";
     							break;
     						}
@@ -739,17 +742,17 @@ public class Controller {
 									isReachableString = "unreachable";
 								break;
 								case UNDEF:
-    								// Theoratically unreachable because of !cancelled
+    								// Theoretically unreachable because of !cancelled
 									isReachableString = "undefined";
 								break;
     						}
     						resultSentence = stateName + " is " + isReachableString + ".";
     					}
 						buffer.append(resultSentence + System.lineSeparator());
-						System.out.println(resultSentence); // Removing temporal operator
+						Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
     				}
     				else if (elapsedTime >= TIMEOUT) {
-    					System.out.println("Timeout...");
+    					Logger.getLogger("GammaLogger").log(Level.INFO, "Timeout...");
     				}
     				// Important to cancel the process
     				verifier.cancelProcess(true);

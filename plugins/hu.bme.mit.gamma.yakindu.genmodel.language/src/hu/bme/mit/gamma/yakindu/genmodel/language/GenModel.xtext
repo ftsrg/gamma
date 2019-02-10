@@ -78,7 +78,9 @@ AnalysisModelTransformation:
 		(
 			'folder' '=' targetFolder=STRING |			
 			'file' '=' fileName=STRING |
-			'language' '=' language=AnalysisLanguage 
+			'language' '=' language=AnalysisLanguage |
+			stateCoverage?= 'state-coverage' |
+			transitionCoverage?= 'transition-coverage'
 		)*
 	'}'
 ;

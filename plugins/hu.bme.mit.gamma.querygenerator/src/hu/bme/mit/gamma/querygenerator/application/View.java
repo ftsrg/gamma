@@ -22,7 +22,6 @@ import java.awt.event.FocusListener;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -98,10 +97,6 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem noSpaceStateReduction;
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
-	
-	private JMenu testSetGenerationOptionsMenu;
-	private JCheckBoxMenuItem stateCoverage;
-	private JCheckBoxMenuItem transitionCoverage;
 	
 	private JTextArea exampleTextArea;
 	private JTextArea helpTextArea;
@@ -216,18 +211,6 @@ public class View extends JFrame {
 	 	spaceStateReductionMenu.add(aggressiveSpaceStateReduction);
 	 		
 	 	modelCheckingOptionsMenu.add(spaceStateReductionMenu);
-	 	
-		// Test set generation options
-		testSetGenerationOptionsMenu = new JMenu("Test Generation");
-		
-		stateCoverage = new JCheckBoxMenuItem("State Coverage");
-		stateCoverage.setSelected(true);
-		transitionCoverage = new JCheckBoxMenuItem("Transition Coverage");
-		
-		testSetGenerationOptionsMenu.add(stateCoverage);
-		testSetGenerationOptionsMenu.add(transitionCoverage);
-		
-		optionsMenu.add(testSetGenerationOptionsMenu);
 	 	
 		// Setting the temporal logical operators using JComboBox		
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
