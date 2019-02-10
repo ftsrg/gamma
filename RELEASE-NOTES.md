@@ -45,12 +45,13 @@
 * Content assist regarding the message queues of the asynchronous adapters is improved.
 * Validation rules regarding the priority of message queues of asynchronous adapters are extended.
 
-## 2018.12.28. - Version 2.1.0
+## 2018.02.10. - Version 2.1.0
 
 ### What is New
 
 * Components are now parameterizable. Parameterization is supported by both formal verification and code generation functionalities.
 * Gamma interfaces, Java code, UPPAAL model and JUnit test suites (in addition to Gamma statecharts) can be generated using the generator model.
+* Gamma execution traces now must have a name.
 * Transition-covering test sets can now be generated.
 
 ### Improvements

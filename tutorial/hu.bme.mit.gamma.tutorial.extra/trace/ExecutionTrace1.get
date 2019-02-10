@@ -1,5 +1,5 @@
 import "monitoredcrossroadView"
-component MonitoredCrossroad
+trace MonitoredCrossroadTrace of MonitoredCrossroad
 step {
 	assert {
 		raise priorityOutput.displayRed

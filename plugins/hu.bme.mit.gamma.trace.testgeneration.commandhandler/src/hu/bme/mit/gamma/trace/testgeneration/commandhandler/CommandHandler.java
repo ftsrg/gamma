@@ -77,7 +77,7 @@ public class CommandHandler extends AbstractHandler {
 									logger.log(Level.WARNING, "The package name does not contain View at the end: " + importedPackageName);
 								}
 								String className = splittedPath[splittedPath.length - 1].split(".get")[0];
-								TestGenerator testGenerator = new TestGenerator(path, resSet, executionTrace,
+								TestGenerator testGenerator = new TestGenerator(resSet, executionTrace,
 										file.getProject().getName(), className);
 								String testClass = testGenerator.execute();
 								// Generate in the test-gen folder the right package

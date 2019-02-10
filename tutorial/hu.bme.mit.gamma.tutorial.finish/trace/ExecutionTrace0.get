@@ -2,7 +2,7 @@ import "tutorialView"
 /**
  * Note, that this is no longer a valid trace due to the fix in Controller.sct.
 */
-component Crossroad
+trace CrossroadTrace of Crossroad
 step {
 	assert {
 		raise priorityOutput.displayRed

@@ -19,10 +19,14 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.yakindu.genmodel.AnalysisModelTransformation
+import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration
 import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
+import hu.bme.mit.gamma.yakindu.genmodel.GenModel
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
+import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration
+import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
@@ -38,6 +42,53 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class GenModelValidator extends AbstractGenModelValidator {
+	
+	@Check
+	def checkGammaImports(GenModel genmodel) {
+		val packageImports = genmodel.packageImports.toSet
+		for (codeGenerationTask : genmodel.tasks.filter(CodeGeneration)) {
+			val parentPackage = codeGenerationTask.component.eContainer
+			packageImports.remove(parentPackage)
+		}
+		for (analysisModelTransformationTask : genmodel.tasks.filter(AnalysisModelTransformation)) {
+			val parentPackage = analysisModelTransformationTask.component.eContainer
+			packageImports.remove(parentPackage)
+		}
+		for (statechartCompilationTask : genmodel.tasks.filter(StatechartCompilation)) {
+			for (interfaceMapping : statechartCompilationTask.interfaceMappings) {
+				val parentPackage = interfaceMapping.gammaInterface.eContainer
+				packageImports.remove(parentPackage)
+			}
+		}
+		for (packageImport : packageImports) {
+			val index = genmodel.packageImports.indexOf(packageImport);
+			warning("This Gamma package import is not used.", GenmodelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index);
+		}
+	}
+
+	@Check
+	def checkYakinduImports(GenModel genmodel) {
+		val statechartImports = genmodel.statechartImports.toSet
+		for (statechartCompilationTask : genmodel.tasks.filter(YakinduCompilation)) {
+			statechartImports -= statechartCompilationTask.statechart
+		}
+		for (statechartImport : statechartImports) {
+			val index = genmodel.statechartImports.indexOf(statechartImport);
+			warning("This Yakindu import is not used.", GenmodelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index);
+		}
+	}
+	
+	@Check
+	def checkTraceImports(GenModel genmodel) {
+		val traceImports = genmodel.traceImports.toSet
+		for (testGenerationTask : genmodel.tasks.filter(TestGeneration)) {
+			traceImports -= testGenerationTask.executionTrace
+		}
+		for (traceImport : traceImports) {
+			val index = genmodel.traceImports.indexOf(traceImport);
+			warning("This execution trace import is not used.", GenmodelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index);
+		}
+	}
 	
 	@Check
 	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {

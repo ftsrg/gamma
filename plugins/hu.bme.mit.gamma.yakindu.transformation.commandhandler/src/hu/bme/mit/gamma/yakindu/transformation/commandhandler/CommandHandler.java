@@ -100,8 +100,6 @@ public class CommandHandler extends AbstractHandler {
 								String fileUriSubstring = URI.decode(file.getLocation().toString());
 								// Decoding so spaces do not stir trouble
 								String parentFolderUri = fileUriSubstring.substring(0, fileUriSubstring.lastIndexOf("/"));	
-								// No file extension
-								String fileName = file.getName().substring(0, file.getName().length() - file.getFileExtension().length() - 1);
 								// WARNING: workspace location and imported project locations are not to be confused
 								String projectLocation = file.getProject().getLocation().toString();
 								GenModel genmodel = (GenModel) resource.getContents().get(0);
@@ -225,7 +223,7 @@ public class CommandHandler extends AbstractHandler {
 										ResourceSet testGenerationResourceSet = new ResourceSetImpl();
 										testGenerationResourceSet.getResource(testGeneration.eResource().getURI(), true);
 										logger.log(Level.INFO, "Resource set content for test generation: " + testGenerationResourceSet);
-										TestGenerator testGenerator = new TestGenerator(targetFolderUri, testGenerationResourceSet, executionTrace,
+										TestGenerator testGenerator = new TestGenerator(testGenerationResourceSet, executionTrace,
 												testGeneration.getPackageName(), testGeneration.getFileName());
 										String testClass = testGenerator.execute();
 										saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
@@ -285,7 +283,7 @@ public class CommandHandler extends AbstractHandler {
 		if (codeGeneration.getPackageName() == null) {
 			codeGeneration.setPackageName(packageName);
 		}
-		// TargetFolder set in setTask
+		// TargetFolder set in setTargetFolder
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
@@ -302,7 +300,7 @@ public class CommandHandler extends AbstractHandler {
 		if (testGeneration.getFileName() == null) {
 			testGeneration.setFileName("ExecutionTraceSimulation");
 		}
-		// TargetFolder set in setTask
+		// TargetFolder set in setTargetFolder
 	}
 	
 	private void loadStatechartTraces(ResourceSet resourceSet, Component component) {

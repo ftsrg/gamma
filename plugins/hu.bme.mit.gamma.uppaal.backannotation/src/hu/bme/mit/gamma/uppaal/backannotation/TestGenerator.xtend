@@ -67,7 +67,7 @@ class TestGenerator {
 	/**
 	 * Id is needed as a suffix to match the trace file.
 	 */
-	new(String folderUri, ResourceSet resourceSet, ExecutionTrace trace, String yakinduPackageName, String className) {
+	new(ResourceSet resourceSet, ExecutionTrace trace, String yakinduPackageName, String className) {
 		this.resourceSet = resourceSet
 		this.component = trace.component // Theoretically, the same thing what loadModels do
 		this.gammaPackage = component.eContainer as Package
@@ -170,6 +170,7 @@ class TestGenerator {
 						«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive(«instanceState.instance.yakinduStatePackageName».«instanceState.state.fullContainmentHierarchy»));
 					«ENDFOR»
 				}
+				
 			'''
 			builder.append(testMethod)
 		}		
