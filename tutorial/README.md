@@ -7,9 +7,9 @@ Gamma is tested to work with Eclipse Photon.
 
 - Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2018-09/r/eclipse-ide-java-and-dsl-developers).
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
-  - Install VIATRA 2.0.2 from update site http://download.eclipse.org/viatra/updates/release/2.0.2
+  - Install VIATRA 2.1.0 from update site http://download.eclipse.org/viatra/updates/release/2.1.0
     - Choose the whole _VIATRA Query and Transformation SDK_ package
- - Intall the Yakindu Statechart Tools 3.5.0. from update site: http://updates.yakindu.com/statecharts/releases/.
+ - Intall the Yakindu Statechart Tools 3.5.1. from update site: http://updates.yakindu.com/statecharts/releases/.
    - From the Yakindu Standard Edition choose _Yakindu Statechart Tools_, _Yakindu Statechart Tools Base_ and _Yakindu Statechart Tools Java Code Generator_ subpackages in package _Yakindu Statechart Tools Standard Edition_.
 - Exit Eclipse and extract the [Gamma zip file](http://inf.mit.bme.hu/sites/default/files/gamma/2_0_2/gamma-tool-2.0.2.zip) into the root folder of Eclipse (this will create the plugins directory in the dropins folder, containing the JAR file of the Gamma).
 - When starting Eclipse for the first time, you might need to start it with the `-clean_` flag.

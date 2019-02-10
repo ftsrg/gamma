@@ -33,6 +33,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         // Line break after these rules
         c.setLinewrap(1).after(f.getGenModelAccess().getPackageImportsAssignment_0_1_0());
         c.setLinewrap(1).after(f.getGenModelAccess().getStatechartImportsAssignment_0_1_1_1());
+        c.setLinewrap(1).after(f.getGenModelAccess().getTraceImportsAssignment_0_1_2_1());
         // Interface compilation
         c.setLinewrap(1).after(f.getEventMappingRule());
         c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_3_0_2());
@@ -51,6 +52,8 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_4_0_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_4_1_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_4_2_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTransitionCoverageAssignment_4_4());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getStateCoverageAssignment_4_3());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {

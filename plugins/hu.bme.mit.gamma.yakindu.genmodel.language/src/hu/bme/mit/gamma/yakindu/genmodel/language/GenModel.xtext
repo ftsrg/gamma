@@ -86,7 +86,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 	JAVA = 'java'
 ;
 
-AnalysisModelTransformation:
+AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' component=[model::Component] ('(' parameters+=Expression (',' parameters+=Expression)* ')')? '{'
 		(
 			'folder' '=' targetFolder=STRING |			

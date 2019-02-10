@@ -117,9 +117,9 @@ class TestGenerator {
 			«IF component.needTimer»
 «««				Only if there are timing specs in the model
 				«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-				«componentClassName.toFirstLower» = new «componentClassName»(«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
+				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.parameters SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 			«ELSE»
-				«componentClassName.toFirstLower» = new «componentClassName»();
+				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.parameters SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			«componentClassName.toFirstLower».reset();
 		}

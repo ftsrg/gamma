@@ -23,14 +23,17 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
         // Line break between import and component keywords
         c.setLinewrap(1).between(f.executionTraceAccess.importAssignment_1, f.executionTraceAccess.traceKeyword_2)
         // Line breaks after these rules
-        c.setLinewrap(1).after(f.executionTraceAccess.componentAssignment_5)
+//        c.setLinewrap(1).after(f.executionTraceAccess.componentAssignment_5)
+//        c.setLinewrap(1).after(f.executionTraceAccess.parametersAssignment_6_1)
+//        c.setLinewrap(1).after(f.executionTraceAccess.parametersAssignment_6_2_1)
+  		c.setLinewrap(1).after( f.executionTraceAccess.group_6)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
         c.setLinewrap(1).after(f.stepAccess.commaKeyword_7_3_0)
         // No space around parentheses
         for (p : f.findKeywordPairs("(", ")")) {
             c.setNoSpace().around(p.getFirst())
-            c.setNoSpace().around(p.getSecond())
+            c.setNoSpace().before(p.getSecond())
         }	    
         // No space before commas
         for (comma : f.findKeywords(",")) {

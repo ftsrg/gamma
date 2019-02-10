@@ -67,6 +67,10 @@ import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
+import uppaal.declarations.ExpressionInitializer
+import org.eclipse.emf.ecore.util.EcoreUtil.Copier
+import hu.bme.mit.gamma.uppaal.backannotation.patterns.ExpressionTraces
+import hu.bme.mit.gamma.constraint.model.Expression
 
 class StringTraceBackAnnotator {
 	
@@ -107,7 +111,17 @@ class StringTraceBackAnnotator {
 			it.component = this.component
 			it.import = this.component.eContainer as Package
 			it.name = this.component.name + "Trace"
-		]	
+		]
+		// Setting the arguments
+		for (parameter : this.component.parameterDeclarations) {
+			val uppaalVariableDeclaration = parameter.allValuesOfTo.head as DataVariableDeclaration
+			val uppaalVariable = uppaalVariableDeclaration.variable.head
+			val initExpression = uppaalVariable.initializer as ExpressionInitializer
+			val gammaExpression = initExpression.expression.allExpressionValuesOfFrom.head as Expression
+			val newGammaExpression = gammaExpression.clone(true, true)
+			trace.parameters += newGammaExpression
+		}
+		// Back-annotating the steps
 		var isFirstStep = true
 		// Collections to store the locations and variable values in
 		var Collection<Location> lastActiveLocations
@@ -712,6 +726,13 @@ class StringTraceBackAnnotator {
     }
     
     /**
+     * Returns a Set of Expression EObjects that the given "to" object is created of.
+     */
+    protected def getAllExpressionValuesOfFrom(EObject to) {
+    	return ExpressionTraces.Matcher.on(engine).getAllValuesOffrom(null, to)
+    }
+    
+    /**
 	 * Returns the name of the isRaised boolean flag of the given event of the given port.
 	 */
 	protected def isRaisedName(Event event, Port port, SynchronousComponentInstance instance) {
@@ -720,6 +741,14 @@ class StringTraceBackAnnotator {
 	
 	protected def getOutEventName(Event event, Port port, SynchronousComponentInstance owner) {
 		return port.name + "_" + event.name + "Of" + owner.name
+	}
+	
+	private def <T extends EObject> T clone(T model, boolean a, boolean b) {
+		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
+		val copier = new Copier(a, b)
+		val clone = copier.copy(model);
+		copier.copyReferences();
+		return clone as T;
 	}
 	
 }

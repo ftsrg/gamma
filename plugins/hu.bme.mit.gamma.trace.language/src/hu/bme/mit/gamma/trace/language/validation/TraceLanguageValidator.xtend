@@ -39,6 +39,14 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
 	@Check
+	def checkParameters(ExecutionTrace executionTrace) {
+		val type = executionTrace.component
+		if (executionTrace.getParameters().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS)
+		}
+	}
+	
+	@Check
 	def checkRaiseEventAct(RaiseEventAct raiseEventAct) {
 		val step = raiseEventAct.eContainer as Step
 		val realizationMode = raiseEventAct.port.interfaceRealization.realizationMode
