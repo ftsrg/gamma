@@ -29,7 +29,6 @@ import hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityPackage
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace
 import java.util.AbstractMap.SimpleEntry
 import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.viatra.query.runtime.api.IPatternMatch
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.api.ViatraQueryMatcher
@@ -105,7 +104,7 @@ class InterfaceTransformer {
 
 	protected def getInterfaceRule() {
 		if (interfaceRule === null) {
-			interfaceRule = createRule.name("InterfacesRule").precondition(Interfaces.instance).action [
+			interfaceRule = createRule(Interfaces.instance).action [
 				val yInterface = it.interface
 				if (yInterface.name === null) {
 					throw new IllegalArgumentException("The interface must have a name! " + yInterface)
@@ -124,7 +123,7 @@ class InterfaceTransformer {
 
 	protected def getEventsRule() {
 		if (eventsRule === null) {
-			eventsRule = createRule.name("EventsRule").precondition(Events.instance).action [
+			eventsRule = createRule(Events.instance).action [
 				val yEvent = it.event
 				val dir = it.direction
 				// Placing it into its interface

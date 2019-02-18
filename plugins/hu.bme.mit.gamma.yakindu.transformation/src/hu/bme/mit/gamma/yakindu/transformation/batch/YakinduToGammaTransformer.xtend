@@ -238,7 +238,7 @@ class YakinduToGammaTransformer {
      * This rule assumes that the root elements of the EMF models exist.
      * This rule should be fired first.
      */
-    val statechartRule = createRule.name("StatechartRule").precondition(Statecharts.instance).action [
+    val statechartRule = createRule(Statecharts.instance).action [
     	// Creating the region trace
     	addToTrace(it.statechart, #{yakinduStatechart, gammaStatechart}, trace)
     ].build
@@ -247,7 +247,7 @@ class YakinduToGammaTransformer {
      * Responsible for mapping Yakindu top regions to gamma top regions.
      * This rule depends on statechartRule.
      */
-    val topRegionRule = createRule.name("TopRegionRule").precondition(TopRegions.instance).action [
+    val topRegionRule = createRule(TopRegions.instance).action [
     	val yRegion = it.region
     	val gammaStatechart = it.statechart.allValuesOfTo.filter(StatechartDefinition).head
     	val gammaRegion = gammaStatechart.createChild(compositeElement_Regions, StatechartModelPackage.eINSTANCE.region) as Region    	
@@ -301,7 +301,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping entry nodes of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val entryNodesRule = createRule.name("EntryNodesRule").precondition(Entries.instance).action [
+    val entryNodesRule = createRule(Entries.instance).action [
     	val entry = it.entry
     	// Creating the entry nodes in the corresponding gamma region: only one match is expected
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -331,7 +331,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping simple states (not composite states) of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val simpleStatesRule = createRule.name("SimpleStatesRule").precondition(SimpleStates.instance).action [
+    val simpleStatesRule = createRule(SimpleStates.instance).action [
     	val simpleState = it.simpleState
     	// Creating the state in the corresponding gamma region
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -345,7 +345,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping choices of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val choicesRule = createRule.name("ChoicesRule").precondition(Choices.instance).action [
+    val choicesRule = createRule(Choices.instance).action [
     	val choice = it.choice
     	// Creating the choice in the corresponding gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -365,7 +365,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping merges of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val mergesRule = createRule.name("MergesRule").precondition(Merges.instance).action [
+    val mergesRule = createRule(Merges.instance).action [
     	val merge = it.merge
     	// Creating the choice in the corresponding gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -385,7 +385,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping forks of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val forksRule = createRule.name("ForksRule").precondition(Forks.instance).action [
+    val forksRule = createRule(Forks.instance).action [
     	val fork = it.fork
     	// Creating the fork in the corresponding Gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -405,7 +405,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping joins of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val joinsRule = createRule.name("JoinsRule").precondition(Joins.instance).action [
+    val joinsRule = createRule(Joins.instance).action [
     	val join = it.join
     	// Creating the join in the corresponding Gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -425,7 +425,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping final states of regions.
      * It depends on the compositeStateRegionRule.
      */
-    val finalStatesRule = createRule.name("FinalStatesRule").precondition(FinalStates.instance).action [
+    val finalStatesRule = createRule(FinalStates.instance).action [
     	val finalState = it.finalState
     	// Creating the final state in the corresponding gamma region
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
@@ -469,7 +469,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping exit nodes of regions.
      * It depends on all the rules that create nodes.
      */
-    val exitNodesRule = createRule.name("ExitNodesRule").precondition(ExitNodeTransitions.instance).action [
+    val exitNodesRule = createRule(ExitNodeTransitions.instance).action [
     	val incomingTransition = it.incomingTransition
     	val exitNode = it.exitNode
     	val defaultTransition = it.defaultTransition
@@ -496,7 +496,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping transitions (apart from transitions of exit nodes).
      * This rule depends on all the rules that create nodes.
      */
-    val transitionsRule = createRule.name("TransitionsRule").precondition(Transitions.instance).action [
+    val transitionsRule = createRule(Transitions.instance).action [
     	val gammaSource = it.source.getAllValuesOfTo.filter(StateNode).head
     	val gammaTarget = it.target.getAllValuesOfTo.filter(StateNode).head
     	// Creating the new transition
@@ -577,7 +577,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for mapping constants and plain variables.
      * This rule depends on topRegionRule.
      */    
-     val variablesRule = createRule.name("VariablesRule").precondition(Variables.instance).action [
+     val variablesRule = createRule(Variables.instance).action [
     	var DefinableDeclaration gammaVariable
 	    // If the Yakindu variable is a constant, a constantDeclaration is created
 	    if (it.isReadOnly) {
@@ -622,7 +622,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for initializing the variables with initialization in the Yakindu model.
      * This rule depends on variablesRule.
      */ 
-    val variableInitRule = createRule.name("VariableInitRule").precondition(VariableInits.instance).action [
+    val variableInitRule = createRule(VariableInits.instance).action [
     	val yVariable = it.variable
     	for (gammaVariable : yVariable.getAllValuesOfTo.filter(DefinableDeclaration)) {
 	    	gammaVariable.transform(definableDeclaration_Expression, yVariable.initialValue)
@@ -634,7 +634,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming guard expressions of transitions.
      * This rule depends on transitionsRule, variablesRule and transitionValueOfTriggersRule.
      */
-    val transitionGuardsRule = createRule.name("TransitionGuardRule").precondition(TransitionsWithGuards.instance).action [
+    val transitionGuardsRule = createRule(TransitionsWithGuards.instance).action [
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
     	gammaTransition.transformGuard(it.expression)
     	// The trace is created by the ExpressionTransformer
@@ -644,7 +644,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming Yakindu interfaces with events to Ports with interfaces and events.
      * This rule depends on topRegionRule.
      */
-    val interfaceRule = createRule.name("InterfacesRule").precondition(Interfaces.instance).action [
+    val interfaceRule = createRule(Interfaces.instance).action [
     	val yInterface = it.interface
     	val mappingMatches = InterfaceToInterface.Matcher.on(genmodelEngine).getAllMatches(null, yInterface, null, null)
     	if (mappingMatches.size == 0) {  
@@ -676,7 +676,7 @@ class YakinduToGammaTransformer {
     	addToTrace(yInterface, #{port}, trace)
     ].build
     
-    val eventsRule = createRule.name("EventsRule").precondition(Events.instance).action [
+    val eventsRule = createRule(Events.instance).action [
     	val gammaEvent = it.event.gammaEvent
     	// Creating the trace
     	addToTrace(it.event, #{gammaEvent}, trace)
@@ -686,7 +686,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming event triggers of transitions.
      * This rule depends on transitionsRule and eventsRule.
      */
-    val transitionEventTriggersRule = createRule.name("TransitionEventTriggerRule").precondition(TransitionsWithEventTriggers.instance).action [
+    val transitionEventTriggersRule = createRule(TransitionsWithEventTriggers.instance).action [
     	val yEvent = it.event
     	val yTrigger = it.trigger
     	val transitions = it.transition.getAllValuesOfTo.filter(Transition)
@@ -738,7 +738,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming always triggers of transitions.
      * This rule depends on transitionsRule and eventsRule.
      */
-    val transitionAlwaysTriggersRule = createRule.name("TransitionAlwaysTriggerRule").precondition(TransitionsWithAlwaysTriggers.instance).action [
+    val transitionAlwaysTriggersRule = createRule(TransitionsWithAlwaysTriggers.instance).action [
     	val yTrigger = it.trigger
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
     	if (gammaTransition.trigger !== null) {
@@ -753,7 +753,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming default triggers of transitions.
      * This rule depends on transitionsRule and eventsRule.
      */
-    val transitionDefaultTriggersRule = createRule.name("TransitionDefaultTriggerRule").precondition(TransitionsWithDefaultTriggers.instance).action [
+    val transitionDefaultTriggersRule = createRule(TransitionsWithDefaultTriggers.instance).action [
     	val yTrigger = it.trigger
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
     	if (gammaTransition.trigger !== null && gammaTransition.guard !== null) {
@@ -768,7 +768,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming time triggers (after 1 s) of transitions.
      * This rule depends on transitionsRule.
      */
-    val transitionTimeTriggersRule = createRule.name("TransitionTimeTriggerRule").precondition(TransitionsWithTimeTriggers.instance).action [
+    val transitionTimeTriggersRule = createRule(TransitionsWithTimeTriggers.instance).action [
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
     	val gammaState = it.source.getAllValuesOfTo.filter(State).head
     	gammaTransition.transformTimedTrigger(gammaState, it.expression, it.trigger, it.unit)
@@ -830,7 +830,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming valueof "triggers" of transitions.
      * This rule depends on transitionsRule and eventsRule.
      */
-    val transitionValueOfTriggersRule = createRule.name("TransitionValueOfTriggersRule").precondition(TransitionsWithValueOfTriggers.instance).action [
+    val transitionValueOfTriggersRule = createRule(TransitionsWithValueOfTriggers.instance).action [
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head   	
     	createValueOfTrigger(gammaTransition, it.eventValueReference, it.event)
     ].build
@@ -868,7 +868,7 @@ class YakinduToGammaTransformer {
      * This rule is responsible for transforming effects (assignment expression and raising expression) of transitions.
      * This rule depends on transitionsRule, variablesRule and eventsRule
      */
-    val transitionEffectsRule = createRule.name("TransitionEffectsRule").precondition(TransitionsWithEffect.instance).action [
+    val transitionEffectsRule = createRule(TransitionsWithEffect.instance).action [
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
     	gammaTransition.transform(transition_Effects, it.action)
     	// The trace is created by the ExpressionTransformer

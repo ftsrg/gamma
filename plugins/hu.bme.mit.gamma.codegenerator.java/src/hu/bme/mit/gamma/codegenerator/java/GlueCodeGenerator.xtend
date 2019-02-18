@@ -593,7 +593,7 @@ class GlueCodeGenerator {
 	 */
 	protected def getPortInterfaceRule() {
 		if (portInterfaceRule === null) {
-			 portInterfaceRule = createRule.name("PortInterfaceRule").precondition(Interfaces.instance).action [
+			 portInterfaceRule = createRule(Interfaces.instance).action [
 				val code = it.interface.generatePortInterfaces
 				code.saveCode(parentPackageUri + File.separator + INTERFACES_NAME + File.separator + it.interface.generateName + ".java")
 			].build		
@@ -675,7 +675,7 @@ class GlueCodeGenerator {
 	 */
 	protected def getSimpleComponentDeclarationRule() {
 		if (simpleComponentsRule === null) {
-			 simpleComponentsRule = createRule.name("SimpleComponents").precondition(SimpleComponents.instance).action [
+			 simpleComponentsRule = createRule(SimpleComponents.instance).action [
 				val componentUri = parentPackageUri + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
 				val code = it.statechartDefinition.createSimpleComponentClass
 				code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
@@ -1277,7 +1277,7 @@ class GlueCodeGenerator {
 	
 	protected def getSynchronousCompositeComponentsRule() {
 		if (synchronousCompositeComponentsRule === null) {
-			 synchronousCompositeComponentsRule = createRule.name("SynchronousCompositeComponentsRule").precondition(AbstractSynchronousCompositeComponents.instance).action [
+			 synchronousCompositeComponentsRule = createRule(AbstractSynchronousCompositeComponents.instance).action [
 				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
 				val code = it.synchronousCompositeComponent.createSynchronousCompositeComponentClass
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.componentClassName + ".java")
@@ -1577,7 +1577,7 @@ class GlueCodeGenerator {
 	
 	protected def getSynchronousComponentWrapperRule() {
 		if (synchronousComponentWrapperRule === null) {
-			 synchronousComponentWrapperRule = createRule.name("SynchronousComponentWrapperRule").precondition(SynchronousComponentWrappers.instance).action [
+			 synchronousComponentWrapperRule = createRule(SynchronousComponentWrappers.instance).action [
 				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
 				val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.componentClassName + ".java")
@@ -1976,7 +1976,7 @@ class GlueCodeGenerator {
 	 */
 	protected def getChannelsRule() {
 		if (channelsRule === null) {
-			 channelsRule = createRule.name("ChannelsRule").precondition(Interfaces.instance).action [
+			 channelsRule = createRule(Interfaces.instance).action [
 				val channelInterfaceCode = it.interface.createChannelInterfaceCode
 				channelInterfaceCode.saveCode(channelUri + File.separator + it.interface.generateChannelInterfaceName + ".java")
 				val channelClassCode = it.interface.createChannelClassCode
@@ -2048,7 +2048,7 @@ class GlueCodeGenerator {
 	
 	protected def getAsynchronousCompositeComponentsRule() {
 		if (asynchronousCompositeComponentsRule === null) {
-			 asynchronousCompositeComponentsRule = createRule.name("AsynchronousCompositeComponentsRule").precondition(AsynchronousCompositeComponents.instance).action [
+			 asynchronousCompositeComponentsRule = createRule(AsynchronousCompositeComponents.instance).action [
 				val compositeSystemUri = parentPackageUri + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
 				// Main components
 				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)

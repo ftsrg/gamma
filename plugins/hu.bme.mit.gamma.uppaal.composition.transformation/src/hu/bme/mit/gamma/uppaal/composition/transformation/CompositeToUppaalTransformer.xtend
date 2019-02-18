@@ -239,21 +239,21 @@ class CompositeToUppaalTransformer {
 	// Arguments for the top level component
 	protected List<Expression> topComponentArguments = new ArrayList<Expression>
 	
-	// Engine on the gamma resource 
+	// Engine on the Gamma resource 
     protected ViatraQueryEngine engine
      // Engine on the trace resource 
     protected ViatraQueryEngine traceEngine
         
     protected ResourceSet resources
-    // The gamma composite system to be transformed
+    // The Gamma composite system to be transformed
     protected Component component
-    // The gamma statechart that contains all ComponentDeclarations with the required instances
+    // The Gamma statechart that contains all ComponentDeclarations with the required instances
     protected Package sourceRoot
     // Root element containing the traces
 	protected G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
-	// isStablevariable
+	// isStable variable
 	protected final String isStableVarName = "isStable"
 	protected DataVariableDeclaration isStableVar
 	
@@ -609,7 +609,7 @@ class CompositeToUppaalTransformer {
     /**
      * Responsible for creating the control template that enables the user to fire events.
      */
-	val syncEnvironmentRule = createRule.name("SyncEnvironmentRule").precondition(TopUnwrappedSyncComponents.instance).action [
+	val syncEnvironmentRule = createRule(TopUnwrappedSyncComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc("Environment", "InitLoc")
     	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, null, null, null, null)) {
     		val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) 
@@ -777,15 +777,15 @@ class CompositeToUppaalTransformer {
     	]
     }
     
-    val eventConstantsRule = createRule.name("EventConstantsRule").precondition(WrapperInEvents.instance).action [
+    val eventConstantsRule = createRule(WrapperInEvents.instance).action [
     	it.event.createConstRepresentation(it.port, it.wrapper)
     ].build
     
-    val clockConstantsRule = createRule.name("ClockConstantsRule").precondition(QueuesOfClocks.instance).action [
+    val clockConstantsRule = createRule(QueuesOfClocks.instance).action [
     	it.clock.createConstRepresentation(it.wrapper)
     ].build
     
-	val topMessageQueuesRule = createRule.name("TopMessageQueuesRule").precondition(TopMessageQueues.instance).action [
+	val topMessageQueuesRule = createRule(TopMessageQueues.instance).action [
 		val queue = it.queue
 		// Creating the size const
 		val capacityConst = queue.createCapacityConst(false, null)
@@ -806,7 +806,7 @@ class CompositeToUppaalTransformer {
 		queue.addQueueTrace(capacityConst, sizeVar, peekFunction, shiftFunction, pushFunction, isFullFunction, messageVariableContainer)
 	].build
 	
-	val instanceMessageQueuesRule = createRule.name("InstanceMessageQueuesRule").precondition(InstanceMessageQueues.instance).action [
+	val instanceMessageQueuesRule = createRule(InstanceMessageQueues.instance).action [
 		val queue = it.queue
 		// Checking whether the message needs regular size
 		val hasIncomingQueueMessage = EventsIntoMessageQueues.Matcher.on(engine).hasMatch(null, null, null, it.instance, null, queue)
@@ -1160,7 +1160,7 @@ class CompositeToUppaalTransformer {
 		return isFullFunction
 	}
 	
-    val topWrapperEnvironmentRule = createRule.name("TopWrapperEnvironmentRule").precondition(TopWrapperComponents.instance).action [
+    val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Environment" + id++, "InitLoc")
     	val containedComposite = wrapper.wrappedComponent as AbstractSynchronousCompositeComponent
@@ -1178,7 +1178,7 @@ class CompositeToUppaalTransformer {
     	}
 	].build
 	
-	val instanceWrapperEnvironmentRule = createRule.name("InstanceWrapperEnvironmentRule").precondition(TopAsyncCompositeComponents.instance).action [
+	val instanceWrapperEnvironmentRule = createRule(TopAsyncCompositeComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Environment" + id++, "InitLoc")
     	// Creating in events
@@ -1209,14 +1209,14 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
-    val topWrapperClocksRule = createRule.name("TopWrapperClocksRule").precondition(TopWrapperComponents.instance).action [
+    val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Clock" + id++, "InitLoc")
     	// Creating clock events
 		wrapper.createClockEvents(initLoc, null /*no owner in this case*/)
 	].build
 	
-    val instanceWrapperClocksRule = createRule.name("InstanceWrapperClockRule").precondition(TopAsyncCompositeComponents.instance).action [
+    val instanceWrapperClocksRule = createRule(TopAsyncCompositeComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Clock" + id++, "InitLoc")
     	// Creating clock events
@@ -1373,21 +1373,21 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-	val topWrapperSyncChannelRule = createRule.name("TopWrapperSyncChannelRule").precondition(TopWrapperComponents.instance).action [
+	val topWrapperSyncChannelRule = createRule(TopWrapperComponents.instance).action [
 		val asyncChannel = target.globalDeclarations.createSynchronization(false, false, it.wrapper.asyncSchedulerChannelName)
 		val syncChannel = target.globalDeclarations.createSynchronization(false, false, it.wrapper.syncSchedulerChannelName)
 		val isInitializedVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool,  it.wrapper.initializedVariableName)
 		addToTrace(it.wrapper, #{asyncChannel, syncChannel, isInitializedVar}, trace)
 	].build
 	
-	val instanceWrapperSyncChannelRule = createRule.name("InstanceWrapperSyncChannelRule").precondition(SimpleWrapperInstances.instance).action [
+	val instanceWrapperSyncChannelRule = createRule(SimpleWrapperInstances.instance).action [
 		val asyncChannel = target.globalDeclarations.createSynchronization(false, false, it.instance.asyncSchedulerChannelName)
 		val syncChannel = target.globalDeclarations.createSynchronization(false, false, it.instance.syncSchedulerChannelName)
 		val isInitializedVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool,  it.instance.initializedVariableName)
 		addToTrace(it.instance, #{asyncChannel, syncChannel, isInitializedVar}, trace) // No instanceTrace as it would be harder to retrieve the elements
 	].build
 	 
-    val topWrapperSchedulerRule = createRule.name("TopWrapperSchedulerRule").precondition(TopWrapperComponents.instance).action [
+    val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
     	val loopEdge = initLoc.createEdge(initLoc)
     	val asyncSchedulerChannel = wrapper.asyncSchedulerChannel
@@ -1397,7 +1397,7 @@ class CompositeToUppaalTransformer {
     	loopEdge.addInitializedGuards // Only if the wrapper is initialized
 	].build
 	
-	val instanceWrapperSchedulerRule = createRule.name("InstanceWrapperSchedulerRule").precondition(TopAsyncCompositeComponents.instance).action [
+	val instanceWrapperSchedulerRule = createRule(TopAsyncCompositeComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Scheduler" + id++, "InitLoc")
     	var Edge lastEdge = null
     	for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
@@ -1440,7 +1440,7 @@ class CompositeToUppaalTransformer {
 	 * Note that it only fires if there are top wrappers.
 	 * Depends on no rules.
 	 */
-	val topWrapperConnectorRule = createRule.name("TopWrapperConnectorRule").precondition(TopWrapperComponents.instance).action [		
+	val topWrapperConnectorRule = createRule(TopWrapperComponents.instance).action [		
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
 		val connectorTemplate = initLoc.parentTemplate
@@ -1457,7 +1457,7 @@ class CompositeToUppaalTransformer {
 	 * Note that it only fires if there are wrapper instances.
 	 * Depends on no rules.
 	 */
-	val instanceWrapperConnectorRule = createRule.name("AllWrapperConnectorRule").precondition(SimpleWrapperInstances.instance).action [		
+	val instanceWrapperConnectorRule = createRule(SimpleWrapperInstances.instance).action [		
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
 		val connectorTemplate = initLoc.parentTemplate
@@ -1730,7 +1730,7 @@ class CompositeToUppaalTransformer {
 	 * Note that it only fires if there are TOP synchronous composite components.
 	 * Depends on all statechart mapping rules.
 	 */
-	val topSyncOrchestratorRule = createRule.name("TopSyncSchedulerRule").precondition(TopUnwrappedSyncComponents.instance).action [		
+	val topSyncOrchestratorRule = createRule(TopUnwrappedSyncComponents.instance).action [		
 		val lastEdge = it.syncComposite.createSchedulerTemplate(null)
 		// Creating timing for the orchestrator template
 		val initLoc = lastEdge.target
@@ -1750,7 +1750,7 @@ class CompositeToUppaalTransformer {
 	 * Note that it only fires if there are top wrappers.
 	 * Depends on topWrapperSyncChannelRule and all statechart mapping rules.
 	 */
-	val topWrappedSyncOrchestratorRule = createRule.name("TopWrappedSyncSchedulerRule").precondition(TopWrapperComponents.instance).action [		
+	val topWrappedSyncOrchestratorRule = createRule(TopWrapperComponents.instance).action [		
 		val lastEdge = it.composite.createSchedulerTemplate(it.wrapper.syncSchedulerChannel)
 		lastEdge.setSynchronization(it.wrapper.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
 	].build
@@ -1760,7 +1760,7 @@ class CompositeToUppaalTransformer {
 	 * Note that it only fires if there are wrapper instances.
 	 * Depends on allWrapperSyncChannelRule and all statechart mapping rules.
 	 */
-	val instanceWrapperSyncOrchestratorRule = createRule.name("AllWrappedSyncSchedulerRule").precondition(SimpleWrapperInstances.instance).action [		
+	val instanceWrapperSyncOrchestratorRule = createRule(SimpleWrapperInstances.instance).action [		
 		val lastEdge = it.composite.createSchedulerTemplate(it.instance.syncSchedulerChannel)
 		lastEdge.setSynchronization(it.instance.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
 		val orchestratorTemplate = lastEdge.parentTemplate
@@ -2012,7 +2012,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the input signals.
      * It depends on initNTA.
      */
-	val inputEventsRule = createRule.name("SignalsRule").precondition(InputInstanceEvents.instance).action [
+	val inputEventsRule = createRule(InputInstanceEvents.instance).action [
 		if (!it.instance.isCascade) {
 			// Cascade components do not have a double event queue
 			val toRaise = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.toRaiseName(it.port, it.instance))
@@ -2078,7 +2078,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the output signals led out to the system interface.
      * It depends on initNTA.
      */
-	val syncSystemOutputEventsRule = createRule.name("SignalsRule").precondition(TopSyncSystemOutEvents.instance).action [
+	val syncSystemOutputEventsRule = createRule(TopSyncSystemOutEvents.instance).action [
 		val boolFlag = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.getOutEventName(it.port, it.instance))
 		addToTrace(it.event, #{boolFlag}, trace)
 		log(Level.INFO, "Information: System out event: " + it.instance.name + "." + boolFlag.variable.head.name)
@@ -2129,7 +2129,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for connecting the parameters of actions and triggers to the parameters of events.
      * It depends on initNTA.
      */
-	val eventParametersRule = createRule.name("EventParametersRule").precondition(ParameteredEvents.instance).action [
+	val eventParametersRule = createRule(ParameteredEvents.instance).action [
 		if (it.event.parameterDeclarations.size != 1) {
 			throw new IllegalArgumentException("The event has more than one parameters." + it.event)
 		}
@@ -2155,7 +2155,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the variables.
      * It depends on initNTA.
      */
-	val variablesRule = createRule.name("VariablesRule").precondition(InstanceVariables.instance).action [
+	val variablesRule = createRule(InstanceVariables.instance).action [
 		val variable = it.variable.transformVariable(it.variable.type, DataVariablePrefix.NONE,
 			it.variable.name + "Of" + instance.name)
 		addToTrace(it.instance, #{variable}, instanceTrace)		
@@ -2166,7 +2166,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the constants.
      * It depends on initNTA.
      */
-	val constantsRule = createRule.name("ConstantsRule").precondition(ConstantDeclarations.instance).action [
+	val constantsRule = createRule(ConstantDeclarations.instance).action [
 		it.constant.transformVariable(it.type, DataVariablePrefix.CONST, 
 			it.constant.name + "Of" + (it.constant.eContainer as Package).name)
 		// Traces are created in the createVariable method
@@ -2278,7 +2278,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the initializations of declarations.
      * It depends on variablesRule and constantsRule.
      */
-	val declarationInitRule = createRule.name("DeclarationInitRule").precondition(DeclarationInitializations.instance).action [
+	val declarationInitRule = createRule(DeclarationInitializations.instance).action [
 		val initExpression = it.initValue
 		for (uDeclaration : it.declaration.allValuesOfTo.filter(DataVariableDeclaration)) {
 			var ComponentInstance owner = null
@@ -2312,7 +2312,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the bound parameters.
      * It depends on initNTA.
      */
-	val parametersRule = createRule.name("ParametersRule").precondition(ParameterizedInstances.instance).action [
+	val parametersRule = createRule(ParameterizedInstances.instance).action [
 		val instance = it.instance
 		val parameters = instance.derivedType.parameterDeclarations
 		val arguments = instance.parameters
@@ -2351,7 +2351,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming all regions to templates. (Top regions and subregions.)
      * It depends on initNTA.
      */
-	val regionsRule = createRule.name("RegionRule").precondition(InstanceRegions.instance).action [
+	val regionsRule = createRule(InstanceRegions.instance).action [
 		val instance = it.instance
 		val name = it.region.regionName
 		val template = target.createChild(getNTA_Template, template) as Template => [
@@ -2382,7 +2382,7 @@ class CompositeToUppaalTransformer {
      * If the parent regions is a subregion, a new init location is generated as well.
      * It depends on regionsRule.
      */
-	val entriesRule = createRule.name("EntriesRule").precondition(Entries.instance).action [
+	val entriesRule = createRule(Entries.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
 			val initLocation = template.createChild(template_Location, location) as Location => [
@@ -2415,7 +2415,7 @@ class CompositeToUppaalTransformer {
      * (The edge is there for the subregion synchronization and entry event assignment.)
      * It depends on regionsRule.
      */
-	val statesRule = createRule.name("StatesRule").precondition(States.instance).action [
+	val statesRule = createRule(States.instance).action [
 		val gammaState = it.state
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
@@ -2456,7 +2456,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming all choices to committed locations.
      * It depends on regionsRule.
      */
-	val choicesRule = createRule.name("ChoicesRule").precondition(Choices.instance).action [
+	val choicesRule = createRule(Choices.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
 			val choiceLocation = template.createChild(template_Location, location) as Location => [
@@ -2474,7 +2474,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming all same region transitions (whose sources and targets are in the same region) to edges.
      * It depends on all the rules that create nodes.
      */
-	val sameRegionTransitionsRule = createRule.name("SameRegionTransitiosRule").precondition(SameRegionTransitions.instance).action [
+	val sameRegionTransitionsRule = createRule(SameRegionTransitions.instance).action [
 		for (template : it.region.allValuesOfTo.filter(Template)) {
 			val owner = template.owner
 			val source = getEdgeSource(it.source).filter(Location).filter[it.parentTemplate == template].head
@@ -2495,7 +2495,7 @@ class CompositeToUppaalTransformer {
 	 * This rule is repsonsible for transforming transitions whose targets are in a lower abstraction level (lower region)
 	 * than its source.
 	 */
-	val toLowerRegionTransitionsRule = createRule.name("LowerRegionTransitiosRule").precondition(ToLowerInstanceTransitions.instance).action [		
+	val toLowerRegionTransitionsRule = createRule(ToLowerInstanceTransitions.instance).action [		
 		val syncVar = target.globalDeclarations.createSynchronization(true, false, "AcrReg" + id++)
 		it.transition.toLowerTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.target.levelOfStateNode, it.instance)		
 	].build
@@ -2565,7 +2565,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for placing entry events onto edges that go lower templates.
 	 * Depends on assignmentActionsRule.
 	 */
-	val toLowerRegionEntryEventTransitionsRule = createRule.name("LowerRegionEntryEventTransitiosRule").precondition(ToLowerInstanceTransitions.instance).action [		
+	val toLowerRegionEntryEventTransitionsRule = createRule(ToLowerInstanceTransitions.instance).action [		
 		transition.toLowerTransitionRuleEntryEvent(it.source, it.target, it.instance)
 	].build
 	
@@ -2624,7 +2624,7 @@ class CompositeToUppaalTransformer {
 	 * This rule is responsible for transforming transitions whose targets are in a higher abstraction level (higher region)
 	 * than its source.
 	 */
-	val toHigherRegionTransitionsRule = createRule.name("HigherRegionTransitiosRule").precondition(ToHigherInstanceTransitions.instance).action [		
+	val toHigherRegionTransitionsRule = createRule(ToHigherInstanceTransitions.instance).action [		
 		val syncVar = target.globalDeclarations.createSynchronization(true, false, "AcrReg" + id++)
 		it.transition.toHigherTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.source.levelOfStateNode, it.instance)
 	].build
@@ -2772,7 +2772,7 @@ class CompositeToUppaalTransformer {
      * to make sure they get to the proper state at each entry.
      * It depends on all the rules that create nodes (including timeTriggersRule).
      */
-	val compositeStateEntryRule = createRule.name("CompositeStateEntryRule").precondition(CompositeStates.instance).action [
+	val compositeStateEntryRule = createRule(CompositeStates.instance).action [
 		for (entryEdge : it.compositeState.allValuesOfTo.filter(Edge)) {
 			val owner = entryEdge.owner as SynchronousComponentInstance
 			// Creating the synchronization variable
@@ -2946,7 +2946,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the event triggers.
      * It depends on eventsRule and sameRegionTransitionsRule.
      */
-	val eventTriggersRule = createRule.name("EventTriggersRule").precondition(EventTriggersOfTransitions.instance).action [
+	val eventTriggersRule = createRule(EventTriggersOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			checkState(edge.guard === null) // Must this assert be true at all times?
 			val owner = edge.owner
@@ -3248,7 +3248,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the timeout event triggers.
      * It depends on sameRegionTransitionsRule, toLowerTransitionsRule, ToHigherTransitionsRule and triggersRule.
      */
-	val timeTriggersRule = createRule.name("TimeTriggersRule").precondition(TimeTriggersOfTransitions.instance).action [
+	val timeTriggersRule = createRule(TimeTriggersOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner
 			var Edge cloneEdge
@@ -3398,7 +3398,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the guards.
      * It depends on sameRegionTransitionsRule, eventTriggersRule, timeTriggersRule and ExpressionTransformer.
      */
-	val guardsRule = createRule.name("GuardsRule").precondition(GuardsOfTransitions.instance).action [
+	val guardsRule = createRule(GuardsOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			edge.transformGuard(it.guard)		
 		}
@@ -3432,7 +3432,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the updates.
      * It depends on sameRegionTransitionsRule, exitAssignmentActionsOfStatesRule, exitEventRaisingActionsOfStatesRule and ExpressionTransformer.
      */
-	val assignmentActionsRule = createRule.name("AssignmentActionsRule").precondition(UpdatesOfTransitions.instance).action [
+	val assignmentActionsRule = createRule(UpdatesOfTransitions.instance).action [
 		// No update on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)		
@@ -3444,7 +3444,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the entry event updates of states.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val entryAssignmentActionsOfStatesRule = createRule.name("EntryAssignmentActionsOfStatesRule").precondition(EntryAssignmentsOfStates.instance).action [
+	val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)
 			// The trace is created by the ExpressionTransformer
@@ -3456,7 +3456,7 @@ class CompositeToUppaalTransformer {
      * (Initializing the timer to 0 on entering a state.)
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val entryTimeoutActionsOfStatesRule = createRule.name("EntryTimeoutActionsOfStatesRule").precondition(EntryTimeoutActionsOfStates.instance).action [
+	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformTimeoutAction(edge_Update, it.setTimeoutAction, edge.owner)
 			// The trace is created by the ExpressionTransformer
@@ -3467,7 +3467,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the exit event updates of states.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val exitAssignmentActionsOfStatesRule = createRule.name("ExitAssignmentActionsOfStatesRule").precondition(ExitAssignmentsOfStatesWithTransitions.instance).action [
+	val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)
 		}
@@ -3479,7 +3479,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the raise event actions (raising events) of transitions. (No system out-events.)
      * It depends on sameRegionTransitionsRule and eventsRule.
      */
-	val eventRaisingActionsRule = createRule.name("EventRaisingActionsRule").precondition(RaisingActionsOfTransitions.instance).action [
+	val eventRaisingActionsRule = createRule(RaisingActionsOfTransitions.instance).action [
 		// No event raising on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner  as SynchronousComponentInstance
@@ -3493,7 +3493,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the event actions of transitions that raise signals led out to the system interface.
      * It depends on sameRegionTransitionsRule, toLowerRegionTransitionsRule, toHigherRegionTransitionsRule and systemOutputSignalsRule.
      */
-	val syncSystemEventRaisingActionsRule = createRule.name("SystemEventRaisingActionsRule").precondition(RaiseTopSystemEventOfTransitions.instance).action [
+	val syncSystemEventRaisingActionsRule = createRule(RaiseTopSystemEventOfTransitions.instance).action [
 		// Only if the out event is led out to the main composite system
 		val owner = it.instance
 		for (edge : it.transition.allValuesOfTo.filter(Edge).filter[it.owner == owner]) {
@@ -3505,7 +3505,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the raising event actions (raising events) as entry events. (No out-events.)
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val entryEventRaisingActionsRule = createRule.name("EntryEventRaisingActionsRule").precondition(EntryRaisingActionsOfStates.instance).action [
+	val entryEventRaisingActionsRule = createRule(EntryRaisingActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner as SynchronousComponentInstance
 			for (match : RaiseInstanceEventStateEntryActions.Matcher.on(engine).getAllMatches(it.state, it.raiseEventAction, owner, it.raiseEventAction.port, it.raiseEventAction.event, null, null)) {
@@ -3518,7 +3518,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the out-event actions (raising event) as entry events.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val syncSystemEventRaisingOfEntryActionsRule = createRule.name("EntryInterfaceEventRaisingActionsRule").precondition(RaiseTopSystemEventStateEntryActions.instance).action [
+	val syncSystemEventRaisingOfEntryActionsRule = createRule(RaiseTopSystemEventStateEntryActions.instance).action [
 		// Only if the out event is led out to the main composite system
 		val owner = it.instance as SynchronousComponentInstance
 		for (edge : it.state.allValuesOfTo.filter(Edge).filter[it.owner == owner]) {
@@ -3530,7 +3530,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the exit event event raisings of states. (No out-events.)
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val exitEventRaisingActionsOfStatesRule = createRule.name("ExitRaisingEventActionsOfStatesRule").precondition(ExitRaisingActionsOfStatesWithTransitions.instance).action [
+	val exitEventRaisingActionsOfStatesRule = createRule(ExitRaisingActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner as SynchronousComponentInstance
 			for (match : RaiseInstanceEventStateExitActions.Matcher.on(engine).getAllMatches(it.state,
@@ -3544,7 +3544,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the out-event actions (raising event) as exit events.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val exitSystemEventRaisingActionsOfStatesRule = createRule.name("ExitSystemEventRaisingActionsOfStatesRule").precondition(ExitRaisingActionsOfStatesWithTransitions.instance).action [
+	val exitSystemEventRaisingActionsOfStatesRule = createRule(ExitRaisingActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner  as SynchronousComponentInstance
 			for (match : RaiseSystemEventStateExitActions.Matcher.on(engine).getAllMatches(null, it.state,
@@ -3590,7 +3590,7 @@ class CompositeToUppaalTransformer {
 	 * Places isActive guards on each transition equivalent edge indicating that a transition can only fire when its template is activated.
 	 * It depends on sameRegionTransitionRule, toLowerTransitionTule, toHigherTransitionRule.
 	 */
-	val isActiveRule = createRule.name("IsActiveRule").precondition(Transitions.instance).action [
+	val isActiveRule = createRule(Transitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			if (it.region.subregion) {
 				edge.createIsActiveGuard
@@ -3601,7 +3601,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Places guards (conjunction of the negated expressions of adjacent edges) for the default edges of choices. 
 	 */
-	val defultChoiceTransitionsRule = createRule.name("DefultChoiceTransitionsRule").precondition(DefaultTransitionsOfChoices.instance).action [
+	val defultChoiceTransitionsRule = createRule(DefaultTransitionsOfChoices.instance).action [
 		for (edge : it.defaultTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner
 			val otherEdge = it.otherTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner].head
@@ -3620,7 +3620,7 @@ class CompositeToUppaalTransformer {
 		toLowerRegionTransitionCompletion.fireAllCurrent
 	}
 	
-	val compositeStateEntryRuleCompletion = createRule.name("CompositeStateEntryRuleCompletion").precondition(CompositeStates.instance).action [
+	val compositeStateEntryRuleCompletion = createRule(CompositeStates.instance).action [
 		for (commLoc : it.compositeState.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED]) {
 			// Solving the problem: the finalize should take into the deepest state at once
 			// From the entry node (an loop edge-history) finalize location should be skipped
@@ -3642,7 +3642,7 @@ class CompositeToUppaalTransformer {
 		}		
 	].build
 	
-	val toLowerRegionTransitionCompletion = createRule.name("LowerRegionTransitiosRule").precondition(ToLowerInstanceTransitions.instance).action [
+	val toLowerRegionTransitionCompletion = createRule(ToLowerInstanceTransitions.instance).action [
 		val owner = it.instance
 		// The owner filter is needed as ToLowerInstanceTransitionsMatcher returns each transition for each instance
 		for (toLowerEdge : it.transition.allValuesOfTo.filter(Edge).filter[it.owner == owner]) {
@@ -3870,7 +3870,7 @@ class CompositeToUppaalTransformer {
     	clockLocationTraceRule.fireAllCurrent
     }
     
-    val clockLocationTraceRule = createRule.name("ClockLocationTraceRule").precondition(EdgesWithClock.instance).action [
+    val clockLocationTraceRule = createRule(EdgesWithClock.instance).action [
     	val source = it.edge.source
     	val target = it.edge.target
     	val state = source.allValuesOfFrom.head
