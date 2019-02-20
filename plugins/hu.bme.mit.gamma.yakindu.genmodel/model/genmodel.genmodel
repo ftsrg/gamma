@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.genmodel/src" modelPluginID="hu.bme.mit.gamma.yakindu.genmodel"
     modelName="Genmodel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
-    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types"
+    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
   <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.yakindu" disposableProviderFactory="true"
@@ -13,6 +13,10 @@
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//AnalysisLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/UPPAAL"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//Scheduler">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/FAIR"/>
     </genEnums>
     <genClasses ecoreClass="genmodel.ecore#//GenModel">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechartImports"/>
@@ -39,11 +43,12 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/component"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/transitionCoverage"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/stateCoverage"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/scheduler"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//InterfaceMapping/gammaInterface"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//InterfaceMapping/yakinduInterface"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//InterfaceMapping/gammaInterface"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//InterfaceMapping/eventMappings"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//EventMapping">

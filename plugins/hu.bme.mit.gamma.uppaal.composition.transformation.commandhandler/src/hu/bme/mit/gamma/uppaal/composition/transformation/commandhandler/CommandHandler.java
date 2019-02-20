@@ -35,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
@@ -129,7 +130,8 @@ public class CommandHandler extends AbstractHandler {
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
-		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet, newTopComponent, false); // newTopComponent
+		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
+				newTopComponent, Scheduler.RANDOM, false); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models

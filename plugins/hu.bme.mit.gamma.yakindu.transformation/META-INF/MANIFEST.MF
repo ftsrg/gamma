@@ -8,17 +8,17 @@ Export-Package: hu.bme.mit.gamma.yakindu.transformation.batch,
   hu.bme.mit.gamma.yakindu.transformation.queries
 Require-Bundle: hu.bme.mit.gamma.statechart.model,
   hu.bme.mit.gamma.constraint.model,
-  org.yakindu.sct.model.sgraph,
-  org.yakindu.base.types,
+  hu.bme.mit.gamma.yakindu.genmodel,
+  hu.bme.mit.gamma.yakindu.transformation.traceability,
   org.yakindu.base.expressions,
+  org.yakindu.base.types,
+  org.yakindu.sct.model.sgraph,
+  org.yakindu.sct.model.stext,
   org.eclipse.viatra.transformation.runtime.emf,
   org.eclipse.viatra.transformation.evm,
-  org.eclipse.emf.ecore,
   org.eclipse.viatra.query.runtime,
   org.eclipse.xtext.xbase.lib,
-  hu.bme.mit.gamma.yakindu.transformation.traceability,
-  org.yakindu.sct.model.stext,
-  hu.bme.mit.gamma.yakindu.genmodel
+  org.eclipse.emf.ecore
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: hu.bme.mit.gamma.yakindu.transformation
 Import-Package: org.apache.log4j

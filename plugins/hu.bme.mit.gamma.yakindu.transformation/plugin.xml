@@ -53,7 +53,6 @@
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.nonEntryNonChoiceTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.interfaceToInterface"/>
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.eventToEvent"/>
-      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.eventMapping"/>
     </group>
   </extension>
 </plugin>

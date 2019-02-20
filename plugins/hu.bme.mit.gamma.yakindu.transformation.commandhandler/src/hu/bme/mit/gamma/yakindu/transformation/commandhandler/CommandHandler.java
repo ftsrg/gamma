@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedF
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -193,7 +194,9 @@ public class CommandHandler extends AbstractHandler {
 										validator.checkModel();
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-												newTopComponent, analysisModelTransformation.getParameters(), analysisModelTransformation.isTransitionCoverage()); // newTopComponent
+											newTopComponent, analysisModelTransformation.getParameters(),
+											getGammaScheduler(analysisModelTransformation.getScheduler()),
+											analysisModelTransformation.isTransitionCoverage()); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models
@@ -327,6 +330,15 @@ public class CommandHandler extends AbstractHandler {
 	
 	private String getNameWithoutExtension(String fileName) {
 		return fileName.substring(0, fileName.lastIndexOf("."));
+	}
+	
+	private Scheduler getGammaScheduler(hu.bme.mit.gamma.yakindu.genmodel.Scheduler scheduler) {
+		switch (scheduler) {
+		case FAIR:
+			return Scheduler.FAIR;
+		default:
+			return Scheduler.RANDOM;
+		}
 	}
 	
 	/**

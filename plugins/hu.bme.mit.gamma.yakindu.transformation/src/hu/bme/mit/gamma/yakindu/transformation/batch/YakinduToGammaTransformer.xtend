@@ -127,11 +127,13 @@ class YakinduToGammaTransformer {
     // Engine on the target resource (the created model)
     protected ViatraQueryEngine targetEngine
     
+    // The Yakindu statechart compilation
+    protected StatechartCompilation statechartCompilation
     // The Yakindu statechart to be transformed
     protected Statechart yakinduStatechart
     // Root element containing the traces
     protected Y2GTrace traceRoot
-    // The root element of the gamma statechart 
+    // The root element of the Gamma statechart 
     protected Package gammaPackage
     // The statechart definition, it contains variables and regions 
     protected StatechartDefinition gammaStatechart
@@ -147,6 +149,7 @@ class YakinduToGammaTransformer {
     
     new(StatechartCompilation statechartCompilation) {
     	val genmodel = statechartCompilation.eContainer as GenModel
+    	this.statechartCompilation = statechartCompilation
         this.yakinduStatechart = statechartCompilation.statechart
         val statechartName = if (statechartCompilation.statechartName === null) yakinduStatechart.name + "Statechart"
         	else statechartCompilation.statechartName
@@ -230,11 +233,12 @@ class YakinduToGammaTransformer {
         transformation = BatchTransformation.forEngine(engine).build
         //Initialize batch transformation statements
         statements = transformation.transformationStatements
-        expTransf = new ExpressionTransformer(this.manipulation, this.traceRoot, this.traceEngine, this.genmodelEngine)        
+        expTransf = new ExpressionTransformer(this.manipulation, this.statechartCompilation, this.traceRoot,
+        	this.traceEngine, this.genmodelEngine)        
     }
     
     /**
-     * Responsible for mapping Yakindu statechart to gamma statechart definition. 
+     * Responsible for mapping Yakindu statechart to Gamma statechart definition. 
      * This rule assumes that the root elements of the EMF models exist.
      * This rule should be fired first.
      */
@@ -244,7 +248,7 @@ class YakinduToGammaTransformer {
     ].build
     
     /**
-     * Responsible for mapping Yakindu top regions to gamma top regions.
+     * Responsible for mapping Yakindu top regions to Gamma top regions.
      * This rule depends on statechartRule.
      */
     val topRegionRule = createRule(TopRegions.instance).action [
@@ -269,9 +273,9 @@ class YakinduToGammaTransformer {
     			val untransformedRegion = iter.next
     			// If it is transformable, i.e. its composite state exists
     			if (!untransformedRegion.parentRegion.getAllValuesOfTo.isEmpty) {
-    				// A single gamma region is expected
+    				// A single Gamma region is expected
     				val gammaParentRegion = untransformedRegion.parentRegion.allValuesOfTo.filter(Region).head
-    				// The composite state is created in the gamma model if it is not present already
+    				// The composite state is created in the Gamma model if it is not present already
     				var State gammaState
     				if (untransformedRegion.compositeState.allValuesOfTo.empty) {
 	    				val newgammaState = gammaParentRegion.createChild(region_StateNodes, state) as State
@@ -284,7 +288,7 @@ class YakinduToGammaTransformer {
     				else {
     					gammaState = untransformedRegion.compositeState.allValuesOfTo.filter(State).head
     				}
-    				// The subregion is created in the gamma model
+    				// The subregion is created in the Gamma model
     				val gammaSubregion = gammaState.createChild(compositeElement_Regions, region) as Region
     				gammaSubregion.name = untransformedRegion.regionName.replaceAll(" ", "_")
     				// The trace is saved
@@ -303,7 +307,7 @@ class YakinduToGammaTransformer {
      */
     val entryNodesRule = createRule(Entries.instance).action [
     	val entry = it.entry
-    	// Creating the entry nodes in the corresponding gamma region: only one match is expected
+    	// Creating the entry nodes in the corresponding Gamma region: only one match is expected
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
     	var EntryState newgammaEntry
     	switch (it.kind) {
@@ -316,7 +320,7 @@ class YakinduToGammaTransformer {
     		default:
     			throw new IllegalArgumentException("The entry kind is not known: " + it.kind) 
     	}
-    	// The entry must have a name in the gamma model
+    	// The entry must have a name in the Gamma model
     	if (entry.name.nullOrEmpty) {
     		newgammaEntry.name = "Entry" + id++
     	}
@@ -333,7 +337,7 @@ class YakinduToGammaTransformer {
      */
     val simpleStatesRule = createRule(SimpleStates.instance).action [
     	val simpleState = it.simpleState
-    	// Creating the state in the corresponding gamma region
+    	// Creating the state in the corresponding Gamma region
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
     	val gammaState = gammaRegion.createChild(region_StateNodes, state) as State
     	gammaState.name = it.stateName.replaceAll(" ", "_")
@@ -347,7 +351,7 @@ class YakinduToGammaTransformer {
      */
     val choicesRule = createRule(Choices.instance).action [
     	val choice = it.choice
-    	// Creating the choice in the corresponding gamma region
+    	// Creating the choice in the corresponding Gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
     	val gammaChoice = gammaRegion.createChild(region_StateNodes, choiceState) as ChoiceState
     	// If the choice has a name, it is mapped
@@ -367,7 +371,7 @@ class YakinduToGammaTransformer {
      */
     val mergesRule = createRule(Merges.instance).action [
     	val merge = it.merge
-    	// Creating the choice in the corresponding gamma region
+    	// Creating the choice in the corresponding Gamma region
     	val gammaRegion =  it.parentRegion.getAllValuesOfTo.filter(Region).head
     	val gammaMerge = gammaRegion.createChild(region_StateNodes, mergeState) as MergeState
     	// If the choice has a name, it is mapped
@@ -427,7 +431,7 @@ class YakinduToGammaTransformer {
      */
     val finalStatesRule = createRule(FinalStates.instance).action [
     	val finalState = it.finalState
-    	// Creating the final state in the corresponding gamma region
+    	// Creating the final state in the corresponding Gamma region
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
     	val gammaFinalState = gammaRegion.createChild(region_StateNodes, state) as State
     	// If the final states has a name, it is mapped
@@ -452,7 +456,7 @@ class YakinduToGammaTransformer {
     			]
     		}
     		val gammaFinalState = finalStateTopRegionMatch.finalState.getAllValuesOfTo.filter(State).head
-    		// Creating and entry event of the gamma final state that sets the "end" variable to false
+    		// Creating and entry event of the Gamma final state that sets the "end" variable to false
     		val variableDeclaration = endVariable
     		gammaFinalState.createChild(state_EntryActions, assignmentAction) as AssignmentAction => [
     			it.createChild(assignmentAction_Lhs, referenceExpression) as ReferenceExpression => [
@@ -460,7 +464,7 @@ class YakinduToGammaTransformer {
     			]
     			it.createChild(assignmentAction_Rhs, trueExpression)
     		]
-    		// Now the Yakindu final state is mapped to and "end" variable too in addition to a gamma State
+    		// Now the Yakindu final state is mapped to and "end" variable too in addition to a Gamma State
     		addToTrace(finalStateTopRegionMatch.finalState, #{variableDeclaration}, trace)
     	}
     }
@@ -478,7 +482,7 @@ class YakinduToGammaTransformer {
     				.countMatches(it.exitNode, null) !=  1) {
     		throw new Exception("The following exit node has more than one default outgoing transition or not at all: " + it.exitNode)
     	}
-    	// Creating the transition from the source to the target (the exit node does not appear in the gamma model)
+    	// Creating the transition from the source to the target (the exit node does not appear in the Gamma model)
     	// Getting the source and the target node
     	val gammaSource = it.source.getAllValuesOfTo.filter(StateNode).head
     	val gammaTarget = it.target.getAllValuesOfTo.filter(StateNode).head    	
@@ -648,7 +652,7 @@ class YakinduToGammaTransformer {
     	val yInterface = it.interface
     	val mappingMatches = InterfaceToInterface.Matcher.on(genmodelEngine).getAllMatches(null, yInterface, null, null)
     	if (mappingMatches.size == 0) {  
-    		Logger.getLogger("GammaLogger").log(Level.WARNING, yInterface.name + " is not mapped to any gamma interfaces. This is acceptable if it does not contain any events. Event count: " + yInterface.events.size + ".")
+    		Logger.getLogger("GammaLogger").log(Level.WARNING, yInterface.name + " is not mapped to any Gamma interfaces. This is acceptable if it does not contain any events. Event count: " + yInterface.events.size + ".")
     		return
     	}
     	// Validation
@@ -660,7 +664,7 @@ class YakinduToGammaTransformer {
     		throw new IllegalArgumentException("More than one statechart declarations: " + gammaPackage.components)
     	}
     	if (mappingMatches.size > 1) {
-    		throw new IllegalArgumentException("Yakindu interface mapped to more than one gamma interface: " + mappingMatches.size)
+    		throw new IllegalArgumentException("Yakindu interface mapped to more than one Gamma interface: " + mappingMatches.size)
     	}
     	// Starting the transformation
     	val statechartComponent = gammaPackage.components.head
@@ -698,11 +702,11 @@ class YakinduToGammaTransformer {
     ].build
     
     /**
-     * Transforms Yakindu triggers (regular EventSpecs) to gamma EventTriggers, places onto the given transition then saves it in a trace.
+     * Transforms Yakindu triggers (regular EventSpecs) to Gamma EventTriggers, places onto the given transition then saves it in a trace.
      */
     private def void transformRegularTrigger(Transition transition, EventDefinition yEvent, EventSpec yTrigger) {
     	val gammaEvent = yEvent.gammaEvent
-    	// Transforming the trigger, the Yakindu interface that is mapped to gamma Port is transformed too
+    	// Transforming the trigger, the Yakindu interface that is mapped to Gamma Port is transformed too
     	val gPort = yEvent.gammaPort
     	// If multiple triggers are on the transition
     	val gTrigger = transition.trigger
@@ -780,7 +784,7 @@ class YakinduToGammaTransformer {
      * placing a TimeoutEvent onto the given gammaTransition and creating a trace from the given TimeEventSpec to gammaTimeoutVariable, gammaEntryEvent, gammaTimeTrigger.
      */
     private def transformTimedTrigger(Transition gammaTransition, State gammaState, Expression yExpression, TimeEventSpec yTrigger, TimeUnit timeUnit) {
-    	// Creating a gamma TimeoutDeclaration for this particular trigger
+    	// Creating a Gamma TimeoutDeclaration for this particular trigger
     	val gammaTimeoutVariable = gammaStatechart.createChild(statechartDefinition_TimeoutDeclarations, timeoutDeclaration) as TimeoutDeclaration => [
     		it.name = gammaState.name + "Timeout" + id++ // A more special name is needed, hence the id
     	]    	
@@ -836,7 +840,7 @@ class YakinduToGammaTransformer {
     ].build
     
     /**
-     * Transforms Yakindu valueof "triggers" to gamma SignalEvents, places onto the given transition then saves it in a trace.
+     * Transforms Yakindu valueof "triggers" to Gamma SignalEvents, places onto the given transition then saves it in a trace.
      */
     private def createValueOfTrigger(Transition gammaTransition, EventValueReferenceExpression yEventValueReference, EventDefinition yEvent) {
     	// Creating a parameter for the gammaTransition, so it can be referenced by the signalEvent and later the ExpressionTransformer from transitionGuardsRule

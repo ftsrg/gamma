@@ -45,7 +45,7 @@
 * Content assist regarding the message queues of the asynchronous adapters is improved.
 * Validation rules regarding the priority of message queues of asynchronous adapters are extended.
 
-## 2018.02.10. - Version 2.1.0
+## 2018.02.20. - Version 2.1.0
 
 ### What is New
 
@@ -58,3 +58,4 @@
 ### Improvements
 
 * Bug regarding the linking of packages is fixed.
+* Compatibility issues with the new VIATRA version are resolved.

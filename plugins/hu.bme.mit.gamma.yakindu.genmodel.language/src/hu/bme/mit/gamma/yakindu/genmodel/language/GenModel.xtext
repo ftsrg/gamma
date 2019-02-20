@@ -92,10 +92,15 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' '=' targetFolder=STRING |			
 			'file' '=' fileName=STRING |
 			'language' '=' language=AnalysisLanguage |
+			'scheduler' '=' scheduler=Scheduler |
 			stateCoverage?= 'state-coverage' |
 			transitionCoverage?= 'transition-coverage'
 		)*
 	'}'
+;
+
+enum Scheduler returns Scheduler:
+	RANDOM = "random" //| FAIR = "fair"
 ;
 
 enum AnalysisLanguage returns AnalysisLanguage:

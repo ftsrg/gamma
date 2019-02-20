@@ -38,15 +38,17 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="stateCoverage" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="scheduler" lowerBound="1"
+        eType="#//Scheduler"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
         eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RealizationMode"
         defaultValueLiteral="PROVIDED"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaInterface" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Interface"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduInterface" lowerBound="1"
         eType="ecore:EClass ../../org.yakindu.sct.model.stext/model/SText.ecore#//InterfaceScope"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaInterface" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Interface"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventMappings" upperBound="-1"
         eType="#//EventMapping" containment="true"/>
   </eClassifiers>
@@ -74,5 +76,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
         eType="#//ProgrammingLanguage"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Scheduler">
+    <eLiterals name="RANDOM"/>
+    <eLiterals name="FAIR" value="1"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
+import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
 import hu.bme.mit.gamma.yakindu.transformation.queries.Traces
@@ -50,7 +51,6 @@ import org.yakindu.base.expressions.expressions.AssignmentExpression
 import org.yakindu.base.expressions.expressions.BoolLiteral
 import org.yakindu.base.expressions.expressions.DoubleLiteral
 import org.yakindu.base.expressions.expressions.ElementReferenceExpression
-import org.yakindu.base.types.Expression
 import org.yakindu.base.expressions.expressions.FeatureCall
 import org.yakindu.base.expressions.expressions.IntLiteral
 import org.yakindu.base.expressions.expressions.LogicalAndExpression
@@ -65,12 +65,12 @@ import org.yakindu.base.expressions.expressions.PostFixUnaryExpression
 import org.yakindu.base.expressions.expressions.PrimitiveValueExpression
 import org.yakindu.base.expressions.expressions.StringLiteral
 import org.yakindu.base.types.Event
+import org.yakindu.base.types.Expression
 import org.yakindu.sct.model.stext.stext.EventDefinition
 import org.yakindu.sct.model.stext.stext.EventRaisingExpression
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import hu.bme.mit.gamma.yakindu.transformation.queries.EventMapping
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.
@@ -79,6 +79,7 @@ class ExpressionTransformer {
 	
     protected ViatraQueryEngine traceEngine
     protected ViatraQueryEngine genmodelEngine
+    protected StatechartCompilation statechartCompilation
     protected Y2GTrace traceRoot
     
 	protected extension IModelManipulations manipulation	
@@ -88,17 +89,20 @@ class ExpressionTransformer {
 	protected extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
 	
-	new (IModelManipulations manipulation, Y2GTrace traceRoot, ViatraQueryEngine traceEngine, ViatraQueryEngine genmodelEngine) {
+	new(IModelManipulations manipulation, StatechartCompilation statechartCompilation, 
+			Y2GTrace traceRoot, ViatraQueryEngine traceEngine, ViatraQueryEngine genmodelEngine) {
 		this.manipulation = manipulation
+		this.statechartCompilation = statechartCompilation
 		this.traceRoot = traceRoot
 		this.traceEngine = traceEngine
 		this.genmodelEngine = genmodelEngine
 	}
 	
-	def getGammaEvent(Event event) {
+	def getGammaEvent(Event event) {		
 		val events = EventToEvent.Matcher.on(genmodelEngine).getAllValuesOfgammaEvent(null, event)
 		if (events.size > 1) {
-			throw new IllegalArgumentException("This Yakindu event is mapped to more than one gamma event: " + event + " " + events)
+			throw new IllegalArgumentException("This Yakindu event is mapped to more
+				than one Gamma event: " + event + " " + events)
 		}
 		// The event is not mapped explicitly, have to find it through name equality
 		if (events.empty) {
@@ -109,21 +113,31 @@ class ExpressionTransformer {
 	}
 	
 	/**
-	 * Explores Yakindu event - gamma event mappings through name equality.
+	 * Explores Yakindu event - Gamma event mappings through name equality.
 	 */
 	private def findGammaEvent(Event event) {
-		val events = EventMapping.Matcher.on(genmodelEngine).getAllValuesOfgammaEvent(event)
-		if (events.size != 1) {
-			throw new IllegalArgumentException("This Yakindu event is not mapped to one gamma event: " + event + " " + events)
+		val eventName = event.name
+		val interfaceMappings = statechartCompilation.interfaceMappings
+				.filter[it.yakinduInterface.events.contains(event)]
+		if (interfaceMappings.size != 1) {
+			throw new IllegalArgumentException("This Yakindu event is contained by more
+				than one Yakindu interface: " + event + " " + interfaceMappings)
 		}
-		return events.head
+		val gammaInterface = interfaceMappings.head.gammaInterface
+		val gammaEvents = gammaInterface.events.map[it.event].filter[it.name == eventName]
+		if (gammaEvents.size != 1) {
+			throw new IllegalArgumentException("Not one Gamma event with the name " + eventName +
+				" is present: " + gammaEvents)
+		}
+		return gammaEvents.head
 	}
 	
 	def getGammaPort(Event event) {
 		val yInterface = (event.eContainer as InterfaceScope)
     	val gPorts = yInterface.allValuesOfTo.filter(Port)
     	if (gPorts.size != 1) {
-    		throw new IllegalArgumentException("More than one gamma port connected to Yakindu interface: " + gPorts)
+    		throw new IllegalArgumentException("More than one Gamma port connected to Yakindu interface: "
+    			+ gPorts)
     	}
     	return gPorts.head
 	}

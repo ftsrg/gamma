@@ -51,8 +51,9 @@ class InterfaceTransformer {
 	extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	extension IModelManipulations manipulation
 
+	// Engine
 	protected ViatraQueryEngine engine
-	// Yakindu sct
+	// Yakindu statechart
 	protected Statechart yakinduStatechart
 	// The container of interfaces
 	protected Package statechartInterfaces
@@ -64,8 +65,9 @@ class InterfaceTransformer {
 	extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
 	extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
 	extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-
-	extension ExpressionTransformer expTransf
+	
+	// For add to trace
+	extension ExpressionTransformer expressionTransformer
 
 	// Transformation rules
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> interfaceRule
@@ -99,7 +101,8 @@ class InterfaceTransformer {
 		// Initialize batch transformation statements
 		statements = transformation.transformationStatements
 		// No genmodel here in the ExpressionTransformer, as this transformation takes place before it
-		expTransf = new ExpressionTransformer(this.manipulation, this.traceRoot, ViatraQueryEngine.on(new EMFScope(traceRoot)), null)
+		expressionTransformer = new ExpressionTransformer(this.manipulation, null /* getGammaEvent will not work*/,
+			this.traceRoot,	ViatraQueryEngine.on(new EMFScope(traceRoot)), null)
 	}
 
 	protected def getInterfaceRule() {

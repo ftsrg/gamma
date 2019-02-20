@@ -279,6 +279,9 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
     protected extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	
+	// Async scheduler
+	protected Scheduler asyncScheduler = Scheduler.RANDOM
+	
     // For the generation of pseudo locations
     protected int id = 0
     // For the async event queue constants
@@ -293,10 +296,11 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionCopier expCop
     protected extension ExpressionEvaluator expEval
 
-    new(ResourceSet resourceSet, Component component, boolean generateTransitionId) { 
+    new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler, boolean generateTransitionId) { 
         this.resources = resourceSet
 		this.sourceRoot = component.eContainer as Package
         this.component = component
+        this.asyncScheduler = asyncScheduler
         this.generateTransitionId = generateTransitionId
         this.target = UppaalFactory.eINSTANCE.createNTA
         // Connecting the two models in trace
@@ -314,8 +318,8 @@ class CompositeToUppaalTransformer {
     }
     
     new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments,
-			boolean genereateTransitionId) { 
-        this(resourceSet, component, genereateTransitionId)
+			Scheduler asyncScheduler, boolean genereateTransitionId) { 
+        this(resourceSet, component, asyncScheduler, genereateTransitionId)
         this.topComponentArguments.addAll(topComponentArguments)
     }
     
@@ -1401,8 +1405,14 @@ class CompositeToUppaalTransformer {
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Scheduler" + id++, "InitLoc")
     	var Edge lastEdge = null
     	for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
-//    		lastEdge = lastEdge.createFairScheduler(initLoc, instance)
-    		lastEdge = initLoc.createRandomScheduler(instance)
+			switch (asyncScheduler) {
+				case FAIR: {
+	    			lastEdge = lastEdge.createFairScheduler(initLoc, instance)
+				}
+				default: {
+		    		lastEdge = initLoc.createRandomScheduler(instance)
+				}
+			}
     	}
 	].build
     
@@ -3982,5 +3992,7 @@ class CompositeToUppaalTransformer {
         transformation = null
         return
     }
+    
+    enum Scheduler {FAIR, RANDOM}
     
 }

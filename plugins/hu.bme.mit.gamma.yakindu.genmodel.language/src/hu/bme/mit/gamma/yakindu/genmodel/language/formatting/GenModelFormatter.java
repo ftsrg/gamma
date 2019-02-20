@@ -52,8 +52,9 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_4_0_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_4_1_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_4_2_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTransitionCoverageAssignment_4_4());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getStateCoverageAssignment_4_3());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTransitionCoverageAssignment_4_5());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getStateCoverageAssignment_4_4());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_4_3_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
