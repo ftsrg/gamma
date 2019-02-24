@@ -35,6 +35,7 @@ import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation
 
 /**
  * This class contains custom validation rules. 
@@ -276,6 +277,23 @@ class GenModelValidator extends AbstractGenModelValidator {
 			default:
 				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.realizationMode)				
 			}
+		}
+	}
+	
+	@Check
+	def checkTraces(TestGeneration testGeneration) {
+		val genmodel = testGeneration.eContainer as GenModel
+		val usedInterfaces = testGeneration.executionTrace.component.ports
+								.map[it.interfaceRealization.interface]
+								.map[it.name].toSet
+		val transformedInterfaces = genmodel.tasks.filter(InterfaceCompilation)
+								.map[it.statechart.scopes].flatten
+								.filter(InterfaceScope).map[it.name].toSet
+		usedInterfaces.retainAll(transformedInterfaces)
+		if (!usedInterfaces.isEmpty) {
+			warning("This trace depends on interfaces " + usedInterfaces + ", which seem to be about to be recompiled. " + 
+				"The recompilation of interfaces just before the generation of tests might cause a break in the generated test suite.",
+				 GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)
 		}
 	}
 	
