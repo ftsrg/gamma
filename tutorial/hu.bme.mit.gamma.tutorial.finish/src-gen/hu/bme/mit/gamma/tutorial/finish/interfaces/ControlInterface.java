@@ -25,7 +25,7 @@ public interface ControlInterface {
 			void raiseToggle();
 		}
 		
-		interface Required   {
+		interface Required  {
 		}
 		
 	}

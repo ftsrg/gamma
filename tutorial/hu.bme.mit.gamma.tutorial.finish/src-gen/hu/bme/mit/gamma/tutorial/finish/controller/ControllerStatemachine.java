@@ -1,10 +1,10 @@
 package hu.bme.mit.gamma.tutorial.finish.controller;
+
 import hu.bme.mit.gamma.tutorial.finish.ITimer;
 import java.util.LinkedList;
 import java.util.List;
 
 public class ControllerStatemachine implements IControllerStatemachine {
-
 	protected class SCIPoliceInterruptImpl implements SCIPoliceInterrupt {
 	
 		private boolean police;
@@ -162,6 +162,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	
 	private int nextStateIndex;
 	
+	
 	private ITimer timer;
 	
 	private final boolean[] timeEvents = new boolean[5];
@@ -191,7 +192,8 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	public void enter() {
 		if (!initialized) {
 			throw new IllegalStateException(
-					"The state machine needs to be initialized first by calling the init() function.");
+				"The state machine needs to be initialized first by calling the init() function."
+			);
 		}
 		if (timer == null) {
 			throw new IllegalStateException("timer not set.");
@@ -199,6 +201,37 @@ public class ControllerStatemachine implements IControllerStatemachine {
 		enterSequence_main_region_default();
 	}
 	
+	public void runCycle() {
+		if (!initialized)
+			throw new IllegalStateException(
+					"The state machine needs to be initialized first by calling the init() function.");
+		clearOutEvents();
+		for (nextStateIndex = 0; nextStateIndex < stateVector.length; nextStateIndex++) {
+			switch (stateVector[nextStateIndex]) {
+			case main_region_Operating_operating_Init:
+				main_region_Operating_operating_Init_react(true);
+				break;
+			case main_region_Operating_operating_PriorityPrepares:
+				main_region_Operating_operating_PriorityPrepares_react(true);
+				break;
+			case main_region_Operating_operating_Secondary:
+				main_region_Operating_operating_Secondary_react(true);
+				break;
+			case main_region_Operating_operating_SecondaryPrepares:
+				main_region_Operating_operating_SecondaryPrepares_react(true);
+				break;
+			case main_region_Operating_operating_Priority:
+				main_region_Operating_operating_Priority_react(true);
+				break;
+			case main_region_Interrupted:
+				main_region_Interrupted_react(true);
+				break;
+			default:
+				// $NullState$
+			}
+		}
+		clearEvents();
+	}
 	public void exit() {
 		exitSequence_main_region();
 	}
@@ -270,7 +303,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	
 	/**
 	* Set the {@link ITimer} for the state machine. It must be set
-	* externally on a timed state machine before a run cycle can be correct
+	* externally on a timed state machine before a run cycle can be correctly
 	* executed.
 	* 
 	* @param timer
@@ -290,6 +323,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	
 	public void timeElapsed(int eventID) {
 		timeEvents[eventID] = true;
+		runCycle();
 	}
 	
 	public SCIPoliceInterrupt getSCIPoliceInterrupt() {
@@ -314,21 +348,21 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	
 	/* Entry action for state 'Init'. */
 	private void entryAction_main_region_Operating_operating_Init() {
-		timer.setTimer(this, 0, 2 * 1000, false);
+		timer.setTimer(this, 0, (2 * 1000), false);
 		
 		sCIPriorityControl.raiseToggle();
 	}
 	
 	/* Entry action for state 'PriorityPrepares'. */
 	private void entryAction_main_region_Operating_operating_PriorityPrepares() {
-		timer.setTimer(this, 1, 1 * 1000, false);
+		timer.setTimer(this, 1, (1 * 1000), false);
 		
 		sCIPriorityControl.raiseToggle();
 	}
 	
 	/* Entry action for state 'Secondary'. */
 	private void entryAction_main_region_Operating_operating_Secondary() {
-		timer.setTimer(this, 2, 2 * 1000, false);
+		timer.setTimer(this, 2, (2 * 1000), false);
 		
 		sCIPriorityControl.raiseToggle();
 		
@@ -337,14 +371,14 @@ public class ControllerStatemachine implements IControllerStatemachine {
 	
 	/* Entry action for state 'SecondaryPrepares'. */
 	private void entryAction_main_region_Operating_operating_SecondaryPrepares() {
-		timer.setTimer(this, 3, 1 * 1000, false);
+		timer.setTimer(this, 3, (1 * 1000), false);
 		
 		sCISecondaryControl.raiseToggle();
 	}
 	
 	/* Entry action for state 'Priority'. */
 	private void entryAction_main_region_Operating_operating_Priority() {
-		timer.setTimer(this, 4, 2 * 1000, false);
+		timer.setTimer(this, 4, (2 * 1000), false);
 		
 		sCIPriorityControl.raiseToggle();
 		
@@ -580,7 +614,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 		enterSequence_main_region_Operating_default();
 	}
 	
-	private boolean react(boolean try_transition) {
+	private boolean react() {
 		return false;
 	}
 	
@@ -588,7 +622,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 		boolean did_transition = try_transition;
 		
 		if (try_transition) {
-			if (react(try_transition)==false) {
+			if (react()==false) {
 				if (sCIPoliceInterrupt.police) {
 					exitSequence_main_region_Operating();
 					sCIPriorityPolice.raisePolice();
@@ -600,8 +634,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 					did_transition = false;
 				}
 			}
-		}
-		if (did_transition==false) {
 		}
 		return did_transition;
 	}
@@ -619,8 +651,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 				}
 			}
 		}
-		if (did_transition==false) {
-		}
 		return did_transition;
 	}
 	
@@ -636,8 +666,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 					did_transition = false;
 				}
 			}
-		}
-		if (did_transition==false) {
 		}
 		return did_transition;
 	}
@@ -655,8 +683,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 				}
 			}
 		}
-		if (did_transition==false) {
-		}
 		return did_transition;
 	}
 	
@@ -672,8 +698,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 					did_transition = false;
 				}
 			}
-		}
-		if (did_transition==false) {
 		}
 		return did_transition;
 	}
@@ -691,8 +715,6 @@ public class ControllerStatemachine implements IControllerStatemachine {
 				}
 			}
 		}
-		if (did_transition==false) {
-		}
 		return did_transition;
 	}
 	
@@ -700,7 +722,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 		boolean did_transition = try_transition;
 		
 		if (try_transition) {
-			if (react(try_transition)==false) {
+			if (react()==false) {
 				if (sCIPoliceInterrupt.police) {
 					exitSequence_main_region_Interrupted();
 					sCIPriorityPolice.raisePolice();
@@ -713,40 +735,7 @@ public class ControllerStatemachine implements IControllerStatemachine {
 				}
 			}
 		}
-		if (did_transition==false) {
-		}
 		return did_transition;
 	}
 	
-	public void runCycle() {
-		if (!initialized)
-			throw new IllegalStateException(
-					"The state machine needs to be initialized first by calling the init() function.");
-		clearOutEvents();
-		for (nextStateIndex = 0; nextStateIndex < stateVector.length; nextStateIndex++) {
-			switch (stateVector[nextStateIndex]) {
-			case main_region_Operating_operating_Init:
-				main_region_Operating_operating_Init_react(true);
-				break;
-			case main_region_Operating_operating_PriorityPrepares:
-				main_region_Operating_operating_PriorityPrepares_react(true);
-				break;
-			case main_region_Operating_operating_Secondary:
-				main_region_Operating_operating_Secondary_react(true);
-				break;
-			case main_region_Operating_operating_SecondaryPrepares:
-				main_region_Operating_operating_SecondaryPrepares_react(true);
-				break;
-			case main_region_Operating_operating_Priority:
-				main_region_Operating_operating_Priority_react(true);
-				break;
-			case main_region_Interrupted:
-				main_region_Interrupted_react(true);
-				break;
-			default:
-				// $NullState$
-			}
-		}
-		clearEvents();
-	}
 }

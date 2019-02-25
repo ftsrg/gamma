@@ -14,11 +14,11 @@ import hu.bme.mit.gamma.tutorial.finish.trafficlightctrl.TrafficLightCtrlStatema
 
 public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInterface {
 	// The wrapped Yakindu statemachine
-	private TrafficLightCtrlStatemachine trafficLightCtrlStatemachine = new TrafficLightCtrlStatemachine();
+	private TrafficLightCtrlStatemachine trafficLightCtrlStatemachine;
 	// Port instances
-	private LightCommands lightCommands = new LightCommands();
-	private PoliceInterrupt policeInterrupt = new PoliceInterrupt();
-	private Control control = new Control();
+	private Control control;
+	private PoliceInterrupt policeInterrupt;
+	private LightCommands lightCommands;
 	// Indicates which queues are active in this cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
@@ -27,11 +27,14 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
 	public TrafficLightCtrlStatechart() {
-		// Initializing and entering the wrapped statemachine
+		trafficLightCtrlStatemachine = new TrafficLightCtrlStatemachine();
+		control = new Control();
+		policeInterrupt = new PoliceInterrupt();
+		lightCommands = new LightCommands();
 		trafficLightCtrlStatemachine.setTimer(new TimerService());
 	}
 	
-	/** Resets the statemachine. Should be used only be the container (composite system) class. */
+	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
 		trafficLightCtrlStatemachine.init();
@@ -46,7 +49,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	
 	/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 	public void changeInsertQueue() {
-	    insertQueue = !insertQueue;
+		insertQueue = !insertQueue;
 	}
 	
 	/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -80,8 +83,8 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	/** Changes the insert queue and initiates a run. */
 	public void runAndRechangeInsertQueue() {
 		// First the insert queue is changed back, so self-event sending can work
-	    changeInsertQueue();
-	    runComponent();
+		changeInsertQueue();
+		runComponent();
 	}
 	
 	/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
@@ -91,76 +94,43 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		while (!eventQueue.isEmpty()) {
 				Event event = eventQueue.remove();
 				switch (event.getEvent()) {
-					case "PoliceInterrupt.Police": 
-						trafficLightCtrlStatemachine.getSCIPoliceInterrupt().raisePolice();
-					break;
 					case "Control.Toggle": 
 						trafficLightCtrlStatemachine.getSCIControl().raiseToggle();
+					break;
+					case "PoliceInterrupt.Police": 
+						trafficLightCtrlStatemachine.getSCIPoliceInterrupt().raisePolice();
 					break;
 					default:
 						throw new IllegalArgumentException("No such event!");
 				}
 		}
 		trafficLightCtrlStatemachine.runCycle();
-	}    		
+	}			
 	
 	// Inner classes representing Ports
-	public class LightCommands implements LightCommandsInterface.Provided {
-		private List<LightCommandsInterface.Listener.Provided> registeredListeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
+	public class Control implements ControlInterface.Required {
+		private List<ControlInterface.Listener.Required> registeredListeners = new LinkedList<ControlInterface.Listener.Required>();
 
+		@Override
+		public void raiseToggle() {
+			getInsertQueue().add(new Event("Control.Toggle", null));
+		}
 
 		@Override
-		public boolean isRaisedDisplayRed() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
-		}
-		@Override
-		public boolean isRaisedDisplayYellow() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayYellow();
-		}
-		@Override
-		public boolean isRaisedDisplayNone() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
-		}
-		@Override
-		public boolean isRaisedDisplayGreen() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
-		}
-		@Override
-		public void registerListener(final LightCommandsInterface.Listener.Provided listener) {
+		public void registerListener(final ControlInterface.Listener.Required listener) {
 			registeredListeners.add(listener);
-			trafficLightCtrlStatemachine.getSCILightCommands().getListeners().add(new SCILightCommandsListener() {
-				@Override
-				public void onDisplayRedRaised() {
-					listener.raiseDisplayRed();
-				}
-				
-				@Override
-				public void onDisplayYellowRaised() {
-					listener.raiseDisplayYellow();
-				}
-				
-				@Override
-				public void onDisplayNoneRaised() {
-					listener.raiseDisplayNone();
-				}
-				
-				@Override
-				public void onDisplayGreenRaised() {
-					listener.raiseDisplayGreen();
-				}
-			});
 		}
 		
 		@Override
-		public List<LightCommandsInterface.Listener.Provided> getRegisteredListeners() {
+		public List<ControlInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
 		}
 
 	}
 	
 	@Override
-	public LightCommands getLightCommands() {
-		return lightCommands;
+	public Control getControl() {
+		return control;
 	}
 	
 	public class PoliceInterrupt implements PoliceInterruptInterface.Required {
@@ -188,29 +158,62 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		return policeInterrupt;
 	}
 	
-	public class Control implements ControlInterface.Required {
-		private List<ControlInterface.Listener.Required> registeredListeners = new LinkedList<ControlInterface.Listener.Required>();
+	public class LightCommands implements LightCommandsInterface.Provided {
+		private List<LightCommandsInterface.Listener.Provided> registeredListeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
+
 
 		@Override
-		public void raiseToggle() {
-			getInsertQueue().add(new Event("Control.Toggle", null));
+		public boolean isRaisedDisplayRed() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
 		}
-
 		@Override
-		public void registerListener(final ControlInterface.Listener.Required listener) {
+		public boolean isRaisedDisplayGreen() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
+		}
+		@Override
+		public boolean isRaisedDisplayNone() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
+		}
+		@Override
+		public boolean isRaisedDisplayYellow() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayYellow();
+		}
+		@Override
+		public void registerListener(final LightCommandsInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
+			trafficLightCtrlStatemachine.getSCILightCommands().getListeners().add(new SCILightCommandsListener() {
+				@Override
+				public void onDisplayRedRaised() {
+					listener.raiseDisplayRed();
+				}
+				
+				@Override
+				public void onDisplayGreenRaised() {
+					listener.raiseDisplayGreen();
+				}
+				
+				@Override
+				public void onDisplayNoneRaised() {
+					listener.raiseDisplayNone();
+				}
+				
+				@Override
+				public void onDisplayYellowRaised() {
+					listener.raiseDisplayYellow();
+				}
+			});
 		}
 		
 		@Override
-		public List<ControlInterface.Listener.Required> getRegisteredListeners() {
+		public List<LightCommandsInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
 		}
 
 	}
 	
 	@Override
-	public Control getControl() {
-		return control;
+	public LightCommands getLightCommands() {
+		return lightCommands;
 	}
 	
 	

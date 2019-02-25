@@ -1,31 +1,31 @@
 package TrafficLightCtrl
 import "Interfaces"
 statechart TrafficLightCtrlStatechart [
-	port LightCommands : provides LightCommands,
-	port PoliceInterrupt : requires PoliceInterrupt,
 	port Control : requires Control
+	port PoliceInterrupt : requires PoliceInterrupt
+	port LightCommands : provides LightCommands
 ] {
 	timeout BlinkingYellowTimeout3
 	timeout BlackTimeout4
-	transition from Black to BlinkingYellow when timeout BlackTimeout4
-	transition from Normal to Interrupted when PoliceInterrupt.police
 	transition from Yellow to Red when Control.toggle
-	transition from Entry0 to Red
-	transition from Interrupted to Normal when PoliceInterrupt.police
+	transition from Normal to Interrupted when PoliceInterrupt.police
+	transition from Entry2 to Red
 	transition from Entry1 to BlinkingYellow
+	transition from Entry0 to Normal
+	transition from Interrupted to Normal when PoliceInterrupt.police
 	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
-	transition from Entry2 to Normal
+	transition from Black to BlinkingYellow when timeout BlackTimeout4
 	transition from Green to Yellow when Control.toggle
 	transition from Red to Green when Control.toggle
 	region main_region {
 		state Normal {
 			region normal {
-				shallow history Entry0
-				state Red {
-					entry / raise LightCommands.displayRed
-				}
+				shallow history Entry2
 				state Green {
 					entry / raise LightCommands.displayGreen
+				}
+				state Red {
+					entry / raise LightCommands.displayRed
 				}
 				state Yellow {
 					entry / raise LightCommands.displayYellow
@@ -35,14 +35,14 @@ statechart TrafficLightCtrlStatechart [
 		state Interrupted {
 			region interrupted {
 				initial Entry1
-				state BlinkingYellow {
-					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow
-				}
 				state Black {
 					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone
 				}
+				state BlinkingYellow {
+					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow
+				}
 			}
 		}
-		initial Entry2
+		initial Entry0
 	}
 }

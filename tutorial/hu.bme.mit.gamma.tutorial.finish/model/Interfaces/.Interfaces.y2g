@@ -2,7 +2,7 @@
 <hu.bme.mit.gamma.yakindu.transformation:Y2GTrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.yakindu.transformation="http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability">
   <yakinduStatechart href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#_m0Om0JWUEeeu_eB7_daUpg"/>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_/0/@scopes.1"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_/0/@scopes.0"/>
     <to href="Interfaces.gcd#//@interfaces.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -14,12 +14,24 @@
     <to href="Interfaces.gcd#//@interfaces.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_/0/@scopes.0"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_/0/@scopes.1"/>
     <to href="Interfaces.gcd#//@interfaces.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayNone"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.Executable.execute"/>
+    <to href="Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.PoliceInterrupt.police"/>
     <to href="Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayRed"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayYellow"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.Control.toggle"/>
@@ -27,22 +39,10 @@
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayGreen"/>
-    <to href="Interfaces.gcd#//@interfaces.3/@events.1/@event"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.PoliceInterrupt.police"/>
-    <to href="Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayYellow"/>
-    <to href="Interfaces.gcd#//@interfaces.3/@events.2/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayRed"/>
-    <to href="Interfaces.gcd#//@interfaces.3/@events.3/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.Executable.execute"/>
-    <to href="Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.sct#SCT_Interfaces.LightCommands.displayNone"/>
+    <to href="Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
   </traces>
 </hu.bme.mit.gamma.yakindu.transformation:Y2GTrace>

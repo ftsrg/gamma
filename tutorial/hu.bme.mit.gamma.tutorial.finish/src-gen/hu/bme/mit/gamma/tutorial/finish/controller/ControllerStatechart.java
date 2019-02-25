@@ -14,13 +14,13 @@ import hu.bme.mit.gamma.tutorial.finish.controller.ControllerStatemachine.State;
 
 public class ControllerStatechart implements ControllerStatechartInterface {
 	// The wrapped Yakindu statemachine
-	private ControllerStatemachine controllerStatemachine = new ControllerStatemachine();
+	private ControllerStatemachine controllerStatemachine;
 	// Port instances
-	private PriorityControl priorityControl = new PriorityControl();
-	private SecondaryPolice secondaryPolice = new SecondaryPolice();
-	private PriorityPolice priorityPolice = new PriorityPolice();
-	private PoliceInterrupt policeInterrupt = new PoliceInterrupt();
-	private SecondaryControl secondaryControl = new SecondaryControl();
+	private PoliceInterrupt policeInterrupt;
+	private PriorityPolice priorityPolice;
+	private PriorityControl priorityControl;
+	private SecondaryControl secondaryControl;
+	private SecondaryPolice secondaryPolice;
 	// Indicates which queues are active in this cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
@@ -29,11 +29,16 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
 	public ControllerStatechart() {
-		// Initializing and entering the wrapped statemachine
+		controllerStatemachine = new ControllerStatemachine();
+		policeInterrupt = new PoliceInterrupt();
+		priorityPolice = new PriorityPolice();
+		priorityControl = new PriorityControl();
+		secondaryControl = new SecondaryControl();
+		secondaryPolice = new SecondaryPolice();
 		controllerStatemachine.setTimer(new TimerService());
 	}
 	
-	/** Resets the statemachine. Should be used only be the container (composite system) class. */
+	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
 		controllerStatemachine.init();
@@ -48,7 +53,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	
 	/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 	public void changeInsertQueue() {
-	    insertQueue = !insertQueue;
+		insertQueue = !insertQueue;
 	}
 	
 	/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -82,8 +87,8 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	/** Changes the insert queue and initiates a run. */
 	public void runAndRechangeInsertQueue() {
 		// First the insert queue is changed back, so self-event sending can work
-	    changeInsertQueue();
-	    runComponent();
+		changeInsertQueue();
+		runComponent();
 	}
 	
 	/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
@@ -101,69 +106,32 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 				}
 		}
 		controllerStatemachine.runCycle();
-	}    		
+	}			
 	
 	// Inner classes representing Ports
-	public class PriorityControl implements ControlInterface.Provided {
-		private List<ControlInterface.Listener.Provided> registeredListeners = new LinkedList<ControlInterface.Listener.Provided>();
-
+	public class PoliceInterrupt implements PoliceInterruptInterface.Required {
+		private List<PoliceInterruptInterface.Listener.Required> registeredListeners = new LinkedList<PoliceInterruptInterface.Listener.Required>();
 
 		@Override
-		public boolean isRaisedToggle() {
-			return controllerStatemachine.getSCIPriorityControl().isRaisedToggle();
+		public void raisePolice() {
+			getInsertQueue().add(new Event("PoliceInterrupt.Police", null));
 		}
+
 		@Override
-		public void registerListener(final ControlInterface.Listener.Provided listener) {
+		public void registerListener(final PoliceInterruptInterface.Listener.Required listener) {
 			registeredListeners.add(listener);
-			controllerStatemachine.getSCIPriorityControl().getListeners().add(new SCIPriorityControlListener() {
-				@Override
-				public void onToggleRaised() {
-					listener.raiseToggle();
-				}
-			});
 		}
 		
 		@Override
-		public List<ControlInterface.Listener.Provided> getRegisteredListeners() {
+		public List<PoliceInterruptInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
 		}
 
 	}
 	
 	@Override
-	public PriorityControl getPriorityControl() {
-		return priorityControl;
-	}
-	
-	public class SecondaryPolice implements PoliceInterruptInterface.Provided {
-		private List<PoliceInterruptInterface.Listener.Provided> registeredListeners = new LinkedList<PoliceInterruptInterface.Listener.Provided>();
-
-
-		@Override
-		public boolean isRaisedPolice() {
-			return controllerStatemachine.getSCISecondaryPolice().isRaisedPolice();
-		}
-		@Override
-		public void registerListener(final PoliceInterruptInterface.Listener.Provided listener) {
-			registeredListeners.add(listener);
-			controllerStatemachine.getSCISecondaryPolice().getListeners().add(new SCISecondaryPoliceListener() {
-				@Override
-				public void onPoliceRaised() {
-					listener.raisePolice();
-				}
-			});
-		}
-		
-		@Override
-		public List<PoliceInterruptInterface.Listener.Provided> getRegisteredListeners() {
-			return registeredListeners;
-		}
-
-	}
-	
-	@Override
-	public SecondaryPolice getSecondaryPolice() {
-		return secondaryPolice;
+	public PoliceInterrupt getPoliceInterrupt() {
+		return policeInterrupt;
 	}
 	
 	public class PriorityPolice implements PoliceInterruptInterface.Provided {
@@ -197,29 +165,35 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		return priorityPolice;
 	}
 	
-	public class PoliceInterrupt implements PoliceInterruptInterface.Required {
-		private List<PoliceInterruptInterface.Listener.Required> registeredListeners = new LinkedList<PoliceInterruptInterface.Listener.Required>();
+	public class PriorityControl implements ControlInterface.Provided {
+		private List<ControlInterface.Listener.Provided> registeredListeners = new LinkedList<ControlInterface.Listener.Provided>();
+
 
 		@Override
-		public void raisePolice() {
-			getInsertQueue().add(new Event("PoliceInterrupt.Police", null));
+		public boolean isRaisedToggle() {
+			return controllerStatemachine.getSCIPriorityControl().isRaisedToggle();
 		}
-
 		@Override
-		public void registerListener(final PoliceInterruptInterface.Listener.Required listener) {
+		public void registerListener(final ControlInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
+			controllerStatemachine.getSCIPriorityControl().getListeners().add(new SCIPriorityControlListener() {
+				@Override
+				public void onToggleRaised() {
+					listener.raiseToggle();
+				}
+			});
 		}
 		
 		@Override
-		public List<PoliceInterruptInterface.Listener.Required> getRegisteredListeners() {
+		public List<ControlInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
 		}
 
 	}
 	
 	@Override
-	public PoliceInterrupt getPoliceInterrupt() {
-		return policeInterrupt;
+	public PriorityControl getPriorityControl() {
+		return priorityControl;
 	}
 	
 	public class SecondaryControl implements ControlInterface.Provided {
@@ -251,6 +225,37 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	@Override
 	public SecondaryControl getSecondaryControl() {
 		return secondaryControl;
+	}
+	
+	public class SecondaryPolice implements PoliceInterruptInterface.Provided {
+		private List<PoliceInterruptInterface.Listener.Provided> registeredListeners = new LinkedList<PoliceInterruptInterface.Listener.Provided>();
+
+
+		@Override
+		public boolean isRaisedPolice() {
+			return controllerStatemachine.getSCISecondaryPolice().isRaisedPolice();
+		}
+		@Override
+		public void registerListener(final PoliceInterruptInterface.Listener.Provided listener) {
+			registeredListeners.add(listener);
+			controllerStatemachine.getSCISecondaryPolice().getListeners().add(new SCISecondaryPoliceListener() {
+				@Override
+				public void onPoliceRaised() {
+					listener.raisePolice();
+				}
+			});
+		}
+		
+		@Override
+		public List<PoliceInterruptInterface.Listener.Provided> getRegisteredListeners() {
+			return registeredListeners;
+		}
+
+	}
+	
+	@Override
+	public SecondaryPolice getSecondaryPolice() {
+		return secondaryPolice;
 	}
 	
 	

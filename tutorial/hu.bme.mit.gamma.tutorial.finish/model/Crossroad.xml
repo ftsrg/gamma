@@ -4,91 +4,91 @@
 <declaration>
 
 
-bool LightCommands_displayGreenOfprior;
-
-bool LightCommands_displayGreenOfsecondary;
-
-bool LightCommands_displayNoneOfprior;
-
-bool LightCommands_displayNoneOfsecondary;
-
-bool LightCommands_displayRedOfprior;
-
-bool LightCommands_displayRedOfsecondary;
-
-bool LightCommands_displayYellowOfprior;
-
-bool LightCommands_displayYellowOfsecondary;
-
-broadcast chan entryChanOfInterrupted32;
-
-broadcast chan entryChanOfInterrupted35;
-
-broadcast chan entryChanOfNormal31;
-
-broadcast chan entryChanOfNormal34;
-
-broadcast chan entryChanOfOperating33;
-
-broadcast chan exitChanOfInterrupted38;
-
-broadcast chan exitChanOfInterrupted40;
-
-broadcast chan exitChanOfNormal36;
-
-broadcast chan exitChanOfNormal42;
-
-broadcast chan exitChanOfOperating44;
-
 broadcast chan finalize;
-
-bool isRaised_Control_toggleOfprior;
-
-bool isRaised_Control_toggleOfsecondary;
-
-bool isRaised_PoliceInterrupt_policeOfcontroller;
-
-bool isRaised_PoliceInterrupt_policeOfprior;
-
-bool isRaised_PoliceInterrupt_policeOfsecondary;
 
 bool isStable = true;
 
-broadcast chan runCycleInterruptedOfInterruptedOfprior;
+bool toRaise_Control_toggleOfprior;
 
-broadcast chan runCycleInterruptedOfInterruptedOfsecondary;
+bool isRaised_Control_toggleOfprior;
 
-broadcast chan runCycleMain_regionOfStatechartOfcontroller;
+bool toRaise_Control_toggleOfsecondary;
+
+bool isRaised_Control_toggleOfsecondary;
+
+bool toRaise_PoliceInterrupt_policeOfsecondary;
+
+bool isRaised_PoliceInterrupt_policeOfsecondary;
+
+bool toRaise_PoliceInterrupt_policeOfcontroller;
+
+bool isRaised_PoliceInterrupt_policeOfcontroller;
+
+bool toRaise_PoliceInterrupt_policeOfprior;
+
+bool isRaised_PoliceInterrupt_policeOfprior;
+
+bool LightCommands_displayYellowOfprior;
+
+bool LightCommands_displayRedOfprior;
+
+bool LightCommands_displayNoneOfsecondary;
+
+bool LightCommands_displayGreenOfprior;
+
+bool LightCommands_displayNoneOfprior;
+
+bool LightCommands_displayRedOfsecondary;
+
+bool LightCommands_displayGreenOfsecondary;
+
+bool LightCommands_displayYellowOfsecondary;
+
+broadcast chan runCycleOperatingOfOperatingOfcontroller;
+
+broadcast chan runCycleNormalOfNormalOfprior;
 
 broadcast chan runCycleMain_regionOfStatechartOfprior;
 
 broadcast chan runCycleMain_regionOfStatechartOfsecondary;
 
-broadcast chan runCycleNormalOfNormalOfprior;
+broadcast chan runCycleInterruptedOfInterruptedOfsecondary;
 
 broadcast chan runCycleNormalOfNormalOfsecondary;
 
-broadcast chan runCycleOperatingOfOperatingOfcontroller;
+broadcast chan runCycleMain_regionOfStatechartOfcontroller;
 
-bool toRaise_Control_toggleOfprior;
+broadcast chan runCycleInterruptedOfInterruptedOfprior;
 
-bool toRaise_Control_toggleOfsecondary;
+broadcast chan entryChanOfInterrupted31;
 
-bool toRaise_PoliceInterrupt_policeOfcontroller;
+broadcast chan entryChanOfNormal32;
 
-bool toRaise_PoliceInterrupt_policeOfprior;
+broadcast chan entryChanOfOperating33;
 
-bool toRaise_PoliceInterrupt_policeOfsecondary;
+broadcast chan entryChanOfInterrupted34;
+
+broadcast chan entryChanOfNormal35;
+
+broadcast chan exitChanOfInterrupted36;
+
+broadcast chan exitChanOfNormal38;
+
+broadcast chan exitChanOfOperating40;
+
+broadcast chan exitChanOfInterrupted42;
+
+broadcast chan exitChanOfNormal44;
 
 void clearOutEvents64() {
-		LightCommands_displayRedOfprior = false;
-		LightCommands_displayNoneOfprior = false;
-		LightCommands_displayNoneOfsecondary = false;
-		LightCommands_displayGreenOfprior = false;
-		LightCommands_displayRedOfsecondary = false;
-		LightCommands_displayYellowOfsecondary = false;
-		LightCommands_displayYellowOfprior = false;
-		LightCommands_displayGreenOfsecondary = false;
+	LightCommands_displayRedOfprior = false;
+	LightCommands_displayYellowOfprior = false;
+	LightCommands_displayYellowOfsecondary = false;
+	LightCommands_displayNoneOfsecondary = false;
+	LightCommands_displayGreenOfsecondary = false;
+	LightCommands_displayNoneOfprior = false;
+	LightCommands_displayRedOfsecondary = false;
+	LightCommands_displayGreenOfprior = false;
 }
 
 bool noInnerEvents() {
@@ -97,26 +97,32 @@ bool noInnerEvents() {
 	bool tempVar2;
 	bool tempVar3;
 	bool tempVar4;
-		tempVar0 = toRaise_PoliceInterrupt_policeOfsecondary;
-		tempVar1 = (tempVar0 || toRaise_PoliceInterrupt_policeOfcontroller);
-		tempVar2 = (tempVar1 || toRaise_Control_toggleOfsecondary);
-		tempVar3 = (tempVar2 || toRaise_PoliceInterrupt_policeOfprior);
-		tempVar4 = (tempVar3 || toRaise_Control_toggleOfprior);
-		return !(tempVar4);
+	tempVar0 = toRaise_PoliceInterrupt_policeOfprior;
+	tempVar1 = (tempVar0 || toRaise_PoliceInterrupt_policeOfsecondary);
+	tempVar2 = (tempVar1 || toRaise_Control_toggleOfsecondary);
+	tempVar3 = (tempVar2 || toRaise_PoliceInterrupt_policeOfcontroller);
+	tempVar4 = (tempVar3 || toRaise_Control_toggleOfprior);
+	return !(tempVar4);
 }
 
 </declaration>
 <template>
 <name>
-interruptedOfInterruptedOfsecondary
+operatingOfOperatingOfcontroller
 </name>
 <declaration>
 bool isActive;
 
 clock timer15;
 
+clock timer17;
+
 clock timer19;
-</declaration>					
+
+clock timer21;
+
+clock timer29;
+</declaration>
 <location id="EntryLocation0">
 <name>
 EntryLocation0
@@ -136,18 +142,18 @@ Generated for the synchronization of subregions.
 </label>
 </location>
 
-<location id="BlinkingYellow">
+<location id="Init">
 <name>
-BlinkingYellow
+Init
 </name>
 <label kind="invariant">
-timer19 &lt;= 500
+timer17 &lt;= 2 * 1000
 </label>
 </location>
 
-<location id="entryOfBlinkingYellow">
+<location id="entryOfInit">
 <name>
-entryOfBlinkingYellow
+entryOfInit
 </name>
 <label kind="comments">
 Pseudo state for subregion synchronization
@@ -155,18 +161,75 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
-<location id="Black">
+<location id="PriorityPrepares">
 <name>
-Black
+PriorityPrepares
 </name>
 <label kind="invariant">
-timer15 &lt;= 500
+timer15 &lt;= 1 * 1000
 </label>
 </location>
 
-<location id="entryOfBlack">
+<location id="entryOfPriorityPrepares">
 <name>
-entryOfBlack
+entryOfPriorityPrepares
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Priority">
+<name>
+Priority
+</name>
+<label kind="invariant">
+timer19 &lt;= 2 * 1000
+</label>
+</location>
+
+<location id="entryOfPriority">
+<name>
+entryOfPriority
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="SecondaryPrepares">
+<name>
+SecondaryPrepares
+</name>
+<label kind="invariant">
+timer29 &lt;= 1 * 1000
+</label>
+</location>
+
+<location id="entryOfSecondaryPrepares">
+<name>
+entryOfSecondaryPrepares
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Secondary">
+<name>
+Secondary
+</name>
+<label kind="invariant">
+timer21 &lt;= 2 * 1000
+</label>
+</location>
+
+<location id="entryOfSecondary">
+<name>
+entryOfSecondary
 </name>
 <label kind="comments">
 Pseudo state for subregion synchronization
@@ -180,133 +243,306 @@ timer16
 </name>
 </location>
 
+<location id="timer18">
+<name>
+timer18
+</name>
+</location>
+
 <location id="timer20">
 <name>
 timer20
 </name>
 </location>
+
+<location id="timer22">
+<name>
+timer22
+</name>
+</location>
+
+<location id="timer30">
+<name>
+timer30
+</name>
+</location>
 <init ref="GenInitLocation1"/>
 
 <transition>
-<source ref="entryOfBlinkingYellow"/>
-<target ref="BlinkingYellow"/>
-<label kind="assignment">LightCommands_displayYellowOfsecondary = true,
-timer19 = 0</label>
+<source ref="entryOfInit"/>
+<target ref="Init"/>
+<label kind="assignment">toRaise_Control_toggleOfprior = true,
+timer17 = 0</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="entryOfBlack"/>
-<target ref="Black"/>
-<label kind="assignment">LightCommands_displayNoneOfsecondary = true,
+<source ref="entryOfPriorityPrepares"/>
+<target ref="PriorityPrepares"/>
+<label kind="assignment">toRaise_Control_toggleOfprior = true,
 timer15 = 0</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="timer20"/>
-<target ref="entryOfBlack"/>
+<source ref="entryOfPriority"/>
+<target ref="Priority"/>
+<label kind="assignment">toRaise_Control_toggleOfsecondary = true,
+toRaise_Control_toggleOfprior = true,
+timer19 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfSecondaryPrepares"/>
+<target ref="SecondaryPrepares"/>
+<label kind="assignment">toRaise_Control_toggleOfsecondary = true,
+timer29 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfSecondary"/>
+<target ref="Secondary"/>
+<label kind="assignment">toRaise_Control_toggleOfprior = true,
+toRaise_Control_toggleOfsecondary = true,
+timer21 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="timer16"/>
+<target ref="entryOfSecondary"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfsecondary?</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer30"/>
+<target ref="entryOfPriority"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="EntryLocation0"/>
-<target ref="entryOfBlinkingYellow"/>
+<target ref="entryOfInit"/>
 <label kind="guard">isActive</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="timer16"/>
-<target ref="entryOfBlinkingYellow"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfsecondary?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="timer16"/>
-<label kind="guard">(isStable &amp;&amp; timer15 >= 500)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="timer20"/>
-<label kind="guard">(isStable &amp;&amp; timer19 >= 500)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="timer20"/>
-<target ref="EntryLocation0"/>
-<label kind="synchronisation">entryChanOfInterrupted35?</label>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer18"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer22"/>
+<target ref="entryOfSecondaryPrepares"/>
+<label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="timer16"/>
+<label kind="guard">(isStable &amp;&amp; timer15 >= 1 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="timer18"/>
+<label kind="guard">(isStable &amp;&amp; timer17 >= 2 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="timer20"/>
+<label kind="guard">(isStable &amp;&amp; timer19 >= 2 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Secondary"/>
+<target ref="timer22"/>
+<label kind="guard">(isStable &amp;&amp; timer21 >= 2 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="timer30"/>
+<label kind="guard">(isStable &amp;&amp; timer29 >= 1 * 1000)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="timer16"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="entryOfSecondaryPrepares"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="GenInitLocation1"/>
 <target ref="EntryLocation0"/>
-<label kind="synchronisation">entryChanOfInterrupted35?</label>
+<label kind="synchronisation">entryChanOfOperating33?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="BlinkingYellow"/>
-<target ref="EntryLocation0"/>
-<label kind="synchronisation">entryChanOfInterrupted35?</label>
+<source ref="timer22"/>
+<target ref="entryOfSecondary"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="timer16"/>
-<target ref="EntryLocation0"/>
-<label kind="synchronisation">entryChanOfInterrupted35?</label>
+<source ref="timer30"/>
+<target ref="entryOfSecondaryPrepares"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="Black"/>
-<target ref="EntryLocation0"/>
-<label kind="synchronisation">entryChanOfInterrupted35?</label>
+<source ref="Secondary"/>
+<target ref="entryOfSecondary"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="entryOfPriority"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="timer20"/>
-<target ref="timer20"/>
-<label kind="synchronisation">exitChanOfInterrupted40?</label>
+<target ref="entryOfPriority"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="entryOfInit"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer18"/>
+<target ref="entryOfInit"/>
+<label kind="synchronisation">entryChanOfOperating33?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="timer16"/>
+<target ref="timer16"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="SecondaryPrepares"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="GenInitLocation1"/>
 <target ref="GenInitLocation1"/>
-<label kind="synchronisation">exitChanOfInterrupted40?</label>
+<label kind="synchronisation">exitChanOfOperating40?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="BlinkingYellow"/>
-<target ref="BlinkingYellow"/>
-<label kind="synchronisation">exitChanOfInterrupted40?</label>
+<source ref="timer22"/>
+<target ref="timer22"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="timer16"/>
-<target ref="timer16"/>
-<label kind="synchronisation">exitChanOfInterrupted40?</label>
+<source ref="timer30"/>
+<target ref="timer30"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="Black"/>
-<target ref="Black"/>
-<label kind="synchronisation">exitChanOfInterrupted40?</label>
+<source ref="Secondary"/>
+<target ref="Secondary"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="PriorityPrepares"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="Priority"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer20"/>
+<target ref="timer20"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="Init"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer18"/>
+<target ref="timer18"/>
+<label kind="synchronisation">exitChanOfOperating40?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 </template>
@@ -317,10 +553,10 @@ normalOfNormalOfprior
 </name>
 <declaration>
 bool isActive;
-</declaration>					
-<location id="EntryLocation8">
+</declaration>
+<location id="EntryLocation3">
 <name>
-EntryLocation8
+EntryLocation3
 </name>
 <label kind="comments">
 Entry Location
@@ -328,9 +564,9 @@ Entry Location
 <committed/>
 </location>
 
-<location id="GenInitLocation9">
+<location id="GenInitLocation4">
 <name>
-GenInitLocation9
+GenInitLocation4
 </name>
 <label kind="comments">
 Generated for the synchronization of subregions.
@@ -353,22 +589,6 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
-<location id="Red">
-<name>
-Red
-</name>
-</location>
-
-<location id="entryOfRed">
-<name>
-entryOfRed
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
 <location id="Yellow">
 <name>
 Yellow
@@ -384,19 +604,28 @@ Pseudo state for subregion synchronization
 </label>
 <committed/>
 </location>
-<init ref="GenInitLocation9"/>
+
+<location id="Red">
+<name>
+Red
+</name>
+</location>
+
+<location id="entryOfRed">
+<name>
+entryOfRed
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+<init ref="GenInitLocation4"/>
 
 <transition>
 <source ref="entryOfGreen"/>
 <target ref="Green"/>
 <label kind="assignment">LightCommands_displayGreenOfprior = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfRed"/>
-<target ref="Red"/>
-<label kind="assignment">LightCommands_displayRedOfprior = true</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
@@ -408,31 +637,14 @@ Pseudo state for subregion synchronization
 </transition>
 
 <transition>
-<source ref="Green"/>
-<target ref="entryOfYellow"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
-<label kind="assignment"></label>
+<source ref="entryOfRed"/>
+<target ref="Red"/>
+<label kind="assignment">LightCommands_displayRedOfprior = true</label>
+<label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="Yellow"/>
-<target ref="entryOfRed"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfGreen"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="EntryLocation8"/>
+<source ref="EntryLocation3"/>
 <target ref="entryOfRed"/>
 <label kind="guard">isActive</label>
 <label kind="assignment"></label>
@@ -440,58 +652,234 @@ Pseudo state for subregion synchronization
 
 <transition>
 <source ref="Red"/>
+<target ref="entryOfGreen"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="entryOfYellow"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
 <target ref="entryOfRed"/>
-<label kind="synchronisation">entryChanOfNormal31?</label>
-<label kind="assignment">isActive = true</label>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfprior)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfprior?</label>
+<label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="Yellow"/>
 <target ref="entryOfYellow"/>
-<label kind="synchronisation">entryChanOfNormal31?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation9"/>
-<target ref="EntryLocation8"/>
-<label kind="synchronisation">entryChanOfNormal31?</label>
+<label kind="synchronisation">entryChanOfNormal35?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="entryOfGreen"/>
-<label kind="synchronisation">entryChanOfNormal31?</label>
+<label kind="synchronisation">entryChanOfNormal35?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="Red"/>
-<target ref="Red"/>
-<label kind="synchronisation">exitChanOfNormal42?</label>
-<label kind="assignment">isActive = false</label>
+<target ref="entryOfRed"/>
+<label kind="synchronisation">entryChanOfNormal35?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation4"/>
+<target ref="EntryLocation3"/>
+<label kind="synchronisation">entryChanOfNormal35?</label>
+<label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="Yellow"/>
 <target ref="Yellow"/>
-<label kind="synchronisation">exitChanOfNormal42?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation9"/>
-<target ref="GenInitLocation9"/>
-<label kind="synchronisation">exitChanOfNormal42?</label>
+<label kind="synchronisation">exitChanOfNormal44?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="Green"/>
-<label kind="synchronisation">exitChanOfNormal42?</label>
+<label kind="synchronisation">exitChanOfNormal44?</label>
 <label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="Red"/>
+<label kind="synchronisation">exitChanOfNormal44?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation4"/>
+<target ref="GenInitLocation4"/>
+<label kind="synchronisation">exitChanOfNormal44?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+main_regionOfStatechartOfprior
+</name>
+<declaration>
+</declaration>
+<location id="EntryLocation8">
+<name>
+EntryLocation8
+</name>
+<label kind="comments">
+Entry Location
+</label>
+<committed/>
+</location>
+
+<location id="Normal">
+<name>
+Normal
+</name>
+</location>
+
+<location id="entryOfNormal">
+<name>
+entryOfNormal
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Interrupted">
+<name>
+Interrupted
+</name>
+</location>
+
+<location id="entryOfInterrupted">
+<name>
+entryOfInterrupted
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="exitOfInterrupted43">
+<name>
+exitOfInterrupted43
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="exitOfNormal45">
+<name>
+exitOfNormal45
+</name>
+<label kind="comments">
+Synchronization location.
+</label>
+<committed/>
+</location>
+
+<location id="FinalizeBeforeNormal49">
+<name>
+FinalizeBeforeNormal49
+</name>
+<urgent/>
+</location>
+
+<location id="FinalizeBeforeInterrupted50">
+<name>
+FinalizeBeforeInterrupted50
+</name>
+<urgent/>
+</location>
+<init ref="EntryLocation8"/>
+
+<transition>
+<source ref="entryOfNormal"/>
+<target ref="Normal"/>
+<label kind="synchronisation">entryChanOfNormal35!</label>
+<label kind="assignment"></label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfInterrupted"/>
+<target ref="Interrupted"/>
+<label kind="synchronisation">entryChanOfInterrupted31!</label>
+<label kind="assignment"></label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="Interrupted"/>
+<target ref="exitOfInterrupted43"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfprior</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfprior?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Normal"/>
+<target ref="exitOfNormal45"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfprior</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfprior?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="EntryLocation8"/>
+<target ref="entryOfNormal"/>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="exitOfInterrupted43"/>
+<target ref="FinalizeBeforeNormal49"/>
+<label kind="synchronisation">exitChanOfInterrupted42!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="exitOfNormal45"/>
+<target ref="FinalizeBeforeInterrupted50"/>
+<label kind="synchronisation">exitChanOfNormal44!</label>
+<label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="FinalizeBeforeNormal49"/>
+<target ref="entryOfNormal"/>
+<label kind="synchronisation">finalize?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="FinalizeBeforeInterrupted50"/>
+<target ref="entryOfInterrupted"/>
+<label kind="synchronisation">finalize?</label>
+<label kind="assignment"></label>
 </transition>
 </template>
 
@@ -500,10 +888,10 @@ Pseudo state for subregion synchronization
 main_regionOfStatechartOfsecondary
 </name>
 <declaration>
-</declaration>					
-<location id="EntryLocation4">
+</declaration>
+<location id="EntryLocation5">
 <name>
-EntryLocation4
+EntryLocation5
 </name>
 <label kind="comments">
 Entry Location
@@ -543,9 +931,9 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
-<location id="exitOfNormal37">
+<location id="exitOfInterrupted37">
 <name>
-exitOfNormal37
+exitOfInterrupted37
 </name>
 <label kind="comments">
 Synchronization location.
@@ -553,9 +941,9 @@ Synchronization location.
 <committed/>
 </location>
 
-<location id="exitOfInterrupted41">
+<location id="exitOfNormal39">
 <name>
-exitOfInterrupted41
+exitOfNormal39
 </name>
 <label kind="comments">
 Synchronization location.
@@ -563,9 +951,9 @@ Synchronization location.
 <committed/>
 </location>
 
-<location id="FinalizeBeforeNormal47">
+<location id="FinalizeBeforeNormal46">
 <name>
-FinalizeBeforeNormal47
+FinalizeBeforeNormal46
 </name>
 <urgent/>
 </location>
@@ -576,12 +964,12 @@ FinalizeBeforeInterrupted48
 </name>
 <urgent/>
 </location>
-<init ref="EntryLocation4"/>
+<init ref="EntryLocation5"/>
 
 <transition>
 <source ref="entryOfInterrupted"/>
 <target ref="Interrupted"/>
-<label kind="synchronisation">entryChanOfInterrupted35!</label>
+<label kind="synchronisation">entryChanOfInterrupted34!</label>
 <label kind="assignment"></label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
@@ -589,51 +977,51 @@ FinalizeBeforeInterrupted48
 <transition>
 <source ref="entryOfNormal"/>
 <target ref="Normal"/>
-<label kind="synchronisation">entryChanOfNormal34!</label>
+<label kind="synchronisation">entryChanOfNormal32!</label>
 <label kind="assignment"></label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="Normal"/>
-<target ref="exitOfNormal37"/>
+<source ref="Interrupted"/>
+<target ref="exitOfInterrupted37"/>
 <label kind="guard">isRaised_PoliceInterrupt_policeOfsecondary</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfsecondary?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="EntryLocation4"/>
+<source ref="Normal"/>
+<target ref="exitOfNormal39"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfsecondary</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfsecondary?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="EntryLocation5"/>
 <target ref="entryOfNormal"/>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="Interrupted"/>
-<target ref="exitOfInterrupted41"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfsecondary</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfsecondary?</label>
+<source ref="exitOfInterrupted37"/>
+<target ref="FinalizeBeforeNormal46"/>
+<label kind="synchronisation">exitChanOfInterrupted36!</label>
 <label kind="assignment"></label>
+<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="exitOfNormal37"/>
+<source ref="exitOfNormal39"/>
 <target ref="FinalizeBeforeInterrupted48"/>
-<label kind="synchronisation">exitChanOfNormal36!</label>
+<label kind="synchronisation">exitChanOfNormal38!</label>
 <label kind="assignment"></label>
 <label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="exitOfInterrupted41"/>
-<target ref="FinalizeBeforeNormal47"/>
-<label kind="synchronisation">exitChanOfInterrupted40!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeNormal47"/>
+<source ref="FinalizeBeforeNormal46"/>
 <target ref="entryOfNormal"/>
 <label kind="synchronisation">finalize?</label>
 <label kind="assignment"></label>
@@ -649,18 +1037,18 @@ FinalizeBeforeInterrupted48
 
 <template>
 <name>
-interruptedOfInterruptedOfprior
+interruptedOfInterruptedOfsecondary
 </name>
 <declaration>
 bool isActive;
 
-clock timer27;
+clock timer13;
 
-clock timer29;
-</declaration>					
-<location id="EntryLocation2">
+clock timer27;
+</declaration>
+<location id="EntryLocation9">
 <name>
-EntryLocation2
+EntryLocation9
 </name>
 <label kind="comments">
 Entry Location
@@ -668,32 +1056,13 @@ Entry Location
 <committed/>
 </location>
 
-<location id="GenInitLocation3">
+<location id="GenInitLocation10">
 <name>
-GenInitLocation3
+GenInitLocation10
 </name>
 <label kind="comments">
 Generated for the synchronization of subregions.
 </label>
-</location>
-
-<location id="BlinkingYellow">
-<name>
-BlinkingYellow
-</name>
-<label kind="invariant">
-timer29 &lt;= 500
-</label>
-</location>
-
-<location id="entryOfBlinkingYellow">
-<name>
-entryOfBlinkingYellow
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
 </location>
 
 <location id="Black">
@@ -701,7 +1070,7 @@ Pseudo state for subregion synchronization
 Black
 </name>
 <label kind="invariant">
-timer27 &lt;= 500
+timer13 &lt;= 500
 </label>
 </location>
 
@@ -715,139 +1084,158 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
+<location id="BlinkingYellow">
+<name>
+BlinkingYellow
+</name>
+<label kind="invariant">
+timer27 &lt;= 500
+</label>
+</location>
+
+<location id="entryOfBlinkingYellow">
+<name>
+entryOfBlinkingYellow
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="timer14">
+<name>
+timer14
+</name>
+</location>
+
 <location id="timer28">
 <name>
 timer28
 </name>
 </location>
-
-<location id="timer30">
-<name>
-timer30
-</name>
-</location>
-<init ref="GenInitLocation3"/>
-
-<transition>
-<source ref="entryOfBlinkingYellow"/>
-<target ref="BlinkingYellow"/>
-<label kind="assignment">LightCommands_displayYellowOfprior = true,
-timer29 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
+<init ref="GenInitLocation10"/>
 
 <transition>
 <source ref="entryOfBlack"/>
 <target ref="Black"/>
-<label kind="assignment">LightCommands_displayNoneOfprior = true,
+<label kind="assignment">LightCommands_displayNoneOfsecondary = true,
+timer13 = 0</label>
+<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfBlinkingYellow"/>
+<target ref="BlinkingYellow"/>
+<label kind="assignment">LightCommands_displayYellowOfsecondary = true,
 timer27 = 0</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="EntryLocation2"/>
+<source ref="timer14"/>
 <target ref="entryOfBlinkingYellow"/>
 <label kind="guard">isActive</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfsecondary?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="timer30"/>
-<target ref="entryOfBlack"/>
+<source ref="EntryLocation9"/>
+<target ref="entryOfBlinkingYellow"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="timer28"/>
-<target ref="entryOfBlinkingYellow"/>
+<target ref="entryOfBlack"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior?</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfsecondary?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="Black"/>
+<target ref="timer14"/>
+<label kind="guard">(isStable &amp;&amp; timer13 >= 500)</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
 <target ref="timer28"/>
 <label kind="guard">(isStable &amp;&amp; timer27 >= 500)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="BlinkingYellow"/>
-<target ref="timer30"/>
-<label kind="guard">(isStable &amp;&amp; timer29 >= 500)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation3"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted32?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer28"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted32?</label>
+<source ref="GenInitLocation10"/>
+<target ref="EntryLocation9"/>
+<label kind="synchronisation">entryChanOfInterrupted34?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="Black"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted32?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer30"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted32?</label>
+<target ref="EntryLocation9"/>
+<label kind="synchronisation">entryChanOfInterrupted34?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="BlinkingYellow"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted32?</label>
+<target ref="EntryLocation9"/>
+<label kind="synchronisation">entryChanOfInterrupted34?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="GenInitLocation3"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted38?</label>
-<label kind="assignment">isActive = false</label>
+<source ref="timer14"/>
+<target ref="EntryLocation9"/>
+<label kind="synchronisation">entryChanOfInterrupted34?</label>
+<label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="timer28"/>
-<target ref="timer28"/>
-<label kind="synchronisation">exitChanOfInterrupted38?</label>
+<target ref="EntryLocation9"/>
+<label kind="synchronisation">entryChanOfInterrupted34?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation10"/>
+<target ref="GenInitLocation10"/>
+<label kind="synchronisation">exitChanOfInterrupted36?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Black"/>
 <target ref="Black"/>
-<label kind="synchronisation">exitChanOfInterrupted38?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer30"/>
-<target ref="timer30"/>
-<label kind="synchronisation">exitChanOfInterrupted38?</label>
+<label kind="synchronisation">exitChanOfInterrupted36?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="BlinkingYellow"/>
 <target ref="BlinkingYellow"/>
-<label kind="synchronisation">exitChanOfInterrupted38?</label>
+<label kind="synchronisation">exitChanOfInterrupted36?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer14"/>
+<target ref="timer14"/>
+<label kind="synchronisation">exitChanOfInterrupted36?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="timer28"/>
+<target ref="timer28"/>
+<label kind="synchronisation">exitChanOfInterrupted36?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 </template>
@@ -858,7 +1246,7 @@ normalOfNormalOfsecondary
 </name>
 <declaration>
 bool isActive;
-</declaration>					
+</declaration>
 <location id="EntryLocation11">
 <name>
 EntryLocation11
@@ -878,22 +1266,6 @@ Generated for the synchronization of subregions.
 </label>
 </location>
 
-<location id="Green">
-<name>
-Green
-</name>
-</location>
-
-<location id="entryOfGreen">
-<name>
-entryOfGreen
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
 <location id="Yellow">
 <name>
 Yellow
@@ -903,6 +1275,22 @@ Yellow
 <location id="entryOfYellow">
 <name>
 entryOfYellow
+</name>
+<label kind="comments">
+Pseudo state for subregion synchronization
+</label>
+<committed/>
+</location>
+
+<location id="Green">
+<name>
+Green
+</name>
+</location>
+
+<location id="entryOfGreen">
+<name>
+entryOfGreen
 </name>
 <label kind="comments">
 Pseudo state for subregion synchronization
@@ -928,16 +1316,16 @@ Pseudo state for subregion synchronization
 <init ref="GenInitLocation12"/>
 
 <transition>
-<source ref="entryOfGreen"/>
-<target ref="Green"/>
-<label kind="assignment">LightCommands_displayGreenOfsecondary = true</label>
+<source ref="entryOfYellow"/>
+<target ref="Yellow"/>
+<label kind="assignment">LightCommands_displayYellowOfsecondary = true</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="entryOfYellow"/>
-<target ref="Yellow"/>
-<label kind="assignment">LightCommands_displayYellowOfsecondary = true</label>
+<source ref="entryOfGreen"/>
+<target ref="Green"/>
+<label kind="assignment">LightCommands_displayGreenOfsecondary = true</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
@@ -949,6 +1337,30 @@ Pseudo state for subregion synchronization
 </transition>
 
 <transition>
+<source ref="Red"/>
+<target ref="entryOfGreen"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
+<target ref="entryOfRed"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="entryOfYellow"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
 <source ref="EntryLocation11"/>
 <target ref="entryOfRed"/>
 <label kind="guard">isActive</label>
@@ -956,82 +1368,58 @@ Pseudo state for subregion synchronization
 </transition>
 
 <transition>
-<source ref="Green"/>
-<target ref="entryOfYellow"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
 <source ref="Red"/>
-<target ref="entryOfGreen"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
-<label kind="assignment"></label>
+<target ref="entryOfRed"/>
+<label kind="synchronisation">entryChanOfNormal32?</label>
+<label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="Yellow"/>
-<target ref="entryOfRed"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfsecondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfsecondary?</label>
-<label kind="assignment"></label>
+<target ref="entryOfYellow"/>
+<label kind="synchronisation">entryChanOfNormal32?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="entryOfGreen"/>
+<label kind="synchronisation">entryChanOfNormal32?</label>
+<label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="GenInitLocation12"/>
 <target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfNormal34?</label>
+<label kind="synchronisation">entryChanOfNormal32?</label>
 <label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfRed"/>
-<label kind="synchronisation">entryChanOfNormal34?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Yellow"/>
-<target ref="entryOfYellow"/>
-<label kind="synchronisation">entryChanOfNormal34?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Green"/>
-<target ref="entryOfGreen"/>
-<label kind="synchronisation">entryChanOfNormal34?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation12"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfNormal36?</label>
-<label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Red"/>
 <target ref="Red"/>
-<label kind="synchronisation">exitChanOfNormal36?</label>
+<label kind="synchronisation">exitChanOfNormal38?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Yellow"/>
 <target ref="Yellow"/>
-<label kind="synchronisation">exitChanOfNormal36?</label>
+<label kind="synchronisation">exitChanOfNormal38?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="Green"/>
-<label kind="synchronisation">exitChanOfNormal36?</label>
+<label kind="synchronisation">exitChanOfNormal38?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation12"/>
+<target ref="GenInitLocation12"/>
+<label kind="synchronisation">exitChanOfNormal38?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 </template>
@@ -1041,15 +1429,21 @@ Pseudo state for subregion synchronization
 main_regionOfStatechartOfcontroller
 </name>
 <declaration>
-</declaration>					
-<location id="EntryLocation10">
+</declaration>
+<location id="EntryLocation2">
 <name>
-EntryLocation10
+EntryLocation2
 </name>
 <label kind="comments">
 Entry Location
 </label>
 <committed/>
+</location>
+
+<location id="Interrupted">
+<name>
+Interrupted
+</name>
 </location>
 
 <location id="Operating">
@@ -1068,15 +1462,9 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
-<location id="Interrupted">
+<location id="exitOfOperating41">
 <name>
-Interrupted
-</name>
-</location>
-
-<location id="exitOfOperating45">
-<name>
-exitOfOperating45
+exitOfOperating41
 </name>
 <label kind="comments">
 Synchronization location.
@@ -1084,13 +1472,13 @@ Synchronization location.
 <committed/>
 </location>
 
-<location id="FinalizeBeforeOperating46">
+<location id="FinalizeBeforeOperating47">
 <name>
-FinalizeBeforeOperating46
+FinalizeBeforeOperating47
 </name>
 <urgent/>
 </location>
-<init ref="EntryLocation10"/>
+<init ref="EntryLocation2"/>
 
 <transition>
 <source ref="entryOfOperating"/>
@@ -1102,7 +1490,7 @@ FinalizeBeforeOperating46
 
 <transition>
 <source ref="Operating"/>
-<target ref="exitOfOperating45"/>
+<target ref="exitOfOperating41"/>
 <label kind="guard">isRaised_PoliceInterrupt_policeOfcontroller</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfcontroller?</label>
 <label kind="assignment">toRaise_PoliceInterrupt_policeOfsecondary = true,
@@ -1110,30 +1498,30 @@ toRaise_PoliceInterrupt_policeOfprior = true</label>
 </transition>
 
 <transition>
-<source ref="Interrupted"/>
-<target ref="FinalizeBeforeOperating46"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcontroller</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcontroller?</label>
-<label kind="assignment">toRaise_PoliceInterrupt_policeOfsecondary = true,
-toRaise_PoliceInterrupt_policeOfprior = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation10"/>
+<source ref="EntryLocation2"/>
 <target ref="entryOfOperating"/>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="exitOfOperating45"/>
+<source ref="Interrupted"/>
+<target ref="FinalizeBeforeOperating47"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcontroller</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcontroller?</label>
+<label kind="assignment">toRaise_PoliceInterrupt_policeOfprior = true,
+toRaise_PoliceInterrupt_policeOfsecondary = true</label>
+</transition>
+
+<transition>
+<source ref="exitOfOperating41"/>
 <target ref="Interrupted"/>
-<label kind="synchronisation">exitChanOfOperating44!</label>
+<label kind="synchronisation">exitChanOfOperating40!</label>
 <label kind="assignment"></label>
 <label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="FinalizeBeforeOperating46"/>
+<source ref="FinalizeBeforeOperating47"/>
 <target ref="entryOfOperating"/>
 <label kind="synchronisation">finalize?</label>
 <label kind="assignment"></label>
@@ -1142,176 +1530,18 @@ toRaise_PoliceInterrupt_policeOfprior = true</label>
 
 <template>
 <name>
-main_regionOfStatechartOfprior
-</name>
-<declaration>
-</declaration>					
-<location id="EntryLocation7">
-<name>
-EntryLocation7
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="Interrupted">
-<name>
-Interrupted
-</name>
-</location>
-
-<location id="entryOfInterrupted">
-<name>
-entryOfInterrupted
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Normal">
-<name>
-Normal
-</name>
-</location>
-
-<location id="entryOfNormal">
-<name>
-entryOfNormal
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="exitOfInterrupted39">
-<name>
-exitOfInterrupted39
-</name>
-<label kind="comments">
-Synchronization location.
-</label>
-<committed/>
-</location>
-
-<location id="exitOfNormal43">
-<name>
-exitOfNormal43
-</name>
-<label kind="comments">
-Synchronization location.
-</label>
-<committed/>
-</location>
-
-<location id="FinalizeBeforeInterrupted49">
-<name>
-FinalizeBeforeInterrupted49
-</name>
-<urgent/>
-</location>
-
-<location id="FinalizeBeforeNormal50">
-<name>
-FinalizeBeforeNormal50
-</name>
-<urgent/>
-</location>
-<init ref="EntryLocation7"/>
-
-<transition>
-<source ref="entryOfInterrupted"/>
-<target ref="Interrupted"/>
-<label kind="synchronisation">entryChanOfInterrupted32!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfNormal"/>
-<target ref="Normal"/>
-<label kind="synchronisation">entryChanOfNormal31!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="Interrupted"/>
-<target ref="exitOfInterrupted39"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfprior</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfprior?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="EntryLocation7"/>
-<target ref="entryOfNormal"/>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Normal"/>
-<target ref="exitOfNormal43"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfprior</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfprior?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="exitOfInterrupted39"/>
-<target ref="FinalizeBeforeNormal50"/>
-<label kind="synchronisation">exitChanOfInterrupted38!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="exitOfNormal43"/>
-<target ref="FinalizeBeforeInterrupted49"/>
-<label kind="synchronisation">exitChanOfNormal42!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeInterrupted49"/>
-<target ref="entryOfInterrupted"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeNormal50"/>
-<target ref="entryOfNormal"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-</template>
-
-<template>
-<name>
-operatingOfOperatingOfcontroller
+interruptedOfInterruptedOfprior
 </name>
 <declaration>
 bool isActive;
 
-clock timer13;
-
-clock timer17;
-
-clock timer21;
-
 clock timer23;
 
 clock timer25;
-</declaration>					
-<location id="EntryLocation5">
+</declaration>
+<location id="EntryLocation6">
 <name>
-EntryLocation5
+EntryLocation6
 </name>
 <label kind="comments">
 Entry Location
@@ -1319,27 +1549,27 @@ Entry Location
 <committed/>
 </location>
 
-<location id="GenInitLocation6">
+<location id="GenInitLocation7">
 <name>
-GenInitLocation6
+GenInitLocation7
 </name>
 <label kind="comments">
 Generated for the synchronization of subregions.
 </label>
 </location>
 
-<location id="Init">
+<location id="BlinkingYellow">
 <name>
-Init
+BlinkingYellow
 </name>
 <label kind="invariant">
-timer25 &lt;= 2 * 1000
+timer25 &lt;= 500
 </label>
 </location>
 
-<location id="entryOfInit">
+<location id="entryOfBlinkingYellow">
 <name>
-entryOfInit
+entryOfBlinkingYellow
 </name>
 <label kind="comments">
 Pseudo state for subregion synchronization
@@ -1347,98 +1577,23 @@ Pseudo state for subregion synchronization
 <committed/>
 </location>
 
-<location id="SecondaryPrepares">
+<location id="Black">
 <name>
-SecondaryPrepares
+Black
 </name>
 <label kind="invariant">
-timer21 &lt;= 1 * 1000
+timer23 &lt;= 500
 </label>
 </location>
 
-<location id="entryOfSecondaryPrepares">
+<location id="entryOfBlack">
 <name>
-entryOfSecondaryPrepares
+entryOfBlack
 </name>
 <label kind="comments">
 Pseudo state for subregion synchronization
 </label>
 <committed/>
-</location>
-
-<location id="Priority">
-<name>
-Priority
-</name>
-<label kind="invariant">
-timer13 &lt;= 2 * 1000
-</label>
-</location>
-
-<location id="entryOfPriority">
-<name>
-entryOfPriority
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Secondary">
-<name>
-Secondary
-</name>
-<label kind="invariant">
-timer17 &lt;= 2 * 1000
-</label>
-</location>
-
-<location id="entryOfSecondary">
-<name>
-entryOfSecondary
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="PriorityPrepares">
-<name>
-PriorityPrepares
-</name>
-<label kind="invariant">
-timer23 &lt;= 1 * 1000
-</label>
-</location>
-
-<location id="entryOfPriorityPrepares">
-<name>
-entryOfPriorityPrepares
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="timer14">
-<name>
-timer14
-</name>
-</location>
-
-<location id="timer18">
-<name>
-timer18
-</name>
-</location>
-
-<location id="timer22">
-<name>
-timer22
-</name>
 </location>
 
 <location id="timer24">
@@ -1452,283 +1607,128 @@ timer24
 timer26
 </name>
 </location>
-<init ref="GenInitLocation6"/>
+<init ref="GenInitLocation7"/>
 
 <transition>
-<source ref="entryOfInit"/>
-<target ref="Init"/>
-<label kind="assignment">toRaise_Control_toggleOfprior = true,
+<source ref="entryOfBlinkingYellow"/>
+<target ref="BlinkingYellow"/>
+<label kind="assignment">LightCommands_displayYellowOfprior = true,
 timer25 = 0</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="entryOfSecondaryPrepares"/>
-<target ref="SecondaryPrepares"/>
-<label kind="assignment">toRaise_Control_toggleOfsecondary = true,
-timer21 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfPriority"/>
-<target ref="Priority"/>
-<label kind="assignment">toRaise_Control_toggleOfprior = true,
-toRaise_Control_toggleOfsecondary = true,
-timer13 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfSecondary"/>
-<target ref="Secondary"/>
-<label kind="assignment">toRaise_Control_toggleOfprior = true,
-toRaise_Control_toggleOfsecondary = true,
-timer17 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfPriorityPrepares"/>
-<target ref="PriorityPrepares"/>
-<label kind="assignment">toRaise_Control_toggleOfprior = true,
+<source ref="entryOfBlack"/>
+<target ref="Black"/>
+<label kind="assignment">LightCommands_displayNoneOfprior = true,
 timer23 = 0</label>
 <label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="timer14"/>
-<target ref="entryOfPriorityPrepares"/>
+<source ref="EntryLocation6"/>
+<target ref="entryOfBlinkingYellow"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="timer22"/>
-<target ref="entryOfPriority"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="timer26"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="timer24"/>
-<target ref="entryOfSecondary"/>
+<target ref="entryOfBlinkingYellow"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="timer18"/>
-<target ref="entryOfSecondaryPrepares"/>
+<source ref="timer26"/>
+<target ref="entryOfBlack"/>
 <label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcontroller?</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior?</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="EntryLocation5"/>
-<target ref="entryOfInit"/>
-<label kind="guard">isActive</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="timer14"/>
-<label kind="guard">(isStable &amp;&amp; timer13 >= 2 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Secondary"/>
-<target ref="timer18"/>
-<label kind="guard">(isStable &amp;&amp; timer17 >= 2 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="timer22"/>
-<label kind="guard">(isStable &amp;&amp; timer21 >= 1 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
+<source ref="Black"/>
 <target ref="timer24"/>
-<label kind="guard">(isStable &amp;&amp; timer23 >= 1 * 1000)</label>
+<label kind="guard">(isStable &amp;&amp; timer23 >= 500)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="Init"/>
+<source ref="BlinkingYellow"/>
 <target ref="timer26"/>
-<label kind="guard">(isStable &amp;&amp; timer25 >= 2 * 1000)</label>
+<label kind="guard">(isStable &amp;&amp; timer25 >= 500)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="timer18"/>
-<target ref="entryOfSecondary"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
+<source ref="timer24"/>
+<target ref="EntryLocation6"/>
+<label kind="synchronisation">entryChanOfInterrupted31?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="Secondary"/>
-<target ref="entryOfSecondary"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
+<source ref="Black"/>
+<target ref="EntryLocation6"/>
+<label kind="synchronisation">entryChanOfInterrupted31?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="Init"/>
-<target ref="entryOfInit"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
+<source ref="BlinkingYellow"/>
+<target ref="EntryLocation6"/>
+<label kind="synchronisation">entryChanOfInterrupted31?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="timer26"/>
-<target ref="entryOfInit"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
+<target ref="EntryLocation6"/>
+<label kind="synchronisation">entryChanOfInterrupted31?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
-<source ref="GenInitLocation6"/>
-<target ref="EntryLocation5"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="entryOfPriority"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer14"/>
-<target ref="entryOfPriority"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="entryOfSecondaryPrepares"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer22"/>
-<target ref="entryOfSecondaryPrepares"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
+<source ref="GenInitLocation7"/>
+<target ref="EntryLocation6"/>
+<label kind="synchronisation">entryChanOfInterrupted31?</label>
 <label kind="assignment">isActive = true</label>
 </transition>
 
 <transition>
 <source ref="timer24"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="synchronisation">entryChanOfOperating33?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer18"/>
-<target ref="timer18"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
+<target ref="timer24"/>
+<label kind="synchronisation">exitChanOfInterrupted42?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="Secondary"/>
-<target ref="Secondary"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
+<source ref="Black"/>
+<target ref="Black"/>
+<label kind="synchronisation">exitChanOfInterrupted42?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="Init"/>
-<target ref="Init"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
+<source ref="BlinkingYellow"/>
+<target ref="BlinkingYellow"/>
+<label kind="synchronisation">exitChanOfInterrupted42?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="timer26"/>
 <target ref="timer26"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
+<label kind="synchronisation">exitChanOfInterrupted42?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="GenInitLocation6"/>
-<target ref="GenInitLocation6"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="Priority"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer14"/>
-<target ref="timer14"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="SecondaryPrepares"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer22"/>
-<target ref="timer22"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer24"/>
-<target ref="timer24"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
-<target ref="PriorityPrepares"/>
-<label kind="synchronisation">exitChanOfOperating44?</label>
+<source ref="GenInitLocation7"/>
+<target ref="GenInitLocation7"/>
+<label kind="synchronisation">exitChanOfInterrupted42?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 </template>
@@ -1739,7 +1739,7 @@ CrossroadOrchestrator51
 </name>
 <declaration>
 clock orchestratorTimer65;
-</declaration>					
+</declaration>
 <location id="InitLoc">
 <name>
 InitLoc
@@ -1796,9 +1796,9 @@ Synchronization location.
 <urgent/>
 </location>
 
-<location id="RunInterruptedOfInterruptedOfprior57">
+<location id="RunNormalOfNormalOfprior57">
 <name>
-RunInterruptedOfInterruptedOfprior57
+RunNormalOfNormalOfprior57
 </name>
 <label kind="comments">
 Synchronization location.
@@ -1806,9 +1806,9 @@ Synchronization location.
 <urgent/>
 </location>
 
-<location id="RunNormalOfNormalOfprior58">
+<location id="RunInterruptedOfInterruptedOfprior58">
 <name>
-RunNormalOfNormalOfprior58
+RunInterruptedOfInterruptedOfprior58
 </name>
 <label kind="comments">
 Synchronization location.
@@ -1925,24 +1925,24 @@ toRaise_PoliceInterrupt_policeOfcontroller = false</label>
 
 <transition>
 <source ref="RunMain_regionOfStatechartOfprior56"/>
-<target ref="RunInterruptedOfInterruptedOfprior57"/>
+<target ref="RunNormalOfNormalOfprior57"/>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfprior!</label>
 <label kind="assignment"></label>
 <label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunInterruptedOfInterruptedOfprior57"/>
-<target ref="RunNormalOfNormalOfprior58"/>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior!</label>
+<source ref="RunNormalOfNormalOfprior57"/>
+<target ref="RunInterruptedOfInterruptedOfprior58"/>
+<label kind="synchronisation">runCycleNormalOfNormalOfprior!</label>
 <label kind="assignment"></label>
 <label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunNormalOfNormalOfprior58"/>
+<source ref="RunInterruptedOfInterruptedOfprior58"/>
 <target ref="finalizeprior59"/>
-<label kind="synchronisation">runCycleNormalOfNormalOfprior!</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfprior!</label>
 <label kind="assignment"></label>
 <label kind="comments">Synchronization edge.</label>
 </transition>
@@ -2000,7 +2000,7 @@ orchestratorTimer65 = 0</label>
 Environment
 </name>
 <declaration>
-</declaration>					
+</declaration>
 <location id="InitLoc">
 <name>
 InitLoc
@@ -2016,25 +2016,25 @@ InitLoc
 </transition>
 </template>
 <system>
-	P_interruptedOfInterruptedOfsecondary = interruptedOfInterruptedOfsecondary();
+	P_operatingOfOperatingOfcontroller = operatingOfOperatingOfcontroller();
 	
 	P_normalOfNormalOfprior = normalOfNormalOfprior();
 	
+	P_main_regionOfStatechartOfprior = main_regionOfStatechartOfprior();
+	
 	P_main_regionOfStatechartOfsecondary = main_regionOfStatechartOfsecondary();
 	
-	P_interruptedOfInterruptedOfprior = interruptedOfInterruptedOfprior();
+	P_interruptedOfInterruptedOfsecondary = interruptedOfInterruptedOfsecondary();
 	
 	P_normalOfNormalOfsecondary = normalOfNormalOfsecondary();
 	
 	P_main_regionOfStatechartOfcontroller = main_regionOfStatechartOfcontroller();
 	
-	P_main_regionOfStatechartOfprior = main_regionOfStatechartOfprior();
-	
-	P_operatingOfOperatingOfcontroller = operatingOfOperatingOfcontroller();
+	P_interruptedOfInterruptedOfprior = interruptedOfInterruptedOfprior();
 	
 	P_CrossroadOrchestrator51 = CrossroadOrchestrator51();
 	
 	P_Environment = Environment();
-	system P_interruptedOfInterruptedOfsecondary, P_normalOfNormalOfprior, P_main_regionOfStatechartOfsecondary, P_interruptedOfInterruptedOfprior, P_normalOfNormalOfsecondary, P_main_regionOfStatechartOfcontroller, P_main_regionOfStatechartOfprior, P_operatingOfOperatingOfcontroller, P_CrossroadOrchestrator51, P_Environment;
+	system P_operatingOfOperatingOfcontroller, P_normalOfNormalOfprior, P_main_regionOfStatechartOfprior, P_main_regionOfStatechartOfsecondary, P_interruptedOfInterruptedOfsecondary, P_normalOfNormalOfsecondary, P_main_regionOfStatechartOfcontroller, P_interruptedOfInterruptedOfprior, P_CrossroadOrchestrator51, P_Environment;
 </system>
 	</nta>

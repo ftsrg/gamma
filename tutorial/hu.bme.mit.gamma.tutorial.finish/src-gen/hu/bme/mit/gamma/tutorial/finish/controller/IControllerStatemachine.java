@@ -1,11 +1,10 @@
 package hu.bme.mit.gamma.tutorial.finish.controller;
 
-import java.util.List;
 import hu.bme.mit.gamma.tutorial.finish.IStatemachine;
 import hu.bme.mit.gamma.tutorial.finish.ITimerCallback;
+import java.util.List;
 
 public interface IControllerStatemachine extends ITimerCallback,IStatemachine {
-
 	public interface SCIPoliceInterrupt {
 	
 		public void raisePolice();

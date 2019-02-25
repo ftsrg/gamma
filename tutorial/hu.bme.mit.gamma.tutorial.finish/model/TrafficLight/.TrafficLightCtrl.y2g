@@ -4,8 +4,8 @@
   <gammaStatechart href="TrafficLightCtrl.gcd#//@components.0"/>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_NPjBgBA-EeGQ0KsLDV4EFg"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0"/>
     <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_NPjBgBA-EeGQ0KsLDV4EFg"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM2j4CQsEeeu6I-nNWXkgQ"/>
@@ -28,31 +28,31 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_gVVRcCQtEeeu6I-nNWXkgQ"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM2j4SQsEeeu6I-nNWXkgQ"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nQyQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM2j4SQsEeeu6I-nNWXkgQ"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5AICQsEeeu6I-nNWXkgQ"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nRSQsEeeu6I-nNWXkgQ"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_gVVRcCQtEeeu6I-nNWXkgQ"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM4ZFCQsEeeu6I-nNWXkgQ"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nNiQsEeeu6I-nNWXkgQ"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5AICQsEeeu6I-nNWXkgQ"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nRSQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -60,7 +60,7 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nPiQsEeeu6I-nNWXkgQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM3yDCQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -68,19 +68,19 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM3yDCQsEeeu6I-nNWXkgQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_SOHeYFlPEeejeIiDAnqfIQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_SOHeYFlPEeejeIiDAnqfIQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nRCQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nMSQsEeeu6I-nNWXkgQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM2j4iQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.4"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nRCQsEeeu6I-nNWXkgQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nMSQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.5"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -88,7 +88,7 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.6"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM2j4iQsEeeu6I-nNWXkgQ"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#_YM5nPiQsEeeu6I-nNWXkgQ"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.7"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -100,7 +100,7 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.9"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@scopes.0"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@scopes.2"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@ports.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
@@ -108,12 +108,20 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@ports.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@scopes.2"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@scopes.0"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@ports.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayNone"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.Control.toggle"/>
-    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayRed"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.PoliceInterrupt.police"/>
@@ -121,75 +129,75 @@
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayYellow"/>
-    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.2/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayRed"/>
-    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayNone"/>
-    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.1/@event"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_TrafficLightCtrl.LightCommands.displayGreen"/>
-    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.3/@event"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.4/@trigger"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.9/@trigger"/>
+    <to href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.1/@outgoingTransitions.0/@trigger/@triggers.0"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.8/@trigger"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.0/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.0/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.9/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@outgoingTransitions.0/@trigger/@triggers.0"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.1/@trigger"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.0/@outgoingTransitions.0/@trigger/@triggers.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.2/@trigger"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.5/@trigger"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0/@value/@value"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@outgoingTransitions.0/@trigger/@triggers.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.6/@trigger"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@timeoutDeclarations.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@outgoingTransitions.0/@trigger/@triggers.0/@value/@value"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:Trace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@outgoingTransitions.0/@trigger/@triggers.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.0/@trigger"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@timeoutDeclarations.1"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@transitions.7/@trigger"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.1/@scopes.0/@members.0/@effect/@actions.0/@event"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.1/@scopes.0/@members.0/@effect/@actions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0/@event"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0/@event"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@scopes.0/@members.0/@effect/@actions.0/@event"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@scopes.0/@members.0/@effect/@actions.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
+    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
     <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.0/@scopes.0/@members.0/@effect/@actions.0/@event"/>
@@ -200,19 +208,11 @@
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.1/@scopes.0/@members.0/@effect/@actions.0/@event"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.1/@regions.0/@vertices.1/@scopes.0/@members.0/@effect/@actions.0"/>
-    <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0/@event"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@scopes.0/@members.0/@effect/@actions.0/@event"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.yakindu.transformation:ExpressionTrace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.2/@scopes.0/@members.0/@effect/@actions.0"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.finish/model/TrafficLight/TrafficLightCtrl.sct#SCT_/0/@regions.0/@vertices.2/@regions.0/@vertices.0/@scopes.0/@members.0/@effect/@actions.0"/>
     <to href="TrafficLightCtrl.gcd#//@components.0/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.1"/>
   </traces>
 </hu.bme.mit.gamma.yakindu.transformation:Y2GTrace>

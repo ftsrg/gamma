@@ -20,3 +20,25 @@ E<> P_operatingOfOperatingOfcontroller.Priority && isStable
 E<> P_operatingOfOperatingOfcontroller.PriorityPrepares && isStable
 E<> P_operatingOfOperatingOfcontroller.Secondary && isStable
 E<> P_operatingOfOperatingOfcontroller.SecondaryPrepares && isStable
+A[] not deadlock
+E<> P_interruptedOfInterruptedOfprior.Black && isStable
+E<> P_interruptedOfInterruptedOfprior.BlinkingYellow && isStable
+E<> P_interruptedOfInterruptedOfsecondary.Black && isStable
+E<> P_interruptedOfInterruptedOfsecondary.BlinkingYellow && isStable
+E<> P_main_regionOfStatechartOfcontroller.Interrupted && isStable
+E<> P_main_regionOfStatechartOfcontroller.Operating && isStable
+E<> P_main_regionOfStatechartOfprior.Interrupted && isStable
+E<> P_main_regionOfStatechartOfprior.Normal && isStable
+E<> P_main_regionOfStatechartOfsecondary.Interrupted && isStable
+E<> P_main_regionOfStatechartOfsecondary.Normal && isStable
+E<> P_normalOfNormalOfprior.Green && isStable
+E<> P_normalOfNormalOfprior.Red && isStable
+E<> P_normalOfNormalOfprior.Yellow && isStable
+E<> P_normalOfNormalOfsecondary.Green && isStable
+E<> P_normalOfNormalOfsecondary.Red && isStable
+E<> P_normalOfNormalOfsecondary.Yellow && isStable
+E<> P_operatingOfOperatingOfcontroller.Init && isStable
+E<> P_operatingOfOperatingOfcontroller.Priority && isStable
+E<> P_operatingOfOperatingOfcontroller.PriorityPrepares && isStable
+E<> P_operatingOfOperatingOfcontroller.Secondary && isStable
+E<> P_operatingOfOperatingOfcontroller.SecondaryPrepares && isStable

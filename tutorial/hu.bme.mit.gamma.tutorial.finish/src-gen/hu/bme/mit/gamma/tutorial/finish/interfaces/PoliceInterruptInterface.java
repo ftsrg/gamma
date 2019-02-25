@@ -25,7 +25,7 @@ public interface PoliceInterruptInterface {
 			void raisePolice();
 		}
 		
-		interface Required   {
+		interface Required  {
 		}
 		
 	}

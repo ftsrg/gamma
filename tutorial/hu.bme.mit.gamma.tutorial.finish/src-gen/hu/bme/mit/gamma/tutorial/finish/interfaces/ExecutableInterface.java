@@ -24,7 +24,7 @@ public interface ExecutableInterface {
 		interface Provided  {
 		}
 		
-		interface Required   {
+		interface Required  {
 			void raiseExecute();
 		}
 		

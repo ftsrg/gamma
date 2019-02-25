@@ -10,24 +10,36 @@
 	
 	public class Crossroad implements CrossroadInterface {			
 		// Component instances
-		private ControllerStatechart controller = new ControllerStatechart();
-		private TrafficLightCtrlStatechart prior = new TrafficLightCtrlStatechart();
-		private TrafficLightCtrlStatechart secondary = new TrafficLightCtrlStatechart();
+		private ControllerStatechart controller;
+		private TrafficLightCtrlStatechart prior;
+		private TrafficLightCtrlStatechart secondary;
 		// Port instances
-		private Police police = new Police();
-		private PriorityOutput priorityOutput = new PriorityOutput();
-		private SecondaryOutput secondaryOutput = new SecondaryOutput();
+		private Police police;
+		private PriorityOutput priorityOutput;
+		private SecondaryOutput secondaryOutput;
 		
 		public Crossroad(ITimer timer) {
+			controller = new ControllerStatechart();
+			prior = new TrafficLightCtrlStatechart();
+			secondary = new TrafficLightCtrlStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
 			setTimer(timer);
 			init();
 		}
 		
 		public Crossroad() {
+			controller = new ControllerStatechart();
+			prior = new TrafficLightCtrlStatechart();
+			secondary = new TrafficLightCtrlStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
 			init();
 		}
 		
-		/** Resets the contained statemachines recursively. Should be used only be the container (composite system) class. */
+		/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 		@Override
 		public void reset() {
 			controller.reset();
@@ -100,9 +112,9 @@
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
 			boolean isRaisedDisplayRed;
-			boolean isRaisedDisplayYellow;
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
+			boolean isRaisedDisplayYellow;
 			
 			public PriorityOutput() {
 				// Registering the listener to the contained component
@@ -116,8 +128,8 @@
 			}
 			
 			@Override
-			public boolean isRaisedDisplayYellow() {
-				return isRaisedDisplayYellow;
+			public boolean isRaisedDisplayGreen() {
+				return isRaisedDisplayGreen;
 			}
 			
 			@Override
@@ -126,8 +138,8 @@
 			}
 			
 			@Override
-			public boolean isRaisedDisplayGreen() {
-				return isRaisedDisplayGreen;
+			public boolean isRaisedDisplayYellow() {
+				return isRaisedDisplayYellow;
 			}
 			
 			// Class for the setting of the boolean fields (events)
@@ -138,8 +150,8 @@
 				}
 				
 				@Override
-				public void raiseDisplayYellow() {
-					isRaisedDisplayYellow = true;
+				public void raiseDisplayGreen() {
+					isRaisedDisplayGreen = true;
 				}
 				
 				@Override
@@ -148,8 +160,8 @@
 				}
 				
 				@Override
-				public void raiseDisplayGreen() {
-					isRaisedDisplayGreen = true;
+				public void raiseDisplayYellow() {
+					isRaisedDisplayYellow = true;
 				}
 			}
 			
@@ -166,9 +178,9 @@
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
 				isRaisedDisplayRed = false;
-				isRaisedDisplayYellow = false;
-				isRaisedDisplayNone = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
+				isRaisedDisplayYellow = false;
 			}
 			
 			/** Notifying the registered listeners. */
@@ -178,9 +190,9 @@
 						listener.raiseDisplayRed();
 					}
 				}
-				if (isRaisedDisplayYellow) {
+				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayYellow();
+						listener.raiseDisplayGreen();
 					}
 				}
 				if (isRaisedDisplayNone) {
@@ -188,9 +200,9 @@
 						listener.raiseDisplayNone();
 					}
 				}
-				if (isRaisedDisplayGreen) {
+				if (isRaisedDisplayYellow) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayGreen();
+						listener.raiseDisplayYellow();
 					}
 				}
 			}
@@ -206,9 +218,9 @@
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
 			boolean isRaisedDisplayRed;
-			boolean isRaisedDisplayYellow;
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
+			boolean isRaisedDisplayYellow;
 			
 			public SecondaryOutput() {
 				// Registering the listener to the contained component
@@ -222,8 +234,8 @@
 			}
 			
 			@Override
-			public boolean isRaisedDisplayYellow() {
-				return isRaisedDisplayYellow;
+			public boolean isRaisedDisplayGreen() {
+				return isRaisedDisplayGreen;
 			}
 			
 			@Override
@@ -232,8 +244,8 @@
 			}
 			
 			@Override
-			public boolean isRaisedDisplayGreen() {
-				return isRaisedDisplayGreen;
+			public boolean isRaisedDisplayYellow() {
+				return isRaisedDisplayYellow;
 			}
 			
 			// Class for the setting of the boolean fields (events)
@@ -244,8 +256,8 @@
 				}
 				
 				@Override
-				public void raiseDisplayYellow() {
-					isRaisedDisplayYellow = true;
+				public void raiseDisplayGreen() {
+					isRaisedDisplayGreen = true;
 				}
 				
 				@Override
@@ -254,8 +266,8 @@
 				}
 				
 				@Override
-				public void raiseDisplayGreen() {
-					isRaisedDisplayGreen = true;
+				public void raiseDisplayYellow() {
+					isRaisedDisplayYellow = true;
 				}
 			}
 			
@@ -272,9 +284,9 @@
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
 				isRaisedDisplayRed = false;
-				isRaisedDisplayYellow = false;
-				isRaisedDisplayNone = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
+				isRaisedDisplayYellow = false;
 			}
 			
 			/** Notifying the registered listeners. */
@@ -284,9 +296,9 @@
 						listener.raiseDisplayRed();
 					}
 				}
-				if (isRaisedDisplayYellow) {
+				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayYellow();
+						listener.raiseDisplayGreen();
 					}
 				}
 				if (isRaisedDisplayNone) {
@@ -294,9 +306,9 @@
 						listener.raiseDisplayNone();
 					}
 				}
-				if (isRaisedDisplayGreen) {
+				if (isRaisedDisplayYellow) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayGreen();
+						listener.raiseDisplayYellow();
 					}
 				}
 			}

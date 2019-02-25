@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:sgraph="http://www.yakindu.org/sct/sgraph/2.0.0">
-  <sgraph:Statechart xmi:id="_sVGfIF1REeeQSrn72MQqaA" specification="interface PoliceInterrupt:&#xA;  in event police&#xA;  &#xA;interface PriorityPolice:&#xA;  out event police&#xA;&#xA;interface SecondaryPolice:&#xA;  out event police&#xA;  &#xA;interface PriorityControl:&#xA;  out event toggle&#xA;  &#xA;interface SecondaryControl:&#xA;  out event toggle&#xA;" name="Controller">
+  <sgraph:Statechart xmi:id="_sVGfIF1REeeQSrn72MQqaA" specification="@CycleBased(200)&#xA;interface PoliceInterrupt:&#xA;  in event police&#xA;  &#xA;interface PriorityPolice:&#xA;  out event police&#xA;&#xA;interface SecondaryPolice:&#xA;  out event police&#xA;  &#xA;interface PriorityControl:&#xA;  out event toggle&#xA;  &#xA;interface SecondaryControl:&#xA;  out event toggle&#xA;" name="Controller">
     <regions xmi:id="_sVVvsl1REeeQSrn72MQqaA" name="main_region">
       <vertices xsi:type="sgraph:State" xmi:id="_KyARAF1TEeeQSrn72MQqaA" specification="" name="Operating" incomingTransitions="_VzwHMF1TEeeQSrn72MQqaA _FRHP8OaTEeijmMEf8VJggw">
         <outgoingTransitions xmi:id="_bfV9wF1jEeeQSrn72MQqaA" specification="PoliceInterrupt.police / &#xD;&#xA;raise PriorityPolice.police;&#xD;&#xA;raise SecondaryPolice.police" target="_BJTGAOaTEeijmMEf8VJggw"/>

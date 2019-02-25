@@ -7,9 +7,9 @@ public interface LightCommandsInterface {
 	interface Provided extends Listener.Required {
 		
 		public boolean isRaisedDisplayRed();
-		public boolean isRaisedDisplayNone();
 		public boolean isRaisedDisplayYellow();
 		public boolean isRaisedDisplayGreen();
+		public boolean isRaisedDisplayNone();
 		
 		void registerListener(Listener.Provided listener);
 		List<Listener.Provided> getRegisteredListeners();
@@ -26,12 +26,12 @@ public interface LightCommandsInterface {
 		
 		interface Provided  {
 			void raiseDisplayRed();
-			void raiseDisplayNone();
 			void raiseDisplayYellow();
 			void raiseDisplayGreen();
+			void raiseDisplayNone();
 		}
 		
-		interface Required   {
+		interface Required  {
 		}
 		
 	}
