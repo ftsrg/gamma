@@ -223,6 +223,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import uppaal.declarations.DeclarationsFactory
+import hu.bme.mit.gamma.statechart.model.CompositeElement
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -1785,7 +1786,7 @@ class CompositeToUppaalTransformer {
 		val initLoc = createTemplateWithInitLoc(compositeComponent.name + "Orchestrator" + id++, "InitLoc")
 		val schedulerTemplate = initLoc.parentTemplate
     	val firstEdge = initLoc.createEdge(initLoc)
-    	// If a channel has been passed for async-sync synchronoization
+    	// If a channel has been passed for async-sync synchronization
     	if (chan !== null) {
     		firstEdge.setSynchronization(chan.variable.head, SynchronizationKind.RECEIVE)
     	}
@@ -1936,9 +1937,21 @@ class CompositeToUppaalTransformer {
     	val statechart = instance.type as StatechartDefinition
     	val finalizeSyncVar = instance.finalizeSyncVar
     	// Syncing the templates with run cycles
-    	for (topRegion : TopRegions.Matcher.on(engine).getAllValuesOftopRegion(null, statechart, null)) {
-    		lastEdge = topRegion.createRunCycleEdges(new ArrayList<Region>, lastEdge, instance)
-    	} 
+    	if (false) {
+    		// Parent first
+	    	for (topRegion : TopRegions.Matcher.on(engine).getAllValuesOftopRegion(null, statechart, null)) {
+	    		lastEdge = topRegion.createRunCycleEdgesTopDown(new ArrayList<Region>, lastEdge, instance)
+	    	}
+    	}
+    	else {
+    		// Child first
+    		val levelRegionAssociation = statechart.regionsChildFirst
+    		for (deepestLevel : levelRegionAssociation.keySet.sort.reverseView) {
+    			for (deepestLevelRegion: levelRegionAssociation.get(deepestLevel)) {
+    				lastEdge = deepestLevelRegion.createRunCycleEdgeBottomUp(lastEdge, instance)
+    			}
+    		}
+    	}
     	// When all templates of an instance is synced, a finalize edge is put in the sequence
     	val finalizeEdge = createCommittedSyncTarget(lastEdge.target, finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
     	finalizeEdge.source.locationTimeKind = LocationKind.URGENT
@@ -1951,6 +1964,33 @@ class CompositeToUppaalTransformer {
     		}
     	}
     	return lastEdge
+    }
+    
+    private def Map<Integer, List<Region>> getRegionsChildFirst(CompositeElement compositeElement) {
+    	val levelRegionMap = new HashMap<Integer, List<Region>>
+    	val levelRegionList = new ArrayList<Region>
+    	val containedRegion = compositeElement.regions.head
+    	if (containedRegion === null) {
+    		return levelRegionMap
+    	}
+    	val level = containedRegion.stateNodes.head.levelOfStateNode
+    	levelRegionMap.put(level, levelRegionList)
+    	for (region : compositeElement.regions) {
+    		levelRegionList += region
+    		for (state : region.stateNodes.filter(State)) {
+	    		val levelRegionSubmap = state.getRegionsChildFirst
+	    		for (key : levelRegionSubmap.keySet) {
+	    			val regionList = levelRegionMap.get(key)
+	    			if (regionList === null) {
+	    				levelRegionMap.put(key, levelRegionSubmap.get(key))
+	    			}
+	    			else {
+	    				regionList += levelRegionSubmap.get(key)
+	    			}
+	    		}
+    		}
+    	}
+    	return levelRegionMap
     }
     
     /**
@@ -1974,9 +2014,10 @@ class CompositeToUppaalTransformer {
 	 }
         
     /**
-     * Inserts a runCycle edge in the Scheduler template for the template of the the given region, between the given last runCycle edge and the init location.
+     * Inserts a runCycle edge in the Scheduler template for the template of the the given region and subRegions,
+     * between the given last runCycle edge and the init location.
      */
-    private def Edge createRunCycleEdges(Region region, List<Region> nextRegions, Edge lastEdge, ComponentInstance owner) {
+    private def Edge createRunCycleEdgesTopDown(Region region, List<Region> nextRegions, Edge lastEdge, ComponentInstance owner) {
     	nextRegions.remove(region)
     	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
     	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
@@ -1988,11 +2029,25 @@ class CompositeToUppaalTransformer {
     		nextRegions.add(subregion)
     	}    	
     	try {
-    		return nextRegions.get(0).createRunCycleEdges(nextRegions, runCycleEdge, owner) 
+    		return nextRegions.get(0).createRunCycleEdgesTopDown(nextRegions, runCycleEdge, owner) 
     	}
     	catch (IndexOutOfBoundsException e) {
     		return lastLevelEdge
     	}     		
+    }
+    
+    /**
+     * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
+     * between the given last runCycle edge and the init location.
+     */
+    private def Edge createRunCycleEdgeBottomUp(Region region, Edge lastEdge, ComponentInstance owner) {
+    	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
+    	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
+    	val runCycleEdge = createCommittedSyncTarget(lastEdge.target, syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
+    	runCycleEdge.source.locationTimeKind = LocationKind.URGENT
+    	lastEdge.target = runCycleEdge.source
+    	var Edge lastLevelEdge = runCycleEdge
+    	return lastLevelEdge    	
     }
     
     /**
