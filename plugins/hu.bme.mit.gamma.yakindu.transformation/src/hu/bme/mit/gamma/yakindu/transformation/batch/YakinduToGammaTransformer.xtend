@@ -106,6 +106,9 @@ import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
+import org.yakindu.base.types.AnnotationType
+import org.yakindu.base.types.Annotation
+import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -238,12 +241,22 @@ class YakinduToGammaTransformer {
     }
     
     /**
-     * Responsible for mapping Yakindu statechart to Gamma statechart definition. 
+     * Responsible for mapping the Yakindu statechart to a Gamma statechart definition. 
      * This rule assumes that the root elements of the EMF models exist.
      * This rule should be fired first.
      */
     val statechartRule = createRule(Statecharts.instance).action [
     	// Creating the region trace
+    	for (yakinduAnnotation: yakinduStatechart.annotations) {
+	    	val annotationType = yakinduAnnotation.type
+	    	val annotationName = annotationType.name
+    		if (annotationName.equals("ChildFirstExecution")) {
+    			gammaStatechart.schedulingOrder = SchedulingOrder.BOTTOM_UP
+    		}
+    		else if (annotationName.equals("ParentFirstExecution")) {
+    			gammaStatechart.schedulingOrder = SchedulingOrder.TOP_DOWN
+    		}
+    	}
     	addToTrace(it.statechart, #{yakinduStatechart, gammaStatechart}, trace)
     ].build
     

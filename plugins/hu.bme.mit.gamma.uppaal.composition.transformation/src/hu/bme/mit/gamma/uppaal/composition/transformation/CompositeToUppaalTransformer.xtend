@@ -224,6 +224,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import uppaal.declarations.DeclarationsFactory
 import hu.bme.mit.gamma.statechart.model.CompositeElement
+import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -1808,7 +1809,7 @@ class CompositeToUppaalTransformer {
     	]
     	firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
     	lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
-    	// TODO Setting isScheduled variable
+    	// Setting isScheduled variables
     	for (region : InstanceRegions.Matcher.on(engine).allValuesOfregion) {
     		val isScheduledVar = region.allValuesOfTo.filter(Template).head
     								.allValuesOfTo.filter(DataVariableDeclaration).head
@@ -1943,21 +1944,26 @@ class CompositeToUppaalTransformer {
     	val statechart = instance.type as StatechartDefinition
     	val finalizeSyncVar = instance.finalizeSyncVar
     	// Syncing the templates with run cycles
-    	if (false) {
-    		// Parent first
-//	    	for (topRegion : TopRegions.Matcher.on(engine).getAllValuesOftopRegion(null, statechart, null)) {
-//	    		lastEdge = topRegion.createRunCycleEdgesTopDown(new ArrayList<Region>, lastEdge, instance)
-//	    	}
-    	}
-    	else {
-    		// Child first
-    		val levelRegionAssociation = statechart.regionsChildFirst
-    		for (deepestLevel : levelRegionAssociation.keySet.sort.reverseView) {
-    			for (deepestLevelRegion: levelRegionAssociation.get(deepestLevel)) {
-    				lastEdges = deepestLevelRegion.createRunCycleEdgeBottomUp(lastEdges, instance)
-    			}
+    	val schedulingOrder = statechart.schedulingOrder
+    		// Scheduling either top-down or bottom-up
+		val levelRegionAssociation = statechart.calculateSubregionLevels
+		var List<Integer> regionLevels
+		switch (schedulingOrder) {
+    		case TOP_DOWN: {
+    			regionLevels = levelRegionAssociation.keySet.sort
+    		}
+    		case BOTTOM_UP: {
+    			regionLevels = levelRegionAssociation.keySet.sort.reverseView
+    		}
+    		default: {
+    			throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
     		}
     	}
+		for (level : regionLevels) {
+			for (region: levelRegionAssociation.get(level)) {
+				lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
+			}
+		}
     	// When all templates of an instance is synced, a finalize edge is put in the sequence
     	val finalizeEdge = createCommittedSyncTarget(lastEdges.head.target,
     		finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
@@ -1975,7 +1981,7 @@ class CompositeToUppaalTransformer {
     	return lastEdge
     }
     
-    private def Map<Integer, List<Region>> getRegionsChildFirst(CompositeElement compositeElement) {
+    private def Map<Integer, List<Region>> calculateSubregionLevels(CompositeElement compositeElement) {
     	val levelRegionMap = new HashMap<Integer, List<Region>>
     	val levelRegionList = new ArrayList<Region>
     	val containedRegion = compositeElement.regions.head
@@ -1987,7 +1993,7 @@ class CompositeToUppaalTransformer {
     	for (region : compositeElement.regions) {
     		levelRegionList += region
     		for (state : region.stateNodes.filter(State)) {
-	    		val levelRegionSubmap = state.getRegionsChildFirst
+	    		val levelRegionSubmap = state.calculateSubregionLevels
 	    		for (key : levelRegionSubmap.keySet) {
 	    			val regionList = levelRegionMap.get(key)
 	    			if (regionList === null) {
@@ -2021,36 +2027,13 @@ class CompositeToUppaalTransformer {
 			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)										
 	    }
 	 }
-        
-    /**
-     * Inserts a runCycle edge in the Scheduler template for the template of the the given region and subRegions,
-     * between the given last runCycle edge and the init location.
-     */
-    private def Edge createRunCycleEdgesTopDown(Region region, List<Region> nextRegions, Edge lastEdge, ComponentInstance owner) {
-    	nextRegions.remove(region)
-    	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
-    	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
-    	val runCycleEdge = createCommittedSyncTarget(lastEdge.target, syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
-    	runCycleEdge.source.locationTimeKind = LocationKind.URGENT
-    	lastEdge.target = runCycleEdge.source
-    	var Edge lastLevelEdge = runCycleEdge
-    	for (subregion : RegionToSubregion.Matcher.on(engine).getAllValuesOfsubregion(region)) {
-    		nextRegions.add(subregion)
-    	}    	
-    	try {
-    		return nextRegions.get(0).createRunCycleEdgesTopDown(nextRegions, runCycleEdge, owner) 
-    	}
-    	catch (IndexOutOfBoundsException e) {
-    		return lastLevelEdge
-    	}     		
-    }
     
     /**
      * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
      * between the given last runCycle edge and the init location.
      */
-    private def Collection<Edge> createRunCycleEdgeBottomUp(Region region, Collection<Edge> lastEdges,
-    		ComponentInstance owner) {
+    private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,
+    		SchedulingOrder schedulingOrder, ComponentInstance owner) {
     	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
     	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
     	val runCycleEdge = createCommittedSyncTarget(lastEdges.head.target,
@@ -2059,16 +2042,26 @@ class CompositeToUppaalTransformer {
     	for (lastEdge : lastEdges) {
     		lastEdge.target = runCycleEdge.source
     	}
-    	// TODO set this method parameterizable with scheduling order
-    	val subregions = region.subregions
-    	if (!subregions.empty) {
-    		val isScheduledVars = subregions.map[it.allValuesOfTo.filter(Template).head]
+    	var Collection<Region> regionsToExamine
+    	switch (schedulingOrder) {
+    		case TOP_DOWN: {
+    			regionsToExamine = region.parentRegions
+    		}
+    		case BOTTOM_UP: {
+    			regionsToExamine = region.subregions
+    		}
+    		default: {
+    			throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
+    		}
+    	}
+    	if (!regionsToExamine.empty) {
+    		val isScheduledVars = regionsToExamine.map[it.allValuesOfTo.filter(Template).head]
     								.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
 	    	val isNotSchedulableGuard = createLogicalExpression(LogicalOperator.OR, 
 	    			isScheduledVars.map[variable | createIdentifierExpression => [
 	    				it.identifier = variable.variable.head
-	    			]	    			
-	    		]
+	    			]
+	    		].toList
 	    	)
 	    	val isSchedulableGuard = createNegationExpression => [
 	    		it.negatedExpression = isNotSchedulableGuard.clone(true, true)
@@ -2523,7 +2516,7 @@ class CompositeToUppaalTransformer {
 			return #[]
 		}
 		val parentRegion = region.parentRegion
-		return (#[parentRegion] + region.parentRegions).toList
+		return (#[parentRegion] + parentRegion.parentRegions).toList
 	}
 	
 	private def List<Region> getSubregions(Region region) {
@@ -4151,5 +4144,6 @@ class CompositeToUppaalTransformer {
     }
     
     enum Scheduler {FAIR, RANDOM}
+    
     
 }
