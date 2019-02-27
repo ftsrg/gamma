@@ -28,6 +28,12 @@
         eType="#//TimeoutDeclaration" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
         eType="#//Transition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
+        eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
+    <eLiterals name="TOP_DOWN"/>
+    <eLiterals name="BOTTOM_UP" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="#//EventSource"/>

@@ -1808,6 +1808,12 @@ class CompositeToUppaalTransformer {
     	]
     	firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
     	lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
+    	// TODO Setting isScheduled variable
+    	for (region : InstanceRegions.Matcher.on(engine).allValuesOfregion) {
+    		val isScheduledVar = region.allValuesOfTo.filter(Template).head
+    								.allValuesOfTo.filter(DataVariableDeclaration).head
+    		firstEdge.createAssignmentExpression(edge_Update, isScheduledVar, false)
+    	}
     	return lastEdge
     }
     
@@ -1933,30 +1939,33 @@ class CompositeToUppaalTransformer {
      * the reset of event queue in case of cascade instances.
      */
     private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
-    	var Edge lastEdge = previousLastEdge
+    	var Collection<Edge> lastEdges = #[previousLastEdge]
     	val statechart = instance.type as StatechartDefinition
     	val finalizeSyncVar = instance.finalizeSyncVar
     	// Syncing the templates with run cycles
     	if (false) {
     		// Parent first
-	    	for (topRegion : TopRegions.Matcher.on(engine).getAllValuesOftopRegion(null, statechart, null)) {
-	    		lastEdge = topRegion.createRunCycleEdgesTopDown(new ArrayList<Region>, lastEdge, instance)
-	    	}
+//	    	for (topRegion : TopRegions.Matcher.on(engine).getAllValuesOftopRegion(null, statechart, null)) {
+//	    		lastEdge = topRegion.createRunCycleEdgesTopDown(new ArrayList<Region>, lastEdge, instance)
+//	    	}
     	}
     	else {
     		// Child first
     		val levelRegionAssociation = statechart.regionsChildFirst
     		for (deepestLevel : levelRegionAssociation.keySet.sort.reverseView) {
     			for (deepestLevelRegion: levelRegionAssociation.get(deepestLevel)) {
-    				lastEdge = deepestLevelRegion.createRunCycleEdgeBottomUp(lastEdge, instance)
+    				lastEdges = deepestLevelRegion.createRunCycleEdgeBottomUp(lastEdges, instance)
     			}
     		}
     	}
     	// When all templates of an instance is synced, a finalize edge is put in the sequence
-    	val finalizeEdge = createCommittedSyncTarget(lastEdge.target, finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
+    	val finalizeEdge = createCommittedSyncTarget(lastEdges.head.target,
+    		finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
     	finalizeEdge.source.locationTimeKind = LocationKind.URGENT
-    	lastEdge.target = finalizeEdge.source
-    	lastEdge = finalizeEdge
+    	for (lastEdge : lastEdges) {
+    		lastEdge.target = finalizeEdge.source
+    	}
+    	val lastEdge = finalizeEdge
     	// If the instance is cascade, the in events have to be cleared
     	if (instance.isCascade) {
     		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
@@ -2040,14 +2049,70 @@ class CompositeToUppaalTransformer {
      * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
      * between the given last runCycle edge and the init location.
      */
-    private def Edge createRunCycleEdgeBottomUp(Region region, Edge lastEdge, ComponentInstance owner) {
+    private def Collection<Edge> createRunCycleEdgeBottomUp(Region region, Collection<Edge> lastEdges,
+    		ComponentInstance owner) {
     	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
     	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
-    	val runCycleEdge = createCommittedSyncTarget(lastEdge.target, syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
+    	val runCycleEdge = createCommittedSyncTarget(lastEdges.head.target,
+    		syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
     	runCycleEdge.source.locationTimeKind = LocationKind.URGENT
-    	lastEdge.target = runCycleEdge.source
-    	var Edge lastLevelEdge = runCycleEdge
-    	return lastLevelEdge    	
+    	for (lastEdge : lastEdges) {
+    		lastEdge.target = runCycleEdge.source
+    	}
+    	// TODO set this method parameterizable with scheduling order
+    	val subregions = region.subregions
+    	if (!subregions.empty) {
+    		val isScheduledVars = subregions.map[it.allValuesOfTo.filter(Template).head]
+    								.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
+	    	val isNotSchedulableGuard = createLogicalExpression(LogicalOperator.OR, 
+	    			isScheduledVars.map[variable | createIdentifierExpression => [
+	    				it.identifier = variable.variable.head
+	    			]	    			
+	    		]
+	    	)
+	    	val isSchedulableGuard = createNegationExpression => [
+	    		it.negatedExpression = isNotSchedulableGuard.clone(true, true)
+	    	]
+    		runCycleEdge.addGuard(isSchedulableGuard, LogicalOperator.AND)
+    		// If the region is not schedulable
+    		val elseEdge = runCycleEdge.source.createEdge(runCycleEdge.target) => [
+    			it.guard = isNotSchedulableGuard
+    		]
+    		return #[runCycleEdge, elseEdge]
+    	}
+    	else {
+    		return #[runCycleEdge]
+    	}    	
+    }
+    
+    private def createLogicalExpression(LogicalOperator operator,
+    		Collection<? extends uppaal.expressions.Expression> expressions) {
+    	checkState(!expressions.empty)
+    	if (expressions.size == 1) {
+    		return expressions.head
+    	}
+    	var logicalExpression = createLogicalExpression => [
+    		it.operator = operator
+    	]
+    	var i = 0
+    	for (expression : expressions) {
+    		if (i == 0) {
+    			logicalExpression.firstExpr = expression
+    		}
+    		else if (i == 1) {
+    			logicalExpression.secondExpr = expression
+    		}
+    		else {
+    			val oldExpression = logicalExpression.secondExpr
+    			logicalExpression = createLogicalExpression => [
+		    		it.operator = operator
+    				it.firstExpr = oldExpression
+    				it.secondExpr = expression
+		    	]
+    		}
+    		i++
+    	}
+    	return logicalExpression
     }
     
     /**
@@ -2425,7 +2490,7 @@ class CompositeToUppaalTransformer {
 		// Creating the local declaration container of the template
 		val localDeclaration = template.createChild(template_Declarations, localDeclarations) as LocalDeclarations
 		if (it.region.subregion) {
-			val isActiveVar = localDeclaration.createVariable(DataVariablePrefix.NONE, target.bool, "isActive")		
+			val isActiveVar = localDeclaration.createVariable(DataVariablePrefix.NONE, target.bool, "isActive")
 			addToTrace(it.region, #{isActiveVar}, trace)
 			addToTrace(instance, #{isActiveVar}, instanceTrace)
 		}
@@ -2433,6 +2498,10 @@ class CompositeToUppaalTransformer {
 		val runCycleVar = target.globalDeclarations.createSynchronization(true, false, "runCycle" + template.name.toFirstUpper)
 		addToTrace(template, #{runCycleVar}, trace)
 		addToTrace(instance, #{runCycleVar}, instanceTrace)
+		// Creating the isScheduled sync var
+		val isScheduledVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, "isScheduled" + name + "Of" + instance.name)
+		addToTrace(template, #{isScheduledVar}, trace)
+		addToTrace(instance, #{isScheduledVar}, instanceTrace)
 		// Creating the trace
 		addToTrace(it.region, #{template}, trace)
 		addToTrace(instance, #{template}, instanceTrace)
@@ -2440,6 +2509,30 @@ class CompositeToUppaalTransformer {
 	
 	private def boolean isSubregion(Region region) {
 		return Subregions.Matcher.on(engine).countMatches(region, null) > 0
+	}
+	
+	private def getParentRegion(Region region) {
+		if (region.topRegion) {
+			return null
+		}
+		return (region.eContainer as State).parentRegion 
+	}
+	
+	private def List<Region> getParentRegions(Region region) {
+		if (region.topRegion) {
+			return #[]
+		}
+		val parentRegion = region.parentRegion
+		return (#[parentRegion] + region.parentRegions).toList
+	}
+	
+	private def List<Region> getSubregions(Region region) {
+		val subregions = new ArrayList<Region>
+		for (subregion : region.stateNodes.filter(State).map[it.regions].flatten) {
+			subregions += subregion
+			subregions += subregion.subregions
+		}
+		return subregions
 	}
 	
 	/**
@@ -2550,6 +2643,9 @@ class CompositeToUppaalTransformer {
 					createLiteralExpression => [it.text = (transitionId++).toString]
 				)
 			}
+			// TODO Updating the scheduling variable
+			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
+			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			// Creating the trace
 			addToTrace(it.transition, #{edge}, trace)			
 			addToTrace(owner, #{edge}, instanceTrace)			
@@ -2587,6 +2683,9 @@ class CompositeToUppaalTransformer {
 					createLiteralExpression => [it.text = (transitionId++).toString]
 				)
 			}
+			// TODO Updating the scheduling variable
+			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
+			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
 			// Creating the sync edge
@@ -2712,6 +2811,9 @@ class CompositeToUppaalTransformer {
 						createLiteralExpression => [it.text = (transitionId++).toString]
 					)
 				}
+				// TODO Updating the scheduling variable
+				val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
+				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 				addToTrace(transition, #{toHigherEdge}, trace)
 				addToTrace(owner, #{toHigherEdge}, instanceTrace)
 				// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
@@ -2796,7 +2898,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	// These dispatch methods are for getting the proper source and target location
-	// of a simple edge based on the type of the source/target TTMC state node.
+	// of a simple edge based on the type of the source/target Gamma state node.
 	
 	private def dispatch List<Location> getEdgeSource(EntryState entry) {
 		return entry.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList	

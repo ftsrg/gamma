@@ -39,6 +39,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getConstantDeclarationRule());
         c.setLinewrap(1).after(f.getFunctionDeclarationRule());
         c.setLinewrap(1).after(f.getTypeDeclarationRule());
+        c.setLinewrap(1).after(f.getSchedulingOrderRule());
         // Line breaks after/before these rules
         c.setLinewrap(1).after(f.getVariableDeclarationRule());
         c.setLinewrap(1).after(f.getTimeoutDeclarationRule());

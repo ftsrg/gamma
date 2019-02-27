@@ -181,6 +181,7 @@ enum RealizationMode returns RealizationMode:
 ;
 
 StatechartDefinition returns StatechartDefinition:
+	('@Schedule' '=' schedulingOrder=SchedulingOrder)?
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -199,6 +200,11 @@ StatechartDefinition returns StatechartDefinition:
 			)*
 		'}'
 ;
+
+enum SchedulingOrder returns SchedulingOrder:
+	TOP_DOWN = 'top-down' | BOTTOM_UP = 'bottom-up'
+;
+
 
 StatechartReference returns StatechartReference:
 	{StatechartReference}

@@ -10,6 +10,10 @@
   <foreignModel>statechart.ecore</foreignModel>
   <genPackages prefix="StatechartModel" basePackage="hu.bme.mit.gamma.statechart"
       disposableProviderFactory="true" fileExtensions="gsm" ecorePackage="statechart.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//SchedulingOrder">
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//SchedulingOrder/TOP_DOWN"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//SchedulingOrder/BOTTOM_UP"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//RealizationMode">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//RealizationMode/PROVIDED"/>
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//RealizationMode/REQUIRED"/>
@@ -43,6 +47,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/variableDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/timeoutDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/transitions"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/schedulingOrder"/>
     </genClasses>
     <genClasses image="false" ecoreClass="statechart.ecore#//EventSource"/>
     <genClasses ecoreClass="statechart.ecore#//TimeoutDeclaration"/>
