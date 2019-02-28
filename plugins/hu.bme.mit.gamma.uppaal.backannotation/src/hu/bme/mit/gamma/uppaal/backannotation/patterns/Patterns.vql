@@ -24,7 +24,7 @@ pattern simpleInstances(instance : SynchronousComponentInstance, statechart : St
 	SynchronousComponentInstance.type(instance, statechart); 
 }
 
-pattern asynchronousSimpleInstances(instance : AsynchronousComponentInstance, type : SynchronousComponentWrapper) {
+pattern asynchronousSimpleInstances(instance : AsynchronousComponentInstance, type : AsynchronousAdapter) {
 	AsynchronousComponentInstance.type(instance, type);
 }
 
@@ -260,13 +260,13 @@ pattern topAsyncCompositeComponents(asyncComposite : AsynchronousCompositeCompon
 	neg find asynchronousInstances(_, asyncComposite);
 }
 
-private pattern wrappers(wrapper : SynchronousComponentWrapper, sync : SynchronousComponent) {
-	SynchronousComponentWrapper.wrappedComponent(wrapper, sync);
+private pattern wrappers(wrapper : AsynchronousAdapter, sync : SynchronousComponent) {
+	AsynchronousAdapter.wrappedComponent.type(wrapper, sync);
 }
 
 // In/out events of wrappers
 
-pattern distinctWrapperInEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+pattern distinctWrapperInEvents(wrapper : AsynchronousAdapter, port : Port, event : Event) {
 	// This is not delegated, these events and ports are on the wrapper
 	find wrappers(wrapper, _composite);
 	find componentDeclarationEvents(wrapper, port, RealizationMode::PROVIDED, eventDeclaration, event);
@@ -280,7 +280,7 @@ pattern distinctWrapperInEvents(wrapper : SynchronousComponentWrapper, port : Po
 	neg find eventDirection(eventDeclaration, EventDirection::IN);
 }
 
-pattern wrapperInEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+pattern wrapperInEvents(wrapper : AsynchronousAdapter, port : Port, event : Event) {
 	// This is delegated down to the events and ports of sync instances
 	find wrappers(wrapper, composite);
 	find syncSystemInEvents(composite, port, _instance, _instancePort, event);
@@ -288,7 +288,7 @@ pattern wrapperInEvents(wrapper : SynchronousComponentWrapper, port : Port, even
 	find distinctWrapperInEvents(wrapper, port, event);
 }
 
-pattern wrapperOutEvents(wrapper : SynchronousComponentWrapper, port : Port, event : Event) {
+pattern wrapperOutEvents(wrapper : AsynchronousAdapter, port : Port, event : Event) {
 	// This is delegated down to the events and ports of sync instances
 	find wrappers(wrapper, composite);
 	find syncSystemOutEvents(composite, port, _instance, _instancePort, event);

@@ -23,12 +23,12 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.model.Transition;
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 
 public class StatechartModelDerivedFeatures {
@@ -42,15 +42,15 @@ public class StatechartModelDerivedFeatures {
 		return isBroadcast(port.getInterfaceRealization());
 	}
 	
-	public static Collection<Port> getAllPorts(SynchronousComponentWrapper wrapper) {
+	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
 		Collection<Port> allPorts = new HashSet<Port>(wrapper.getPorts());
-		allPorts.addAll(wrapper.getWrappedComponent().getPorts());
+		allPorts.addAll(wrapper.getWrappedComponent().getType().getPorts());
 		return allPorts;
 	}
 	
 	public static Collection<Port> getAllPorts(Component component) {
-		if (component instanceof SynchronousComponentWrapper) {
-			return getAllPorts((SynchronousComponentWrapper)component);
+		if (component instanceof AsynchronousAdapter) {
+			return getAllPorts((AsynchronousAdapter)component);
 		}		
 		return component.getPorts();
 	}

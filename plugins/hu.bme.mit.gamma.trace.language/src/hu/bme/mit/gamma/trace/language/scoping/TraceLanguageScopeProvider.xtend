@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceState
@@ -37,6 +36,7 @@ import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
 import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
  * This class contains custom scoping description.
@@ -57,9 +57,9 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val executionTrace = (context as RaiseEventAct).eContainer.eContainer as ExecutionTrace
 			val component = executionTrace.component
 			val ports = new HashSet<Port>(component.ports)
-			if (component instanceof SynchronousComponentWrapper) {
+			if (component instanceof AsynchronousAdapter) {
 				// Wrappers need the wrapped components as well
-				ports += component.wrappedComponent.ports
+				ports += component.wrappedComponent.type.ports
 			}
 			return Scopes.scopeFor(ports)
 		}
@@ -127,7 +127,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 	}
 
 	private def Collection<AsynchronousComponentInstance> getAsynchronousInstances(AsynchronousCompositeComponent component) {
-		val simpleInstances = component.components.filter[it.type instanceof SynchronousComponentWrapper].toSet
+		val simpleInstances = component.components.filter[it.type instanceof AsynchronousAdapter].toSet
 		for (compositeComponent : component.components.filter[it.type instanceof AsynchronousCompositeComponent]) {
 			simpleInstances += (compositeComponent.type as AsynchronousCompositeComponent).asynchronousInstances
 		}
@@ -146,8 +146,8 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		return simpleInstances
 	}
 	
-	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(SynchronousComponentWrapper component) {
-		return component.wrappedComponent.synchronousInstances
+	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(AsynchronousAdapter component) {
+		return #[component.wrappedComponent]
 	}
 	
 	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(AbstractSynchronousCompositeComponent component) {

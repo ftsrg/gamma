@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
@@ -186,13 +187,9 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				return;
 			}
 			// The declaration has an initial value
-			if (initialExpression instanceof ReferenceExpression) {
-				ReferenceExpression referenceExpression = (ReferenceExpression) initialExpression;
-				Declaration referredDeclaration = referenceExpression.getDeclaration();
-				if (referredDeclaration == declaration) {
-					error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
-					return;
-				}
+			if (isDeclarationReferredInExpression(declaration, initialExpression)) {
+				error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
+				return;
 			}
 			Type variableDeclarationType = declaration.getType();
 			ExpressionType initialExpressionType = typeDeterminator.getType(declaration.getExpression());
@@ -205,6 +202,23 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
 		}
+	}
+	
+	protected boolean isDeclarationReferredInExpression(Declaration declaration, Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+			if (referenceExpression.getDeclaration() == declaration) {
+				return true;
+			}
+		}
+		for (EObject content : expression.eContents()) {
+			Expression containedExpression = (Expression) content;
+			boolean isReferred = isDeclarationReferredInExpression(declaration, containedExpression);
+			if (isReferred) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected enum ExpressionType { BOOLEAN, NATURAL, INTEGER, REAL, ENUMERATION, ERROR }

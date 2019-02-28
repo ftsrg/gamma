@@ -45,7 +45,7 @@
       eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constantRepresentation"
         lowerBound="1" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/DataVariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="wrapper" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/SynchronousComponentWrapper"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="wrapper" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/AsynchronousAdapter"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClockRepresentation" eSuperTypes="#//AbstractEventRepresentation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Clock"/>

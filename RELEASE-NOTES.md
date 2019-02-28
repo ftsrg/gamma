@@ -55,6 +55,7 @@
 * Gamma execution traces now must have a name.
 * Transition-covering test sets can now be generated.
 * Statecharts can be executed in a bottom-up execution mode (subregions are executed first) in addition to the up to now supported top-down execution mode.
+* Asynchronous adapters now adapt (paramterizable) component instances instead of component types.
 
 ### Improvements
 

@@ -12,18 +12,19 @@ package hu.bme.mit.gamma.uppaal.backannotation
 
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
+import hu.bme.mit.gamma.constraint.model.Expression
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -31,6 +32,7 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceFactory
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.EventRepresentations
+import hu.bme.mit.gamma.uppaal.backannotation.patterns.ExpressionTraces
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.Functions
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceTraces
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.IsActiveVariables
@@ -58,19 +60,17 @@ import java.util.Map.Entry
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import uppaal.declarations.DataVariableDeclaration
+import uppaal.declarations.ExpressionInitializer
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableDeclaration
 import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
-import uppaal.declarations.ExpressionInitializer
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.ExpressionTraces
-import hu.bme.mit.gamma.constraint.model.Expression
 
 class StringTraceBackAnnotator {
 	
@@ -400,7 +400,7 @@ class StringTraceBackAnnotator {
 									val asyncPort = asyncMatches.head.systemPort
 									step.addOutEvent(asyncPort, raisedEvent, rightValue)
 								}
-								else if (component instanceof SynchronousComponentWrapper || component instanceof SynchronousComponent)  {
+								else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent)  {
 									// Event is not led out to an async system port (sync or wrapper component)
 									step.addOutEvent(syncPort, match.event, rightValue)
 								}
@@ -428,7 +428,7 @@ class StringTraceBackAnnotator {
 							val asyncPort = asyncMatches.head.systemPort
 							step.addOutEvent(asyncPort, raisedEvent, null)
 						}
-						else if (component instanceof SynchronousComponentWrapper || component instanceof SynchronousComponent) {
+						else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent) {
 							// Event is not led out to an async system port (sync or wrapper component)
 							step.addOutEvent(syncPort, raisedEvent, null)
 						}						
@@ -451,7 +451,7 @@ class StringTraceBackAnnotator {
 			// The line is not of scheduler template
 			return
 		}
-		if (component instanceof SynchronousComponentWrapper) {
+		if (component instanceof AsynchronousAdapter) {
 			step.addComponentScheduling
 		}
 		else {
@@ -530,7 +530,7 @@ class StringTraceBackAnnotator {
 					// Else it is a regular variable assignment, we do not care about it
 				}			
 			}
-			else if (component instanceof SynchronousComponentWrapper) {
+			else if (component instanceof AsynchronousAdapter) {
 				val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(null)
 				if (match !== null) {
 					if (match.event.parameterDeclarations.empty) {
@@ -544,7 +544,7 @@ class StringTraceBackAnnotator {
 			else if (component instanceof AsynchronousCompositeComponent) {
 				val functionName = splittedAction.get("function") // Push function
 				val owner = functionName.peekFunction.asyncOwner
-				val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(owner.type as SynchronousComponentWrapper)
+				val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(owner.type as AsynchronousAdapter)
 				if (match !== null) {
 					// Instance ports must be traced back to system level ports
 					val systemMatches = TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, owner, match.port, match.event)
@@ -665,7 +665,7 @@ class StringTraceBackAnnotator {
 		return events.head
 	}
 	
-	protected def getWrapperEvent(DataVariableDeclaration variable, SynchronousComponentWrapper wrapper) {
+	protected def getWrapperEvent(DataVariableDeclaration variable, AsynchronousAdapter wrapper) {
 		val events = EventRepresentations.Matcher.on(engine).getAllMatches(wrapper, null, null, variable)
 		return events.head
 	}

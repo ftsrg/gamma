@@ -339,7 +339,7 @@ SynchronousCompositeComponent returns CompositeModel::SynchronousCompositeCompon
 
 AsynchronousComponent returns CompositeModel::AsynchronousComponent:
 	AsynchronousCompositeComponent |
-	SynchronousComponentWrapper
+	AsynchronousAdapter
 ;
 
 AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComponent:
@@ -355,9 +355,9 @@ AsynchronousCompositeComponent returns CompositeModel::AsynchronousCompositeComp
 		'}'
 ;
 
-SynchronousComponentWrapper returns CompositeModel::SynchronousComponentWrapper:
-	'async' name=ID 'of' wrappedComponent=[CompositeModel::SynchronousComponent]
-		('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
+	'adapter' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+		'of' wrappedComponent=SynchronousComponentInstance		
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
 		'{'
 			(

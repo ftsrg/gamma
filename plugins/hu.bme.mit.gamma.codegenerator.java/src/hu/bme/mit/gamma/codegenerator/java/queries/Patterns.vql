@@ -133,12 +133,12 @@ pattern constants(type : con::Type, name : java String, initExpression : con::Ex
 
 // Synchronous component wrapper
 
-pattern synchronousComponentWrappers(synchronousComponentWrapper : SynchronousComponentWrapper) {
-	SynchronousComponentWrapper(synchronousComponentWrapper);
+pattern synchronousComponentWrappers(synchronousComponentWrapper : AsynchronousAdapter) {
+	AsynchronousAdapter(synchronousComponentWrapper);
 }
 
-pattern queuesOfClocks(wrapper : SynchronousComponentWrapper, queue : MessageQueue, clock : Clock) {
-	SynchronousComponentWrapper.messageQueues(wrapper, queue);
+pattern queuesOfClocks(wrapper : AsynchronousAdapter, queue : MessageQueue, clock : Clock) {
+	AsynchronousAdapter.messageQueues(wrapper, queue);
 	MessageQueue.eventReference(queue, eventReference);
 	ClockTickReference.clock(eventReference, clock);
 }
@@ -154,31 +154,31 @@ pattern queuesOfEvents(queue : MessageQueue, port : Port, event : gif::Event) {
 	find eventsOfPorts(port, event);
 }
 
-private pattern controlSpecifications(wrapper : SynchronousComponentWrapper, controlSpecification : ControlSpecification, trigger : SimpleTrigger, controlFunction : ControlFunction) {
-	SynchronousComponentWrapper.controlSpecifications(wrapper, controlSpecification);
+private pattern controlSpecifications(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, trigger : SimpleTrigger, controlFunction : ControlFunction) {
+	AsynchronousAdapter.controlSpecifications(wrapper, controlSpecification);
 	ControlSpecification.trigger(controlSpecification, trigger);
 	ControlSpecification.controlFunction(controlSpecification, controlFunction);
 }
 
-pattern anyTriggersOfWrappers(wrapper : SynchronousComponentWrapper, controlSpecification : ControlSpecification, controlFunction : ControlFunction) {
+pattern anyTriggersOfWrappers(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, controlFunction : ControlFunction) {
 	find controlSpecifications(wrapper, controlSpecification, anyTrigger, controlFunction);
 	AnyTrigger(anyTrigger);
 }
 
-pattern anyPortTriggersOfWrappers(wrapper : SynchronousComponentWrapper, controlSpecification : ControlSpecification, port : Port, controlFunction : ControlFunction) {
+pattern anyPortTriggersOfWrappers(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, port : Port, controlFunction : ControlFunction) {
 	find controlSpecifications(wrapper, controlSpecification, eventTrigger, controlFunction);
 	EventTrigger.eventReference(eventTrigger, eventReference);
 	AnyPortEventReference.port(eventReference, port);
 }
 
-pattern portEventTriggersOfWrappers(wrapper : SynchronousComponentWrapper, controlSpecification : ControlSpecification, port : Port, event : gif::Event, controlFunction : ControlFunction) {
+pattern portEventTriggersOfWrappers(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, port : Port, event : gif::Event, controlFunction : ControlFunction) {
 	find controlSpecifications(wrapper, controlSpecification, eventTrigger, controlFunction);
 	EventTrigger.eventReference(eventTrigger, eventReference);
 	PortEventReference.port(eventReference, port);
 	PortEventReference.event(eventReference, event);
 }
 
-pattern clockTriggersOfWrappers(wrapper : SynchronousComponentWrapper, controlSpecification : ControlSpecification, clock : Clock, controlFunction : ControlFunction) {
+pattern clockTriggersOfWrappers(wrapper : AsynchronousAdapter, controlSpecification : ControlSpecification, clock : Clock, controlFunction : ControlFunction) {
 	find controlSpecifications(wrapper, controlSpecification, eventTrigger, controlFunction);
 	EventTrigger.eventReference(eventTrigger, eventReference);
 	ClockTickReference.clock(eventReference, clock);

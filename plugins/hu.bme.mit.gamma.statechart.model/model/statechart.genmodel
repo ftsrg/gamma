@@ -229,12 +229,11 @@
       <genClasses ecoreClass="statechart.ecore#//composite/AsynchronousCompositeComponent">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/AsynchronousCompositeComponent/components"/>
       </genClasses>
-      <genClasses image="false" ecoreClass="statechart.ecore#//composite/SynchronousComponentWrapper">
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/SynchronousComponentWrapper/controlSpecifications"/>
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/SynchronousComponentWrapper/messageQueues"/>
-        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/SynchronousComponentWrapper/clocks"/>
-        <genFeatures notify="false" createChild="false" propertySortChoices="true"
-            ecoreFeature="ecore:EReference statechart.ecore#//composite/SynchronousComponentWrapper/wrappedComponent"/>
+      <genClasses image="false" ecoreClass="statechart.ecore#//composite/AsynchronousAdapter">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/AsynchronousAdapter/controlSpecifications"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/AsynchronousAdapter/messageQueues"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/AsynchronousAdapter/clocks"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/AsynchronousAdapter/wrappedComponent"/>
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//composite/CascadeCompositeComponent">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"

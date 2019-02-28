@@ -38,7 +38,7 @@ pattern portTraces(trace : PortTrace, port, declaration) {
 	PortTrace.declarations(trace, declaration);
 }
 
-pattern eventRepresentations(wrapper : SynchronousComponentWrapper, port : Port, event : Event, representation : DataVariableDeclaration) {
+pattern eventRepresentations(wrapper : AsynchronousAdapter, port : Port, event : Event, representation : DataVariableDeclaration) {
 	EventRepresentation.wrapper(trace, wrapper);
 	EventRepresentation.constantRepresentation(trace, representation);
 	EventRepresentation.port(trace, port);

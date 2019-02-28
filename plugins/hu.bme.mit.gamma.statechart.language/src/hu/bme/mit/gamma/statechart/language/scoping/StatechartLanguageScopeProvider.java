@@ -54,7 +54,7 @@ import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
@@ -158,9 +158,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 				List<Port> ports = new ArrayList<Port>(type.getPorts());
 				// In case of wrappers, we added the ports of the wrapped component as well
-				if (type instanceof SynchronousComponentWrapper) {
-					SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) type;
-					ports.addAll(wrapper.getWrappedComponent().getPorts());
+				if (type instanceof AsynchronousAdapter) {
+					AsynchronousAdapter wrapper = (AsynchronousAdapter) type;
+					ports.addAll(wrapper.getWrappedComponent().getType().getPorts());
 				}				
 				return Scopes.scopeFor(ports);
 			}
@@ -176,43 +176,40 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			// Types
 			if (context instanceof SynchronousComponentInstance && reference == CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				return collectComponents((AbstractSynchronousCompositeComponent )context.eContainer(), true);
+				return collectComponents((Package) context.eContainer().eContainer(), true);
 			}
 			if (context instanceof AsynchronousComponentInstance && reference == CompositePackage.Literals.ASYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				return collectComponents((AsynchronousCompositeComponent) context.eContainer(), false);
-			}
-			if (context instanceof SynchronousComponentWrapper && reference == CompositePackage.Literals.SYNCHRONOUS_COMPONENT_WRAPPER__WRAPPED_COMPONENT) {
-				return collectComponents((SynchronousComponentWrapper) context, true);
-			}			
+				return collectComponents((Package) context.eContainer().eContainer(), false);
+			}		
 			// Synchronous wrapper specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {
-				SynchronousComponentWrapper wrapper = null;
-				if (context.eContainer().eContainer() instanceof SynchronousComponentWrapper) {
+				AsynchronousAdapter wrapper = null;
+				if (context.eContainer().eContainer() instanceof AsynchronousAdapter) {
 					// Message queues
-					wrapper = (SynchronousComponentWrapper) context.eContainer().eContainer();
+					wrapper = (AsynchronousAdapter) context.eContainer().eContainer();
 				}
-				if (context.eContainer().eContainer().eContainer() instanceof SynchronousComponentWrapper) {
+				if (context.eContainer().eContainer().eContainer() instanceof AsynchronousAdapter) {
 					// Control specification
-					wrapper = (SynchronousComponentWrapper) context.eContainer().eContainer().eContainer();
+					wrapper = (AsynchronousAdapter) context.eContainer().eContainer().eContainer();
 				}
 				if (wrapper != null) {
 					// Derived feature "allPorts" does not work all the time
 					Set<Port> ports = new HashSet<Port>();
 					ports.addAll(wrapper.getPorts());
-					ports.addAll(wrapper.getWrappedComponent().getPorts());
+					ports.addAll(wrapper.getWrappedComponent().getType().getPorts());
 					return Scopes.scopeFor(ports);
 				}
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
 					(reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 					reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)) {
-				SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) context.eContainer();
+				AsynchronousAdapter wrapper = (AsynchronousAdapter) context.eContainer();
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllPorts(wrapper));
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
 					reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
-				SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) context.eContainer();
+				AsynchronousAdapter wrapper = (AsynchronousAdapter) context.eContainer();
 				Collection<Event> events = new HashSet<Event>();
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
 					.forEach(it -> events.addAll(getSemanticEvents(Collections.singletonList(it), EventDirection.IN)));
@@ -243,9 +240,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return super.getScope(context, reference);
 	}
 
-	private IScope collectComponents(final Component component, boolean isSynchronous) {
+	private IScope collectComponents(Package parentPackage, boolean isSynchronous) {
 		List<Component> types = new ArrayList<Component>();
-		Package parentPackage = (Package) component.eContainer();
 		for (Package importedPackage : parentPackage.getImports()) {
 			for (Component importedComponent : importedPackage.getComponents()) {
 				if (importedComponent instanceof SynchronousComponent && isSynchronous) {
@@ -264,7 +260,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				types.add(siblingComponent);
 			}
 		}
-		types.remove(component);
 		return Scopes.scopeFor(types);
 	}
 

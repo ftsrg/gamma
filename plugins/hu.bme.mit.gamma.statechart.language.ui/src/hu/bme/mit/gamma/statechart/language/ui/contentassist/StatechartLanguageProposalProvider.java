@@ -34,7 +34,7 @@ import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
@@ -49,7 +49,7 @@ public class StatechartLanguageProposalProvider extends AbstractStatechartLangua
 	
 	public void completeMessageQueue_Priority(MessageQueue model, Assignment assignment,
 			ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-        SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) model.eContainer();
+		AsynchronousAdapter wrapper = (AsynchronousAdapter) model.eContainer();
         if (wrapper.getMessageQueues().size() <= 1) {
         	acceptor.accept(createCompletionProposal("1", context));
         	return;

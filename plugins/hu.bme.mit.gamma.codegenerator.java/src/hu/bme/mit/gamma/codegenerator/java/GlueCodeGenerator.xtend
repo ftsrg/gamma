@@ -29,7 +29,7 @@ import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
@@ -264,7 +264,7 @@ class GlueCodeGenerator {
 	/**
 	 * Returns the name of the wrapped Yakindu statemachine instance.
 	 */
-	protected def getWrappedComponentName(SynchronousComponentWrapper wrapper) {
+	protected def getWrappedComponentName(AsynchronousAdapter wrapper) {
 		return wrapper.wrappedComponent.name.toFirstLower
 	}
  	
@@ -1123,9 +1123,9 @@ class GlueCodeGenerator {
 			val composite = component as CompositeComponent
 			return composite.derivedComponents.map[it.derivedType.needTimer].contains(true)
 		}
-		else if (component instanceof SynchronousComponentWrapper) {
-			val wrapper = component as SynchronousComponentWrapper
-			return !wrapper.clocks.empty || wrapper.wrappedComponent.needTimer
+		else if (component instanceof AsynchronousAdapter) {
+			val wrapper = component as AsynchronousAdapter
+			return !wrapper.clocks.empty || wrapper.wrappedComponent.type.needTimer
 		}
 		else {
 			throw new IllegalArgumentException("No such component: " + component)
@@ -1154,7 +1154,7 @@ class GlueCodeGenerator {
 				// Only bound ports are created
 				ports += composite.portBindings.map[it.compositeSystemPort]
 			}
-			else if (component instanceof SynchronousComponentWrapper) {
+			else if (component instanceof AsynchronousAdapter) {
 				ports += component.allPorts
 			}
 			else {
@@ -1591,7 +1591,7 @@ class GlueCodeGenerator {
 	/**
 	* Creates the Java code of the synchronous composite class, containing the statemachine instances.
 	*/
-	protected def createSynchronousComponentWrapperClass(SynchronousComponentWrapper component) {
+	protected def createSynchronousComponentWrapperClass(AsynchronousAdapter component) {
 		var clockId = 0
 	'''
 		package «component.componentPackageName»;
@@ -1602,13 +1602,13 @@ class GlueCodeGenerator {
 			// Thread running this wrapper instance
 			private Thread thread;
 			// Wrapped synchronous instance
-			private «component.wrappedComponent.componentClassName» «component.wrappedComponentName»;
+			private «component.wrappedComponent.type.componentClassName» «component.wrappedComponentName»;
 			// Control port instances
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			// Wrapped port instances
-			«FOR port : component.wrappedComponent.ports»
+			«FOR port : component.wrappedComponent.type.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			«IF !component.clocks.empty»
@@ -1648,7 +1648,7 @@ class GlueCodeGenerator {
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {
-				«component.wrappedComponentName» = new «component.wrappedComponent.componentClassName»();
+				«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
@@ -1709,7 +1709,7 @@ class GlueCodeGenerator {
 			«ENDFOR»
 			
 			// Inner classes representing wrapped ports
-			«FOR port : component.wrappedComponent.ports SEPARATOR "\n"»
+			«FOR port : component.wrappedComponent.type.ports SEPARATOR "\n"»
 				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods»
@@ -1831,14 +1831,14 @@ class GlueCodeGenerator {
 				thread.interrupt();
 			}
 			
-			public «component.wrappedComponent.componentClassName» get«component.wrappedComponentName.toFirstUpper»() {
+			public «component.wrappedComponent.type.componentClassName» get«component.wrappedComponentName.toFirstUpper»() {
 				return «component.wrappedComponentName»;
 			}
 			
 			«IF component.needTimer»
 				public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
-					«IF component.wrappedComponent.needTimer»«component.wrappedComponentName».setTimer(timer);«ENDIF»
+					«IF component.wrappedComponent.type.needTimer»«component.wrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
 				}
 			«ENDIF»
@@ -1848,16 +1848,16 @@ class GlueCodeGenerator {
 	}
 	
 	/** Sets the parameters of the component and instantiates the necessary components with them. */
-	private def createInstances(SynchronousComponentWrapper component) '''
+	private def createInstances(AsynchronousAdapter component) '''
 		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
-		«component.wrappedComponentName» = new «component.wrappedComponent.componentClassName»();
+		«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«FOR port : component.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»
 		// Wrapped port instances
-		«FOR port : component.wrappedComponent.ports»
+		«FOR port : component.wrappedComponent.type.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»
 	'''
@@ -1875,7 +1875,7 @@ class GlueCodeGenerator {
 	/**
 	 * Generates the needed Java imports in case of the given composite component.
 	 */
-	protected def generateWrapperImports(SynchronousComponentWrapper component) '''
+	protected def generateWrapperImports(AsynchronousAdapter component) '''
 		import java.util.Collections;
 		import java.util.List;
 		
@@ -1885,7 +1885,7 @@ class GlueCodeGenerator {
 		import «packageName».event.*;
 		import «packageName».interfaces.*;
 		
-		import «component.wrappedComponent.componentPackageName».*;
+		import «component.wrappedComponent.type.componentPackageName».*;
 	'''
 
 	/**
@@ -1947,8 +1947,8 @@ class GlueCodeGenerator {
 	/**
 	* Generates event handlers for wrapped in ports of the given wrapper component .
 	*/
-	protected def generateWrapperEventHandlers(SynchronousComponentWrapper component) '''
-	«FOR port : component.wrappedComponent.ports»
+	protected def generateWrapperEventHandlers(AsynchronousAdapter component) '''
+	«FOR port : component.wrappedComponent.type.ports»
 			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
 				case "«port.name».«event.name»":
 					«component.wrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);

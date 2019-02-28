@@ -7,7 +7,6 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.inputInstanceEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameteredEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.syncSystemInEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.topSyncSystemInEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.topSyncSystemOutEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceRegions"/>
@@ -18,7 +17,6 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseInstanceEventStateEntryActions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseTopSystemEventStateEntryActions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseInstanceEventStateExitActions"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseSystemEventStateExitActions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseTopSystemEventStateExitActions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseInstanceEventOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.raiseTopSystemEventOfTransitions"/>

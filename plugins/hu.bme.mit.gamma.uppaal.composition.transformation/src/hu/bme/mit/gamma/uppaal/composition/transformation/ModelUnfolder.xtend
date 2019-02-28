@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import org.eclipse.emf.ecore.EObject
@@ -96,12 +96,12 @@ class ModelUnfolder {
 				instance.type = clonedComposite // Setting the type to the new declaration
 				clonedComposite.copyComponents(gammaPackage, containerInstanceName + instance.name + "_") // Cloning the contained CompositeSystems recursively
 			}
-			else if (type instanceof SynchronousComponentWrapper) {
+			else if (type instanceof AsynchronousAdapter) {
 				val clonedPackage = type.eContainer.clone(true, true) as Package
 				gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
 				gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
 				// Declarations have been moved
-				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponentWrapper // Cloning the declaration
+				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
 				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
 				instance.type = clonedWrapper // Setting the type to the new declaration
 				clonedWrapper.copyComponents(gammaPackage, containerInstanceName + instance.name + "_") // Cloning the contained CompositeSystems recursively
@@ -117,15 +117,15 @@ class ModelUnfolder {
 		}
 	}
 	
-	private dispatch def void copyComponents(SynchronousComponentWrapper component, Package gammaPackage, String containerInstanceName) {
-		val type = component.wrappedComponent
+	private dispatch def void copyComponents(AsynchronousAdapter component, Package gammaPackage, String containerInstanceName) {
+		val type = component.wrappedComponent.type
 		val clonedPackage = type.eContainer.clone(true, true) as Package
 		gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
 		gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
 		// Declarations have been moved
 		val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync Composite or Statechart
 		gammaPackage.components += clonedComponent // Adding it to the "Instance container"
-		component.wrappedComponent = clonedComponent // Setting the type to the new declaration
+		component.wrappedComponent.type = clonedComponent // Setting the type to the new declaration
 		component.fixControlEvents // Fixing control events
 		component.fixMessageQueueEvents // Fixing the message queue event references 
 		if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {				
@@ -138,7 +138,7 @@ class ModelUnfolder {
 		// Fixing the SimpleChannels
 		for (simpleChannel : composite.channels.filter(SimpleChannel).filter[it.requiredPort.instance == instance].toList) {
 			val ports = switch (type) {
-				SynchronousComponentWrapper: type.allPorts // An individual check for wrappers is needed
+				AsynchronousAdapter: type.allPorts // An individual check for wrappers is needed
 				default: type.ports
 			}
 			val newPorts = ports.filter[it.helperEquals(simpleChannel.requiredPort.port)]
@@ -151,7 +151,7 @@ class ModelUnfolder {
 		for (broadcastChannel : composite.channels.filter(BroadcastChannel)) {
 			for (requiredPort : broadcastChannel.requiredPorts.filter[it.instance == instance].toList) {
 				val ports = switch (type) {
-					SynchronousComponentWrapper: type.allPorts // An individual check for wrappers is needed
+					AsynchronousAdapter: type.allPorts // An individual check for wrappers is needed
 					default: type.ports
 				}
 				val newPorts = ports.filter[it.helperEquals(requiredPort.port)]
@@ -167,7 +167,7 @@ class ModelUnfolder {
 		val type = instance.derivedType
 		for (channel : composite.channels.filter[it.providedPort.instance == instance].toList) {
 			val ports = switch (type) {
-				SynchronousComponentWrapper: type.allPorts // An individual check for wrappers is needed
+				AsynchronousAdapter: type.allPorts // An individual check for wrappers is needed
 				default: type.ports
 			}
 			val newPorts = ports.filter[it.helperEquals(channel.providedPort.port)]
@@ -182,7 +182,7 @@ class ModelUnfolder {
 		val type = instance.derivedType
 		for (portBinding : composite.portBindings.filter[it.instancePortReference.instance == instance].toList) {
 			val ports = switch (type) {
-				SynchronousComponentWrapper: type.allPorts // An individual check for wrappers is needed
+				AsynchronousAdapter: type.allPorts // An individual check for wrappers is needed
 				default: type.ports
 			}
 			val newPorts = ports.filter[it.helperEquals(portBinding.instancePortReference.port)]
@@ -193,13 +193,13 @@ class ModelUnfolder {
 		}
 	}
 	
-	protected def void fixControlEvents(SynchronousComponentWrapper wrapper) {
+	protected def void fixControlEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
 		for (portEventReference : wrapper.controlSpecifications.map[it.trigger].filter(EventTrigger)
 				.map[it.eventReference].filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
-			val newPorts = wrappedComponent.ports.filter[it.helperEquals(portEventReference.port)]
+			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
 				throw new IllegalArgumentException("Not one port found: " + newPorts)
 			}
@@ -209,7 +209,7 @@ class ModelUnfolder {
 		for (portEventReference : wrapper.controlSpecifications.map[it.trigger].filter(EventTrigger)
 				.map[it.eventReference].filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
-			val newPorts = wrappedComponent.ports.filter[it.helperEquals(portEventReference.port)]
+			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
 				throw new IllegalArgumentException("Not one port found: " + newPorts)
 			}
@@ -226,12 +226,12 @@ class ModelUnfolder {
 		}
 	}
 	
-	protected def void fixMessageQueueEvents(SynchronousComponentWrapper wrapper) {
+	protected def void fixMessageQueueEvents(AsynchronousAdapter wrapper) {
 		val wrappedComponent = wrapper.wrappedComponent
 		// Any port events
 		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(AnyPortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
-			val newPorts = wrappedComponent.ports.filter[it.helperEquals(portEventReference.port)]
+			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
 				throw new IllegalArgumentException("Not one port found: " + newPorts)
 			}
@@ -240,7 +240,7 @@ class ModelUnfolder {
 		// Port events
 		for (portEventReference : wrapper.messageQueues.map[it.eventReference].flatten.filter(PortEventReference)
 				.filter[it.port.eContainer instanceof SynchronousComponent] /* Wrapper ports are not rearranged */ ) {
-			val newPorts = wrappedComponent.ports.filter[it.helperEquals(portEventReference.port)]
+			val newPorts = wrappedComponent.type.ports.filter[it.helperEquals(portEventReference.port)]
 			if (newPorts.size != 1) {
 				throw new IllegalArgumentException("Not one port found: " + newPorts)
 			}

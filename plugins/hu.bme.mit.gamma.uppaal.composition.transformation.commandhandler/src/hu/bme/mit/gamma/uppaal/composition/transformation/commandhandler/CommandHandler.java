@@ -139,6 +139,8 @@ public class CommandHandler extends AbstractHandler {
 		normalSave(resultModels.getValue(), parentFolder, "." + fileNameWithoutExtenstion + ".g2u");
 		// Serializing the NTA model to XML
 		UppaalModelSerializer.saveToXML(nta, parentFolder, fileNameWithoutExtenstion + ".xml");
+		// Deleting old q file
+		new File(parentFolder + File.separator + fileNameWithoutExtenstion + ".q").delete();
 		UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(), "isStable", parentFolder,
 				fileNameWithoutExtenstion + ".q");
 		transformer.dispose();

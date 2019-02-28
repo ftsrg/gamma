@@ -78,6 +78,8 @@ import uppaal.expressions.LogicalOperator
 import uppaal.expressions.MinusExpression
 import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
+import hu.bme.mit.gamma.constraint.model.DivExpression
+import hu.bme.mit.gamma.constraint.model.ModExpression
 
 class ExpressionTransformer {
 	
@@ -443,6 +445,22 @@ class ExpressionTransformer {
 	def dispatch void transform(EObject container, EReference reference, DivideExpression expression, ComponentInstance owner) {
 		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.DIVIDE			
+		]		
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		addToTrace(expression, #{newExp}, expressionTrace)
+	}
+	
+	def dispatch void transform(EObject container, EReference reference, DivExpression expression, ComponentInstance owner) {
+		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+			it.operator = ArithmeticOperator.DIVIDE			
+		]		
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		addToTrace(expression, #{newExp}, expressionTrace)
+	}
+	
+	def dispatch void transform(EObject container, EReference reference, ModExpression expression, ComponentInstance owner) {
+		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+			it.operator = ArithmeticOperator.MODULO			
 		]		
 		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
 		addToTrace(expression, #{newExp}, expressionTrace)

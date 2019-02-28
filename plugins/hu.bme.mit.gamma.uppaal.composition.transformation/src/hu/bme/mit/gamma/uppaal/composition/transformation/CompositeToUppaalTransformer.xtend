@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateExitActions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseSystemEventStateExitActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateExitActions
@@ -34,7 +33,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventCo
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.StatechartRegions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TimeoutValues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
@@ -87,7 +85,7 @@ import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
@@ -224,6 +222,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedI
 import uppaal.declarations.DeclarationsFactory
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -1168,8 +1167,8 @@ class CompositeToUppaalTransformer {
     val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Environment" + id++, "InitLoc")
-    	val containedComposite = wrapper.wrappedComponent as AbstractSynchronousCompositeComponent
-    	for (match : SyncSystemInEvents.Matcher.on(engine).getAllMatches(containedComposite, null, null, null, null)) {
+    	val component = wrapper.wrappedComponent.type
+    	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
     		val queue = wrapper.getContainerMessageQueue(match.systemPort /*Wrapper port*/, match.event) // In what message queue this event is stored
     		val messageQueueTrace = queue.getTrace(null) // Getting the owner
 			// Creating the loop edge (or edges in case of parametered events)
@@ -1188,7 +1187,7 @@ class CompositeToUppaalTransformer {
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Environment" + id++, "InitLoc")
     	// Creating in events
 		for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, null, null, null, null)) {
-			val wrapper = match.instance.type as SynchronousComponentWrapper
+			val wrapper = match.instance.type as AsynchronousAdapter
 			val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
     		val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
 			// Creating the loop edge (or edges in case of parametered events)
@@ -1215,10 +1214,12 @@ class CompositeToUppaalTransformer {
 	}
 	
     val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Clock" + id++, "InitLoc")
-    	// Creating clock events
-		wrapper.createClockEvents(initLoc, null /*no owner in this case*/)
+    	if (!it.wrapper.clocks.empty) {
+			// Creating the template
+			val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Clock" + id++, "InitLoc")
+	    	// Creating clock events
+			wrapper.createClockEvents(initLoc, null /*no owner in this case*/)
+		}
 	].build
 	
     val instanceWrapperClocksRule = createRule(TopAsyncCompositeComponents.instance).action [
@@ -1230,7 +1231,7 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	protected def createClockEvents(SynchronousComponentWrapper wrapper, Location initLoc, AsynchronousComponentInstance owner) {
+	protected def createClockEvents(AsynchronousAdapter wrapper, Location initLoc, AsynchronousComponentInstance owner) {
     	val clockTemplate = initLoc.parentTemplate
     	for (match : QueuesOfClocks.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
     		val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
@@ -1293,7 +1294,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	private def addInitializedGuards(Edge edge) {
-		if (component instanceof SynchronousComponentWrapper) {
+		if (component instanceof AsynchronousAdapter) {
 			val isInitializedVar = component.initializedVariable
     		edge.addGuard(isInitializedVar, LogicalOperator.AND)
 		}
@@ -1480,14 +1481,15 @@ class CompositeToUppaalTransformer {
 		connectorTemplate.init = relayLoc
 	].build
 	
-	protected def createConnectorEdges(SynchronousComponentWrapper wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
+	protected def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
 			ChannelVariableDeclaration syncChannel, DataVariableDeclaration initializedVar, AsynchronousComponentInstance owner) {
-    	val containedComposite = wrapper.wrappedComponent as AbstractSynchronousCompositeComponent
-    	val relayLocPair = initLoc.createRelayEdges(containedComposite, syncChannel, initializedVar)
+		checkState(wrapper.controlSpecifications.map[it.trigger].filter(AnyTrigger).empty, "Any triggers are not supported in formal verification.")
+    	val synchronousComponent = wrapper.wrappedComponent.type
+    	val relayLocPair = initLoc.createRelayEdges(synchronousComponent, syncChannel, initializedVar)
     	val waitingForRelayLoc = relayLocPair.key
     	val relayLoc = relayLocPair.value
     	// Sync composite in events
-    	for (match : SyncSystemInEvents.Matcher.on(engine).getAllMatches(containedComposite, null, null, null, null)) {
+    	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, null, null, null, null)) {
     		val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
     		val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
     		val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
@@ -1518,7 +1520,7 @@ class CompositeToUppaalTransformer {
     	}
     	// Creating edges for control events of wrapper
     	for (match : RunOnceEventControl.Matcher.on(engine).getAllMatches(wrapper, null, null)
-    			.filter[!SyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent as AbstractSynchronousCompositeComponent, it.port, null, null, it.event)]) {
+    			.filter[!TopSyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent.type, it.port, null, null, it.event)]) {
     		// No events of the wrapped component
     		val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
     		val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
@@ -1561,7 +1563,7 @@ class CompositeToUppaalTransformer {
     	return relayLoc
 	}
 	
-	protected def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, SynchronousComponentWrapper wrapper,
+	protected def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, AsynchronousAdapter wrapper,
 			MessageQueueTrace messageQueueTrace, Port port, Event event, ComponentInstance owner) {
 		// Putting the ? async channel to the loop edge
     	edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE)
@@ -1581,7 +1583,7 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-	protected def createRelayEdges(Location initLoc, AbstractSynchronousCompositeComponent syncComposite,
+	protected def createRelayEdges(Location initLoc, SynchronousComponent syncComposite,
 			ChannelVariableDeclaration syncChan, DataVariableDeclaration initializedVar) {
 		val parentTemplate = initLoc.parentTemplate
 		val relayLoc = parentTemplate.createChild(template_Location, location) as Location => [
@@ -1649,7 +1651,7 @@ class CompositeToUppaalTransformer {
 	    ]
 	}
 	
-	private def addPriorityGuard(Edge edge, SynchronousComponentWrapper wrapper, MessageQueue higherPirorityQueue, ComponentInstance owner) {
+	private def addPriorityGuard(Edge edge, AsynchronousAdapter wrapper, MessageQueue higherPirorityQueue, ComponentInstance owner) {
 		val higherPriorityQueueTrace = higherPirorityQueue.getTrace(owner) // No owner in this case
     	// ...MessagesSize == 0
 	    val sizeCompareExpression = createCompareExpression => [
@@ -1680,7 +1682,7 @@ class CompositeToUppaalTransformer {
 		return "Of" + instance.name
 	}
 	
-	private def getContainerMessageQueue(SynchronousComponentWrapper wrapper, Port port, Event event) {
+	private def getContainerMessageQueue(AsynchronousAdapter wrapper, Port port, Event event) {
 		val queues = QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(wrapper, port, event)
 		if (queues.size > 1) {
 			log(Level.WARNING, "Warning: more than one message queue " + wrapper.name + "." + port.name + "_" + event.name + ":" + queues)			
@@ -1688,15 +1690,15 @@ class CompositeToUppaalTransformer {
 		return queues.head
 	}
 	
-	private def getAsyncSchedulerChannelName(SynchronousComponentWrapper wrapper) {
+	private def getAsyncSchedulerChannelName(AsynchronousAdapter wrapper) {
 		return "async" + wrapper.name
 	}
 	
-	private def getSyncSchedulerChannelName(SynchronousComponentWrapper wrapper) {
+	private def getSyncSchedulerChannelName(AsynchronousAdapter wrapper) {
 		return "sync" + wrapper.name
 	}
 	
-	private def getInitializedVariableName(SynchronousComponentWrapper wrapper) {
+	private def getInitializedVariableName(AsynchronousAdapter wrapper) {
 		return "is"  + wrapper.name.toFirstUpper  + "Initialized"
 	}
 	
@@ -1712,15 +1714,15 @@ class CompositeToUppaalTransformer {
 		return "is" + instance.name.toFirstUpper + "Initialized"
 	}
 	
-	private def getAsyncSchedulerChannel(SynchronousComponentWrapper wrapper) {
+	private def getAsyncSchedulerChannel(AsynchronousAdapter wrapper) {
 		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.asyncSchedulerChannelName)].head
 	}
 	
-	private def getSyncSchedulerChannel(SynchronousComponentWrapper wrapper) {
+	private def getSyncSchedulerChannel(AsynchronousAdapter wrapper) {
 		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.syncSchedulerChannelName)].head		
 	}
 	
-	private def getInitializedVariable(SynchronousComponentWrapper wrapper) {
+	private def getInitializedVariable(AsynchronousAdapter wrapper) {
 		wrapper.allValuesOfTo.filter(DataVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.initializedVariableName)].head		
 	}
 	
@@ -1772,7 +1774,7 @@ class CompositeToUppaalTransformer {
 	 * Depends on allWrapperSyncChannelRule and all statechart mapping rules.
 	 */
 	val instanceWrapperSyncOrchestratorRule = createRule(SimpleWrapperInstances.instance).action [		
-		val lastEdge = it.composite.createSchedulerTemplate(it.instance.syncSchedulerChannel)
+		val lastEdge = it.component.createSchedulerTemplate(it.instance.syncSchedulerChannel)
 		lastEdge.setSynchronization(it.instance.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
 		val orchestratorTemplate = lastEdge.parentTemplate
 		addToTrace(it.instance, #{orchestratorTemplate}, instanceTrace)
@@ -1782,7 +1784,7 @@ class CompositeToUppaalTransformer {
      * Responsible for creating the scheduler template that schedules the run of the automata.
      * (A series edges with runCycle synchronizations and variable swapping on them.) 
      */
-    private def Edge createSchedulerTemplate(AbstractSynchronousCompositeComponent compositeComponent, ChannelVariableDeclaration chan) {
+    private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent, ChannelVariableDeclaration chan) {
 		val initLoc = createTemplateWithInitLoc(compositeComponent.name + "Orchestrator" + id++, "InitLoc")
 		val schedulerTemplate = initLoc.parentTemplate
     	val firstEdge = initLoc.createEdge(initLoc)
@@ -1863,14 +1865,31 @@ class CompositeToUppaalTransformer {
     /**
      * Creates the scheduling of the whole network of automata starting out from the given composite component
      */
-    private def scheduleTopComposite(AbstractSynchronousCompositeComponent topComposite, Edge previousLastEdge) {
+    private def scheduleTopComposite(SynchronousComponent component, Edge previousLastEdge) {
+    	checkState (component instanceof AbstractSynchronousCompositeComponent ||
+    		component instanceof StatechartDefinition
+    	)
     	var Edge lastEdge = previousLastEdge
-    	if (topComposite instanceof SynchronousCompositeComponent) {
+    	if (component instanceof SynchronousCompositeComponent) {
 			// Creating a new location is needed so the queue swap can be done after finalization of previous template
-    		lastEdge = topComposite.swapQueuesOfContainedSimpleInstances(lastEdge)
+    		lastEdge = component.swapQueuesOfContainedSimpleInstances(lastEdge)
     	}
-    	for (instance : topComposite.instancesToBeScheduled /*Cascades are scheduled in accordance with the execution list*/) {
-    		lastEdge = instance.scheduleInstance(lastEdge)
+    	if (component instanceof AbstractSynchronousCompositeComponent) {
+	    	for (instance : component.instancesToBeScheduled /*Cascades are scheduled in accordance with the execution list*/) {
+	    		lastEdge = instance.scheduleInstance(lastEdge)
+	    	}
+    	}
+    	else if (component instanceof StatechartDefinition) {
+    		val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
+    		checkState(instances.size == 1, instances)
+    		val instance = instances.head
+    		val swapEdge = lastEdge.target.createEdgeCommittedTarget("swapLocation" + id++) => [
+    			it.source.locationTimeKind = LocationKind.URGENT
+			]
+			lastEdge.target = swapEdge.source
+			lastEdge = swapEdge
+    		lastEdge.createQueueSwap(instance)
+	    	lastEdge = instance.scheduleInstance(lastEdge)    	
     	}
     	return lastEdge
     }
@@ -2110,7 +2129,7 @@ class CompositeToUppaalTransformer {
     /**
      * Creates the function that copies the state of the toRaise flags to the isRaised flags, and clears the toRaise flags.
      */
-    protected def createClearFunction(AbstractSynchronousCompositeComponent composite) {
+    protected def createClearFunction(SynchronousComponent component) {
     	target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
     		it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
     			it.createChild(function_ReturnType, typeReference) as TypeReference => [
@@ -2119,12 +2138,26 @@ class CompositeToUppaalTransformer {
 				it.name = "clearOutEvents" + id++
 				it.createChild(function_Block, stmPackage.block) as Block => [
 					// Reseting system out-signals
-					for (match : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(composite, null, null, null, null)) {
+					if (component instanceof AbstractSynchronousCompositeComponent) {
+						for (match : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
+							it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
+								// out-signal = false
+								it.createAssignmentExpression(expressionStatement_Expression, match.event.getToRaiseVariable(match.port, match.instance), false)										
+							]
+						} 
+					}
+					else if (component instanceof StatechartDefinition) {
 						it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
-							// out-signal = false
-							it.createAssignmentExpression(expressionStatement_Expression, match.event.getToRaiseVariable(match.port, match.instance), false)										
+							for (port : component.ports) {
+								for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
+									val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
+    								checkState(instances.size == 1, instances)
+    								val variable = event.getToRaiseVariable(port, instances.head)
+									it.createAssignmentExpression(expressionStatement_Expression, variable, false)										
+								}
+							}
 						]
-					} 
+					}
 				]
     		]
     	]
@@ -3259,6 +3292,11 @@ class CompositeToUppaalTransformer {
 		val port = #[reference.getPort]
 		return port.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)
 	}
+	
+	private def dispatch uppaal.expressions.Expression transformEventTrigger(TimeoutEventReference reference, ComponentInstance owner) {
+		throw new UnsupportedOperationException("Timeout triggers are not supported in complex triggers, as the
+			actual clock value is not known in this context.")
+	}
 
 	/**
 	 * Places a runCycle synchronization onto the given edge.
@@ -3280,7 +3318,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def getConstRepresentationName(Clock clock) {
-		return clock.name + "Of" + (clock.eContainer as SynchronousComponentWrapper).name
+		return clock.name + "Of" + (clock.eContainer as AsynchronousAdapter).name
 	}
 	
 	/**
@@ -3306,17 +3344,17 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Creates the Uppaal const representing the given signal.
 	 */
-	protected def createConstRepresentation(Event event, Port port, SynchronousComponentWrapper wrapper) {
+	protected def createConstRepresentation(Event event, Port port, AsynchronousAdapter wrapper) {
 			val name = event.getConstRepresentationName(port)
 			event.createConstRepresentation(port, wrapper, name, constantVal++)
 	}
 	
-	protected def createConstRepresentation(Clock clock, SynchronousComponentWrapper wrapper) {
+	protected def createConstRepresentation(Clock clock, AsynchronousAdapter wrapper) {
 			val name = clock.getConstRepresentationName
 			clock.createConstRepresentation(wrapper, name, constantVal++)
 	}
 	
-	protected def createConstRepresentation(Event event, Port port, SynchronousComponentWrapper wrapper, String name, int value) {
+	protected def createConstRepresentation(Event event, Port port, AsynchronousAdapter wrapper, String name, int value) {
 		// Only one constant for the same port-event pairs, hence the filtering
 		var DataVariableDeclaration constRepr =	target.globalDeclarations.declaration
 			.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.CONST && it.variable.head.name == name].head
@@ -3337,7 +3375,7 @@ class CompositeToUppaalTransformer {
 		]		
 	}
 	
-	protected def createConstRepresentation(Clock clock, SynchronousComponentWrapper wrapper, String name, int value) {
+	protected def createConstRepresentation(Clock clock, AsynchronousAdapter wrapper, String name, int value) {
 		// Only one constant for the same port-event pairs, hence the filtering
 		var DataVariableDeclaration constRepr =	target.globalDeclarations.declaration
 			.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.CONST && it.variable.head.name == name].head
@@ -3358,7 +3396,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Returns the Uppaal toRaise boolean flag of a gamma typed-signal.
+	 * Returns the Uppaal toRaise boolean flag of a Gamma typed-signal.
 	 */
 	protected def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
 		var DataVariableDeclaration variable 
@@ -3713,7 +3751,7 @@ class CompositeToUppaalTransformer {
 	val exitSystemEventRaisingActionsOfStatesRule = createRule(ExitRaisingActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner  as SynchronousComponentInstance
-			for (match : RaiseSystemEventStateExitActions.Matcher.on(engine).getAllMatches(null, it.state,
+			for (match : RaiseTopSystemEventStateExitActions.Matcher.on(engine).getAllMatches(null, it.state,
 				owner, it.raiseEventAction.port, it.raiseEventAction.event, it.raiseEventAction)) {
 				edge.createEventRaising(match.outPort, match.raisedEvent, match.instance, match.exitAction)				
 			}	
@@ -3740,7 +3778,7 @@ class CompositeToUppaalTransformer {
 	 * Places a message insert in a queue equivalent update on the given edge.
 	 */
 	private def createQueueInsertion(Edge edge, Port systemPort, Event toRaiseEvent, ComponentInstance inInstance, DataVariableDeclaration variable) {
-		val wrapper = inInstance.derivedType as SynchronousComponentWrapper
+		val wrapper = inInstance.derivedType as AsynchronousAdapter
 		val queue = wrapper.getContainerMessageQueue(systemPort, toRaiseEvent) // In what message queue this event is stored
     	val messageQueueTrace = queue.getTrace(inInstance) // Getting the owner
 		val constRepresentation = toRaiseEvent.getConstRepresentation(systemPort)
@@ -4156,6 +4194,5 @@ class CompositeToUppaalTransformer {
     }
     
     enum Scheduler {FAIR, RANDOM}
-    
     
 }

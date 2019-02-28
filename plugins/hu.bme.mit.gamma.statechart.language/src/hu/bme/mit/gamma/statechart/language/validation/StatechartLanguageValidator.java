@@ -75,7 +75,7 @@ import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
@@ -137,8 +137,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					usedComponents.add(StatechartModelDerivedFeatures.getDerivedType(componentInstance));
 				}
 			}
-			if (component instanceof SynchronousComponentWrapper) {
-				usedComponents.add(((SynchronousComponentWrapper) component).getWrappedComponent());
+			if (component instanceof AsynchronousAdapter) {
+				usedComponents.add(((AsynchronousAdapter) component).getWrappedComponent().getType());
 			}
 		}
 		// Checking the imports
@@ -825,6 +825,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkUnusedInstancePort(ComponentInstance instance) {
+		Component type = (Component) instance.eContainer();
+		if (type instanceof AsynchronousAdapter) {
+			// Not checking AsynchronousAdapters
+			return;
+		}
 		EObject root = EcoreUtil2.getRootContainer(instance);
 		Collection<Port> usedPorts = EcoreUtil2.getAllContentsOfType(root, InstancePortReference.class).stream()
 				.filter(it -> it.getInstance() == instance).map(it -> it.getPort()).collect(Collectors.toSet());
@@ -1050,21 +1055,25 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	// Wrapper
 	
 	@Check
-	public void checkSynchronousComponentWrapper(SynchronousComponentWrapper wrapper) {
-		if (wrapper.getWrappedComponent() instanceof StatechartDefinition) {
-			error("The direct wrapping of statechart components is not (yet) supported.", CompositePackage.Literals.SYNCHRONOUS_COMPONENT_WRAPPER__WRAPPED_COMPONENT);
+	public void checkWrapperPortName(Port port) {
+		if (port.eContainer() instanceof AsynchronousAdapter) {
+			AsynchronousAdapter adapter = (AsynchronousAdapter) port.eContainer();
+			String portName = port.getName();
+			if (adapter.getWrappedComponent().getType().getPorts().stream().anyMatch(it -> it.getName().equals(portName))) {
+				error("This port enshadows a port in the wrapped synchronous component.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			}
 		}
 	}
 	
 	@Check
 	public void checkWrapperClock(Clock clock) {
-		if (!isContainedInQueue(clock, (SynchronousComponentWrapper) clock.eContainer())) {
+		if (!isContainedInQueue(clock, (AsynchronousAdapter) clock.eContainer())) {
 			warning("Ticks of this clock are not forwarded to any messages queues.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
 	@Check
-	public void checkSynchronousComponentWrapperMultipleEventContainment(SynchronousComponentWrapper wrapper) {
+	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
@@ -1108,14 +1117,21 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 	
+	@Check
+	public void checkInputPossibility(AsynchronousAdapter wrapper) {
+		if (getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN).isEmpty() &&
+				wrapper.getClocks().isEmpty()) {
+			warning("This asynchronous adapter can never be executed.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+		}
+	}
 	
 	@Check
-	public void checkWrappedPort(SynchronousComponentWrapper wrapper) {
-		for (Port port : wrapper.getWrappedComponent().getPorts()) {
+	public void checkWrappedPort(AsynchronousAdapter wrapper) {
+		for (Port port : StatechartModelDerivedFeatures.getAllPorts(wrapper)) {
 			for (Event event : getSemanticEvents(Collections.singleton(port), EventDirection.IN)) {
 				if (!isContainedInQueue(port, event, wrapper)) {
 					warning("Event " + event.getName() + " of port " + port.getName() + 
-							" is not forwarded to a message queue.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+						" is not forwarded to a message queue.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 				}
 			}
 		}
@@ -1142,7 +1158,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkMessageQueuePriorities(SynchronousComponentWrapper wrapper) {
+	public void checkMessageQueuePriorities(AsynchronousAdapter wrapper) {
 		Set<Integer> priorityValues = new HashSet<Integer>();
 		for (int i = 0; i < wrapper.getMessageQueues().size(); ++i) {
 			MessageQueue queue = wrapper.getMessageQueues().get(i);
@@ -1220,7 +1236,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return eventSet;
 	}
 	
-	private boolean isContainedInQueue(Port port, Event event, SynchronousComponentWrapper wrapper) {
+	private boolean isContainedInQueue(Port port, Event event, AsynchronousAdapter wrapper) {
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
 				if (StatechartModelDerivedFeatures.getEventSource(eventReference)  == port) {
@@ -1239,7 +1255,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return false;
 	}
 	
-	private boolean isContainedInQueue(Clock clock, SynchronousComponentWrapper wrapper) {
+	private boolean isContainedInQueue(Clock clock, AsynchronousAdapter wrapper) {
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
 				if (eventReference instanceof ClockTickReference) {
@@ -1255,8 +1271,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkAnyPortControls(ControlSpecification controlSpecification) {
 		if (controlSpecification.getTrigger() instanceof AnyTrigger) {
-			if (controlSpecification.eContainer() instanceof SynchronousComponentWrapper) {
-				SynchronousComponentWrapper wrapper = (SynchronousComponentWrapper) controlSpecification.eContainer();
+			if (controlSpecification.eContainer() instanceof AsynchronousAdapter) {
+				AsynchronousAdapter wrapper = (AsynchronousAdapter) controlSpecification.eContainer();
 				int controlIndex = wrapper.getControlSpecifications().indexOf(controlSpecification);
 				if (controlIndex < wrapper.getControlSpecifications().size() - 1) {
 					warning("This control specification with any trigger enshadows the following control specifications.", CompositePackage.Literals.CONTROL_SPECIFICATION__TRIGGER);

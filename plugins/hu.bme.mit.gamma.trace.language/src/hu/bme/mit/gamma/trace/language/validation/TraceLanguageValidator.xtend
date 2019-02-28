@@ -23,13 +23,13 @@ import hu.bme.mit.gamma.trace.model.TracePackage
 import org.eclipse.xtext.validation.Check
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import org.eclipse.xtext.EcoreUtil2
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.InstanceState
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
  * This class contains custom validation rules. 
@@ -132,7 +132,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 		val executionTrace = step.eContainer as ExecutionTrace
 		val component = executionTrace.component
 		if (component !== null) {
-			if (!(component instanceof SynchronousComponent || component instanceof SynchronousComponentWrapper)) {
+			if (!(component instanceof SynchronousComponent || component instanceof AsynchronousAdapter)) {
 				error("Component scheduling is valid only if the component is a synchronous component or synchronous component wrapper.",
 					step, TracePackage.Literals.STEP__ACTIONS, step.actions.indexOf(schedule))
 			}

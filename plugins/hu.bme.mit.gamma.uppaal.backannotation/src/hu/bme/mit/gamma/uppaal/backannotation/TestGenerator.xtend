@@ -16,11 +16,11 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -265,9 +265,9 @@ class TestGenerator {
 				// This is the end
 				return ''''''
 			}
-			if (component instanceof SynchronousComponentWrapper) {
+			if (component instanceof AsynchronousAdapter) {
 				// This is the end
-				return '''get«(component as SynchronousComponentWrapper).wrappedComponent.name.toFirstUpper»().'''
+				return '''get«(component as AsynchronousAdapter).wrappedComponent.name.toFirstUpper»().'''
 			}
 			if  (component instanceof AsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
@@ -339,8 +339,8 @@ class TestGenerator {
     	else if (component instanceof AbstractSynchronousCompositeComponent) {
     		return component.components.map[it.type.needTimer].contains(true)
     	}
-    	else if (component instanceof SynchronousComponentWrapper) {
-    		return component.wrappedComponent.needTimer
+    	else if (component instanceof AsynchronousAdapter) {
+    		return component.wrappedComponent.type.needTimer
     	}
     	else if (component instanceof AsynchronousCompositeComponent) {
     		return component.components.map[it.type.needTimer].contains(true)

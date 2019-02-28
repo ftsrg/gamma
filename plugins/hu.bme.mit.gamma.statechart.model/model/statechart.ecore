@@ -279,7 +279,7 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
           eType="#//composite/AsynchronousComponentInstance" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponentWrapper" eSuperTypes="#//composite/AsynchronousComponent">
+    <eClassifiers xsi:type="ecore:EClass" name="AsynchronousAdapter" eSuperTypes="#//composite/AsynchronousComponent">
       <eStructuralFeatures xsi:type="ecore:EReference" name="controlSpecifications"
           lowerBound="1" upperBound="-1" eType="#//composite/ControlSpecification"
           containment="true"/>
@@ -288,7 +288,7 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="clocks" upperBound="-1"
           eType="#//Clock" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="wrappedComponent" lowerBound="1"
-          eType="#//composite/SynchronousComponent"/>
+          eType="#//composite/SynchronousComponentInstance" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="CascadeCompositeComponent" eSuperTypes="#//composite/AbstractSynchronousCompositeComponent">
       <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" unique="false"

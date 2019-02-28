@@ -24,7 +24,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentWrapper
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 class ModelValidator {
 	
@@ -66,12 +66,6 @@ class ModelValidator {
 	def checkTopComponentParameters() {
 		if (!topComponent.parameterDeclarations.empty) {
 			throw new IllegalArgumentException("The top component must not have parameters. " + topComponent.parameterDeclarations)
-		}
-		if (topComponent instanceof SynchronousComponentWrapper) {
-			val parameterDeclarations = topComponent.wrappedComponent.parameterDeclarations
-			if (!parameterDeclarations.empty) {
-				throw new IllegalArgumentException("The wrapped synchronous components must not have parameters. " + parameterDeclarations)
-			}
 		}
 	}
 	
