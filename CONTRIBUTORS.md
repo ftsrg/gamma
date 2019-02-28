@@ -1,6 +1,6 @@
 # Contributors to the Gamma project
 
-* [Bence Graics](https://github.com/grbeni) [1, 2]: core framework
+* [Bence Graics](https://github.com/grbeni) ([homepage](https://inf.mit.bme.hu/members/graicsb)) [1, 2]: core framework
 * [Vince Molnár](https://github.com/Vin55) ([homepage](https://inf.mit.bme.hu/members/molnarv)) [1, 2]: tutorials and design
 * [Benedek Horváth](https://github.com/benedekh) [1]: initial UPPAAL serialization and dialog window
 * [Bence Beöthy](https://github.com/beothy) [1]: metamodel changes

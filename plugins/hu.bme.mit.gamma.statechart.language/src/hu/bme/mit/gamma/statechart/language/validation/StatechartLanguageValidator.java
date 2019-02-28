@@ -527,7 +527,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				.filter(it -> it != transition).collect(Collectors.toSet());
 		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, siblingTransitions);
 		if (nonDeterministicTransition != null) {
-			error("This transitions is in a non-deterministic relation with other transitions from the same source.",
+			warning("This transitions is in a non-deterministic relation with other transitions from the same source.",
 					StatechartModelPackage.Literals.TRANSITION__TRIGGER);
 		}
 	}
