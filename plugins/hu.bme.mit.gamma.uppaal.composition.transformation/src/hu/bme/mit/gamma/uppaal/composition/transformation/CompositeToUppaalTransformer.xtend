@@ -3093,6 +3093,13 @@ class CompositeToUppaalTransformer {
 					val newSyncEdge = originalTarget.createCommittedSyncTarget(syncVar.variable.head, compositeState.exitLocationNameOfCompositeState)
 					// Setting the target of the original edge to the recently created committed location
 					originalExitEdge.target = newSyncEdge.source
+					// Resetting the exit events so these events are executed after the exit events of child states
+					if (!compositeState.exitActions.empty) {
+						val newExitEventEdge = originalTarget.createEdgeCommittedTarget("NewExitEventUpdateOf" + compositeState.name) => [
+							it.update += originalExitEdge.update
+						]
+						newSyncEdge.target = newExitEventEdge.source
+					}
 				}
 				// Creating the trace
 				addToTrace(compositeState, #{syncVar}, trace)
@@ -3873,11 +3880,7 @@ class CompositeToUppaalTransformer {
 		return assignmentExpression
 	}
 	
-	/**
-	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
-	 * The target of the synchronized edge will be the given "target" location.
-	 */
-	private def Edge createCommittedSyncTarget(Location target, Variable syncVar, String name) {
+	private def Edge createEdgeCommittedTarget(Location target, String name) {
 		val template = target.parentTemplate
 		val syncLocation = template.createChild(template_Location, location) as Location => [
 			it.name = name
@@ -3885,8 +3888,18 @@ class CompositeToUppaalTransformer {
 			it.comment = "Synchronization location."
 		]
 		val syncEdge = syncLocation.createEdge(target)
-		syncEdge.comment = "Synchronization edge."
-		syncEdge.setSynchronization(syncVar, SynchronizationKind.SEND)
+		return syncEdge		
+	}
+	
+	/**
+	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
+	 * The target of the synchronized edge will be the given "target" location.
+	 */
+	private def Edge createCommittedSyncTarget(Location target, Variable syncVar, String name) {
+		val syncEdge = target.createEdgeCommittedTarget(name) => [
+			it.comment = "Synchronization edge."
+			it.setSynchronization(syncVar, SynchronizationKind.SEND)
+		]
 		return syncEdge		
 	}
 	
