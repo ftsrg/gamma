@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.statechart.model.PseudoState;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
+import hu.bme.mit.gamma.statechart.model.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.model.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.model.StateNode;
@@ -601,8 +602,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		StateNode sourceState = transition.getSourceState();
 		Collection<Transition> parentTransitions = getOutgoingTransitionsOfAncestors(sourceState);
 		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, parentTransitions);
-		if (nonDeterministicTransition != null) {
-			error("This transitions is occluded by a higher level transition.",
+		StatechartDefinition statechart = (StatechartDefinition) nonDeterministicTransition.eContainer(); 
+		if (nonDeterministicTransition != null && 
+				statechart.getSchedulingOrder() == SchedulingOrder.TOP_DOWN) {
+			warning("This transitions is occluded by a higher level transition.",
 					StatechartModelPackage.Literals.TRANSITION__TRIGGER);
 		}
 	}

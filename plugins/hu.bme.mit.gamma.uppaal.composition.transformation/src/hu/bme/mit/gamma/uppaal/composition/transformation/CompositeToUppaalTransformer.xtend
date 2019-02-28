@@ -29,7 +29,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseSystemEve
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateExitActions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RegionToSubregion
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceClockControl
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventControl
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
@@ -2636,7 +2635,7 @@ class CompositeToUppaalTransformer {
 					createLiteralExpression => [it.text = (transitionId++).toString]
 				)
 			}
-			// TODO Updating the scheduling variable
+			// Updating the scheduling variable
 			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
 			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			// Creating the trace
@@ -2676,8 +2675,8 @@ class CompositeToUppaalTransformer {
 					createLiteralExpression => [it.text = (transitionId++).toString]
 				)
 			}
-			// TODO Updating the scheduling variable
-			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
+			// Updating the scheduling variable upon firing
+			val isScheduledVar = toLowerEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
@@ -2804,8 +2803,8 @@ class CompositeToUppaalTransformer {
 						createLiteralExpression => [it.text = (transitionId++).toString]
 					)
 				}
-				// TODO Updating the scheduling variable
-				val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
+				// Setting isScheduled variable to true upon firing 
+				val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 				addToTrace(transition, #{toHigherEdge}, trace)
 				addToTrace(owner, #{toHigherEdge}, instanceTrace)

@@ -49,11 +49,12 @@
 
 ### What is New
 
-* Gamma now depends on VIATRA 2.1.0 and Yakindu 3.5.1.
+* Gamma now depends on VIATRA 2.1.0 and Yakindu 3.5.2.
 * Components are now parameterizable. Parameterization is supported by both formal verification and code and test generation functionalities.
 * Gamma interfaces, Java code, UPPAAL model and JUnit test suites (in addition to Gamma statecharts) can be generated using the generator model.
 * Gamma execution traces now must have a name.
 * Transition-covering test sets can now be generated.
+* Statecharts can be executed in a bottom-up execution mode (subregions are executed first) in addition to the up to now supported top-down execution mode.
 
 ### Improvements
 
