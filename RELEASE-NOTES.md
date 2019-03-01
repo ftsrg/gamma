@@ -55,10 +55,11 @@
 * Gamma execution traces now must have a name.
 * Transition-covering test sets can now be generated.
 * Statecharts can be executed in a bottom-up execution mode (subregions are executed first) in addition to the up to now supported top-down execution mode.
-* Asynchronous adapters now adapt (paramterizable) component instances instead of component types.
+* Asynchronous adapters are now defined with the "adapter" keyword and adapt (paramterizable) component instances instead of component types.
 
 ### Improvements
 
 * Bug regarding exit events of composite states is fixed.
 * Bug regarding the linking of packages is fixed.
 * Compatibility issues with the new VIATRA version are resolved.
+* Queries generated with the GUI are now appended with an expression specifying activeness (isActive) when referring to states.

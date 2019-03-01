@@ -163,11 +163,15 @@ class UppaalModelSerializer {
 		<name>
 		«template.name»
 		</name>
-		<declaration>
-		«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"»
-			«variableDeclaration.serializeVariable»
-		«ENDFOR»
-		</declaration>
+		«IF !template.declarations.declaration.filter(VariableDeclaration).empty»
+«««			This IF is due to an UPPAAL bug: if there is an empty declaration tag, UPPAAL throws
+«««			a nullptr exception upon opening the declaration of a template in the editor
+			<declaration>
+			«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"»
+				«variableDeclaration.serializeVariable»
+			«ENDFOR»
+			</declaration>
+		«ENDIF»
 		«FOR location : template.location SEPARATOR "\n"»
 		<location id="«location.name»">
 		<name>

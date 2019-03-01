@@ -235,8 +235,13 @@ public class Controller {
 //				logger.log(Level.INFO, "Region " + splittedStateName[splittedStateName.length - 2]);
 //				logger.log(Level.INFO, "State " + splittedStateName[splittedStateName.length - 1]);
 //				logger.log(Level.INFO, stateName + "->" + Arrays.asList(splittedStateName));
-				return "P_" + getRegionName(match.getParentRegion()) + "Of" + splittedStateName[0] /* instance name */ + "."
-					+ splittedStateName[splittedStateName.length - 1] /* state name */;
+				Region parentRegion = match.getParentRegion();
+				String templateName = "P_" + getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
+				String locationName = templateName +  "." + splittedStateName[splittedStateName.length - 1] /* state name */;
+				if (isSubregion(parentRegion)) {
+					locationName += " && " + templateName + ".isActive"; 
+				}
+				return locationName;
 			}
 		}
 		else {
