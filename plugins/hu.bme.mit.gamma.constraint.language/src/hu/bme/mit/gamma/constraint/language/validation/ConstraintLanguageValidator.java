@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.DefinableDeclaration;
 import hu.bme.mit.gamma.constraint.model.DivExpression;
 import hu.bme.mit.gamma.constraint.model.DivideExpression;
+import hu.bme.mit.gamma.constraint.model.ElseExpression;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.Expression;
@@ -71,6 +72,15 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			if (element.getName().equals(elem.getName())) {
 				error("Names must be unique!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
+		}
+	}
+	
+	@Check
+	public void checkElseExpression(ElseExpression expression) {
+		EObject container = expression.eContainer();
+		if (container instanceof Expression) {
+			error("Else expressions must not be contained by composite expressions.", 
+					expression.eContainingFeature());
 		}
 	}
 	
@@ -247,6 +257,9 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			if (expression instanceof ReferenceExpression) {
 				return getType((ReferenceExpression) expression);
 			}
+			if (expression instanceof ElseExpression) {
+				return getType((ElseExpression) expression);
+			}
 			if (expression instanceof BooleanExpression) {
 				return getType((BooleanExpression) expression);
 			}
@@ -309,6 +322,12 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		private ExpressionType getType(ReferenceExpression expression) {
 			Type declarationType = expression.getDeclaration().getType();
 			return transform(declarationType);
+		}
+		
+		// Else
+		
+		private ExpressionType getType(ElseExpression expression) {
+			return ExpressionType.BOOLEAN;
 		}
 		
 		// Boolean
@@ -396,7 +415,8 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				Type declarationType = declaration.getType();
 				return transform(declarationType) == ExpressionType.BOOLEAN;
 			}
-			return expression instanceof BooleanExpression || expression instanceof PredicateExpression;
+			return expression instanceof BooleanExpression || expression instanceof PredicateExpression ||
+				expression instanceof ElseExpression;
 		}
 		
 		private boolean isInteger(ExpressionType type) {
@@ -459,11 +479,10 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		
 		public boolean equals(Type type, ExpressionType expressionType) {
 			return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
-					type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
-					type instanceof RealTypeDefinition && expressionType == ExpressionType.REAL || 
-					type instanceof NaturalTypeDefinition && expressionType == ExpressionType.NATURAL|| 
-					type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION; 
-					
+				type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
+				type instanceof RealTypeDefinition && expressionType == ExpressionType.REAL ||
+				type instanceof NaturalTypeDefinition && expressionType == ExpressionType.NATURAL||
+				type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION;
 		}
 		
 	}
