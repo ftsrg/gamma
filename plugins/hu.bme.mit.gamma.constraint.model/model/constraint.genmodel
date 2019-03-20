@@ -42,6 +42,7 @@
     <genClasses ecoreClass="constraint.ecore#//LetDeclaration"/>
     <genClasses ecoreClass="constraint.ecore#//ConstantDeclaration"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//LambdaDeclaration"/>
     <genClasses ecoreClass="constraint.ecore#//Type"/>
     <genClasses ecoreClass="constraint.ecore#//TypeDeclaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//TypeDeclaration/type"/>
@@ -51,9 +52,11 @@
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//TypeDefinition"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//BasicTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//VoidTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//IntegerTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//NaturalTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//BooleanTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//RationalTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//RealTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//SubrangeTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubrangeTypeDefinition/lowerBound"/>
@@ -63,17 +66,19 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubTypeDefinition/parameterDeclaration"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubTypeDefinition/expression"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="constraint.ecore#//EnumerableTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//EnumerationTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//EnumerationTypeDefinition/literals"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//EnumerationLiteralDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//ArrayTypeDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/elementType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//ArrayTypeDefinition/size"/>
+    </genClasses>
+    <genClasses ecoreClass="constraint.ecore#//IntegerRangeTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionTypeDefinition/parameterTypes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionTypeDefinition/returnType"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ArrayTypeDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/indexTypes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/elementType"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//TupleTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//TupleTypeDefinition/types"/>
@@ -103,13 +108,10 @@
     <genClasses image="false" ecoreClass="constraint.ecore#//AccessExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//AccessExpression/operand"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="constraint.ecore#//WithExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//WithExpression/operand"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//WithExpression/value"/>
-    </genClasses>
     <genClasses image="false" ecoreClass="constraint.ecore#//BooleanExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//QuantifierExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//LiteralExpression"/>
+    <genClasses image="false" ecoreClass="constraint.ecore#//EnumerableExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//ArithmeticLiteralExpression"/>
     <genClasses ecoreClass="constraint.ecore#//IntegerLiteralExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerLiteralExpression/value"/>
@@ -125,6 +127,7 @@
     <genClasses ecoreClass="constraint.ecore#//TrueExpression"/>
     <genClasses ecoreClass="constraint.ecore#//FalseExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ArrayLiteralExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//IntegerRangeLiteralExpression"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionLiteralExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionLiteralExpression/returnType"/>
     </genClasses>
@@ -188,6 +191,6 @@
     <genClasses ecoreClass="constraint.ecore#//RecordAccessExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//RecordAccessExpression/field"/>
     </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ArrayWithExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//SelectExpression"/>
   </genPackages>
 </genmodel:GenModel>

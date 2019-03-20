@@ -241,5 +241,48 @@
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//composite/SynchronousCompositeComponent"/>
     </nestedGenPackages>
+    <nestedGenPackages prefix="Action" disposableProviderFactory="true" ecorePackage="statechart.ecore#//action">
+      <genClasses ecoreClass="statechart.ecore#//action/ProcedureDeclaration">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ProcedureDeclaration/body"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/Block">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/Block/statements"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/GuardedBlock">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/GuardedBlock/guard"/>
+      </genClasses>
+      <genClasses image="false" ecoreClass="statechart.ecore#//action/Statement"/>
+      <genClasses ecoreClass="statechart.ecore#//action/VariableDeclarationStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/VariableDeclarationStatement/variableDeclaration"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/ConstantDeclarationStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ConstantDeclarationStatement/constantDeclaration"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/ExpressionStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ExpressionStatement/expression"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/BreakStatement"/>
+      <genClasses ecoreClass="statechart.ecore#//action/ReturnStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ReturnStatement/expression"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/IfStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/IfStatement/conditionals"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/IfStatement/else"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/SwitchStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/SwitchStatement/controlExpression"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/SwitchStatement/cases"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/SwitchStatement/default"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/ForStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ForStatement/parameter"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ForStatement/range"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ForStatement/body"/>
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ForStatement/then"/>
+      </genClasses>
+      <genClasses ecoreClass="statechart.ecore#//action/ChoiceStatement">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ChoiceStatement/branches"/>
+      </genClasses>
+    </nestedGenPackages>
   </genPackages>
 </genmodel:GenModel>

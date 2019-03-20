@@ -15,6 +15,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//action" as ActionModel 
 
 Package returns Package:
 	'package' name=ID
@@ -462,4 +463,107 @@ PrimaryExpression returns ConstraintModel::Expression:
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
 	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
+
+//Action Language
+
+@Override
+FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
+	LambdaDeclaration | ProcedureDeclaration
+;
+
+ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
+	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
+	body=Block
+;
+
+Block returns ActionModel::Block:
+	{ActionModel::Block}
+	'{' 
+		(statements+=Statement)*
+	'}'
+;
+
+Statement returns ActionModel::Statement:
+	(VariableDeclarationStatement ';') |
+	(ConstantDeclarationStatement ';') |
+	
+	(ExpressionStatement ';') |
+
+	IfStatement |
+	SwitchStatement |
+	ForStatement |
+	
+	(ReturnStatement ';')|
+	(BreakStatement ';') |
+	
+	ChoiceStatement
+	//is a (statement)block itself a statement?
+;
+
+VariableDeclarationStatement returns ActionModel::VariableDeclarationStatement:
+	variableDeclaration = VariableDeclaration
+;
+
+ConstantDeclarationStatement returns ActionModel::ConstantDeclarationStatement:
+	constantDeclaration = ConstantDeclaration
+;
+
+ExpressionStatement returns ActionModel::ExpressionStatement:
+	expression=Expression
+;
+
+
+IfStatement returns ActionModel::IfStatement:
+	{ActionModel::IfStatement}
+	'if' ':'
+	conditionals+=GuardedBlock
+	('elsif' ':' conditionals+=GuardedBlock)*
+	('else' ':'
+	else=Block)?
+;
+
+GuardedBlock returns ActionModel::GuardedBlock:
+	{ActionModel::GuardedBlock}
+	'(' guard=Expression ')'
+	'{' 
+		(statements+=Statement ';')*
+	'}'	
+;
+
+SwitchStatement returns ActionModel::SwitchStatement:
+	'switch'
+	'(' controlExpression=Expression ')'
+	'{'
+	('case' cases+=GuardedBlock ('case' cases+=GuardedBlock)*)
+	('default' default=Block)?
+	'}'
+;
+
+ForStatement returns ActionModel::ForStatement:
+	'for' 
+	'(' 
+	parameter=ParameterDeclaration
+	'in'
+	range=Expression
+	')'
+	body=Block
+	('then'
+	then=Block)?
+;
+
+ReturnStatement returns ActionModel::ReturnStatement:
+	'return' expression=Expression
+;
+
+BreakStatement returns ActionModel::BreakStatement:
+	{ActionModel::BreakStatement}
+	'break'
+;
+
+ChoiceStatement returns ActionModel::ChoiceStatement:
+	'choice'
+	'{'
+	('branch' branches+=GuardedBlock ('branch' branches+=GuardedBlock)*)
+	'}'
+;
 	

@@ -43,7 +43,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="FieldDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="LetDeclaration" eSuperTypes="#//DefinableDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//DefinableDeclaration"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//DefinableDeclaration #//ParametricElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="LambdaDeclaration" eSuperTypes="#//DefinableDeclaration #//FunctionDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//Type"
@@ -55,9 +56,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="TypeDefinition" eSuperTypes="#//Type"/>
   <eClassifiers xsi:type="ecore:EClass" name="BasicTypeDefinition" abstract="true"
       eSuperTypes="#//TypeDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VoidTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="NaturalTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="BooleanTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RationalTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="RealTypeDefinition" eSuperTypes="#//BasicTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="SubrangeTypeDefinition" eSuperTypes="#//TypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lowerBound" eType="#//Expression"
@@ -71,21 +74,23 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
         eType="#//Expression" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EnumerationTypeDefinition" eSuperTypes="#//TypeDefinition">
+  <eClassifiers xsi:type="ecore:EClass" name="EnumerableTypeDefinition" abstract="true"
+      eSuperTypes="#//TypeDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EnumerationTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="literals" upperBound="-1"
         eType="#//EnumerationLiteralDefinition" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationLiteralDefinition" eSuperTypes="#//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ArrayTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="elementType" lowerBound="1"
+        eType="#//Type" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="size" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionTypeDefinition" eSuperTypes="#//TypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="parameterTypes" upperBound="-1"
         eType="#//Type" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="returnType" lowerBound="1"
-        eType="#//Type" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayTypeDefinition" eSuperTypes="#//TypeDefinition">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="indexTypes" lowerBound="1"
-        upperBound="-1" eType="#//Type" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="elementType" lowerBound="1"
         eType="#//Type" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TupleTypeDefinition" eSuperTypes="#//TypeDefinition">
@@ -127,16 +132,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
         eType="#//Expression" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="WithExpression" abstract="true" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
-        eType="#//Expression" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Expression"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BooleanExpression" abstract="true" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="QuantifierExpression" abstract="true"
       eSuperTypes="#//UnaryExpression #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="LiteralExpression" abstract="true" eSuperTypes="#//Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EnumerableExpression" abstract="true"
+      eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArithmeticLiteralExpression" abstract="true"
       eSuperTypes="#//NullaryExpression #//LiteralExpression #//ArithmeticExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerLiteralExpression" eSuperTypes="#//ArithmeticLiteralExpression">
@@ -155,7 +156,8 @@
       eSuperTypes="#//NullaryExpression #//LiteralExpression #//BooleanExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="TrueExpression" eSuperTypes="#//BooleanLiteralExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="FalseExpression" eSuperTypes="#//BooleanLiteralExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayLiteralExpression" eSuperTypes="#//UnaryExpression #//LiteralExpression #//ParametricElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ArrayLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//MultiaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//BinaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionLiteralExpression" eSuperTypes="#//UnaryExpression #//LiteralExpression #//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="returnType" lowerBound="1"
         eType="#//Type" containment="true"/>
@@ -234,5 +236,5 @@
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AccessExpression">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="field" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayWithExpression" eSuperTypes="#//WithExpression #//ParameterizedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//AccessExpression"/>
 </ecore:EPackage>
