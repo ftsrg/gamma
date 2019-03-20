@@ -294,4 +294,68 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//composite/AbstractSynchronousCompositeComponent"/>
   </eSubpackages>
+  <eSubpackages name="action" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Action"
+      nsPrefix="hu.bme.mit.gamma.statechart.action">
+    <eClassifiers xsi:type="ecore:EClass" name="ProcedureDeclaration" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//FunctionDeclaration">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//action/Block"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Block">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statements" upperBound="-1"
+          eType="#//action/Statement" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="GuardedBlock" eSuperTypes="#//action/Block">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true"/>
+    <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclarationStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="constantDeclaration"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ConstantDeclaration"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ExpressionStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="BreakStatement" eSuperTypes="#//action/Statement"/>
+    <eClassifiers xsi:type="ecore:EClass" name="ReturnStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="IfStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="conditionals" lowerBound="1"
+          upperBound="-1" eType="#//action/GuardedBlock" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="else" eType="#//action/Block"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="SwitchStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="controlExpression" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="cases" upperBound="-1"
+          eType="#//action/GuardedBlock" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="default" eType="#//action/Block"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ForStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterDeclaration"
+          containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="range" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//action/Block"
+          containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="then" eType="#//action/Block"
+          containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="ChoiceStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="branches" upperBound="-1"
+          eType="#//action/GuardedBlock" containment="true"/>
+    </eClassifiers>
+  </eSubpackages>
 </ecore:EPackage>
