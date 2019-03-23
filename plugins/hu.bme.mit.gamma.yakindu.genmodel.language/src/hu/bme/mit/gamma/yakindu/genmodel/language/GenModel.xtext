@@ -40,9 +40,9 @@ YakinduCompilation returns YakinduCompilation:
 InterfaceCompilation returns InterfaceCompilation:
 	'interface' statechart=[sgraph::Statechart] '{'
 		(
-			'folder' '=' targetFolder=STRING | // The location of the folder relative to the project
-			'file' '=' fileName=STRING | // The name of the generated file
-			'package' '=' packageName=STRING // Gamma package name
+			'folder' '=' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' '=' fileName+=STRING | // The name of the generated file
+			'package' '=' packageName+=STRING // Gamma package name
 		)*
 	'}'
 ;
@@ -50,23 +50,23 @@ InterfaceCompilation returns InterfaceCompilation:
 StatechartCompilation returns StatechartCompilation:
 	'statechart' statechart=[sgraph::Statechart] '{'
 		(
-			'folder' '=' targetFolder=STRING | // The location of the folder relative to the project
-			'file' '=' fileName=STRING | // The name of the generated file
-			'package' '=' packageName=STRING | // Gamma package name
-			'statechart' '=' statechartName=STRING // Gamma statechart name
+			'folder' '=' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' '=' fileName+=STRING | // The name of the generated file
+			'package' '=' packageName+=STRING | // Gamma package name
+			'statechart' '=' statechartName+=STRING | // Gamma statechart name
+			'mappings' '{'
+				(interfaceMappings+=InterfaceMapping)*
+			'}'
 		)*
-		'mappings' '{'
-			(interfaceMappings+=InterfaceMapping)*
-		'}'
 	'}'
 ;
 
 CodeGeneration returns CodeGeneration:
 	'code' component=[model::Component] '{'
 		(
-			'folder' '=' targetFolder=STRING |
-			'package' '=' packageName=STRING |
-			'language' '=' language=ProgrammingLanguage
+			'folder' '=' targetFolder+=STRING |
+			'package' '=' packageName+=STRING |
+			'language' '=' language+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -74,10 +74,10 @@ CodeGeneration returns CodeGeneration:
 TestGeneration returns TestGeneration:
 	'test' executionTrace=[trace::ExecutionTrace] '{'
 		(
-			'folder' '=' targetFolder=STRING |
-			'file' '=' fileName=STRING | // The name of the generated file
-			'package' '=' packageName=STRING |
-			'language' '=' language=ProgrammingLanguage
+			'folder' '=' targetFolder+=STRING |
+			'file' '=' fileName+=STRING | // The name of the generated file
+			'package' '=' packageName+=STRING |
+			'language' '=' language+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -89,10 +89,10 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' component=[model::Component] ('(' parameters+=Expression (',' parameters+=Expression)* ')')? '{'
 		(
-			'folder' '=' targetFolder=STRING |			
-			'file' '=' fileName=STRING |
-			'language' '=' language=AnalysisLanguage |
-			'scheduler' '=' scheduler=Scheduler |
+			'folder' '=' targetFolder+=STRING |			
+			'file' '=' fileName+=STRING |
+			'language' '=' language+=AnalysisLanguage |
+			'scheduler' '=' scheduler+=Scheduler |
 			stateCoverage?= 'state-coverage' |
 			transitionCoverage?= 'transition-coverage'
 		)*

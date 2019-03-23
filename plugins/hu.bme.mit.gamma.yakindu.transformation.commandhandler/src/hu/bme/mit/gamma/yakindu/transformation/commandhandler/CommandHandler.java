@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.yakindu.transformation.commandhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,6 +33,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -121,7 +123,7 @@ public class CommandHandler extends AbstractHandler {
 								});
 								for (Task task : sortedTaskList) {
 									setTargetFolder(task, file, parentFolderUri);
-									String targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder());
+									String targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder().get(0));
 									if (task instanceof YakinduCompilation) {
 										YakinduCompilation yakinduCompilation = (YakinduCompilation) task;
 										setYakinduCompilation(yakinduCompilation);
@@ -129,30 +131,32 @@ public class CommandHandler extends AbstractHandler {
 											logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resSet);
 											InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
 											InterfaceTransformer transformer = new InterfaceTransformer(
-													interfaceCompilation.getStatechart(), interfaceCompilation.getPackageName());
+													interfaceCompilation.getStatechart(), interfaceCompilation.getPackageName().get(0));
 											SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
-											saveModel(resultModels.getKey(), targetFolderUri, interfaceCompilation.getFileName() + ".gcd");
-											saveModel(resultModels.getValue(), targetFolderUri, "." + interfaceCompilation.getFileName()  + ".y2g");
+											saveModel(resultModels.getKey(), targetFolderUri, interfaceCompilation.getFileName().get(0) + ".gcd");
+											saveModel(resultModels.getValue(), targetFolderUri, "." + interfaceCompilation.getFileName().get(0)  + ".y2g");
 											logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
 										}
 										else if (task instanceof StatechartCompilation) {
 											logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resSet);
 											StatechartCompilation statechartCompilation = (StatechartCompilation) task;
-											setStatechartCompilation(statechartCompilation, yakinduCompilation.getPackageName() + "Statechart");
+											setStatechartCompilation(statechartCompilation, yakinduCompilation.getPackageName().get(0) + "Statechart");
 											ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
 											validator.checkModel();
 											YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
 											SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
 											// Saving Xtext and EMF models
-											saveModel(resultModels.getKey(), targetFolderUri, yakinduCompilation.getFileName() + ".gcd");
-											saveModel(resultModels.getValue(), targetFolderUri, "." + yakinduCompilation.getFileName() + ".y2g");
+											saveModel(resultModels.getKey(), targetFolderUri, yakinduCompilation.getFileName().get(0) + ".gcd");
+											saveModel(resultModels.getValue(), targetFolderUri, "." + yakinduCompilation.getFileName().get(0) + ".y2g");
 											transformer.dispose();
 											logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 										}
 									}
 									else if (task instanceof CodeGeneration) {
 										CodeGeneration codeGeneration = (CodeGeneration) task;
-										checkArgument(codeGeneration.getLanguage() == ProgrammingLanguage.JAVA, 
+										checkArgument(codeGeneration.getLanguage().size() == 1, 
+												"A single programming language must be specified: " + codeGeneration.getLanguage());
+										checkArgument(codeGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
 												"Currently only Java is supported.");
 										setCodeGeneration(codeGeneration, file.getProject().getName());
 										logger.log(Level.INFO, "Resource set content for Java code generation: " + resSet);
@@ -163,14 +167,16 @@ public class CommandHandler extends AbstractHandler {
 										// The presence of the top level component and statechart traces are sufficient in the resource set
 										// Contained composite components are automatically resolved by VIATRA
 										GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
-												codeGeneration.getPackageName(), targetFolderUri);
+												codeGeneration.getPackageName().get(0), targetFolderUri);
 										generator.execute();
 										generator.dispose();
 										logger.log(Level.INFO, "The Java code generation has been finished.");
 									}
 									else if (task instanceof AnalysisModelTransformation) {
 										AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
-										checkArgument(analysisModelTransformation.getLanguage() == AnalysisLanguage.UPPAAL, 
+										checkArgument(analysisModelTransformation.getLanguage().size() == 1, 
+												"A single formal modeling language must be specified: " + analysisModelTransformation.getLanguage());
+										checkArgument(analysisModelTransformation.getLanguage().get(0) == AnalysisLanguage.UPPAAL, 
 												"Currently only UPPAAL is supported.");
 										setAnalysisModelTransformation(analysisModelTransformation);
 										// Unfolding the given system
@@ -179,7 +185,7 @@ public class CommandHandler extends AbstractHandler {
 										SimpleEntry<Package, Component> packageWithTopComponent = new ModelUnfolder().unfold(gammaPackage);
 										Component topComponent = packageWithTopComponent.getValue();
 										// Saving the Package of the unfolded model
-										String flattenedModelFileName = "." + analysisModelTransformation.getFileName() + ".gsm";
+										String flattenedModelFileName = "." + analysisModelTransformation.getFileName().get(0) + ".gsm";
 										normalSave(packageWithTopComponent.getKey(), targetFolderUri, flattenedModelFileName);
 										// Reading the model from disk as this is the only way it works
 										ResourceSet resourceSet = new ResourceSetImpl();
@@ -195,31 +201,33 @@ public class CommandHandler extends AbstractHandler {
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 											newTopComponent, analysisModelTransformation.getParameters(),
-											getGammaScheduler(analysisModelTransformation.getScheduler()),
+											getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 											analysisModelTransformation.isTransitionCoverage()); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models
-										normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName() + ".uppaal");
-										normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName() + ".g2u");
+										normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
+										normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
 										// Serializing the NTA model to XML
-										UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName() + ".xml");
+										UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
 										// Creating a new query file
-										new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName() + ".q").delete();
+										new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
 										if (analysisModelTransformation.isStateCoverage()) {
 											UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(),
-												transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName() + ".q");
+												transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 										}
 										if (analysisModelTransformation.isTransitionCoverage()) {
 											UppaalModelSerializer.createTransitionFireabilityQueries(transformer.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
-												"", targetFolderUri, analysisModelTransformation.getFileName() + ".q");
+												"", targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 										}
 										transformer.dispose();
 										logger.log(Level.INFO, "The composite system transformation has been finished.");
 									}
 									else if (task instanceof TestGeneration) {
 										TestGeneration testGeneration = (TestGeneration) task;
-										checkArgument(testGeneration.getLanguage() == ProgrammingLanguage.JAVA, 
+										checkArgument(testGeneration.getLanguage().size() == 1, 
+												"A single programming language must be specified: " + testGeneration.getLanguage());
+										checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
 												"Currently only Java is supported.");
 										setTestGeneration(testGeneration, file.getProject().getName());
 										ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
@@ -227,10 +235,10 @@ public class CommandHandler extends AbstractHandler {
 										testGenerationResourceSet.getResource(testGeneration.eResource().getURI(), true);
 										logger.log(Level.INFO, "Resource set content for test generation: " + testGenerationResourceSet);
 										TestGenerator testGenerator = new TestGenerator(testGenerationResourceSet, executionTrace,
-												testGeneration.getPackageName(), testGeneration.getFileName());
+												testGeneration.getPackageName().get(0), testGeneration.getFileName().get(0));
 										String testClass = testGenerator.execute();
 										saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
-												testGeneration.getFileName() + ".java", testClass);
+												testGeneration.getFileName().get(0) + ".java", testClass);
 										logger.log(Level.INFO, "The test generation has been finished.");
 									}
 								}
@@ -251,7 +259,8 @@ public class CommandHandler extends AbstractHandler {
 	private void setTargetFolder(Task task, IFile file, String parentFolderUri) {
 		// E.g., C:/Users/...
 		String projectLocation = file.getProject().getLocation().toString();
-		if (task.getTargetFolder() == null) {
+		checkArgument(task.getTargetFolder().size() <= 1);
+		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
 			if (task instanceof CodeGeneration) {
 				targetFolder = "src-gen";
@@ -262,46 +271,57 @@ public class CommandHandler extends AbstractHandler {
 			else {
 				targetFolder = parentFolderUri.substring(projectLocation.length() + 1);
 			}
-			task.setTargetFolder(targetFolder);
+			task.getTargetFolder().add(targetFolder);
 		}
 	}
 
 	private void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
 		String fileName = getNameWithoutExtension(getContainingFileName(yakinduCompilation.getStatechart()));
-		if (yakinduCompilation.getFileName() == null) {
-			yakinduCompilation.setFileName(fileName);
+		checkArgument(yakinduCompilation.getFileName().size() <= 1);
+		checkArgument(yakinduCompilation.getPackageName().size() <= 1);
+		if (yakinduCompilation.getFileName().isEmpty()) {
+			yakinduCompilation.getFileName().add(fileName);
 		}
-		if (yakinduCompilation.getPackageName() == null) {
-			yakinduCompilation.setPackageName(fileName);
+		if (yakinduCompilation.getPackageName().isEmpty()) {
+			yakinduCompilation.getPackageName().add(fileName);
 		}
 	}
 	
 	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
-		if (statechartCompilation.getStatechartName() == null) {
-			statechartCompilation.setStatechartName(statechartName);
+		checkArgument(statechartCompilation.getStatechartName().size() <= 1);
+		if (statechartCompilation.getStatechartName().isEmpty()) {
+			statechartCompilation.getStatechartName().add(statechartName);
 		}
 	}
 	
 	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {
-		if (codeGeneration.getPackageName() == null) {
-			codeGeneration.setPackageName(packageName);
+		checkArgument(codeGeneration.getPackageName().size() <= 1);
+		if (codeGeneration.getPackageName().isEmpty()) {
+			codeGeneration.getPackageName().add(packageName);
 		}
 		// TargetFolder set in setTargetFolder
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
-		if (analysisModelTransformation.getFileName() == null) {
+		checkArgument(analysisModelTransformation.getFileName().size() <= 1);
+		if (analysisModelTransformation.getFileName().isEmpty()) {
 			String fileName = getNameWithoutExtension(getContainingFileName(analysisModelTransformation.getComponent()));
-			analysisModelTransformation.setFileName(fileName);
+			analysisModelTransformation.getFileName().add(fileName);
+		}
+		checkArgument(analysisModelTransformation.getScheduler().size() <= 1);
+		if (analysisModelTransformation.getScheduler().isEmpty()) {
+			analysisModelTransformation.getScheduler().add(hu.bme.mit.gamma.yakindu.genmodel.Scheduler.RANDOM);
 		}
 	}
 	
 	private void setTestGeneration(TestGeneration testGeneration, String packageName) {
-		if (testGeneration.getPackageName() == null) {
-			testGeneration.setPackageName(packageName);
+		checkArgument(testGeneration.getFileName().size() <= 1);
+		checkArgument(testGeneration.getPackageName().size() <= 1);
+		if (testGeneration.getPackageName().isEmpty()) {
+			testGeneration.getPackageName().add(packageName);
 		}
-		if (testGeneration.getFileName() == null) {
-			testGeneration.setFileName("ExecutionTraceSimulation");
+		if (testGeneration.getFileName().isEmpty()) {
+			testGeneration.getFileName().add("ExecutionTraceSimulation");
 		}
 		// TargetFolder set in setTargetFolder
 	}

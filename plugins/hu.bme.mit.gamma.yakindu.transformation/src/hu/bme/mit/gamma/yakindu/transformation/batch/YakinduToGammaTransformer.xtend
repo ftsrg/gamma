@@ -154,10 +154,10 @@ class YakinduToGammaTransformer {
     	val genmodel = statechartCompilation.eContainer as GenModel
     	this.statechartCompilation = statechartCompilation
         this.yakinduStatechart = statechartCompilation.statechart
-        val statechartName = if (statechartCompilation.statechartName === null) yakinduStatechart.name + "Statechart"
-        	else statechartCompilation.statechartName
-    	val packageName = if (statechartCompilation.packageName === null) yakinduStatechart.name
-    		else statechartCompilation.packageName
+        val statechartName = if (statechartCompilation.statechartName.empty) yakinduStatechart.name + "Statechart"
+        	else statechartCompilation.statechartName.head
+    	val packageName = if (statechartCompilation.packageName.empty) yakinduStatechart.name
+    		else statechartCompilation.packageName.head
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
     	]

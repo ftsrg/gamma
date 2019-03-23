@@ -15,6 +15,8 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
@@ -23,8 +25,10 @@ import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration
 import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
+import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
+import hu.bme.mit.gamma.yakindu.genmodel.Task
 import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 import java.util.Collections
@@ -34,11 +38,8 @@ import java.util.Set
 import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
-import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import org.yakindu.sct.model.sgraph.Statechart
+import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 /**
  * This class contains custom validation rules. 
@@ -46,6 +47,64 @@ import org.yakindu.sct.model.sgraph.Statechart
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class GenModelValidator extends AbstractGenModelValidator {
+	
+	// Checking tasks, only one parameter is acceptable
+	
+	@Check
+	def checkTasks(Task task) {
+		if (task.fileName.size > 1) {
+			error("At most one file name can be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+		}
+		if (task.targetFolder.size > 1) {
+			error("At most one target folder can be specified.", GenmodelPackage.Literals.TASK__TARGET_FOLDER)
+		}
+	}
+	
+	@Check
+	def checkTasks(YakinduCompilation yakinduCompilation) {
+		if (yakinduCompilation.packageName.size > 1) {
+			error("At most one package name can be specified.", GenmodelPackage.Literals.YAKINDU_COMPILATION__PACKAGE_NAME)
+		}
+	}
+	
+	@Check
+	def checkTasks(StatechartCompilation statechartCompilation) {
+		if (statechartCompilation.statechartName.size > 1) {
+			error("At most one statechart name can be specified.", GenmodelPackage.Literals.STATECHART_COMPILATION__STATECHART_NAME)
+		}
+	}
+	
+	@Check
+	def checkTasks(AnalysisModelTransformation analysisModelTransformation) {
+		if (analysisModelTransformation.scheduler.size > 1) {
+			error("At most one scheduler type can be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER)
+		}
+		if (analysisModelTransformation.language.size != 1) {
+			error("A single formal language must be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGE)
+		}
+	}
+	
+	@Check
+	def checkTasks(CodeGeneration codeGeneration) {
+		if (codeGeneration.packageName.size > 1) {
+			error("At most one package name can be specified.", GenmodelPackage.Literals.CODE_GENERATION__PACKAGE_NAME)
+		}
+		if (codeGeneration.language.size != 1) {
+			error("A single programming language must be specified.", GenmodelPackage.Literals.CODE_GENERATION__LANGUAGE)
+		}
+	}
+	
+	@Check
+	def checkTasks(TestGeneration testGeneration) {
+		if (testGeneration.packageName.size > 1) {
+			error("At most one package name can be specified.", GenmodelPackage.Literals.TEST_GENERATION__PACKAGE_NAME)
+		}
+		if (testGeneration.language.size != 1) {
+			error("A single programming language must be specified.", GenmodelPackage.Literals.TEST_GENERATION__LANGUAGE)
+		}
+	}
+	
+	// Additional validation rules
 	
 	@Check
 	def checkGammaImports(GenModel genmodel) {
@@ -66,7 +125,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		for (packageImport : packageImports) {
 			val index = genmodel.packageImports.indexOf(packageImport);
-			warning("This Gamma package import is not used.", GenmodelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index);
+			warning("This Gamma package import is not used.", GenmodelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)
 		}
 	}
 
