@@ -104,8 +104,6 @@ class ExpressionTransformer {
 	
 	def dispatch String negate(IdentifierExpression expression) {
 		if (expression.identifier instanceof Variable)  {
-			val variable = expression.identifier as Variable
-			
 			return "!" + expression.identifier.name
 		}
 		throw new IllegalArgumentException("The negation of the following variable is not supported: " + expression.identifier)

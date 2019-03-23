@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.uppaal.transformation
 
 import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
+import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
 import hu.bme.mit.gamma.uppaal.transformation.queries.Events
@@ -23,8 +24,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.VariableDeclarations
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
-import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 class ModelValidator {
 	

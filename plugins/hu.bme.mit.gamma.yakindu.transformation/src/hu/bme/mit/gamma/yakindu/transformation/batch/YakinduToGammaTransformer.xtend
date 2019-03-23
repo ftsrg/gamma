@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.Region
+import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.model.State
@@ -106,9 +107,6 @@ import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import org.yakindu.base.types.AnnotationType
-import org.yakindu.base.types.Annotation
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions

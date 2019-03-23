@@ -47,7 +47,6 @@ public class CommandHandler extends AbstractHandler {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
 						ResourceSet resSet = new ResourceSetImpl();
-						String path = file.getLocation().toString();
 						String fullPath = file.getFullPath().toString();
 						// Decoding so spaces do not stir trouble
 						fullPath = URI.decode(fullPath);
