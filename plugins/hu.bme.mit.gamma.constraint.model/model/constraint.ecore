@@ -157,7 +157,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="TrueExpression" eSuperTypes="#//BooleanLiteralExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="FalseExpression" eSuperTypes="#//BooleanLiteralExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArrayLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//MultiaryExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//BinaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeLiteralExpression" eSuperTypes="#//LiteralExpression #//EnumerableExpression #//BinaryExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="leftInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionLiteralExpression" eSuperTypes="#//UnaryExpression #//LiteralExpression #//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="returnType" lowerBound="1"
         eType="#//Type" containment="true"/>

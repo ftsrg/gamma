@@ -288,7 +288,7 @@ AccessExpression returns Expression:
 		{ArrayAccessExpression.operand=current} '[' parameters+=Expression ']' |
 		{FunctionAccessExpression.operand=current} '(' ((parameters+=Expression)(',' parameters+=Expression)*) ')' |
 		{RecordAccessExpression.operand=current} '.' field=ID |
-		{TupleAccessExpression.operand=current} '!' index=INTEGER
+		{TupleAccessExpression.operand=current} '!' index=INTEGER | 
 		{SelectExpression.operand=current} '.select'
 	)*
 ;
@@ -316,7 +316,8 @@ LiteralExpression returns Expression:
 	ArrayLiteralExpression |
 	RecordLiteralExpression |
 	TupleLiteralExpression |
-	EnumerationLiteralExpression
+	EnumerationLiteralExpression |
+	IntegerRangeLiteralExpression
 ;
 
 IntegerLiteralExpression:
@@ -361,6 +362,11 @@ TupleLiteralExpression:
 
 EnumerationLiteralExpression:
 	'::' reference=[EnumerationLiteralDefinition]
+;
+
+IntegerRangeLiteralExpression:
+	{IntegerRangeLiteralExpression}
+	((leftInclusive?='[') | '(') leftOperand=IntegerLiteralExpression ',' rightOperand=IntegerLiteralExpression ((rightInclusive?=']') | ')')
 ;
 
 
