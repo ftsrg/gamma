@@ -478,20 +478,29 @@ Block returns ActionModel::Block:
 ;
 
 Statement returns ActionModel::Statement:
-	(VariableDeclarationStatement ';') |
-	(ConstantDeclarationStatement ';') |
+	InlineStatement | MultilineStatement
 	
-	(ExpressionStatement ';') |
+	//is a (statement)block itself a statement?
+;
 
+InlineStatement returns ActionModel::Statement:
+	(VariableDeclarationStatement |
+	ConstantDeclarationStatement |
+	
+	ExpressionStatement |
+	
+	ReturnStatement |
+	BreakStatement )
+	
+	';'
+;
+
+MultilineStatement returns ActionModel::Statement:
 	IfStatement |
 	SwitchStatement |
 	ForStatement |
 	
-	(ReturnStatement ';')|
-	(BreakStatement ';') |
-	
 	ChoiceStatement
-	//is a (statement)block itself a statement?
 ;
 
 VariableDeclarationStatement returns ActionModel::VariableDeclarationStatement:
@@ -511,8 +520,8 @@ IfStatement returns ActionModel::IfStatement:
 	{ActionModel::IfStatement}
 	'if' ':'
 	conditionals+=GuardedBlock
-	('elsif' ':' conditionals+=GuardedBlock)*
-	('else' ':'
+	('elsif' conditionals+=GuardedBlock)*
+	('else' 
 	else=Block)?
 ;
 
@@ -520,7 +529,7 @@ GuardedBlock returns ActionModel::GuardedBlock:
 	{ActionModel::GuardedBlock}
 	'(' guard=Expression ')'
 	'{' 
-		(statements+=Statement ';')*
+		(statements+=Statement)*
 	'}'	
 ;
 

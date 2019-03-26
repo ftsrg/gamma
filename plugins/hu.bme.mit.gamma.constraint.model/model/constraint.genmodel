@@ -127,7 +127,10 @@
     <genClasses ecoreClass="constraint.ecore#//TrueExpression"/>
     <genClasses ecoreClass="constraint.ecore#//FalseExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ArrayLiteralExpression"/>
-    <genClasses ecoreClass="constraint.ecore#//IntegerRangeLiteralExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//IntegerRangeLiteralExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerRangeLiteralExpression/leftInclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerRangeLiteralExpression/rightInclusive"/>
+    </genClasses>
     <genClasses ecoreClass="constraint.ecore#//FunctionLiteralExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionLiteralExpression/returnType"/>
     </genClasses>
