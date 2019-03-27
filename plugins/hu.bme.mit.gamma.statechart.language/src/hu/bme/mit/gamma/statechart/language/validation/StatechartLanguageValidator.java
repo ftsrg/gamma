@@ -1302,4 +1302,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 		
+	//Action
+	
+
 }
