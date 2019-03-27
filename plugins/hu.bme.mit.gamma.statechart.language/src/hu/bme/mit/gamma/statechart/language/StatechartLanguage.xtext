@@ -490,7 +490,9 @@ InlineStatement returns ActionModel::Statement:
 	ExpressionStatement |
 	
 	ReturnStatement |
-	BreakStatement )
+	BreakStatement |
+	
+	AssignmentStatement)
 	
 	';'
 ;
@@ -568,5 +570,9 @@ ChoiceStatement returns ActionModel::ChoiceStatement:
 	'{'
 	('branch' branches+=GuardedBlock ('branch' branches+=GuardedBlock)*)
 	'}'
+;
+
+AssignmentStatement returns ActionModel::AssignmentStatement:
+	variableDeclaration=[ConstraintModel::VariableDeclaration] ':=' expression=Expression
 ;
 	

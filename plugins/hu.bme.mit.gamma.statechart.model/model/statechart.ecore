@@ -357,5 +357,11 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="branches" upperBound="-1"
           eType="#//action/GuardedBlock" containment="true"/>
     </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//action/Statement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+          containment="true"/>
+    </eClassifiers>
   </eSubpackages>
 </ecore:EPackage>
