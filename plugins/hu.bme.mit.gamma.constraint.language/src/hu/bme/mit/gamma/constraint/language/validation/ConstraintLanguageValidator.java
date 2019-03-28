@@ -389,7 +389,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		 */
 		private <T extends ArithmeticExpression & BinaryExpression> ExpressionType getArithmeticBinaryIntegerType(T expression) {
 			ExpressionType type = getArithmeticBinaryType(expression);
-			if (type == ExpressionType.INTEGER || type ==  ExpressionType.NATURAL) {
+			if (type == ExpressionType.INTEGER || type == ExpressionType.NATURAL) {
 				return type;
 			}
 			throw new IllegalArgumentException("Type is not suitable type for expression: " + type + System.lineSeparator() + expression);

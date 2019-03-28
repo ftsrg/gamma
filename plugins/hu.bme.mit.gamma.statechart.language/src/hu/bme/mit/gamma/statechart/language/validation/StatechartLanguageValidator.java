@@ -406,11 +406,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("A fork node must have at least one outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		// Targets of fork nodes must always be States
-		for (Transition transition : StatechartModelDerivedFeatures.getOutgoingTransitions(fork)) {
+		for (Transition transition : outgoingTransitions) {
 			StateNode target = transition.getTargetState();
 			if (!(target instanceof hu.bme.mit.gamma.statechart.model.State)) {
 				error("Targets of outgoing transitions of fork nodes must be of type State.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 				error("Targets of outgoing transitions of fork nodes must be of type State.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+			}
+		}
+		// Targets of fork nodes must always be in distinct regions
+		Set<Region> targetedRegions = new HashSet<Region>();
+		for (Transition transition : outgoingTransitions) {
+			Region region = (Region) transition.getTargetState().eContainer();
+			if (targetedRegions.contains(region)) {
+				error("Targets of outgoing transitions of fork nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Targets of outgoing transitions of fork nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+			}
+			else {
+				targetedRegions.add(region);
 			}
 		}
 		// TODO or a join state should be reachable in accordance with the well-formedness rules
@@ -449,11 +461,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("Join nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		// Sources of join nodes must always be States
-		for (Transition transition : StatechartModelDerivedFeatures.getIncomingTransitions(join)) {
+		for (Transition transition : incomingTransitions) {
 			StateNode source = transition.getSourceState();
 			if (!(source instanceof hu.bme.mit.gamma.statechart.model.State)) {
 				error("Sources of incoming transitions of join nodes must be of type State.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 				error("Sources of incoming transitions of join nodes must be of type State.", transition, StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
+			}
+		}
+		// Targets of fork nodes must always be in distinct regions
+		Set<Region> targetedRegions = new HashSet<Region>();
+		for (Transition transition : incomingTransitions) {
+			Region region = (Region) transition.getTargetState().eContainer();
+			if (targetedRegions.contains(region)) {
+				error("Sources of incoming transitions of fork nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Sources of incoming transitions of fork nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+			}
+			else {
+				targetedRegions.add(region);
 			}
 		}
 		// TODO or a fork state should be reachable in accordance with the well-formedness rules
