@@ -244,7 +244,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (!getSemanticEvents(Collections.singleton(port), EventDirection.OUT).contains(event)) {
 			error("This event is not an out event.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
 		}
-		if (!raiseEvent.getParameters().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
+		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
 			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
 		}
 	}
@@ -697,7 +697,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					RaiseEventAction rhsRaiseEvent = (RaiseEventAction) raiseEvent;
 					if (lhsRaiseEvent.getPort() == rhsRaiseEvent.getPort() && 
 						lhsRaiseEvent.getEvent() == rhsRaiseEvent.getEvent()) {
-						if (!lhsRaiseEvent.getParameters().isEmpty() && !rhsRaiseEvent.getParameters().isEmpty()) {
+						if (!lhsRaiseEvent.getArguments().isEmpty() && !rhsRaiseEvent.getArguments().isEmpty()) {
 							return new HashMap.SimpleEntry<Port, Event>(lhsRaiseEvent.getPort(), lhsRaiseEvent.getEvent());
 						}
 					}
@@ -782,8 +782,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkParameters(ComponentInstance instance) {
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-		if (instance.getParameters().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS);
+		if (instance.getArguments().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 		}
 	}
 	
@@ -794,14 +794,14 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			EList<ParameterDeclaration> parameters = type.getParameterDeclarations();
 			for (int i = 0; i < parameters.size(); ++i) {
 				ParameterDeclaration parameter = parameters.get(i);
-				Expression argument = instance.getParameters().get(i);
+				Expression argument = instance.getArguments().get(i);
 				Type declarationType = parameter.getType();
 				ExpressionType argumentType = typeDeterminator.getType(argument);
 				if (!typeDeterminator.equals(declarationType, argumentType)) {
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS, i);
+							ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
 				} 
 			}
 		} catch (Exception exception) {

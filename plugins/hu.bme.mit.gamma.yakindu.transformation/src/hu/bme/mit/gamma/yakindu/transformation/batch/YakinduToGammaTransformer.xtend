@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.yakindu.transformation.batch
 import hu.bme.mit.gamma.constraint.model.AndExpression
 import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DefinableDeclaration
+import hu.bme.mit.gamma.constraint.model.InitializableElement
 import hu.bme.mit.gamma.constraint.model.NotExpression
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration

@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
-import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
+import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.Package
@@ -973,7 +973,7 @@ class GlueCodeGenerator {
 			}				
 			BooleanTypeDefinition: 
 				return "boolean"
-			RealTypeDefinition: 
+			DecimalTypeDefinition: 
 				return "double"
 			default:
 				throw new IllegalArgumentException("Not known type: " + type)
@@ -1544,7 +1544,7 @@ class GlueCodeGenerator {
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
 		«FOR instance : component.derivedComponents»
-			«instance.name» = new «instance.derivedType.componentClassName»(«FOR argument : instance.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+			«instance.name» = new «instance.derivedType.componentClassName»(«FOR argument : instance.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«ENDFOR»
 		«FOR port : component.portBindings.map[it.compositeSystemPort]»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
@@ -1648,7 +1648,7 @@ class GlueCodeGenerator {
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {
-				«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+				«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
@@ -1852,7 +1852,7 @@ class GlueCodeGenerator {
 		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
-		«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.parameters SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+		«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«FOR port : component.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»

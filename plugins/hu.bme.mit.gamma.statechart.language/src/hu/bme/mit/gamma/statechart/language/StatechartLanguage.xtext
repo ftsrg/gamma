@@ -120,7 +120,7 @@ AnyTrigger returns AnyTrigger:
 ;
 
 EventTrigger returns EventTrigger:
-	eventReference=EventReference ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+	eventReference=EventReference ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 EventReference returns EventReference:
@@ -154,7 +154,7 @@ Action:
 ;
 
 RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 SetTimeoutAction returns SetTimeoutAction:
@@ -209,7 +209,7 @@ enum SchedulingOrder returns SchedulingOrder:
 
 StatechartReference returns StatechartReference:
 	{StatechartReference}
-	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((parameters+=Expression)(',' parameters+=Expression)*)? ')')?
+	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')')?
 ;
 
 Region returns Region:
@@ -410,11 +410,11 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 AsynchronousComponentInstance returns CompositeModel::AsynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 Channel returns CompositeModel::Channel:

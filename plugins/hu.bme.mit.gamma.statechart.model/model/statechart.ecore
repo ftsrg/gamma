@@ -41,7 +41,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeSpecification" eType="#//TimeSpecification"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//Component"/>
   </eClassifiers>
@@ -81,7 +81,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Trigger" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="#//Action ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="#//Action ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//interface/Event"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
   </eClassifiers>
@@ -132,7 +132,7 @@
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement #//SimpleTrigger">
+  <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
         eType="#//EventReference" containment="true"/>
   </eClassifiers>
@@ -215,7 +215,7 @@
           eType="#//composite/Channel" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ComponentInstance" abstract="true"
-        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterizedElement"/>
+        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement"/>
     <eClassifiers xsi:type="ecore:EClass" name="PortBinding">
       <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort"
           lowerBound="1" eType="#//Port"/>

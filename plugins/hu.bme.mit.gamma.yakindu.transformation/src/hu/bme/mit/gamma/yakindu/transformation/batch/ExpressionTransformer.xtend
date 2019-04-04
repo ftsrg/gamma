@@ -484,7 +484,7 @@ class ExpressionTransformer {
 	def dispatch EObject transform(EObject container, EReference reference, EventRaisingExpression expression) {		
 		val gammaSignal = container.transform(reference, expression.event)
 		if (expression.value !== null) {
-			gammaSignal.transform(parameterizedElement_Parameters, expression.value)		
+			gammaSignal.transform(argumentedElement_Arguments, expression.value)		
 		}
 		// Creating the trace
 		addToTrace(expression, #{gammaSignal}, expressionTrace)

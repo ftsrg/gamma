@@ -41,8 +41,8 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	@Check
 	def checkParameters(ExecutionTrace executionTrace) {
 		val type = executionTrace.component
-		if (executionTrace.getParameters().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS)
+		if (executionTrace.getArguments().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 	}
 	
@@ -66,10 +66,10 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 				error("This event is an in-event of the component.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 			}			
 		}
-		if (event.parameterDeclarations.empty && !raiseEventAct.parameters.empty) {
+		if (event.parameterDeclarations.empty && !raiseEventAct.arguments.empty) {
 			error("This event type has no parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 		}
-		if (!event.parameterDeclarations.empty && raiseEventAct.parameters.empty) {
+		if (!event.parameterDeclarations.empty && raiseEventAct.arguments.empty) {
 			error("This event type must have a parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 		}
 	}

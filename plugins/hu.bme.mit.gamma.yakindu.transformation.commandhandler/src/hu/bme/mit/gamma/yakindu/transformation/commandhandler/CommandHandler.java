@@ -198,7 +198,7 @@ public class CommandHandler extends AbstractHandler {
 										validator.checkModel();
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-											newTopComponent, analysisModelTransformation.getParameters(),
+											newTopComponent, analysisModelTransformation.getArguments(),
 											getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 											analysisModelTransformation.isTransitionCoverage()); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();

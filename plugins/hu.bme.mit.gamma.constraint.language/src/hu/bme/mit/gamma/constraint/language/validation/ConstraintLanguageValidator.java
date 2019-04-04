@@ -29,7 +29,7 @@ import hu.bme.mit.gamma.constraint.model.ComparisonExpression;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.DefinableDeclaration;
+import hu.bme.mit.gamma.constraint.model.InitializableElement;
 import hu.bme.mit.gamma.constraint.model.DivExpression;
 import hu.bme.mit.gamma.constraint.model.DivideExpression;
 import hu.bme.mit.gamma.constraint.model.ElseExpression;
@@ -42,10 +42,9 @@ import hu.bme.mit.gamma.constraint.model.ModExpression;
 import hu.bme.mit.gamma.constraint.model.MultiaryExpression;
 import hu.bme.mit.gamma.constraint.model.MultiplyExpression;
 import hu.bme.mit.gamma.constraint.model.NamedElement;
-import hu.bme.mit.gamma.constraint.model.NaturalTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.PredicateExpression;
 import hu.bme.mit.gamma.constraint.model.RationalLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.RealTypeDefinition;
+import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.SubtractExpression;
 import hu.bme.mit.gamma.constraint.model.Type;
@@ -190,25 +189,30 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 	}
 	
 	@Check
-	public void checkDefinableDeclaration(DefinableDeclaration declaration) {
+	//TODO REVIEW
+	public void checkInitializableElement(InitializableElement elem) {
 		try {
-			Expression initialExpression = declaration.getExpression();
+			Expression initialExpression = elem.getExpression();
 			if (initialExpression == null) {
 				return;
 			}
 			// The declaration has an initial value
-			if (isDeclarationReferredInExpression(declaration, initialExpression)) {
-				error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
-				return;
+			if(elem instanceof Declaration)
+			{
+				Declaration declaration = (Declaration)elem;
+				if (isDeclarationReferredInExpression(declaration, initialExpression)) {
+					error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+					return;
+				}
+				Type variableDeclarationType = declaration.getType();
+				ExpressionType initialExpressionType = typeDeterminator.getType(elem.getExpression());
+				if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
+					error("The types of the declaration and the right hand side expression are not the same: " +
+							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
+							initialExpressionType.toString().toLowerCase() + ".",
+							ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+				} 
 			}
-			Type variableDeclarationType = declaration.getType();
-			ExpressionType initialExpressionType = typeDeterminator.getType(declaration.getExpression());
-			if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
-				error("The types of the declaration and the right hand side expression are not the same: " +
-						typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
-						initialExpressionType.toString().toLowerCase() + ".",
-						ConstraintModelPackage.Literals.DEFINABLE_DECLARATION__EXPRESSION);
-			} 
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
 		}
@@ -231,7 +235,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		return false;
 	}
 	
-	protected enum ExpressionType { BOOLEAN, NATURAL, INTEGER, REAL, ENUMERATION, ERROR }
+	protected enum ExpressionType { BOOLEAN, INTEGER, DECIMAL, ENUMERATION, ERROR }
 
 	protected class ExpressionTypeDeterminator {
 		
@@ -306,11 +310,11 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		}
 		
 		private ExpressionType getType(RationalLiteralExpression expression) {
-			return ExpressionType.REAL;
+			return ExpressionType.DECIMAL;
 		}
 		
 		private ExpressionType getType(DecimalLiteralExpression expression) {
-			return ExpressionType.REAL;
+			return ExpressionType.DECIMAL;
 		}
 		
 		private ExpressionType getType(EnumerationLiteralExpression expression) {
@@ -350,13 +354,11 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
 			}
 			// All types are numbers
-			if (collection.stream().anyMatch(it -> it == ExpressionType.REAL)) {
-				return ExpressionType.REAL;
+			if (collection.stream().anyMatch(it -> it == ExpressionType.DECIMAL)) {
+				return ExpressionType.DECIMAL;
 			}
-			if (collection.stream().anyMatch(it -> it == ExpressionType.INTEGER)) {
-				return ExpressionType.INTEGER;
-			}
-			return ExpressionType.NATURAL;
+			return ExpressionType.INTEGER;
+			
 		}
 		
 		// Unary
@@ -389,7 +391,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		 */
 		private <T extends ArithmeticExpression & BinaryExpression> ExpressionType getArithmeticBinaryIntegerType(T expression) {
 			ExpressionType type = getArithmeticBinaryType(expression);
-			if (type == ExpressionType.INTEGER || type ==  ExpressionType.NATURAL) {
+			if (type == ExpressionType.INTEGER) {
 				return type;
 			}
 			throw new IllegalArgumentException("Type is not suitable type for expression: " + type + System.lineSeparator() + expression);
@@ -420,8 +422,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		}
 		
 		private boolean isInteger(ExpressionType type) {
-			return type == ExpressionType.INTEGER ||
-					type == ExpressionType.NATURAL;
+			return type == ExpressionType.INTEGER;
 		}
 		
 		public boolean isInteger(Expression expression) {
@@ -430,8 +431,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		
 		private boolean isNumber(ExpressionType type) {
 			return type == ExpressionType.INTEGER ||
-					type == ExpressionType.REAL || 
-					type == ExpressionType.NATURAL;
+					type == ExpressionType.DECIMAL;
 		}
 		
 		public boolean isNumber(Expression expression) {
@@ -457,11 +457,8 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			if (type instanceof IntegerTypeDefinition) {
 				return ExpressionType.INTEGER;
 			}
-			if (type instanceof RealTypeDefinition) {
-				return ExpressionType.REAL;
-			}
-			if (type instanceof NaturalTypeDefinition) {
-				return ExpressionType.NATURAL;
+			if (type instanceof DecimalTypeDefinition) {
+				return ExpressionType.DECIMAL;
 			}
 			if (type instanceof EnumerationTypeDefinition) {
 				return ExpressionType.ENUMERATION;
@@ -480,8 +477,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		public boolean equals(Type type, ExpressionType expressionType) {
 			return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
 				type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
-				type instanceof RealTypeDefinition && expressionType == ExpressionType.REAL ||
-				type instanceof NaturalTypeDefinition && expressionType == ExpressionType.NATURAL||
+				type instanceof DecimalTypeDefinition && expressionType == ExpressionType.DECIMAL ||
 				type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION;
 		}
 		

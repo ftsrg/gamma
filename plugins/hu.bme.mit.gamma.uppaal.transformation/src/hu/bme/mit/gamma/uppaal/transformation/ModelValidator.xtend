@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.transformation
 
-import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
+import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
@@ -134,8 +134,8 @@ class ModelValidator {
 	private def checkFloatVariables() {
 		val variablesMatcher = engine.getMatcher(VariableDeclarations.instance)
 		val costantsMatcher = engine.getMatcher(ConstantDeclarations.instance)
-		val variables = variablesMatcher.allMatches.filter[it.type instanceof RealTypeDefinition].map[it.variable]
-		val constants = costantsMatcher.allMatches.filter[it.type instanceof RealTypeDefinition].map[it.constant]
+		val variables = variablesMatcher.allMatches.filter[it.type instanceof DecimalTypeDefinition].map[it.variable]
+		val constants = costantsMatcher.allMatches.filter[it.type instanceof DecimalTypeDefinition].map[it.constant]
 		if (variables.size != 0) {
 			throw new IllegalArgumentException("Float variables cannot be transformed:" + variables.toString())
 		}
