@@ -2470,7 +2470,7 @@ class CompositeToUppaalTransformer {
 	val parametersRule = createRule(ParameterizedInstances.instance).action [
 		val instance = it.instance
 		val parameters = instance.derivedType.parameterDeclarations
-		val arguments = instance.parameters
+		val arguments = instance.arguments
 		checkState(parameters.size == arguments.size)
 		for (var i = 0; i < parameters.size; i++) {
 			val parameter = parameters.get(i)
@@ -3764,7 +3764,7 @@ class CompositeToUppaalTransformer {
 	private def createEventRaising(Edge edge, Port port, Event toRaiseEvent, ComponentInstance inInstance, RaiseEventAction eventAction) {
 		val toRaiseVar = toRaiseEvent.getToRaiseVariable(port, inInstance)
 		edge.createAssignmentExpression(edge_Update, toRaiseVar, true)
-		val exps = eventAction.parameters
+		val exps = eventAction.arguments
 		if (!exps.empty) {
 	    	for (expression : exps) {
 //	    		val parameter = toRaiseEvent.parameterDeclarations.head

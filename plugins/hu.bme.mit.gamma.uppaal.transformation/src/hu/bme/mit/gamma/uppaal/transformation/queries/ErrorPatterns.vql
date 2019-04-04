@@ -34,7 +34,7 @@ pattern fromChoiceToHigherTransition(transition : Transition, choice : ChoiceSta
 private pattern eventParameter(transition : Transition, event : Event, valueOfParameter : ParameterDeclaration) {
 	Transition.trigger(transition, trigger);
 	EventTrigger.eventReference(trigger, portEventReference);
-	EventTrigger.parameters(trigger, reference);
+	EventTrigger.arguments(trigger, reference);
 	PortEventReference.event(portEventReference, event);
 	ReferenceExpression.declaration(reference, valueOfParameter);
 	Event.parameterDeclarations(event, valueOfParameter);

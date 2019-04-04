@@ -16,7 +16,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
 pattern parameterizedInstances(instance : ComponentInstance) {
-	ComponentInstance.parameters(instance, _); 
+	ComponentInstance.arguments(instance, _); 
 }
 
 pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {

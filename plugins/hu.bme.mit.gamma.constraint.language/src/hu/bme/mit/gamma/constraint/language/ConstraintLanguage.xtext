@@ -104,10 +104,6 @@ RationalTypeDefinition returns RationalTypeDefinition:
 	{RationalTypeDefinition} 'rational'
 ;
 
-RationalTypeDefinition returns RationalTypeDefinition:
-	{RationalTypeDefinition} 'rational'
-;
-
 ArrayTypeDefinition returns ArrayTypeDefinition:
 	'array' elementType=Type '[' size=INTEGER ']'
 ;

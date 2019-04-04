@@ -30,7 +30,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="basicConstraintDefinitions"
         upperBound="-1" eType="#//BasicConstraintDefinition" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InitializableElement" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="InitializableElement" abstract="true"
+      eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//Expression"
         containment="true"/>
   </eClassifiers>

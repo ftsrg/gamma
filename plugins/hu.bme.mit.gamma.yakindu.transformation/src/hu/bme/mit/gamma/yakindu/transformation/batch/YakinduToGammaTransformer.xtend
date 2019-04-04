@@ -593,7 +593,7 @@ class YakinduToGammaTransformer {
      * This rule depends on topRegionRule.
      */    
      val variablesRule = createRule(Variables.instance).action [
-    	var DefinableDeclaration gammaVariable
+    	var InitializableElement gammaVariable
 	    // If the Yakindu variable is a constant, a constantDeclaration is created
 	    if (it.isReadOnly) {
 	    	gammaVariable = gammaPackage.createChild(constraintSpecification_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
@@ -610,7 +610,7 @@ class YakinduToGammaTransformer {
     /**
      * Responsible for initializing the created gammaVariables. Used to avoid code duplication.
      */
-    private def setVariable(VariableDefinition yVariable, DefinableDeclaration gammaVariable, String name, String typeName) {    	    	
+    private def setVariable(VariableDefinition yVariable, InitializableElement gammaVariable, String name, String typeName) {    	    	
 	    gammaVariable.name = name
 	    // The type is created by the createType method
 	    gammaVariable.createType(typeName)
@@ -627,7 +627,7 @@ class YakinduToGammaTransformer {
     		case "string":
     			typeContainer.createChild(declaration_Type, integerTypeDefinition)
     		case "real":
-    			typeContainer.createChild(declaration_Type, realTypeDefinition)
+    			typeContainer.createChild(declaration_Type, decimalTypeDefinition)
     		case "boolean":
     			typeContainer.createChild(declaration_Type, booleanTypeDefinition)
     	}
@@ -639,8 +639,8 @@ class YakinduToGammaTransformer {
      */ 
     val variableInitRule = createRule(VariableInits.instance).action [
     	val yVariable = it.variable
-    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(DefinableDeclaration)) {
-	    	gammaVariable.transform(definableDeclaration_Expression, yVariable.initialValue)
+    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(InitializableElement)) {
+	    	gammaVariable.transform(initializableElement_Expression, yVariable.initialValue)
 	    	// The trace is created by the Expression Transformer
     	}
     ].build
@@ -871,7 +871,7 @@ class YakinduToGammaTransformer {
     		throw new IllegalArgumentException("The EventTrigger must contain one event: " + gammaTransition)
     	}
     	val gammaTransitionTrigger = gammaTransition.trigger
-    	val reference = gammaTransitionTrigger.createChild(parameterizedElement_Parameters, referenceExpression) as ReferenceExpression => [
+    	val reference = gammaTransitionTrigger.createChild(argumentedElement_Arguments, referenceExpression) as ReferenceExpression => [
     		it.declaration = eventDefinitionParameter
     	]
     	// Valueof expressions are in ExpressionTraces now

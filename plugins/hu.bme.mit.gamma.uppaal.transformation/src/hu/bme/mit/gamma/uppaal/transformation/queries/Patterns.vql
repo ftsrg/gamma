@@ -35,7 +35,7 @@ pattern constantDeclarations(constant : ConstantDeclaration, name : java String,
 	ConstantDeclaration.expression(constant, initValue);
 }
 
-pattern declarationInitializations(declaration : DefinableDeclaration, initValue : Expression) {
+pattern declarationInitializations(declaration : InitializableElement, initValue : Expression) {
 	VariableDeclaration.expression(declaration, initValue);
 } or {
 	ConstantDeclaration.expression(declaration, initValue);
@@ -72,7 +72,7 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 }
 
 pattern eventParameters(event : Event, param : ParameterDeclaration) {
-	EventTrigger.parameters(trigger, reference);
+	EventTrigger.arguments(trigger, reference);
 	ReferenceExpression.declaration(reference, param);
 	EventTrigger.eventReference(trigger, portEventReference);
 	PortEventReference.event(portEventReference, event);
