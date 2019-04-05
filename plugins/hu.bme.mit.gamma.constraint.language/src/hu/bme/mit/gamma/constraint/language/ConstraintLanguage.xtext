@@ -146,11 +146,18 @@ ElseExpression returns ElseExpression:
 	'else'
 ;
 
+//TODO check associativity and precedence
+IfThenElseExpression returns Expression:
+	ImplyExpression({IfThenElseExpression.condition=current} '?' then=Expression (=> ':' else=Expression))?
+;
+
+/*
 //ternary, right-associative
 IfThenElseExpression returns Expression:
-	{IfThenElseExpression} 'if' condition=Expression 'then' then=Expression (=>'else' else=Expression) |
+	{IfThenElseExpression} 'if' condition=Expression '?' then=Expression (=>':' else=Expression) |
 	ImplyExpression
 ;
+*/
 
 //binary, right-associative
 ImplyExpression returns Expression:
@@ -303,7 +310,7 @@ FalseExpression returns FalseExpression:
 ;
 
 ArrayLiteralExpression:
-	'{' operands+=Expression (',' operands+=Expression)* '}'
+	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
 ;
 
 RecordLiteralExpression:
@@ -318,9 +325,10 @@ EnumerationLiteralExpression:
 	'::' reference=[EnumerationLiteralDefinition]
 ;
 
+//TODO generally for Expression?
 IntegerRangeLiteralExpression:
 	{IntegerRangeLiteralExpression}
-	((leftInclusive?='[') | '(') leftOperand=IntegerLiteralExpression ',' rightOperand=IntegerLiteralExpression ((rightInclusive?=']') | ')')
+	((leftInclusive?='[') | '(') leftOperand=IntegerLiteralExpression '..' rightOperand=IntegerLiteralExpression ((rightInclusive?=']') | ')')
 ;
 
 

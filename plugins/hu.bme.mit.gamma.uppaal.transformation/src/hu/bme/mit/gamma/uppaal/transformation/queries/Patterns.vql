@@ -137,8 +137,8 @@ private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : Ch
 	Transition.targetState(inTransition, choice);
 	Transition.sourceState(outTransition, choice2);
 	// Assignment action of input transition
-	find updatesOfTransitions(inTransition, assignmentAction);
-	AssignmentAction.lhs(assignmentAction, referenceExpression);
+	//find updatesOfTransitions(inTransition, assignmentAction);
+	//AssignmentAction.lhs(assignmentAction, referenceExpression);
 	ReferenceExpression.declaration(referenceExpression, variable);
 	// Guard of output transition refers to the updated variable
 	Transition.guard(outTransition, guard);
@@ -257,7 +257,7 @@ pattern timeTriggersOfTransitions(state : State, transition : Transition, timeou
 pattern guardsOfTransitions(transition : Transition, guard : Expression) {
 	Transition.guard(transition, guard);
 }
-
+/*
 pattern updatesOfTransitions(transition : Transition, assignmentAction : AssignmentAction) {
 	Transition.effects(transition, assignmentAction);
 	AssignmentAction(assignmentAction);
@@ -282,7 +282,7 @@ pattern exitAssignmentsOfStatesWithTransitions(outgoingTransition : Transition, 
 	Transition.sourceState(outgoingTransition, state);
 	find exitAssignmentsOfStates(state, assignmentAction);
 }
-
+*/
 pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {
 	Transition.effects(transition, raiseEventAction);
 	RaiseEventAction(raiseEventAction);

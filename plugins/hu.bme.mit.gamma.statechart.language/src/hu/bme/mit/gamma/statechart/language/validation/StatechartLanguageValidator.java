@@ -35,7 +35,6 @@ import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.model.Action;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.AnyTrigger;
-import hu.bme.mit.gamma.statechart.model.AssignmentAction;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
 import hu.bme.mit.gamma.statechart.model.Clock;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
@@ -249,6 +248,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 	
+	/*
 	@Check
 	public void checkAssignmentActions(AssignmentAction assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
@@ -273,7 +273,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		}
 	}
-	
+	*/
 	@Check
 	public void checkNodeReachability(StateNode node) {
 		// These nodes do not need incoming transitions
@@ -620,7 +620,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return new HashSet<Transition>();
 	}
 	
-	@Check
+	/*
+	 @Check
 	public void checkParallelTransitionAssignments(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
 		Declaration declaration = getSameVariableOfAssignments(transition, sameTriggerParallelTransition);
@@ -630,7 +631,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 		}
 	}
-
+	 */
 	@Check
 	public void checkParallelEventRaisings(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
@@ -664,7 +665,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return siblingTransitions;
 	}
 	
-	private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
+	/*private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof AssignmentAction) {
 				AssignmentAction assignment = (AssignmentAction) action;
@@ -687,7 +688,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 		return null;
 	}
-	
+	*/
 	private Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof RaiseEventAction) {

@@ -34,7 +34,7 @@ import hu.bme.mit.gamma.constraint.model.TrueExpression
 import hu.bme.mit.gamma.constraint.model.UnaryMinusExpression
 import hu.bme.mit.gamma.constraint.model.UnaryPlusExpression
 import hu.bme.mit.gamma.constraint.model.XorExpression
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+//import hu.bme.mit.gamma.statechart.model.AssignmentAction
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
@@ -217,13 +217,14 @@ class ExpressionTransformer {
 		return finalTrace
 	}
 	
-	def void transformAssignmentAction(EObject container, EReference reference, AssignmentAction action, ComponentInstance owner) {
+	/*def void transformAssignmentAction(EObject container, EReference reference, AssignmentAction action, ComponentInstance owner) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.operator = AssignmentOperator.EQUAL
 		]
 		newExp.transformBinaryExpressions(action.lhs, action.rhs, owner)
 		addToTrace(action, #{newExp}, expressionTrace)
 	}
+	*/
 	
 	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action, ComponentInstance owner) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [

@@ -81,11 +81,11 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Trigger" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="#//Action ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement #//action/Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//interface/Event"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TimeoutAction" abstract="true" eSuperTypes="#//Action">
+  <eClassifiers xsi:type="ecore:EClass" name="TimeoutAction" abstract="true" eSuperTypes="#//action/Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclaration" lowerBound="1"
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>
@@ -94,12 +94,6 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DeactivateTimeoutAction" eSuperTypes="#//TimeoutAction"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AssignmentAction" eSuperTypes="#//Action">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ReferenceExpression"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EntryState" abstract="true" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryState" eSuperTypes="#//EntryState"/>
   <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryState" eSuperTypes="#//EntryState"/>
@@ -302,15 +296,18 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//action/Block"
           containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Block">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="statements" upperBound="-1"
-          eType="#//action/Statement" containment="true"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Block" eSuperTypes="#//Action">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
+          eType="#//Action" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="GuardedBlock" eSuperTypes="#//action/Block">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+    <eClassifiers xsi:type="ecore:EClass" name="Branch">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="guard" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
           containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
+          eType="#//Action" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true" eSuperTypes="#//Action"/>
     <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
           eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"
@@ -332,18 +329,14 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="IfStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="conditionals" lowerBound="1"
-          upperBound="-1" eType="#//action/GuardedBlock" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="else" eType="#//action/Block"
-          containment="true"/>
+          upperBound="-1" eType="#//action/Branch" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="SwitchStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="controlExpression" lowerBound="1"
           eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
           containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="cases" upperBound="-1"
-          eType="#//action/GuardedBlock" containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="default" eType="#//action/Block"
-          containment="true"/>
+          eType="#//action/Branch" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ForStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterDeclaration"
@@ -357,12 +350,11 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ChoiceStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="branches" upperBound="-1"
-          eType="#//action/GuardedBlock" containment="true"/>
+          eType="#//action/Branch" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//action/Statement">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
-          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ValueDeclaration"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
           containment="true"/>
     </eClassifiers>
   </eSubpackages>

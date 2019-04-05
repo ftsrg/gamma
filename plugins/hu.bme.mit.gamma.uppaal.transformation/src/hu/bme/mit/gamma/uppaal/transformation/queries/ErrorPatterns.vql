@@ -44,7 +44,7 @@ pattern prohibitedEventParameterReferences(source : StateNode, target : StateNod
 	Transition.sourceState(transition, source);
 	Transition.targetState(transition, target);
 	Transition.effects(transition, assignment);
-	AssignmentAction.rhs(assignment, reference);
+	//AssignmentAction.rhs(assignment, reference);
 	ReferenceExpression.declaration(reference, valueOfParameter);
 	Event.parameterDeclarations(_, valueOfParameter); // It must be an event parameter
 	neg find eventParameter(transition, _, valueOfParameter);	

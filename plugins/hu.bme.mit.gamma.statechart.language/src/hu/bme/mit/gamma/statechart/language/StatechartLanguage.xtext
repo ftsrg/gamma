@@ -147,10 +147,8 @@ PortEventReference returns PortEventReference:
 ;
 
 Action:
-	RaiseEventAction |
-	SetTimeoutAction |
-	DeactivateTimeoutAction |
-	AssignmentAction
+	Block | 
+	Statement
 ;
 
 RaiseEventAction returns RaiseEventAction:
@@ -164,10 +162,11 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
-
+/*
 AssignmentAction returns AssignmentAction:
 	lhs=ReferenceExpression ':=' rhs=Expression
 ;
+*/
 
 Port returns Port:
 	'port' name=ID ':' interfaceRealization=InterfaceRealization
@@ -479,14 +478,13 @@ ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
 Block returns ActionModel::Block:
 	{ActionModel::Block}
 	'{' 
-		(statements+=Statement)*
+		(actions+=Action)*
 	'}'
 ;
 
 Statement returns ActionModel::Statement:
-	InlineStatement | MultilineStatement
-	
-	//is a (statement)block itself a statement?
+	InlineStatement | 
+	MultilineStatement
 ;
 
 InlineStatement returns ActionModel::Statement:
@@ -498,7 +496,12 @@ InlineStatement returns ActionModel::Statement:
 	ReturnStatement |
 	BreakStatement |
 	
-	AssignmentStatement)
+	AssignmentStatement |
+	
+	RaiseEventAction |
+	SetTimeoutAction |
+	DeactivateTimeoutAction 
+	)
 	
 	';'
 ;
@@ -523,30 +526,50 @@ ExpressionStatement returns ActionModel::ExpressionStatement:
 	expression=Expression
 ;
 
-
-IfStatement returns ActionModel::IfStatement:
-	{ActionModel::IfStatement}
-	'if' ':'
-	conditionals+=GuardedBlock
-	('elsif' conditionals+=GuardedBlock)*
-	('else' 
-	else=Block)?
+IfBranch returns ActionModel::Branch:
+	'(' guard=Expression ')'
+	action=Action
 ;
 
-GuardedBlock returns ActionModel::GuardedBlock:
-	{ActionModel::GuardedBlock}
-	'(' guard=Expression ')'
-	'{' 
-		(statements+=Statement)*
-	'}'	
+ElseBranch returns ActionModel::Branch:
+	guard=ElseExpression
+	action=Action
+;
+
+SwitchBranch returns ActionModel::Branch:
+	guard=Expression ':'
+	action=Action
+;
+
+DefaultBranch returns ActionModel::Branch:
+	guard=DefaultExpression ':'
+	action=Action
+;
+
+ChoiceBranch returns ActionModel::Branch:
+	'[' guard=Expression ']'
+	action=Action
+;
+
+DefaultExpression returns ConstraintModel::ElseExpression:
+	{ConstraintModel::ElseExpression} 'default'
+;
+
+//TODO check if predicates (=>) are correct
+IfStatement returns ActionModel::IfStatement:
+	{ActionModel::IfStatement}
+	'if'
+	conditionals+=IfBranch
+	(=> 'elsif' conditionals+=IfBranch)*
+	(=> conditionals+=ElseBranch)?
 ;
 
 SwitchStatement returns ActionModel::SwitchStatement:
 	'switch'
 	'(' controlExpression=Expression ')'
 	'{'
-	('case' cases+=GuardedBlock ('case' cases+=GuardedBlock)*)
-	('default' default=Block)?
+	('case' cases+=SwitchBranch ('case' cases+=SwitchBranch)*)
+	(cases+=DefaultBranch)?
 	'}'
 ;
 
@@ -574,11 +597,11 @@ BreakStatement returns ActionModel::BreakStatement:
 ChoiceStatement returns ActionModel::ChoiceStatement:
 	'choice'
 	'{'
-	('branch' branches+=GuardedBlock ('branch' branches+=GuardedBlock)*)
+	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
 	'}'
 ;
 
 AssignmentStatement returns ActionModel::AssignmentStatement:
-	variableDeclaration=[ConstraintModel::VariableDeclaration] ':=' expression=Expression
+	lhs=[ConstraintModel::ValueDeclaration] ':=' rhs=Expression
 ;
 	

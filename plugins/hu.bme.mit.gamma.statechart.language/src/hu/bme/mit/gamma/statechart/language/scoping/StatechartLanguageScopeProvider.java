@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
+import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
@@ -337,6 +338,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	
 	private static Collection<StateNode> stateNodesForTransition(final Transition transition) {
 		final StatechartDefinition rootElement = (StatechartDefinition) transition.eContainer();
+		final Collection<Region> asd = rootElement.getRegions(); 
 		final Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
 	}

@@ -57,7 +57,7 @@ import hu.bme.mit.gamma.constraint.model.TrueExpression
 import hu.bme.mit.gamma.constraint.model.Type
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+//import hu.bme.mit.gamma.statechart.model.AssignmentAction
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.Clock
 import hu.bme.mit.gamma.statechart.model.Component
@@ -99,13 +99,13 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.DeclarationInitializations
 import hu.bme.mit.gamma.uppaal.transformation.queries.DefaultTransitionsOfChoices
 import hu.bme.mit.gamma.uppaal.transformation.queries.EliminatableChoices
 import hu.bme.mit.gamma.uppaal.transformation.queries.Entries
-import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
+//import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryRaisingActionsOfStates
-import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfStates
+//import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStates
-import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
+//import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStates
+//import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitRaisingActionsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
@@ -121,7 +121,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Traces
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
+//import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.ClockRepresentation
 import hu.bme.mit.gamma.uppaal.transformation.traceability.EventRepresentation
@@ -356,13 +356,13 @@ class CompositeToUppaalTransformer {
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
 		compositeStateEntryRule.fireAllCurrent 
-		entryAssignmentActionsOfStatesRule.fireAllCurrent
-		exitAssignmentActionsOfStatesRule.fireAllCurrent
+		//entryAssignmentActionsOfStatesRule.fireAllCurrent
+		//exitAssignmentActionsOfStatesRule.fireAllCurrent
 		exitEventRaisingActionsOfStatesRule.fireAllCurrent
 		exitSystemEventRaisingActionsOfStatesRule.fireAllCurrent
-		assignmentActionsRule.fireAllCurrent[
+		/*assignmentActionsRule.fireAllCurrent[
 			!ToHigherTransitions.Matcher.on(engine).allValuesOftransition.contains(it.transition)
-		]	
+		]*/	
 		// Across region entry events are set here so they are situated after the exit events and regular transition assignments
 		toLowerRegionEntryEventTransitionsRule.fireAllCurrent
 		eventRaisingActionsRule.fireAllCurrent[
@@ -372,7 +372,7 @@ class CompositeToUppaalTransformer {
 		entryEventRaisingActionsRule.fireAllCurrent
 		syncSystemEventRaisingOfEntryActionsRule.fireAllCurrent
 		compositeStateExitRule
-		entryTimeoutActionsOfStatesRule.fireAllCurrent
+		//entryTimeoutActionsOfStatesRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
 		isActiveRule.fireAllCurrent
 		// Creating urgent locations in front of composite states, so entry is not immediate
@@ -2776,9 +2776,9 @@ class CompositeToUppaalTransformer {
 	 */
 	private def setEntryEvents(Edge edge, State state, SynchronousComponentInstance owner) {
 		// Entry event updates
-		for (assignmentAction : EntryAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentAction(state)) {
+		/*for (assignmentAction : EntryAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentAction(state)) {
 			edge.transformAssignmentAction(edge_Update, assignmentAction, owner)
-		}
+		}*/
 		// Entry event event raising
 		for (match : RaiseInstanceEventStateEntryActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
 			edge.createEventRaising(match.inPort, match.raisedEvent, match.inInstance, match.entryAction)
@@ -2858,9 +2858,9 @@ class CompositeToUppaalTransformer {
 			val syncEdge = createEdgeWithSync(sourceLoc, targetLoc, syncVar.variable.head, SynchronizationKind.RECEIVE)			
 			syncEdge.setExitEvents(tsource as State, owner)
 			// Setting the regular assignments of the transition, so it takes place after the exit events
-			for (assignment : transition.effects.filter(AssignmentAction)) {
+			/*for (assignment : transition.effects.filter(AssignmentAction)) {
 				syncEdge.transformAssignmentAction(edge_Update, assignment, owner)				
-			}	
+			}*/	
 			// The event raising of the transition is done here, though the order of event raising does not really matter in this transformer
 			for (raiseEventAction : transition.effects.filter(RaiseEventAction)) {
 				for (match : RaiseInstanceEventOfTransitions.Matcher.on(engine).getAllMatches(transition, raiseEventAction, owner, raiseEventAction.port, null, null, null)) {
@@ -3049,9 +3049,9 @@ class CompositeToUppaalTransformer {
 	private def setExitEvents(Edge edge, State state, SynchronousComponentInstance owner) {
 		if (state !== null) {
 			// Assignment actions
-			for (action : ExitAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentAction(state)) {
+			/*for (action : ExitAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentAction(state)) {
 				edge.transformAssignmentAction(edge_Update, action, owner)			
-			}		
+			}*/		
 			// Signal raising actions
 			for (match : RaiseInstanceEventStateExitActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
 				edge.createEventRaising(match.inPort, match.raisedEvent, match.inInstance, match.exitAction)
@@ -3636,49 +3636,49 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming the updates.
      * It depends on sameRegionTransitionsRule, exitAssignmentActionsOfStatesRule, exitEventRaisingActionsOfStatesRule and ExpressionTransformer.
      */
-	val assignmentActionsRule = createRule(UpdatesOfTransitions.instance).action [
+	/*val assignmentActionsRule = createRule(UpdatesOfTransitions.instance).action [
 		// No update on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)		
 		}
 		// The trace is created by the ExpressionTransformer
 	].build
-	
+	*/
 	/**
      * This rule is responsible for transforming the entry event updates of states.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
+	/*val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)
 			// The trace is created by the ExpressionTransformer
 		}
 	].build
-	
+	*/
 	/**
      * This rule is responsible for transforming the entry event timeout actions of states. 
      * (Initializing the timer to 0 on entering a state.)
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
+	/*val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformTimeoutAction(edge_Update, it.setTimeoutAction, edge.owner)
 			// The trace is created by the ExpressionTransformer
 		}
 	].build
-	
+	*/
 	/**
      * This rule is responsible for transforming the exit event updates of states.
      * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
      */
-	val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
+	/*val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentAction, edge.owner)
 		}
 		// The trace is created by the ExpressionTransformer
 		// The loop synchronization edges already have the exit actions
 	].build
-	
+	*/
 	/**
      * This rule is responsible for transforming the raise event actions (raising events) of transitions. (No system out-events.)
      * It depends on sameRegionTransitionsRule and eventsRule.

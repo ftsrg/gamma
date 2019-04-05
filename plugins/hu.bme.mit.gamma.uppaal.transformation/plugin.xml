@@ -38,11 +38,6 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.simpleEventTriggersOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.timeTriggersOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.guardsOfTransitions"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.updatesOfTransitions"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.entryAssignmentsOfStates"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.entryTimeoutActionsOfStates"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.exitAssignmentsOfStates"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.exitAssignmentsOfStatesWithTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.raisingActionsOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.valuesOfEventParameters"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.entryRaisingActionsOfStates"/>

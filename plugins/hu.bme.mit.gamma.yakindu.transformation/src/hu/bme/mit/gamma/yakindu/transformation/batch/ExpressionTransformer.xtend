@@ -25,7 +25,7 @@ import hu.bme.mit.gamma.constraint.model.SubtractExpression
 import hu.bme.mit.gamma.constraint.model.TrueExpression
 import hu.bme.mit.gamma.constraint.model.UnaryExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+//import hu.bme.mit.gamma.statechart.model.AssignmentAction
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
@@ -299,7 +299,7 @@ class ExpressionTransformer {
     	return unaryExp 
 	}
 	
-	def dispatch EObject transform(EObject container, EReference reference, PostFixUnaryExpression expression) {		
+	/*def dispatch EObject transform(EObject container, EReference reference, PostFixUnaryExpression expression) {		
 		// Transformed only if it has a single side effect and not contained by another assignment expression, e.g., (Var.a = Var.b++) or (a * b++)
 		if (expression.eContainer instanceof Expression) {
 			throw new IllegalArgumentException(expression + " is contained by another expression, thus, it is not transformable to Gamma.")
@@ -350,7 +350,7 @@ class ExpressionTransformer {
 		// Creating the trace
 		addToTrace(expression, #{assignmentExpression}, expressionTrace)
     	return assignmentExpression 
-	}
+	}*/
 	
 	def dispatch EObject transform(EObject container, EReference reference, LogicalAndExpression expression) {		
 		val logAndExp = container.createChild(reference, andExpression) => [
@@ -502,7 +502,7 @@ class ExpressionTransformer {
 		// Trace is created by the method that called this one, and EventDefinitions are traced in Traces
 	}
 	
-	def dispatch EObject transform(EObject container, EReference reference, AssignmentExpression expression) {		
+	/*def dispatch EObject transform(EObject container, EReference reference, AssignmentExpression expression) {		
 		var AssignmentAction assExp
 		switch (expression.operator.literal) {
 			case "=":
@@ -548,7 +548,7 @@ class ExpressionTransformer {
 		// Creating the trace
 		addToTrace(expression, #{assExp}, expressionTrace)
     	return assExp 		
-	}
+	}*/
 	
 	def dispatch EObject transform(EObject container, EReference reference, Expression expression) {
 		throw new IllegalArgumentException("The expression is not supported: " + expression)
