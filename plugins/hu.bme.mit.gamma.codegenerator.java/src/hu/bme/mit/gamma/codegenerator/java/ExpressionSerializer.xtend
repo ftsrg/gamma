@@ -63,11 +63,11 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(OrExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " || "»«expression.serialize»«ENDFOR»)'''
+		return '''(«FOR operand : expression.operands SEPARATOR " || "»«operand.serialize»«ENDFOR»)'''
 	}	
 	
 	def dispatch String serialize(AndExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " && "»«expression.serialize»«ENDFOR»)'''
+		return '''(«FOR operand : expression.operands SEPARATOR " && "»«operand.serialize»«ENDFOR»)'''
 	}
 	
 	def dispatch String serialize(EqualityExpression expression) {
