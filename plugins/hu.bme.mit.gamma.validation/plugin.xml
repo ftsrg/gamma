@@ -19,12 +19,14 @@
       <query-specification fqn="hu.bme.mit.gamma.validation.transitionsOfSameSourceAndTrigger"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.occludedTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.sameTrigger"/>
+      <query-specification fqn="hu.bme.mit.gamma.validation.sameTriggerDifferentAssignment"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.sameTriggerSameEvent"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.regionsWithoutEntry"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.regionsWithMoreEntries"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.transitionsAcrossOrthogonalRegions"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.transitionsIntoOrthogonalRegions"/>
       <query-specification fqn="hu.bme.mit.gamma.validation.inOutTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.validation.prohibitedEventParameterReferences"/>
     </group>
   </extension>
 </plugin>

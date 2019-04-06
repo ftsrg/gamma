@@ -602,6 +602,6 @@ ChoiceStatement returns ActionModel::ChoiceStatement:
 ;
 
 AssignmentStatement returns ActionModel::AssignmentStatement:
-	lhs=[ConstraintModel::ValueDeclaration] ':=' rhs=Expression
+	lhs=ReferenceExpression ':=' rhs=Expression
 ;
 	

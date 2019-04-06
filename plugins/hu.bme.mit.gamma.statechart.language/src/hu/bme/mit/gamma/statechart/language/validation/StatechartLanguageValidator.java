@@ -60,6 +60,8 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
+import hu.bme.mit.gamma.statechart.model.action.ActionPackage;
+import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel;
@@ -248,13 +250,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 	
-	/*
+	
 	@Check
-	public void checkAssignmentActions(AssignmentAction assignment) {
+	public void checkAssignmentActions(AssignmentStatement assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 		// Constant
 		if (!(reference.getDeclaration() instanceof VariableDeclaration)) {
-			error("Values can be assigned only to variables.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
+			error("Values can be assigned only to variables.", ActionPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
 		}
 		// Other assignment type checking
 		if (reference.getDeclaration() instanceof VariableDeclaration) {
@@ -266,14 +268,14 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					error("The types of the variable declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 							rightHandSideExpressionType.toString().toLowerCase() + ".",
-							StatechartModelPackage.Literals.ASSIGNMENT_ACTION__RHS);
+							ActionPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
 				} 
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
 	}
-	*/
+	
 	@Check
 	public void checkNodeReachability(StateNode node) {
 		// These nodes do not need incoming transitions
@@ -620,8 +622,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return new HashSet<Transition>();
 	}
 	
-	/*
-	 @Check
+	
+	@Check
 	public void checkParallelTransitionAssignments(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
 		Declaration declaration = getSameVariableOfAssignments(transition, sameTriggerParallelTransition);
@@ -631,7 +633,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 		}
 	}
-	 */
+	 
 	@Check
 	public void checkParallelEventRaisings(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
@@ -665,16 +667,16 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return siblingTransitions;
 	}
 	
-	/*private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
+	private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
-			if (action instanceof AssignmentAction) {
-				AssignmentAction assignment = (AssignmentAction) action;
+			if (action instanceof AssignmentStatement) {
+				AssignmentStatement assignment = (AssignmentStatement) action;
 				if (assignment.getLhs() instanceof ReferenceExpression) {
 					ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 					Declaration declaration = reference.getDeclaration();
 					for (Action rhsAction: rhs.getEffects()) {
-						if (rhsAction instanceof AssignmentAction) {
-							AssignmentAction rhsAssignment = (AssignmentAction) rhsAction;
+						if (rhsAction instanceof AssignmentStatement) {
+							AssignmentStatement rhsAssignment = (AssignmentStatement) rhsAction;
 							if (rhsAssignment.getLhs() instanceof ReferenceExpression) {
 								ReferenceExpression rhsReference = (ReferenceExpression) rhsAssignment.getLhs();
 								if (rhsReference.getDeclaration() == declaration) {
@@ -688,7 +690,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 		return null;
 	}
-	*/
+	
 	private Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof RaiseEventAction) {

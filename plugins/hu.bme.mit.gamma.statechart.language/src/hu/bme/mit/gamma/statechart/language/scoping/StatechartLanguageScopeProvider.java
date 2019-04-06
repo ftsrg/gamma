@@ -338,7 +338,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	
 	private static Collection<StateNode> stateNodesForTransition(final Transition transition) {
 		final StatechartDefinition rootElement = (StatechartDefinition) transition.eContainer();
-		final Collection<Region> asd = rootElement.getRegions(); 
 		final Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
 	}

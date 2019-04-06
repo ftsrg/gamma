@@ -25,12 +25,12 @@ import hu.bme.mit.gamma.constraint.model.SubtractExpression
 import hu.bme.mit.gamma.constraint.model.TrueExpression
 import hu.bme.mit.gamma.constraint.model.UnaryExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-//import hu.bme.mit.gamma.statechart.model.AssignmentAction
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
+import hu.bme.mit.gamma.statechart.model.action.ActionPackage
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
@@ -71,6 +71,7 @@ import org.yakindu.sct.model.stext.stext.EventRaisingExpression
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
+import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.
@@ -86,6 +87,7 @@ class ExpressionTransformer {
     
     protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     protected extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
+    protected extension ActionPackage acPackage = ActionPackage.eINSTANCE
 	protected extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
 	
@@ -299,7 +301,7 @@ class ExpressionTransformer {
     	return unaryExp 
 	}
 	
-	/*def dispatch EObject transform(EObject container, EReference reference, PostFixUnaryExpression expression) {		
+	def dispatch EObject transform(EObject container, EReference reference, PostFixUnaryExpression expression) {		
 		// Transformed only if it has a single side effect and not contained by another assignment expression, e.g., (Var.a = Var.b++) or (a * b++)
 		if (expression.eContainer instanceof Expression) {
 			throw new IllegalArgumentException(expression + " is contained by another expression, thus, it is not transformable to Gamma.")
@@ -321,9 +323,9 @@ class ExpressionTransformer {
 		val gammaVariable = gammaVariables.head as VariableDeclaration
 		val assignmentExpression = switch (expression.operator) {
 			case DECREMENT: {
-				container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.operand)
-					it.createChild(assignmentAction_Rhs, subtractExpression) as SubtractExpression => [
+				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.createChild(assignmentStatement_Rhs, subtractExpression) as SubtractExpression => [
 						it.createChild(binaryExpression_LeftOperand, referenceExpression) as ReferenceExpression => [
 							it.declaration = gammaVariable
 						]
@@ -334,9 +336,9 @@ class ExpressionTransformer {
 				]
 			}
 			case INCREMENT: {
-				container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.operand)
-					it.createChild(assignmentAction_Rhs, addExpression) as AddExpression => [
+				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.createChild(assignmentStatement_Rhs, addExpression) as AddExpression => [
 						it.createChild(multiaryExpression_Operands, referenceExpression) as ReferenceExpression => [
 							it.declaration = gammaVariable
 						]
@@ -350,7 +352,7 @@ class ExpressionTransformer {
 		// Creating the trace
 		addToTrace(expression, #{assignmentExpression}, expressionTrace)
     	return assignmentExpression 
-	}*/
+	}
 	
 	def dispatch EObject transform(EObject container, EReference reference, LogicalAndExpression expression) {		
 		val logAndExp = container.createChild(reference, andExpression) => [
@@ -502,42 +504,42 @@ class ExpressionTransformer {
 		// Trace is created by the method that called this one, and EventDefinitions are traced in Traces
 	}
 	
-	/*def dispatch EObject transform(EObject container, EReference reference, AssignmentExpression expression) {		
-		var AssignmentAction assExp
+	def dispatch EObject transform(EObject container, EReference reference, AssignmentExpression expression) {		
+		var AssignmentStatement assExp
 		switch (expression.operator.literal) {
 			case "=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.transform(assignmentAction_Rhs, expression.expression)
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(assignmentStatement_Rhs, expression.expression)
 				]
 			case "+=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, addExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, addExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "*=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, multiplyExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, multiplyExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "-=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, subtractExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, subtractExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "/=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, divideExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, divideExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)
 					]
@@ -548,7 +550,7 @@ class ExpressionTransformer {
 		// Creating the trace
 		addToTrace(expression, #{assExp}, expressionTrace)
     	return assExp 		
-	}*/
+	}
 	
 	def dispatch EObject transform(EObject container, EReference reference, Expression expression) {
 		throw new IllegalArgumentException("The expression is not supported: " + expression)

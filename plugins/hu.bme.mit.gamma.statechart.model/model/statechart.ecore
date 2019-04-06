@@ -353,7 +353,8 @@
           eType="#//action/Branch" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//action/Statement">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ValueDeclaration"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ReferenceExpression"
+          containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
           containment="true"/>
     </eClassifiers>

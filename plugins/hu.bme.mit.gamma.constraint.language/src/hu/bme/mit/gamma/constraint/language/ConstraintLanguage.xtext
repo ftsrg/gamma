@@ -154,7 +154,7 @@ IfThenElseExpression returns Expression:
 /*
 //ternary, right-associative
 IfThenElseExpression returns Expression:
-	{IfThenElseExpression} 'if' condition=Expression '?' then=Expression (=>':' else=Expression) |
+	{IfThenElseExpression} 'if' condition=Expression 'then' then=Expression (=>'else' else=Expression) |
 	ImplyExpression
 ;
 */

@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.constraint.model.NotExpression
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
+import hu.bme.mit.gamma.statechart.model.action.ActionPackage
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
@@ -141,6 +142,7 @@ class YakinduToGammaTransformer {
     
     // Packages of the metamodels
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
+    extension ActionPackage acPackage = ActionPackage.eINSTANCE
     extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     
@@ -197,7 +199,7 @@ class YakinduToGammaTransformer {
 		forksRule.fireAllCurrent
 		joinsRule.fireAllCurrent
 		finalStatesRule.fireAllCurrent
-		//finalStatesEndVariableRule
+		finalStatesEndVariableRule
 		exitNodesRule.fireAllCurrent
 		transitionsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
@@ -456,7 +458,7 @@ class YakinduToGammaTransformer {
      * an entry event of the gammaFinalState where the variable is set to false.
      * It depends on finalStatesRule.
      */
-    /*private def finalStatesEndVariableRule() {
+    private def finalStatesEndVariableRule() {
     	var VariableDeclaration endVariable = null
     	for (finalStateTopRegionMatch : engine.getMatcher(FinalStates.instance).allMatches) {
     		//  The "end" variable is during for the first iteration
@@ -469,17 +471,17 @@ class YakinduToGammaTransformer {
     		val gammaFinalState = finalStateTopRegionMatch.finalState.getAllValuesOfTo.filter(State).head
     		// Creating and entry event of the Gamma final state that sets the "end" variable to false
     		val variableDeclaration = endVariable
-    		gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentAction => [
-    			it.createChild(assignmentAction_Lhs, referenceExpression) as ReferenceExpression => [
+    		gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentStatement => [
+    			it.createChild(assignmentStatement_Lhs, referenceExpression) as ReferenceExpression => [
     				it.declaration = variableDeclaration    					
     			]
-    			it.createChild(assignmentAction_Rhs, trueExpression)
+    			it.createChild(assignmentStatement_Rhs, trueExpression)
     		]
     		// Now the Yakindu final state is mapped to and "end" variable too in addition to a Gamma State
     		addToTrace(finalStateTopRegionMatch.finalState, #{variableDeclaration}, trace)
     	}
     }
-    */
+    
     /**
      * This rule is responsible for mapping exit nodes of regions.
      * It depends on all the rules that create nodes.
