@@ -74,7 +74,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="ArrayTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elementType" lowerBound="1"
         eType="#//Type" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="size" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="size" eType="#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionTypeDefinition" eSuperTypes="#//CompositeTypeDefinition">

@@ -105,7 +105,7 @@ RationalTypeDefinition returns RationalTypeDefinition:
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' elementType=Type '[' size=INTEGER ']'
+	'array' elementType=Type '[' size=Expression ']'
 ;
 
 IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
@@ -146,7 +146,7 @@ ElseExpression returns ElseExpression:
 	'else'
 ;
 
-//TODO check associativity and precedence
+//ternary, right-associative
 IfThenElseExpression returns Expression:
 	ImplyExpression({IfThenElseExpression.condition=current} '?' then=Expression (=> ':' else=Expression))?
 ;
@@ -183,8 +183,8 @@ AndExpression returns Expression:
 UnaryLogicExpression returns Expression:
 	NotExpression |
 	ForallExpression |
-	ExistsExpression 
-	| EquivalenceExpression	//TODO works but not unaryLogic
+	ExistsExpression | 
+	EquivalenceExpression	
 ;
 
 NotExpression returns Expression:
