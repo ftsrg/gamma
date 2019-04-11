@@ -572,6 +572,10 @@ class GlueCodeGenerator {
 			
 			private Object value;
 			
+			public «EVENT_CLASS_NAME»(String event) {
+				this.event = event;
+			}
+			
 			public «EVENT_CLASS_NAME»(String event, Object value) {
 				this.event = event;
 				this.value = value;
@@ -702,7 +706,7 @@ class GlueCodeGenerator {
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
-			// Indicates which queues are active in this cycle
+			// Indicates which queue is active in a cycle
 			private boolean «INSERT_QUEUE» = true;
 			private boolean «PROCESS_QUEUE» = false;
 			// Event queues for the synchronization of statecharts
@@ -787,7 +791,7 @@ class GlueCodeGenerator {
 						}
 				}
 				«component.statemachineInstanceName».runCycle();
-			}			
+			}
 			
 			// Inner classes representing Ports
 			«FOR port : component.ports SEPARATOR "\n"»
