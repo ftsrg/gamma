@@ -44,7 +44,7 @@ To cite Gamma, please cite the following paper.
 
 * Have an Eclipse instance (Eclipse IDE for Java and DSL Developers) with EMF and Xtext and Java 1.8, .
 * Install VIATRA 2.1.1 and the Yakindu Statechart Tools 3.5.3.
-* Exit Eclipse and extract the Gamma zip file containing the `dropins/plugins` folder (with the Gamma JAR files) into the home folder of Eclipse. This will create the plugins directory in the dropins folder of your home Eclipse folder, which should contain all JAR files of Gamma.
+* Exit Eclipse and extract the Gamma zip file containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the dropins folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the dropins folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the -clean flag.
 * Check if the plugin installed successfully in Help > About Eclipse and by clicking Installation Details. On the Plug-ins tab, sort the entries by Plugin-in Id and look for entries starting with hu.bme.mit.gamma. 
 * For formal verification, download and extract UPPAAL. In order to let Gamma find the UPPAAL executables, add the bin-Win32 or bin-Linux folder to the path environment variable (depending on the operating system being used).
