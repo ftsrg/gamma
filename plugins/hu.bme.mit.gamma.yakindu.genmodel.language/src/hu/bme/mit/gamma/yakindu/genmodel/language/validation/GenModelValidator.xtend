@@ -424,7 +424,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 					if (yEvent.type === null) {
 						return false
 					}
-					return yEvent.type.name.equals("decimal")					
+					return yEvent.type.name.equals("real")					
 				}
 				default:
 					throw new IllegalArgumentException("Not known type: " + gEvent.parameterDeclarations.head.type)

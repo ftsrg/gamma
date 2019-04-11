@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.constraint.model.MultiplyExpression;
 import hu.bme.mit.gamma.constraint.model.NamedElement;
 import hu.bme.mit.gamma.constraint.model.PredicateExpression;
 import hu.bme.mit.gamma.constraint.model.RationalLiteralExpression;
+import hu.bme.mit.gamma.constraint.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.SubtractExpression;
@@ -189,7 +190,6 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 	}
 	
 	@Check
-	//TODO REVIEW
 	public void checkInitializableElement(InitializableElement elem) {
 		try {
 			Expression initialExpression = elem.getExpression();
@@ -235,7 +235,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		return false;
 	}
 	
-	protected enum ExpressionType { BOOLEAN, INTEGER, DECIMAL, ENUMERATION, ERROR }
+	protected enum ExpressionType { BOOLEAN, INTEGER, RATIONAL, DECIMAL, ENUMERATION, ERROR }
 
 	protected class ExpressionTypeDeterminator {
 		
@@ -310,7 +310,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		}
 		
 		private ExpressionType getType(RationalLiteralExpression expression) {
-			return ExpressionType.DECIMAL;
+			return ExpressionType.RATIONAL;
 		}
 		
 		private ExpressionType getType(DecimalLiteralExpression expression) {
@@ -356,6 +356,9 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			// All types are numbers
 			if (collection.stream().anyMatch(it -> it == ExpressionType.DECIMAL)) {
 				return ExpressionType.DECIMAL;
+			}
+			if (collection.stream().anyMatch(it -> it == ExpressionType.RATIONAL)) {
+				return ExpressionType.RATIONAL;
 			}
 			return ExpressionType.INTEGER;
 			
@@ -431,7 +434,8 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		
 		private boolean isNumber(ExpressionType type) {
 			return type == ExpressionType.INTEGER ||
-					type == ExpressionType.DECIMAL;
+					type == ExpressionType.DECIMAL ||
+					type == ExpressionType.RATIONAL;
 		}
 		
 		public boolean isNumber(Expression expression) {
@@ -457,6 +461,9 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 			if (type instanceof IntegerTypeDefinition) {
 				return ExpressionType.INTEGER;
 			}
+			if (type instanceof RationalTypeDefinition) {
+				return ExpressionType.RATIONAL;
+			}
 			if (type instanceof DecimalTypeDefinition) {
 				return ExpressionType.DECIMAL;
 			}
@@ -477,6 +484,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 		public boolean equals(Type type, ExpressionType expressionType) {
 			return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
 				type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
+				type instanceof RationalTypeDefinition && expressionType == ExpressionType.RATIONAL ||
 				type instanceof DecimalTypeDefinition && expressionType == ExpressionType.DECIMAL ||
 				type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION;
 		}

@@ -151,13 +151,6 @@ IfThenElseExpression returns Expression:
 	ImplyExpression({IfThenElseExpression.condition=current} '?' then=Expression (=> ':' else=Expression))?
 ;
 
-/*
-//ternary, right-associative
-IfThenElseExpression returns Expression:
-	{IfThenElseExpression} 'if' condition=Expression 'then' then=Expression (=>'else' else=Expression) |
-	ImplyExpression
-;
-*/
 
 //binary, right-associative
 ImplyExpression returns Expression:
@@ -309,9 +302,6 @@ FalseExpression returns FalseExpression:
 	{FalseExpression} 'false'
 ;
 
-ArrayLiteralExpression:
-	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
-;
 
 RecordLiteralExpression:
 	'(#' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '#)'
@@ -325,11 +315,17 @@ EnumerationLiteralExpression:
 	'::' reference=[EnumerationLiteralDefinition]
 ;
 
-//TODO generally for Expression?
+
+ArrayLiteralExpression:
+	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
+;
+
+//TODO leftoperand=Expression creates a left-recursive grammar (-> serious refactor) - this is lenient enough for now 
 IntegerRangeLiteralExpression:
 	{IntegerRangeLiteralExpression}
-	((leftInclusive?='[') | '(') leftOperand=IntegerLiteralExpression '..' rightOperand=IntegerLiteralExpression ((rightInclusive?=']') | ')')
-;
+	((leftInclusive?='[') | '(') (leftOperand=(IntegerLiteralExpression | ReferenceExpression)) 
+		'..' rightOperand=(IntegerLiteralExpression | ReferenceExpression) ((rightInclusive?=']') | ')')
+; 
 
 
 ///////////////////////////////

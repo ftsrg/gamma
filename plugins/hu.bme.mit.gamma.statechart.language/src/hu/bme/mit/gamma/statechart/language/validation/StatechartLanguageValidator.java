@@ -1304,8 +1304,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					.collect(Collectors.toSet()) + ".",	CompositePackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
 		}
 	}
-		
-	//Action
 	
 
 }

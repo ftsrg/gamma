@@ -49,9 +49,8 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getStateNodeRule());
         c.setLinewrap(1).after(f.getStateAccess().getInvariantsExpressionParserRuleCall_3_1_0_0_1_0());
         c.setLinewrap(1).after(f.getStateAccess().getEntryActionsActionParserRuleCall_3_1_0_1_2_0());
-        c.setLinewrap(1).after(f.getStateAccess().getEntryActionsActionParserRuleCall_3_1_0_1_3_1_0());
         c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_2_0());
-        c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_3_1_0());
+        //c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_3_1_0());
         // Composite system rules   
         c.setLinewrap(1).after(f.getClockDeclarationRule());
         c.setLinewrap(1).after(f.getControlSpecificaitonRule());

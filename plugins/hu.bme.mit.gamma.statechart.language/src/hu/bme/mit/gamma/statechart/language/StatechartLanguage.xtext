@@ -162,11 +162,6 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
-/*
-AssignmentAction returns AssignmentAction:
-	lhs=ReferenceExpression ':=' rhs=Expression
-;
-*/
 
 Port returns Port:
 	'port' name=ID ':' interfaceRealization=InterfaceRealization
@@ -225,7 +220,7 @@ Transition returns Transition:
 	(
 		('when' trigger=Trigger)?
 		('[' guard=Expression ']')?
-		('/' (effects+=Action) (';' effects+=Action)*)?
+		('/' ( => effects+=Action)* )?
 	)
 ;
 
@@ -242,8 +237,8 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
-				('entry' '/' (entryActions+=Action)(';' entryActions+=Action)* )?
-				('exit' '/' (exitActions+=Action)(';' exitActions+=Action)* )?
+				('entry' '/' (=> entryActions+=Action)* )?
+				('exit' '/' (=> exitActions+=Action)* )?
 			)
 			(regions+=Region)*
 		)
@@ -555,7 +550,6 @@ DefaultExpression returns ConstraintModel::ElseExpression:
 	{ConstraintModel::ElseExpression} 'default'
 ;
 
-//TODO check if predicates (=>) are correct
 IfStatement returns ActionModel::IfStatement:
 	{ActionModel::IfStatement}
 	'if'

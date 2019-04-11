@@ -38,7 +38,6 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
-import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
