@@ -30,21 +30,21 @@ To cite Gamma, please cite the following paper.
 ### Dependencies
 
 ##### Recommended Eclipse version and bundle:
-* Eclipse Photon 1, Eclipse IDE for Java and DSL Developers bundle.
+* Eclipse IDE 2019-03, Eclipse IDE for Java and DSL Developers bundle.
 
 ##### 3rd-party Eclipse components (should be installed separately):
-* Xtext 2.15.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
-* VIATRA 2.1.0 (https://www.eclipse.org/viatra/),
-* Yakindu Statechart Tools 3.5.2 (https://www.itemis.com/en/yakindu/state-machine/).
+* Xtext 2.17.0 (https://www.eclipse.org/Xtext/, included in Eclipse bundle),
+* VIATRA 2.1.1 (https://www.eclipse.org/viatra/),
+* Yakindu Statechart Tools 3.5.3 (https://www.itemis.com/en/yakindu/state-machine/).
 
 ##### 3rd-party tools used by Gamma (should be installed separately):
 * UPPAAL (Uppsala and Aalborg Universities, http://www.uppaal.org/).
 
 ### Installation
 
-* Have an Eclipse instance with EMF and Xtext and Java 1.8.
-* Install VIATRA 2.1.0 and the Yakindu Statechart Tools 3.5.2.
-* Exit Eclipse and extract the Gamma zip file into the root folder of Eclipse (this will create the plugins directory in the dropins folder, containing the JAR file of the Gamma).
+* Have an Eclipse instance (Eclipse IDE for Java and DSL Developers) with EMF and Xtext and Java 1.8, .
+* Install VIATRA 2.1.1 and the Yakindu Statechart Tools 3.5.3.
+* Exit Eclipse and extract the Gamma zip file containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the dropins folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the dropins folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the -clean flag.
 * Check if the plugin installed successfully in Help > About Eclipse and by clicking Installation Details. On the Plug-ins tab, sort the entries by Plugin-in Id and look for entries starting with hu.bme.mit.gamma. 
 * For formal verification, download and extract UPPAAL. In order to let Gamma find the UPPAAL executables, add the bin-Win32 or bin-Linux folder to the path environment variable (depending on the operating system being used).

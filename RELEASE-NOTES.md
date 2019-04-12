@@ -63,3 +63,9 @@
 * Bug regarding the linking of packages is fixed.
 * Compatibility issues with the new VIATRA version are resolved.
 * Queries generated with the GUI are now appended with an expression specifying activeness (isActive) when referring to states.
+
+## 2018.03.28. - Version 2.1.1
+
+### Improvements
+
+* Validation rules regarding fork and join nodes are added.

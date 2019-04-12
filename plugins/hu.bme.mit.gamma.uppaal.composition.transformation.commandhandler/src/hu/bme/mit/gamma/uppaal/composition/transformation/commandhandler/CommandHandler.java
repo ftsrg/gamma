@@ -148,7 +148,7 @@ public class CommandHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Returns whether the given objects are equal with respect to ecore copies.
+	 * Returns whether the given objects are equal taking into consideration Ecore copies too.
 	 */
 	private boolean helperEquals(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
