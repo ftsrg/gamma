@@ -117,9 +117,9 @@ class TestGenerator {
 			«IF component.needTimer»
 «««				Only if there are timing specs in the model
 				«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.parameters SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
+				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 			«ELSE»
-				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.parameters SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			«componentClassName.toFirstLower».reset();
 		}
@@ -156,9 +156,9 @@ class TestGenerator {
 					// Checking out events
 					«FOR outEvent : step.outEvents»
 						«ASSERT_TRUE»(«componentClassName.toFirstLower».get«outEvent.port.name.toFirstUpper»().isRaised«outEvent.event.name.toFirstUpper»());
-						«IF outEvent.parameters.head !== null»
+						«IF outEvent.arguments.head !== null»
 							// Parameter value check
-							«ASSERT_EQUALS»(«outEvent.parameters.head.serialize», «componentClassName.toFirstLower».get«outEvent.port.name.toFirstUpper»().get«outEvent.event.name.toFirstUpper»Value());
+							«ASSERT_EQUALS»(«outEvent.arguments.head.serialize», «componentClassName.toFirstLower».get«outEvent.port.name.toFirstUpper»().get«outEvent.event.name.toFirstUpper»Value());
 						«ENDIF»
 					«ENDFOR»
 					// Checking variables
@@ -178,7 +178,7 @@ class TestGenerator {
 	}
 	
 	protected def dispatch serialize(RaiseEventAct raiseEvent) '''
-		«componentClassName.toFirstLower».get«raiseEvent.port.name.toFirstUpper»().raise«raiseEvent.event.name.toFirstUpper»(«FOR param : raiseEvent.parameters SEPARATOR ", "»«param.serialize»«ENDFOR»);
+		«componentClassName.toFirstLower».get«raiseEvent.port.name.toFirstUpper»().raise«raiseEvent.event.name.toFirstUpper»(«FOR param : raiseEvent.arguments SEPARATOR ", "»«param.serialize»«ENDFOR»);
 	'''
 	
 	protected def dispatch serialize(TimeElapse elapse) '''

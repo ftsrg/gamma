@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Traceability Metamodel of Yakindu to Gamma Transformation
+Bundle-Name: Gamma Yakindu-Gamma Traceability Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.transformation.traceability;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-ClassPath: .

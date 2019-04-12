@@ -67,7 +67,7 @@
     <genClasses ecoreClass="constraint.ecore#//EnumerationLiteralDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//ArrayTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/elementType"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//ArrayTypeDefinition/size"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/size"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//IntegerRangeTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionTypeDefinition">

@@ -237,7 +237,8 @@
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//composite/SynchronousCompositeComponent"/>
     </nestedGenPackages>
-    <nestedGenPackages prefix="Action" disposableProviderFactory="true" ecorePackage="statechart.ecore#//action">
+    <nestedGenPackages prefix="Action" basePackage="hu.bme.mit.gamma.statechart.model"
+        disposableProviderFactory="true" ecorePackage="statechart.ecore#//action">
       <genClasses ecoreClass="statechart.ecore#//action/ProcedureDeclaration">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//action/ProcedureDeclaration/body"/>
       </genClasses>
