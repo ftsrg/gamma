@@ -197,8 +197,7 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				return;
 			}
 			// The declaration has an initial value
-			if(elem instanceof Declaration)
-			{
+			if(elem instanceof Declaration){
 				Declaration declaration = (Declaration)elem;
 				if (isDeclarationReferredInExpression(declaration, initialExpression)) {
 					error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
