@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
+********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.queries
 
 import "http://www.mit.bme.hu/gamma/constraint/Model" 
@@ -16,7 +16,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
 pattern parameterizedInstances(instance : ComponentInstance) {
-	ComponentInstance.parameters(instance, _); 
+	ComponentInstance.arguments(instance, _); 
 }
 
 pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
@@ -615,4 +615,3 @@ pattern timeoutValues(valueExp : Expression, unit : TimeUnit) {
 	TimeSpecification.value(timeSpec, valueExp);
 	TimeSpecification.unit(timeSpec, unit);
 }
-

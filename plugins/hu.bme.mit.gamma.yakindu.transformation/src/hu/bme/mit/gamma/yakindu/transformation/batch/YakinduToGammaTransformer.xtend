@@ -13,11 +13,12 @@ package hu.bme.mit.gamma.yakindu.transformation.batch
 import hu.bme.mit.gamma.constraint.model.AndExpression
 import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DefinableDeclaration
+import hu.bme.mit.gamma.constraint.model.InitializableElement
 import hu.bme.mit.gamma.constraint.model.NotExpression
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
+import hu.bme.mit.gamma.statechart.model.action.ActionPackage
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
@@ -141,6 +142,7 @@ class YakinduToGammaTransformer {
     
     // Packages of the metamodels
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
+    extension ActionPackage acPackage = ActionPackage.eINSTANCE
     extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     
@@ -469,11 +471,11 @@ class YakinduToGammaTransformer {
     		val gammaFinalState = finalStateTopRegionMatch.finalState.getAllValuesOfTo.filter(State).head
     		// Creating and entry event of the Gamma final state that sets the "end" variable to false
     		val variableDeclaration = endVariable
-    		gammaFinalState.createChild(state_EntryActions, assignmentAction) as AssignmentAction => [
-    			it.createChild(assignmentAction_Lhs, referenceExpression) as ReferenceExpression => [
+    		gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentStatement => [
+    			it.createChild(assignmentStatement_Lhs, referenceExpression) as ReferenceExpression => [
     				it.declaration = variableDeclaration    					
     			]
-    			it.createChild(assignmentAction_Rhs, trueExpression)
+    			it.createChild(assignmentStatement_Rhs, trueExpression)
     		]
     		// Now the Yakindu final state is mapped to and "end" variable too in addition to a Gamma State
     		addToTrace(finalStateTopRegionMatch.finalState, #{variableDeclaration}, trace)
@@ -593,7 +595,7 @@ class YakinduToGammaTransformer {
      * This rule depends on topRegionRule.
      */    
      val variablesRule = createRule(Variables.instance).action [
-    	var DefinableDeclaration gammaVariable
+    	var InitializableElement gammaVariable
 	    // If the Yakindu variable is a constant, a constantDeclaration is created
 	    if (it.isReadOnly) {
 	    	gammaVariable = gammaPackage.createChild(constraintSpecification_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
@@ -610,7 +612,7 @@ class YakinduToGammaTransformer {
     /**
      * Responsible for initializing the created gammaVariables. Used to avoid code duplication.
      */
-    private def setVariable(VariableDefinition yVariable, DefinableDeclaration gammaVariable, String name, String typeName) {    	    	
+    private def setVariable(VariableDefinition yVariable, InitializableElement gammaVariable, String name, String typeName) {    	    	
 	    gammaVariable.name = name
 	    // The type is created by the createType method
 	    gammaVariable.createType(typeName)
@@ -627,7 +629,7 @@ class YakinduToGammaTransformer {
     		case "string":
     			typeContainer.createChild(declaration_Type, integerTypeDefinition)
     		case "real":
-    			typeContainer.createChild(declaration_Type, realTypeDefinition)
+    			typeContainer.createChild(declaration_Type, decimalTypeDefinition)
     		case "boolean":
     			typeContainer.createChild(declaration_Type, booleanTypeDefinition)
     	}
@@ -639,8 +641,8 @@ class YakinduToGammaTransformer {
      */ 
     val variableInitRule = createRule(VariableInits.instance).action [
     	val yVariable = it.variable
-    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(DefinableDeclaration)) {
-	    	gammaVariable.transform(definableDeclaration_Expression, yVariable.initialValue)
+    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(InitializableElement)) {
+	    	gammaVariable.transform(initializableElement_Expression, yVariable.initialValue)
 	    	// The trace is created by the Expression Transformer
     	}
     ].build
@@ -871,7 +873,7 @@ class YakinduToGammaTransformer {
     		throw new IllegalArgumentException("The EventTrigger must contain one event: " + gammaTransition)
     	}
     	val gammaTransitionTrigger = gammaTransition.trigger
-    	val reference = gammaTransitionTrigger.createChild(parameterizedElement_Parameters, referenceExpression) as ReferenceExpression => [
+    	val reference = gammaTransitionTrigger.createChild(argumentedElement_Arguments, referenceExpression) as ReferenceExpression => [
     		it.declaration = eventDefinitionParameter
     	]
     	// Valueof expressions are in ExpressionTraces now

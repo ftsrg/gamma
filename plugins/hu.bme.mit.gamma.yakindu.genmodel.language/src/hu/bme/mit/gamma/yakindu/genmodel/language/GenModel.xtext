@@ -87,7 +87,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 ;
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
-	'analysis' component=[model::Component] ('(' parameters+=Expression (',' parameters+=Expression)* ')')? '{'
+	'analysis' component=[model::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? '{'
 		(
 			'folder' '=' targetFolder+=STRING |			
 			'file' '=' fileName+=STRING |

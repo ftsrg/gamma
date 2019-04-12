@@ -36,10 +36,6 @@ FieldDeclaration returns FieldDeclaration:
 	{FieldDeclaration} name=ID ':' type=Type
 ;
 
-LetDeclaration returns LetDeclaration:
-	{LetDeclaration} name=ID ':' type=Type ':=' expression=Expression
-;
-
 ConstantDeclaration returns ConstantDeclaration:
 	'const' name=ID ':' type=Type ( ':=' expression=Expression )?
 ;
@@ -49,8 +45,13 @@ VariableDeclaration returns VariableDeclaration:
 	'var' name=ID ':' type=Type (':=' expression=Expression)?
 ;
 
-FunctionDeclaration returns FunctionDeclaration:
-	'function' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type ( ':=' expression=Expression )?
+//Abstraction for extensibility
+FunctionDeclaration:
+	LambdaDeclaration
+;
+
+LambdaDeclaration returns LambdaDeclaration:
+	'lambda' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type ( ':=' expression=Expression )?
 ;
 
 ////////////////////////////////////////
@@ -70,37 +71,45 @@ TypeReference returns TypeReference:
 ;
 
 TypeDefinition returns TypeDefinition:
-	NaturalTypeDefinition |
+	VoidTypeDefinition |
 	IntegerTypeDefinition |
 	BooleanTypeDefinition |
-	RealTypeDefinition |
+	DecimalTypeDefinition |
+	RationalTypeDefinition |
 	ArrayTypeDefinition |
+	IntegerRangeTypeDefinition |
 	EnumerationTypeDefinition |
 	RecordTypeDefinition |
-	TupleTypeDefinition |
 	SubrangeTypeDefinition |
-	SubTypeDefinition |
 	FunctionTypeDefinition
 ;
 
-NaturalTypeDefinition returns BasicTypeDefinition:
-	{NaturalTypeDefinition} 'natural'
+VoidTypeDefinition returns VoidTypeDefinition:
+	{VoidTypeDefinition} 'void'
 ;
 
-IntegerTypeDefinition returns BasicTypeDefinition:
+IntegerTypeDefinition returns IntegerTypeDefinition:
 	{IntegerTypeDefinition} 'integer'
 ;
 
-BooleanTypeDefinition returns BasicTypeDefinition:
+BooleanTypeDefinition returns BooleanTypeDefinition:
 	{BooleanTypeDefinition} 'boolean'
 ;
 
-RealTypeDefinition returns RealTypeDefinition:
-	{RealTypeDefinition} 'real'
+DecimalTypeDefinition returns DecimalTypeDefinition:
+	{DecimalTypeDefinition} 'decimal'
+;
+
+RationalTypeDefinition returns RationalTypeDefinition:
+	{RationalTypeDefinition} 'rational'
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' (indexTypes+=Type)(',' indexTypes+=Type)* 'of' elementType=Type
+	'array' elementType=Type '[' size=Expression ']'
+;
+
+IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
+	{IntegerRangeTypeDefinition} 'integer' 'range'
 ;
 
 EnumerationTypeDefinition returns EnumerationTypeDefinition:
@@ -115,16 +124,8 @@ RecordTypeDefinition returns RecordTypeDefinition:
 	'record' '{' (fieldDeclarations+=FieldDeclaration)(',' fieldDeclarations+=FieldDeclaration)* '}'
 ;
 
-TupleTypeDefinition returns TupleTypeDefinition:
-	'tuple' '{' (types+=Type)(',' types+=Type)* '}'
-;
-
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
 	{SubrangeTypeDefinition} '[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
-;
-
-SubTypeDefinition returns SubTypeDefinition:
-	'{' parameterDeclaration=ParameterDeclaration '|' expression=Expression '}'
 ;
 
 FunctionTypeDefinition returns FunctionTypeDefinition:
@@ -147,21 +148,9 @@ ElseExpression returns ElseExpression:
 
 //ternary, right-associative
 IfThenElseExpression returns Expression:
-	{IfThenElseExpression} 'if' condition=Expression 'then' then=Expression (=>'else' else=Expression) |
-	WithExpression
+	ImplyExpression({IfThenElseExpression.condition=current} '?' then=Expression (=> ':' else=Expression))?
 ;
 
-//right associative
-WithExpression returns Expression:
-	EqualExpression (
-		{ArrayWithExpression.operand=current} 'with' '[' ((parameters+=Expression)(',' parameters+=Expression)*) ']' '=' value=WithExpression
-	)?
-;
-
-//binary, right-associative
-EqualExpression returns Expression:
-	ImplyExpression ({EqualExpression.leftOperand=current} 'equal' rightOperand=EqualExpression)?
-;
 
 //binary, right-associative
 ImplyExpression returns Expression:
@@ -187,10 +176,8 @@ AndExpression returns Expression:
 UnaryLogicExpression returns Expression:
 	NotExpression |
 	ForallExpression |
-	ExistsExpression |
-	FunctionLiteralExpression |
-	LetExpression |
-	InExpression
+	ExistsExpression | 
+	EquivalenceExpression	
 ;
 
 NotExpression returns Expression:
@@ -203,19 +190,6 @@ ForallExpression returns Expression:
 
 ExistsExpression returns Expression:
 	{ExistsExpression} => 'exists' '(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')' ':' operand=UnaryLogicExpression
-;
-
-FunctionLiteralExpression returns Expression:
-	{FunctionLiteralExpression} => 'function' '(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')' ':' returnType=Type '=' operand=UnaryLogicExpression
-;
-
-LetExpression returns Expression:
-	{LetExpression} 'let' '(' (letDeclarations+=LetDeclaration)(',' letDeclarations+=LetDeclaration)* ')' 'in' expression=UnaryLogicExpression
-;
-
-//postfix unary, non-associative
-InExpression returns Expression:
-	EquivalenceExpression ({InExpression.operand=current} 'in' type=Type)?
 ;
 
 //binary, non-associative
@@ -271,10 +245,10 @@ SignumExpression returns Expression:
 //binary (postfix unary), left-associative
 AccessExpression returns Expression:
 	PrimaryExpression (
-		{ArrayAccessExpression.operand=current} '[' ((parameters+=Expression)(',' parameters+=Expression)*) ']' |
-		{FunctionAccessExpression.operand=current} '(' ((parameters+=Expression)(',' parameters+=Expression)*) ')' |
+		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*) ')' |
 		{RecordAccessExpression.operand=current} '.' field=ID |
-		{TupleAccessExpression.operand=current} '!' index=INTEGER
+		{SelectExpression.operand=current} '.select'
 	)*
 ;
 
@@ -290,7 +264,7 @@ PrimaryExpression returns Expression:
 ;
 
 ReferenceExpression returns ReferenceExpression:
-	declaration=[Declaration]
+	declaration=[ValueDeclaration]	
 ;
 
 LiteralExpression returns Expression:
@@ -300,8 +274,8 @@ LiteralExpression returns Expression:
 	BooleanLiteralExpression |
 	ArrayLiteralExpression |
 	RecordLiteralExpression |
-	TupleLiteralExpression |
-	EnumerationLiteralExpression
+	EnumerationLiteralExpression |
+	IntegerRangeLiteralExpression
 ;
 
 IntegerLiteralExpression:
@@ -328,9 +302,6 @@ FalseExpression returns FalseExpression:
 	{FalseExpression} 'false'
 ;
 
-ArrayLiteralExpression:
-	'[' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? '|' operand=Expression ']'
-;
 
 RecordLiteralExpression:
 	'(#' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '#)'
@@ -340,13 +311,21 @@ FieldAssignment:
 	reference=ID ':=' value=Expression
 ;
 
-TupleLiteralExpression:
-	'(#' (expressions+=Expression)(',' expressions+=Expression)* '#)'
-;
-
 EnumerationLiteralExpression:
 	'::' reference=[EnumerationLiteralDefinition]
 ;
+
+
+ArrayLiteralExpression:
+	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
+;
+
+//TODO leftoperand=Expression creates a left-recursive grammar (-> serious refactor) - this is lenient enough for now 
+IntegerRangeLiteralExpression:
+	{IntegerRangeLiteralExpression}
+	((leftInclusive?='[') | '(') (leftOperand=(IntegerLiteralExpression | ReferenceExpression)) 
+		'..' rightOperand=(IntegerLiteralExpression | ReferenceExpression) ((rightInclusive?=']') | ')')
+; 
 
 
 ///////////////////////////////

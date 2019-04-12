@@ -35,7 +35,6 @@ import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.model.Action;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.AnyTrigger;
-import hu.bme.mit.gamma.statechart.model.AssignmentAction;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
 import hu.bme.mit.gamma.statechart.model.Clock;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
@@ -61,6 +60,8 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
+import hu.bme.mit.gamma.statechart.model.action.ActionPackage;
+import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel;
@@ -244,17 +245,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (!getSemanticEvents(Collections.singleton(port), EventDirection.OUT).contains(event)) {
 			error("This event is not an out event.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
 		}
-		if (!raiseEvent.getParameters().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
+		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
 			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
 		}
 	}
 	
+	
 	@Check
-	public void checkAssignmentActions(AssignmentAction assignment) {
+	public void checkAssignmentActions(AssignmentStatement assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 		// Constant
 		if (!(reference.getDeclaration() instanceof VariableDeclaration)) {
-			error("Values can be assigned only to variables.", StatechartModelPackage.Literals.ASSIGNMENT_ACTION__LHS);
+			error("Values can be assigned only to variables.", ActionPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
 		}
 		// Other assignment type checking
 		if (reference.getDeclaration() instanceof VariableDeclaration) {
@@ -266,7 +268,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					error("The types of the variable declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 							rightHandSideExpressionType.toString().toLowerCase() + ".",
-							StatechartModelPackage.Literals.ASSIGNMENT_ACTION__RHS);
+							ActionPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
 				} 
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
@@ -644,6 +646,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		return new HashSet<Transition>();
 	}
 	
+	
 	@Check
 	public void checkParallelTransitionAssignments(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
@@ -654,7 +657,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 		}
 	}
-
+	 
 	@Check
 	public void checkParallelEventRaisings(Transition transition) {
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
@@ -690,14 +693,14 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
-			if (action instanceof AssignmentAction) {
-				AssignmentAction assignment = (AssignmentAction) action;
+			if (action instanceof AssignmentStatement) {
+				AssignmentStatement assignment = (AssignmentStatement) action;
 				if (assignment.getLhs() instanceof ReferenceExpression) {
 					ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 					Declaration declaration = reference.getDeclaration();
 					for (Action rhsAction: rhs.getEffects()) {
-						if (rhsAction instanceof AssignmentAction) {
-							AssignmentAction rhsAssignment = (AssignmentAction) rhsAction;
+						if (rhsAction instanceof AssignmentStatement) {
+							AssignmentStatement rhsAssignment = (AssignmentStatement) rhsAction;
 							if (rhsAssignment.getLhs() instanceof ReferenceExpression) {
 								ReferenceExpression rhsReference = (ReferenceExpression) rhsAssignment.getLhs();
 								if (rhsReference.getDeclaration() == declaration) {
@@ -721,7 +724,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					RaiseEventAction rhsRaiseEvent = (RaiseEventAction) raiseEvent;
 					if (lhsRaiseEvent.getPort() == rhsRaiseEvent.getPort() && 
 						lhsRaiseEvent.getEvent() == rhsRaiseEvent.getEvent()) {
-						if (!lhsRaiseEvent.getParameters().isEmpty() && !rhsRaiseEvent.getParameters().isEmpty()) {
+						if (!lhsRaiseEvent.getArguments().isEmpty() && !rhsRaiseEvent.getArguments().isEmpty()) {
 							return new HashMap.SimpleEntry<Port, Event>(lhsRaiseEvent.getPort(), lhsRaiseEvent.getEvent());
 						}
 					}
@@ -806,8 +809,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkParameters(ComponentInstance instance) {
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
-		if (instance.getParameters().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS);
+		if (instance.getArguments().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 		}
 	}
 	
@@ -818,14 +821,14 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			EList<ParameterDeclaration> parameters = type.getParameterDeclarations();
 			for (int i = 0; i < parameters.size(); ++i) {
 				ParameterDeclaration parameter = parameters.get(i);
-				Expression argument = instance.getParameters().get(i);
+				Expression argument = instance.getArguments().get(i);
 				Type declarationType = parameter.getType();
 				ExpressionType argumentType = typeDeterminator.getType(argument);
 				if (!typeDeterminator.equals(declarationType, argumentType)) {
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS, i);
+							ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
 				} 
 			}
 		} catch (Exception exception) {
@@ -1325,5 +1328,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					.collect(Collectors.toSet()) + ".",	CompositePackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
 		}
 	}
-		
+	
+
 }

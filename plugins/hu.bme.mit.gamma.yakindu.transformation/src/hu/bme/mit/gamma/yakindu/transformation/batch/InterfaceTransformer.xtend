@@ -160,7 +160,7 @@ class InterfaceTransformer {
 						case "string":
 							eventParam = event.createEventType(integerTypeDefinition, event.eventParameterName)
 						case "real":
-							eventParam = event.createEventType(realTypeDefinition, event.eventParameterName)
+							eventParam = event.createEventType(decimalTypeDefinition, event.eventParameterName)
 						case "void":
 							event.createEventType(null, event.eventParameterName)
 						default:
@@ -188,7 +188,7 @@ class InterfaceTransformer {
     	}
     	return parametricElement.createChild(parametricElement_ParameterDeclarations, parameterDeclaration) as ParameterDeclaration => [
     		it.name = name
-    		it.createChild(typeDeclaration_Type, type)
+    		it.createChild(declaration_Type, type)
     	]
     }
     

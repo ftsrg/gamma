@@ -119,7 +119,7 @@ class StringTraceBackAnnotator {
 			val initExpression = uppaalVariable.initializer as ExpressionInitializer
 			val gammaExpression = initExpression.expression.allExpressionValuesOfFrom.head as Expression
 			val newGammaExpression = gammaExpression.clone(true, true)
-			trace.parameters += newGammaExpression
+			trace.arguments += newGammaExpression
 		}
 		// Back-annotating the steps
 		var isFirstStep = true
@@ -232,7 +232,7 @@ class StringTraceBackAnnotator {
 			it.event = event
 		]
 		if (parameter !== null) {
-			eventRaise.parameters += event.createParameter(parameter)
+			eventRaise.arguments += event.createParameter(parameter)
 		}		
 		return eventRaise
 	}

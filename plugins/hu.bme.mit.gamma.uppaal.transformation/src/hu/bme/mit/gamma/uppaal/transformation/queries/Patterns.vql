@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.uppaal.transformation.queries
 import "http://www.mit.bme.hu/gamma/constraint/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Action"
 
 pattern namedElements(element : NamedElement, name : java String) {
 	NamedElement.name(element, name);
@@ -35,7 +36,7 @@ pattern constantDeclarations(constant : ConstantDeclaration, name : java String,
 	ConstantDeclaration.expression(constant, initValue);
 }
 
-pattern declarationInitializations(declaration : DefinableDeclaration, initValue : Expression) {
+pattern declarationInitializations(declaration : InitializableElement, initValue : Expression) {
 	VariableDeclaration.expression(declaration, initValue);
 } or {
 	ConstantDeclaration.expression(declaration, initValue);
@@ -72,7 +73,7 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 }
 
 pattern eventParameters(event : Event, param : ParameterDeclaration) {
-	EventTrigger.parameters(trigger, reference);
+	EventTrigger.arguments(trigger, reference);
 	ReferenceExpression.declaration(reference, param);
 	EventTrigger.eventReference(trigger, portEventReference);
 	PortEventReference.event(portEventReference, event);
@@ -137,8 +138,8 @@ private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : Ch
 	Transition.targetState(inTransition, choice);
 	Transition.sourceState(outTransition, choice2);
 	// Assignment action of input transition
-	find updatesOfTransitions(inTransition, assignmentAction);
-	AssignmentAction.lhs(assignmentAction, referenceExpression);
+	find updatesOfTransitions(inTransition, assignmentStatement);
+	AssignmentStatement.lhs(assignmentStatement, referenceExpression);
 	ReferenceExpression.declaration(referenceExpression, variable);
 	// Guard of output transition refers to the updated variable
 	Transition.guard(outTransition, guard);
@@ -258,14 +259,14 @@ pattern guardsOfTransitions(transition : Transition, guard : Expression) {
 	Transition.guard(transition, guard);
 }
 
-pattern updatesOfTransitions(transition : Transition, assignmentAction : AssignmentAction) {
-	Transition.effects(transition, assignmentAction);
-	AssignmentAction(assignmentAction);
+pattern updatesOfTransitions(transition : Transition, assignmentStatement : AssignmentStatement) {
+	Transition.effects(transition, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
 }
 
-pattern entryAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {
-	State.entryActions(state, assignmentAction);
-	AssignmentAction(assignmentAction);
+pattern entryAssignmentsOfStates(state : State, assignmentStatement : AssignmentStatement) {
+	State.entryActions(state, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
 }
 
 pattern entryTimeoutActionsOfStates(state : State, setTimeoutAction : SetTimeoutAction) {
@@ -273,14 +274,14 @@ pattern entryTimeoutActionsOfStates(state : State, setTimeoutAction : SetTimeout
 	SetTimeoutAction(setTimeoutAction);
 }
 
-pattern exitAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {	
-	State.exitActions(state, assignmentAction);
-	AssignmentAction(assignmentAction);
+pattern exitAssignmentsOfStates(state : State, assignmentStatement : AssignmentStatement) { 
+	State.exitActions(state, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
 }
 
-pattern exitAssignmentsOfStatesWithTransitions(outgoingTransition : Transition, assignmentAction : AssignmentAction) {
+pattern exitAssignmentsOfStatesWithTransitions(outgoingTransition : Transition, assignmentStatement : AssignmentStatement) {
 	Transition.sourceState(outgoingTransition, state);
-	find exitAssignmentsOfStates(state, assignmentAction);
+	find exitAssignmentsOfStates(state, assignmentStatement);
 }
 
 pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {

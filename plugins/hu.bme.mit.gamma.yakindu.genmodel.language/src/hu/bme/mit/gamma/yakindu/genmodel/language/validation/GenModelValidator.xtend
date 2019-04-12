@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.yakindu.genmodel.language.validation
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.RealTypeDefinition
+import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
@@ -157,8 +157,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {
 		val genmodel = analysisModelTransformation.eContainer as GenModel
 		val type = analysisModelTransformation.component
-		if (analysisModelTransformation.getParameters().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS)
+		if (analysisModelTransformation.getArguments().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 		if (type instanceof AbstractSynchronousCompositeComponent) {
 			val importedStatecharts = type.components.map[it.type]
@@ -187,14 +187,14 @@ class GenModelValidator extends AbstractGenModelValidator {
 			val parameters = type.getParameterDeclarations();
 			for (var i = 0; i < parameters.size(); i++) {
 				val parameter = parameters.get(i);
-				val argument = analysisModelTransformation.getParameters().get(i);
+				val argument = analysisModelTransformation.getArguments().get(i);
 				val declarationType = parameter.getType();
 				val argumentType = typeDeterminator.getType(argument);
 				if (!typeDeterminator.equals(declarationType, argumentType)) {
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS, i);
+							ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
 				} 
 			}
 		} catch (Exception exception) {
@@ -420,7 +420,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 					}
 					return yEvent.type.name.equals("boolean")					
 				}
-				RealTypeDefinition: {
+				DecimalTypeDefinition: {
 					if (yEvent.type === null) {
 						return false
 					}

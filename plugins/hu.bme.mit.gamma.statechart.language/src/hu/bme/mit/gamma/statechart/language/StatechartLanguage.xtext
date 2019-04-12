@@ -15,6 +15,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//action" as ActionModel 
 
 Package returns Package:
 	'package' name=ID
@@ -119,7 +120,7 @@ AnyTrigger returns AnyTrigger:
 ;
 
 EventTrigger returns EventTrigger:
-	eventReference=EventReference ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+	eventReference=EventReference ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 EventReference returns EventReference:
@@ -146,14 +147,12 @@ PortEventReference returns PortEventReference:
 ;
 
 Action:
-	RaiseEventAction |
-	SetTimeoutAction |
-	DeactivateTimeoutAction |
-	AssignmentAction
+	Block | 
+	Statement
 ;
 
 RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 SetTimeoutAction returns SetTimeoutAction:
@@ -162,10 +161,6 @@ SetTimeoutAction returns SetTimeoutAction:
 
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
-;
-
-AssignmentAction returns AssignmentAction:
-	lhs=ReferenceExpression ':=' rhs=Expression
 ;
 
 Port returns Port:
@@ -208,7 +203,7 @@ enum SchedulingOrder returns SchedulingOrder:
 
 StatechartReference returns StatechartReference:
 	{StatechartReference}
-	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((parameters+=Expression)(',' parameters+=Expression)*)? ')')?
+	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')')?
 ;
 
 Region returns Region:
@@ -225,7 +220,7 @@ Transition returns Transition:
 	(
 		('when' trigger=Trigger)?
 		('[' guard=Expression ']')?
-		('/' (effects+=Action) (';' effects+=Action)*)?
+		('/' ( => effects+=Action)* )?
 	)
 ;
 
@@ -242,8 +237,8 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
-				('entry' '/' (entryActions+=Action)(';' entryActions+=Action)* )?
-				('exit' '/' (exitActions+=Action)(';' exitActions+=Action)* )?
+				('entry' '/' (=> entryActions+=Action)* )?
+				('exit' '/' (=> exitActions+=Action)* )?
 			)
 			(regions+=Region)*
 		)
@@ -409,11 +404,11 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 AsynchronousComponentInstance returns CompositeModel::AsynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 Channel returns CompositeModel::Channel:
@@ -462,4 +457,137 @@ PrimaryExpression returns ConstraintModel::Expression:
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
 	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
+
+//Action Language
+
+@Override
+FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
+	LambdaDeclaration | ProcedureDeclaration
+;
+
+ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
+	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
+	body=Block
+;
+
+Block returns ActionModel::Block:
+	{ActionModel::Block}
+	'{' 
+		(actions+=Action)*
+	'}'
+;
+
+Statement returns ActionModel::Statement:
+	InlineStatement | 
+	MultilineStatement
+;
+
+InlineStatement returns ActionModel::Statement:
+	(VariableDeclarationStatement |
+	ConstantDeclarationStatement |
+	
+	ExpressionStatement |
+	
+	ReturnStatement |
+	BreakStatement |
+	
+	AssignmentStatement |
+	
+	RaiseEventAction |
+	SetTimeoutAction |
+	DeactivateTimeoutAction 
+	)
+	
+	';'
+;
+
+MultilineStatement returns ActionModel::Statement:
+	IfStatement |
+	SwitchStatement |
+	ForStatement |
+	
+	ChoiceStatement
+;
+
+VariableDeclarationStatement returns ActionModel::VariableDeclarationStatement:
+	variableDeclaration = VariableDeclaration
+;
+
+ConstantDeclarationStatement returns ActionModel::ConstantDeclarationStatement:
+	constantDeclaration = ConstantDeclaration
+;
+
+ExpressionStatement returns ActionModel::ExpressionStatement:
+	expression=Expression
+;
+
+IfBranch returns ActionModel::Branch:
+	'(' guard=Expression ')'
+	action=Action
+;
+
+ElseBranch returns ActionModel::Branch:
+	guard=ElseExpression
+	action=Action
+;
+
+SwitchBranch returns ActionModel::Branch:
+	guard=Expression ':'
+	action=Action
+;
+
+DefaultBranch returns ActionModel::Branch:
+	guard=DefaultExpression ':'
+	action=Action
+;
+
+ChoiceBranch returns ActionModel::Branch:
+	'[' guard=Expression ']'
+	action=Action
+;
+
+DefaultExpression returns ConstraintModel::ElseExpression:
+	{ConstraintModel::ElseExpression} 'default'
+;
+
+IfStatement returns ActionModel::IfStatement:
+	{ActionModel::IfStatement}
+	'if' conditionals+=IfBranch
+	(=> 'elsif' conditionals+=IfBranch)*
+	(=> conditionals+=ElseBranch)?
+;
+
+SwitchStatement returns ActionModel::SwitchStatement:
+	'switch' '(' controlExpression=Expression ')'
+	'{'
+	('case' cases+=SwitchBranch ('case' cases+=SwitchBranch)*)
+	(cases+=DefaultBranch)?
+	'}'
+;
+
+ForStatement returns ActionModel::ForStatement:
+	'for' '(' parameter=ParameterDeclaration'in'range=Expression')'
+	body=Block
+	('then' then=Block)?
+;
+
+ReturnStatement returns ActionModel::ReturnStatement:
+	'return' expression=Expression
+;
+
+BreakStatement returns ActionModel::BreakStatement:
+	{ActionModel::BreakStatement}
+	'break'
+;
+
+ChoiceStatement returns ActionModel::ChoiceStatement:
+	'choice'
+	'{'
+	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
+	'}'
+;
+
+AssignmentStatement returns ActionModel::AssignmentStatement:
+	lhs=ReferenceExpression ':=' rhs=Expression
+;
 	

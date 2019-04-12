@@ -21,8 +21,8 @@
     <genClasses image="false" ecoreClass="constraint.ecore#//ParametricElement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ParametricElement/parameterDeclarations"/>
     </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ParameterizedElement">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ParameterizedElement/parameters"/>
+    <genClasses ecoreClass="constraint.ecore#//ArgumentedElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArgumentedElement/arguments"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//ConstraintSpecification">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ConstraintSpecification/typeDeclarations"/>
@@ -30,53 +30,49 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ConstraintSpecification/functionDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ConstraintSpecification/basicConstraintDefinitions"/>
     </genClasses>
+    <genClasses image="false" ecoreClass="constraint.ecore#//InitializableElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//InitializableElement/expression"/>
+    </genClasses>
     <genClasses image="false" ecoreClass="constraint.ecore#//Declaration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//Declaration/type"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="constraint.ecore#//DefinableDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//DefinableDeclaration/expression"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ParameterDeclaration"/>
-    <genClasses ecoreClass="constraint.ecore#//VariableDeclaration"/>
-    <genClasses ecoreClass="constraint.ecore#//FieldDeclaration"/>
-    <genClasses ecoreClass="constraint.ecore#//LetDeclaration"/>
-    <genClasses ecoreClass="constraint.ecore#//ConstantDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//ValueDeclaration"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//TypeDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//VariableDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//ConstantDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//ParameterDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//FieldDeclaration"/>
+    <genClasses ecoreClass="constraint.ecore#//LambdaDeclaration"/>
     <genClasses ecoreClass="constraint.ecore#//Type"/>
-    <genClasses ecoreClass="constraint.ecore#//TypeDeclaration">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//TypeDeclaration/type"/>
-    </genClasses>
     <genClasses ecoreClass="constraint.ecore#//TypeReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference constraint.ecore#//TypeReference/reference"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//TypeDefinition"/>
-    <genClasses image="false" ecoreClass="constraint.ecore#//BasicTypeDefinition"/>
-    <genClasses ecoreClass="constraint.ecore#//IntegerTypeDefinition"/>
-    <genClasses ecoreClass="constraint.ecore#//NaturalTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//NumericalTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//CompositeTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//VoidTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//BooleanTypeDefinition"/>
-    <genClasses ecoreClass="constraint.ecore#//RealTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//IntegerTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//RationalTypeDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//DecimalTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//SubrangeTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubrangeTypeDefinition/lowerBound"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubrangeTypeDefinition/upperBound"/>
     </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//SubTypeDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubTypeDefinition/parameterDeclaration"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//SubTypeDefinition/expression"/>
-    </genClasses>
+    <genClasses image="false" ecoreClass="constraint.ecore#//EnumerableTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//EnumerationTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//EnumerationTypeDefinition/literals"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//EnumerationLiteralDefinition"/>
+    <genClasses ecoreClass="constraint.ecore#//ArrayTypeDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/elementType"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//ArrayTypeDefinition/size"/>
+    </genClasses>
+    <genClasses ecoreClass="constraint.ecore#//IntegerRangeTypeDefinition"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionTypeDefinition/parameterTypes"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionTypeDefinition/returnType"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ArrayTypeDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/indexTypes"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//ArrayTypeDefinition/elementType"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//TupleTypeDefinition">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//TupleTypeDefinition/types"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//RecordTypeDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//RecordTypeDefinition/fieldDeclarations"/>
@@ -87,7 +83,6 @@
     <genClasses ecoreClass="constraint.ecore#//BasicConstraintDefinition"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//Expression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//NullaryExpression"/>
-    <genClasses ecoreClass="constraint.ecore#//ElseExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//UnaryExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//UnaryExpression/operand"/>
     </genClasses>
@@ -98,18 +93,17 @@
     <genClasses image="false" ecoreClass="constraint.ecore#//MultiaryExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//MultiaryExpression/operands"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="constraint.ecore#//PredicateExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//ArithmeticExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//LogicExpression"/>
+    <genClasses image="false" ecoreClass="constraint.ecore#//BooleanExpression"/>
+    <genClasses image="false" ecoreClass="constraint.ecore#//PredicateExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//ElseExpression"/>
+    <genClasses image="false" ecoreClass="constraint.ecore#//QuantifierExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//AccessExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//AccessExpression/operand"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="constraint.ecore#//WithExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//WithExpression/operand"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//WithExpression/value"/>
-    </genClasses>
-    <genClasses image="false" ecoreClass="constraint.ecore#//BooleanExpression"/>
-    <genClasses image="false" ecoreClass="constraint.ecore#//QuantifierExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//LiteralExpression"/>
+    <genClasses image="false" ecoreClass="constraint.ecore#//EnumerableExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//ArithmeticLiteralExpression"/>
     <genClasses ecoreClass="constraint.ecore#//IntegerLiteralExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerLiteralExpression/value"/>
@@ -125,17 +119,15 @@
     <genClasses ecoreClass="constraint.ecore#//TrueExpression"/>
     <genClasses ecoreClass="constraint.ecore#//FalseExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ArrayLiteralExpression"/>
-    <genClasses ecoreClass="constraint.ecore#//FunctionLiteralExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//FunctionLiteralExpression/returnType"/>
+    <genClasses ecoreClass="constraint.ecore#//IntegerRangeLiteralExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerRangeLiteralExpression/leftInclusive"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//IntegerRangeLiteralExpression/rightInclusive"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//RecordLiteralExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//RecordLiteralExpression/fieldAssignments"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//EnumerationLiteralExpression">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference constraint.ecore#//EnumerationLiteralExpression/reference"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//TupleLiteralExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//TupleLiteralExpression/expressions"/>
     </genClasses>
     <genClasses ecoreClass="constraint.ecore#//FieldAssignment">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//FieldAssignment/reference"/>
@@ -149,11 +141,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//IfThenElseExpression/then"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//IfThenElseExpression/else"/>
     </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//LetExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//LetExpression/letDeclarations"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//LetExpression/expression"/>
-    </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//EqualExpression"/>
     <genClasses ecoreClass="constraint.ecore#//NotExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ForallExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ExistsExpression"/>
@@ -161,9 +148,6 @@
     <genClasses ecoreClass="constraint.ecore#//OrExpression"/>
     <genClasses ecoreClass="constraint.ecore#//AndExpression"/>
     <genClasses ecoreClass="constraint.ecore#//XorExpression"/>
-    <genClasses ecoreClass="constraint.ecore#//InExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//InExpression/type"/>
-    </genClasses>
     <genClasses image="false" ecoreClass="constraint.ecore#//EquivalenceExpression"/>
     <genClasses ecoreClass="constraint.ecore#//EqualityExpression"/>
     <genClasses ecoreClass="constraint.ecore#//InequalityExpression"/>
@@ -182,12 +166,9 @@
     <genClasses ecoreClass="constraint.ecore#//UnaryPlusExpression"/>
     <genClasses ecoreClass="constraint.ecore#//FunctionAccessExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ArrayAccessExpression"/>
-    <genClasses ecoreClass="constraint.ecore#//TupleAccessExpression">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//TupleAccessExpression/index"/>
-    </genClasses>
     <genClasses ecoreClass="constraint.ecore#//RecordAccessExpression">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//RecordAccessExpression/field"/>
     </genClasses>
-    <genClasses ecoreClass="constraint.ecore#//ArrayWithExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//SelectExpression"/>
   </genPackages>
 </genmodel:GenModel>

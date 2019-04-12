@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.uppaal.transformation.queries
 import "http://www.mit.bme.hu/gamma/constraint/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Action"
 
 private pattern sourceAndTargetOfTransitions(transition : Transition, source : StateNode, target : StateNode) {
 	Transition.sourceState(transition, source);
@@ -34,7 +35,7 @@ pattern fromChoiceToHigherTransition(transition : Transition, choice : ChoiceSta
 private pattern eventParameter(transition : Transition, event : Event, valueOfParameter : ParameterDeclaration) {
 	Transition.trigger(transition, trigger);
 	EventTrigger.eventReference(trigger, portEventReference);
-	EventTrigger.parameters(trigger, reference);
+	EventTrigger.arguments(trigger, reference);
 	PortEventReference.event(portEventReference, event);
 	ReferenceExpression.declaration(reference, valueOfParameter);
 	Event.parameterDeclarations(event, valueOfParameter);
@@ -44,7 +45,7 @@ pattern prohibitedEventParameterReferences(source : StateNode, target : StateNod
 	Transition.sourceState(transition, source);
 	Transition.targetState(transition, target);
 	Transition.effects(transition, assignment);
-	AssignmentAction.rhs(assignment, reference);
+	AssignmentStatement.rhs(assignment, reference);
 	ReferenceExpression.declaration(reference, valueOfParameter);
 	Event.parameterDeclarations(_, valueOfParameter); // It must be an event parameter
 	neg find eventParameter(transition, _, valueOfParameter);	
