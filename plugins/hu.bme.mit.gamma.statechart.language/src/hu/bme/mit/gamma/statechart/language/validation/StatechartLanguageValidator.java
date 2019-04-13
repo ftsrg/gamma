@@ -27,10 +27,13 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
+import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.Expression;
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.Type;
+import hu.bme.mit.gamma.constraint.model.TypeReference;
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.model.Action;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
@@ -269,7 +272,28 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 							rightHandSideExpressionType.toString().toLowerCase() + ".",
 							ActionPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
-				} 
+				}
+				// Additional checks for enumerations
+				EnumerationTypeDefinition enumType = null;
+				if (variableDeclarationType instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) variableDeclarationType;
+				}
+				else if (variableDeclarationType instanceof TypeReference &&
+						((TypeReference) variableDeclarationType).getReference().getType() instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
+				}
+				if (enumType != null) {
+					if (assignment.getRhs() instanceof EnumerationLiteralExpression) {
+						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) assignment.getRhs();
+						if (!enumType.getLiterals().contains(rhs.getReference())) {
+							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
+									ActionPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
+						}
+					}
+					else {
+						error("The right hand side must be of type enumeration literal.", ActionPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
+					}
+				}
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}

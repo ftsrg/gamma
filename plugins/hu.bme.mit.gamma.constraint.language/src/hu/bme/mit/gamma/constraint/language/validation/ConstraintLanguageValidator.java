@@ -197,8 +197,8 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				return;
 			}
 			// The declaration has an initial value
-			if(elem instanceof Declaration){
-				Declaration declaration = (Declaration)elem;
+			if (elem instanceof Declaration) {
+				Declaration declaration = (Declaration) elem;
 				if (isDeclarationReferredInExpression(declaration, initialExpression)) {
 					error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					return;
@@ -211,6 +211,27 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 							initialExpressionType.toString().toLowerCase() + ".",
 							ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 				} 
+				// Additional checks for enumerations
+				EnumerationTypeDefinition enumType = null;
+				if (variableDeclarationType instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) variableDeclarationType;
+				}
+				else if (variableDeclarationType instanceof TypeReference &&
+						((TypeReference) variableDeclarationType).getReference().getType() instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
+				}
+				if (enumType != null) {
+					if (initialExpression instanceof EnumerationLiteralExpression) {
+						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) initialExpression;
+						if (!enumType.getLiterals().contains(rhs.getReference())) {
+							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
+									ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+						}
+					}
+					else {
+						error("The right hand side must be of type enumeration literal.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+					}
+				}
 			}
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
@@ -485,7 +506,9 @@ public class ConstraintLanguageValidator extends AbstractConstraintLanguageValid
 				type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
 				type instanceof RationalTypeDefinition && expressionType == ExpressionType.RATIONAL ||
 				type instanceof DecimalTypeDefinition && expressionType == ExpressionType.DECIMAL ||
-				type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION;
+				type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION ||
+				type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
+
 		}
 		
 	}
