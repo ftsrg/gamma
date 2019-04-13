@@ -85,7 +85,6 @@ class GlueCodeGenerator {
 	protected Component topComponent
 	// File URIs where the classes need to be saved
 	protected final String parentPackageUri
-	protected final String eventUri
 	protected final String channelUri
 	protected final String interfaceUri
 	protected final String timerUri
@@ -100,7 +99,7 @@ class GlueCodeGenerator {
 	protected final String EVENT_QUEUE = "eventQueue"	
 	protected final String INSERT_QUEUE = "insertQueue"	
 	protected final String PROCESS_QUEUE = "processQueue"	
-	protected final String EVENT_INSTANCE_NAME = "event"	
+	protected final String EVENT_INSTANCE_NAME = "event"
 	protected final String CHANNEL_CLASS_NAME = "Channel"
 	protected final String CHANNEL_NAME = "channels"	
 	protected final String INTERFACES_NAME = "interfaces"
@@ -126,7 +125,6 @@ class GlueCodeGenerator {
 		this.resSet.loadModels
 		engine = ViatraQueryEngine.on(new EMFScope(resSet))
 		this.parentPackageUri = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
-		this.eventUri = this.parentPackageUri + File.separator + EVENT_INSTANCE_NAME
 		this.channelUri = this.parentPackageUri + File.separator + CHANNEL_NAME
 		this.interfaceUri = this.parentPackageUri + File.separator + INTERFACES_NAME
 		this.timerUri = this.parentPackageUri
@@ -306,7 +304,7 @@ class GlueCodeGenerator {
 	 */
 	protected def generateEventClass() {
 		val code = createEventClassCode
-		code.saveCode(eventUri + File.separator + EVENT_CLASS_NAME + ".java")
+		code.saveCode(parentPackageUri + File.separator + EVENT_CLASS_NAME + ".java")
 	}
 	
 	/**
@@ -414,6 +412,7 @@ class GlueCodeGenerator {
 				}
 			}
 			
+			@Override
 			public void cancel() {
 				// No op
 			}
@@ -555,6 +554,7 @@ class GlueCodeGenerator {
 			 * Cancel timer service. Use this to end possible timing threads and free
 			 * memory resources.
 			 */
+			@Override
 			public void cancel() {
 				lock.lock();
 				timer.cancel();
@@ -569,7 +569,7 @@ class GlueCodeGenerator {
 	 * Returns the code of the message class.
 	 */
 	protected def createEventClassCode() '''
-		package «packageName».«EVENT_INSTANCE_NAME»;
+		package «packageName»;
 		
 		public class «EVENT_CLASS_NAME» {
 		
@@ -1103,7 +1103,6 @@ class GlueCodeGenerator {
 		import java.util.List;
 		import java.util.LinkedList;
 		
-		import «packageName».event.*;
 		import «packageName».interfaces.*;
 		// Yakindu listeners
 		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
@@ -1188,7 +1187,7 @@ class GlueCodeGenerator {
 					«IF component instanceof AbstractSynchronousCompositeComponent»void runFullCycle();«ENDIF»
 					«IF component instanceof AsynchronousComponent»void start();«ENDIF»
 					
-				} 
+				}
 			'''
 			return interfaceCode
 		}
@@ -1891,7 +1890,6 @@ class GlueCodeGenerator {
 		import lbmq.*; 
 		«IF component.needTimer»import «packageName».*;«ENDIF»
 
-		import «packageName».event.*;
 		import «packageName».interfaces.*;
 		
 		import «component.wrappedComponent.type.componentPackageName».*;
