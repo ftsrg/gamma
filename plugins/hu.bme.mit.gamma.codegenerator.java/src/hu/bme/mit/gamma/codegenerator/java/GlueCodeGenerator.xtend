@@ -413,6 +413,10 @@ class GlueCodeGenerator {
 					timer.elapse(amount);
 				}
 			}
+			
+			public void cancel() {
+				// No op
+			}
 		
 		}
 	'''
@@ -429,6 +433,7 @@ class GlueCodeGenerator {
 			
 			void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic);
 			void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID);
+			void cancel();
 			
 		}
 	'''
