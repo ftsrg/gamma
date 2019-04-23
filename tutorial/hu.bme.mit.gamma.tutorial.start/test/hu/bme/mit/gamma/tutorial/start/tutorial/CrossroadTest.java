@@ -1,3 +1,6 @@
+/*
+ * THIS FILE SHOULD CONTAIN ERRORS UNTIL THE CODE FOR THE CROSSROAD MODEL IS GENERATED.
+ */
 package hu.bme.mit.gamma.tutorial.start.tutorial;
 
 import static org.junit.Assert.assertTrue;
