@@ -44,13 +44,13 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 #### Code generation from EMF artifacts:
 | Project | Model | Edit | Editor |
 |-|:-:|:-:|:-:|
+|`de.uni_paderborn.uppaal`| x | | |
 |`hu.bme.mit.gamma.constraint.model`| x | x | |
 |`hu.bme.mit.gamma.statechart.model`| x | x | x |
-|`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
-|`hu.bme.mit.gamma.yakindu.transformation.traceability`| x | | |
-|`de.uni_paderborn.uppaal`| x | | |
-|`hu.bme.mit.gamma.yakindu.genmodel`| x | | |
 |`hu.bme.mit.gamma.trace.model`| x | | |
+|`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
+|`hu.bme.mit.gamma.yakindu.genmodel`| x | | |
+|`hu.bme.mit.gamma.yakindu.transformation.traceability`| x | | |
 
 #### Code generation with MWE2 workflows:
 | Project | Path |
@@ -58,3 +58,4 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 | `hu.bme.mit.gamma.constraint.language` | `/src/hu/bme/mit/gamma/constraint/language/GenerateConstraintLanguage.mwe2` |
 | `hu.bme.mit.gamma.statechart.language` | `/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` |
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
+| `hu.bme.mit.gamma.yakindu.genmodel.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
