@@ -965,6 +965,7 @@ class YakinduToGammaTransformer {
     /**
      * Returns whether the given Yakindu state has entry events.
      */
+	@SuppressWarnings("unused")
     private def hasEntryEvent(org.yakindu.sct.model.sgraph.State state) {
     	for (entryEventMatch : runOnceEngine.getAllMatches(StatesWithEntryEvents.instance)) {
     		if (entryEventMatch.state == state) {
@@ -977,6 +978,7 @@ class YakinduToGammaTransformer {
     /**
      * Returns whether the given Yakindu state has exit events.
      */
+	@SuppressWarnings("unused")
     private def hasExitEvent(org.yakindu.sct.model.sgraph.State state) {
     	for (exitEventMatch : runOnceEngine.getAllMatches(StatesWithExitEvents.instance)) {
     		if (exitEventMatch.state == state) {

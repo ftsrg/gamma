@@ -66,6 +66,7 @@ public class Controller {
 	
 	private View view;
 	
+	@SuppressWarnings("unused")
 	private ResourceSet resourceSet;
 	private ViatraQueryEngine engine;
 	// Indicates the actual verification process
@@ -350,6 +351,7 @@ public class Controller {
 		return getLocation(file).substring(0, getLocation(file).lastIndexOf(".")) + ".xml";
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 	}
