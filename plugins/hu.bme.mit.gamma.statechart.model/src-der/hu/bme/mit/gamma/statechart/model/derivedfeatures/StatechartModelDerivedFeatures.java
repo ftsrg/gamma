@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.statechart.model.derivedfeatures;
 import java.util.Collection;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
@@ -11,6 +12,7 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
 import hu.bme.mit.gamma.statechart.model.Component;
+import hu.bme.mit.gamma.statechart.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
@@ -18,6 +20,7 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
+import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference;
@@ -99,6 +102,31 @@ public class StatechartModelDerivedFeatures {
 	public static Collection<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toSet());
+	}
+	
+	public static Collection<StateNode> getStateNodes(CompositeElement compositeElement) {
+		Set<StateNode> stateNodes = new HashSet<StateNode>();
+		for (Region region : compositeElement.getRegions()) {
+			for (StateNode stateNode : region.getStateNodes()) {
+				stateNodes.add(stateNode);
+				if (stateNode instanceof State) {
+					State state = (State) stateNode;
+					stateNodes.addAll(getStateNodes(state));
+				}
+			}
+		}
+		return stateNodes;
+	}
+	
+	public static Collection<State> getStates(CompositeElement compositeElement) {
+		Set<State> states = new HashSet<State>();
+		for (StateNode stateNode : getStateNodes(compositeElement)) {
+			if (stateNode instanceof State) {
+				State state = (State) stateNode;
+				states.add(state);
+			}
+		}
+		return states;
 	}
 	
 	public static Region getParentRegion(StateNode node) {

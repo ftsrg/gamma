@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.constraint.model.Expression;
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
 import hu.bme.mit.gamma.constraint.model.Type;
+import hu.bme.mit.gamma.constraint.model.TypeDeclaration;
 import hu.bme.mit.gamma.constraint.model.TypeReference;
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.model.Action;
@@ -177,8 +178,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (declaration.eContainer() instanceof Event) {
 			return;
 		}
-		boolean isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
-								.stream().anyMatch(it -> it.getDeclaration() == declaration);
+		boolean isReferred;
+		if (declaration instanceof TypeDeclaration) {
+			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), TypeReference.class)
+					.stream().anyMatch(it -> it.getReference() == declaration);
+		}
+		else {
+			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
+					.stream().anyMatch(it -> it.getDeclaration() == declaration);
+		}
 		if (!isReferred) {
 			warning("This declaration is not used.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
