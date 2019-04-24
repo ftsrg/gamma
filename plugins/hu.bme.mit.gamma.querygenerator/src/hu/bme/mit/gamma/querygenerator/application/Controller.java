@@ -34,6 +34,7 @@ import javax.swing.JComboBox;
 import javax.swing.SwingWorker;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -233,9 +234,6 @@ public class Controller {
 			for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0],
 					null, splittedStateName[splittedStateName.length - 2] /* parent region */,
 					null, splittedStateName[splittedStateName.length - 1] /* state */)) {
-//				logger.log(Level.INFO, "Region " + splittedStateName[splittedStateName.length - 2]);
-//				logger.log(Level.INFO, "State " + splittedStateName[splittedStateName.length - 1]);
-//				logger.log(Level.INFO, stateName + "->" + Arrays.asList(splittedStateName));
 				Region parentRegion = match.getParentRegion();
 				String templateName = "P_" + getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
 				String locationName = templateName +  "." + splittedStateName[splittedStateName.length - 1] /* state name */;
@@ -521,7 +519,7 @@ public class Controller {
 		private String uppaalQuery;		
 		// Process running the UPPAAL verification
 		private Process process;
-		// Indicates wether this worker is cancelled: needed as the original isCancelled is updated late
+		// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
 		private volatile boolean isCancelled = false;
 		// Indicates whether it should contribute to the View in any form
 		private boolean contributeToView;
@@ -549,7 +547,7 @@ public class Controller {
 				// Reading the result of the command
 				String rawTrace = readFromStream(ips); // This is where the thread block
 				if (isCancelled) {
-					// If the proces is killed, this is where it can be checked
+					// If the process is killed, this is where it can be checked
 					return ThreeStateBoolean.UNDEF;
 				}
 				if (rawTrace.isEmpty()) {
@@ -784,6 +782,13 @@ public class Controller {
 	    	if (buffer.length() > 0) {
 	    		DialogUtil.showInfo(buffer.toString());
 	    	}
+	    	try {
+	    		logger.log(Level.INFO, "Cleaning project...");
+				file.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+				logger.log(Level.INFO, "Cleaning project finished.");
+			} catch (CoreException e) {
+				// Nothing we can do
+			}
 	    }
     	
     	public void cancelProcess() {
