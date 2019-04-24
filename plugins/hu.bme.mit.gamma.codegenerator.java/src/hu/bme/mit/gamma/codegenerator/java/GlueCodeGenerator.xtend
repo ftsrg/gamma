@@ -333,7 +333,7 @@ class GlueCodeGenerator {
 		/**
 		 * Virtual timer service implementation.
 		 */
-		public class «VIRTUAL_TIMER_CLASS_NAME» implements ITimer {
+		public class «VIRTUAL_TIMER_CLASS_NAME» implements «ITIMER_INTERFACE_NAME» {
 			
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
 			
@@ -411,11 +411,6 @@ class GlueCodeGenerator {
 					timer.elapse(amount);
 				}
 			}
-			
-			@Override
-			public void cancel() {
-				// No op
-			}
 		
 		}
 	'''
@@ -432,7 +427,6 @@ class GlueCodeGenerator {
 			
 			void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic);
 			void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID);
-			void cancel();
 			
 		}
 	'''
@@ -554,7 +548,6 @@ class GlueCodeGenerator {
 			 * Cancel timer service. Use this to end possible timing threads and free
 			 * memory resources.
 			 */
-			@Override
 			public void cancel() {
 				lock.lock();
 				timer.cancel();
