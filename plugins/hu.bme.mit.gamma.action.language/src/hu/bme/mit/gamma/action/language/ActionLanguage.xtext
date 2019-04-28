@@ -1,0 +1,9 @@
+grammar hu.bme.mit.gamma.action.language.ActionLanguage with org.eclipse.xtext.common.Terminals
+
+generate actionLanguage "http://www.bme.hu/mit/gamma/action/language/ActionLanguage"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
