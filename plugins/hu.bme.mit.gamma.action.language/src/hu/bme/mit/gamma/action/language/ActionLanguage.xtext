@@ -9,10 +9,9 @@
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 grammar hu.bme.mit.gamma.action.language.ActionLanguage with hu.bme.mit.gamma.constraint.language.ConstraintLanguage
-//generate actionLanguage "http://www.bme.hu/mit/gamma/action/language/ActionLanguage"
+
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
-//import "http://www.mit.bme.hu/gamma/action/Model"
-import "platform:/resource/hu.bme.mit.gamma.action.model/model/action.ecore" as ActionModel
+import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel
 import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
 
 Action returns ActionModel::Action:
@@ -123,8 +122,8 @@ SwitchStatement returns ActionModel::SwitchStatement:
 
 ForStatement returns ActionModel::ForStatement:
 	'for' '(' parameter=ParameterDeclaration'in'range=Expression')'
-	body=Block
-	('then' then=Block)?
+	(=> body=Action)
+	(=> 'then' then=Action)?
 ;
 
 ReturnStatement returns ActionModel::ReturnStatement:
