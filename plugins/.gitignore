@@ -4,6 +4,9 @@ hu.bme.mit.gamma.constraint.model.tests/
 hu.bme.mit.gamma.statechart.model.edit/
 hu.bme.mit.gamma.statechart.model.editor/
 hu.bme.mit.gamma.statechart.model.tests/
+hu.bme.mit.gamma.action.model.edit/
+hu.bme.mit.gamma.action.model.editor/
+hu.bme.mit.gamma.action.model.tests/
 de.uni_paderborn.uppaal.edit/
 de.uni_paderborn.uppaal.editor/
 de.uni_paderborn.uppaal.tests/

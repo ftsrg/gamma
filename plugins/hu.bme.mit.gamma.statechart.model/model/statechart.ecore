@@ -296,6 +296,7 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="body" eType="#//action/Block"
           containment="true"/>
     </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true" eSuperTypes="#//Action"/>
     <eClassifiers xsi:type="ecore:EClass" name="Block" eSuperTypes="#//Action">
       <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
           eType="#//Action" containment="true"/>
@@ -307,7 +308,6 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
           eType="#//Action" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true" eSuperTypes="#//Action"/>
     <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationStatement" eSuperTypes="#//action/Statement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclaration"
           eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"
@@ -353,9 +353,9 @@
           eType="#//action/Branch" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="AssignmentStatement" eSuperTypes="#//action/Statement">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ReferenceExpression"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="lhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ReferenceExpression"
           containment="true"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="rhs" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
           containment="true"/>
     </eClassifiers>
   </eSubpackages>
