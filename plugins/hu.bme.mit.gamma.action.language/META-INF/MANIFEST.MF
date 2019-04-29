@@ -17,3 +17,12 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.apache.log4j
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.action.language
+Export-Package: hu.bme.mit.gamma.action.language.generator,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.action.language.parser.antlr,
+ hu.bme.mit.gamma.action.language.services,
+ hu.bme.mit.gamma.action.language.scoping,
+ hu.bme.mit.gamma.action.language.serializer,
+ hu.bme.mit.gamma.action.language.validation,
+ hu.bme.mit.gamma.action.language.formatting,
+ hu.bme.mit.gamma.action.language.parser.antlr.internal

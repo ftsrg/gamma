@@ -12,6 +12,13 @@ Require-Bundle: hu.bme.mit.gamma.action.language,
  org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.codetemplates.ui,
  org.eclipse.ui.editors;bundle-version="3.5.0",
- org.eclipse.ui.ide;bundle-version="3.5.0"
+ org.eclipse.ui.ide;bundle-version="3.5.0",
+ org.eclipse.ui,
+ org.eclipse.compare,
+ org.eclipse.xtext.builder
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: hu.bme.mit.gamma.action.language.ui.contentassist,
+ hu.bme.mit.gamma.action.language.ui.quickfix,
+ hu.bme.mit.gamma.action.language.ui.internal
+Bundle-Activator: hu.bme.mit.gamma.action.language.ui.internal.LanguageActivator
