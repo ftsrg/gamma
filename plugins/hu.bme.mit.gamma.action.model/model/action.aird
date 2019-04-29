@@ -3,6 +3,9 @@
   <viewpoint:DAnalysis xmi:id="_kvjYwGnlEemgIeNwzXrpuw" selectedViews="_k-WCsGnlEemgIeNwzXrpuw" version="13.0.0.201804031646">
     <semanticResources>action.ecore</semanticResources>
     <semanticResources>action.genmodel</semanticResources>
+    <semanticResources>platform:/resource/hu.bme.mit.gamma.constraint.model/model/constraint.ecore</semanticResources>
+    <semanticResources>http://www.eclipse.org/emf/2002/Ecore</semanticResources>
+    <semanticResources>platform:/resource/hu.bme.mit.gamma.constraint.model/model/constraint.genmodel</semanticResources>
     <ownedViews xmi:type="viewpoint:DView" xmi:id="_k-WCsGnlEemgIeNwzXrpuw">
       <viewpoint xmi:type="description:Viewpoint" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']"/>
       <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" xmi:id="_lF2Y4GnlEemgIeNwzXrpuw" name="model" repPath="#_lAYDAGnlEemgIeNwzXrpuw">

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Action Language Metamodel
-Bundle-SymbolicName: hu.bme.mit.gamma.action.model; singleton:=true
+Bundle-Name: %pluginName
+Bundle-SymbolicName: hu.bme.mit.gamma.action.model;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName
@@ -11,5 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.constraint.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-
+Export-Package: hu.bme.mit.gamma.action.model,
+ hu.bme.mit.gamma.action.model.impl,
+ hu.bme.mit.gamma.action.model.util
 Automatic-Module-Name: hu.bme.mit.gamma.action.model
