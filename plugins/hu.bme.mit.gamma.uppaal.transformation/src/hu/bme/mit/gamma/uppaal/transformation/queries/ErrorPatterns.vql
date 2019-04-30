@@ -11,9 +11,9 @@
 package hu.bme.mit.gamma.uppaal.transformation.queries
 
 import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/action/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-import "http://www.mit.bme.hu/gamma/statechart/Model/Action"
 
 private pattern sourceAndTargetOfTransitions(transition : Transition, source : StateNode, target : StateNode) {
 	Transition.sourceState(transition, source);

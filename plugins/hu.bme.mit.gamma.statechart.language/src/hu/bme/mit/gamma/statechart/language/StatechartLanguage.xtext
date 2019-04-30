@@ -8,14 +8,16 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage with hu.bme.mit.gamma.constraint.language.ConstraintLanguage
+grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage 
+	with hu.bme.mit.gamma.action.language.ActionLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model" 
 import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//action" as ActionModel 
+ 
 
 Package returns Package:
 	'package' name=ID
@@ -144,23 +146,6 @@ AnyPortEventReference returns AnyPortEventReference:
 
 PortEventReference returns PortEventReference:
 	port=[Port] '.' event=[InterfaceModel::Event]
-;
-
-Action:
-	Block | 
-	Statement
-;
-
-RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
-;
-
-SetTimeoutAction returns SetTimeoutAction:
-	'set' timeoutDeclaration=[TimeoutDeclaration] ':=' time=TimeSpecification
-;
-
-DeactivateTimeoutAction returns DeactivateTimeoutAction:
-	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
 
 Port returns Port:
@@ -458,30 +443,9 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
 
-//Action Language
+//Action Language Extensions
 
-@Override
-FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
-	LambdaDeclaration | ProcedureDeclaration
-;
-
-ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
-	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
-	body=Block
-;
-
-Block returns ActionModel::Block:
-	{ActionModel::Block}
-	'{' 
-		(actions+=Action)*
-	'}'
-;
-
-Statement returns ActionModel::Statement:
-	InlineStatement | 
-	MultilineStatement
-;
-
+@Override 
 InlineStatement returns ActionModel::Statement:
 	(VariableDeclarationStatement |
 	ConstantDeclarationStatement |
@@ -493,6 +457,7 @@ InlineStatement returns ActionModel::Statement:
 	
 	AssignmentStatement |
 	
+	//Extensions:
 	RaiseEventAction |
 	SetTimeoutAction |
 	DeactivateTimeoutAction 
@@ -501,93 +466,16 @@ InlineStatement returns ActionModel::Statement:
 	';'
 ;
 
-MultilineStatement returns ActionModel::Statement:
-	IfStatement |
-	SwitchStatement |
-	ForStatement |
-	
-	ChoiceStatement
+RaiseEventAction returns RaiseEventAction:
+	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
-VariableDeclarationStatement returns ActionModel::VariableDeclarationStatement:
-	variableDeclaration = VariableDeclaration
+SetTimeoutAction returns SetTimeoutAction:
+	'set' timeoutDeclaration=[TimeoutDeclaration] ':=' time=TimeSpecification
 ;
 
-ConstantDeclarationStatement returns ActionModel::ConstantDeclarationStatement:
-	constantDeclaration = ConstantDeclaration
+DeactivateTimeoutAction returns DeactivateTimeoutAction:
+	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
 
-ExpressionStatement returns ActionModel::ExpressionStatement:
-	expression=Expression
-;
-
-IfBranch returns ActionModel::Branch:
-	'(' guard=Expression ')'
-	action=Action
-;
-
-ElseBranch returns ActionModel::Branch:
-	guard=ElseExpression
-	action=Action
-;
-
-SwitchBranch returns ActionModel::Branch:
-	guard=Expression ':'
-	action=Action
-;
-
-DefaultBranch returns ActionModel::Branch:
-	guard=DefaultExpression ':'
-	action=Action
-;
-
-ChoiceBranch returns ActionModel::Branch:
-	'[' guard=Expression ']'
-	action=Action
-;
-
-DefaultExpression returns ConstraintModel::ElseExpression:
-	{ConstraintModel::ElseExpression} 'default'
-;
-
-IfStatement returns ActionModel::IfStatement:
-	{ActionModel::IfStatement}
-	'if' conditionals+=IfBranch
-	(=> 'elsif' conditionals+=IfBranch)*
-	(=> conditionals+=ElseBranch)?
-;
-
-SwitchStatement returns ActionModel::SwitchStatement:
-	'switch' '(' controlExpression=Expression ')'
-	'{'
-	('case' cases+=SwitchBranch ('case' cases+=SwitchBranch)*)
-	(cases+=DefaultBranch)?
-	'}'
-;
-
-ForStatement returns ActionModel::ForStatement:
-	'for' '(' parameter=ParameterDeclaration'in'range=Expression')'
-	body=Block
-	('then' then=Block)?
-;
-
-ReturnStatement returns ActionModel::ReturnStatement:
-	'return' expression=Expression
-;
-
-BreakStatement returns ActionModel::BreakStatement:
-	{ActionModel::BreakStatement}
-	'break'
-;
-
-ChoiceStatement returns ActionModel::ChoiceStatement:
-	'choice'
-	'{'
-	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
-	'}'
-;
-
-AssignmentStatement returns ActionModel::AssignmentStatement:
-	lhs=ReferenceExpression ':=' rhs=Expression
-;
 	

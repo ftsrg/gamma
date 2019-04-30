@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.validation
 
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-import "http://www.mit.bme.hu/gamma/statechart/Model/Action"
+import "http://www.mit.bme.hu/gamma/action/Model"
 import "http://www.mit.bme.hu/gamma/constraint/Model"
 
 // 1. Unused events

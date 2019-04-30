@@ -222,7 +222,7 @@ import uppaal.declarations.DeclarationsFactory
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions

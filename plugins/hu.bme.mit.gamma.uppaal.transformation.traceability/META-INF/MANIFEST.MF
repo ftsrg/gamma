@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.constraint.model;visibility:=reexport,
  hu.bme.mit.gamma.statechart.model;visibility:=reexport,
- de.uni_paderborn.uppaal;visibility:=reexport
+ de.uni_paderborn.uppaal;visibility:=reexport,
+ hu.bme.mit.gamma.action.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.uppaal.transformation.traceability

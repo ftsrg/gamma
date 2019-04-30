@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
-import hu.bme.mit.gamma.statechart.model.action.ActionPackage
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
@@ -71,7 +70,8 @@ import org.yakindu.sct.model.stext.stext.EventRaisingExpression
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.
@@ -87,7 +87,7 @@ class ExpressionTransformer {
     
     protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     protected extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
-    protected extension ActionPackage acPackage = ActionPackage.eINSTANCE
+    protected extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
 	protected extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
 	

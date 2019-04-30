@@ -3,6 +3,17 @@
  */
 package hu.bme.mit.gamma.action.language.validation;
 
+import org.eclipse.xtext.validation.Check;
+
+import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
+import hu.bme.mit.gamma.constraint.model.Type;
+import hu.bme.mit.gamma.constraint.model.TypeReference;
+import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
+
 
 /**
  * This class contains custom validation rules. 
@@ -11,15 +22,50 @@ package hu.bme.mit.gamma.action.language.validation;
  */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	
-//	public static final INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	public void checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.getName().charAt(0))) {
-//			warning("Name should start with a capital",
-//					ActionLanguagePackage.Literals.GREETING__NAME,
-//					INVALID_NAME);
-//		}
-//	}
+	@Check
+	public void checkAssignmentActions(AssignmentStatement assignment) {
+		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
+		// Constant
+		if (!(reference.getDeclaration() instanceof VariableDeclaration)) {
+			error("Values can be assigned only to variables.", ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
+		}
+		// Other assignment type checking
+		if (reference.getDeclaration() instanceof VariableDeclaration) {
+			VariableDeclaration variableDeclaration = (VariableDeclaration) reference.getDeclaration();
+			try {
+				Type variableDeclarationType = variableDeclaration.getType();
+				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(assignment.getRhs());
+				if (!typeDeterminator.equals(variableDeclarationType, rightHandSideExpressionType)) {
+					error("The types of the variable declaration and the right hand side expression are not the same: " +
+							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
+							rightHandSideExpressionType.toString().toLowerCase() + ".",
+							ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
+				}
+				// Additional checks for enumerations
+				EnumerationTypeDefinition enumType = null;
+				if (variableDeclarationType instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) variableDeclarationType;
+				}
+				else if (variableDeclarationType instanceof TypeReference &&
+						((TypeReference) variableDeclarationType).getReference().getType() instanceof EnumerationTypeDefinition) {
+					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
+				}
+				if (enumType != null) {
+					if (assignment.getRhs() instanceof EnumerationLiteralExpression) {
+						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) assignment.getRhs();
+						if (!enumType.getLiterals().contains(rhs.getReference())) {
+							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
+									ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
+						}
+					}
+					else {
+						error("The right hand side must be of type enumeration literal.", ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
+					}
+				}
+			} catch (Exception exception) {
+				// There is a type error on a lower level, no need to display the error message on this level too
+			}
+		}
+	}
 	
 }

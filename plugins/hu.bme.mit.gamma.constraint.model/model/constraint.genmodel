@@ -98,6 +98,7 @@
     <genClasses image="false" ecoreClass="constraint.ecore#//BooleanExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//PredicateExpression"/>
     <genClasses ecoreClass="constraint.ecore#//ElseExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//DefaultExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//QuantifierExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//AccessExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference constraint.ecore#//AccessExpression/operand"/>
