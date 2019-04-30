@@ -117,6 +117,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="PredicateExpression" abstract="true"
       eSuperTypes="#//LogicExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ElseExpression" eSuperTypes="#//NullaryExpression #//LogicExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DefaultExpression" eSuperTypes="#//ElseExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="QuantifierExpression" abstract="true"
       eSuperTypes="#//UnaryExpression #//ParametricElement #//LogicExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="AccessExpression" abstract="true" eSuperTypes="#//Expression">

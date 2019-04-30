@@ -79,7 +79,7 @@ import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
 import hu.bme.mit.gamma.constraint.model.DivExpression
 import hu.bme.mit.gamma.constraint.model.ModExpression
-import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 
 class ExpressionTransformer {
 	

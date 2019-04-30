@@ -1,9 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Statechart Language
+Bundle-Name: Gamma Action Language
 Bundle-SymbolicName: hu.bme.mit.gamma.action.language; singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-Vendor: BME-FTSRG
+Export-Package: hu.bme.mit.gamma.action.language.generator,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.action.language.parser.antlr,
+ hu.bme.mit.gamma.action.language.services,
+ hu.bme.mit.gamma.action.language.scoping,
+ hu.bme.mit.gamma.action.language.serializer,
+ hu.bme.mit.gamma.action.language.validation,
+ hu.bme.mit.gamma.action.language.formatting,
+ hu.bme.mit.gamma.action.language.parser.antlr.internal
 Require-Bundle: hu.bme.mit.gamma.constraint.language,
  hu.bme.mit.gamma.action.model,
  org.eclipse.xtext,
@@ -17,12 +26,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.apache.log4j
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.action.language
-Export-Package: hu.bme.mit.gamma.action.language.generator,
- hu.bme.mit.gamma.action.language,
- hu.bme.mit.gamma.action.language.parser.antlr,
- hu.bme.mit.gamma.action.language.services,
- hu.bme.mit.gamma.action.language.scoping,
- hu.bme.mit.gamma.action.language.serializer,
- hu.bme.mit.gamma.action.language.validation,
- hu.bme.mit.gamma.action.language.formatting,
- hu.bme.mit.gamma.action.language.parser.antlr.internal
+

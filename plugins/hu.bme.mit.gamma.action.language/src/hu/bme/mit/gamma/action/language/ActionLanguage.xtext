@@ -101,8 +101,10 @@ ChoiceBranch returns ActionModel::Branch:
 	action=Action
 ;
 
-DefaultExpression returns ConstraintModel::ElseExpression:
-	{ConstraintModel::ElseExpression} 'default'
+// Xtext bug - DefaultExpression had to be introduced to tackle the problem in the generated StatechartLanguageSemanticSequencer class
+// DefaultExpression has the same semantics as ElseExpression (but it is used in DefaultBranch)
+DefaultExpression returns ConstraintModel::DefaultExpression:
+	{ConstraintModel::DefaultExpression} 'default'
 ;
 
 IfStatement returns ActionModel::IfStatement:

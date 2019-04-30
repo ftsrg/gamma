@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.genmodel/src" modelPluginID="hu.bme.mit.gamma.yakindu.genmodel"
     modelName="Genmodel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
-    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types"
+    usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
   <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.yakindu" disposableProviderFactory="true"

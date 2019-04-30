@@ -17,8 +17,6 @@ import hu.bme.mit.gamma.constraint.model.InitializableElement
 import hu.bme.mit.gamma.constraint.model.NotExpression
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression
 import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.action.AssignmentStatement
-import hu.bme.mit.gamma.statechart.model.action.ActionPackage
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
@@ -108,6 +106,8 @@ import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -142,7 +142,7 @@ class YakinduToGammaTransformer {
     
     // Packages of the metamodels
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
-    extension ActionPackage acPackage = ActionPackage.eINSTANCE
+    extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
     extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     
