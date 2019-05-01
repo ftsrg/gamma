@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Scope Provied UI
+Bundle-Name: Scope Provider UI
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.scoping.ui;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-Activator: hu.bme.mit.gamma.statechart.scoping.ui.Activator
