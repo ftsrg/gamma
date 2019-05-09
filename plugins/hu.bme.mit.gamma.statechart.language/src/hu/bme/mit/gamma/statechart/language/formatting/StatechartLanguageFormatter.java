@@ -30,8 +30,9 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess(); 
+		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
-        c.setAutoLinewrap(110);
+        c.setAutoLinewrap(105);
         // Line break between import keywords
         c.setLinewrap(1).after(f.getPackageAccess().getNameAssignment_1());
         c.setLinewrap(1).after(f.getPackageAccess().getImportsAssignment_2_1());
@@ -44,13 +45,15 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getVariableDeclarationRule());
         c.setLinewrap(1).after(f.getTimeoutDeclarationRule());
         c.setLinewrap(1).before(f.getComponentRule());
-        c.setLinewrap(1).after(f.getTransitionRule()); 
+        c.setLinewrap(1).before(f.getTransitionRule());
+        c.setLinewrap(1).after(f.getTransitionRule());
+        c.setLinewrap(1).before(f.getRegionRule());
         c.setLinewrap(1).after(f.getRegionRule());
         c.setLinewrap(1).after(f.getStateNodeRule());
         c.setLinewrap(1).after(f.getStateAccess().getInvariantsExpressionParserRuleCall_3_1_0_0_1_0());
         c.setLinewrap(1).after(f.getStateAccess().getEntryActionsActionParserRuleCall_3_1_0_1_2_0());
         c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_2_0());
-        //c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_3_1_0());
+        c.setLinewrap(1).after(f.getStateAccess().getExitActionsAssignment_3_1_0_2_2());
         // Composite system rules   
         c.setLinewrap(1).after(f.getClockDeclarationRule());
         c.setLinewrap(1).after(f.getControlSpecificaitonRule());
