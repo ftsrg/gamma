@@ -3023,9 +3023,16 @@ class CompositeToUppaalTransformer {
 							.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].filter[it.parentTemplate == source.parentTemplate].head
 			}
 		}
-		// In case of exit, the target is always the source
+		// In case of exit
 		else {
-			target = source
+			// If the region ha history, the target is the source (remembering last active state)
+			if (subregion.hasHistory) {
+				target = source
+			}
+			// The target is the inactive location to reduce state space
+			else {
+				target = source.parentTemplate.init
+			}
 		}
 		val realTarget = target
 		// Creating an edge with a ? synchronization and an "isActive" update
