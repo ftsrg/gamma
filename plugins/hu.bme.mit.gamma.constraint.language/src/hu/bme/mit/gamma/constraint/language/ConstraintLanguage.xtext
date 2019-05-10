@@ -248,7 +248,7 @@ AccessExpression returns Expression:
 		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
 		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*) ')' |
 		{RecordAccessExpression.operand=current} '.' field=ID |
-		{SelectExpression.operand=current} '.select'
+		{SelectExpression.operand=current} '.' 'select'
 	)*
 ;
 
