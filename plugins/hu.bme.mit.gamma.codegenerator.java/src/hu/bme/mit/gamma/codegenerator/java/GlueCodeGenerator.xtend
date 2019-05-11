@@ -323,6 +323,10 @@ class GlueCodeGenerator {
 		timerCallbackInterface.saveCode(parentPackageUri + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
 		val timerServiceClass = createTimerServiceClassCode
 		timerServiceClass.saveCode(parentPackageUri + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
+		val gammaTimerInterface = createGammaTimerInterfaceCode
+		gammaTimerInterface.saveCode(parentPackageUri + File.separator + GAMMA_TIMER_INTERFACE_NAME + ".java")
+		val gammaTimerClass = createGammaTimerClassCode
+		gammaTimerClass.saveCode(parentPackageUri + File.separator + GAMMA_TIMER_CLASS_NAME + ".java")
 		val unifiedTimerInterface = createUnifiedTimerInterfaceCode
 		unifiedTimerInterface.saveCode(parentPackageUri + File.separator + UNIFIED_TIMER_INTERFACE_NAME + ".java")
 		val unifiedTimerClass = createUnifiedTimerClassCode
@@ -439,6 +443,60 @@ class GlueCodeGenerator {
 				}
 			}
 		
+		}
+	'''
+	
+	/**
+	 * Creates the Gamma timer interface for the timings.
+	 */
+	protected def createGammaTimerInterfaceCode() '''
+		package «yakinduPackageName»;
+		
+		public interface «GAMMA_TIMER_INTERFACE_NAME» {
+			
+			public void saveTime(Object object);
+			public long getElapsedTime(Object object, TimeUnit timeUnit);
+			
+			public enum TimeUnit {
+				SECOND, MILLISECOND, MICROSECOND, NANOSECOND
+			}
+			
+		}
+	'''
+	
+	/**
+	 * Creates the Gamma timer class for the timings.
+	 */
+	protected def createGammaTimerClassCode() '''
+		package «yakinduPackageName»;
+		
+		import java.util.Map;
+		import java.util.HashMap;
+		
+		public class «GAMMA_TIMER_CLASS_NAME» implements «GAMMA_TIMER_INTERFACE_NAME» {
+			
+				private Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
+				
+				public void saveTime(Object object) {
+					elapsedTime.put(object, System.nanoTime());
+				}
+				
+				public long getElapsedTime(Object object, TimeUnit timeUnit) {
+					long elapsedTime = System.nanoTime() - this.elapsedTime.get(object);
+					switch (timeUnit) {
+						case SECOND:
+							return elapsedTime / 1000000000;
+						case MILLISECOND:
+							return elapsedTime / 1000000;
+						case MICROSECOND:
+							return elapsedTime / 1000;
+						case NANOSECOND:
+							return elapsedTime;
+						default:
+							throw new IllegalArgumentException("Not known time unit: " + timeUnit);
+					}
+				}
+			
 		}
 	'''
 	
