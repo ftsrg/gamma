@@ -104,9 +104,13 @@ class GlueCodeGenerator {
 	protected final String CHANNEL_NAME = "channels"	
 	protected final String INTERFACES_NAME = "interfaces"
 	protected final String VIRTUAL_TIMER_CLASS_NAME = "VirtualTimerService"
+	protected final String GAMMA_TIMER_INTERFACE_NAME = "TimerInterface"
+	protected final String GAMMA_TIMER_CLASS_NAME = "OneThreadedTimer"
 	protected final String ITIMER_INTERFACE_NAME = "ITimer"
 	protected final String ITIMER_CALLBACK_INTERFACE_NAME = "ITimerCallback"
 	protected final String TIMER_SERVICE_CLASS_NAME = "TimerService"
+	protected final String UNIFIED_TIMER_INTERFACE_NAME = "UnifiedTimerInterface"
+	protected final String UNIFIED_TIMER_CLASS_NAME = "UnifiedTimer"
 	protected final String TIMER_OBJECT_NAME = "timer"
 	// Expression serializer
 	protected final extension ExpressionSerializer serializer = new ExpressionSerializer
@@ -319,6 +323,10 @@ class GlueCodeGenerator {
 		timerCallbackInterface.saveCode(parentPackageUri + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
 		val timerServiceClass = createTimerServiceClassCode
 		timerServiceClass.saveCode(parentPackageUri + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
+		val unifiedTimerInterface = createUnifiedTimerInterfaceCode
+		unifiedTimerInterface.saveCode(parentPackageUri + File.separator + UNIFIED_TIMER_INTERFACE_NAME + ".java")
+		val unifiedTimerClass = createUnifiedTimerClassCode
+		unifiedTimerClass.saveCode(parentPackageUri + File.separator + UNIFIED_TIMER_CLASS_NAME + ".java")
 	}
 	
 	/**
@@ -327,15 +335,19 @@ class GlueCodeGenerator {
 	protected def createVirtualTimerClassCode() '''
 		package «yakinduPackageName»;
 		
-		import java.util.ArrayList;
 		import java.util.List;
+		import java.util.ArrayList;
+		import java.util.Map;
+		import java.util.HashMap;
 		
 		/**
 		 * Virtual timer service implementation.
 		 */
-		public class «VIRTUAL_TIMER_CLASS_NAME» implements «ITIMER_INTERFACE_NAME» {
-			
+		public class «VIRTUAL_TIMER_CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
+			// Yakindu timer
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
+			// Gamma timer
+			Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
 			
 			/**
 			 * Timer task that reflects a time event. It's internally used by TimerService.
@@ -390,14 +402,12 @@ class GlueCodeGenerator {
 				}
 			}
 			
-			@Override
 			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {	
 				// Creating a new TimerTask for given event and storing it
 				TimeEventTask timerTask = new TimeEventTask(callback, eventID, time, isPeriodic);
 				timerTaskList.add(timerTask);
 			}
 			
-			@Override
 			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
 				for (TimeEventTask timer : new ArrayList<TimeEventTask>(timerTaskList)) {
 					if (timer.callback.equals(callback) && timer.eventID == eventID) {
@@ -410,8 +420,66 @@ class GlueCodeGenerator {
 				for (TimeEventTask timer : timerTaskList) {
 					timer.elapse(amount);
 				}
+				for (Object object : elapsedTime.keySet()) {
+					elapsedTime.put(object, elapsedTime.get(object) + amount);
+				}
+			}
+			
+			public void saveTime(Object object) {
+				elapsedTime.put(object, Long.valueOf(0));
+			}
+			
+			public long getElapsedTime(Object object, TimeUnit timeUnit) {
+				long elapsedTime = this.elapsedTime.get(object);
+				switch (timeUnit) {
+					case MILLISECOND:
+						return elapsedTime;
+					default:
+						throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
+				}
 			}
 		
+		}
+	'''
+	
+	/**
+	 * Creates the unified timer interface for the timings.
+	 */
+	protected def createUnifiedTimerInterfaceCode() '''
+		package «yakinduPackageName»;
+		
+		public interface «UNIFIED_TIMER_INTERFACE_NAME» extends «ITIMER_INTERFACE_NAME», «GAMMA_TIMER_INTERFACE_NAME» {
+			
+		}
+	'''
+	
+	/**
+	 * Creates the unified timer class for the timings.
+	 */
+	protected def createUnifiedTimerClassCode() '''
+		package «yakinduPackageName»;
+		
+		public class «UNIFIED_TIMER_CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
+			
+			private «ITIMER_INTERFACE_NAME» «TIMER_OBJECT_NAME» = new «TIMER_SERVICE_CLASS_NAME»();
+			private «GAMMA_TIMER_INTERFACE_NAME» «GAMMA_TIMER_CLASS_NAME.toFirstLower» = new «GAMMA_TIMER_CLASS_NAME»();
+			
+			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {
+				«TIMER_OBJECT_NAME».setTimer(callback, eventID, time, isPeriodic);
+			}
+		
+			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
+				«TIMER_OBJECT_NAME».unsetTimer(callback, eventID);
+			}
+		
+			public void saveTime(Object object) {
+				«GAMMA_TIMER_CLASS_NAME.toFirstLower».saveTime(object);
+			}
+		
+			public long getElapsedTime(Object object, TimeUnit timeUnit) {
+				return «GAMMA_TIMER_CLASS_NAME.toFirstLower».getElapsedTime(object, timeUnit);
+			}
+			
 		}
 	'''
 	
@@ -1318,7 +1386,7 @@ class GlueCodeGenerator {
 	
 		«component.generateCompositeSystemImports»
 		
-		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {			
+		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {
 			// Component instances
 			«FOR instance : component.components»
 				private «instance.type.componentClassName» «instance.name»;
@@ -1330,7 +1398,7 @@ class GlueCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«ITIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE_NAME» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init();
@@ -1520,7 +1588,7 @@ class GlueCodeGenerator {
 	
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */
-				public void setTimer(«ITIMER_INTERFACE_NAME» timer) {
+				public void setTimer(«UNIFIED_TIMER_INTERFACE_NAME» timer) {
 					«FOR instance : component.components»
 						«IF instance.type.needTimer»
 							«instance.name».setTimer(timer);
