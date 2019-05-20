@@ -11,9 +11,9 @@ statechart MonitorStatechart [
 	transition from Red to Other when LightInputs.displayYellow
 	transition from Entry0 to Other
 	transition from Green to Red when LightInputs.displayRed
-	transition from Red to Error when LightInputs.displayRed / raise Monitor.error
+	transition from Red to Error when LightInputs.displayRed / raise Monitor.error;
 	transition from Red to Other when LightInputs.displayNone
-	transition from Green to Error when LightInputs.displayGreen / raise Monitor.error
+	transition from Green to Error when LightInputs.displayGreen / raise Monitor.error;
 	transition from Red to Green when LightInputs.displayGreen
 	region main_region {
 		initial Entry0
