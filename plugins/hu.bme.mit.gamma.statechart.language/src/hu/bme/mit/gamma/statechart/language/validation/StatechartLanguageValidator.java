@@ -62,6 +62,8 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
+import hu.bme.mit.gamma.statechart.model.Trigger;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel;
@@ -76,7 +78,6 @@ import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
@@ -1278,13 +1279,53 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkAnyPortControls(ControlSpecification controlSpecification) {
-		if (controlSpecification.getTrigger() instanceof AnyTrigger) {
-			if (controlSpecification.eContainer() instanceof AsynchronousAdapter) {
-				AsynchronousAdapter wrapper = (AsynchronousAdapter) controlSpecification.eContainer();
-				int controlIndex = wrapper.getControlSpecifications().indexOf(controlSpecification);
-				if (controlIndex < wrapper.getControlSpecifications().size() - 1) {
-					warning("This control specification with any trigger enshadows the following control specifications.", CompositePackage.Literals.CONTROL_SPECIFICATION__TRIGGER);
+	public void checkAnyPortControls(AsynchronousAdapter adapter) {
+		Map<Port, Collection<Event>> usedEvents = new HashMap<Port, Collection<Event>>();
+		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
+			Trigger trigger = controlSpecification.getTrigger();
+			int index =  adapter.getControlSpecifications().indexOf(controlSpecification);
+			if (trigger instanceof AnyTrigger) {
+				if (adapter.getControlSpecifications().size() > 1) {
+					error("This control specification with any trigger enshadows all other control specifications.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+					return;
+				}
+			}
+			if (trigger instanceof EventTrigger) {
+				EventTrigger eventTrigger = (EventTrigger) trigger;
+				EventReference eventReference = eventTrigger.getEventReference();
+				if (eventReference instanceof AnyPortEventReference) {
+					AnyPortEventReference anyPortEventReference = (AnyPortEventReference) eventReference;
+					Port port = anyPortEventReference.getPort();
+					Collection<Event> portEvents = getSemanticEvents(Collections.singleton(port), EventDirection.IN);
+					if (usedEvents.containsKey(port)) {
+						error("This control specification with any port trigger enshadows all control specifications "
+							+ "with reference to the same port.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+						Collection<Event> containedEvents = usedEvents.get(port);
+						containedEvents.addAll(portEvents);
+					}
+					else {
+						usedEvents.put(port, portEvents);
+					}
+				}
+				else if (eventReference instanceof PortEventReference) {
+					PortEventReference portEventReference = (PortEventReference) eventReference;
+					Port port = portEventReference.getPort();
+					Event event = portEventReference.getEvent();
+					if (usedEvents.containsKey(port)) {
+						Collection<Event> containedEvents = usedEvents.get(port);
+						if (containedEvents.contains(event)) {
+							error("This control specification with port event trigger has the same effect as some "
+									+ "previous control specification.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+						}
+						else {
+							containedEvents.add(event);
+						}
+					}
+					else {
+						Collection<Event> events = new HashSet<Event>();
+						events.add(event);
+						usedEvents.put(port, events);
+					}
 				}
 			}
 		}
