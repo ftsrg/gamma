@@ -224,7 +224,7 @@ class TestGenerator {
 	
 	protected def getAsyncParent(SynchronousComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
-		val parents = WrapperInstanceContainer.Matcher.on(engine).getAllValuesOfwrapperInstance(null, instance)
+		val parents = WrapperInstanceContainer.Matcher.on(engine).getAllValuesOfwrapperInstance(instance)
 		if (parents.size > 1) {
 			throw new IllegalArgumentException("More than one parent: " + parents)
 		}
@@ -272,10 +272,8 @@ class TestGenerator {
 			if  (component instanceof AsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
 					// We are on the border of async-sync components
-					val match = WrapperInstanceContainer.Matcher.on(engine).getOneArbitraryMatch(null, null, child).get
-					val wrapperInstance = match.wrapperInstance
-					val syncComposite = match.syncComposite
-					return '''«wrapperInstance.getFullContainmentHierarchy(child)»get«syncComposite.name.toFirstUpper»().'''
+					val wrapperInstance = child.asyncParent
+					return '''«wrapperInstance.getFullContainmentHierarchy(child)»get«child.localName.toFirstUpper»().'''
 				}
 				else {
 					// We are on the top of async components
@@ -287,7 +285,7 @@ class TestGenerator {
 			val parent = actual.parent
 			if (child === null) {
 				// No dot after the last instance
-				// Local names are needed form parent_actual names
+				// Local names are needed to form parent_actual names
 				return '''«parent.getFullContainmentHierarchy(actual)»get«actual.localName.toFirstUpper»()'''	
 			}
 			return '''«parent.getFullContainmentHierarchy(actual)»get«actual.localName.toFirstUpper»().'''
@@ -327,6 +325,7 @@ class TestGenerator {
 		if (statechartName.endsWith("Statechart")) {
 			return statechartName.substring(0, statechartName.length - "Statechart".length)
 		}
+		return statechartName
 	}
 	
 	/**

@@ -39,10 +39,13 @@ pattern instanceContainer(containerInstace : ComponentInstance, instance : Compo
 	AsynchronousCompositeComponent.components(type, instance);
 }
 
-pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncComposite : AbstractSynchronousCompositeComponent, syncIntance : SynchronousComponentInstance) {
+pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncInstance : SynchronousComponentInstance) {
 	find asynchronousSimpleInstances(wrapperInstance, wrapper);
 	find wrappers(wrapper, syncComposite);
-	AbstractSynchronousCompositeComponent.components(syncComposite, syncIntance);
+	AbstractSynchronousCompositeComponent.components(syncComposite, syncInstance);
+} or {
+	find asynchronousSimpleInstances(wrapperInstance, wrapper);
+	AsynchronousAdapter.wrappedComponent(wrapper, syncInstance);
 }
 
 private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {

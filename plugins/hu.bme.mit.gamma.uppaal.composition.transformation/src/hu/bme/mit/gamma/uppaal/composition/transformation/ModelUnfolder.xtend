@@ -129,8 +129,10 @@ class ModelUnfolder {
 		component.fixControlEvents // Fixing control events
 		component.fixMessageQueueEvents // Fixing the message queue event references 
 		if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {				
-			clonedComponent.copyComponents(gammaPackage, containerInstanceName) // Cloning the contained CompositeSystems recursively
+			clonedComponent.copyComponents(gammaPackage, containerInstanceName + component.wrappedComponent.name + "_") // Cloning the contained CompositeSystems recursively
 		}
+		// Rename
+		component.wrappedComponent.name = containerInstanceName + component.wrappedComponent.name
 	}
 	
 	protected def void fixChannelRequiredPorts(CompositeComponent composite, ComponentInstance instance) {
