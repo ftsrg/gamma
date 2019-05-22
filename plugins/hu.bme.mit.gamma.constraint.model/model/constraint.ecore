@@ -116,6 +116,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="BooleanExpression" abstract="true" eSuperTypes="#//LogicExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="PredicateExpression" abstract="true"
       eSuperTypes="#//LogicExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OpaqueExpression" eSuperTypes="#//NullaryExpression">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="expression" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ElseExpression" eSuperTypes="#//NullaryExpression #//LogicExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="DefaultExpression" eSuperTypes="#//ElseExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="QuantifierExpression" abstract="true"

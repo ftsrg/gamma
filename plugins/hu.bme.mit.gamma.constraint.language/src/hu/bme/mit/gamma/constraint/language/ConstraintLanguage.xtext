@@ -275,7 +275,8 @@ LiteralExpression returns Expression:
 	ArrayLiteralExpression |
 	RecordLiteralExpression |
 	EnumerationLiteralExpression |
-	IntegerRangeLiteralExpression
+	IntegerRangeLiteralExpression  |
+	OpaqueExpression
 ;
 
 IntegerLiteralExpression:
@@ -315,6 +316,9 @@ EnumerationLiteralExpression:
 	'::' reference=[EnumerationLiteralDefinition]
 ;
 
+OpaqueExpression:
+	expression=STRING
+;
 
 ArrayLiteralExpression:
 	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'

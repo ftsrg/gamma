@@ -97,6 +97,9 @@
     <genClasses ecoreClass="constraint.ecore#//LogicExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//BooleanExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//PredicateExpression"/>
+    <genClasses ecoreClass="constraint.ecore#//OpaqueExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute constraint.ecore#//OpaqueExpression/expression"/>
+    </genClasses>
     <genClasses ecoreClass="constraint.ecore#//ElseExpression"/>
     <genClasses ecoreClass="constraint.ecore#//DefaultExpression"/>
     <genClasses image="false" ecoreClass="constraint.ecore#//QuantifierExpression"/>
