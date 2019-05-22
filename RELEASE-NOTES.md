@@ -69,3 +69,16 @@
 ### Improvements
 
 * Validation rules regarding fork and join nodes are added.
+
+## 2018.05.25. - Version 2.1.2
+
+### What is New
+
+* Gamma now depends on VIATRA 2.1.1 and Yakindu 3.5.3.
+* A new action language has been introduced (GAL), wich provides new elements in actions, such as cycles and branches.
+* The GCL metamodel and grammar have been refactored, they now depend on the GAL.
+
+### Improvements
+ 
+* Validation rules regarding the control specifications of asynchronous adapters are added.
+* The Gamma-UPPAAL transformation has been optimized.

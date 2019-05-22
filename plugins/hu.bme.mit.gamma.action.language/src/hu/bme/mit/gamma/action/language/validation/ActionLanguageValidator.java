@@ -3,10 +3,22 @@
  */
 package hu.bme.mit.gamma.action.language.validation;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
+import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.BreakStatement;
+import hu.bme.mit.gamma.action.model.ChoiceStatement;
+import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
+import hu.bme.mit.gamma.action.model.ForStatement;
+import hu.bme.mit.gamma.action.model.IfStatement;
+import hu.bme.mit.gamma.action.model.ReturnStatement;
+import hu.bme.mit.gamma.action.model.SwitchStatement;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
@@ -21,6 +33,23 @@ import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
+	
+	@Check
+	public void checkUnsupportedActions(Action action) {
+		if (action instanceof Block ||
+				action instanceof BreakStatement ||
+				action instanceof ChoiceStatement ||
+				action instanceof ConstantDeclarationStatement ||
+				action instanceof ExpressionStatement ||
+				action instanceof ForStatement ||
+				action instanceof IfStatement ||
+				action instanceof ReturnStatement ||
+				action instanceof SwitchStatement ||
+				action instanceof VariableDeclarationStatement) {
+			EObject container = action.eContainer();
+			error("Not supported action.", container, action.eContainmentFeature());
+		}
+	}
 	
 	@Check
 	public void checkAssignmentActions(AssignmentStatement assignment) {
