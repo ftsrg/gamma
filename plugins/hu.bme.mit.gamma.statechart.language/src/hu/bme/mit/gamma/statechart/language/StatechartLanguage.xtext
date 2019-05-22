@@ -66,6 +66,7 @@ Trigger returns Trigger:
  */
 SimpleTrigger returns SimpleTrigger:
 	AnyTrigger |
+	OpaqueTrigger |
 	EventTrigger
 ;
 
@@ -106,7 +107,7 @@ enum Not returns UnaryType:
 ;
 
 UnaryTrigger returns Trigger:
-	NotTrigger | EventTrigger
+	NotTrigger | EventTrigger | OpaqueTrigger 
 ;
 
 NotTrigger returns UnaryTrigger:
@@ -119,6 +120,10 @@ ParenthesesTrigger returns Trigger:
 
 AnyTrigger returns AnyTrigger:
 	{AnyTrigger} 'any'
+;
+
+OpaqueTrigger returns OpaqueTrigger:
+	trigger=STRING
 ;
 
 EventTrigger returns EventTrigger:

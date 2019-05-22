@@ -169,6 +169,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"
         eType="#//Region" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OpaqueTrigger" eSuperTypes="#//SimpleTrigger">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="trigger" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
   <eSubpackages name="interface" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Interface"
       nsPrefix="hu.bme.mit.gamma.statechart.interface">
     <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">

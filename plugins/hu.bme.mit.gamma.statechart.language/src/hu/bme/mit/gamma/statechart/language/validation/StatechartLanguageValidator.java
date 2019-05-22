@@ -22,11 +22,22 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.BreakStatement;
+import hu.bme.mit.gamma.action.model.ChoiceStatement;
+import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
+import hu.bme.mit.gamma.action.model.ForStatement;
+import hu.bme.mit.gamma.action.model.IfStatement;
+import hu.bme.mit.gamma.action.model.ReturnStatement;
+import hu.bme.mit.gamma.action.model.SwitchStatement;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.Expression;
@@ -47,6 +58,7 @@ import hu.bme.mit.gamma.statechart.model.EventTrigger;
 import hu.bme.mit.gamma.statechart.model.ForkState;
 import hu.bme.mit.gamma.statechart.model.JoinState;
 import hu.bme.mit.gamma.statechart.model.MergeState;
+import hu.bme.mit.gamma.statechart.model.OpaqueTrigger;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
@@ -89,6 +101,13 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
+	
+	// Not supported elements
+	
+	@Check
+	public void checkUnsupportedTriggers(OpaqueTrigger trigger) {
+		error("Not supported trigger.", StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER);
+	}
 	
 	// Interfaces
 	
