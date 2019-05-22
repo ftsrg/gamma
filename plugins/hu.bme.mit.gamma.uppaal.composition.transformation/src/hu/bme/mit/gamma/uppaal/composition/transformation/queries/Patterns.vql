@@ -353,10 +353,10 @@ pattern raiseInstanceEventOfTransitions(transition : Transition, eventRaiseActio
 }
 
 // Same for top level sync components
-pattern raiseTopSystemEventOfTransitions(composite : AbstractSynchronousCompositeComponent, transition : Transition,
+pattern raiseTopSystemEventOfTransitions(component : SynchronousComponent, transition : Transition,
 	instance : SynchronousComponentInstance, outPort : Port, raisedEvent : Event, eventRaiseAction : RaiseEventAction) {
 	find raiseEventTransitionEffects(transition, eventRaiseAction, raisedEvent, outPort);
-	find topSyncSystemOutEvents(composite, _systemPort, instance, outPort, raisedEvent);
+	find topSyncSystemOutEvents(component, _systemPort, instance, outPort, raisedEvent);
 }
 
 // Scheduling of synchronous components
