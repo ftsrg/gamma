@@ -718,8 +718,15 @@ public class Controller {
     					++elapsedTime;
     				}
     				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
-    					String stateName = (uppaalQuery.equals("A[] not deadlock")) ? "" 
-    							: uppaalQuery.substring("E<> ".length(), uppaalQuery.length() - " && isStable".length());
+    					String stateName = "";
+						if (!uppaalQuery.equals("A[] not deadlock")) {
+							if (uppaalQuery.startsWith("E<> ")) {
+								stateName =  uppaalQuery.substring("E<> ".length());
+							}
+						}
+						if (stateName.endsWith( " && isStable")) {
+							stateName = stateName.substring(0, stateName.length() - " && isStable".length());
+						}
     					if (stateName.startsWith("P_")) {
     						stateName = stateName.substring("P_".length());
     					}

@@ -22,22 +22,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.action.model.Block;
-import hu.bme.mit.gamma.action.model.BreakStatement;
-import hu.bme.mit.gamma.action.model.ChoiceStatement;
-import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
-import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.action.model.ForStatement;
-import hu.bme.mit.gamma.action.model.IfStatement;
-import hu.bme.mit.gamma.action.model.ReturnStatement;
-import hu.bme.mit.gamma.action.model.SwitchStatement;
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.Expression;
@@ -103,6 +92,18 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 	
 	// Not supported elements
+	
+	@Check
+	public void checkComponentSepratation(Component component) {
+		Package parentPackage = (Package) component.eContainer();
+		int index = parentPackage.getComponents().indexOf(component);
+		if (!parentPackage.getInterfaces().isEmpty()) {
+			error("Components cannot be defined in package containing an interface.", parentPackage, StatechartModelPackage.Literals.PACKAGE__COMPONENTS, index);
+		}
+		if (!parentPackage.getTypeDeclarations().isEmpty()) {
+			error("Components cannot be defined in package containing a type declaration.", parentPackage, StatechartModelPackage.Literals.PACKAGE__COMPONENTS, index);
+		}
+	}
 	
 	@Check
 	public void checkUnsupportedTriggers(OpaqueTrigger trigger) {
@@ -204,6 +205,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					.stream().anyMatch(it -> it.getDeclaration() == declaration);
 		}
 		if (!isReferred) {
+			if (declaration instanceof TypeDeclaration) {
+				// Type declarations can be referred from different package
+				return;
+			}
 			warning("This declaration is not used.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}

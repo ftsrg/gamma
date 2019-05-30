@@ -38,14 +38,10 @@ class ModelUnfolder {
 	def unfold(Package gammaPackage) {
 		val clonedPackage = gammaPackage.clone(true, true) as Package => [
 			it.imports.clear // Clearing the imports as no reference will be needed in the "Instance container"
-			it.typeDeclarations.clear
-			// Retrieve correct type declaration objects
-			it.typeDeclarations += gammaPackage.typeDeclarations
-			it.interfaces += gammaPackage.interfaces
-			for (import : gammaPackage.imports) {
-				it.typeDeclarations += import.typeDeclarations
-				it.interfaces += import.interfaces
-			}
+			// The interfaces and type declarations of imports are not copied here as the multiple
+			// references in the (possible more than one) original models (due to instantiation)
+			// would also be necessary to retarget. Therefore, the definition of interfaces and
+			// type declarations is possible only in packages different from the component package
 			it.name = it.name + "View"
 		]
 		val topComponent = clonedPackage.component
@@ -65,8 +61,7 @@ class ModelUnfolder {
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.eContainer.clone(true, true) as Package
-			gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
-			gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
+			gammaPackage.addDeclarations(clonedPackage)
 			// Declarations have been moved
 			val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync Composite or Statechart
 			gammaPackage.components += clonedComponent // Adding it to the "Instance container"
@@ -90,8 +85,7 @@ class ModelUnfolder {
 			val type = instance.type
 			if (type instanceof AsynchronousCompositeComponent) {
 				val clonedPackage = type.eContainer.clone(true, true) as Package
-				gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
-				gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
+				gammaPackage.addDeclarations(clonedPackage)
 				// Declarations have been moved		
 				val clonedComposite = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousCompositeComponent // Cloning the declaration
 				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
@@ -100,8 +94,7 @@ class ModelUnfolder {
 			}
 			else if (type instanceof AsynchronousAdapter) {
 				val clonedPackage = type.eContainer.clone(true, true) as Package
-				gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
-				gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
+				gammaPackage.addDeclarations(clonedPackage)
 				// Declarations have been moved
 				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
 				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
@@ -122,8 +115,7 @@ class ModelUnfolder {
 	private dispatch def void copyComponents(AsynchronousAdapter component, Package gammaPackage, String containerInstanceName) {
 		val type = component.wrappedComponent.type
 		val clonedPackage = type.eContainer.clone(true, true) as Package
-		gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
-		gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
+		gammaPackage.addDeclarations(clonedPackage)
 		// Declarations have been moved
 		val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync Composite or Statechart
 		gammaPackage.components += clonedComponent // Adding it to the "Instance container"
@@ -265,10 +257,16 @@ class ModelUnfolder {
 		return gammaPackage.components.head
 	}
 	
-	private def EObject clone(EObject model, boolean a, boolean b) {
+	protected def addDeclarations(Package gammaPackage, Package clonedPackage) {
+		gammaPackage.constantDeclarations += clonedPackage.constantDeclarations
+		gammaPackage.functionDeclarations += clonedPackage.functionDeclarations
+		// No interface and type declarations as their cloning cause a lot of trouble
+	}
+	
+	private def <T extends EObject> T clone(T model, boolean a, boolean b) {
 		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
 		val copier = new Copier(a, b)
-		val clone = copier.copy(model);
+		val clone = copier.copy(model) as T;
 		copier.copyReferences();
 		return clone;
 	}
