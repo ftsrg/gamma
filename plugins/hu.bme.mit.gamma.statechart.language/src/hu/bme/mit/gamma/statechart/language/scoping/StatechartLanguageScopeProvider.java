@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
 import hu.bme.mit.gamma.constraint.model.Declaration;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.constraint.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
@@ -106,9 +107,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (context instanceof EnumerationLiteralExpression && 
 					reference == ConstraintModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-				EObject root = EcoreUtil2.getRootContainer(context, true);
+				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
 				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
-				return(Scopes.scopeFor(enumLiterals));
+				for (Package imported : root.getImports()) {
+					enumLiterals.addAll(EcoreUtil2.getAllContentsOfType(imported, EnumerationLiteralDefinition.class));
+				}
+				return Scopes.scopeFor(enumLiterals);
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
@@ -217,6 +221,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					.forEach(it -> events.addAll(getSemanticEvents(Collections.singletonList(it), EventDirection.IN)));
 				return Scopes.scopeFor(events);
 			}
+			if (reference == ConstraintModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
+				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+				return Scopes.scopeFor(typeDeclarations);
+			}
 			if (/*context instanceof EventTrigger && */reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
 				Component component = null;
@@ -240,6 +249,15 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			e.printStackTrace();
 		} 
 		return super.getScope(context, reference);
+	}
+	
+	private List<TypeDeclaration> collectTypeDeclarations(Package _package) {
+		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
+		for (Package _import :_package.getImports()) {
+			types.addAll(_import.getTypeDeclarations());
+		}
+		types.addAll(_package.getTypeDeclarations());
+		return types;
 	}
 
 	private List<Component> collectComponents(Package parentPackage, boolean isSynchronous) {
