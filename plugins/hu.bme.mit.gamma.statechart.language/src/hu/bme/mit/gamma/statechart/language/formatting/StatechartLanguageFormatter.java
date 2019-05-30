@@ -50,6 +50,12 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).before(f.getRegionRule());
         c.setLinewrap(1).after(f.getRegionRule());
         c.setLinewrap(1).after(f.getStateNodeRule());
+        c.setLinewrap(1).after(f.getPseudoStateRule());
+        c.setLinewrap(1).after(f.getInitialStateRule());
+        c.setLinewrap(1).after(f.getChoiceStateRule());
+        c.setLinewrap(1).after(f.getMergeStateRule());
+        c.setLinewrap(1).after(f.getForkStateRule());
+        c.setLinewrap(1).after(f.getJoinStateRule());
         c.setLinewrap(1).after(f.getStateAccess().getInvariantsExpressionParserRuleCall_3_1_0_0_1_0());
         c.setLinewrap(1).after(f.getStateAccess().getEntryActionsActionParserRuleCall_3_1_0_1_2_0());
         c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_2_0());

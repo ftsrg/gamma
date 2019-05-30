@@ -41,8 +41,10 @@ class ModelUnfolder {
 			it.typeDeclarations.clear
 			// Retrieve correct type declaration objects
 			it.typeDeclarations += gammaPackage.typeDeclarations
+			it.interfaces += gammaPackage.interfaces
 			for (import : gammaPackage.imports) {
 				it.typeDeclarations += import.typeDeclarations
+				it.interfaces += import.interfaces
 			}
 			it.name = it.name + "View"
 		]
@@ -56,7 +58,7 @@ class ModelUnfolder {
 	}
 	
 	private dispatch def void copyComponents(Component component, Package gammaPackage, String containerInstanceName) {
-		// Simple stateharts are already cloned
+		// Simple statecharts are already cloned
 	}
 	
 	private dispatch def void copyComponents(AbstractSynchronousCompositeComponent component, Package gammaPackage, String containerInstanceName) {

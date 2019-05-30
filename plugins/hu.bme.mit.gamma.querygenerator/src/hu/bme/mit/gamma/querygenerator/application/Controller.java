@@ -97,14 +97,16 @@ public class Controller {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
 		// In case of composite systems
-		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
-			String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
-			if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-				entryList.add(entry);				
+		if (isCompositeSystem()) {
+			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
+				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
+				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
+					entryList.add(entry);				
+				}
 			}
 		}
-		// In case of single statecharts
-		if (selector.getItemCount() == 0) {
+		else {
+			// In case of single statecharts
 			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getRegion().getName() + "." + statesMatch.getStateName();
 				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
@@ -119,12 +121,14 @@ public class Controller {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
 		// In case of composite systems
-		for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
-			String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
-			entryList.add(entry);
+		if (isCompositeSystem()) {
+			for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
+				String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
+				entryList.add(entry);
+			}
 		}
-		// In case of single statecharts
-		if (selector.getItemCount() == 0) {
+		else {
+			// In case of single statecharts
 			for (SimpleStatechartVariables.Match statesMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getVariable().getName();
 				entryList.add(entry);
