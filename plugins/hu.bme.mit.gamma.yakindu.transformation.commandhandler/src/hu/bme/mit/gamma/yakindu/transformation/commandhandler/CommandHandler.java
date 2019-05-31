@@ -204,8 +204,11 @@ public class CommandHandler extends AbstractHandler {
 												transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 										}
 										if (analysisModelTransformation.isTransitionCoverage()) {
+											// Suffix present? If not, all transitions can be reached; if yes, some transitions
+											// are covered by transition fired in the same step, but the end is a stable state
+											String querySuffix = transformer.getIsStableVarName(); 
 											UppaalModelSerializer.createTransitionFireabilityQueries(transformer.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
-												"", targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
+												querySuffix, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 										}
 										transformer.dispose();
 										logger.log(Level.INFO, "The composite system transformation has been finished.");
