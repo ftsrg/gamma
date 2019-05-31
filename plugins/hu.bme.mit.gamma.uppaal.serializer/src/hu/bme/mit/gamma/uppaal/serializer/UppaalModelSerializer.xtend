@@ -129,7 +129,7 @@ class UppaalModelSerializer {
 		«ENDFOR»
 		
 		«FOR declaration : nta.globalDeclarations.declaration.filter(VariableDeclaration)
-//				.sortBy[it.variable.head.name] /* To ease debugging */ 
+//				.sortBy[it.variable.head.name] /* Declaration order is crucial, it must not be reordered */ 
 				SEPARATOR "\n"»
 			«declaration.serializeVariable»
 		«ENDFOR»
