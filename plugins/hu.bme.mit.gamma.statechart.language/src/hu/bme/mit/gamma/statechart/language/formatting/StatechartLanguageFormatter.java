@@ -101,7 +101,6 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         }
         // No space before and after double colons
         for (Keyword dot : f.findKeywords("::")) {
-            c.setNoSpace().before(dot);
             c.setNoSpace().after(dot);
         }	
         // Setting indentation inside all curly brackets 

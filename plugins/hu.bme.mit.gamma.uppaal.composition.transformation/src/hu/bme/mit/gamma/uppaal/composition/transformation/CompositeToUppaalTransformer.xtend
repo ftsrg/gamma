@@ -420,7 +420,7 @@ class CompositeToUppaalTransformer {
         statements = transformation.transformationStatements
         expTransf = new ExpressionTransformer(this.manipulation, this.traceRoot, this.traceEngine)
         expCop = new ExpressionCopier(this.manipulation, this.traceRoot, this.traceEngine, expTransf) 
-        expEval = new ExpressionEvaluator
+        expEval = new ExpressionEvaluator(this.engine)
     }
 
     

@@ -147,6 +147,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkImports(Package _package) {
 		Collection<Interface> usedInterfaces = new HashSet<Interface>();
 		Collection<Component> usedComponents = new HashSet<Component>();
+		Collection<TypeDeclaration> usedTypeDeclarations =
+				EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(_package), TypeReference.class)
+				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
 		// Collecting the used components and interfaces
 		for (Component component : _package.getComponents()) {
 			for (Port port : component.getPorts()) {
@@ -169,9 +172,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			interfaces.retainAll(usedInterfaces);
 			Collection<Component> components = new HashSet<Component>(importedPackage.getComponents());
 			components.retainAll(usedComponents);
-			if (interfaces.isEmpty() && components.isEmpty()) {
+			Collection<TypeDeclaration> typeDeclarations = new HashSet<TypeDeclaration>(importedPackage.getTypeDeclarations());
+			typeDeclarations.retainAll(usedTypeDeclarations);
+			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty()) {
 				int index = _package.getImports().indexOf(importedPackage);
-				warning("No component or interface from this imported package is used.", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
+				warning("No component or interface or type declaration from this imported package is used.", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
 			}
 		}
 	}
