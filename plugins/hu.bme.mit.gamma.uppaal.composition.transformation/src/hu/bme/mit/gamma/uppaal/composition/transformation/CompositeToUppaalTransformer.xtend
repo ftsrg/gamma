@@ -223,6 +223,7 @@ import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.statechart.model.PseudoState
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -3839,9 +3840,9 @@ class CompositeToUppaalTransformer {
 			val finalizeEdge = template.createFinalizeEdge("FinalizeBefore" + it.name.toFirstUpper.replaceAll(" ", ""), commLoc)			
 			val incomingEdges = new HashSet<Edge>(template.edge.filter[it.target == commLoc && it != finalizeEdge].toSet)
 			for (incomingEdge : incomingEdges) {
-				val ttmcSource = incomingEdge.source.allValuesOfFrom.head
+				val ttmcSource = incomingEdge.source.allValuesOfFrom.head as StateNode
 				// If not an entry edge: normal entry, history entry
-				if (!(ttmcSource instanceof EntryState || ttmcSource == it.compositeState)) {
+				if (!(ttmcSource.isEntryStateReachable || ttmcSource == it.compositeState)) {
 					incomingEdge.target = finalizeEdge.source
 				}
 			}
@@ -3852,6 +3853,32 @@ class CompositeToUppaalTransformer {
 			}
 		}		
 	].build
+	
+	private def boolean isEntryStateReachable(StateNode node) {
+		if (node instanceof EntryState) {
+			return true
+		}
+		if (!(node instanceof PseudoState)) {
+			return false
+		}
+		// Imagine that an entry state and a regular are is targeted to the same choice
+		// Then the compositeStateEntryRuleCompletion cannnot be executed properly
+		var reachedEntry = false
+		var unreachableEntry = false
+		for (incomingTransition: node.incomingTransitions) {
+			val source = incomingTransition.sourceState
+			if (source.isEntryStateReachable) {
+				reachedEntry = true
+			}
+			else {
+				unreachableEntry = true
+			}
+		}
+		if (reachedEntry && unreachableEntry) {
+			throw new IllegalStateException("An entry state and a regular state are targeted to the same choice.")
+		}
+		return reachedEntry
+	}
 	
 	val toLowerRegionTransitionCompletion = createRule(ToLowerInstanceTransitions.instance).action [
 		val owner = it.instance

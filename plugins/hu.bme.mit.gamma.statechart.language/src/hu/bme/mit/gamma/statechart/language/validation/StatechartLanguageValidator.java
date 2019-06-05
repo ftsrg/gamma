@@ -183,7 +183,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkRegionEntries(Region region) {
-		Collection<StateNode> entries = region.getStateNodes().stream().filter(it -> it instanceof EntryState).collect(Collectors.toSet());
+		List<StateNode> entries = region.getStateNodes().stream().filter(it -> it instanceof EntryState).collect(Collectors.toList());
 		if (entries.isEmpty()) {
 			error("A region must have a single entry node.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
@@ -347,8 +347,17 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (hasIncomingTransition(entry)) {
 			error("Entry nodes must not have incoming transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
-		if (StatechartModelDerivedFeatures.getOutgoingTransitions(entry).size() > 1) {
+		if (StatechartModelDerivedFeatures.getOutgoingTransitions(entry).size() != 1) {
 			error("Entry nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+		}
+		else {
+			// A single transition
+			for (Transition transition : StatechartModelDerivedFeatures.getOutgoingTransitions(entry)) {
+				StateNode target = transition.getTargetState();
+				if (StatechartModelDerivedFeatures.getParentRegion(target) != StatechartModelDerivedFeatures.getParentRegion(entry)) {
+					error("Transitions going out from entry nodes must be targeted to a node in the region of the entry node.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+				}
+			}
 		}
 	}
 	
