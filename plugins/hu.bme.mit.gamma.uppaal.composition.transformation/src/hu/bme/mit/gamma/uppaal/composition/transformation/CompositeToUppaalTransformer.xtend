@@ -1272,7 +1272,7 @@ class CompositeToUppaalTransformer {
 		   			it.text = "0"
 		   		]
 		   	]
-			// Transforiming S to MS
+			// Transforming S to MS
 			val timeSpec = match.clock.timeSpecification
 			val timeValue = timeSpec.convertToMs
 			val locInvariant = initLoc.invariant
@@ -1897,7 +1897,7 @@ class CompositeToUppaalTransformer {
     
     /**
      * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-     * Note that in casacade commposite an instance might be scheduled multiple times.
+     * Note that in cascade composite an instance might be scheduled multiple times.
      */
     private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
     	return component.components
@@ -1955,7 +1955,7 @@ class CompositeToUppaalTransformer {
     }
     
     /**
-     * Creates the scheduling of the given staetchart instance, that is, the runCycle sync and 
+     * Creates the scheduling of the given statechart instance, that is, the runCycle sync and 
      * the reset of event queue in case of cascade instances.
      */
     private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
@@ -2664,11 +2664,8 @@ class CompositeToUppaalTransformer {
 			val source = getEdgeSource(it.source).filter(Location).filter[it.parentTemplate == template].head
 			val target = getEdgeTarget(it.target).filter(Location).filter[it.parentTemplate == template].head
 			val edge = source.createEdge(target)
-			if (generateTransitionId) {
-				edge.createAssignmentExpression(edge_Update, transitionIdVar,
-					createLiteralExpression => [it.text = (transitionId++).toString]
-				)
-			}
+			// For test generation
+			edge.generateTransitionId(generateTransitionId)
 			// Updating the scheduling variable
 			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
 			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -2676,10 +2673,18 @@ class CompositeToUppaalTransformer {
 			addToTrace(it.transition, #{edge}, trace)			
 			addToTrace(owner, #{edge}, instanceTrace)			
 		}
-	].build	
+	].build
+	
+	private def generateTransitionId(Edge edge, boolean generateTransitionId) {
+		if (generateTransitionId) {
+			edge.createAssignmentExpression(edge_Update, transitionIdVar,
+				createLiteralExpression => [it.text = (transitionId++).toString]
+			)
+		}
+	}
 	
 	/**
-	 * This rule is repsonsible for transforming transitions whose targets are in a lower abstraction level (lower region)
+	 * This rule is responsible for transforming transitions whose targets are in a lower abstraction level (lower region)
 	 * than its source.
 	 */
 	val toLowerRegionTransitionsRule = createRule(ToLowerInstanceTransitions.instance).action [		
@@ -2692,7 +2697,7 @@ class CompositeToUppaalTransformer {
 	 * than its source.
 	 */
 	private def void toLowerTransitionRule(Transition transition, StateNode tsource, StateNode ttarget, Set<Region> visitedRegions, 
-											ChannelVariableDeclaration syncVar, int lastLevel, SynchronousComponentInstance owner) {
+			ChannelVariableDeclaration syncVar, int lastLevel, SynchronousComponentInstance owner) {
 		// Going back to top level
 		if (tsource.eContainer != ttarget.eContainer) {
 			visitedRegions.add(ttarget.eContainer as Region)
@@ -2703,12 +2708,8 @@ class CompositeToUppaalTransformer {
 			val targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head 
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
 			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
-			if (generateTransitionId) {
-				// For test generation
-				toLowerEdge.createAssignmentExpression(edge_Update, transitionIdVar,
-					createLiteralExpression => [it.text = (transitionId++).toString]
-				)
-			}
+			// For test generation
+			toLowerEdge.generateTransitionId(generateTransitionId)
 			// Updating the scheduling variable upon firing
 			val isScheduledVar = toLowerEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -2831,12 +2832,8 @@ class CompositeToUppaalTransformer {
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head {		
 				// Creating a the transition equivalent edge
 				val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
-				if (generateTransitionId) {
-					// For test generation
-					toHigherEdge.createAssignmentExpression(edge_Update, transitionIdVar,
-						createLiteralExpression => [it.text = (transitionId++).toString]
-					)
-				}
+				// For test generation
+				toHigherEdge.generateTransitionId(generateTransitionId)
 				// Setting isScheduled variable to true upon firing 
 				val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -3431,7 +3428,7 @@ class CompositeToUppaalTransformer {
 	}	
 	
 	/**
-	 * Returns the Uppaal isRaised boolean flag of a gamma typed-signal.
+	 * Returns the Uppaal isRaised boolean flag of a Gamma typed-signal.
 	 */
 	protected def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
@@ -3443,7 +3440,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Returns the Uppaal out-event boolean flag of a gamma typed-signal.
+	 * Returns the Uppaal out-event boolean flag of a Gamma typed-signal.
 	 */
 	protected def getOutVariable(Event event, Port port, ComponentInstance instance) {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
@@ -3519,7 +3516,7 @@ class CompositeToUppaalTransformer {
 			case SECOND: {
 				val newValue = time.value.multiplyExpression(1000)
 				// Maybe strange changing the S to MS in the View model 
-				// New expression needs to be contained in a resource because of the epxpression trace mechanism) 
+				// New expression needs to be contained in a resource because of the expression trace mechanism) 
 				// Somehow the tracing works, in a way that the original (1 s) expression is not changed
 				time.value = newValue
 				time.unit = TimeUnit.MILLISECOND
@@ -3862,7 +3859,7 @@ class CompositeToUppaalTransformer {
 			return false
 		}
 		// Imagine that an entry state and a regular are is targeted to the same choice
-		// Then the compositeStateEntryRuleCompletion cannnot be executed properly
+		// Then the compositeStateEntryRuleCompletion cannot be executed properly
 		var reachedEntry = false
 		var unreachableEntry = false
 		for (incomingTransition: node.incomingTransitions) {
