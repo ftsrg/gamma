@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.yakindu.genmodel.language.validation
 
 import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
@@ -27,9 +27,11 @@ import hu.bme.mit.gamma.yakindu.genmodel.GenModel
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
+import hu.bme.mit.gamma.yakindu.genmodel.StateCoverage
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.genmodel.Task
 import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration
+import hu.bme.mit.gamma.yakindu.genmodel.TransitionCoverage
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 import java.util.Collections
 import java.util.HashMap
@@ -81,6 +83,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		if (analysisModelTransformation.language.size != 1) {
 			error("A single formal language must be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGE)
+		}
+		if (analysisModelTransformation.coverages.filter(TransitionCoverage).size > 1) {
+			error("A single transition coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+		}
+		if (analysisModelTransformation.coverages.filter(StateCoverage).size > 1) {
+			error("A single state coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
 		}
 	}
 	

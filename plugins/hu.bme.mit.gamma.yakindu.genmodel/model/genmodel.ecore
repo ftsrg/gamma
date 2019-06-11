@@ -38,12 +38,10 @@
         lowerBound="1" upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="transitionCoverage" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="stateCoverage" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean" defaultValueLiteral="false"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="scheduler" unique="false"
         upperBound="-1" eType="#//Scheduler"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
+        eType="#//Coverage" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
@@ -86,5 +84,11 @@
   <eClassifiers xsi:type="ecore:EEnum" name="Scheduler">
     <eLiterals name="RANDOM"/>
     <eLiterals name="FAIR" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
   </eClassifiers>
 </ecore:EPackage>

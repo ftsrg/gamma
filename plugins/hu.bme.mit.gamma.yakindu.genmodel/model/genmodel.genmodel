@@ -41,9 +41,8 @@
     <genClasses ecoreClass="genmodel.ecore#//AnalysisModelTransformation">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/language"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/component"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/transitionCoverage"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/stateCoverage"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/scheduler"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/coverages"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>
@@ -63,6 +62,11 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TestGeneration/executionTrace"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TestGeneration/packageName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TestGeneration/language"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//Coverage">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/components"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

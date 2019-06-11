@@ -61,9 +61,11 @@ import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel;
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
+import hu.bme.mit.gamma.yakindu.genmodel.StateCoverage;
 import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.Task;
 import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration;
+import hu.bme.mit.gamma.yakindu.genmodel.TransitionCoverage;
 import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation;
 import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
@@ -189,7 +191,7 @@ public class CommandHandler extends AbstractHandler {
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 											newTopComponent, analysisModelTransformation.getArguments(),
 											getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
-											analysisModelTransformation.isTransitionCoverage()); // newTopComponent
+											analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof TransitionCoverage)); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models
@@ -199,11 +201,11 @@ public class CommandHandler extends AbstractHandler {
 										UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
 										// Creating a new query file
 										new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
-										if (analysisModelTransformation.isStateCoverage()) {
+										if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof StateCoverage)) {
 											UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(),
 												transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 										}
-										if (analysisModelTransformation.isTransitionCoverage()) {
+										if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof TransitionCoverage)) {
 											// Suffix present? If not, all transitions can be reached; if yes, some transitions
 											// are covered by transition fired in the same step, but the end is a stable state
 											String querySuffix = transformer.getIsStableVarName(); 

@@ -10,12 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.genmodel.language.scoping
 
+import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel
 import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
 import java.util.Collections
 import java.util.HashSet
 import java.util.Set
@@ -23,7 +25,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 
 /**
  * This class contains custom scoping description.
@@ -43,6 +45,12 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				reference == GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COMPONENT) {
 			val genmodel = context.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten
+			return Scopes.scopeFor(components)
+		}
+		if (reference == GenmodelPackage.Literals.COVERAGE__COMPONENTS) {
+			val genmodel = context.eContainer.eContainer as GenModel
+			val components = genmodel.packageImports.map[it.components].flatten
+								.filter(AbstractSynchronousCompositeComponent).map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
 		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE) {
