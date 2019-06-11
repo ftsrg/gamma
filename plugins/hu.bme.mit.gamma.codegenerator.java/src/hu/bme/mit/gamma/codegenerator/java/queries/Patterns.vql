@@ -31,6 +31,12 @@ pattern simpleComponents(statechartDefinition : Component) {
 	StatechartDefinition(statechartDefinition);
 }
 
+pattern simpleYakinduComponents(statechartDefinition : Component) {
+	Statechart(yakinduStatechart);
+	find traces(_, yakinduStatechart, statechartDefinition);
+	find simpleComponents(statechartDefinition);
+}
+
 pattern abstractSynchronousCompositeComponents(synchronousCompositeComponent : AbstractSynchronousCompositeComponent) {
 	AbstractSynchronousCompositeComponent(synchronousCompositeComponent);
 }

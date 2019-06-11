@@ -10,31 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
-import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.codegenerator.java.queries.AbstractSynchronousCompositeComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.AnyPortTriggersOfWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.AsynchronousCompositeComponents
@@ -47,8 +22,35 @@ import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfEvents
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleComponents
+import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.Traces
+import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
+import hu.bme.mit.gamma.statechart.model.AnyTrigger
+import hu.bme.mit.gamma.statechart.model.Component
+import hu.bme.mit.gamma.statechart.model.Package
+import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.RealizationMode
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
+import hu.bme.mit.gamma.statechart.model.composite.PortBinding
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import java.io.File
 import java.io.FileWriter
 import java.util.Collection
@@ -71,7 +73,6 @@ import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 
 class GlueCodeGenerator {
 	// Transformation-related extensions
@@ -799,11 +800,11 @@ class GlueCodeGenerator {
 			«eventDeclaration.event.parameterDeclarations.eventParameterValue»«ENDIF»'''
 	
 	/**
-	 * Creates a Java class for each component given in the component model.
+	 * Creates a Java class for each component transformed from Yakindu given in the component model.
 	 */
 	protected def getSimpleComponentDeclarationRule() {
 		if (simpleComponentsRule === null) {
-			 simpleComponentsRule = createRule(SimpleComponents.instance).action [
+			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
 				val componentUri = parentPackageUri + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
 				val code = it.statechartDefinition.createSimpleComponentClass
 				code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
@@ -1386,7 +1387,7 @@ class GlueCodeGenerator {
 		'''
 	
 	/**
-	* Returns a string that contains a cast and the value of the event if needed. E.g.: (Long) event.getValue();
+	* Returns a string that contains a cast and the value of the event if needed. E.g., (Long) event.getValue();
 	*/
 		protected def castArgument(org.yakindu.base.types.Event event) '''
 			«IF event.type !== null»
@@ -1655,7 +1656,7 @@ class GlueCodeGenerator {
 				}
 			«ENDIF»
 			
-			/**  Getter for component instances, e.g. enabling to check their states. */
+			/**  Getter for component instances, e.g., enabling to check their states. */
 			«FOR instance : component.components SEPARATOR "\n"»
 				public «instance.type.componentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
