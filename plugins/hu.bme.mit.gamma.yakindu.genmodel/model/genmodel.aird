@@ -1813,9 +1813,9 @@
       </ownedStyle>
       <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
     </ownedDiagramElements>
-    <ownedDiagramElements xmi:type="diagram:DEdge" xmi:id="_McDMcIxyEemWx-SFBBEJmw" name="[0..*] components" sourceNode="_CyX8cIxyEemWx-SFBBEJmw" targetNode="_25g4EIxxEemWx-SFBBEJmw">
-      <target xmi:type="ecore:EReference" href="genmodel.ecore#//Coverage/components"/>
-      <semanticElements xmi:type="ecore:EReference" href="genmodel.ecore#//Coverage/components"/>
+    <ownedDiagramElements xmi:type="diagram:DEdge" xmi:id="_McDMcIxyEemWx-SFBBEJmw" name="[0..*] include" sourceNode="_CyX8cIxyEemWx-SFBBEJmw" targetNode="_25g4EIxxEemWx-SFBBEJmw">
+      <target xmi:type="ecore:EReference" href="genmodel.ecore#//Coverage/include"/>
+      <semanticElements xmi:type="ecore:EReference" href="genmodel.ecore#//Coverage/include"/>
       <ownedStyle xmi:type="diagram:EdgeStyle" xmi:id="_McDzgIxyEemWx-SFBBEJmw" routingStyle="manhattan" strokeColor="0,0,0">
         <description xmi:type="style:EdgeStyleDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@edgeMappings[name='EC_EReference']/@style"/>
         <centerLabelStyle xmi:type="diagram:CenterLabelStyle" xmi:id="_McDzgYxyEemWx-SFBBEJmw" showIcon="false">

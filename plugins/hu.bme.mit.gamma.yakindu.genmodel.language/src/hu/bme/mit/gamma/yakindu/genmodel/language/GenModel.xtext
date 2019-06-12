@@ -39,22 +39,24 @@ YakinduCompilation returns YakinduCompilation:
 ;
 
 InterfaceCompilation returns InterfaceCompilation:
-	'interface' statechart=[sgraph::Statechart] '{'
+	'interface' '{'
+		'statechart' ':' statechart=[sgraph::Statechart]
 		(
-			'folder' '=' targetFolder+=STRING | // The location of the folder relative to the project
-			'file' '=' fileName+=STRING | // The name of the generated file
-			'package' '=' packageName+=STRING // Gamma package name
+			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'package' ':' packageName+=STRING // Gamma package name
 		)*
 	'}'
 ;
 
 StatechartCompilation returns StatechartCompilation:
-	'statechart' statechart=[sgraph::Statechart] '{'
+	'statechart'  '{'
+		'statechart' ':' statechart=[sgraph::Statechart]
 		(
-			'folder' '=' targetFolder+=STRING | // The location of the folder relative to the project
-			'file' '=' fileName+=STRING | // The name of the generated file
-			'package' '=' packageName+=STRING | // Gamma package name
-			'statechart' '=' statechartName+=STRING | // Gamma statechart name
+			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'package' ':' packageName+=STRING | // Gamma package name
+			'name' ':' statechartName+=STRING | // Gamma statechart name
 			'mappings' '{'
 				(interfaceMappings+=InterfaceMapping)*
 			'}'
@@ -63,22 +65,24 @@ StatechartCompilation returns StatechartCompilation:
 ;
 
 CodeGeneration returns CodeGeneration:
-	'code' component=[model::Component] '{'
+	'code'  '{'
+		'component' ':' component=[model::Component]
 		(
-			'folder' '=' targetFolder+=STRING |
-			'package' '=' packageName+=STRING |
-			'language' '=' language+=ProgrammingLanguage
+			'folder' ':' targetFolder+=STRING |
+			'package' ':' packageName+=STRING |
+			'language' ':' language+=ProgrammingLanguage
 		)*
 	'}'
 ;
 
 TestGeneration returns TestGeneration:
-	'test' executionTrace=[trace::ExecutionTrace] '{'
+	'test' '{'
+		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
-			'folder' '=' targetFolder+=STRING |
-			'file' '=' fileName+=STRING | // The name of the generated file
-			'package' '=' packageName+=STRING |
-			'language' '=' language+=ProgrammingLanguage
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'package' ':' packageName+=STRING |
+			'language' ':' language+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -88,12 +92,13 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 ;
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
-	'analysis' component=[model::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? '{'
+	'analysis' '{'
+		'component' ':' component=[model::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 		(
-			'folder' '=' targetFolder+=STRING |			
-			'file' '=' fileName+=STRING |
-			'language' '=' language+=AnalysisLanguage |
-			'scheduler' '=' scheduler+=Scheduler |
+			'folder' ':' targetFolder+=STRING |			
+			'file' ':' fileName+=STRING |
+			'language' ':' language+=AnalysisLanguage |
+			'scheduler' ':' scheduler+=Scheduler |
 			coverages+=Coverage
 		)*
 	'}'
@@ -112,11 +117,15 @@ Coverage returns Coverage:
 ;
 
 StateCoverage returns StateCoverage:
-	{StateCoverage} 'state-coverage' (':' components+=[composite::ComponentInstance] (',' components+=[composite::ComponentInstance])*)?
+	{StateCoverage} 'state-coverage' ('{' 
+		'include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']'
+	'}')?
 ;
 
 TransitionCoverage returns TransitionCoverage:
-	{TransitionCoverage} 'transition-coverage' (':' components+=[composite::ComponentInstance] (',' components+=[composite::ComponentInstance])*)?
+	{TransitionCoverage} 'transition-coverage' ('{' 
+		'include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']'
+	'}')?
 ;
 
 InterfaceMapping  returns InterfaceMapping:

@@ -36,29 +36,34 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getGenModelAccess().getTraceImportsAssignment_0_1_2_1());
         // Interface compilation
         c.setLinewrap(1).after(f.getEventMappingRule());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getStatechartAssignment_4());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getTargetFolderAssignment_5_0_2());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getFileNameAssignment_5_1_2());
+        c.setLinewrap(1).after(f.getInterfaceCompilationAccess().getPackageNameAssignment_5_2_2());
         // Statechart compilation
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getPackageNameAssignment_3_2_2());
-        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartNameAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartAssignment_4());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getTargetFolderAssignment_5_0_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getFileNameAssignment_5_1_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getPackageNameAssignment_5_2_2());
+        c.setLinewrap(1).after(f.getStatechartCompilationAccess().getStatechartNameAssignment_5_3_2());
         // Code generation
-        c.setLinewrap(1).after(f.getCodeGenerationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getCodeGenerationAccess().getPackageNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getCodeGenerationAccess().getLanguageAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getComponentAssignment_4());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getTargetFolderAssignment_5_0_2());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getPackageNameAssignment_5_1_2());
+        c.setLinewrap(1).after(f.getCodeGenerationAccess().getLanguageAssignment_5_2_2());
         // Analysis model transformation
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_4_0_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_4_1_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_4_2_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_4_4());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_4_3_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getComponentAssignment_4());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_6_0_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_6_1_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_6_2_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_6_4());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getSchedulerAssignment_6_3_2());
         // Test generation
-        c.setLinewrap(1).after(f.getTestGenerationAccess().getTargetFolderAssignment_3_0_2());
-        c.setLinewrap(1).after(f.getTestGenerationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getTestGenerationAccess().getPackageNameAssignment_3_2_2());
-        c.setLinewrap(1).after(f.getTestGenerationAccess().getLanguageAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getTestGenerationAccess().getExecutionTraceAssignment_4());
+        c.setLinewrap(1).after(f.getTestGenerationAccess().getTargetFolderAssignment_5_0_2());
+        c.setLinewrap(1).after(f.getTestGenerationAccess().getFileNameAssignment_5_1_2());
+        c.setLinewrap(1).after(f.getTestGenerationAccess().getPackageNameAssignment_5_2_2());
+        c.setLinewrap(1).after(f.getTestGenerationAccess().getLanguageAssignment_5_3_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
