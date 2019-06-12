@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -176,11 +177,11 @@ public class CommandHandler extends AbstractHandler {
 										// Unfolding the given system
 										Component component = analysisModelTransformation.getComponent();
 										Package gammaPackage = (Package) component.eContainer();
-										SimpleEntry<Package, Component> packageWithTopComponent = new ModelUnfolder().unfold(gammaPackage);
-										Component topComponent = packageWithTopComponent.getValue();
+										Trace trace = new ModelUnfolder().unfold(gammaPackage);
+										Component topComponent = trace.getTopComponent();
 										// Saving the Package of the unfolded model
 										String flattenedModelFileName = "." + analysisModelTransformation.getFileName().get(0) + ".gsm";
-										normalSave(packageWithTopComponent.getKey(), targetFolderUri, flattenedModelFileName);
+										normalSave(trace.getPackage(), targetFolderUri, flattenedModelFileName);
 										// Reading the model from disk as this is the only way it works
 										ResourceSet resourceSet = new ResourceSetImpl();
 										logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
@@ -195,13 +196,19 @@ public class CommandHandler extends AbstractHandler {
 										SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
 										// If there is no include in the coverage, it means all instances need to be tested
 										Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
-												.filter(it -> it instanceof StateCoverage).findFirst();
+														.filter(it -> it instanceof StateCoverage).findFirst();
 										List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(newTopComponent,
 												stateCoverage, simpleInstanceHandler);
+										// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
+										// thus, cannot be recognized by the SimpleInstanceHandler.contains method
+										testedComponentsForStates.replaceAll(it -> (SynchronousComponentInstance) trace.get(it));
 										Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
-												.filter(it -> it instanceof TransitionCoverage).findFirst();
+														.filter(it -> it instanceof TransitionCoverage).findFirst();
 										List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(newTopComponent,
 												transitionCoverage, simpleInstanceHandler);
+										// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
+										// thus, cannot be recognized by the SimpleInstanceHandler.contains method
+										testedComponentsForTransitions.replaceAll(it -> (SynchronousComponentInstance) trace.get(it));
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 											newTopComponent, analysisModelTransformation.getArguments(),

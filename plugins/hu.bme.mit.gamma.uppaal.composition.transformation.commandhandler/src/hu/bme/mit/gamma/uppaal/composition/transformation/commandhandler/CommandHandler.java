@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
@@ -115,11 +116,11 @@ public class CommandHandler extends AbstractHandler {
 		String fileName = fileURISubstring.substring(fileURISubstring.lastIndexOf("/") + 1);
 		String fileNameWithoutExtenstion = fileName.substring(0, fileName.lastIndexOf("."));
 		// Unfolding the given system
-		SimpleEntry<Package, Component> packageWithTopComponent = new ModelUnfolder().unfold(gammaPackage);
-		Component topComponent = packageWithTopComponent.getValue();
+		Trace trace = new ModelUnfolder().unfold(gammaPackage);
+		Component topComponent = trace.getTopComponent();
 		// Saving the Package of the unfolded model
 		String flattenedModelFileName = "." + fileNameWithoutExtenstion + ".gsm";
-		normalSave(packageWithTopComponent.getKey(), parentFolder, flattenedModelFileName);
+		normalSave(trace.getPackage(), parentFolder, flattenedModelFileName);
 		// Reading the model from disk as this is the only way it works
 		ResourceSet resourceSet = new ResourceSetImpl();
 		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
