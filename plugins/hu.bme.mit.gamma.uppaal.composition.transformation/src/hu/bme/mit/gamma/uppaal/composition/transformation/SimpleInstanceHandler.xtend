@@ -70,7 +70,8 @@ class SimpleInstanceHandler {
 	
 	def boolean contains(SynchronousComponentInstance container, SynchronousComponentInstance instance) {
 		if (container.helperEquals(instance)) {
-			// TODO Not working due to the M2M transformation: a trace model has to be introduced
+			// Sometimes not working due to the M2M transformation: different references (instances) for component instances
+			// Works for transition tests and not for state tests for some reason
 			return true
 		}
 		val containerType = container.type

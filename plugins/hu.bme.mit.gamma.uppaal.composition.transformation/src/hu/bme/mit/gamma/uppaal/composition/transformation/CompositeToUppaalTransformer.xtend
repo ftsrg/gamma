@@ -10,6 +10,54 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
+import hu.bme.mit.gamma.constraint.model.Declaration
+import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.constraint.model.FalseExpression
+import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.constraint.model.TrueExpression
+import hu.bme.mit.gamma.constraint.model.Type
+import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.model.AnyTrigger
+import hu.bme.mit.gamma.statechart.model.BinaryTrigger
+import hu.bme.mit.gamma.statechart.model.Clock
+import hu.bme.mit.gamma.statechart.model.Component
+import hu.bme.mit.gamma.statechart.model.CompositeElement
+import hu.bme.mit.gamma.statechart.model.EntryState
+import hu.bme.mit.gamma.statechart.model.EventTrigger
+import hu.bme.mit.gamma.statechart.model.Package
+import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.PortEventReference
+import hu.bme.mit.gamma.statechart.model.PseudoState
+import hu.bme.mit.gamma.statechart.model.RaiseEventAction
+import hu.bme.mit.gamma.statechart.model.RealizationMode
+import hu.bme.mit.gamma.statechart.model.Region
+import hu.bme.mit.gamma.statechart.model.SchedulingOrder
+import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.StateNode
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.model.UnaryTrigger
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.DistinctWrapperInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
@@ -18,6 +66,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceMessag
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceVariables
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuePriorities
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueueSwapInstancesOfComposite
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfClocks
@@ -32,7 +81,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceClockCo
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventControl
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.StatechartRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TimeoutValues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
@@ -45,50 +93,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopUnwrappedSy
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.WrapperInEvents
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
-import hu.bme.mit.gamma.constraint.model.Declaration
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.constraint.model.Expression
-import hu.bme.mit.gamma.constraint.model.FalseExpression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.TrueExpression
-import hu.bme.mit.gamma.constraint.model.Type
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.BinaryTrigger
-import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.EntryState
-import hu.bme.mit.gamma.statechart.model.EventTrigger
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PortEventReference
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.UnaryTrigger
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.Choices
 import hu.bme.mit.gamma.uppaal.transformation.queries.ClockRepresentations
@@ -115,7 +119,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.RegionsWithShallowHistory
 import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
-import hu.bme.mit.gamma.uppaal.transformation.queries.Subregions
 import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Traces
@@ -159,6 +162,7 @@ import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.Declarations
+import uppaal.declarations.DeclarationsFactory
 import uppaal.declarations.DeclarationsPackage
 import uppaal.declarations.ExpressionInitializer
 import uppaal.declarations.Function
@@ -179,6 +183,7 @@ import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.AssignmentOperator
 import uppaal.expressions.CompareExpression
 import uppaal.expressions.CompareOperator
+import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.ExpressionsPackage
 import uppaal.expressions.FunctionCallExpression
@@ -216,14 +221,6 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
-import uppaal.declarations.DeclarationsFactory
-import hu.bme.mit.gamma.statechart.model.CompositeElement
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.statechart.model.PseudoState
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -238,7 +235,7 @@ class CompositeToUppaalTransformer {
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
 	
 	// Arguments for the top level component
-	protected List<Expression> topComponentArguments = new ArrayList<Expression>
+	protected List<hu.bme.mit.gamma.constraint.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.constraint.model.Expression>
 	
 	// Engine on the Gamma resource 
     protected ViatraQueryEngine engine
@@ -306,8 +303,8 @@ class CompositeToUppaalTransformer {
 		this.sourceRoot = component.eContainer as Package
         this.component = component
         this.asyncScheduler = asyncScheduler
-        this.testedComponentsForStates += testedComponentsForStates
-        this.testedComponentsForTransitions += testedComponentsForTransitions
+        this.testedComponentsForStates += testedComponentsForStates // Only simple instances
+        this.testedComponentsForTransitions += testedComponentsForTransitions // Only simple instances
         this.target = UppaalFactory.eINSTANCE.createNTA
         // Connecting the two models in trace
         this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
@@ -323,7 +320,7 @@ class CompositeToUppaalTransformer {
         createTransformation 
     }
     
-    new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments,
+    new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.constraint.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler, List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
         this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
@@ -660,7 +657,7 @@ class CompositeToUppaalTransformer {
     private def addGuard(Edge edge, DataVariableDeclaration guard, LogicalOperator operator) {
     	if (edge.guard !== null) {
 			// Getting the old reference
-			val oldGuard = edge.guard as uppaal.expressions.Expression
+			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
 			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
 				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
@@ -681,10 +678,10 @@ class CompositeToUppaalTransformer {
     /**
      * Appends an Uppaal guard to the guard of the given edge. The operator between the old and the new guard can be given too.
      */
-    private def addGuard(Edge edge, uppaal.expressions.Expression guard, LogicalOperator operator) {
+    private def addGuard(Edge edge, Expression guard, LogicalOperator operator) {
     	if (edge.guard !== null) {
 			// Getting the old reference
-			val oldGuard = edge.guard as uppaal.expressions.Expression
+			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
 			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
 				it.firstExpr = guard
@@ -729,7 +726,7 @@ class CompositeToUppaalTransformer {
      * according to the given Expression. 
      */
     protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-    				DataVariableDeclaration isRaisedVar, ComponentInstance owner, Expression expression) {
+    				DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.constraint.model.Expression expression) {
     	val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
     	val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
     						.filter[it.owner == owner && it.port == port]
@@ -744,7 +741,7 @@ class CompositeToUppaalTransformer {
     /**
      * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
      */
-    private def hasValue(Set<BigInteger> hasValue, Expression expression) {
+    private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.constraint.model.Expression expression) {
     	if (!(expression instanceof IntegerLiteralExpression)) {
     		return false
     	}
@@ -1317,7 +1314,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
 	 */
 	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		Expression timeExpression, uppaal.expressions.Expression originalExpression, LogicalOperator logOp) {
+		hu.bme.mit.gamma.constraint.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 				it.operator = logOp
 				it.secondExpr = originalExpression			
@@ -1329,7 +1326,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
 	 */
 	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, Expression timeExpression) {		
+		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.constraint.model.Expression timeExpression) {		
 		container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = compOp	
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
@@ -1340,7 +1337,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, Expression expression, SynchronousComponentInstance instance) {
+		DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.createChild(negationExpression_NegatedExpression, functionCallExpression) as FunctionCallExpression => [
@@ -1353,7 +1350,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, Expression expression, SynchronousComponentInstance instance) {
+		DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function
 			   	it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
@@ -1364,7 +1361,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, uppaal.expressions.Expression expression) {
+		DataVariableDeclaration representation, Expression expression) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.createChild(negationExpression_NegatedExpression, functionCallExpression) as FunctionCallExpression => [
@@ -1376,7 +1373,7 @@ class CompositeToUppaalTransformer {
 		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression)
 	}
 	
-	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace, DataVariableDeclaration representation, uppaal.expressions.Expression expression) {
+	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace, DataVariableDeclaration representation, Expression expression) {
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function
 			it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
@@ -1603,7 +1600,7 @@ class CompositeToUppaalTransformer {
 		val waitingRelaySyncEdge = waitingForRelayLoc.createEdge(relayLoc)
 		waitingRelaySyncEdge.setSynchronization(syncChan.variable.head, SynchronizationKind.RECEIVE)
 		// Creating relay edges
-		val originalGuards = new HashSet<uppaal.expressions.Expression>
+		val originalGuards = new HashSet<Expression>
 		for (outEventMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(syncComposite, null, null, null, null)) {
 			val relayEdge = relayLoc.createEdge(relayLoc)
 			val outVariable = outEventMatch.event.getOutVariable(outEventMatch.port, outEventMatch.instance)
@@ -1673,7 +1670,7 @@ class CompositeToUppaalTransformer {
 		edge.addGuard(sizeCompareExpression, LogicalOperator.AND)		
 	}
 	
-	private def createDefaultExpression(Edge edge, Collection<? extends uppaal.expressions.Expression> expressions) {
+	private def createDefaultExpression(Edge edge, Collection<? extends Expression> expressions) {
 		for (exp : expressions) {
 			val negatedExp = createNegationExpression as NegationExpression => [
 				it.negatedExpression = exp.clone(true, true)
@@ -2104,7 +2101,7 @@ class CompositeToUppaalTransformer {
     }
     
     private def createLogicalExpression(LogicalOperator operator,
-    		Collection<? extends uppaal.expressions.Expression> expressions) {
+    		Collection<? extends Expression> expressions) {
     	checkState(!expressions.empty)
     	if (expressions.size == 1) {
     		return expressions.head
@@ -2421,8 +2418,8 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-	private def createIntTypeWithRangeAndVariable(VariableContainer container, uppaal.expressions.Expression lowerBound,
-			uppaal.expressions.Expression upperBound, String name) {		
+	private def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
+			Expression upperBound, String name) {		
 		container.createChild(variableContainer_TypeDefinition, rangeTypeSpecification) as RangeTypeSpecification => [
 			it.createChild(rangeTypeSpecification_Bounds, integerBounds) as IntegerBounds => [
 				it.lowerBound = lowerBound
@@ -2540,7 +2537,7 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	private def boolean isSubregion(Region region) {
-		return Subregions.Matcher.on(engine).countMatches(region, null) > 0
+		return region.eContainer instanceof State
 	}
 	
 	private def getParentRegion(Region region) {
@@ -3175,11 +3172,11 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	private def dispatch uppaal.expressions.Expression transformTrigger(AnyTrigger trigger, ComponentInstance owner) {
+	private def dispatch Expression transformTrigger(AnyTrigger trigger, ComponentInstance owner) {
 		return owner.derivedType.ports.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)			
 	}
 	
-	private def uppaal.expressions.Expression createLogicalExpressionOfPortInEvents(Collection<Port> ports,
+	private def Expression createLogicalExpressionOfPortInEvents(Collection<Port> ports,
 			LogicalOperator operator, ComponentInstance owner) {
 		val events = ports.map[#[it].getSemanticEvents(EventDirection.IN)].flatten
 		val eventCount = events.size
@@ -3224,8 +3221,8 @@ class CompositeToUppaalTransformer {
 		return orExpression
 	}
 	
-	private def createLogicalExpression(uppaal.expressions.Expression lhs, LogicalOperator operator,
-			uppaal.expressions.Expression rhs) {
+	private def createLogicalExpression(Expression lhs, LogicalOperator operator,
+			Expression rhs) {
 		return createLogicalExpression => [
 			it.firstExpr = lhs
 			it.operator = operator
@@ -3233,11 +3230,11 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-	private def dispatch uppaal.expressions.Expression transformTrigger(EventTrigger trigger, ComponentInstance owner) {
+	private def dispatch Expression transformTrigger(EventTrigger trigger, ComponentInstance owner) {
 		return trigger.eventReference.transformEventTrigger(owner)
 	}
 	
-	private def dispatch uppaal.expressions.Expression transformTrigger(BinaryTrigger trigger, ComponentInstance owner) {
+	private def dispatch Expression transformTrigger(BinaryTrigger trigger, ComponentInstance owner) {
 		switch (trigger.type) {
 			case AND: {
 				return createLogicalExpression => [
@@ -3280,7 +3277,7 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
-	private def dispatch uppaal.expressions.Expression transformTrigger(UnaryTrigger trigger, ComponentInstance owner) {
+	private def dispatch Expression transformTrigger(UnaryTrigger trigger, ComponentInstance owner) {
 		switch (trigger.getType) {
 			case NOT: {
 				return createNegationExpression => [
@@ -3293,7 +3290,7 @@ class CompositeToUppaalTransformer {
 		}
 	}
 
-	private def dispatch uppaal.expressions.Expression transformEventTrigger(PortEventReference reference, ComponentInstance owner) {
+	private def dispatch Expression transformEventTrigger(PortEventReference reference, ComponentInstance owner) {
 		val port = reference.port
 		val event = reference.event
 		return createIdentifierExpression => [
@@ -3301,12 +3298,12 @@ class CompositeToUppaalTransformer {
 		]
 	}
 
-	private def dispatch uppaal.expressions.Expression transformEventTrigger(AnyPortEventReference reference, ComponentInstance owner) {
+	private def dispatch Expression transformEventTrigger(AnyPortEventReference reference, ComponentInstance owner) {
 		val port = #[reference.getPort]
 		return port.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)
 	}
 	
-	private def dispatch uppaal.expressions.Expression transformEventTrigger(TimeoutEventReference reference, ComponentInstance owner) {
+	private def dispatch Expression transformEventTrigger(TimeoutEventReference reference, ComponentInstance owner) {
 		throw new UnsupportedOperationException("Timeout triggers are not supported in complex triggers, as the
 			actual clock value is not known in this context.")
 	}
@@ -3540,7 +3537,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Transforms gamma expression "100" into "100 * value" or "timeValue" into "timeValue * value"
 	 */
-	protected def multiplyExpression(Expression base, long value) {
+	protected def multiplyExpression(hu.bme.mit.gamma.constraint.model.Expression base, long value) {
 		val multiplyExp = constrFactory.createMultiplyExpression => [
 			it.operands += base
 			it.operands += constrFactory.createIntegerLiteralExpression => [
@@ -3586,7 +3583,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
 	 */
 	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		Expression timeExpression, uppaal.expressions.Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
+		hu.bme.mit.gamma.constraint.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 			it.operator = logOp
 			it.secondExpr = originalExpression			
@@ -3598,7 +3595,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
 	 */
 	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
+		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.constraint.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
 		val owner = clockVar.owner
 		val compExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = compOp	
@@ -3626,11 +3623,11 @@ class CompositeToUppaalTransformer {
 	 * Responsible for placing the ttmcExpressions onto the given edge. It is needed to ensure that "isActive"
 	 * variables are handled correctly (if they are present).
 	 */
-	private def transformGuard(Edge edge, Expression guard) {
+	private def transformGuard(Edge edge, hu.bme.mit.gamma.constraint.model.Expression guard) {
 		// If the reference is not null there are "triggers" on it
 		if (edge.guard !== null) {
 			// Getting the old reference
-			val oldGuard = edge.guard as uppaal.expressions.Expression
+			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
 			val andExpression = edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
 				it.operator = LogicalOperator.AND
@@ -3927,7 +3924,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Places the negated form of the given expression onto the given edge.
 	 */
-	private def addNegatedExpression(Edge edge, uppaal.expressions.Expression expression) {
+	private def addNegatedExpression(Edge edge, Expression expression) {
 		val negatedExp = createNegationExpression
 		negatedExp.copy(negationExpression_NegatedExpression, expression)
 		edge.addGuard(negatedExp, LogicalOperator.AND)
@@ -3936,7 +3933,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Responsible for creating an assignment expression with the given variable reference and the given expression.
 	 */
-	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, Expression rhs, ComponentInstance owner) {
+	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, hu.bme.mit.gamma.constraint.model.Expression rhs, ComponentInstance owner) {
 		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head // Only one variable is expected
@@ -3946,7 +3943,7 @@ class CompositeToUppaalTransformer {
 		]
 		return assignmentExpression
 	}
-	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, uppaal.expressions.Expression rhs) {
+	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, Expression rhs) {
 		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head // Only one variable is expected
@@ -3992,7 +3989,7 @@ class CompositeToUppaalTransformer {
 	
     
     private def boolean isTopRegion(Region region) {
-    	return TopRegions.Matcher.on(engine).countMatches(null, null, region, null) > 0
+    	return !region.subregion
     }
     
     /**
@@ -4175,18 +4172,22 @@ class CompositeToUppaalTransformer {
      */
     def Map<String, String[]> getTemplateLocationsMap() {
     	val templateLocationMap = new HashMap<String, String[]>
-    	for (statechartRegionMatch : StatechartRegions.Matcher.on(engine).allMatches) {
-			for (instance : SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(statechartRegionMatch.statechart)) {
-				// testedComponentsForStates stores the instances to which tests need to be generated
-				if (testedComponentsForStates.exists[it.contains(instance)]) {
+    	// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
+    	for (instance : testedComponentsForStates) {
+    		val statechart = instance.type as StatechartDefinition
+    		val Set<Region> regions = newHashSet
+    		for (topRegion : statechart.regions) {
+    			regions += topRegion
+    			regions += topRegion.subregions
+    		}
+    		for (statechartRegion : regions) {
 					var array = new ArrayList<String>
-					for (state : States.Matcher.on(engine).getAllValuesOfstate(statechartRegionMatch.region, null)) {
+					for (state : statechartRegion.stateNodes.filter(State)) {
 						array.add(state.locationName)
 					}
-					templateLocationMap.put(statechartRegionMatch.region.regionName + "Of" + instance.name, array)
-				}
-			}
-		}
+					templateLocationMap.put(statechartRegion.regionName + "Of" + instance.name, array)
+    		}
+    	}
     	return templateLocationMap
     }
     
