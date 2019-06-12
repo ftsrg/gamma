@@ -1226,9 +1226,7 @@ class GlueCodeGenerator {
 		import «packageName».interfaces.*;
 		// Yakindu listeners
 		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
-		«IF component.needTimer»
-			import «packageName».*;
-		«ENDIF»
+		import «packageName».*;
 		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
 		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
 	'''
