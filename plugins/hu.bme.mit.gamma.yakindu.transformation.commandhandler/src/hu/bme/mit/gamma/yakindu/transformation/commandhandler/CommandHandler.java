@@ -199,14 +199,14 @@ public class CommandHandler extends AbstractHandler {
 												stateCoverage, simpleInstanceHandler);
 										// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
 										// thus, cannot be recognized by the SimpleInstanceHandler.contains method
-										testedComponentsForStates.replaceAll(it -> (SynchronousComponentInstance) trace.get(it));
+										testedComponentsForStates.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
 										Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
 														.filter(it -> it instanceof TransitionCoverage).findFirst();
 										List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(newTopComponent,
 												transitionCoverage, simpleInstanceHandler);
 										// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
 										// thus, cannot be recognized by the SimpleInstanceHandler.contains method
-										testedComponentsForTransitions.replaceAll(it -> (SynchronousComponentInstance) trace.get(it));
+										testedComponentsForTransitions.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 											newTopComponent, analysisModelTransformation.getArguments(),
