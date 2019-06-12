@@ -298,6 +298,7 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionTransformer expTransf
     protected extension ExpressionCopier expCop
     protected extension ExpressionEvaluator expEval
+    protected extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
 
     new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
     		List<SynchronousComponentInstance> testedComponentsForStates,
@@ -2671,14 +2672,14 @@ class CompositeToUppaalTransformer {
 			val source = getEdgeSource(it.source).filter(Location).filter[it.parentTemplate == template].head
 			val target = getEdgeTarget(it.target).filter(Location).filter[it.parentTemplate == template].head
 			val edge = source.createEdge(target)
-			// For test generation
-			edge.generateTransitionId
 			// Updating the scheduling variable
 			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
 			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			// Creating the trace
-			addToTrace(it.transition, #{edge}, trace)			
-			addToTrace(owner, #{edge}, instanceTrace)			
+			addToTrace(it.transition, #{edge}, trace)		
+			addToTrace(owner, #{edge}, instanceTrace)		
+			// For test generation (after adding owner)
+			edge.generateTransitionId
 		}
 	].build
 	
@@ -2690,22 +2691,6 @@ class CompositeToUppaalTransformer {
 				createLiteralExpression => [it.text = (transitionId++).toString]
 			)
 		}
-	}
-	
-	private def boolean contains(SynchronousComponentInstance container, SynchronousComponentInstance instance) {
-		if (container === instance) {
-			return true
-		}
-		val type = container.getType
-		if (type instanceof AbstractSynchronousCompositeComponent) {
-			for (containedInstance : type.components) {
-				val result = containedInstance.contains(instance) 
-				if (result) {
-					return true
-				}
-			}
-		}
-		return false
 	}
 	
 	/**
@@ -2733,13 +2718,13 @@ class CompositeToUppaalTransformer {
 			val targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head 
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
 			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
-			// For test generation
-			toLowerEdge.generateTransitionId
 			// Updating the scheduling variable upon firing
 			val isScheduledVar = toLowerEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
+			// For test generation (after adding owner)
+			toLowerEdge.generateTransitionId
 			// Creating the sync edge
 			val syncEdge = createCommittedSyncTarget(targetLoc, syncVar.variable.head, "AcrossEntry" + id++)
 			toLowerEdge.setTarget(syncEdge.source)
@@ -2857,13 +2842,13 @@ class CompositeToUppaalTransformer {
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head {		
 				// Creating a the transition equivalent edge
 				val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
-				// For test generation
-				toHigherEdge.generateTransitionId
 				// Setting isScheduled variable to true upon firing 
 				val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
 				addToTrace(transition, #{toHigherEdge}, trace)
 				addToTrace(owner, #{toHigherEdge}, instanceTrace)
+				// For test generation (after adding owner)
+				toHigherEdge.generateTransitionId
 				// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
 				val syncEdge = createCommittedSyncTarget(sourceLoc, syncVar.variable.head, "AcrossEntry" + id++)
 				toHigherEdge.target = syncEdge.source			

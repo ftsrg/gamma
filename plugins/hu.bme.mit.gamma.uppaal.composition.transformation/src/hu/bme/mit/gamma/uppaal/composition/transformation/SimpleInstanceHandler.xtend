@@ -10,6 +10,8 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import java.util.Collection
 import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -27,7 +29,14 @@ class SimpleInstanceHandler {
 		checkArgument(instance instanceof SynchronousComponentInstance ||
 			instance instanceof AsynchronousComponentInstance)
 		if (instance instanceof SynchronousComponentInstance) {
-			return instance.type.simpleInstances
+			if (instance.type instanceof StatechartDefinition) {
+				// Atomic component
+				return newArrayList(instance)
+			}
+			else {
+				// Composite component
+				return instance.type.simpleInstances
+			}
 		}
 		if (instance instanceof AsynchronousComponentInstance) {
 			return instance.type.simpleInstances
@@ -57,6 +66,27 @@ class SimpleInstanceHandler {
 			}
 		}
 		return simpleInstances
+	}
+	
+	def boolean contains(SynchronousComponentInstance container, SynchronousComponentInstance instance) {
+		if (container.helperEquals(instance)) {
+			return true
+		}
+		val containerType = container.type
+		if (containerType instanceof AbstractSynchronousCompositeComponent) {
+			for (containedInstance : containerType.components) {
+				val result = containedInstance.contains(instance) 
+				if (result) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	
+	private def boolean helperEquals(EObject lhs, EObject rhs) {
+		val helper = new EqualityHelper();
+		return helper.equals(lhs, rhs);
 	}
 	
 }
