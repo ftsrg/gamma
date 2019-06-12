@@ -53,6 +53,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getCodeGenerationAccess().getLanguageAssignment_5_2_2());
         // Analysis model transformation
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getComponentAssignment_4());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getGroup_5());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_6_0_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_6_1_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_6_2_2());
@@ -75,7 +76,6 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
 		for (Keyword comma: f.findKeywords(",")) {
 			c.setNoLinewrap().before(comma);
 			c.setNoSpace().before(comma);
-			c.setLinewrap().after(comma);
 		}
         // No space around parentheses
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {

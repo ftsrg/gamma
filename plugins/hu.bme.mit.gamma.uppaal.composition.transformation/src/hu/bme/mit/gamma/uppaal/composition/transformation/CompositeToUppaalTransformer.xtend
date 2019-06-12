@@ -289,8 +289,8 @@ class CompositeToUppaalTransformer {
     protected int constantVal = 1 // Starting from 1, as 0 means empty
     // Transition ids
 //    protected boolean generateTransitionId = false
-	protected final List<SynchronousComponentInstance> testedComponentsForStates = newArrayList
-	protected final List<SynchronousComponentInstance> testedComponentsForTransitions = newArrayList
+	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
+	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
     protected final String transitionIdVarName = "transitionId"
     protected DataVariableDeclaration transitionIdVar
     protected int transitionId = 0
@@ -309,7 +309,6 @@ class CompositeToUppaalTransformer {
         this.asyncScheduler = asyncScheduler
         this.testedComponentsForStates += testedComponentsForStates
         this.testedComponentsForTransitions += testedComponentsForTransitions
-//        this.generateTransitionId = generateTransitionId
         this.target = UppaalFactory.eINSTANCE.createNTA
         // Connecting the two models in trace
         this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
