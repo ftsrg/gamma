@@ -288,7 +288,6 @@ class CompositeToUppaalTransformer {
     // For the async event queue constants
     protected int constantVal = 1 // Starting from 1, as 0 means empty
     // Transition ids
-//    protected boolean generateTransitionId = false
 	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
 	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
     protected final String transitionIdVarName = "transitionId"
@@ -303,7 +302,7 @@ class CompositeToUppaalTransformer {
     new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
     		List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
-        this.resources = resourceSet
+        this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
         this.component = component
         this.asyncScheduler = asyncScheduler
@@ -316,7 +315,7 @@ class CompositeToUppaalTransformer {
         	it.nta = this.target
         ]
         // Create EMF scope and EMF IncQuery engine based on the Gamma resource
-        val scope = new EMFScope(resourceSet)
+        val scope = new EMFScope(this.resources)
         engine = ViatraQueryEngine.on(scope);      
         // Create EMF scope and EMF IncQuery engine based on created root element of traces
         val traceScope = new EMFScope(traceRoot)

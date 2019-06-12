@@ -17,8 +17,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +36,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -178,17 +179,14 @@ public class CommandHandler extends AbstractHandler {
 										Component component = analysisModelTransformation.getComponent();
 										Package gammaPackage = (Package) component.eContainer();
 										Trace trace = new ModelUnfolder().unfold(gammaPackage);
-										Component topComponent = trace.getTopComponent();
+										Component newTopComponent = trace.getTopComponent();
 										// Saving the Package of the unfolded model
 										String flattenedModelFileName = "." + analysisModelTransformation.getFileName().get(0) + ".gsm";
 										normalSave(trace.getPackage(), targetFolderUri, flattenedModelFileName);
 										// Reading the model from disk as this is the only way it works
-										ResourceSet resourceSet = new ResourceSetImpl();
+										ResourceSet resourceSet = new ResourceSetImpl(); // newTopComponent.eResource().getResourceSet() does not work
+										resolveResources(newTopComponent, resourceSet, new HashSet<Resource>());
 										logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
-										Resource flattenedResource = resourceSet.getResource(
-												URI.createFileURI(targetFolderUri + File.separator + flattenedModelFileName), true);
-										// Needed because reading from disk means it is another model now
-										Component newTopComponent = getEquivalentComposite(flattenedResource, topComponent);
 										// Checking the model whether it contains forbidden elements
 										hu.bme.mit.gamma.uppaal.transformation.ModelValidator validator = 
 												new hu.bme.mit.gamma.uppaal.transformation.ModelValidator(resourceSet, newTopComponent, false);
@@ -349,6 +347,20 @@ public class CommandHandler extends AbstractHandler {
 		// TargetFolder set in setTargetFolder
 	}
 	
+	private void resolveResources(EObject object, ResourceSet resourceSet, Set<Resource> resolvedResources) {
+		for (EObject crossObject : object.eCrossReferences()) {
+			Resource resource = crossObject.eResource();
+			if (resource != null && !resolvedResources.contains(resource)) {
+				resourceSet.getResource(resource.getURI(), true);
+				resolvedResources.add(resource);
+			}
+			resolveResources(crossObject, resourceSet, resolvedResources);
+		}
+		for (EObject containedObject : object.eContents()) {
+			resolveResources(containedObject, resourceSet, resolvedResources);
+		}
+	}
+	
 	private void loadStatechartTraces(ResourceSet resourceSet, Component component) {
 		if (component instanceof CompositeComponent) {
 			CompositeComponent compositeComponent = (CompositeComponent) component;
@@ -393,26 +405,6 @@ public class CommandHandler extends AbstractHandler {
 			return simpleInstanceHandler.getSimpleInstances(presentCoverage.getInclude());
 		}
 		return Collections.emptyList();
-	}
-	
-	/**
-	 * Returns the CompositeDefinition from the resource that equals to the given composite.
-	 */
-	private Component getEquivalentComposite(Resource resource, Component component) {
-		Package gammaPackage = (Package) resource.getContents().get(0);
-		Component foundComponent = (Component) gammaPackage.getComponents().get(0);
-		if (helperEquals(component, foundComponent)) {
-			return foundComponent;
-		}
-		throw new IllegalArgumentException("No equivalent component!");
-	}
-	
-	/**
-	 * Returns whether the given objects are equal with respect to ecore copies.
-	 */
-	private boolean helperEquals(EObject lhs, EObject rhs) {
-		EqualityHelper helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
 	}
 	
 	/**
