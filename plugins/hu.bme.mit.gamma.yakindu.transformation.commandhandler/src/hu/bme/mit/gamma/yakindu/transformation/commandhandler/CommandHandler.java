@@ -16,7 +16,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,17 +50,20 @@ import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.yakindu.genmodel.AnalysisLanguage;
 import hu.bme.mit.gamma.yakindu.genmodel.AnalysisModelTransformation;
 import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
+import hu.bme.mit.gamma.yakindu.genmodel.Coverage;
 import hu.bme.mit.gamma.yakindu.genmodel.GenModel;
 import hu.bme.mit.gamma.yakindu.genmodel.InterfaceCompilation;
 import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
@@ -187,11 +193,21 @@ public class CommandHandler extends AbstractHandler {
 										hu.bme.mit.gamma.uppaal.transformation.ModelValidator validator = 
 												new hu.bme.mit.gamma.uppaal.transformation.ModelValidator(resourceSet, newTopComponent, false);
 										validator.checkModel();
+										SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
+										// If there is no include in the coverage, it means all instances need to be tested
+										Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
+												.filter(it -> it instanceof StateCoverage).findFirst();
+										List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(newTopComponent,
+												stateCoverage, simpleInstanceHandler);
+										Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
+												.filter(it -> it instanceof TransitionCoverage).findFirst();
+										List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(newTopComponent,
+												transitionCoverage, simpleInstanceHandler);
 										logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 										CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 											newTopComponent, analysisModelTransformation.getArguments(),
 											getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
-											analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof TransitionCoverage)); // newTopComponent
+											testedComponentsForStates, testedComponentsForTransitions); // newTopComponent
 										SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 										NTA nta = resultModels.getKey();
 										// Saving the generated models
@@ -360,6 +376,17 @@ public class CommandHandler extends AbstractHandler {
 		default:
 			return Scheduler.RANDOM;
 		}
+	}
+	
+	private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component, Optional<Coverage> coverage, SimpleInstanceHandler simpleInstanceHandler) {
+		if (coverage.isPresent()) {
+			Coverage presentCoverage = coverage.get();
+			if (presentCoverage.getInclude().isEmpty()) {
+				return simpleInstanceHandler.getSimpleInstances(component);
+			}
+			return simpleInstanceHandler.getSimpleInstances(presentCoverage.getInclude());
+		}
+		return Collections.emptyList();
 	}
 	
 	/**

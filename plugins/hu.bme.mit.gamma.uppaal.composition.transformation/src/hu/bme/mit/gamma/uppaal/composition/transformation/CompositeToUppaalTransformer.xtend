@@ -288,7 +288,9 @@ class CompositeToUppaalTransformer {
     // For the async event queue constants
     protected int constantVal = 1 // Starting from 1, as 0 means empty
     // Transition ids
-    protected boolean generateTransitionId = false
+//    protected boolean generateTransitionId = false
+	protected final List<SynchronousComponentInstance> testedComponentsForStates = newArrayList
+	protected final List<SynchronousComponentInstance> testedComponentsForTransitions = newArrayList
     protected final String transitionIdVarName = "transitionId"
     protected DataVariableDeclaration transitionIdVar
     protected int transitionId = 0
@@ -297,12 +299,16 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionCopier expCop
     protected extension ExpressionEvaluator expEval
 
-    new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler, boolean generateTransitionId) { 
+    new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
+    		List<SynchronousComponentInstance> testedComponentsForStates,
+			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
         this.resources = resourceSet
 		this.sourceRoot = component.eContainer as Package
         this.component = component
         this.asyncScheduler = asyncScheduler
-        this.generateTransitionId = generateTransitionId
+        this.testedComponentsForStates += testedComponentsForStates
+        this.testedComponentsForTransitions += testedComponentsForTransitions
+//        this.generateTransitionId = generateTransitionId
         this.target = UppaalFactory.eINSTANCE.createNTA
         // Connecting the two models in trace
         this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
@@ -319,8 +325,9 @@ class CompositeToUppaalTransformer {
     }
     
     new(ResourceSet resourceSet, Component component, List<Expression> topComponentArguments,
-			Scheduler asyncScheduler, boolean genereateTransitionId) { 
-        this(resourceSet, component, asyncScheduler, genereateTransitionId)
+			Scheduler asyncScheduler, List<SynchronousComponentInstance> testedComponentsForStates,
+			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
+        this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
         this.topComponentArguments.addAll(topComponentArguments)
     }
     
@@ -329,7 +336,7 @@ class CompositeToUppaalTransformer {
     	createMessageStructType
     	createFinalizeSyncVar
     	createIsStableVar
-    	if (generateTransitionId) {
+    	if (!testedComponentsForTransitions.empty) {
     		createTransitionIdVar
     	}
     	transformTopComponentArguments
@@ -2665,7 +2672,7 @@ class CompositeToUppaalTransformer {
 			val target = getEdgeTarget(it.target).filter(Location).filter[it.parentTemplate == template].head
 			val edge = source.createEdge(target)
 			// For test generation
-			edge.generateTransitionId(generateTransitionId)
+			edge.generateTransitionId
 			// Updating the scheduling variable
 			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
 			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -2675,12 +2682,30 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	private def generateTransitionId(Edge edge, boolean generateTransitionId) {
-		if (generateTransitionId) {
+	private def generateTransitionId(Edge edge) {
+		val owner = edge.owner as SynchronousComponentInstance
+		// testedComponentsForTransitions stores the instances to which tests need to be generated
+		if (testedComponentsForTransitions.exists[it.contains(owner)]) {
 			edge.createAssignmentExpression(edge_Update, transitionIdVar,
 				createLiteralExpression => [it.text = (transitionId++).toString]
 			)
 		}
+	}
+	
+	private def boolean contains(SynchronousComponentInstance container, SynchronousComponentInstance instance) {
+		if (container === instance) {
+			return true
+		}
+		val type = container.getType
+		if (type instanceof AbstractSynchronousCompositeComponent) {
+			for (containedInstance : type.components) {
+				val result = containedInstance.contains(instance) 
+				if (result) {
+					return true
+				}
+			}
+		}
+		return false
 	}
 	
 	/**
@@ -2709,7 +2734,7 @@ class CompositeToUppaalTransformer {
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
 			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
 			// For test generation
-			toLowerEdge.generateTransitionId(generateTransitionId)
+			toLowerEdge.generateTransitionId
 			// Updating the scheduling variable upon firing
 			val isScheduledVar = toLowerEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -2833,7 +2858,7 @@ class CompositeToUppaalTransformer {
 				// Creating a the transition equivalent edge
 				val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
 				// For test generation
-				toHigherEdge.generateTransitionId(generateTransitionId)
+				toHigherEdge.generateTransitionId
 				// Setting isScheduled variable to true upon firing 
 				val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
 				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
@@ -4169,11 +4194,14 @@ class CompositeToUppaalTransformer {
     	val templateLocationMap = new HashMap<String, String[]>
     	for (statechartRegionMatch : StatechartRegions.Matcher.on(engine).allMatches) {
 			for (instance : SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(statechartRegionMatch.statechart)) {
-				var array = new ArrayList<String>
-				for (state : States.Matcher.on(engine).getAllValuesOfstate(statechartRegionMatch.region, null)) {
-					array.add(state.locationName)
+				// testedComponentsForStates stores the instances to which tests need to be generated
+				if (testedComponentsForStates.exists[it.contains(instance)]) {
+					var array = new ArrayList<String>
+					for (state : States.Matcher.on(engine).getAllValuesOfstate(statechartRegionMatch.region, null)) {
+						array.add(state.locationName)
+					}
+					templateLocationMap.put(statechartRegionMatch.region.regionName + "Of" + instance.name, array)
 				}
-				templateLocationMap.put(statechartRegionMatch.region.regionName + "Of" + instance.name, array)
 			}
 		}
     	return templateLocationMap
