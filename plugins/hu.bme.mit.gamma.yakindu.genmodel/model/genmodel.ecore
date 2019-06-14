@@ -90,5 +90,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="exclude" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
   </eClassifiers>
 </ecore:EPackage>

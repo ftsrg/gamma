@@ -67,6 +67,7 @@
     <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//Coverage">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/include"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/exclude"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

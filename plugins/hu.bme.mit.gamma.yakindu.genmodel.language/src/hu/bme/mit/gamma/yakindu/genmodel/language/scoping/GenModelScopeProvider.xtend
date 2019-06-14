@@ -47,7 +47,8 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
-		if (reference == GenmodelPackage.Literals.COVERAGE__INCLUDE) {
+		if (reference == GenmodelPackage.Literals.COVERAGE__INCLUDE ||
+				reference == GenmodelPackage.Literals.COVERAGE__EXCLUDE) {
 			val genmodel = context.eContainer.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten
 								.filter(AbstractSynchronousCompositeComponent).map[it.components].flatten
