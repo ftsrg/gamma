@@ -124,6 +124,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 		for (analysisModelTransformationTask : genmodel.tasks.filter(AnalysisModelTransformation)) {
 			val parentPackage = analysisModelTransformationTask.component.eContainer
 			packageImports.remove(parentPackage)
+			for (coverage : analysisModelTransformationTask.coverages) {
+				for (instance : coverage.include + coverage.exclude) {
+					val instanceParentPackage = instance.eContainer.eContainer
+					packageImports.remove(instanceParentPackage)
+				}
+			}
 		}
 		for (statechartCompilationTask : genmodel.tasks.filter(StatechartCompilation)) {
 			for (interfaceMapping : statechartCompilationTask.interfaceMappings) {

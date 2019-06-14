@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -402,7 +403,13 @@ public class CommandHandler extends AbstractHandler {
 			if (presentCoverage.getInclude().isEmpty()) {
 				return simpleInstanceHandler.getSimpleInstances(component);
 			}
-			return simpleInstanceHandler.getSimpleInstances(presentCoverage.getInclude());
+			else {
+				List<SynchronousComponentInstance> instances = new ArrayList<SynchronousComponentInstance>();
+				// Include - exclude
+				instances.addAll(simpleInstanceHandler.getSimpleInstances(presentCoverage.getInclude()));
+				instances.removeAll(simpleInstanceHandler.getSimpleInstances(presentCoverage.getExclude()));
+				return instances;
+			}
 		}
 		return Collections.emptyList();
 	}
