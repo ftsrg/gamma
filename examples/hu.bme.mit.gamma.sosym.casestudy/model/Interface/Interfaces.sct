@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:sgraph="http://www.yakindu.org/sct/sgraph/2.0.0">
+  <sgraph:Statechart xmi:id="_Qmz6gCUnEeeTxv1FvWbzPQ" specification="interface Protocol:&#xD;&#xA;&#x9;out event canGo&#xD;&#xA;&#x9;out event cannotGo&#xD;&#xA;&#x9;out event reserve&#xD;&#xA;&#x9;out event release&#xD;&#xA;&#xD;&#xA;interface Restart:&#xD;&#xA;&#x9;out event restart&#xD;&#xA;&#xD;&#xA;interface SectionControl:&#xD;&#xA;&#x9;out event enableSection&#xD;&#xA;&#x9;out event disableSection&#xD;&#xA;&#xD;&#xA;interface TurnoutControl:&#xD;&#xA;&#x9;out event turnoutStraight&#xD;&#xA;&#x9;out event turnoutDivergent&#xD;&#xA;&#xD;&#xA;interface Train:&#xD;&#xA;&#x9;out event occupy&#xD;&#xA;&#x9;out event unoccupy&#xD;&#xA;&#xD;&#xA;interface TrainControl:&#xD;&#xA;&#x9;out event moveForward&#xD;&#xA;&#x9;out event moveBackward&#xD;&#xA;&#xD;&#xA;interface NewProtocol:&#xD;&#xA;&#x9;out event occupied&#xD;&#xA;&#x9;out event unoccupied&#xD;&#xA;&#x9;out event go&#xD;&#xA;&#x9;out event stop&#xD;&#xA;&#xD;&#xA;interface Error:&#xD;&#xA;&#x9;out event error" name="Interfaces"/>
+  <notation:Diagram xmi:id="_Qm1vsCUnEeeTxv1FvWbzPQ" type="org.yakindu.sct.ui.editor.editor.StatechartDiagramEditor" element="_Qmz6gCUnEeeTxv1FvWbzPQ" measurementUnit="Pixel">
+    <children xsi:type="notation:Shape" xmi:id="_Qm8dZCUnEeeTxv1FvWbzPQ" type="StatechartText" fontName="Verdana" lineColor="4210752">
+      <children xsi:type="notation:DecorationNode" xmi:id="_Qm9EcCUnEeeTxv1FvWbzPQ" type="StatechartName">
+        <styles xsi:type="notation:ShapeStyle" xmi:id="_Qm9EcSUnEeeTxv1FvWbzPQ"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_Qm9EciUnEeeTxv1FvWbzPQ"/>
+      </children>
+      <children xsi:type="notation:Shape" xmi:id="_Qm9EcyUnEeeTxv1FvWbzPQ" type="StatechartTextExpression" fontName="Verdana" lineColor="4210752">
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_Qm9EdCUnEeeTxv1FvWbzPQ"/>
+      </children>
+      <layoutConstraint xsi:type="notation:Bounds" xmi:id="_Qm9EdSUnEeeTxv1FvWbzPQ" x="15" y="-75" width="271" height="406"/>
+    </children>
+    <styles xsi:type="notation:DiagramStyle" xmi:id="_Qm1vsSUnEeeTxv1FvWbzPQ"/>
+  </notation:Diagram>
+</xmi:XMI>

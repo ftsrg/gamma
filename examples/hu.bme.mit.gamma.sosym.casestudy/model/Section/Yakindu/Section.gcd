@@ -1,0 +1,139 @@
+package Section
+import "Interface/Interfaces"
+const UNSPECIFIED : integer := 2
+const CW : integer := 0
+const CCW : integer := 1
+statechart SectionStatechart [
+	port ProtocolInCW : requires Protocol
+	port ProtocolInCCW : requires Protocol
+	port ProtocolOutCW : provides Protocol
+	port ProtocolOutCCW : provides Protocol
+	port Train : requires Train
+	port Restart : requires Restart
+	port SectionControl : provides SectionControl
+] {
+	var latestReserveDirection : integer
+	transition from Occupied to Free when Train.unoccupy / raise ProtocolOutCW.release; raise
+		ProtocolOutCCW.release;
+	transition from Free to Reserved when ProtocolInCW.reserve / raise ProtocolOutCW.canGo;
+		latestReserveDirection := CW;
+	transition from Free to Reserved when ProtocolInCCW.reserve / latestReserveDirection := CCW; raise
+		ProtocolOutCCW.canGo;
+	transition from Reserved to Free when ProtocolInCCW.release [CCW = latestReserveDirection] / raise
+		ProtocolOutCW.release;
+	transition from Stop to Locking_protocol when Restart.restart
+	transition from Locking_protocol to Free when Train.unoccupy
+	transition from Locking_protocol to Stop when ProtocolInCCW.reserve / raise ProtocolOutCCW.cannotGo;
+	transition from Free to Locking_protocol when Train.occupy
+	transition from Stop to Free when Train.unoccupy / raise ProtocolOutCCW.release; raise
+		ProtocolOutCW.release;
+	transition from Stop to Locking_protocol when ProtocolInCCW.release
+	transition from Locking_protocol to Stop when ProtocolInCW.reserve / raise ProtocolOutCW.cannotGo;
+	transition from Stop to Locking_protocol when ProtocolInCW.release
+	transition from Occupied to Stop when ProtocolInCW.cannotGo
+	transition from WaitForFirstResponse to Stop when ProtocolInCW.cannotGo
+	transition from Reserved to Free when ProtocolInCW.release [CW = latestReserveDirection] / raise
+		ProtocolOutCCW.release;
+	transition from WaitForSecondResponse to Stop when ProtocolInCCW.cannotGo
+	transition from WaitForSecondResponse to Occupied when ProtocolInCCW.canGo
+	transition from Entry0 to WaitForFirstResponse
+	transition from Entry1 to Free
+	transition from Reserved to Locking_protocol when Train.occupy
+	transition from WaitForFirstResponse to WaitForSecondResponse when ProtocolInCW.canGo
+	transition from Occupied to Stop when ProtocolInCCW.cannotGo
+	transition from Entry3 to LocalReactionState3
+	transition from LocalReactionState3 to LocalReactionState3 when ProtocolInCW.reserve / raise
+		ProtocolOutCW.cannotGo;
+	transition from Entry4 to LocalReactionState4
+	transition from LocalReactionState4 to LocalReactionState4 when ProtocolInCW.reserve [CW /=
+		latestReserveDirection] / raise ProtocolOutCW.cannotGo;
+	transition from Entry5 to LocalReactionState5
+	transition from LocalReactionState5 to LocalReactionState5 when ProtocolInCCW.release / raise
+		ProtocolOutCCW.reserve;
+	transition from Entry6 to LocalReactionState6
+	transition from LocalReactionState6 to LocalReactionState6 when ProtocolInCW.reserve [CW =
+		latestReserveDirection] / raise ProtocolOutCW.canGo;
+	transition from Entry7 to LocalReactionState7
+	transition from LocalReactionState7 to LocalReactionState7 when ProtocolInCCW.reserve / raise
+		ProtocolOutCCW.canGo;
+	transition from Entry8 to LocalReactionState8
+	transition from LocalReactionState8 to LocalReactionState8 when ProtocolInCW.release / raise
+		ProtocolOutCW.reserve;
+	transition from Entry9 to LocalReactionState9
+	transition from LocalReactionState9 to LocalReactionState9 when ProtocolInCCW.reserve / raise
+		ProtocolOutCCW.cannotGo;
+	transition from Entry10 to LocalReactionState10
+	transition from LocalReactionState10 to LocalReactionState10 when ProtocolInCCW.reserve [CCW /=
+		latestReserveDirection] / raise ProtocolOutCCW.cannotGo;
+	transition from Entry11 to LocalReactionState11
+	transition from LocalReactionState11 to LocalReactionState11 when ProtocolInCCW.reserve [CCW =
+		latestReserveDirection] / raise ProtocolOutCCW.canGo;
+	transition from Entry12 to LocalReactionState12
+	transition from LocalReactionState12 to LocalReactionState12 when ProtocolInCW.reserve / raise
+		ProtocolOutCW.canGo;
+	region main {
+		state Locking_protocol {
+			region inner_region {
+				initial Entry0
+				state WaitForFirstResponse {
+					entry / raise ProtocolOutCW.reserve; raise ProtocolOutCCW.reserve;
+				}
+				state WaitForSecondResponse {
+					entry / raise ProtocolOutCCW.reserve;
+				}
+			}
+		}
+		initial Entry1
+		state Free {
+			entry / latestReserveDirection := UNSPECIFIED;
+		}
+		state Stop {
+			entry / raise SectionControl.disableSection;
+			region localReactionRegion3 {
+				initial Entry3
+				state LocalReactionState3
+			}
+			region localReactionRegion9 {
+				initial Entry9
+				state LocalReactionState9
+			}
+		}
+		state Occupied {
+			entry / raise SectionControl.enableSection;
+			region localReactionRegion5 {
+				initial Entry5
+				state LocalReactionState5
+			}
+			region localReactionRegion7 {
+				initial Entry7
+				state LocalReactionState7
+			}
+			region localReactionRegion8 {
+				initial Entry8
+				state LocalReactionState8
+			}
+			region localReactionRegion12 {
+				initial Entry12
+				state LocalReactionState12
+			}
+		}
+		state Reserved {
+			region localReactionRegion4 {
+				initial Entry4
+				state LocalReactionState4
+			}
+			region localReactionRegion6 {
+				initial Entry6
+				state LocalReactionState6
+			}
+			region localReactionRegion10 {
+				initial Entry10
+				state LocalReactionState10
+			}
+			region localReactionRegion11 {
+				initial Entry11
+				state LocalReactionState11
+			}
+		}
+	}
+}

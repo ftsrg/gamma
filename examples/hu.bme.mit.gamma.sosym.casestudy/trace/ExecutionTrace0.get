@@ -1,0 +1,143 @@
+import "mediumlevel_eightsections_async_systemView"
+/*
+ * An execution trace describing the behavior of train1 while moving from S01
+ * to S05 (collision with train2).
+ */
+trace AsyncMediumLevelSystemTrace of AsyncMediumLevelSystem
+step {
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.InitializationState2
+		}
+	}
+}
+step {
+	act {
+		schedule track_ccwFourSections
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.InitializationState2
+		}
+	}
+}
+step {
+	act {
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}
+step {
+	act {
+		raise Train1Control.moveForward
+		schedule train
+	}
+	assert {
+		states {
+			track_ccwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			track_cwFourSections_mediumLevelFourSectionsAsync.GlobalState,
+			train_trainAsync.GlobalState
+		}
+	}
+}

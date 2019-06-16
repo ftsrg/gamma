@@ -1,0 +1,35 @@
+package Interfaces
+interface NewProtocol {
+	out event go
+	out event occupied
+	out event unoccupied
+	out event stop
+}
+interface TrainControl {
+	out event moveForward
+	out event moveBackward
+}
+interface Error {
+	out event error
+}
+interface Protocol {
+	out event release
+	out event canGo
+	out event reserve
+	out event cannotGo
+}
+interface TurnoutControl {
+	out event turnoutDivergent
+	out event turnoutStraight
+}
+interface Train {
+	out event unoccupy
+	out event occupy
+}
+interface SectionControl {
+	out event disableSection
+	out event enableSection
+}
+interface Restart {
+	out event restart
+}

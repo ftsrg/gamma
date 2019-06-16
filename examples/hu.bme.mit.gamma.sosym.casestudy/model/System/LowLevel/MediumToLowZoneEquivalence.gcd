@@ -1,0 +1,79 @@
+package eightsections_oracle
+import "Interface/Interfaces"
+import "Train/Sync/Train"
+import "MediumLevel/Sync/Zone/MediumLevelZone"
+import "Zone/LowLevelZone"
+import "Oracle/Oracle"
+cascade MediumToLowZoneEquivalence [
+	port Train1Control : requires TrainControl
+	port Train2Control : requires TrainControl
+	// Debugging ports
+	port EnableError1 : provides Error
+	port EnableError2 : provides Error
+	port EnableError3 : provides Error
+	port EnableError4 : provides Error
+	port EnableError5 : provides Error
+	port EnableError6 : provides Error
+	port EnableError7 : provides Error
+	port EnableError8 : provides Error
+	port DisableError1 : provides Error
+	port DisableError2 : provides Error
+	port DisableError3 : provides Error
+	port DisableError4 : provides Error
+	port DisableError5 : provides Error
+	port DisableError6 : provides Error
+	port DisableError7 : provides Error
+	port DisableError8 : provides Error
+] {
+	// Component
+	component train : Train
+	component mediumLevelFourSections : MediumLevelZone
+	component lowLevelFourSections : LowLevelZone
+	component oracle : Oracle
+	// Execution 
+	execute train, mediumLevelFourSections, lowLevelFourSections, lowLevelFourSections,
+		lowLevelFourSections, lowLevelFourSections, oracle
+	// Binding
+	bind Train1Control -> train.Train1
+	bind Train2Control -> train.Train2
+	// Debugging port bindings
+	bind EnableError1 -> oracle.EnableError1
+	bind EnableError2 -> oracle.EnableError2
+	bind EnableError3 -> oracle.EnableError3
+	bind EnableError4 -> oracle.EnableError4
+	bind EnableError5 -> oracle.EnableError5
+	bind EnableError6 -> oracle.EnableError6
+	bind EnableError7 -> oracle.EnableError7
+	bind EnableError8 -> oracle.EnableError8
+	bind DisableError1 -> oracle.DisableError1
+	bind DisableError2 -> oracle.DisableError2
+	bind DisableError3 -> oracle.DisableError3
+	bind DisableError4 -> oracle.DisableError4
+	bind DisableError5 -> oracle.DisableError5
+	bind DisableError6 -> oracle.DisableError6
+	bind DisableError7 -> oracle.DisableError7
+	bind DisableError8 -> oracle.DisableError8
+	// Train : higher level and lower level
+	channel [ train.TrainControl1 ] -o)- [ lowLevelFourSections.Train1, mediumLevelFourSections.Train1 ]
+	channel [ train.TrainControl2 ] -o)- [ lowLevelFourSections.Train2, mediumLevelFourSections.Train2 ]
+	channel [ train.TrainControl3 ] -o)- [ lowLevelFourSections.Train3, mediumLevelFourSections.Train3 ]
+	channel [ train.TrainControl4 ] -o)- [ lowLevelFourSections.Train4, mediumLevelFourSections.Train4 ]
+	// Oracle : higher level
+	channel [ mediumLevelFourSections.SectionControl1 ] -o)- [ oracle.HighLevelSectionControl1,
+		train.HighLevelSectionControl1 ]
+	channel [ mediumLevelFourSections.SectionControl2 ] -o)- [ oracle.HighLevelSectionControl2,
+		train.HighLevelSectionControl2 ]
+	channel [ mediumLevelFourSections.SectionControl3 ] -o)- [ oracle.HighLevelSectionControl3,
+		train.HighLevelSectionControl3 ]
+	channel [ mediumLevelFourSections.SectionControl4 ] -o)- [ oracle.HighLevelSectionControl4,
+		train.HighLevelSectionControl4 ]
+	// Oracle : lower level
+	channel [ lowLevelFourSections.SectionControl1 ] -o)- [ oracle.LowLevelSectionControl1,
+		train.LowLevelSectionControl1 ]
+	channel [ lowLevelFourSections.SectionControl2 ] -o)- [ oracle.LowLevelSectionControl2,
+		train.LowLevelSectionControl2 ]
+	channel [ lowLevelFourSections.SectionControl3 ] -o)- [ oracle.LowLevelSectionControl3,
+		train.LowLevelSectionControl3 ]
+	channel [ lowLevelFourSections.SectionControl4 ] -o)- [ oracle.LowLevelSectionControl4,
+		train.LowLevelSectionControl4 ]
+}
