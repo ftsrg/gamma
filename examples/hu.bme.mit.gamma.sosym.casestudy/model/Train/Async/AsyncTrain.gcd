@@ -1,6 +1,7 @@
 package train_async
 import "Train"
-adapter AsyncTrain of component trainAsync : Train [
+adapter AsyncTrain(initialPosition1 : integer, initialPosition2 : integer) of component trainAsync :
+	Train(initialPosition1, initialPosition2) [
 ] {
 	when HighLevelSectionControl1.any / run
 	when LowLevelSectionControl1.any / run
