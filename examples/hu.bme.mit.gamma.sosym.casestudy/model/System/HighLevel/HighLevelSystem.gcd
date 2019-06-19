@@ -1,13 +1,13 @@
 package eightsections
 import "Interface/Interfaces"
-import "Train/Sync/Train"
+import "Train/Async/Train"
 import "HighLevel/SafetyLogic/HighLevelSafetyLogic"
 cascade HighLevelSystem [
 	port Train1Control : requires TrainControl
 	port Train2Control : requires TrainControl
 ] {
 	// Component
-	component train : Train
+	component train : Train(1, 5)
 	component highLevelEightSections : HighLevelSafetyLogic
 	// Execution 
 	execute train, highLevelEightSections

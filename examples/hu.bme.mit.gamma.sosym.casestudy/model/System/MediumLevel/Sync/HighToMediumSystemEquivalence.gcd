@@ -26,7 +26,7 @@ cascade HighToMediumSystemEquivalence [
 	port DisableError8 : provides Error
 ] {
 // Component
-	component train : Train
+	component train : Train(1, 5)
 	component highLevelEightSections : HighLevelSafetyLogic
 	component mediumLevelEightSections : MediumLevelSafetyLogic
 	component oracle : Oracle

@@ -57,7 +57,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied2 and (isOccupied1 or
 			isOccupied8 or isOccupied7)] /
 		isOccupied1 := true; isDisabled1 := true; raise SectionControl1.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train1.unoccupy
 		[isDisabled2] /
 		isOccupied1 := false; isDisabled1 := false; raise SectionControl2.disableSection;
@@ -95,7 +94,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied3 and (isOccupied2 or
 			isOccupied1 or isOccupied8)] /
 		isOccupied2 := true; isDisabled2 := true; raise SectionControl2.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train2.unoccupy
 		[isDisabled3] /
 		isOccupied2 := false; isDisabled2 := false; raise SectionControl3.disableSection;
@@ -133,7 +131,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied4 and (isOccupied3 or
 			isOccupied2 or isOccupied1)] /
 		isOccupied3 := true; isDisabled3 := true; raise SectionControl3.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train3.unoccupy
 		[isDisabled4] /
 		isOccupied3 := false; isDisabled3 := false; raise SectionControl4.disableSection;
@@ -171,7 +168,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied5 and (isOccupied4 or
 			isOccupied3 or isOccupied2)] /
 		isOccupied4 := true; isDisabled4 := true; raise SectionControl4.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train4.unoccupy
 		[isDisabled5] /
 		isOccupied4 := false; isDisabled4 := false; raise SectionControl5.disableSection;
@@ -209,7 +205,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied6 and (isOccupied5 or
 			isOccupied4 or isOccupied3)] /
 		isOccupied5 := true; isDisabled5 := true; raise SectionControl5.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train5.unoccupy
 		[isDisabled6] /
 		isOccupied5 := false; isDisabled5 := false; raise SectionControl6.disableSection;
@@ -247,7 +242,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied7 and (isOccupied6 or
 			isOccupied5 or isOccupied4)] /
 		isOccupied6 := true; isDisabled6 := true; raise SectionControl6.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train6.unoccupy
 		[isDisabled7] /
 		isOccupied6 := false; isDisabled6 := false; raise SectionControl7.disableSection;
@@ -285,7 +279,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied8 and (isOccupied7 or
 			isOccupied6 or isOccupied5)] /
 		isOccupied7 := true; isDisabled7 := true; raise SectionControl7.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train7.unoccupy
 		[isDisabled8] /
 		isOccupied7 := false; isDisabled7 := false; raise SectionControl8.disableSection;
@@ -323,7 +316,6 @@ statechart HighLevelSafetyLogic [
 		[isOccupied1 and (isOccupied8 or
 			isOccupied7 or isOccupied6)] /
 		isOccupied8 := true; isDisabled8 := true; raise SectionControl8.disableSection;
-	// Because of low-level implementation: the train goes onto the disabled section
 	transition from GlobalState to GlobalState when Train8.unoccupy
 		[isDisabled1] /
 		isOccupied8 := false; isDisabled8 := false; raise SectionControl1.disableSection;

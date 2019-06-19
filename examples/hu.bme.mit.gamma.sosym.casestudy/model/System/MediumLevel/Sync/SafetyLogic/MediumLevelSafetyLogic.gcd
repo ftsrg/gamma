@@ -24,7 +24,7 @@ sync MediumLevelSafetyLogic [
 	port Protocol2CCW : provides NewProtocol
 	port Protocol2CW : provides NewProtocol
 ] {
-// Components
+	// Components
 	component ccwFourSections : MediumLevelZone
 	component cwFourSections : MediumLevelZone
 	// Bindings
