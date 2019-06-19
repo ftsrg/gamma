@@ -1,7 +1,7 @@
 package eightsections
 import "Interface/Interfaces"
 import "Zone/LowLevelZone"
-cascade LowLevelSafetyLogic [
+sync LowLevelSafetyLogic [
 	port Train1 : requires Train
 	port Train2 : requires Train
 	port Train3 : requires Train
@@ -22,7 +22,6 @@ cascade LowLevelSafetyLogic [
 	// Components
 	component ccwFourSections : LowLevelZone
 	component cwFourSections : LowLevelZone
-	execute ccwFourSections, cwFourSections, ccwFourSections
 	// Bindings
 	bind Train1 -> ccwFourSections.Train1
 	bind Train2 -> ccwFourSections.Train2

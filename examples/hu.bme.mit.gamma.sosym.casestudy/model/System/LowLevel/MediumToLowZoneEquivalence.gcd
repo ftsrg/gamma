@@ -26,13 +26,14 @@ cascade MediumToLowZoneEquivalence [
 	port DisableError8 : provides Error
 ] {
 	// Component
-	component train : Train
+	component train : Train(1, 4)
 	component mediumLevelFourSections : MediumLevelZone
 	component lowLevelFourSections : LowLevelZone
 	component oracle : Oracle
 	// Execution 
-	execute train, mediumLevelFourSections, lowLevelFourSections, lowLevelFourSections,
-		lowLevelFourSections, lowLevelFourSections, oracle
+	execute train, mediumLevelFourSections, mediumLevelFourSections, mediumLevelFourSections,
+		mediumLevelFourSections, lowLevelFourSections, lowLevelFourSections, lowLevelFourSections,
+		lowLevelFourSections, oracle
 	// Binding
 	bind Train1Control -> train.Train1
 	bind Train2Control -> train.Train2

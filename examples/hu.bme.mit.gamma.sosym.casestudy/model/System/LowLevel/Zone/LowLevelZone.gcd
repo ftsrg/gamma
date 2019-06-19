@@ -1,11 +1,11 @@
 package foursection
-import "Section/Yakindu/Section"
+import "Section/Gamma/Section"
 import "Interface/Interfaces"
-cascade LowLevelZone [
-	port ProtocolInCCW : requires Protocol
-	port ProtocolOutCCW : provides Protocol
-	port ProtocolInCW : requires Protocol
-	port ProtocolOutCW : provides Protocol
+sync LowLevelZone [
+	port ProtocolInCCW : requires NewProtocol
+	port ProtocolOutCCW : provides NewProtocol
+	port ProtocolInCW : requires NewProtocol
+	port ProtocolOutCW : provides NewProtocol
 	port Train1 : requires Train
 	port Train2 : requires Train
 	port Train3 : requires Train
