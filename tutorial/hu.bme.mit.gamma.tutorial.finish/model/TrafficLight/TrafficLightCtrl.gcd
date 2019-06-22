@@ -36,14 +36,10 @@ statechart TrafficLightCtrlStatechart [
 			region interrupted {
 				initial Entry1
 				state Black {
-					entry / {
-						set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
-					}
+					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
 				}
 				state BlinkingYellow {
-					entry / {
-						set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
-					}
+					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
 				}
 			}
 		}
