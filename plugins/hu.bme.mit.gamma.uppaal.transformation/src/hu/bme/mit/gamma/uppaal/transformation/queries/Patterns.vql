@@ -119,9 +119,18 @@ pattern states(state : State, region : Region, name : java String) {
 	State.name(state, name);
 }
 
-pattern choices(choice : ChoiceState, region : Region) {
+private pattern choices(choice : ChoiceState, region : Region) {
 	Region.stateNodes(region, choice);
-	ChoiceState(choice);
+}
+
+private pattern merges(merge : MergeState, region : Region) {
+	Region.stateNodes(region, merge);
+}
+
+pattern choicesAndMerges(pseudoState : PseudoState, region : Region) {
+	find choices(pseudoState, region);
+} or {
+	find merges(pseudoState, region);
 }
 
 private pattern dynamicChoices(choice : ChoiceState) {

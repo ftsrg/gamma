@@ -23,7 +23,7 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.simpleStates"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.compositeStates"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.states"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.choices"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.choicesAndMerges"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.eliminatableChoices"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.defaultTransitionsOfChoices"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.transitions"/>

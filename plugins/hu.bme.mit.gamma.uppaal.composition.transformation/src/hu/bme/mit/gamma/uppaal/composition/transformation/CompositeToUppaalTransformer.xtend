@@ -94,7 +94,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComp
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.WrapperInEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
-import hu.bme.mit.gamma.uppaal.transformation.queries.Choices
+import hu.bme.mit.gamma.uppaal.transformation.queries.ChoicesAndMerges
 import hu.bme.mit.gamma.uppaal.transformation.queries.ClockRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.CompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
@@ -2643,7 +2643,7 @@ class CompositeToUppaalTransformer {
      * This rule is responsible for transforming all choices to committed locations.
      * It depends on regionsRule.
      */
-	val choicesRule = createRule(Choices.instance).action [
+	val choicesRule = createRule(ChoicesAndMerges.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
 			val choiceLocation = template.createChild(template_Location, location) as Location => [
@@ -2652,7 +2652,7 @@ class CompositeToUppaalTransformer {
 				it.comment = "Choice"
 			]
 			// Creating the trace
-			addToTrace(it.choice, #{choiceLocation}, trace)
+			addToTrace(it.pseudoState, #{choiceLocation}, trace)
 			addToTrace(owner, #{choiceLocation}, instanceTrace)		
 		}
 	].build
