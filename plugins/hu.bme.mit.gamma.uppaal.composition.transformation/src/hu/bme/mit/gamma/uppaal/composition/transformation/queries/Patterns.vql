@@ -44,13 +44,15 @@ pattern instanceVariables(instance : SynchronousComponentInstance, variable : Va
 }
 
 // To filter out events that are not used
-private pattern relevantEvents(event : Event) {
-	PortEventReference.event(_, event);
+private pattern relevantEvents(port : Port, event : Event) {
+	PortEventReference.port(portEventReference, port);
+	PortEventReference.event(portEventReference, event);
 } or {
 	Port.interfaceRealization.interface.events.event(port, event);
 	AnyPortEventReference.port(_, port);
 } or {
-	RaiseEventAction.event(_, event);
+	RaiseEventAction.port(raiseEventAction, port);
+	RaiseEventAction.event(raiseEventAction, event);
 }
 
 private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {
@@ -138,13 +140,15 @@ pattern topSyncSystemInEvents(component : SynchronousComponent, systemPort : Por
 	find topSyncComponents(component);
 	find syncCompositeSystemInEvents(component, systemPort, instance, port, event);
 	// Filtering out unused event
-	find relevantEvents(event);
+	find relevantEvents(port, event);
 }  or {
 	// Statechart wrapped by wrapper
 	find topSyncComponents(component);
 	SynchronousComponentInstance.type(instance, component);	
 	find inputInstanceEvents(instance, port, event);
 	systemPort == port;
+	// Filtering out unused event
+	find relevantEvents(port, event);
 }
 
 private pattern syncCompositeSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
