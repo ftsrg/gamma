@@ -15,8 +15,6 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
 import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
@@ -40,7 +38,6 @@ import java.util.Set
 import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
-import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 /**
@@ -169,29 +166,10 @@ class GenModelValidator extends AbstractGenModelValidator {
 	
 	@Check
 	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {
-		val genmodel = analysisModelTransformation.eContainer as GenModel
 		val type = analysisModelTransformation.component
 		if (analysisModelTransformation.getArguments().size() != type.getParameterDeclarations().size()) {
 			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
-		if (type instanceof AbstractSynchronousCompositeComponent) {
-			val importedStatecharts = type.components.map[it.type]
-													.filter(StatechartDefinition)
-													.map[it.name].toSet
-			val yakinduStatecharts = genmodel.tasks.filter(StatechartCompilation)
-													.map[it.statechart.gammaStatechartName].toSet
-			importedStatecharts.retainAll(yakinduStatecharts)
-			if (!importedStatecharts.empty) {
-				info("This Gamma model depends on statecharts " + importedStatecharts + ", which seem to be about to be recompiled. " + 
-				"Note that this Gamma model will depend on the old statechart version when the model transformation is executed. " +
-				"Execute the artefact generation twice if you want the Gamma model to depend on the newly generated statechart versions.",
-				 GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COMPONENT)
-			}
-		}
-	}
-	
-	private def getGammaStatechartName(Statechart statechart) {
-		return statechart.name + "Statechart"
 	}
 	
 	@Check
