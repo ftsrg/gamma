@@ -1,0 +1,36 @@
+package hu.bme.mit.gamma.yakindu.transformation.commandhandler.taskhandler;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
+
+import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
+import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
+import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
+import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
+
+public class StatechartCompilationHandler extends YakinduCompilationHandler {
+
+	public void execute(StatechartCompilation statechartCompilation) throws IOException {
+		setYakinduCompilation(statechartCompilation);
+		setStatechartCompilation(statechartCompilation, statechartCompilation.getPackageName().get(0) + "Statechart");
+		ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
+		validator.checkModel();
+		YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
+		SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
+		// Saving Xtext and EMF models
+		saveModel(resultModels.getKey(), targetFolderUri, statechartCompilation.getFileName().get(0) + ".gcd");
+		saveModel(resultModels.getValue(), targetFolderUri, "." + statechartCompilation.getFileName().get(0) + ".y2g");
+		transformer.dispose();
+	}
+
+	private void setStatechartCompilation(StatechartCompilation statechartCompilation, String statechartName) {
+		checkArgument(statechartCompilation.getStatechartName().size() <= 1);
+		if (statechartCompilation.getStatechartName().isEmpty()) {
+			statechartCompilation.getStatechartName().add(statechartName);
+		}
+	}
+
+}
