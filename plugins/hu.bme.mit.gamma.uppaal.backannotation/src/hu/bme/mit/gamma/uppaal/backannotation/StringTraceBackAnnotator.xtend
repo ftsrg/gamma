@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
 import hu.bme.mit.gamma.constraint.model.Expression
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
-import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
@@ -23,6 +22,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event

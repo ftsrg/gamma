@@ -40,7 +40,6 @@ import hu.bme.mit.gamma.statechart.model.AnyTrigger;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
 import hu.bme.mit.gamma.statechart.model.Clock;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.EntryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventTrigger;
@@ -70,6 +69,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponen
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.Channel;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.CompositePackage;

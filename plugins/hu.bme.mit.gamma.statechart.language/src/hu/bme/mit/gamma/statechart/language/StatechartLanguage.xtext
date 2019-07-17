@@ -280,7 +280,7 @@ DeepHistoryState returns DeepHistoryState:
 
 // Composition language 
  
-Component returns Component:
+Component returns CompositeModel::Component:
 	SynchronousComponent |
 	AsynchronousComponent
 ;

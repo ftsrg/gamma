@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Commandhandler of Gamma Composite System to UPPAAL Transformer
+Bundle-Name: Command Handler of Gamma Composite System to UPPAAL Transformer
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler;singleton:=true
-Bundle-Version: 2.1.2.qualifier
+Bundle-Version: 2.1.3.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.commands,
  org.eclipse.jface,

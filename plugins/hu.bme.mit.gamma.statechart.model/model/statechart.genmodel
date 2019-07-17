@@ -40,9 +40,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Package/components"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Package/interfaces"/>
     </genClasses>
-    <genClasses ecoreClass="statechart.ecore#//Component">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//Component/ports"/>
-    </genClasses>
     <genClasses ecoreClass="statechart.ecore#//StatechartDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/variableDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/timeoutDeclarations"/>
@@ -176,6 +173,9 @@
         <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//composite/ControlFunction/RUN_TO_COMPLETION"/>
         <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//composite/ControlFunction/RESET"/>
       </genEnums>
+      <genClasses image="false" ecoreClass="statechart.ecore#//composite/Component">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/Component/ports"/>
+      </genClasses>
       <genClasses ecoreClass="statechart.ecore#//composite/CompositeComponent">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/CompositeComponent/portBindings"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//composite/CompositeComponent/channels"/>

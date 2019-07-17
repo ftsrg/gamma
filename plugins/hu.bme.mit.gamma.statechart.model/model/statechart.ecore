@@ -12,13 +12,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
-        eType="#//Component" containment="true"/>
+        eType="#//composite/Component" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="interfaces" upperBound="-1"
         eType="#//interface/Interface" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParametricElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="ports" upperBound="-1"
-        eType="#//Port" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" eSuperTypes="#//composite/SynchronousComponent #//CompositeElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
@@ -43,7 +39,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
-        eType="#//Component"/>
+        eType="#//composite/Component"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Region" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateNodes" upperBound="-1"
@@ -207,8 +203,12 @@
     <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
       <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
     </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParametricElement">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="ports" upperBound="-1"
+          eType="#//Port" containment="true"/>
+    </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="CompositeComponent" abstract="true"
-        eSuperTypes="#//Component">
+        eSuperTypes="#//composite/Component">
       <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
           eType="#//composite/PortBinding" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="channels" upperBound="-1"
@@ -259,9 +259,9 @@
           upperBound="-1" eType="#//EventReference" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
-        eSuperTypes="#//Component"/>
+        eSuperTypes="#//composite/Component"/>
     <eClassifiers xsi:type="ecore:EClass" name="AsynchronousComponent" abstract="true"
-        eSuperTypes="#//Component"/>
+        eSuperTypes="#//composite/Component"/>
     <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponentInstance" eSuperTypes="#//composite/ComponentInstance">
       <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1"
           eType="#//composite/SynchronousComponent"/>

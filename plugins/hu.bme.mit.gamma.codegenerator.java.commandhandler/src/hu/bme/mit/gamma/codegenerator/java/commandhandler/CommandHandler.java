@@ -34,11 +34,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class CommandHandler extends AbstractHandler {

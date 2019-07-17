@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.statechart.model.derivedfeatures;
 
 import java.util.Collection;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
@@ -29,6 +27,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;

@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 import hu.bme.mit.gamma.constraint.model.Declaration
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.ClockTickReference
-import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.EventTrigger
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.PortEventReference
@@ -22,6 +21,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel

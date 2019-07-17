@@ -10,17 +10,25 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
+import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
+import hu.bme.mit.gamma.constraint.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceState
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TracePackage
 import java.util.Collection
 import java.util.Collections
@@ -29,14 +37,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
-import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
  * This class contains custom scoping description.

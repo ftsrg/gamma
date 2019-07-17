@@ -5,7 +5,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
         eType="#//Step" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="import" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Step">

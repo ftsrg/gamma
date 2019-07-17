@@ -66,7 +66,7 @@ StatechartCompilation returns StatechartCompilation:
 
 CodeGeneration returns CodeGeneration:
 	'code'  '{'
-		'component' ':' component=[model::Component]
+		'component' ':' component=[composite::Component]
 		(
 			'folder' ':' targetFolder+=STRING |
 			'package' ':' packageName+=STRING |
@@ -93,7 +93,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' '{'
-		'component' ':' component=[model::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		'component' ':' component=[composite::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 		(
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |

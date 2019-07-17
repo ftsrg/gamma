@@ -82,3 +82,14 @@
  
 * Validation rules regarding the control specifications of asynchronous adapters are added.
 * The Gamma-UPPAAL transformation has been optimized.
+
+## 2018.07.17. - Version 2.1.3
+
+### What is New
+
+* The Component element of the GSL metamodel has been moved to the composite package.
+* The analysis task now has include and exclude component features.
+
+### Improvements
+ 
+* Bugs regarding the generation of imports in the generated code and tests are fixed.

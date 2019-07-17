@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.constraint.model.AndExpression
 import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
 import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
@@ -106,8 +108,7 @@ import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import hu.bme.mit.gamma.action.model.ActionModelPackage
-import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.statechart.model.composite.CompositePackage
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -141,6 +142,7 @@ class YakinduToGammaTransformer {
     protected StatechartDefinition gammaStatechart
     
     // Packages of the metamodels
+    extension CompositePackage compPackage = CompositePackage.eINSTANCE
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
     extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE

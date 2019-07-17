@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.EventTrigger
@@ -50,6 +49,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent

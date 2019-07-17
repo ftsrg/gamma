@@ -26,15 +26,15 @@ import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 
 import com.google.common.base.Predicate;
 
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;

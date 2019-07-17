@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.Component
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RealizationMode
@@ -42,6 +41,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding

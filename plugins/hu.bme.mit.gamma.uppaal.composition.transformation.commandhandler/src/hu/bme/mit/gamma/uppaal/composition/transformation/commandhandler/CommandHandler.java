@@ -34,9 +34,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;

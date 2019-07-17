@@ -31,13 +31,13 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
         lowerBound="1" upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Component"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="scheduler" unique="false"
         upperBound="-1" eType="#//Scheduler"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
