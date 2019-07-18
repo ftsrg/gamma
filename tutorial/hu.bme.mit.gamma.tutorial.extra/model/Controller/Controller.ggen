@@ -1,7 +1,8 @@
 import "Interfaces/Interfaces.gcd"
 import external "Controller.sct"
 
-statechart Controller {
+statechart {
+	statechart : Controller
 	mappings {
 		map PriorityControl = Control as provided
 		map SecondaryControl = Control as provided
