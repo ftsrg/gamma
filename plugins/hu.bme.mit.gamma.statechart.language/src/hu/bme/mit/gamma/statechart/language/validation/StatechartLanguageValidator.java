@@ -492,15 +492,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		}
 		// Targets of fork nodes must always be in distinct regions
-		Set<Region> targetedRegions = new HashSet<Region>();
+		Set<Region> sourceRegions = new HashSet<Region>();
 		for (Transition transition : incomingTransitions) {
-			Region region = (Region) transition.getTargetState().eContainer();
-			if (targetedRegions.contains(region)) {
+			Region region = (Region) transition.getSourceState().eContainer();
+			if (sourceRegions.contains(region)) {
 				error("Sources of incoming transitions of fork nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 				error("Sources of incoming transitions of fork nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 			}
 			else {
-				targetedRegions.add(region);
+				sourceRegions.add(region);
 			}
 		}
 		// TODO or a fork state should be reachable in accordance with the well-formedness rules
