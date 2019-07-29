@@ -132,6 +132,26 @@ public class StatechartModelDerivedFeatures {
 		return (Region) node.eContainer();
 	}
 	
+	public static boolean isTopRegion(Region region) {
+		return region.eContainer() instanceof StatechartDefinition;
+	}
+	
+	public static boolean isSubregion(Region region) {
+		return !isTopRegion(region);
+	}
+	
+	public static State getParentState(Region region) {
+		if (isTopRegion(region)) {
+			throw new IllegalArgumentException("This region has no parent state: " + region);
+		}
+		return (State) region.eContainer();
+	}
+	
+	public static State getParentState(StateNode node) {
+		Region parentRegion = getParentRegion(node);
+		return getParentState(parentRegion);
+	}
+	
 	public static StatechartDefinition getContainingStatechart(EObject object) {
 		if (object.eContainer() instanceof StatechartDefinition) {
 			return (StatechartDefinition) object.eContainer();

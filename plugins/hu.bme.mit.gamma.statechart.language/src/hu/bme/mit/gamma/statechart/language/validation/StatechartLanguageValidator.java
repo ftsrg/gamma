@@ -483,14 +483,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (outgoingTransitionSize != 1) {
 			error("Join nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
-		// Sources of join nodes must always be States
-		for (Transition transition : incomingTransitions) {
-			StateNode source = transition.getSourceState();
-			if (!(source instanceof hu.bme.mit.gamma.statechart.model.State)) {
-				error("Sources of incoming transitions of join nodes must be of type State.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-				error("Sources of incoming transitions of join nodes must be of type State.", transition, StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
-			}
-		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> sourceRegions = new HashSet<Region>();
 		for (Transition transition : incomingTransitions) {
@@ -507,7 +499,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkChoiceNodeTransitions(Transition transition) {
+	public void checkPseudoNodeTransitions(Transition transition) {
 		StateNode source = transition.getSourceState();
 		StateNode target = transition.getTargetState();
 		if (source instanceof ChoiceState) {
@@ -518,7 +510,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				error("Transitions from choice nodes must have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
-		// If the target is a choice, everything is permitted
 		if (source instanceof ForkState) {
 			if (transition.getTrigger() != null) {
 				error("Transitions from fork nodes must not have triggers.", StatechartModelPackage.Literals.TRANSITION__TRIGGER);
@@ -527,18 +518,12 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				error("Transitions from fork nodes must not have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
-		// If the target is a fork, everything is permitted
 		if (source instanceof MergeState) {
 			if (transition.getTrigger() != null) {
 				error("Transitions from merge nodes must not have triggers.", StatechartModelPackage.Literals.TRANSITION__TRIGGER);
 			}
 			if (transition.getGuard() != null) {
 				error("Transitions from merge nodes must not have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
-			}
-		}
-		if (target instanceof MergeState) {
-			if (!(source instanceof PseudoState) && !transition.getEffects().isEmpty()) {
-				error("Transitions targeted to merge nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 			}
 		}
 		if (source instanceof JoinState) {
@@ -549,8 +534,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				error("Transitions from join nodes must not have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
+		if (target instanceof MergeState) {
+			if (!(source instanceof PseudoState) && !transition.getEffects().isEmpty()) {
+				error("Transitions targeted to merge nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
+			}
+		}
 		if (target instanceof JoinState) {
-			if (!transition.getEffects().isEmpty()) {
+			if (!(source instanceof PseudoState) &&	!transition.getEffects().isEmpty()) {
 				error("Transitions targeted to join nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 			}
 		}
@@ -757,16 +747,27 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	private void checkTransitionOrientation(Transition transition) {
-		if (transition.getSourceState().eContainer() == transition.getTargetState().eContainer()) {
+		StateNode sourceState = transition.getSourceState();
+		StateNode targetState = transition.getTargetState();
+		if (sourceState.eContainer() == targetState.eContainer()) {
 			// Transitions in same region are permitted
 			return;
 		}
-		Collection<hu.bme.mit.gamma.statechart.model.State> commonAncestors = getCommonAncestors(transition.getSourceState(),
-			 transition.getTargetState());
+		Collection<hu.bme.mit.gamma.statechart.model.State> commonAncestors =
+				getCommonAncestors(sourceState, targetState);
+		Region sourceParentRegion = StatechartModelDerivedFeatures.getParentRegion(sourceState);
+		if (StatechartModelDerivedFeatures.isSubregion(sourceParentRegion)) {
+			hu.bme.mit.gamma.statechart.model.State parentSourceState =
+				StatechartModelDerivedFeatures.getParentState(sourceState);
+			Collection<hu.bme.mit.gamma.statechart.model.State> acceptableAncestors =
+				getAncestors(parentSourceState);
+			// Transitions going out of the state are allowed
+			commonAncestors.removeAll(acceptableAncestors);
+		}
 		if (!commonAncestors.isEmpty()) {
-			error("The orientation of this transition is incorrect as the source and target have common ancestor states: " +
-				commonAncestors.stream().map(it -> it.getName()).collect(Collectors.toSet()) + ".",
-				StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
+			error("The orientation of this transition is incorrect as the source and target are in orthogonal regions "
+				+ "of the following states: " +	commonAncestors.stream().map(it -> it.getName()).collect(Collectors.toSet())
+				+ ".", StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
 		}
 	}
 	
