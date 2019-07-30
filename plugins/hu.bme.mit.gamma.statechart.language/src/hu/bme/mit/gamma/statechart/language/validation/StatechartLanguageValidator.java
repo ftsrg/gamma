@@ -488,8 +488,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		for (Transition transition : incomingTransitions) {
 			Region region = (Region) transition.getSourceState().eContainer();
 			if (sourceRegions.contains(region)) {
-				error("Sources of incoming transitions of fork nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-				error("Sources of incoming transitions of fork nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+				error("Sources of incoming transitions of join nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Sources of incoming transitions of join nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 			}
 			else {
 				sourceRegions.add(region);
