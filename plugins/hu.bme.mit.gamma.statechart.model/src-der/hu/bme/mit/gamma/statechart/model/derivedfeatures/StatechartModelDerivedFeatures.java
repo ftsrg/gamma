@@ -169,4 +169,97 @@ public class StatechartModelDerivedFeatures {
 		return getContainingComponent(object.eContainer());
 	}
 	
+	public static boolean isToHigher(Transition transition) {
+		return isToHigher(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToHigher(StateNode source, StateNode target) {
+		Region sourceParentRegion = getParentRegion(source);
+		if (isTopRegion(sourceParentRegion)) {
+			return false;
+		}
+		State sourceParentState = getParentState(source);
+		if (getParentRegion(sourceParentState) == getParentRegion(target)) {
+			return true;
+		}
+		return isToHigher(sourceParentState, target);
+	}
+	
+	public static boolean isToLower(Transition transition) {
+		return isToLower(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToLower(StateNode source, StateNode target) {
+		Region targetParentRegion = getParentRegion(target);
+		if (isTopRegion(targetParentRegion)) {
+			return false;
+		}
+		State targetParentState = getParentState(target);
+		if (getParentRegion(source) == getParentRegion(targetParentState)) {
+			return true;
+		}
+		return isToLower(source, targetParentState);
+	}
+	
+	public static boolean isToHigherAndLower(Transition transition) {
+		return isToLowerOrHigherAndLower(transition.getSourceState(), transition.getTargetState()) &&
+				!isToLower(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToLowerOrHigherAndLower(StateNode source, StateNode target) {
+		if (isToLower(source, target)) {
+			return true;
+		}
+		Region sourceParentRegion = getParentRegion(source);
+		if (isTopRegion(sourceParentRegion)) {
+			return false;
+		}
+		State sourceParentState = getParentState(source);
+		return isToLower(sourceParentState, target);
+	}
+	
+	public static boolean isToHigherOrHigherAndLower(StateNode source, StateNode target) {
+		if (isToHigher(source, target)) {
+			return true;
+		}
+		Region targetParentRegion = getParentRegion(target);
+		if (isTopRegion(targetParentRegion)) {
+			return false;
+		}
+		State targetParentState = getParentState(target);
+		return isToLower(source, targetParentState);
+	}
+	
+	public static StateNode getSourceAncestor(Transition transition) {
+		return getSourceAncestor(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static StateNode getSourceAncestor(StateNode source, StateNode target) {
+		if (isToLower(source, target)) {
+			return source;
+		}
+		Region sourceParentRegion = getParentRegion(source);
+		if (isTopRegion(sourceParentRegion)) {
+			throw new IllegalArgumentException("No source ancestor!");
+		}
+		State sourceParentState = getParentState(source);
+		return getSourceAncestor(sourceParentState, target);
+	}
+	
+	public static StateNode getTargetAncestor(Transition transition) {
+		return getTargetAncestor(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static StateNode getTargetAncestor(StateNode source, StateNode target) {
+		if (isToHigher(source, target)) {
+			return source;
+		}
+		Region targetParentRegion = getParentRegion(target);
+		if (isTopRegion(targetParentRegion)) {
+			throw new IllegalArgumentException("No target ancestor!");
+		}
+		State targetParentState = getParentState(target);
+		return getTargetAncestor(source, targetParentState);
+	}
+	
 }
