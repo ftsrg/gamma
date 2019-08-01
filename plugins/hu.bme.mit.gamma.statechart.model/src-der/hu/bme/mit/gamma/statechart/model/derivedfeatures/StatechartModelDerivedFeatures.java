@@ -169,6 +169,10 @@ public class StatechartModelDerivedFeatures {
 		return getContainingComponent(object.eContainer());
 	}
 	
+	public static boolean isSameRegion(Transition transition) {
+		return getParentRegion(transition.getSourceState()) == getParentRegion(transition.getTargetState());
+	}
+	
 	public static boolean isToHigher(Transition transition) {
 		return isToHigher(transition.getSourceState(), transition.getTargetState());
 	}
