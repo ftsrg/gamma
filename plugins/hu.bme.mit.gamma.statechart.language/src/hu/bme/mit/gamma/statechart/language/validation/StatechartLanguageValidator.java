@@ -428,14 +428,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		else if (outgoingTransitionSize < 1) {
 			error("A fork node must have at least one outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
-		// Targets of fork nodes must always be States
-		for (Transition transition : outgoingTransitions) {
-			StateNode target = transition.getTargetState();
-			if (!(target instanceof hu.bme.mit.gamma.statechart.model.State)) {
-				error("Targets of outgoing transitions of fork nodes must be of type State.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
-				error("Targets of outgoing transitions of fork nodes must be of type State.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
-			}
-		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> targetedRegions = new HashSet<Region>();
 		for (Transition transition : outgoingTransitions) {
@@ -448,7 +440,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				targetedRegions.add(region);
 			}
 		}
-		// TODO or a join state should be reachable in accordance with the well-formedness rules
 	}
 	
 	@Check
@@ -495,7 +486,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				sourceRegions.add(region);
 			}
 		}
-		// TODO or a fork state should be reachable in accordance with the well-formedness rules
 	}
 	
 	@Check
@@ -543,6 +533,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			if (!(source instanceof PseudoState) &&	!transition.getEffects().isEmpty()) {
 				error("Transitions targeted to join nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
 			}
+		}
+		
+		if ((source instanceof ChoiceState || source instanceof ForkState) &&
+				(target instanceof MergeState || source instanceof JoinState)) {
+			error("Transitions cannot connect choice or fork states to merge or join states.", StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 		}
 	}
 	
