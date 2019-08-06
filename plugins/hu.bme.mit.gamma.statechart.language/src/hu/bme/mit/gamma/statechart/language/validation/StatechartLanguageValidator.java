@@ -535,18 +535,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		}
 		
-		if ((source instanceof ChoiceState || source instanceof ForkState) &&
+		if ((source instanceof EntryState || source instanceof ChoiceState || source instanceof ForkState) &&
 				(target instanceof MergeState || source instanceof JoinState)) {
-			error("Transitions cannot connect choice or fork states to merge or join states.", StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+			error("Transitions cannot connect entry, choice or fork states to merge or join states.", StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 		}
 	}
 	
 	@Check
 	public void checkTimeoutTransitions(hu.bme.mit.gamma.statechart.model.State state) {
 		boolean multipleTimedTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(state).stream()
-				.filter(it -> it.getTrigger() instanceof EventTrigger && 
-				((EventTrigger) it.getTrigger()).getEventReference() instanceof ClockTickReference &&
-				it.getGuard() == null).count() > 1;
+			.filter(it -> it.getTrigger() instanceof EventTrigger && 
+			((EventTrigger) it.getTrigger()).getEventReference() instanceof ClockTickReference &&
+			it.getGuard() == null).count() > 1;
 		if (multipleTimedTransitions) {
 			error("This state has multiple transitions with occluding timing specifications.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 		}
