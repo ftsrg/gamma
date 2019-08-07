@@ -79,6 +79,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 			newTopComponent, analysisModelTransformation.getArguments(),
 			getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
+			analysisModelTransformation.isMinimalElementSet(),
 			testedComponentsForStates, testedComponentsForTransitions); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();

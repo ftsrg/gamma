@@ -242,13 +242,13 @@ class CompositeToUppaalTransformer {
      // Engine on the trace resource 
     protected ViatraQueryEngine traceEngine
         
-    protected ResourceSet resources
+    protected final ResourceSet resources
     // The Gamma composite system to be transformed
-    protected Component component
+    protected final Component component
     // The Gamma statechart that contains all ComponentDeclarations with the required instances
-    protected Package sourceRoot
+    protected final Package sourceRoot
     // Root element containing the traces
-	protected G2UTrace traceRoot
+	protected final G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
 	// isStable variable
@@ -262,24 +262,24 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration messageValue
 	
 	// Gamma factory for the millisecond multiplication
-	protected ConstraintModelFactory constrFactory = ConstraintModelFactory.eINSTANCE
+	protected final ConstraintModelFactory constrFactory = ConstraintModelFactory.eINSTANCE
 	// UPPAAL packages
-    protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-    protected extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
-    protected extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
-    protected extension TypesPackage typPackage = TypesPackage.eINSTANCE
-    protected extension TemplatesPackage temPackage = TemplatesPackage.eINSTANCE
-    protected extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
-    protected extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
-    protected extension SystemPackage sysPackage = SystemPackage.eINSTANCE
+    protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+    protected final extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
+    protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
+    protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
+    protected final extension TemplatesPackage temPackage = TemplatesPackage.eINSTANCE
+    protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
+    protected final extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
+    protected final extension SystemPackage sysPackage = SystemPackage.eINSTANCE
     
-    protected extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
-    protected extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-    protected extension TypesFactory typesFact = TypesFactory.eINSTANCE
-	
+    protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
+    protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+    protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
-	
+	// Minimal element set: no functions
+	protected boolean isMinimalElementSet	= false
     // For the generation of pseudo locations
     protected int id = 0
     // For the async event queue constants
@@ -294,7 +294,7 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionTransformer expTransf
     protected extension ExpressionCopier expCop
     protected extension ExpressionEvaluator expEval
-    protected extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
+    protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
 
     new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
     		List<SynchronousComponentInstance> testedComponentsForStates,
@@ -321,9 +321,11 @@ class CompositeToUppaalTransformer {
     }
     
     new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.constraint.model.Expression> topComponentArguments,
-			Scheduler asyncScheduler, List<SynchronousComponentInstance> testedComponentsForStates,
+			Scheduler asyncScheduler, boolean isMinimalElementSet,
+			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
         this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+        this.isMinimalElementSet = isMinimalElementSet
         this.topComponentArguments.addAll(topComponentArguments)
     }
     
@@ -409,7 +411,9 @@ class CompositeToUppaalTransformer {
 		instanceWrapperConnectorRule.fireAllCurrent}
 		// Creating a same level process list
 		instantiateUninstantiatedTemplates
-		createNoInnerEventsFunction
+		if (!isMinimalElementSet) {
+			createNoInnerEventsFunction
+		}
 		cleanUp
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
@@ -1243,9 +1247,7 @@ class CompositeToUppaalTransformer {
     		val clockEdge = initLoc.createEdge(initLoc)
     		// It can be fired only if the queue is not full
     		clockEdge.addGuard(createNegationExpression => [
-    			it.createChild(negationExpression_NegatedExpression, functionCallExpression) as FunctionCallExpression => [
-    				it.function = messageQueueTrace.isFullFunction.function
-    			]
+    			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
     		], LogicalOperator.AND)
     		// It can be fired only if template is stable
     		clockEdge.addGuard(isStableVar, LogicalOperator.AND)		
@@ -1258,6 +1260,7 @@ class CompositeToUppaalTransformer {
 			addToTrace(match.clock, #{clockVar}, trace)
 			// push....
 			clockEdge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
+		   		// No addFunctionCall method as there are arguments
 		   		it.function = messageQueueTrace.pushFunction.function
 		   		it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
 		   			it.identifier = match.clock.constRepresentation.variable.head
@@ -1295,6 +1298,47 @@ class CompositeToUppaalTransformer {
 				it.transform(binaryExpression_SecondExpr, timeValue, null)		
 			], LogicalOperator.AND)
     	}
+	}
+	
+	private def addFunctionCall(EObject container, EReference reference, Function function) {
+		if (isMinimalElementSet && function.isInlinable) {
+			log(Level.INFO, "Inlining " + function.name)
+			// Deleting the function from the model tree
+			val functionContainer = function.eContainer as FunctionDeclaration
+			functionContainer.remove
+			val block = function.block
+			for (statement : block.statement) {
+				if (statement instanceof ExpressionStatement) {
+					val expression = statement.expression
+					val referenceObject = container.eGet(reference, true)
+					if (referenceObject instanceof List) {
+						referenceObject += expression.clone(true, true)
+					}
+					else {
+						// Then only one element is expected
+						checkState(block.statement.size == 1)
+						container.eSet(reference, expression)
+					}
+				}
+			}
+		}
+		else {
+			container.createChild(reference, functionCallExpression) as FunctionCallExpression => [
+				it.function = function
+			]
+		}
+	}
+	
+	private def boolean isInlinable(Function function) {
+		val statements = function.block.statement
+		if (statements.forall[it instanceof ExpressionStatement]) {
+			// Block of assignments or a single expression
+			return (statements.filter(ExpressionStatement)
+				.map[it.expression]
+				.forall[it instanceof AssignmentExpression]) ||
+				(statements.size == 1)
+		}
+		return false
 	}
 	
 	private def addInitializedGuards(Edge edge) {
@@ -1340,9 +1384,7 @@ class CompositeToUppaalTransformer {
 		DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
-			it.createChild(negationExpression_NegatedExpression, functionCallExpression) as FunctionCallExpression => [
-				it.function = messageQueueTrace.isFullFunction.function
-			]
+			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
 		 ]
 		edge.addGuard(isNotFull, LogicalOperator.AND)
 		// push....
@@ -1350,7 +1392,8 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
+		// No addFunctionCall method as there are arguments
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function
 			   	it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
@@ -1364,9 +1407,7 @@ class CompositeToUppaalTransformer {
 		DataVariableDeclaration representation, Expression expression) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
-			it.createChild(negationExpression_NegatedExpression, functionCallExpression) as FunctionCallExpression => [
-	   			it.function = messageQueueTrace.isFullFunction.function
-			]
+			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
 		 ]
 		edge.addGuard(isNotFull, LogicalOperator.AND)
 		// push....
@@ -1374,6 +1415,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace, DataVariableDeclaration representation, Expression expression) {
+		// No addFunctionCall method as there are arguments
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function
 			it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
@@ -1558,9 +1600,7 @@ class CompositeToUppaalTransformer {
 	    	val valueCompareExpression = createPeekClockCompare(messageQueueTrace, match.clock)
     		edge.addGuard(valueCompareExpression, LogicalOperator.AND)
     		// Shifting the message queue
-		    edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-    			it.function = messageQueueTrace.shiftFunction.function
-    		]
+		    edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
 			// Adding isStable  guard
 			edge.addGuard(isStableVar, LogicalOperator.AND)
     	}
@@ -1582,9 +1622,7 @@ class CompositeToUppaalTransformer {
 		// Adding isStable  guard
 		edge.addGuard(isStableVar, LogicalOperator.AND)
 		// Shifting the message queue
-		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-		    it.function = messageQueueTrace.shiftFunction.function
-		]
+		edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
 	}
 	
 	protected def createRelayEdges(Location initLoc, SynchronousComponent syncComposite,
@@ -1646,9 +1684,7 @@ class CompositeToUppaalTransformer {
 	
 	private def messageValueScopeExp(FunctionDeclaration peekFunction, Variable variable) {
 		return createScopedIdentifierExpression => [
-			it.createChild(scopedIdentifierExpression_Scope, functionCallExpression) as FunctionCallExpression => [
-				it.function = peekFunction.function
-			]	
+			it.addFunctionCall(scopedIdentifierExpression_Scope, peekFunction.function)
 		    it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable
 			]
@@ -1809,9 +1845,7 @@ class CompositeToUppaalTransformer {
 		val beforeIsStableEdge = finalLoc.createEdge(initLoc)
     	lastEdge = beforeIsStableEdge
     	// Clearing raised out events on scheduling turn
-    	firstEdge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-    		it.function = createClearFunction(compositeComponent).function
-    	]
+    	firstEdge.addFunctionCall(edge_Update, createClearFunction(compositeComponent).function)
     	firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
     	lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
     	// Setting isScheduled variables
