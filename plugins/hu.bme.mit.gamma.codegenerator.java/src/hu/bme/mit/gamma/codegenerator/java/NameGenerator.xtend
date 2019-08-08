@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.Component

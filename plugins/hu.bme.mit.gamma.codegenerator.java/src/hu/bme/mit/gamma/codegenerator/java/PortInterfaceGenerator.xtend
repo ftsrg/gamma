@@ -16,7 +16,7 @@ class PortInterfaceGenerator {
 	}
 	
 	def generatePortInterfaces(Interface anInterface) '''
-		package «PACKAGE_NAME»;
+		package «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX»;
 		
 		import java.util.List;
 		

@@ -305,7 +305,7 @@ class SynchronousComponentWrapperCodeGenerator {
 		import java.util.List;
 		
 		import lbmq.*; 
-		«IF component.needTimer»import «PACKAGE_NAME».*;«ENDIF»
+		import «PACKAGE_NAME».*;
 
 		import «PACKAGE_NAME».interfaces.*;
 		
