@@ -14,4 +14,7 @@ class Namings {
 	public static final String GAMMA_TIMER_CLASS = "OneThreadedTimer"
 	public static final String UNIFIED_TIMER_CLASS = "UnifiedTimer"
 	
+	public static final String INTERFACE_PACKAGE_POSTFIX = "interfaces"
+	public static final String CHANNEL_PACKAGE_POSTFIX = "channels"
+	
 }
