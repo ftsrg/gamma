@@ -94,7 +94,6 @@ class GlueCodeGenerator {
 	// The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
 	protected final String YAKINDU_PACKAGE_NAME
 	// Attributes of the message class
-	protected final String EVENT_CLASS_NAME = "Event"	
 	protected final String GET_EVENT_METHOD = "getEvent"	
 	protected final String GET_VALUE_METHOD = "getValue"	
 	protected final String EVENT_QUEUE = "eventQueue"	
@@ -104,19 +103,20 @@ class GlueCodeGenerator {
 	protected final String CHANNEL_CLASS_NAME = "Channel"
 	protected final String CHANNEL_NAME = "channels"	
 	protected final String INTERFACES_NAME = "interfaces"
-	protected final String VIRTUAL_TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String GAMMA_TIMER_INTERFACE_NAME = "TimerInterface"
 	protected final String GAMMA_TIMER_CLASS_NAME = "OneThreadedTimer"
 	protected final String ITIMER_INTERFACE_NAME = "ITimer"
 	protected final String ITIMER_CALLBACK_INTERFACE_NAME = "ITimerCallback"
 	protected final String TIMER_SERVICE_CLASS_NAME = "TimerService"
-	protected final String UNIFIED_TIMER_INTERFACE_NAME = "UnifiedTimerInterface"
-	protected final String UNIFIED_TIMER_CLASS_NAME = "UnifiedTimer"
 	protected final String TIMER_OBJECT_NAME = "timer"
 	// Expression serializer
 	protected final extension ExpressionSerializer serializer = new ExpressionSerializer
 	// Auxiliary transformer objects
 	protected final extension EventCodeGenerator eventCodeGenerator
+	protected final extension VirtualTimerServiceCodeGenerator virtualTimerServiceCodeGenerator
+	protected final extension TimerInterfaceGenerator timerInterfaceGenerator
+	protected final extension TimerCallbackInterfaceGenerator timerCallbackInterfaceGenerator
+	protected final extension TimerServiceCodeGenerator timerServiceCodeGenerator
 	// Transformation rules
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> portInterfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsRule
@@ -135,7 +135,11 @@ class GlueCodeGenerator {
 		this.channelUri = this.BASE_PACKAGE_URI + File.separator + CHANNEL_NAME
 		this.interfaceUri = this.BASE_PACKAGE_URI + File.separator + INTERFACES_NAME
 		this.timerUri = this.BASE_PACKAGE_URI
-		this.eventCodeGenerator = new EventCodeGenerator(basePackageName)
+		this.eventCodeGenerator = new EventCodeGenerator(this.BASE_PACKAGE_NAME)
+		this.virtualTimerServiceCodeGenerator = new VirtualTimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
+		this.timerInterfaceGenerator = new TimerInterfaceGenerator(this.BASE_PACKAGE_NAME)
+		this.timerCallbackInterfaceGenerator = new TimerCallbackInterfaceGenerator(this.BASE_PACKAGE_NAME)
+		this.timerServiceCodeGenerator = new TimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
 		setup
 	}
 	
@@ -321,373 +325,22 @@ class GlueCodeGenerator {
 	 */
 	protected def generateTimerClasses() {
 		val virtualTimerClassCode = createVirtualTimerClassCode
-		virtualTimerClassCode.saveCode(BASE_PACKAGE_URI + File.separator + VIRTUAL_TIMER_CLASS_NAME + ".java")
+		virtualTimerClassCode.saveCode(BASE_PACKAGE_URI + File.separator + virtualTimerServiceCodeGenerator.className + ".java")
 		val timerInterfaceCode = createITimerInterfaceCode
-		timerInterfaceCode.saveCode(BASE_PACKAGE_URI + File.separator + ITIMER_INTERFACE_NAME + ".java")
+		timerInterfaceCode.saveCode(BASE_PACKAGE_URI + File.separator + timerInterfaceGenerator.yakinduInterfaceName + ".java")
 		val timerCallbackInterface = createITimerCallbackInterfaceCode
-		timerCallbackInterface.saveCode(BASE_PACKAGE_URI + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
+		timerCallbackInterface.saveCode(BASE_PACKAGE_URI + File.separator + timerCallbackInterfaceGenerator.interfaceName + ".java")
 		val timerServiceClass = createTimerServiceClassCode
-		timerServiceClass.saveCode(BASE_PACKAGE_URI + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
+		timerServiceClass.saveCode(BASE_PACKAGE_URI + File.separator + timerServiceCodeGenerator.yakinduClassName + ".java")
 		val gammaTimerInterface = createGammaTimerInterfaceCode
-		gammaTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + GAMMA_TIMER_INTERFACE_NAME + ".java")
+		gammaTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + timerInterfaceGenerator.gammaInterfaceName + ".java")
 		val gammaTimerClass = createGammaTimerClassCode
-		gammaTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + GAMMA_TIMER_CLASS_NAME + ".java")
+		gammaTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + timerServiceCodeGenerator.gammaClassName + ".java")
 		val unifiedTimerInterface = createUnifiedTimerInterfaceCode
-		unifiedTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + UNIFIED_TIMER_INTERFACE_NAME + ".java")
+		unifiedTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + timerInterfaceGenerator.unifiedInterfaceName + ".java")
 		val unifiedTimerClass = createUnifiedTimerClassCode
-		unifiedTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + UNIFIED_TIMER_CLASS_NAME + ".java")
+		unifiedTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + timerServiceCodeGenerator.unifiedClassName + ".java")
 	}
-	
-	/**
-	 * Creates the virtual timer class for the timings in the generated test cases.
-	 */
-	protected def createVirtualTimerClassCode() '''
-		package «YAKINDU_PACKAGE_NAME»;
-		
-		import java.util.List;
-		import java.util.ArrayList;
-		import java.util.Map;
-		import java.util.HashMap;
-		
-		/**
-		 * Virtual timer service implementation.
-		 */
-		public class «VIRTUAL_TIMER_CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
-			// Yakindu timer
-			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
-			// Gamma timer
-			Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
-			
-			/**
-			 * Timer task that reflects a time event. It's internally used by TimerService.
-			 */
-			private class TimeEventTask {
-			
-				private «ITIMER_CALLBACK_INTERFACE_NAME» callback;
-			
-				int eventID;
-				
-				private boolean periodic;
-				private final long time;
-				private long timeLeft;
-			
-				/**
-				 * Constructor for a time event.
-				 * 
-				 * @param callback: Set to true if event should be repeated periodically.
-				 * @param eventID: index position within the state machine's timeEvent array.
-				 */
-				public TimeEventTask(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {
-					this.callback = callback;
-					this.eventID = eventID;
-					this.time = time;
-					this.timeLeft = time;
-					this.periodic = isPeriodic;
-				}
-			
-				public void run() {
-					callback.timeElapsed(eventID);
-				}
-			
-				public boolean equals(Object obj) {
-					if (obj instanceof TimeEventTask) {
-						return ((TimeEventTask) obj).callback.equals(callback)
-								&& ((TimeEventTask) obj).eventID == eventID;
-					}
-					return super.equals(obj);
-				}
-				
-				public void elapse(long amount) {				
-					if (timeLeft <= 0) {
-						return;
-					}
-					timeLeft -= amount;
-					if (timeLeft <= 0) {
-						run();
-						if (periodic) {
-							timeLeft = time + timeLeft;
-						}
-					}
-				}
-			}
-			
-			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {	
-				// Creating a new TimerTask for given event and storing it
-				TimeEventTask timerTask = new TimeEventTask(callback, eventID, time, isPeriodic);
-				timerTaskList.add(timerTask);
-			}
-			
-			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
-				for (TimeEventTask timer : new ArrayList<TimeEventTask>(timerTaskList)) {
-					if (timer.callback.equals(callback) && timer.eventID == eventID) {
-						timerTaskList.remove(timer);
-					}
-				}
-			}
-			
-			public void elapse(long amount) {
-				for (TimeEventTask timer : timerTaskList) {
-					timer.elapse(amount);
-				}
-				for (Object object : elapsedTime.keySet()) {
-					elapsedTime.put(object, elapsedTime.get(object) + amount);
-				}
-			}
-			
-			public void saveTime(Object object) {
-				elapsedTime.put(object, Long.valueOf(0));
-			}
-			
-			public long getElapsedTime(Object object, TimeUnit timeUnit) {
-				long elapsedTime = this.elapsedTime.get(object);
-				switch (timeUnit) {
-					case MILLISECOND:
-						return elapsedTime;
-					default:
-						throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
-				}
-			}
-		
-		}
-	'''
-	
-	/**
-	 * Creates the Gamma timer interface for the timings.
-	 */
-	protected def createGammaTimerInterfaceCode() '''
-		package «YAKINDU_PACKAGE_NAME»;
-		
-		public interface «GAMMA_TIMER_INTERFACE_NAME» {
-			
-			public void saveTime(Object object);
-			public long getElapsedTime(Object object, TimeUnit timeUnit);
-			
-			public enum TimeUnit {
-				SECOND, MILLISECOND, MICROSECOND, NANOSECOND
-			}
-			
-		}
-	'''
-	
-	/**
-	 * Creates the Gamma timer class for the timings.
-	 */
-	protected def createGammaTimerClassCode() '''
-		package «YAKINDU_PACKAGE_NAME»;
-		
-		import java.util.Map;
-		import java.util.HashMap;
-		
-		public class «GAMMA_TIMER_CLASS_NAME» implements «GAMMA_TIMER_INTERFACE_NAME» {
-			
-				private Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
-				
-				public void saveTime(Object object) {
-					elapsedTime.put(object, System.nanoTime());
-				}
-				
-				public long getElapsedTime(Object object, TimeUnit timeUnit) {
-					long elapsedTime = System.nanoTime() - this.elapsedTime.get(object);
-					switch (timeUnit) {
-						case SECOND:
-							return elapsedTime / 1000000000;
-						case MILLISECOND:
-							return elapsedTime / 1000000;
-						case MICROSECOND:
-							return elapsedTime / 1000;
-						case NANOSECOND:
-							return elapsedTime;
-						default:
-							throw new IllegalArgumentException("Not known time unit: " + timeUnit);
-					}
-				}
-			
-		}
-	'''
-	
-	/**
-	 * Creates the unified timer interface for the timings.
-	 */
-	protected def createUnifiedTimerInterfaceCode() '''
-		package «YAKINDU_PACKAGE_NAME»;
-		
-		public interface «UNIFIED_TIMER_INTERFACE_NAME» extends «ITIMER_INTERFACE_NAME», «GAMMA_TIMER_INTERFACE_NAME» {
-			
-		}
-	'''
-	
-	/**
-	 * Creates the unified timer class for the timings.
-	 */
-	protected def createUnifiedTimerClassCode() '''
-		package «YAKINDU_PACKAGE_NAME»;
-		
-		public class «UNIFIED_TIMER_CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
-			
-			private «ITIMER_INTERFACE_NAME» «TIMER_OBJECT_NAME» = new «TIMER_SERVICE_CLASS_NAME»();
-			private «GAMMA_TIMER_INTERFACE_NAME» «GAMMA_TIMER_CLASS_NAME.toFirstLower» = new «GAMMA_TIMER_CLASS_NAME»();
-			
-			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {
-				«TIMER_OBJECT_NAME».setTimer(callback, eventID, time, isPeriodic);
-			}
-		
-			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
-				«TIMER_OBJECT_NAME».unsetTimer(callback, eventID);
-			}
-		
-			public void saveTime(Object object) {
-				«GAMMA_TIMER_CLASS_NAME.toFirstLower».saveTime(object);
-			}
-		
-			public long getElapsedTime(Object object, TimeUnit timeUnit) {
-				return «GAMMA_TIMER_CLASS_NAME.toFirstLower».getElapsedTime(object, timeUnit);
-			}
-			
-		}
-	'''
-	
-	/**
-	 * Creates the ITimer interface for the timings.
-	 */
-	protected def createITimerInterfaceCode() '''
-		/**
-		 * Based on the Yakindu ITimer interface.
-		 */ 
-		package «YAKINDU_PACKAGE_NAME»;
-		public interface «ITIMER_INTERFACE_NAME» {
-			
-			void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic);
-			void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID);
-			
-		}
-	'''
-	
-	 /**
-	 * Creates the ITimerCallback interface for the timings.
-	 */
-	protected def createITimerCallbackInterfaceCode() '''
-		/**
-		 * Based on the Yakindu ITimerCallback interface.
-		 */ 
-		package «BASE_PACKAGE_NAME»;
-		public interface «ITIMER_CALLBACK_INTERFACE_NAME» {
-			
-			void timeElapsed(int eventID);
-			
-		}
-	'''
-	
-	/**
-	 * Creates the TimerService class for the timings.
-	 */
-	protected def createTimerServiceClassCode() '''
-		/**
-		 * Based on the Yakindu TimerService class.
-		 */ 
-		package «BASE_PACKAGE_NAME»;
-		
-		import java.util.ArrayList;
-		import java.util.List;
-		import java.util.Timer;
-		import java.util.TimerTask;
-		import java.util.concurrent.locks.Lock;
-		import java.util.concurrent.locks.ReentrantLock;
-		
-		public class «TIMER_SERVICE_CLASS_NAME» implements «ITIMER_INTERFACE_NAME» {
-		
-			private final Timer timer = new Timer();
-			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
-			private final Lock lock = new ReentrantLock();
-			
-			/**
-			 * Timer task that reflects a time event. It's internally used by
-			 * {@link TimerService}.
-			 *
-			 */
-			private class TimeEventTask extends TimerTask {
-			
-				private «ITIMER_CALLBACK_INTERFACE_NAME» callback;
-				int eventID;
-			
-				/**
-				 * Constructor for a time event.
-				 *
-				 * @param callback: Object that implements ITimerCallback, is called when the timer expires.
-				 * @param eventID: Index position within the state machine's timeEvent array.
-				 */
-				public TimeEventTask(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
-					this.callback = callback;
-					this.eventID = eventID;
-				}
-			
-				public void run() {
-					callback.timeElapsed(eventID);
-				}
-				
-				@Override
-				public boolean equals(Object obj) {
-					if (obj instanceof TimeEventTask) {
-						return ((TimeEventTask) obj).callback.equals(callback)
-								&& ((TimeEventTask) obj).eventID == eventID;
-					}
-					return super.equals(obj);
-				}
-				
-				@Override
-				public int hashCode() {
-					int prime = 37;
-					int result = 1;
-					
-					int c = (int) this.eventID;
-					result = prime * result + c;
-					c = this.callback.hashCode();
-					result = prime * result + c;
-					return result;
-				}
-				
-			}
-			
-			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID,
-					long time, boolean isPeriodic) {
-			
-				// Create a new TimerTask for given event and store it.
-				TimeEventTask timerTask = new TimeEventTask(callback, eventID);
-				lock.lock();
-				timerTaskList.add(timerTask);
-			
-				// start scheduling the timer
-				if (isPeriodic) {
-					timer.scheduleAtFixedRate(timerTask, time, time);
-				} else {
-					timer.schedule(timerTask, time);
-				}
-				lock.unlock();
-			}
-			
-			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
-				lock.lock();
-				int index = timerTaskList.indexOf(new TimeEventTask(callback, eventID));
-				if (index != -1) {
-					timerTaskList.get(index).cancel();
-					timer.purge();
-					timerTaskList.remove(index);
-				}
-				lock.unlock();
-			}
-			
-			/**
-			 * Cancel timer service. Use this to end possible timing threads and free
-			 * memory resources.
-			 */
-			public void cancel() {
-				lock.lock();
-				timer.cancel();
-				timer.purge();
-				lock.unlock();
-			}
-			
-		}
-	'''
 	
 	/**
 	 * Creates a Java interface for each Port Interface.
@@ -807,8 +460,8 @@ class GlueCodeGenerator {
 			private boolean «INSERT_QUEUE» = true;
 			private boolean «PROCESS_QUEUE» = false;
 			// Event queues for the synchronization of statecharts
-			private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»1 = new LinkedList<«EVENT_CLASS_NAME»>();
-			private Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE»2 = new LinkedList<«EVENT_CLASS_NAME»>();
+			private Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE»1 = new LinkedList<«Namings.GAMMA_EVENT_CLASS»>();
+			private Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE»2 = new LinkedList<«Namings.GAMMA_EVENT_CLASS»>();
 			«component.generateParameterDeclarationFields»
 			
 			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
@@ -846,7 +499,7 @@ class GlueCodeGenerator {
 			}
 			
 			/** Returns the event queue into which events should be put in the particular cycle. */
-			private Queue<«EVENT_CLASS_NAME»> getInsertQueue() {
+			private Queue<«Namings.GAMMA_EVENT_CLASS»> getInsertQueue() {
 				if («INSERT_QUEUE») {
 					return «EVENT_QUEUE»1;
 				}
@@ -854,7 +507,7 @@ class GlueCodeGenerator {
 			}
 			
 			/** Returns the event queue from which events should be inspected in the particular cycle. */
-			private Queue<«EVENT_CLASS_NAME»> getProcessQueue() {
+			private Queue<«Namings.GAMMA_EVENT_CLASS»> getProcessQueue() {
 				if («PROCESS_QUEUE») {
 					return «EVENT_QUEUE»1;
 				}
@@ -878,9 +531,9 @@ class GlueCodeGenerator {
 			/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
 			Should be used only be the container (composite system) class. */
 			public void runComponent() {
-				Queue<«EVENT_CLASS_NAME»> «EVENT_QUEUE» = getProcessQueue();
+				Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE» = getProcessQueue();
 				while (!«EVENT_QUEUE».isEmpty()) {
-						«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME» = «EVENT_QUEUE».remove();
+						«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = «EVENT_QUEUE».remove();
 						switch («EVENT_INSTANCE_NAME».«GET_EVENT_METHOD»()) {
 							«component.generateEventHandlers()»
 							default:
@@ -983,7 +636,7 @@ class GlueCodeGenerator {
 		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN) SEPARATOR "\n"»
 			@Override
 			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
-				getInsertQueue().add(new «EVENT_CLASS_NAME»("«port.name.toFirstUpper».«event.name.toFirstUpper»", «event.toYakinduEvent(port).valueOrNull»));
+				getInsertQueue().add(new «Namings.GAMMA_EVENT_CLASS»("«port.name.toFirstUpper».«event.name.toFirstUpper»", «event.toYakinduEvent(port).valueOrNull»));
 			}
 		«ENDFOR»
 	'''
@@ -1427,7 +1080,7 @@ class GlueCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE_NAME» timer) {
+				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init();
@@ -1617,7 +1270,7 @@ class GlueCodeGenerator {
 	
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */
-				public void setTimer(«UNIFIED_TIMER_INTERFACE_NAME» timer) {
+				public void setTimer(«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					«FOR instance : component.components»
 						«IF instance.type.needTimer»
 							«instance.name».setTimer(timer);
@@ -1834,7 +1487,7 @@ class GlueCodeGenerator {
 			
 			/** Manual scheduling. */
 			public void schedule() {
-				«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME» = __asyncQueue.poll();
+				«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.poll();
 				if («EVENT_INSTANCE_NAME» == null) {
 					// There was no event in the queue
 					return;
@@ -1851,7 +1504,7 @@ class GlueCodeGenerator {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
-						«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
+						«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
 						if (!isControlEvent(«EVENT_INSTANCE_NAME»)) {
 							// Event is forwarded to the wrapped component
 							forwardEvent(«EVENT_INSTANCE_NAME»);
@@ -1863,7 +1516,7 @@ class GlueCodeGenerator {
 				}
 			}
 			
-			private boolean isControlEvent(«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME») {
+			private boolean isControlEvent(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				«IF component.ports.empty && component.clocks.empty»
 					return false;
 				«ELSE»
@@ -1872,7 +1525,7 @@ class GlueCodeGenerator {
 				«ENDIF»
 			}
 			
-			private void forwardEvent(«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME») {
+			private void forwardEvent(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				switch («EVENT_INSTANCE_NAME».«GET_EVENT_METHOD»()) {
 					«component.generateWrapperEventHandlers()»
 					default:
@@ -1880,7 +1533,7 @@ class GlueCodeGenerator {
 				}
 			}
 			
-			private void performControlActions(«EVENT_CLASS_NAME» «EVENT_INSTANCE_NAME») {
+			private void performControlActions(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				String[] eventName = «EVENT_INSTANCE_NAME».«GET_EVENT_METHOD»().split("\\.");
 				«FOR controlSpecification : component.controlSpecifications»
 					«IF controlSpecification.trigger instanceof AnyTrigger»

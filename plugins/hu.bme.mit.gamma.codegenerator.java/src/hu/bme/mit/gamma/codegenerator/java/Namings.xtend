@@ -10,6 +10,8 @@ class Namings {
 	
 	public static final String TIMER_CALLBACK_INTERFACE = "ITimerCallback"
 	
+	public static final String YAKINDU_TIMER_CLASS = "TimerService"
 	public static final String GAMMA_TIMER_CLASS = "OneThreadedTimer"
+	public static final String UNIFIED_TIMER_CLASS = "UnifiedTimer"
 	
 }

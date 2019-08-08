@@ -2,16 +2,17 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class EventCodeGenerator {
 	
-	final String BASE_PACKAGE_NAME
+	final String PACKAGE_NAME
+	final String CLASS_NAME = Namings.GAMMA_EVENT_CLASS
 	
-	new(String basePackageName) {
-		this.BASE_PACKAGE_NAME = basePackageName
+	new(String packageName) {
+		this.PACKAGE_NAME = packageName
 	}
 	
 	protected def createEventClass() '''
-		package «BASE_PACKAGE_NAME»;
+		package «PACKAGE_NAME»;
 		
-		public class «Namings.GAMMA_EVENT_CLASS» {
+		public class «CLASS_NAME» {
 			private String event;
 			private Object value;
 			
@@ -35,7 +36,7 @@ class EventCodeGenerator {
 	'''
 	
 	def getClassName() {
-		return Namings.GAMMA_EVENT_CLASS
+		return CLASS_NAME
 	}
 	
 }
