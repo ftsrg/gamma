@@ -85,14 +85,14 @@ class GlueCodeGenerator {
 	protected final ResourceSet resSet
 	protected Component topComponent
 	// File URIs where the classes need to be saved
-	protected final String parentPackageUri
+	protected final String BASE_PACKAGE_URI
 	protected final String channelUri
 	protected final String interfaceUri
 	protected final String timerUri
 	// The base of the package name: hu.bme.mit.gamma.impl
-	protected final String packageName
+	protected final String BASE_PACKAGE_NAME
 	// The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
-	protected final String yakinduPackageName
+	protected final String YAKINDU_PACKAGE_NAME
 	// Attributes of the message class
 	protected final String EVENT_CLASS_NAME = "Event"	
 	protected final String GET_EVENT_METHOD = "getEvent"	
@@ -115,6 +115,8 @@ class GlueCodeGenerator {
 	protected final String TIMER_OBJECT_NAME = "timer"
 	// Expression serializer
 	protected final extension ExpressionSerializer serializer = new ExpressionSerializer
+	// Auxiliary transformer objects
+	protected final extension EventCodeGenerator eventCodeGenerator
 	// Transformation rules
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> portInterfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsRule
@@ -124,15 +126,16 @@ class GlueCodeGenerator {
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> asynchronousCompositeComponentsRule
 	
 	new(ResourceSet resourceSet, String basePackageName, String srcGenFolderUri) {
-		this.packageName = basePackageName
-		this.yakinduPackageName = basePackageName
+		this.BASE_PACKAGE_NAME = basePackageName
+		this.YAKINDU_PACKAGE_NAME = basePackageName
 		this.resSet = resourceSet
 		this.resSet.loadModels
-		engine = ViatraQueryEngine.on(new EMFScope(resSet))
-		this.parentPackageUri = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
-		this.channelUri = this.parentPackageUri + File.separator + CHANNEL_NAME
-		this.interfaceUri = this.parentPackageUri + File.separator + INTERFACES_NAME
-		this.timerUri = this.parentPackageUri
+		this.engine = ViatraQueryEngine.on(new EMFScope(resSet))
+		this.BASE_PACKAGE_URI = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
+		this.channelUri = this.BASE_PACKAGE_URI + File.separator + CHANNEL_NAME
+		this.interfaceUri = this.BASE_PACKAGE_URI + File.separator + INTERFACES_NAME
+		this.timerUri = this.BASE_PACKAGE_URI
+		this.eventCodeGenerator = new EventCodeGenerator(basePackageName)
 		setup
 	}
 	
@@ -212,7 +215,7 @@ class GlueCodeGenerator {
 	/**
 	 * Returns the Java package name of the class generated from the component.
 	 */
-	protected def componentPackageName (Component component) '''«packageName».«(component.containingPackage).name.toLowerCase»'''
+	protected def componentPackageName (Component component) '''«BASE_PACKAGE_NAME».«(component.containingPackage).name.toLowerCase»'''
  	
  	/**
 		 * Returns the name of the Java interface generated from the given Gamma interface. 
@@ -308,8 +311,9 @@ class GlueCodeGenerator {
 	 * Creates and saves the message class that is responsible for informing the statecharts about the event that has to be raised (with the given value).
 	 */
 	protected def generateEventClass() {
-		val code = createEventClassCode
-		code.saveCode(parentPackageUri + File.separator + EVENT_CLASS_NAME + ".java")
+		val componentUri = BASE_PACKAGE_URI + File.separator + eventCodeGenerator.className + ".java"
+		val code = eventCodeGenerator.createEventClass
+		code.saveCode(componentUri)
 	}
 	
 	/**
@@ -317,28 +321,28 @@ class GlueCodeGenerator {
 	 */
 	protected def generateTimerClasses() {
 		val virtualTimerClassCode = createVirtualTimerClassCode
-		virtualTimerClassCode.saveCode(parentPackageUri + File.separator + VIRTUAL_TIMER_CLASS_NAME + ".java")
+		virtualTimerClassCode.saveCode(BASE_PACKAGE_URI + File.separator + VIRTUAL_TIMER_CLASS_NAME + ".java")
 		val timerInterfaceCode = createITimerInterfaceCode
-		timerInterfaceCode.saveCode(parentPackageUri + File.separator + ITIMER_INTERFACE_NAME + ".java")
+		timerInterfaceCode.saveCode(BASE_PACKAGE_URI + File.separator + ITIMER_INTERFACE_NAME + ".java")
 		val timerCallbackInterface = createITimerCallbackInterfaceCode
-		timerCallbackInterface.saveCode(parentPackageUri + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
+		timerCallbackInterface.saveCode(BASE_PACKAGE_URI + File.separator + ITIMER_CALLBACK_INTERFACE_NAME + ".java")
 		val timerServiceClass = createTimerServiceClassCode
-		timerServiceClass.saveCode(parentPackageUri + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
+		timerServiceClass.saveCode(BASE_PACKAGE_URI + File.separator + TIMER_SERVICE_CLASS_NAME + ".java")
 		val gammaTimerInterface = createGammaTimerInterfaceCode
-		gammaTimerInterface.saveCode(parentPackageUri + File.separator + GAMMA_TIMER_INTERFACE_NAME + ".java")
+		gammaTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + GAMMA_TIMER_INTERFACE_NAME + ".java")
 		val gammaTimerClass = createGammaTimerClassCode
-		gammaTimerClass.saveCode(parentPackageUri + File.separator + GAMMA_TIMER_CLASS_NAME + ".java")
+		gammaTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + GAMMA_TIMER_CLASS_NAME + ".java")
 		val unifiedTimerInterface = createUnifiedTimerInterfaceCode
-		unifiedTimerInterface.saveCode(parentPackageUri + File.separator + UNIFIED_TIMER_INTERFACE_NAME + ".java")
+		unifiedTimerInterface.saveCode(BASE_PACKAGE_URI + File.separator + UNIFIED_TIMER_INTERFACE_NAME + ".java")
 		val unifiedTimerClass = createUnifiedTimerClassCode
-		unifiedTimerClass.saveCode(parentPackageUri + File.separator + UNIFIED_TIMER_CLASS_NAME + ".java")
+		unifiedTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + UNIFIED_TIMER_CLASS_NAME + ".java")
 	}
 	
 	/**
 	 * Creates the virtual timer class for the timings in the generated test cases.
 	 */
 	protected def createVirtualTimerClassCode() '''
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		
 		import java.util.List;
 		import java.util.ArrayList;
@@ -451,7 +455,7 @@ class GlueCodeGenerator {
 	 * Creates the Gamma timer interface for the timings.
 	 */
 	protected def createGammaTimerInterfaceCode() '''
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		
 		public interface «GAMMA_TIMER_INTERFACE_NAME» {
 			
@@ -469,7 +473,7 @@ class GlueCodeGenerator {
 	 * Creates the Gamma timer class for the timings.
 	 */
 	protected def createGammaTimerClassCode() '''
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		
 		import java.util.Map;
 		import java.util.HashMap;
@@ -505,7 +509,7 @@ class GlueCodeGenerator {
 	 * Creates the unified timer interface for the timings.
 	 */
 	protected def createUnifiedTimerInterfaceCode() '''
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		
 		public interface «UNIFIED_TIMER_INTERFACE_NAME» extends «ITIMER_INTERFACE_NAME», «GAMMA_TIMER_INTERFACE_NAME» {
 			
@@ -516,7 +520,7 @@ class GlueCodeGenerator {
 	 * Creates the unified timer class for the timings.
 	 */
 	protected def createUnifiedTimerClassCode() '''
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		
 		public class «UNIFIED_TIMER_CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
 			
@@ -549,7 +553,7 @@ class GlueCodeGenerator {
 		/**
 		 * Based on the Yakindu ITimer interface.
 		 */ 
-		package «yakinduPackageName»;
+		package «YAKINDU_PACKAGE_NAME»;
 		public interface «ITIMER_INTERFACE_NAME» {
 			
 			void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic);
@@ -565,7 +569,7 @@ class GlueCodeGenerator {
 		/**
 		 * Based on the Yakindu ITimerCallback interface.
 		 */ 
-		package «packageName»;
+		package «BASE_PACKAGE_NAME»;
 		public interface «ITIMER_CALLBACK_INTERFACE_NAME» {
 			
 			void timeElapsed(int eventID);
@@ -580,7 +584,7 @@ class GlueCodeGenerator {
 		/**
 		 * Based on the Yakindu TimerService class.
 		 */ 
-		package «packageName»;
+		package «BASE_PACKAGE_NAME»;
 		
 		import java.util.ArrayList;
 		import java.util.List;
@@ -686,45 +690,13 @@ class GlueCodeGenerator {
 	'''
 	
 	/**
-	 * Returns the code of the message class.
-	 */
-	protected def createEventClassCode() '''
-		package «packageName»;
-		
-		public class «EVENT_CLASS_NAME» {
-		
-			private String event;
-			
-			private Object value;
-			
-			public «EVENT_CLASS_NAME»(String event) {
-				this.event = event;
-			}
-			
-			public «EVENT_CLASS_NAME»(String event, Object value) {
-				this.event = event;
-				this.value = value;
-			}
-			
-			public String getEvent() {
-				return event;
-			}
-			
-			public Object getValue() {
-				return value;
-			}
-		
-		}
-	'''
-	
-	/**
 	 * Creates a Java interface for each Port Interface.
 	 */
 	protected def getPortInterfaceRule() {
 		if (portInterfaceRule === null) {
 			 portInterfaceRule = createRule(Interfaces.instance).action [
 				val code = it.interface.generatePortInterfaces
-				code.saveCode(parentPackageUri + File.separator + INTERFACES_NAME + File.separator + it.interface.generateName + ".java")
+				code.saveCode(BASE_PACKAGE_URI + File.separator + INTERFACES_NAME + File.separator + it.interface.generateName + ".java")
 			].build		
 		}
 		return portInterfaceRule
@@ -732,7 +704,7 @@ class GlueCodeGenerator {
 	
 	protected def generatePortInterfaces(Interface anInterface) {
 			val interfaceCode = '''
-				package «packageName».«INTERFACES_NAME»;
+				package «BASE_PACKAGE_NAME».«INTERFACES_NAME»;
 				
 				import java.util.List;
 				
@@ -805,7 +777,7 @@ class GlueCodeGenerator {
 	protected def getSimpleComponentDeclarationRule() {
 		if (simpleComponentsRule === null) {
 			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
-				val componentUri = parentPackageUri + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
+				val componentUri = BASE_PACKAGE_URI + File.separator + it.statechartDefinition.containingPackage.name.toLowerCase
 				val code = it.statechartDefinition.createSimpleComponentClass
 				code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
 				// Generating the interface for returning the Ports
@@ -1223,12 +1195,12 @@ class GlueCodeGenerator {
 		import java.util.List;
 		import java.util.LinkedList;
 		
-		import «packageName».interfaces.*;
+		import «BASE_PACKAGE_NAME».interfaces.*;
 		// Yakindu listeners
-		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
-		import «packageName».*;
-		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
-		import «yakinduPackageName».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
+		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
+		import «BASE_PACKAGE_NAME».*;
+		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
+		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
 	'''
 	
 	/**
@@ -1290,7 +1262,7 @@ class GlueCodeGenerator {
 				package «component.componentPackageName»;
 				
 				«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
-					import «packageName».«INTERFACES_NAME».«interfaceName»;
+					import «BASE_PACKAGE_NAME».«INTERFACES_NAME».«interfaceName»;
 				«ENDFOR»
 				
 				public interface «component.portOwnerInterfaceName» {
@@ -1404,7 +1376,7 @@ class GlueCodeGenerator {
 	protected def getSynchronousCompositeComponentsRule() {
 		if (synchronousCompositeComponentsRule === null) {
 			 synchronousCompositeComponentsRule = createRule(AbstractSynchronousCompositeComponents.instance).action [
-				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
+				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
 				val code = it.synchronousCompositeComponent.createSynchronousCompositeComponentClass
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.componentClassName + ".java")
 				// Generating the interface that is able to return the Ports
@@ -1423,11 +1395,11 @@ class GlueCodeGenerator {
 		import java.util.LinkedList;
 		
 		«IF component.needTimer»
-			import «yakinduPackageName».*;
+			import «YAKINDU_PACKAGE_NAME».*;
 		«ENDIF»
-		import «packageName».interfaces.*;
+		import «BASE_PACKAGE_NAME».interfaces.*;
 		«IF component instanceof AsynchronousCompositeComponent»
-			import «packageName».channels.*;
+			import «BASE_PACKAGE_NAME».channels.*;
 		«ENDIF»
 		«FOR containedComponent : component.derivedComponents.map[it.derivedType]
 			.filter[!it.componentPackageName.equals(component.componentPackageName)].toSet»
@@ -1693,7 +1665,7 @@ class GlueCodeGenerator {
 	}
 	
 	protected def void generateLinkedBlockingMultiQueueClasses() {
-		val compositeSystemUri = parentPackageUri.substring(0, parentPackageUri.length - packageName.length) + File.separator + "lbmq"
+		val compositeSystemUri = BASE_PACKAGE_URI.substring(0, BASE_PACKAGE_URI.length - BASE_PACKAGE_NAME.length) + File.separator + "lbmq"
 		LinkedBlockingQueueSource.AbstractOfferable.saveCode(compositeSystemUri + File.separator + "AbstractOfferable.java")
 		LinkedBlockingQueueSource.AbstractPollable.saveCode(compositeSystemUri + File.separator + "AbstractPollable.java")
 		LinkedBlockingQueueSource.LinkedBlockingMultiQueue.saveCode(compositeSystemUri + File.separator + "LinkedBlockingMultiQueue.java")
@@ -1704,7 +1676,7 @@ class GlueCodeGenerator {
 	protected def getSynchronousComponentWrapperRule() {
 		if (synchronousComponentWrapperRule === null) {
 			 synchronousComponentWrapperRule = createRule(SynchronousComponentWrappers.instance).action [
-				val compositeSystemUri = parentPackageUri + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
+				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
 				val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.componentClassName + ".java")
 				val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
@@ -2006,9 +1978,9 @@ class GlueCodeGenerator {
 		import java.util.List;
 		
 		import lbmq.*; 
-		«IF component.needTimer»import «packageName».*;«ENDIF»
+		«IF component.needTimer»import «BASE_PACKAGE_NAME».*;«ENDIF»
 
-		import «packageName».interfaces.*;
+		import «BASE_PACKAGE_NAME».interfaces.*;
 		
 		import «component.wrappedComponent.type.componentPackageName».*;
 	'''
@@ -2115,9 +2087,9 @@ class GlueCodeGenerator {
 	 * Returns the Java interface code of the Channel class.
 	 */
 	protected def createChannelInterfaceCode(Interface anInterface) '''
-		package «packageName».«CHANNEL_NAME»;
+		package «BASE_PACKAGE_NAME».«CHANNEL_NAME»;
 		
-		import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
+		import «BASE_PACKAGE_NAME».«INTERFACES_NAME».«anInterface.generateName»;
 		
 		public interface «anInterface.generateChannelInterfaceName» {			
 			
@@ -2132,9 +2104,9 @@ class GlueCodeGenerator {
 	 * Returns the Java class code of the Channel class.
 	 */
 	protected def createChannelClassCode(Interface anInterface) '''
-		package «packageName».«CHANNEL_NAME»;
+		package «BASE_PACKAGE_NAME».«CHANNEL_NAME»;
 		
-		import «packageName».«INTERFACES_NAME».«anInterface.generateName»;
+		import «BASE_PACKAGE_NAME».«INTERFACES_NAME».«anInterface.generateName»;
 		import java.util.List;
 		import java.util.LinkedList;
 		
@@ -2174,7 +2146,7 @@ class GlueCodeGenerator {
 	protected def getAsynchronousCompositeComponentsRule() {
 		if (asynchronousCompositeComponentsRule === null) {
 			 asynchronousCompositeComponentsRule = createRule(AsynchronousCompositeComponents.instance).action [
-				val compositeSystemUri = parentPackageUri + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
+				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
 				// Main components
 				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)
 				code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.componentClassName + ".java")
