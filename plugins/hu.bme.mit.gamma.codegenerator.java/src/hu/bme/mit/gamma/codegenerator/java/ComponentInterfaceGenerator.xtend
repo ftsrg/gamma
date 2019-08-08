@@ -39,16 +39,16 @@ class ComponentInterfaceGenerator {
 			ports += component.ports
 		}
 		val interfaceCode = '''
-			package «component.componentPackageName»;
+			package «component.generateComponentPackageName»;
 			
 			«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
 				import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«interfaceName»;
 			«ENDFOR»
 			
-			public interface «component.portOwnerInterfaceName» {
+			public interface «component.generatePortOwnerInterfaceName» {
 				
 				«FOR port : ports»
-					«port.implementedJavaInterface» get«port.name.toFirstUpper»();
+					«port.implementedJavaInterfaceName» get«port.name.toFirstUpper»();
 				«ENDFOR»
 				
 				void reset();

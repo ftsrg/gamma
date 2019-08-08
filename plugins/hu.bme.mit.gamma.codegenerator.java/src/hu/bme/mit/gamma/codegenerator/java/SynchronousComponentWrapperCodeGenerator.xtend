@@ -44,15 +44,15 @@ class SynchronousComponentWrapperCodeGenerator {
 	protected def createSynchronousComponentWrapperClass(AsynchronousAdapter component) {
 		var clockId = 0
 	'''
-		package «component.componentPackageName»;
+		package «component.generateComponentPackageName»;
 		
 		«component.generateWrapperImports»
 		
-		public class «component.componentClassName» implements Runnable, «component.portOwnerInterfaceName» {			
+		public class «component.generateComponentClassName» implements Runnable, «component.generatePortOwnerInterfaceName» {			
 			// Thread running this wrapper instance
 			private Thread thread;
 			// Wrapped synchronous instance
-			private «component.wrappedComponent.type.componentClassName» «component.wrappedComponentName»;
+			private «component.wrappedComponent.type.generateComponentClassName» «component.generateWrappedComponentName»;
 			// Control port instances
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
@@ -77,14 +77,14 @@ class SynchronousComponentWrapperCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
+			public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				«IF !component.clocks.empty»this.timerService = new TimerService();«ENDIF»
 				init();
@@ -93,12 +93,12 @@ class SynchronousComponentWrapperCodeGenerator {
 			/** Resets the wrapped component. Must be called to initialize the component. */
 			@Override
 			public void reset() {
-				«component.wrappedComponentName».reset();
+				«component.generateWrappedComponentName».reset();
 			}
 			
 			/** Creates the subqueues, clocks and enters the wrapped synchronous component. */
 			private void init() {
-				«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+				«component.generateWrappedComponentName» = new «component.wrappedComponent.type.generateComponentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 				// Creating subqueues: the negative conversion regarding priorities is needed,
 				// because the lbmq marks higher priority with lower integer values
 				«FOR queue : component.messageQueues.sortWith(a, b | -1 * (a.priority.compareTo(b.priority)))»
@@ -164,16 +164,16 @@ class SynchronousComponentWrapperCodeGenerator {
 					
 					«port.delegateWrapperRaisingMethods»
 					
-					«port.delegateWrapperOutMethods(component.wrappedComponentName)»
+					«port.delegateWrapperOutMethods(component.generateWrappedComponentName)»
 					
 					@Override
 					public void registerListener(«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
-						«component.wrappedComponentName».get«port.name.toFirstUpper»().registerListener(listener);
+						«component.generateWrappedComponentName».get«port.name.toFirstUpper»().registerListener(listener);
 					}
 					
 					@Override
 					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-						return «component.wrappedComponentName».get«port.name.toFirstUpper»().getRegisteredListeners();
+						return «component.generateWrappedComponentName».get«port.name.toFirstUpper»().getRegisteredListeners();
 					}
 					
 				}
@@ -237,27 +237,27 @@ class SynchronousComponentWrapperCodeGenerator {
 				«FOR controlSpecification : component.controlSpecifications»
 					«IF controlSpecification.trigger instanceof AnyTrigger»
 						// Any trigger
-						«controlSpecification.controlFunction.generateRunCycle(component.wrappedComponentName)»
+						«controlSpecification.controlFunction.generateRunCycle(component.generateWrappedComponentName)»
 						return;
 					«ELSE»
 						«FOR match : AnyPortTriggersOfWrappers.Matcher.on(engine).getAllMatches(component, controlSpecification, null, null)»
 							// Port trigger
 							if (eventName.length == 2 && eventName[0].equals("«match.port.name»")) {
-								«match.controlFunction.generateRunCycle(component.wrappedComponentName)»
+								«match.controlFunction.generateRunCycle(component.generateWrappedComponentName)»
 								return;
 							}
 						«ENDFOR»
 						«FOR match : PortEventTriggersOfWrappers.Matcher.on(engine).getAllMatches(component, controlSpecification, null, null, null)»
 							// Port event trigger
 							if (eventName.length == 2 && eventName[0].equals("«match.port.name»") && eventName[1].equals("«match.event.name»")) {
-								«match.controlFunction.generateRunCycle(component.wrappedComponentName)»
+								«match.controlFunction.generateRunCycle(component.generateWrappedComponentName)»
 								return;
 							}
 						«ENDFOR»
 						«FOR match : ClockTriggersOfWrappers.Matcher.on(engine).getAllMatches(component, controlSpecification, null, null)»
 							// Clock trigger
 							if (eventName.length == 1 && eventName[0].equals("«match.clock.name»")) {
-								«match.controlFunction.generateRunCycle(component.wrappedComponentName)»
+								«match.controlFunction.generateRunCycle(component.generateWrappedComponentName)»
 								return;
 							}
 						«ENDFOR»
@@ -281,14 +281,14 @@ class SynchronousComponentWrapperCodeGenerator {
 				thread.interrupt();
 			}
 			
-			public «component.wrappedComponent.type.componentClassName» get«component.wrappedComponentName.toFirstUpper»() {
-				return «component.wrappedComponentName»;
+			public «component.wrappedComponent.type.generateComponentClassName» get«component.generateWrappedComponentName.toFirstUpper»() {
+				return «component.generateWrappedComponentName»;
 			}
 			
 			«IF component.needTimer»
 				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
-					«IF component.wrappedComponent.type.needTimer»«component.wrappedComponentName».setTimer(timer);«ENDIF»
+					«IF component.wrappedComponent.type.needTimer»«component.generateWrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
 				}
 			«ENDIF»
@@ -309,15 +309,17 @@ class SynchronousComponentWrapperCodeGenerator {
 
 		import «PACKAGE_NAME».interfaces.*;
 		
-		import «component.wrappedComponent.type.componentPackageName».*;
+		import «component.wrappedComponent.type.generateComponentPackageName».*;
 	'''
 	
-	/** Sets the parameters of the component and instantiates the necessary components with them. */
+	/**
+	 * Sets the parameters of the component and instantiates the necessary components with them.
+	 */
 	private def createInstances(AsynchronousAdapter component) '''
 		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
-		«component.wrappedComponentName» = new «component.wrappedComponent.type.componentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+		«component.generateWrappedComponentName» = new «component.wrappedComponent.type.generateComponentClassName»(«FOR argument : component.wrappedComponent.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«FOR port : component.ports»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»
@@ -390,7 +392,7 @@ class SynchronousComponentWrapperCodeGenerator {
 	«FOR port : component.wrappedComponent.type.ports»
 			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
 				case "«port.name».«event.name»":
-					«component.wrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
+					«component.generateWrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
 				break;
 			«ENDFOR»
 		«ENDFOR»

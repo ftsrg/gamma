@@ -42,13 +42,13 @@ class StatechartWrapperCodeGenerator {
 	 * Creates the Java code for the given component.
 	 */
 	def createSimpleComponentClass(Component component) '''		
-		package «component.componentPackageName»;
+		package «component.generateComponentPackageName»;
 		
 		«component.generateSimpleComponentImports»
 		
-		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {
+		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
 			// The wrapped Yakindu statemachine
-			private «component.statemachineClassName» «component.statemachineInstanceName»;
+			private «component.statemachineClassName» «component.generateStatemachineInstanceName»;
 			// Port instances
 			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
@@ -61,22 +61,22 @@ class StatechartWrapperCodeGenerator {
 			private Queue<«Namings.GAMMA_EVENT_CLASS»> «EVENT_QUEUE»2 = new LinkedList<«Namings.GAMMA_EVENT_CLASS»>();
 			«component.generateParameterDeclarationFields»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
+			public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
 					this.«parameter.name» = «parameter.name»;
 				«ENDFOR»
-				«component.statemachineInstanceName» = new «component.statemachineClassName»();
+				«component.generateStatemachineInstanceName» = new «component.statemachineClassName»();
 				«FOR port : component.ports»
 					«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 				«ENDFOR»
-				«IF component.needTimer»«component.statemachineInstanceName».setTimer(new TimerService());«ENDIF»
+				«IF component.needTimer»«component.generateStatemachineInstanceName».setTimer(new TimerService());«ENDIF»
 			}
 			
 			/** Resets the statemachine. Must be called to initialize the component. */
 			@Override
 			public void reset() {
-				«component.statemachineInstanceName».init();
-				«component.statemachineInstanceName».enter();
+				«component.generateStatemachineInstanceName».init();
+				«component.generateStatemachineInstanceName».enter();
 			}
 			
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -137,12 +137,12 @@ class StatechartWrapperCodeGenerator {
 								throw new IllegalArgumentException("No such event!");
 						}
 				}
-				«component.statemachineInstanceName».runCycle();
+				«component.generateStatemachineInstanceName».runCycle();
 			}
 			
 			// Inner classes representing Ports
 			«FOR port : component.ports SEPARATOR "\n"»
-				public class «port.name.toFirstUpper» implements «port.implementedJavaInterface» {
+				public class «port.name.toFirstUpper» implements «port.implementedJavaInterfaceName» {
 					private List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 
 					«port.generateRaisingMethods» 
@@ -178,18 +178,18 @@ class StatechartWrapperCodeGenerator {
 			
 			«IF component.hasNamelessInterface»
 				public SCInterface getInterface() {
-					return «component.statemachineInstanceName».getSCInterface();
+					return «component.generateStatemachineInstanceName».getSCInterface();
 				}
 			«ENDIF»
 			
 			/** Checks whether the wrapped statemachine is in the given state. */
 			public boolean isStateActive(State state) {
-				return «component.statemachineInstanceName».isStateActive(state);
+				return «component.generateStatemachineInstanceName».isStateActive(state);
 			}
 			
 			«IF component.needTimer»
 				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
-					«component.statemachineInstanceName».setTimer(timer);
+					«component.generateStatemachineInstanceName».setTimer(timer);
 					reset();
 				}
 			«ENDIF»
@@ -231,7 +231,7 @@ class StatechartWrapperCodeGenerator {
 	 * Generates code raising the Yakindu statechart event "connected" to the given port and component.
 	 */
 	protected def delegateCall(Event event, Component component, Port port) '''
-		«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().raise«event.name.toFirstUpper»(«event.castArgument»);
+		«component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().raise«event.name.toFirstUpper»(«event.castArgument»);
 	'''
 	
 	/**
@@ -247,7 +247,7 @@ class StatechartWrapperCodeGenerator {
 	 * E.g., generates code that raises event "b" of component "comp" if an "a"  out-event is raised inside the implemented component.
 	 */
 	protected def CharSequence registerListener(Component component, Port port, EventDirection oppositeDirection) '''
-		«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().add(new «port.yakinduRealizationModeName»Listener() {
+		«component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().add(new «port.yakinduRealizationModeName»Listener() {
 			«FOR event : port.interfaceRealization.interface.getAllEvents(oppositeDirection).map[it.eContainer as EventDeclaration] SEPARATOR "\n"»
 				@Override
 				public void on«event.event.toYakinduEvent(port).name.toFirstUpper»Raised(«event.generateParameter») {
@@ -278,16 +278,16 @@ class StatechartWrapperCodeGenerator {
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				«IF port.name === null»
-					return «component.statemachineInstanceName».isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
+					return «component.generateStatemachineInstanceName».isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ELSE»
-					return «component.statemachineInstanceName».get«port.yakinduRealizationModeName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
+					return «component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ENDIF»
 			}
 «««		ValueOf checks
 			«IF event.toYakinduEvent(port).type !== null»
 				@Override
 				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					return «component.statemachineInstanceName».get«port.yakinduRealizationModeName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+					return «component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
 				}
 			«ENDIF»
 		«ENDFOR»

@@ -234,10 +234,10 @@ class GlueCodeGenerator {
 			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
 				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
 				val code = it.statechartDefinition.createSimpleComponentClass
-				code.saveCode(componentUri + File.separator + it.statechartDefinition.componentClassName + ".java")
+				code.saveCode(componentUri + File.separator + it.statechartDefinition.generateComponentClassName + ".java")
 				// Generating the interface for returning the Ports
 				val interfaceCode = it.statechartDefinition.generateComponentInterface
-				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.portOwnerInterfaceName + ".java")
+				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.generatePortOwnerInterfaceName + ".java")
 			].build		
 		}
 		return simpleComponentsRule
@@ -248,10 +248,10 @@ class GlueCodeGenerator {
 			 synchronousCompositeComponentsRule = createRule(AbstractSynchronousCompositeComponents.instance).action [
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousCompositeComponent.containingPackage.name.toLowerCase
 				val code = it.synchronousCompositeComponent.createSynchronousCompositeComponentClass
-				code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.componentClassName + ".java")
+				code.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generateComponentClassName + ".java")
 				// Generating the interface that is able to return the Ports
 				val interfaceCode = it.synchronousCompositeComponent.generateComponentInterface
-				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.portOwnerInterfaceName + ".java")
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
 			].build		
 		}
 		return synchronousCompositeComponentsRule
@@ -271,9 +271,9 @@ class GlueCodeGenerator {
 			 synchronousComponentWrapperRule = createRule(SynchronousComponentWrappers.instance).action [
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
 				val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
-				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.componentClassName + ".java")
+				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generateComponentClassName + ".java")
 				val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
-				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.portOwnerInterfaceName + ".java")
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generatePortOwnerInterfaceName + ".java")
 			].build		
 		}
 		return synchronousComponentWrapperRule
@@ -300,9 +300,9 @@ class GlueCodeGenerator {
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.asynchronousCompositeComponent.containingPackage.name.toLowerCase
 				// Main components
 				val code = it.asynchronousCompositeComponent.createAsynchronousCompositeComponentClass(0, 0)
-				code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.componentClassName + ".java")
+				code.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generateComponentClassName + ".java")
 				val interfaceCode = it.asynchronousCompositeComponent.generateComponentInterface
-				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.portOwnerInterfaceName + ".java")
+				interfaceCode.saveCode(compositeSystemUri + File.separator + it.asynchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
 			].build		
 		}
 		return asynchronousCompositeComponentsRule

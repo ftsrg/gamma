@@ -28,14 +28,14 @@ class AsynchronousCompositeComponentCodeGenerator {
 	* Creates the Java code of the asynchronous composite class, containing asynchronous components.
 	*/
 	protected def createAsynchronousCompositeComponentClass(AsynchronousCompositeComponent component, int channelId1, int channelId2) '''
-		package «component.componentPackageName»;
+		package «component.generateComponentPackageName»;
 		
 		«component.generateCompositeSystemImports»
 		
-		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {			
+		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
 			// Component instances
 			«FOR instance : component.components»
-				private «instance.type.componentClassName» «instance.name»;
+				private «instance.type.generateComponentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
 			«FOR port : component.portBindings.map[it.compositeSystemPort]»
@@ -51,14 +51,14 @@ class AsynchronousCompositeComponentCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init(); // Init is not called in setTimer like in the wrapper as it would be unnecessary
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
+			public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				init();
 			}
@@ -139,7 +139,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 			
 			/**  Getter for component instances, e.g., enabling to check their states. */
 			«FOR instance : component.components SEPARATOR "\n"»
-				public «instance.type.componentClassName» get«instance.name.toFirstUpper»() {
+				public «instance.type.generateComponentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
 				}
 			«ENDFOR»

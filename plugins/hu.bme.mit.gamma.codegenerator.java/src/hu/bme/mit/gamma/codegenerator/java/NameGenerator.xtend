@@ -17,7 +17,7 @@ class NameGenerator {
 	/**
 	 * Returns the Java package name of the class generated from the component.
 	 */
-	def componentPackageName (Component component) '''«PACKAGE_NAME».«component.containingPackage.name.toLowerCase»'''
+	def generateComponentPackageName (Component component) '''«PACKAGE_NAME».«component.containingPackage.name.toLowerCase»'''
  
  	/**
 	 * Returns the name of the Java interface generated from the given Gamma interface. 
@@ -43,7 +43,7 @@ class NameGenerator {
 	/**
 	 * Returns the name of the Java class of the component (the Yakindu statemachine wrapper).
 	 */
-	def getComponentClassName(Component component) {
+	def generateComponentClassName(Component component) {
 		return component.name.toFirstUpper
 	}
 		
@@ -65,28 +65,28 @@ class NameGenerator {
 	/**
 	 * Returns the name of the wrapped Yakindu statemachine instance.
 	 */
-	def getStatemachineInstanceName(Component component) {
+	def generateStatemachineInstanceName(Component component) {
 		return component.statemachineClassName.toFirstLower
 	}
 	
 	/**
-	 * Returns the name of the wrapped Yakindu statemachine instance.
+	 * Returns the name of the wrapped synchronous component instance.
 	 */
-	def getWrappedComponentName(AsynchronousAdapter wrapper) {
+	def generateWrappedComponentName(AsynchronousAdapter wrapper) {
 		return wrapper.wrappedComponent.name.toFirstLower
 	}
 	
 	/**
 	 * Returns the interface name (implemented by the component) of the given component.
 	 */
-	protected def getPortOwnerInterfaceName(Component component) {
-		return component.componentClassName + "Interface";
+	protected def generatePortOwnerInterfaceName(Component component) {
+		return component.generateComponentClassName + "Interface";
 	}
 	
 	/**
 	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
 	 */
-	protected def getImplementedJavaInterface(Port port) '''«port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
+	protected def getImplementedJavaInterfaceName(Port port) '''«port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
 	
 	/**
 	 * Returns the type name of the interface of the wrapped Yakindu statemachine.

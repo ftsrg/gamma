@@ -48,8 +48,8 @@ class CompositeComponentCodeGenerator {
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;
 		«ENDIF»
 		«FOR containedComponent : component.derivedComponents.map[it.derivedType]
-			.filter[!it.componentPackageName.equals(component.componentPackageName)].toSet»
-			import «containedComponent.componentPackageName».*;
+			.filter[!it.generateComponentPackageName.equals(component.generateComponentPackageName)].toSet»
+			import «containedComponent.generateComponentPackageName».*;
 		«ENDFOR»
 	'''
 	
@@ -111,7 +111,7 @@ class CompositeComponentCodeGenerator {
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
 		«FOR instance : component.derivedComponents»
-			«instance.name» = new «instance.derivedType.componentClassName»(«FOR argument : instance.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
+			«instance.name» = new «instance.derivedType.generateComponentClassName»(«FOR argument : instance.arguments SEPARATOR ", "»«argument.serialize»«ENDFOR»);
 		«ENDFOR»
 		«FOR port : component.portBindings.map[it.compositeSystemPort]»
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();

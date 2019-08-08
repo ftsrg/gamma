@@ -39,14 +39,14 @@ class SynchronousCompositeComponentCodeGenerator {
 	* Creates the Java code of the synchronous composite class, containing the statemachine instances.
 	*/
 	protected def createSynchronousCompositeComponentClass(AbstractSynchronousCompositeComponent component) '''
-		package «component.componentPackageName»;
+		package «component.generateComponentPackageName»;
 	
 		«component.generateCompositeSystemImports»
 		
-		public class «component.componentClassName» implements «component.portOwnerInterfaceName» {
+		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
 			// Component instances
 			«FOR instance : component.components»
-				private «instance.type.componentClassName» «instance.name»;
+				private «instance.type.generateComponentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
 			«FOR port : component.portBindings.map[it.compositeSystemPort]»
@@ -55,14 +55,14 @@ class SynchronousCompositeComponentCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					init();
 				}
 			«ENDIF»
 			
-			public «component.componentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
+			public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
 				«component.createInstances»
 				init();
 			}
@@ -256,7 +256,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			
 			/**  Getter for component instances, e.g., enabling to check their states. */
 			«FOR instance : component.components SEPARATOR "\n"»
-				public «instance.type.componentClassName» get«instance.name.toFirstUpper»() {
+				public «instance.type.generateComponentClassName» get«instance.name.toFirstUpper»() {
 					return «instance.name»;
 				}
 			«ENDFOR»
