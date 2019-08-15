@@ -166,7 +166,10 @@ enum RealizationMode returns RealizationMode:
 ;
 
 StatechartDefinition returns StatechartDefinition:
-	('@Schedule' '=' schedulingOrder=SchedulingOrder)?
+	(
+		('@Schedule' '=' schedulingOrder=SchedulingOrder)? &
+		(prioritizedTransitions ?= '@PrioritizedTransitions')?
+	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?

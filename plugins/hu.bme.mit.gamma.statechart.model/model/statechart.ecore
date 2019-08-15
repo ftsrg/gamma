@@ -26,6 +26,8 @@
         eType="#//Transition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="prioritizedTransitions"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>
