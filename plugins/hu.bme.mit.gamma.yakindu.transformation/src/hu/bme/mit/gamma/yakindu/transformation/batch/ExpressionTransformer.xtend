@@ -148,7 +148,14 @@ class ExpressionTransformer {
      * Returns a Set of EObjects that are created of the given "from" object.
      */
     def getAllValuesOfTo(EObject from) {
-    	return traceEngine.getMatcher(Traces.instance).getAllValuesOfto(null, from)    	
+    	return traceEngine.getMatcher(Traces.instance).getAllValuesOfto(null, from)
+    }
+    
+    /**
+     * Returns a Set of EObjects that are created of the given "to" object.
+     */
+    def getAllValuesOfFrom(EObject to) {
+    	return traceEngine.getMatcher(Traces.instance).getAllValuesOffrom(null, to)
     }
 	
 	/**

@@ -227,6 +227,8 @@ class YakinduToGammaTransformer {
     	transformValueOfLocalReactions
     	transformGuardsOfRegularLocalReactions
     	transformEffectsOfRegularLocalReactions
+    	// Sorting transitions in accordance with priority
+    	sortTransitions
 		// The created EMF models are returned
 		return new SimpleEntry<Package, Y2GTrace>(gammaPackage, traceRoot)
     }
@@ -965,32 +967,6 @@ class YakinduToGammaTransformer {
     }
     
     /**
-     * Returns whether the given Yakindu state has entry events.
-     */
-	@SuppressWarnings("unused")
-    private def hasEntryEvent(org.yakindu.sct.model.sgraph.State state) {
-    	for (entryEventMatch : runOnceEngine.getAllMatches(StatesWithEntryEvents.instance)) {
-    		if (entryEventMatch.state == state) {
-    			return true
-    		}
-    	}
-    	return false
-    }
-    
-    /**
-     * Returns whether the given Yakindu state has exit events.
-     */
-	@SuppressWarnings("unused")
-    private def hasExitEvent(org.yakindu.sct.model.sgraph.State state) {
-    	for (exitEventMatch : runOnceEngine.getAllMatches(StatesWithExitEvents.instance)) {
-    		if (exitEventMatch.state == state) {
-    			return true
-    		}
-    	}
-    	return false
-    }
-    
-    /**
      * Transforms the valueof "triggers" of regular local reactions.
      */
     private def transformValueOfLocalReactions() {
@@ -1058,6 +1034,32 @@ class YakinduToGammaTransformer {
 			gammaTransition.transform(transition_Effects, localReactionAction.action)
 			// The trace is created by the ExpressionTransformer
     	}
+    }
+    
+    /**
+     * Sorts the transitions in accordance with 1) their priorities and 2) the names of their sources.
+     */
+    protected def sortTransitions() {
+    	val transitionList = newArrayList
+    	transitionList += gammaStatechart.transitions
+    	transitionList.sort[lhs, rhs |
+			val lhsYakinduTransition = lhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+			val lhsSource = lhsYakinduTransition.source
+			val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
+			val rhsYakinduTransition = rhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+			val rhsSource = rhsYakinduTransition.source
+			val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
+			if (lhsSource == rhsSource) {
+		    	// Sorting according to priority
+				lhsPriority.compareTo(rhsPriority)
+			}
+			else {
+		    	// Sorting according to source name
+				lhs.sourceState.name.compareTo(rhs.sourceState.name)
+			}
+		]
+    	gammaStatechart.transitions.clear
+    	gammaStatechart.transitions += transitionList
     }
     
     def dispose() {
