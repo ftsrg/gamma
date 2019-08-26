@@ -38,12 +38,13 @@ public class GammaApi {
 	protected Logger logger = Logger.getLogger("GammaLogger");
 
 	/**
-	 * Executes the Gamma tasks based on the ggen model specified by the fullPath parameter.
-	 * @param fullPath IFile.fullPath method of the file containing the ggen model
+	 * Executes the Gamma tasks based on the ggen model specified by the fullPath parameter,
+	 *  e.g., /hu.bme.mit.gamma.tutorial.start/model/Controller/Controller.ggen.
+	 * @param fileWorkspaceRelativePath IFile.fullPath method of the file containing the ggen model
 	 */
-	public void run(String fullPath) {
+	public void run(String fileWorkspaceRelativePath) {
 		try {
-			URI fileURI = URI.createPlatformResourceURI(fullPath, true);
+			URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
 			// Eclipse magic: URI -> IFile
 			IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 			IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
