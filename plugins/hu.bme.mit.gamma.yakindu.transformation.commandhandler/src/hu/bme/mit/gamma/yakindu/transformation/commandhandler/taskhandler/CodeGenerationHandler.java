@@ -11,8 +11,8 @@ import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
-import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
+import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 
 public class CodeGenerationHandler extends TaskHandler {
 

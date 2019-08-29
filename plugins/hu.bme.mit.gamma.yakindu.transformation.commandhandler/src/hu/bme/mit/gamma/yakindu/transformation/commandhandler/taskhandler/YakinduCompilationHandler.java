@@ -2,7 +2,7 @@ package hu.bme.mit.gamma.yakindu.transformation.commandhandler.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation;
+import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 
 public abstract class YakinduCompilationHandler extends TaskHandler {
 	

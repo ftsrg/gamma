@@ -8,7 +8,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.expression.language.ui,
  hu.bme.mit.gamma.genmodel.language,
  hu.bme.mit.gamma.genmodel.language.ide,
- hu.bme.mit.gamma.yakindu.genmodel,
+ hu.bme.mit.gamma.genmodel.model,
  org.eclipse.xtext.ui,
  org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.codetemplates.ui,

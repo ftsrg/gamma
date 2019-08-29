@@ -7,7 +7,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.genmodel.language.ide;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.genmodel.language,
- hu.bme.mit.gamma.yakindu.genmodel,
+ hu.bme.mit.gamma.genmodel.model,
  org.eclipse.xtext.ide,
  org.eclipse.xtext.xbase.ide,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"

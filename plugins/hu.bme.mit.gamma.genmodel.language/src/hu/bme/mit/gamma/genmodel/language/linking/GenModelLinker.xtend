@@ -17,8 +17,8 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.nodemodel.INode
 import org.eclipse.emf.common.util.URI
-import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
-import hu.bme.mit.gamma.yakindu.genmodel.GenModel
+import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
+import hu.bme.mit.gamma.genmodel.model.GenModel
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 
 class GenModelLinker extends DefaultLinkingService {

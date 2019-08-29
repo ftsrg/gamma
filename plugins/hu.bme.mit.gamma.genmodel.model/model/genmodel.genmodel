@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.genmodel/src" modelPluginID="hu.bme.mit.gamma.yakindu.genmodel"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.genmodel.model/src" editDirectory="/hu.bme.mit.gamma.genmodel.model.edit/src"
+    editorDirectory="/hu.bme.mit.gamma.genmodel.model.editor/src" modelPluginID="hu.bme.mit.gamma.genmodel.model"
     modelName="Genmodel" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    editPluginID="hu.bme.mit.gamma.genmodel.model.edit" editorPluginID="hu.bme.mit.gamma.genmodel.model.editor"
     usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../org.yakindu.base.types/model/types.genmodel#//types ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
-  <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.yakindu" disposableProviderFactory="true"
+  <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.genmodel" disposableProviderFactory="true"
       fileExtensions="ggm" ecorePackage="genmodel.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//ProgrammingLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/JAVA"/>

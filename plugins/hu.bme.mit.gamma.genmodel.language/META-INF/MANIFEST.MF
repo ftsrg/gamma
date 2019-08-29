@@ -5,7 +5,7 @@ Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.1.3.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.genmodel.language;singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: hu.bme.mit.gamma.yakindu.genmodel,
+Require-Bundle: hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.expression.language,
  org.eclipse.xtext,
  org.eclipse.xtext.xbase,

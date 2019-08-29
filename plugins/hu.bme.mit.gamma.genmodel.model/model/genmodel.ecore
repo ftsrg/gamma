@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="genmodel" nsURI="http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
-    nsPrefix="hu.bme.mit.gamma.yakindu.genmodel">
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/genmodel/Model" nsPrefix="hu.bme.mit.gamma.yakindu.genmodel">
   <eClassifiers xsi:type="ecore:EClass" name="GenModel">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechartImports" upperBound="-1"
         eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>

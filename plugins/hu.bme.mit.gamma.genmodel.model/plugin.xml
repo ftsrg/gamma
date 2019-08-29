@@ -9,8 +9,8 @@
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated genmodel -->
       <package
-            uri="http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
-            class="hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage"
+            uri="http://www.mit.bme.hu/gamma/genmodel/Model"
+            class="hu.bme.mit.gamma.genmodel.model.GenmodelPackage"
             genModel="model/genmodel.genmodel"/>
    </extension>
 

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 
 import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation;
+import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
 import hu.bme.mit.gamma.yakindu.transformation.batch.YakinduToGammaTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;

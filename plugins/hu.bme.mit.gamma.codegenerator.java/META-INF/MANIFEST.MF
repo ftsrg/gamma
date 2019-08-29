@@ -18,7 +18,7 @@ Require-Bundle: hu.bme.mit.gamma.expression.model,
  org.eclipse.xtext.xbase.lib,
  hu.bme.mit.gamma.yakindu.transformation.traceability,
  org.yakindu.sct.model.stext,
- hu.bme.mit.gamma.yakindu.genmodel
+ hu.bme.mit.gamma.genmodel.model
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: hu.bme.mit.gamma.codegenerator.java
 Import-Package: org.apache.log4j

@@ -13,11 +13,11 @@ package hu.bme.mit.gamma.genmodel.language.scoping
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
-import hu.bme.mit.gamma.yakindu.genmodel.EventMapping
-import hu.bme.mit.gamma.yakindu.genmodel.GenModel
-import hu.bme.mit.gamma.yakindu.genmodel.GenmodelPackage
-import hu.bme.mit.gamma.yakindu.genmodel.InterfaceMapping
-import hu.bme.mit.gamma.yakindu.genmodel.YakinduCompilation
+import hu.bme.mit.gamma.genmodel.model.EventMapping
+import hu.bme.mit.gamma.genmodel.model.GenModel
+import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
+import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
+import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import java.util.Collections
 import java.util.HashSet
 import java.util.Set

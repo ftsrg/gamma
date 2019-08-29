@@ -25,7 +25,7 @@ Workflow {
 		language = StandardLanguage {
 			name = "hu.bme.mit.gamma.genmodel.language.GenModel"
 			fileExtensions = "ggen"
-			referencedResource = "platform:/resource/hu.bme.mit.gamma.yakindu.genmodel/model/genmodel.genmodel"
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.genmodel.model/model/genmodel.genmodel"
 		
 			fragment = ecore2xtext.Ecore2XtextValueConverterServiceFragment2 auto-inject {}
 

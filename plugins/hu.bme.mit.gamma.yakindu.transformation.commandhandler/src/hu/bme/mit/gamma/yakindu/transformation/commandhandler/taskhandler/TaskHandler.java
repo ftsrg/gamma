@@ -20,9 +20,9 @@ import com.google.inject.Injector;
 import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.yakindu.genmodel.CodeGeneration;
-import hu.bme.mit.gamma.yakindu.genmodel.Task;
-import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
+import hu.bme.mit.gamma.genmodel.model.Task;
+import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 
 public abstract class TaskHandler {
 	

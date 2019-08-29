@@ -14,7 +14,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model" as model
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as interface
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as composite
-import "http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
+import "http://www.mit.bme.hu/gamma/genmodel/Model"
 import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph

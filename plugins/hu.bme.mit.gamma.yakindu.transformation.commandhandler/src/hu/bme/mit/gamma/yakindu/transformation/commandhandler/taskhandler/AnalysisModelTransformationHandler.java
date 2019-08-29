@@ -28,11 +28,11 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
-import hu.bme.mit.gamma.yakindu.genmodel.AnalysisLanguage;
-import hu.bme.mit.gamma.yakindu.genmodel.AnalysisModelTransformation;
-import hu.bme.mit.gamma.yakindu.genmodel.Coverage;
-import hu.bme.mit.gamma.yakindu.genmodel.StateCoverage;
-import hu.bme.mit.gamma.yakindu.genmodel.TransitionCoverage;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.Coverage;
+import hu.bme.mit.gamma.genmodel.model.StateCoverage;
+import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import uppaal.NTA;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
@@ -112,7 +112,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 		checkArgument(analysisModelTransformation.getScheduler().size() <= 1);
 		if (analysisModelTransformation.getScheduler().isEmpty()) {
-			analysisModelTransformation.getScheduler().add(hu.bme.mit.gamma.yakindu.genmodel.Scheduler.RANDOM);
+			analysisModelTransformation.getScheduler().add(hu.bme.mit.gamma.genmodel.model.Scheduler.RANDOM);
 		}
 	}
 	
@@ -147,7 +147,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		return Collections.emptyList();
 	}
 	
-	private Scheduler getGammaScheduler(hu.bme.mit.gamma.yakindu.genmodel.Scheduler scheduler) {
+	private Scheduler getGammaScheduler(hu.bme.mit.gamma.genmodel.model.Scheduler scheduler) {
 		switch (scheduler) {
 		case FAIR:
 			return Scheduler.FAIR;

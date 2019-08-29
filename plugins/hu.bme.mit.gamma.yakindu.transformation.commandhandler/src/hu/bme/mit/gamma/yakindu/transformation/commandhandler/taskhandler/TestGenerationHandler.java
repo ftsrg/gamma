@@ -12,8 +12,8 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
-import hu.bme.mit.gamma.yakindu.genmodel.ProgrammingLanguage;
-import hu.bme.mit.gamma.yakindu.genmodel.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
+import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 
 public class TestGenerationHandler extends TaskHandler {
 

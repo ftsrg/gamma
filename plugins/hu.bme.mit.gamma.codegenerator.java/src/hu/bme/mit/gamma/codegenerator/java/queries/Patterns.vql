@@ -15,7 +15,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model" as model
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as gif
 import "http://www.mit.bme.hu/gamma/yakindu/transformation/Traceability"
-import "http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
+import "http://www.mit.bme.hu/gamma/genmodel/Model"
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0"
 import "http://www.yakindu.org/sct/statechart/SText" as stext
