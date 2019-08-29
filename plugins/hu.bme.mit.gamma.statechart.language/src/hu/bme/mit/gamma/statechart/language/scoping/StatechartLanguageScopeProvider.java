@@ -26,11 +26,11 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
-import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Package;
@@ -106,7 +106,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(getAllEvents(_interface));
 			}
 			if (context instanceof EnumerationLiteralExpression && 
-					reference == ConstraintModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
+					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
 				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
 				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
 				for (Package imported : root.getImports()) {
@@ -221,12 +221,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					.forEach(it -> events.addAll(getSemanticEvents(Collections.singletonList(it), EventDirection.IN)));
 				return Scopes.scopeFor(events);
 			}
-			if (reference == ConstraintModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
 				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
 				return Scopes.scopeFor(typeDeclarations);
 			}
-			if (/*context instanceof EventTrigger && */reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
+			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
 				Component component = null;
 				try {

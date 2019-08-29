@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.uppaal.transformation.traceability/src"
     modelPluginID="hu.bme.mit.gamma.uppaal.transformation.traceability" modelName="Traceability"
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../de.uni_paderborn.uppaal/model/uppaal.genmodel#//uppaal ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../de.uni_paderborn.uppaal/model/uppaal.genmodel#//uppaal ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>traceability.ecore</foreignModel>
   <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.uppaal.transformation"

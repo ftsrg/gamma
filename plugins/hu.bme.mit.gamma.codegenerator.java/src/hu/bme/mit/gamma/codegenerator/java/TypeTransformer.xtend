@@ -1,9 +1,9 @@
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.Type
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
 
 class TypeTransformer {
 	

@@ -10,10 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
@@ -168,7 +168,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {
 		val type = analysisModelTransformation.component
 		if (analysisModelTransformation.getArguments().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
+			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 	}
 	
@@ -186,7 +186,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
+							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
 				} 
 			}
 		} catch (Exception exception) {

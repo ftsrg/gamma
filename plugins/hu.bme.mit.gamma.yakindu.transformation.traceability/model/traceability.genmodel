@@ -3,7 +3,7 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.yakindu.transformation.traceability/src"
     modelPluginID="hu.bme.mit.gamma.yakindu.transformation.traceability" modelName="Traceability"
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../org.yakindu.base.types/model/base.genmodel#//base ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>traceability.ecore</foreignModel>
   <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.yakindu.transformation"

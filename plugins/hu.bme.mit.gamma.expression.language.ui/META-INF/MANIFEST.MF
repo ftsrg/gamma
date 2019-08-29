@@ -7,7 +7,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.expression.language.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.expression.language.ide,
- hu.bme.mit.gamma.constraint.model,
+ hu.bme.mit.gamma.expression.model,
  org.eclipse.xtext.ui,
  org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.codetemplates.ui,

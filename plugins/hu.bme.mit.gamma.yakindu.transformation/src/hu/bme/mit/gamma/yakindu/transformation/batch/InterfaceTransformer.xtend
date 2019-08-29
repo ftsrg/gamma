@@ -10,10 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.NamedElement
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
-import hu.bme.mit.gamma.constraint.model.ParametricElement
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.NamedElement
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ParametricElement
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
@@ -63,7 +63,7 @@ class InterfaceTransformer {
 	// Packages of the metamodels
 	extension StatechartModelPackage sctPackage = StatechartModelPackage.eINSTANCE
 	extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
-	extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+	extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
 	extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	
 	// For add to trace

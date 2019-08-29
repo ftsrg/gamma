@@ -7,7 +7,7 @@ Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation,
  hu.bme.mit.gamma.uppaal.composition.transformation.queries
 Require-Bundle: de.uni_paderborn.uppaal,
- hu.bme.mit.gamma.constraint.model,
+ hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.uppaal.transformation,
  hu.bme.mit.gamma.uppaal.transformation.traceability,

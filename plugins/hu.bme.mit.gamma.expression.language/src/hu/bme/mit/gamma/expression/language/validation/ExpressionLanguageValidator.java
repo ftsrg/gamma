@@ -20,41 +20,42 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.language.validation.AbstractExpressionLanguageValidator;
-import hu.bme.mit.gamma.constraint.model.AddExpression;
-import hu.bme.mit.gamma.constraint.model.ArithmeticExpression;
-import hu.bme.mit.gamma.constraint.model.BinaryExpression;
-import hu.bme.mit.gamma.constraint.model.BooleanExpression;
-import hu.bme.mit.gamma.constraint.model.BooleanLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.ComparisonExpression;
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
-import hu.bme.mit.gamma.constraint.model.DecimalLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.InitializableElement;
-import hu.bme.mit.gamma.constraint.model.DivExpression;
-import hu.bme.mit.gamma.constraint.model.DivideExpression;
-import hu.bme.mit.gamma.constraint.model.ElseExpression;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.Expression;
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.ModExpression;
-import hu.bme.mit.gamma.constraint.model.MultiaryExpression;
-import hu.bme.mit.gamma.constraint.model.MultiplyExpression;
-import hu.bme.mit.gamma.constraint.model.NamedElement;
-import hu.bme.mit.gamma.constraint.model.PredicateExpression;
-import hu.bme.mit.gamma.constraint.model.RationalLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.RationalTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.DecimalTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
-import hu.bme.mit.gamma.constraint.model.SubtractExpression;
-import hu.bme.mit.gamma.constraint.model.Type;
-import hu.bme.mit.gamma.constraint.model.TypeDeclaration;
-import hu.bme.mit.gamma.constraint.model.TypeReference;
-import hu.bme.mit.gamma.constraint.model.UnaryExpression;
-import hu.bme.mit.gamma.constraint.model.UnaryMinusExpression;
-import hu.bme.mit.gamma.constraint.model.UnaryPlusExpression;
+import hu.bme.mit.gamma.expression.model.AddExpression;
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
+import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.BooleanExpression;
+import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ComparisonExpression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.DivExpression;
+import hu.bme.mit.gamma.expression.model.DivideExpression;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ModExpression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
+import hu.bme.mit.gamma.expression.model.MultiplyExpression;
+import hu.bme.mit.gamma.expression.model.NamedElement;
+import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SubtractExpression;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
+import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 
 /**
  * This class contains custom validation rules. 
@@ -71,7 +72,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		namedElements.remove(element);
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
-				error("Names must be unique!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Names must be unique!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
@@ -92,7 +93,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			UnaryExpression unaryExpression = (UnaryExpression) expression;
 			if (!typeDeterminator.isBoolean(unaryExpression.getOperand())) {
 				error("The operand of this unary boolean operation is evaluated as a non-boolean value.",
-						ConstraintModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
+						ExpressionModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
 			}
 		}
 		else if (expression instanceof BinaryExpression) {
@@ -100,11 +101,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			BinaryExpression binaryExpression = (BinaryExpression) expression;
 			if (!typeDeterminator.isBoolean(binaryExpression.getLeftOperand())) {
 				error("The left operand of this binary boolean operation is evaluated as a non-boolean value.",
-						ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+						ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
 			}
 			if (!typeDeterminator.isBoolean(binaryExpression.getRightOperand())) {
 				error("The right operand of this binary boolean operation is evaluated as a non-boolean value.",
-						ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+						ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 			}
 		}
 		else if (expression instanceof MultiaryExpression) {
@@ -114,7 +115,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				Expression operand = multiaryExpression.getOperands().get(i);
 				if (!typeDeterminator.isBoolean(operand)) {
 					error("This operand of this multiary boolean operation is evaluated as a non-boolean value.",
-							ConstraintModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
+							ExpressionModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
 				}
 			}
 		}
@@ -132,11 +133,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				ComparisonExpression binaryExpression = (ComparisonExpression) expression;
 				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
 					error("The left operand of this binary predicate expression is evaluated as a non-comparable value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
 				}
 				if (!typeDeterminator.isNumber(binaryExpression.getRightOperand())) {
 					error("The right operand of this binary predicate expression is evaluated as a non-comparable value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 				}
 			}
 		}	
@@ -149,7 +150,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			UnaryExpression unaryExpression = (UnaryExpression) expression;
 			if (!typeDeterminator.isNumber(unaryExpression.getOperand())) {
 				error("The operand of this unary arithemtic operation is evaluated as a non-number value.",
-						ConstraintModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
+						ExpressionModelPackage.Literals.UNARY_EXPRESSION__OPERAND);
 			}
 		}
 		else if (expression instanceof BinaryExpression) {
@@ -159,21 +160,21 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				// Only integers can be operands
 				if (!typeDeterminator.isInteger(binaryExpression.getLeftOperand())) {
 					error("The left operand of this binary arithemtic operation is evaluated as a non-integer value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
 				}
 				if (!typeDeterminator.isInteger(binaryExpression.getRightOperand())) {
 					error("The right operand of this binary arithemtic operation is evaluated as a non-integer value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 				}
 			}
 			else {
 				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
 					error("The left operand of this binary arithemtic operation is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__LEFT_OPERAND);
 				}
 				if (!typeDeterminator.isNumber(binaryExpression.getRightOperand())) {
 					error("The right operand of this binary arithemtic operation is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 				}
 			}
 		}
@@ -184,7 +185,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				Expression operand = multiaryExpression.getOperands().get(i);
 				if (!typeDeterminator.isNumber(operand)) {
 					error("This operand of this multiary arithemtic operation is evaluated as a non-number value.",
-							ConstraintModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
+							ExpressionModelPackage.Literals.MULTIARY_EXPRESSION__OPERANDS, i);
 				}
 			}
 		}
@@ -201,7 +202,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			if (elem instanceof Declaration) {
 				Declaration declaration = (Declaration) elem;
 				if (isDeclarationReferredInExpression(declaration, initialExpression)) {
-					error("The initial value must not be the declaration itself.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+					error("The initial value must not be the declaration itself.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					return;
 				}
 				Type variableDeclarationType = declaration.getType();
@@ -210,7 +211,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
 							initialExpressionType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+							ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 				} 
 				// Additional checks for enumerations
 				EnumerationTypeDefinition enumType = null;
@@ -226,11 +227,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) initialExpression;
 						if (!enumType.getLiterals().contains(rhs.getReference())) {
 							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
-									ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+									ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 						}
 					}
 					else {
-						error("The right hand side must be of type enumeration literal.", ConstraintModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+						error("The right hand side must be of type enumeration literal.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					}
 				}
 			}

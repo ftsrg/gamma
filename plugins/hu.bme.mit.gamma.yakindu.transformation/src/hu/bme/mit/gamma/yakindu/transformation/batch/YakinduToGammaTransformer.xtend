@@ -12,13 +12,13 @@ package hu.bme.mit.gamma.yakindu.transformation.batch
 
 import hu.bme.mit.gamma.action.model.ActionModelPackage
 import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.constraint.model.AndExpression
-import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.InitializableElement
-import hu.bme.mit.gamma.constraint.model.NotExpression
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
@@ -145,7 +145,7 @@ class YakinduToGammaTransformer {
     extension CompositePackage compPackage = CompositePackage.eINSTANCE
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
-    extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+    extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     
     extension ExpressionTransformer expTransf
@@ -602,7 +602,7 @@ class YakinduToGammaTransformer {
     	var InitializableElement gammaVariable
 	    // If the Yakindu variable is a constant, a constantDeclaration is created
 	    if (it.isReadOnly) {
-	    	gammaVariable = gammaPackage.createChild(constraintSpecification_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
+	    	gammaVariable = gammaPackage.createChild(expressionPackage_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
 	    	setVariable(it.variable, gammaVariable, it.name, it.type.name)
 	    }
 	    // Otherwise a plain variableDeclaration is created	in the statechart

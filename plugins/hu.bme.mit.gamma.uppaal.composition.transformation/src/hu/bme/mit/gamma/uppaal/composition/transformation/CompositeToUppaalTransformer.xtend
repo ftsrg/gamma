@@ -11,15 +11,15 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
-import hu.bme.mit.gamma.constraint.model.Declaration
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.constraint.model.FalseExpression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.TrueExpression
-import hu.bme.mit.gamma.constraint.model.Type
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
@@ -235,7 +235,7 @@ class CompositeToUppaalTransformer {
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
 	
 	// Arguments for the top level component
-	protected List<hu.bme.mit.gamma.constraint.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.constraint.model.Expression>
+	protected List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.expression.model.Expression>
 	
 	// Engine on the Gamma resource 
     protected ViatraQueryEngine engine
@@ -262,7 +262,7 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration messageValue
 	
 	// Gamma factory for the millisecond multiplication
-	protected final ConstraintModelFactory constrFactory = ConstraintModelFactory.eINSTANCE
+	protected final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
 	// UPPAAL packages
     protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     protected final extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
@@ -320,7 +320,7 @@ class CompositeToUppaalTransformer {
         createTransformation 
     }
     
-    new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.constraint.model.Expression> topComponentArguments,
+    new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler, boolean isMinimalElementSet,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
@@ -730,7 +730,7 @@ class CompositeToUppaalTransformer {
      * according to the given Expression. 
      */
     protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-    				DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.constraint.model.Expression expression) {
+    				DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
     	val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
     	val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
     						.filter[it.owner == owner && it.port == port]
@@ -745,7 +745,7 @@ class CompositeToUppaalTransformer {
     /**
      * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
      */
-    private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.constraint.model.Expression expression) {
+    private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.expression.model.Expression expression) {
     	if (!(expression instanceof IntegerLiteralExpression)) {
     		return false
     	}
@@ -1358,7 +1358,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
 	 */
 	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		hu.bme.mit.gamma.constraint.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
+		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 				it.operator = logOp
 				it.secondExpr = originalExpression			
@@ -1370,7 +1370,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
 	 */
 	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.constraint.model.Expression timeExpression) {		
+		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression) {		
 		container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = compOp	
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
@@ -1381,7 +1381,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
+		DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
@@ -1392,7 +1392,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, hu.bme.mit.gamma.constraint.model.Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
 		// No addFunctionCall method as there are arguments
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function
@@ -2367,13 +2367,13 @@ class CompositeToUppaalTransformer {
 	
 	// Type references, such as enums
 	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.constraint.model.TypeDeclaration type, DataVariablePrefix prefix, String name) {
+			hu.bme.mit.gamma.expression.model.TypeDeclaration type, DataVariablePrefix prefix, String name) {
 		val declaredType = type.type
 		return variable.transformVariable(declaredType, prefix, name)	
 	}
 	
 	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.constraint.model.TypeReference type, DataVariablePrefix prefix, String name) {
+			hu.bme.mit.gamma.expression.model.TypeReference type, DataVariablePrefix prefix, String name) {
 		val referredType = type.reference
 		return variable.transformVariable(referredType, prefix, name)	
 	}
@@ -3571,7 +3571,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Transforms gamma expression "100" into "100 * value" or "timeValue" into "timeValue * value"
 	 */
-	protected def multiplyExpression(hu.bme.mit.gamma.constraint.model.Expression base, long value) {
+	protected def multiplyExpression(hu.bme.mit.gamma.expression.model.Expression base, long value) {
 		val multiplyExp = constrFactory.createMultiplyExpression => [
 			it.operands += base
 			it.operands += constrFactory.createIntegerLiteralExpression => [
@@ -3617,7 +3617,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
 	 */
 	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		hu.bme.mit.gamma.constraint.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
+		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 			it.operator = logOp
 			it.secondExpr = originalExpression			
@@ -3629,7 +3629,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
 	 */
 	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.constraint.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
+		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
 		val owner = clockVar.owner
 		val compExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = compOp	
@@ -3657,7 +3657,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for placing the ttmcExpressions onto the given edge. It is needed to ensure that "isActive"
 	 * variables are handled correctly (if they are present).
 	 */
-	private def transformGuard(Edge edge, hu.bme.mit.gamma.constraint.model.Expression guard) {
+	private def transformGuard(Edge edge, hu.bme.mit.gamma.expression.model.Expression guard) {
 		// If the reference is not null there are "triggers" on it
 		if (edge.guard !== null) {
 			// Getting the old reference
@@ -3967,7 +3967,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Responsible for creating an assignment expression with the given variable reference and the given expression.
 	 */
-	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, hu.bme.mit.gamma.constraint.model.Expression rhs, ComponentInstance owner) {
+	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, hu.bme.mit.gamma.expression.model.Expression rhs, ComponentInstance owner) {
 		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head // Only one variable is expected

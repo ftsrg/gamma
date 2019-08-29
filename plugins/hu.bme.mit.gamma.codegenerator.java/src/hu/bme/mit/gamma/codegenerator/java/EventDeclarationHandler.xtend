@@ -1,6 +1,6 @@
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection

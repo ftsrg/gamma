@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.patterns
 
-import "http://www.mit.bme.hu/gamma/constraint/Model" 
+import "http://www.mit.bme.hu/gamma/expression/Model" 
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 

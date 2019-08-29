@@ -27,7 +27,7 @@ Workflow {
 		language = StandardLanguage {
 			name = "hu.bme.mit.gamma.expression.language.ExpressionLanguage"
 			fileExtensions = "gct"
-			referencedResource = "platform:/resource/hu.bme.mit.gamma.constraint.model/model/constraint.genmodel"
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.expression.model/model/expression.genmodel"
 			
 			fragment = ecore2xtext.Ecore2XtextValueConverterServiceFragment2 auto-inject {}
 

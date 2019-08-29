@@ -13,7 +13,7 @@ grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model" 
-import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 

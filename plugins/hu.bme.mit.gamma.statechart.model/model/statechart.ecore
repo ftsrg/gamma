@@ -8,7 +8,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="AnnotatedElement" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="annotation" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ConstraintSpecification">
+  <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ExpressionPackage">
     <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
@@ -18,7 +18,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" eSuperTypes="#//composite/SynchronousComponent #//CompositeElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//VariableDeclaration"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclarations" upperBound="-1"
         eType="#//TimeoutDeclaration" containment="true"/>
@@ -33,24 +33,24 @@
     <eLiterals name="TOP_DOWN"/>
     <eLiterals name="BOTTOM_UP" value="1"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="#//EventSource"/>
   <eClassifiers xsi:type="ecore:EClass" name="Clock" eSuperTypes="#//EventSource">
     <eStructuralFeatures xsi:type="ecore:EReference" name="timeSpecification" eType="#//TimeSpecification"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartReference" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//composite/Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Region" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="Region" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateNodes" upperBound="-1"
         eType="#//StateNode" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StateNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StateNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="State" eSuperTypes="#//AnnotatedElement #//StateNode #//CompositeElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="entryActions" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
@@ -59,7 +59,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NullaryExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//State"/>
   </eClassifiers>
@@ -69,19 +69,19 @@
   <eClassifiers xsi:type="ecore:EClass" name="ForkState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="JoinState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AnnotatedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParametricElement">
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AnnotatedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" eType="#//Trigger"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="effects" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Trigger" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
+  <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="#//interface/Event"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="#//Port"/>
   </eClassifiers>
@@ -126,7 +126,7 @@
         eType="#//TimeoutDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnyTrigger" eSuperTypes="#//SimpleTrigger"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="EventTrigger" eSuperTypes="#//SimpleTrigger ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
         eType="#//EventReference" containment="true"/>
   </eClassifiers>
@@ -158,7 +158,7 @@
     <eLiterals name="SECOND" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TimeSpecification">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit" lowerBound="1" eType="#//TimeUnit"/>
   </eClassifiers>
@@ -173,7 +173,7 @@
   </eClassifiers>
   <eSubpackages name="interface" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Interface"
       nsPrefix="hu.bme.mit.gamma.statechart.interface">
-    <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">
+    <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="parents" upperBound="-1"
           eType="#//interface/Interface"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="events" upperBound="-1"
@@ -189,15 +189,15 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1"
           eType="#//interface/Event" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParametricElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
     <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression"
-        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NullaryExpression">
+        eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
       <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1"
           eType="#//Port"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1"
           eType="#//interface/Event"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
-          eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParameterDeclaration"/>
+          eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
     </eClassifiers>
   </eSubpackages>
   <eSubpackages name="composite" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
@@ -205,7 +205,7 @@
     <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
       <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
     </eAnnotations>
-    <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ParametricElement">
+    <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="ports" upperBound="-1"
           eType="#//Port" containment="true"/>
     </eClassifiers>
@@ -217,7 +217,7 @@
           eType="#//composite/Channel" containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ComponentInstance" abstract="true"
-        eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//ArgumentedElement"/>
+        eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
     <eClassifiers xsi:type="ecore:EClass" name="PortBinding">
       <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort"
           lowerBound="1" eType="#//Port"/>
@@ -252,10 +252,10 @@
       <eLiterals name="RUN_TO_COMPLETION" value="1"/>
       <eLiterals name="RESET" value="2"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//NamedElement">
+    <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
           defaultValueLiteral="0"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.constraint.model/model/constraint.ecore#//Expression"
+      <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
           containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
           upperBound="-1" eType="#//EventReference" containment="true"/>

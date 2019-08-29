@@ -27,14 +27,14 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
-import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.Expression;
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration;
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
-import hu.bme.mit.gamma.constraint.model.Type;
-import hu.bme.mit.gamma.constraint.model.TypeDeclaration;
-import hu.bme.mit.gamma.constraint.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.AnyTrigger;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
@@ -118,7 +118,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			Interface parentInterface = getParentInterfaces(gammaInterface, parent);
 			if (parentInterface != null) {
 				error("This interface is in a parent circle, referred by " + parentInterface.getName() + "!" 
-						+ "Interfaces must have an acyclical parent hierarchy!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+						+ "Interfaces must have an acyclical parent hierarchy!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
@@ -185,11 +185,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkRegionEntries(Region region) {
 		List<StateNode> entries = region.getStateNodes().stream().filter(it -> it instanceof EntryState).collect(Collectors.toList());
 		if (entries.isEmpty()) {
-			error("A region must have a single entry node.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("A region must have a single entry node.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else if (entries.size() > 1) {
 			for (StateNode entry : entries) {
-				error("A region must have a single entry node.", entry, ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("A region must have a single entry node.", entry, ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
@@ -214,7 +214,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				// Type declarations can be referred from different package
 				return;
 			}
-			warning("This declaration is not used.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("This declaration is not used.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -223,7 +223,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<SetTimeoutAction> timeoutSettings = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration),
 				SetTimeoutAction.class).stream().filter(it -> it.getTimeoutDeclaration() == declaration).collect(Collectors.toSet());
 		if (timeoutSettings.isEmpty()) {
-			warning("This declaration is not used.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("This declaration is not used.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		if (timeoutSettings.size() > 1) {
 			for (SetTimeoutAction timeoutSetting : timeoutSettings) {
@@ -296,7 +296,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 		if (!hasIncomingTransition(node) || (!StatechartModelDerivedFeatures.getIncomingTransitions(node).isEmpty()
 				&& allTransitionsAreLoop(node))) {
-			error("This node is unreachable.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("This node is unreachable.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -345,10 +345,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkEntryNodes(EntryState entry) {
 		if (hasIncomingTransition(entry)) {
-			error("Entry nodes must not have incoming transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Entry nodes must not have incoming transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		if (StatechartModelDerivedFeatures.getOutgoingTransitions(entry).size() != 1) {
-			error("Entry nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Entry nodes must have a single outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else {
 			// A single transition
@@ -401,15 +401,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(choice);
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize != 1) {
-			error("Choice nodes must have a single incoming transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Choice nodes must have a single incoming transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(choice);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize == 1) {
-			warning("Choice nodes should have at least two outgoing transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("Choice nodes should have at least two outgoing transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else if (outgoingTransitionSize < 1) {
-			error("A choice node must have at least one outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("A choice node must have at least one outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -418,22 +418,22 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(fork);
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize != 1) {
-			error("Fork nodes must have a single incoming transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Fork nodes must have a single incoming transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(fork);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize == 1) {
-			warning("Fork nodes should have at least two outgoing transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("Fork nodes should have at least two outgoing transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else if (outgoingTransitionSize < 1) {
-			error("A fork node must have at least one outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("A fork node must have at least one outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> targetedRegions = new HashSet<Region>();
 		for (Transition transition : outgoingTransitions) {
 			Region region = (Region) transition.getTargetState().eContainer();
 			if (targetedRegions.contains(region)) {
-				error("Targets of outgoing transitions of fork nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Targets of outgoing transitions of fork nodes must be in distinct regions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 				error("Targets of outgoing transitions of fork nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 			}
 			else {
@@ -447,15 +447,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(merge);
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize == 1) {
-			warning("Merge nodes should have at least two incoming transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("Merge nodes should have at least two incoming transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else if (incomingTransitionSize < 1) {
-			error("A merge node must have at least one incoming transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("A merge node must have at least one incoming transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(merge);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize != 1) {
-			error("Merge nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Merge nodes must have a single outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -464,22 +464,22 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(join);
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize == 1) {
-			warning("Join nodes should have at least two incoming transitions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("Join nodes should have at least two incoming transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else if (incomingTransitionSize < 1) {
-			error("A join node must have at least one incoming transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("A join node must have at least one incoming transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(join);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize != 1) {
-			error("Join nodes must have a single outgoing transition.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			error("Join nodes must have a single outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> sourceRegions = new HashSet<Region>();
 		for (Transition transition : incomingTransitions) {
 			Region region = (Region) transition.getSourceState().eContainer();
 			if (sourceRegions.contains(region)) {
-				error("Sources of incoming transitions of join nodes must be in distinct regions.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("Sources of incoming transitions of join nodes must be in distinct regions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 				error("Sources of incoming transitions of join nodes must be in distinct regions.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 			}
 			else {
@@ -790,7 +790,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			Package parentStatechart = getReferredPackages(statechart, referredStatechart);
 			if (parentStatechart != null) {
 				error("This statechart is in a dependency circle, referred by " + parentStatechart.getName() + "! " 
-						+ "Composite systems must have an acyclical dependency hierarchy!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+						+ "Composite systems must have an acyclical dependency hierarchy!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
@@ -827,7 +827,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkParameters(ComponentInstance instance) {
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (instance.getArguments().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 		}
 	}
 	
@@ -845,7 +845,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					error("The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
+							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
 				} 
 			}
 		} catch (Exception exception) {
@@ -863,7 +863,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					return;
 				}
 			}
-			warning("This system port is not connected to any ports of an instance!", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("This system port is not connected to any ports of an instance!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -881,7 +881,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		unusedPorts.removeAll(usedPorts);
 		if (!unusedPorts.isEmpty()) {
 			warning("The following ports are not used either in system port binding or a channel: " +
-				unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()), ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()), ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -1104,7 +1104,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			AsynchronousAdapter adapter = (AsynchronousAdapter) port.eContainer();
 			String portName = port.getName();
 			if (adapter.getWrappedComponent().getType().getPorts().stream().anyMatch(it -> it.getName().equals(portName))) {
-				error("This port enshadows a port in the wrapped synchronous component.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("This port enshadows a port in the wrapped synchronous component.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
@@ -1112,7 +1112,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkWrapperClock(Clock clock) {
 		if (!isContainedInQueue(clock, (AsynchronousAdapter) clock.eContainer())) {
-			warning("Ticks of this clock are not forwarded to any messages queues.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("Ticks of this clock are not forwarded to any messages queues.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -1165,7 +1165,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkInputPossibility(AsynchronousAdapter wrapper) {
 		if (getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN).isEmpty() &&
 				wrapper.getClocks().isEmpty()) {
-			warning("This asynchronous adapter can never be executed.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+			warning("This asynchronous adapter can never be executed.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -1175,7 +1175,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			for (Event event : getSemanticEvents(Collections.singleton(port), EventDirection.IN)) {
 				if (!isContainedInQueue(port, event, wrapper)) {
 					warning("Event " + event.getName() + " of port " + port.getName() + 
-						" is not forwarded to a message queue.", ConstraintModelPackage.Literals.NAMED_ELEMENT__NAME);
+						" is not forwarded to a message queue.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 				}
 			}
 		}

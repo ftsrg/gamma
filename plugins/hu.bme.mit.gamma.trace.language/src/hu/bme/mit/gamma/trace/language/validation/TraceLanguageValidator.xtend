@@ -28,7 +28,7 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import org.eclipse.xtext.EcoreUtil2
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.InstanceState
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
@@ -42,7 +42,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	def checkParameters(ExecutionTrace executionTrace) {
 		val type = executionTrace.component
 		if (executionTrace.getArguments().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
+			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 	}
 	
@@ -109,7 +109,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 			val variable = variableState.declaration
 			val variables = type.variableDeclarations
 			if (!variables.contains(variable)) {
-				error("This is not a valid variable in the specified statechart.", ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
+				error("This is not a valid variable in the specified statechart.", ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
 			}
 		}
 	}

@@ -7,7 +7,7 @@ Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.querygenerator.application,
  hu.bme.mit.gamma.querygenerator.patterns
 Require-Bundle: hu.bme.mit.gamma.statechart.model,
- hu.bme.mit.gamma.constraint.model,
+ hu.bme.mit.gamma.expression.model,
  org.eclipse.emf.ecore,
  org.eclipse.viatra.query.runtime,
  org.eclipse.xtext.xbase.lib,

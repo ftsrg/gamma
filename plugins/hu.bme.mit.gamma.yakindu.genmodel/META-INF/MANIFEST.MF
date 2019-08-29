@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Generator Language Metamodel
+Bundle-Name: Gamma Genmodel Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.genmodel;singleton:=true
 Bundle-Version: 2.1.3.qualifier
 Bundle-ClassPath: .
@@ -12,7 +12,7 @@ Export-Package: hu.bme.mit.gamma.yakindu.genmodel,
  hu.bme.mit.gamma.yakindu.genmodel.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
- hu.bme.mit.gamma.constraint.model;visibility:=reexport,
+ hu.bme.mit.gamma.expression.model;visibility:=reexport,
  hu.bme.mit.gamma.statechart.model;visibility:=reexport,
  hu.bme.mit.gamma.trace.model;visibility:=reexport,
  org.yakindu.sct.model.sgraph;visibility:=reexport,

@@ -29,12 +29,12 @@ import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition;
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression;
-import hu.bme.mit.gamma.constraint.model.Type;
-import hu.bme.mit.gamma.constraint.model.TypeReference;
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 /**
  * This class contains custom validation rules. 

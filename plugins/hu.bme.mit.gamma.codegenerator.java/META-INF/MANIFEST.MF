@@ -6,7 +6,7 @@ Bundle-Version: 2.1.3.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.codegenerator.java,
  hu.bme.mit.gamma.codegenerator.java.queries
-Require-Bundle: hu.bme.mit.gamma.constraint.model,
+Require-Bundle: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
  org.yakindu.sct.model.sgraph,
  org.yakindu.base.types,

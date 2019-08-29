@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.constraint.model.Declaration
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.ClockTickReference
 import hu.bme.mit.gamma.statechart.model.EventTrigger

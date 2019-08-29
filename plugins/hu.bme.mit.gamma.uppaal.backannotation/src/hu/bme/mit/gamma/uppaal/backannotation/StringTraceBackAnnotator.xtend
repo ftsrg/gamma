@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.backannotation
 
-import hu.bme.mit.gamma.constraint.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ConstraintModelFactory
-import hu.bme.mit.gamma.constraint.model.Expression
-import hu.bme.mit.gamma.constraint.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
@@ -87,7 +87,7 @@ class StringTraceBackAnnotator {
 	protected Package gammaPackage
 	protected Component component
 	
-	protected final extension ConstraintModelFactory cntFact = ConstraintModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory cntFact = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
 	new(ResourceSet resourceSet, String stringUppaalTrace) {

@@ -6,7 +6,7 @@ Bundle-Version: 2.1.3.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.transformation,
  hu.bme.mit.gamma.uppaal.transformation.queries
-Require-Bundle: hu.bme.mit.gamma.constraint.model,
+Require-Bundle: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
  org.eclipse.viatra.transformation.runtime.emf,
  org.eclipse.viatra.transformation.evm,

@@ -10,12 +10,12 @@
  ********************************************************************************/
 grammar hu.bme.mit.gamma.expression.language.ExpressionLanguage with org.eclipse.xtext.common.Terminals
 
-import "http://www.mit.bme.hu/gamma/constraint/Model" 
+import "http://www.mit.bme.hu/gamma/expression/Model" 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 
 ///////////////////////////////////////////
 
-ConstraintSpecification returns ConstraintSpecification:
+ExpressionPackage returns ExpressionPackage:
 	"specification" name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? '{'
 		(
 			typeDeclarations+=TypeDeclaration |

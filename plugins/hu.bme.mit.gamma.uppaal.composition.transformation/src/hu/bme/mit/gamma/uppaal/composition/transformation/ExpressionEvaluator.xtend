@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.constraint.model.AddExpression
-import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
-import hu.bme.mit.gamma.constraint.model.DivideExpression
-import hu.bme.mit.gamma.constraint.model.Expression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.MultiplyExpression
-import hu.bme.mit.gamma.constraint.model.ParameterDeclaration
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.SubtractExpression
+import hu.bme.mit.gamma.expression.model.AddExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.MultiplyExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstancesWithParameters
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 

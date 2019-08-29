@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -113,7 +113,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			return Scopes.scopeFor(states)
 		}
-		if (context instanceof InstanceVariableState && reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
+		if (context instanceof InstanceVariableState && reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 			val instanceVariableState = context as InstanceVariableState
 			val instance = instanceVariableState.instance
 			val instanceType = instance.type

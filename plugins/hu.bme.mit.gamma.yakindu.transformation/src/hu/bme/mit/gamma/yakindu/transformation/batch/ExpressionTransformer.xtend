@@ -10,21 +10,21 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
-import hu.bme.mit.gamma.constraint.model.AddExpression
-import hu.bme.mit.gamma.constraint.model.ArithmeticExpression
-import hu.bme.mit.gamma.constraint.model.BinaryExpression
-import hu.bme.mit.gamma.constraint.model.BooleanExpression
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DecimalLiteralExpression
-import hu.bme.mit.gamma.constraint.model.DivideExpression
-import hu.bme.mit.gamma.constraint.model.FalseExpression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.MultiplyExpression
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.SubtractExpression
-import hu.bme.mit.gamma.constraint.model.TrueExpression
-import hu.bme.mit.gamma.constraint.model.UnaryExpression
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.AddExpression
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.BooleanExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
+import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.MultiplyExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SubtractExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
@@ -88,7 +88,7 @@ class ExpressionTransformer {
     protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     protected extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
     protected extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
-	protected extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+	protected extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
 	
 	new(IModelManipulations manipulation, StatechartCompilation statechartCompilation, 

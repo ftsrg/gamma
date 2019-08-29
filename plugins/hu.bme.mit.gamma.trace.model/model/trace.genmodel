@@ -5,7 +5,7 @@
     modelName="Trace" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
     editPluginID="hu.bme.mit.gamma.trace.model.edit" editorPluginID="hu.bme.mit.gamma.trace.model.editor"
-    usedGenPackages="../../hu.bme.mit.gamma.constraint.model/model/constraint.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model"
+    usedGenPackages="../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model ../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>trace.ecore</foreignModel>
   <genPackages prefix="Trace" basePackage="hu.bme.mit.gamma.trace" disposableProviderFactory="true"
