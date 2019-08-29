@@ -6,7 +6,7 @@ Bundle-Version: 2.1.3.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.genmodel.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.yakindu.genmodel,
- hu.bme.mit.gamma.constraint.language,
+ hu.bme.mit.gamma.expression.language,
  org.eclipse.xtext,
  org.eclipse.xtext.xbase,
  org.eclipse.equinox.common;bundle-version="3.5.0",

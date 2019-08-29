@@ -5,7 +5,7 @@ Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.1.3.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.language; singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: hu.bme.mit.gamma.constraint.language,
+Require-Bundle: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.trace.model,
  org.eclipse.xtext,
  org.eclipse.xtext.xbase,

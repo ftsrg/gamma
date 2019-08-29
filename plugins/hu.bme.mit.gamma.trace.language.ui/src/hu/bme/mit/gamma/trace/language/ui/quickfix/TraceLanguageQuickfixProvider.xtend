@@ -10,14 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.ui.quickfix
 
-import hu.bme.mit.gamma.constraint.language.ui.quickfix.ConstraintLanguageQuickfixProvider
+import hu.bme.mit.gamma.expression.language.ui.quickfix.ExpressionLanguageQuickfixProvider
 
 /**
  * Custom quickfixes.
  *
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
-class TraceLanguageQuickfixProvider extends ConstraintLanguageQuickfixProvider {
+class TraceLanguageQuickfixProvider extends ExpressionLanguageQuickfixProvider {
 
 //	@Fix(TraceLanguageValidator.INVALID_NAME)
 //	def capitalizeName(Issue issue, IssueResolutionAcceptor acceptor) {

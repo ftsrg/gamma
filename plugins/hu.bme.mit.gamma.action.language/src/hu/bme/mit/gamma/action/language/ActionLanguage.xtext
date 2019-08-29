@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-grammar hu.bme.mit.gamma.action.language.ActionLanguage with hu.bme.mit.gamma.constraint.language.ConstraintLanguage
+grammar hu.bme.mit.gamma.action.language.ActionLanguage with hu.bme.mit.gamma.expression.language.ExpressionLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel

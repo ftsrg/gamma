@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Expression Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.1.3.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.expression.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.constraint.model,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: hu.bme.mit.gamma.expression.language.ide.contentassist.antlr.internal,
+ hu.bme.mit.gamma.expression.language.ide.contentassist.antlr
+Automatic-Module-Name: hu.bme.mit.gamma.expression.language.ide
+

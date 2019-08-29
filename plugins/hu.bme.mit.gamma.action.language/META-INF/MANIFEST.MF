@@ -13,7 +13,7 @@ Export-Package: hu.bme.mit.gamma.action.language.generator,
  hu.bme.mit.gamma.action.language.validation,
  hu.bme.mit.gamma.action.language.formatting,
  hu.bme.mit.gamma.action.language.parser.antlr.internal
-Require-Bundle: hu.bme.mit.gamma.constraint.language,
+Require-Bundle: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.action.model,
  org.eclipse.xtext,
  org.eclipse.xtext.xbase,

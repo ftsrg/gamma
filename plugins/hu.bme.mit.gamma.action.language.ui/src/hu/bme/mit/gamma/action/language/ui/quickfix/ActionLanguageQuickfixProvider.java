@@ -10,14 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.ui.quickfix;
 
-import hu.bme.mit.gamma.constraint.language.ui.quickfix.ConstraintLanguageQuickfixProvider;
+import hu.bme.mit.gamma.expression.language.ui.quickfix.ExpressionLanguageQuickfixProvider;
 
 /**
  * Custom quickfixes.
  *
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
-public class ActionLanguageQuickfixProvider extends ConstraintLanguageQuickfixProvider {
+public class ActionLanguageQuickfixProvider extends ExpressionLanguageQuickfixProvider {
 
 //	@Fix(ActionLanguageValidator.INVALID_NAME)
 //	public void capitalizeName(final Issue issue, IssueResolutionAcceptor acceptor) {
