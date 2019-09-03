@@ -7,6 +7,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Action" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="Statement" abstract="true" eSuperTypes="#//Action"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EmptyStatement" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="Block" eSuperTypes="#//Action">
     <eStructuralFeatures xsi:type="ecore:EReference" name="actions" upperBound="-1"
         eType="#//Action" containment="true"/>

@@ -14,6 +14,7 @@
     </genClasses>
     <genClasses image="false" ecoreClass="action.ecore#//Action"/>
     <genClasses image="false" ecoreClass="action.ecore#//Statement"/>
+    <genClasses ecoreClass="action.ecore#//EmptyStatement"/>
     <genClasses ecoreClass="action.ecore#//Block">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//Block/actions"/>
     </genClasses>
