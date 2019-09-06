@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.statechart.model.derivedfeatures;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -93,14 +94,14 @@ public class StatechartModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
 	
-	public static Collection<Transition> getOutgoingTransitions(StateNode node) {
+	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toSet());
+		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toList());
 	}
 	
-	public static Collection<Transition> getIncomingTransitions(StateNode node) {
+	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toSet());
+		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toList());
 	}
 	
 	public static Collection<StateNode> getStateNodes(CompositeElement compositeElement) {

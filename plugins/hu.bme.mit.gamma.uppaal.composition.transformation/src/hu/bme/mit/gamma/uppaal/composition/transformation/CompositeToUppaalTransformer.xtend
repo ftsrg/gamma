@@ -380,6 +380,7 @@ class CompositeToUppaalTransformer {
 		compositeStateExitRule
 		entryTimeoutActionsOfStatesRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
+		transitionPriorityRule.fireAllCurrent 
 		isActiveRule.fireAllCurrent
 		// Creating urgent locations in front of composite states, so entry is not immediate
 		compositeStateEntryCompletion
@@ -683,7 +684,7 @@ class CompositeToUppaalTransformer {
      * Appends an Uppaal guard to the guard of the given edge. The operator between the old and the new guard can be given too.
      */
     private def addGuard(Edge edge, Expression guard, LogicalOperator operator) {
-    	if (edge.guard !== null) {
+    	if (edge.guard !== null && guard !== null) {
 			// Getting the old reference
 			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
@@ -3842,6 +3843,36 @@ class CompositeToUppaalTransformer {
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			if (it.region.subregion) {
 				edge.createIsActiveGuard
+			}
+		}
+	].build
+	
+	/**
+	 * Places guards on edges that specify the priority of transitions of a particular state.
+	 * It depends on all rules that place semantical guards on edges.
+	 */
+	val transitionPriorityRule = createRule(Transitions.instance).action [
+		if (it.transition.containingStatechart.isPrioritizedTransitions) {
+			val sourceState = it.transition.sourceState
+			val outgoingTransitions = sourceState.outgoingTransitions
+			val transitionIndex = outgoingTransitions.indexOf(it.transition)
+			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
+				val owner = edge.owner
+				// Considering that the order in is correct with respect to the priority
+				for (var i = 0; i < transitionIndex; i++) {
+					val higherPriorityTransition = outgoingTransitions.get(i)
+					val higherPriorityEdges = higherPriorityTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner]
+					// Timings are not returned like this, but this is not a problem
+					// due to the fact that timings are fired in isStable state
+					for (higherPriorityGuard : higherPriorityEdges.map[it.guard].filterNull) {
+						edge.addGuard(
+							createNegationExpression => [
+								it.negatedExpression = higherPriorityGuard.clone(true, true)
+							],
+							LogicalOperator.AND
+						)
+					}
+				}
 			}
 		}
 	].build
