@@ -162,6 +162,8 @@ class YakinduToGammaTransformer {
     		else statechartCompilation.packageName.head
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
+    		// Yakindu models are always prioritized
+    		it.prioritizedTransitions = true
     	]
         gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
     		it.name = packageName
