@@ -1,28 +1,27 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Command Handler of Gamma Generator Models
-Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.transformation.commandhandler;singleton:=true
+Bundle-Name: Gamma UI
+Bundle-SymbolicName: hu.bme.mit.gamma.ui
 Bundle-Version: 2.1.3.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.ui,
- hu.bme.mit.gamma.yakindu.transformation,
+Require-Bundle: org.eclipse.equinox.registry,
  org.eclipse.core.resources,
- org.eclipse.equinox.registry,
- org.eclipse.emf.ecore,
  org.yakindu.sct.model.sgraph,
+ de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.dialog,
  hu.bme.mit.gamma.yakindu.transformation.traceability,
+ hu.bme.mit.gamma.yakindu.transformation,
  hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.statechart.language.ui,
  hu.bme.mit.gamma.codegenerator.java,
  hu.bme.mit.gamma.uppaal.composition.transformation,
- de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.uppaal.serializer,
  hu.bme.mit.gamma.uppaal.transformation,
- hu.bme.mit.gamma.uppaal.backannotation
-Export-Package: hu.bme.mit.gamma.yakindu.transformation.commandhandler
-Bundle-Vendor: BME-FTSRG
-Automatic-Module-Name: hu.bme.mit.gamma.yakindu.transformation.commandhandler
+ hu.bme.mit.gamma.uppaal.backannotation,
+ hu.bme.mit.gamma.ui
+Export-Package: hu.bme.mit.gamma.ui
