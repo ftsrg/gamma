@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeUnit
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
@@ -3852,15 +3853,15 @@ class CompositeToUppaalTransformer {
 	 * It depends on all rules that place semantical guards on edges.
 	 */
 	val transitionPriorityRule = createRule(Transitions.instance).action [
-		if (it.transition.containingStatechart.isPrioritizedTransitions) {
-			val sourceState = it.transition.sourceState
-			val outgoingTransitions = sourceState.outgoingTransitions
-			val transitionIndex = outgoingTransitions.indexOf(it.transition)
+		// Note that the order in which the transitions are returned matters, as the guards of
+		// already handled edges can be cloned - ugly (same negated expressions might appear),
+		// but not a problem in reality
+		val containingStatechart = it.transition.containingStatechart
+		if (containingStatechart.transitionPriority != TransitionPriority.OFF) {
+			val prioritizedTransitions = it.transition.prioritizedTransitions
 			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 				val owner = edge.owner
-				// Considering that the order in is correct with respect to the priority
-				for (var i = 0; i < transitionIndex; i++) {
-					val higherPriorityTransition = outgoingTransitions.get(i)
+				for (higherPriorityTransition : prioritizedTransitions) {
 					val higherPriorityEdges = higherPriorityTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner]
 					// Timings are not returned like this, but this is not a problem
 					// due to the fact that timings are fired in isStable state
@@ -3876,6 +3877,37 @@ class CompositeToUppaalTransformer {
 			}
 		}
 	].build
+	
+	private def getPrioritizedTransitions(Transition gammaTransition) {
+		val gammaStatechart = gammaTransition.containingStatechart
+		val transitionPriority = gammaStatechart.transitionPriority
+		val gammaOutgoingTransitions = gammaTransition.sourceState.outgoingTransitions
+		val prioritizedTransitions = newLinkedList
+		switch (transitionPriority) {
+			case OFF: {
+				// No operation
+			}
+			case ORDER_BASED : {
+				for (gammaOutgoingTransition : gammaOutgoingTransitions) {
+					if (gammaOutgoingTransitions.indexOf(gammaOutgoingTransition) < 
+							gammaOutgoingTransitions.indexOf(gammaTransition)) {
+						prioritizedTransitions += gammaOutgoingTransition
+					}
+				}
+			}
+			case VALUE_BASED : {
+				for (gammaOutgoingTransition : gammaOutgoingTransitions) {
+					if (gammaOutgoingTransition.priority > gammaTransition.priority) {
+						prioritizedTransitions += gammaOutgoingTransition
+					}
+				}
+			}
+			default: {
+				throw new IllegalArgumentException("Not known priority enum literal: " + transitionPriority)
+			}
+		}
+		return prioritizedTransitions
+	}
 	
 	/**
 	 * Places guards (conjunction of the negated expressions of adjacent edges) for the default edges of choices. 

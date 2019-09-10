@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.validation;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,6 +63,7 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
+import hu.bme.mit.gamma.statechart.model.TransitionPriority;
 import hu.bme.mit.gamma.statechart.model.Trigger;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
@@ -229,6 +231,17 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			for (SetTimeoutAction timeoutSetting : timeoutSettings) {
 				error("This timeout declaration is set more than once.", timeoutSetting, StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION);
 			}
+		}
+	}
+	
+	@Check
+	public void checkTransitionPriority(Transition transition) {
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		if (transition.getPriority() != null && !transition.getPriority().equals(BigInteger.ZERO) &&
+				statechart.getTransitionPriority() != TransitionPriority.VALUE_BASED) {
+			warning("The transition priority setting is not set to value-based, it is set to " 
+				+ statechart.getTransitionPriority() + " therefore this priority specification has no effect.",
+				CompositePackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
 		}
 	}
 	
@@ -1209,7 +1222,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			int priorityValue = queue.getPriority().intValue();
 			if (priorityValues.contains(priorityValue)) {
 				warning("Another queue with the same priority is already defined.", queue,
-						CompositePackage.Literals.MESSAGE_QUEUE__PRIORITY);
+						CompositePackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
 			}
 			else {
 				priorityValues.add(priorityValue);

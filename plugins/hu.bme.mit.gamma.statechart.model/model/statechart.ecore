@@ -26,12 +26,17 @@
         eType="#//Transition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="prioritizedTransitions"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="transitionPriority" lowerBound="1"
+        eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>
     <eLiterals name="BOTTOM_UP" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="TransitionPriority">
+    <eLiterals name="OFF"/>
+    <eLiterals name="ORDER_BASED" value="1"/>
+    <eLiterals name="VALUE_BASED" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventSource" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TimeoutDeclaration" eSuperTypes="#//EventSource"/>
@@ -69,7 +74,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ForkState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="JoinState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AnnotatedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AnnotatedElement #//composite/PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" eType="#//Trigger"
@@ -205,6 +210,10 @@
     <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
       <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
     </eAnnotations>
+    <eClassifiers xsi:type="ecore:EClass" name="PrioritizedElement">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
+          defaultValueLiteral="0"/>
+    </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="ports" upperBound="-1"
           eType="#//Port" containment="true"/>
@@ -252,9 +261,7 @@
       <eLiterals name="RUN_TO_COMPLETION" value="1"/>
       <eLiterals name="RESET" value="2"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
-          defaultValueLiteral="0"/>
+    <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//composite/PrioritizedElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
           containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"

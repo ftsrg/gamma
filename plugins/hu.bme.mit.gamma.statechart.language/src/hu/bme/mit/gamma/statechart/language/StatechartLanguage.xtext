@@ -168,7 +168,7 @@ enum RealizationMode returns RealizationMode:
 StatechartDefinition returns StatechartDefinition:
 	(
 		('@Schedule' '=' schedulingOrder=SchedulingOrder)? &
-		(prioritizedTransitions ?= '@PrioritizedTransitions')?
+		('@PrioritizedTransitions' '=' transitionPriority=TransitionPriority)?
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
@@ -193,6 +193,9 @@ enum SchedulingOrder returns SchedulingOrder:
 	TOP_DOWN = 'top-down' | BOTTOM_UP = 'bottom-up'
 ;
 
+enum TransitionPriority returns TransitionPriority:
+	OFF = 'off' | ORDER_BASED = 'order-based' | VALUE_BASED = 'value-based'
+;
 
 StatechartReference returns StatechartReference:
 	{StatechartReference}
@@ -207,8 +210,7 @@ Region returns Region:
 
 Transition returns Transition:
 	('@' annotation=ID)?
-	'transition'
-	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	'transition' ('(' priority=INTEGER ')')?
 	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
 	(
 		('when' trigger=Trigger)?

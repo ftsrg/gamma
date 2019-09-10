@@ -109,6 +109,7 @@ import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 import hu.bme.mit.gamma.statechart.model.composite.CompositePackage
+import hu.bme.mit.gamma.statechart.model.TransitionPriority
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -163,7 +164,7 @@ class YakinduToGammaTransformer {
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
     		// Yakindu models are always prioritized
-    		it.prioritizedTransitions = true
+    		it.transitionPriority = TransitionPriority.ORDER_BASED
     	]
         gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
     		it.name = packageName
