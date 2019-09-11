@@ -40,29 +40,15 @@ import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.uppaal.transformation.queries.ExpressionTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.MessageQueueTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.PortTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.Traces
-import hu.bme.mit.gamma.uppaal.transformation.traceability.AbstractTrace
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
-import java.util.Set
-import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
-import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.ArithmeticExpression
@@ -82,139 +68,18 @@ import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
 
 class ExpressionTransformer {
-	
-	protected ViatraQueryEngine traceEngine
-    protected G2UTrace traceRoot
+    // For model creation
+	final extension IModelManipulations manipulation	
+    // Packages
+    final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+    final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
+    final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+    // Trace
+    protected final extension Trace traceModel
     
-	extension IModelManipulations manipulation	
-    
-    extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-    extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
-    extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-    
-	new(IModelManipulations manipulation, G2UTrace traceRoot, ViatraQueryEngine traceEngine) {
+	new(IModelManipulations manipulation, Trace traceModel) {
 		this.manipulation = manipulation
-		this.traceRoot = traceRoot 
-		this.traceEngine = ViatraQueryEngine.on(new EMFScope(traceRoot))
-	}
-	
-	/**
-     * Returns a Set of EObjects that are created of the given "from" object.
-     */
-    def getAllValuesOfTo(EObject from) {
-    	return Traces.Matcher.on(traceEngine).getAllValuesOfto(null, from)
-    }
-    
-    /**
-     * Returns a Set of EObjects that the given "to" object is created of.
-     */
-    def getAllValuesOfFrom(EObject to) {
-    	return Traces.Matcher.on(traceEngine).getAllValuesOffrom(null, to)
-    }
-    
-    def isTraced(EObject object) {
-    	return !object.allValuesOfTo.empty || 
-    		!ExpressionTraces.Matcher.on(traceEngine).getAllValuesOfto(null, object).empty
-    }
-    
-    /** 
-     * Returns the ComponentInstance the given object is element of.
-     */
-    def ComponentInstance getOwner(EObject object) {
-    	val traces = InstanceTraces.Matcher.on(traceEngine).getAllValuesOfinstance(null, object)
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + object + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
-		}
-		return traces.head		
-    }
-    
-    def getPort(VariableDeclaration variable) {
-    	val traces = PortTraces.Matcher.on(traceEngine).getAllValuesOfport(null, variable)
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
-		}
-		return traces.head		
-    }
-    
-    /** 
-     * Returns the MessageQueueTrace the given queue is saved in.
-     */
-    def MessageQueueTrace getTrace(MessageQueue queue, ComponentInstance owner) {
-    	var traces = MessageQueueTraces.Matcher.on(traceEngine).getAllValuesOftrace(queue)
-    	if (owner !== null) {
-			traces = traces.filter[it.queue.owner === owner].toSet
-		}
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! " + traces)
-		}
-		return traces.head		
-    }
-    
-     /** 
-     * Creates a message queue trace.
-     */
-    def addQueueTrace(MessageQueue queue, DataVariableDeclaration sizeConst, DataVariableDeclaration capacityVar,
-    	FunctionDeclaration peekFunction, FunctionDeclaration shiftFunction, FunctionDeclaration pushFunction,
-    	FunctionDeclaration isFullFunction, DataVariableDeclaration array) {
-    	traceRoot.createChild(g2UTrace_Traces, messageQueueTrace) as MessageQueueTrace => [
-    		it.queue = queue
-    		it.sizeConst = sizeConst
-    		it.capacityVar = capacityVar
-    		it.peekFunction = peekFunction
-    		it.shiftFunction = shiftFunction
-    		it.pushFunction = pushFunction
-    		it.isFullFunction = isFullFunction
-    		it.array = array
-    	]
-    }
-    
-    /**
-	 * Responsible for putting the "from" -> "to" mapping into a trace. If the "from" object is already in
-	 * another trace object, it is fetched and it will contain the "to" object as well.
-	 */
-	def addToTrace(EObject from, Set<EObject> to, EClass traceClass) {
-		// So from values will not be duplicated if they are already present in the trace model
-		var AbstractTrace aTrace 
-		switch (traceClass) {
-			case instanceTrace: {
-				val instance = from as ComponentInstance
-				aTrace = InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(instance, null).head
-			}
-			case portTrace: {
-				val port = from as Port
-				aTrace = PortTraces.Matcher.on(traceEngine).getAllValuesOftrace(port, null).head
-			}
-			case expressionTrace: 
-				aTrace = ExpressionTraces.Matcher.on(traceEngine).getAllValuesOftrace(from, null).head
-			case trace: 
-				aTrace = Traces.Matcher.on(traceEngine).getAllValuesOftrace(from, null).head 
-		}
-		// Otherwise a new trace object is created
-		if (aTrace === null) {
-			aTrace = traceRoot.createChild(g2UTrace_Traces, traceClass) as AbstractTrace
-			switch (traceClass) {
-				case instanceTrace: 			
-					aTrace.set(instanceTrace_Owner, from)
-				case portTrace: 
-					aTrace.set(portTrace_Port, from)
-				case expressionTrace: 			
-					aTrace.addTo(expressionTrace_From, from)
-				case trace: 
-					aTrace.addTo(trace_From, from)
-			}
-		}
-		val AbstractTrace finalTrace = aTrace
-		switch (traceClass) {
-				case instanceTrace: 			
-					to.forEach[finalTrace.addTo(instanceTrace_Element, it)]
-				case portTrace: 
-					to.forEach[finalTrace.addTo(portTrace_Declarations, it)]
-				case expressionTrace: 			
-					to.forEach[finalTrace.addTo(expressionTrace_To, it)]
-				case trace: 
-					to.forEach[finalTrace.addTo(trace_To, it)]
-		}
-		return finalTrace
+		this.traceModel = traceModel
 	}
 	
 	def void transformAssignmentAction(EObject container, EReference reference, AssignmentStatement action, ComponentInstance owner) {

@@ -227,22 +227,15 @@ class CompositeToUppaalTransformer {
     // Transformation-related extensions
     protected extension BatchTransformation transformation
     protected extension BatchTransformationStatements statements
-    
     // Transformation rule-related extensions
     protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
     protected extension IModelManipulations manipulation
-	
 	// Logger
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
-	
 	// Arguments for the top level component
 	protected List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.expression.model.Expression>
-	
 	// Engine on the Gamma resource 
     protected ViatraQueryEngine engine
-     // Engine on the trace resource 
-    protected ViatraQueryEngine traceEngine
-        
     protected final ResourceSet resources
     // The Gamma composite system to be transformed
     protected final Component component
@@ -252,16 +245,11 @@ class CompositeToUppaalTransformer {
 	protected final G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
-	// isStable variable
-	protected final String isStableVarName = "isStable"
-	protected DataVariableDeclaration isStableVar
-	
-	// Message struct tpyes
+	// Message struct types
 	protected DeclaredType messageStructType
 	protected StructTypeSpecification messageStructTypeDef
 	protected DataVariableDeclaration messageEvent
 	protected DataVariableDeclaration messageValue
-	
 	// Gamma factory for the millisecond multiplication
 	protected final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
 	// UPPAAL packages
@@ -273,10 +261,13 @@ class CompositeToUppaalTransformer {
     protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
     protected final extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
     protected final extension SystemPackage sysPackage = SystemPackage.eINSTANCE
-    
+    // UPPAAL factories
     protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
     protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
     protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
+	// isStable variable
+	protected final String isStableVarName = "isStable"
+	protected DataVariableDeclaration isStableVar
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
 	// Minimal element set: no functions
@@ -291,11 +282,15 @@ class CompositeToUppaalTransformer {
     protected final String transitionIdVarName = "transitionId"
     protected DataVariableDeclaration transitionIdVar
     protected int transitionId = 0
-    
+    // Auxiliary transformer objects
+    protected extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
+    // Auxiliary objects
     protected extension ExpressionTransformer expTransf
     protected extension ExpressionCopier expCop
-    protected extension ExpressionEvaluator expEval
+    protected final extension ExpressionEvaluator expEval
     protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
+    // Trace
+    protected extension Trace traceModel
 
     new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
     		List<SynchronousComponentInstance> testedComponentsForStates,
@@ -312,13 +307,20 @@ class CompositeToUppaalTransformer {
         	it.gammaPackage = this.sourceRoot
         	it.nta = this.target
         ]
-        // Create EMF scope and EMF IncQuery engine based on the Gamma resource
-        val scope = new EMFScope(this.resources)
-        engine = ViatraQueryEngine.on(scope);      
-        // Create EMF scope and EMF IncQuery engine based on created root element of traces
-        val traceScope = new EMFScope(traceRoot)
-        traceEngine = ViatraQueryEngine.on(traceScope);   
-        createTransformation 
+        // Create VIATRA engine based on the Gamma resource
+        this.engine = ViatraQueryEngine.on(new EMFScope(this.resources));      
+        // Create VIATRA auxiliary objects
+        this.manipulation = new SimpleModelManipulations(engine)
+        this.transformation = BatchTransformation.forEngine(engine).build
+        this.statements = transformation.transformationStatements
+        // Trace
+        this.traceModel = new Trace(this.manipulation, this.traceRoot)
+        // Auxiliary objects
+        this.expTransf = new ExpressionTransformer(this.manipulation, this.traceModel)
+        this.expCop = new ExpressionCopier(this.manipulation, this.traceModel) 
+        this.expEval = new ExpressionEvaluator(this.engine)
+        // Auxiliary transformation objects
+        this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.target, this.traceModel) 
     }
     
     new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
@@ -392,8 +394,8 @@ class CompositeToUppaalTransformer {
 		// Firing the rules for async components 
 		eventConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]
 		clockConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]
-		{topWrapperSyncChannelRule.fireAllCurrent
-		instanceWrapperSyncChannelRule.fireAllCurrent}
+		{getTopWrapperSyncChannelRule.fireAllCurrent
+		getInstanceWrapperSyncChannelRule.fireAllCurrent}
 		// Creating the sync schedulers: here the scheduler template and the priorities are set
 		{topSyncOrchestratorRule.fireAllCurrent
 		topWrappedSyncOrchestratorRule.fireAllCurrent
@@ -420,19 +422,6 @@ class CompositeToUppaalTransformer {
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
     }
-
-    private def createTransformation() {
-        //Create VIATRA model manipulations
-        this.manipulation = new SimpleModelManipulations(engine)
-        //Create VIATRA Batch transformation
-        transformation = BatchTransformation.forEngine(engine).build
-        //Initialize batch transformation statements
-        statements = transformation.transformationStatements
-        expTransf = new ExpressionTransformer(this.manipulation, this.traceRoot, this.traceEngine)
-        expCop = new ExpressionCopier(this.manipulation, this.traceRoot, this.traceEngine, expTransf) 
-        expEval = new ExpressionEvaluator(this.engine)
-    }
-
     
     /**
      * This method is responsible for the initialization of the NTA.
@@ -1427,19 +1416,7 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-	val topWrapperSyncChannelRule = createRule(TopWrapperComponents.instance).action [
-		val asyncChannel = target.globalDeclarations.createSynchronization(false, false, it.wrapper.asyncSchedulerChannelName)
-		val syncChannel = target.globalDeclarations.createSynchronization(false, false, it.wrapper.syncSchedulerChannelName)
-		val isInitializedVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool,  it.wrapper.initializedVariableName)
-		addToTrace(it.wrapper, #{asyncChannel, syncChannel, isInitializedVar}, trace)
-	].build
-	
-	val instanceWrapperSyncChannelRule = createRule(SimpleWrapperInstances.instance).action [
-		val asyncChannel = target.globalDeclarations.createSynchronization(false, false, it.instance.asyncSchedulerChannelName)
-		val syncChannel = target.globalDeclarations.createSynchronization(false, false, it.instance.syncSchedulerChannelName)
-		val isInitializedVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool,  it.instance.initializedVariableName)
-		addToTrace(it.instance, #{asyncChannel, syncChannel, isInitializedVar}, trace) // No instanceTrace as it would be harder to retrieve the elements
-	].build
+
 	 
     val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
@@ -4328,7 +4305,6 @@ class CompositeToUppaalTransformer {
         if (transformation !== null) {
             transformation.dispose
         }
-        traceEngine = null
         transformation = null
         return
     }
