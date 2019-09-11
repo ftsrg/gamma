@@ -27,11 +27,11 @@ import static com.google.common.base.Preconditions.checkState
 class ExpressionEvaluator {
 	
 	// Engine on the Gamma resource 
-    protected ViatraQueryEngine engine
-    
-    new(ViatraQueryEngine engine) {
-    	this.engine = engine
-    }
+	protected final ViatraQueryEngine engine
+	
+	new(ViatraQueryEngine engine) {
+		this.engine = engine
+	}
 	
 	def dispatch int evaluate(Expression exp) {
 		throw new IllegalArgumentException("Not transformable expression: " + exp)

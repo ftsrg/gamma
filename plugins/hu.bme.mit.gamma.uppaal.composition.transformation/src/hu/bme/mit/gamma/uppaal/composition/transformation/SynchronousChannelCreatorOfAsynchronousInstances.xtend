@@ -30,7 +30,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 	protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
 	protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
 	// Traceability package
-    protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+	protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	// Trace
 	protected final extension Trace modelTrace
 	// Rules
@@ -103,7 +103,5 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 			it.name = name
 		]
 	}
-	
-
 	
 }

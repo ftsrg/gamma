@@ -1,8 +1,18 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.statechart.model.Clock
+import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.StateNode
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.uppaal.transformation.queries.ClockRepresentations
+import hu.bme.mit.gamma.uppaal.transformation.queries.EventRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExpressionTraces
 import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
 import hu.bme.mit.gamma.uppaal.transformation.queries.MessageQueueTraces
@@ -14,14 +24,18 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.InstanceTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import java.util.Collections
 import java.util.HashSet
+import java.util.List
 import java.util.Set
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
+import uppaal.declarations.ChannelVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
+import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.BinaryExpression
@@ -32,16 +46,22 @@ import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
 import uppaal.templates.Edge
 import uppaal.templates.Location
+import uppaal.templates.LocationKind
 import uppaal.templates.Synchronization
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+
 class Trace {
-	
+	// EMF Trace model and engine
 	protected final ViatraQueryEngine traceEngine
 	protected final G2UTrace traceRoot
-	
+	// Model manipulation
 	final extension IModelManipulations manipulation	
-	
+	// Factories
 	final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+	// Auxiliary objects 
+	final extension EventHandler eventHandler = new EventHandler
 	
 	new(IModelManipulations manipulation, G2UTrace traceRoot) {
 		this.manipulation = manipulation
@@ -168,6 +188,130 @@ class Trace {
 		return finalTrace
 	}
 	
+	def getAsyncSchedulerChannel(AsynchronousAdapter wrapper) {
+		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.asyncSchedulerChannelName)].head
+	}
+	
+	def getSyncSchedulerChannel(AsynchronousAdapter wrapper) {
+		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.syncSchedulerChannelName)].head		
+	}
+	
+	def getInitializedVariable(AsynchronousAdapter wrapper) {
+		wrapper.allValuesOfTo.filter(DataVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.initializedVariableName)].head		
+	}
+	
+	def getAsyncSchedulerChannel(AsynchronousComponentInstance instance) {
+		instance.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(instance.asyncSchedulerChannelName)].head
+	}
+	
+	def getSyncSchedulerChannel(AsynchronousComponentInstance instance) {
+		instance.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(instance.syncSchedulerChannelName)].head		
+	}
+	
+	def getInitializedVariable(AsynchronousComponentInstance instance) {
+		instance.allValuesOfTo.filter(DataVariableDeclaration).filter[it.variable.head.name.startsWith(instance.initializedVariableName)].head		
+	}
+	
+	// These dispatch methods are for getting the proper source and target location
+	// of a simple edge based on the type of the source/target Gamma state node.
+	
+	def dispatch List<Location> getEdgeSource(EntryState entry) {
+		return entry.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList	
+	}
+	
+	def dispatch List<Location> getEdgeSource(State state) {
+		return state.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].toList
+	}
+	
+	def dispatch List<Location> getEdgeSource(StateNode stateNode) {
+		return stateNode.getAllValuesOfTo.filter(Location).toList
+	}
+	
+	def dispatch List<Location> getEdgeTarget(State state) {
+		return state.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList
+	}
+	
+	def dispatch List<Location> getEdgeTarget(EntryState entry) {
+		return entry.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList
+	}
+	
+	def dispatch List<Location> getEdgeTarget(StateNode stateNode) {
+		return stateNode.getAllValuesOfTo.filter(Location).toList
+	}
+	
+	/**
+	 * Returns the Uppaal const representing the given signal.
+	 */
+	def getConstRepresentation(Event event, Port port) {		
+		var variables = EventRepresentations.Matcher.on(traceEngine).getAllValuesOfrepresentation(port, event)
+		// If the size is 0, it may be because it is a statechart level event and must be transferred to system level: see old code
+		if (variables.size != 1) {
+			throw new IllegalArgumentException("This event has not one const representations: " + event.name + " Port: " + port.name + " " + variables)
+		}
+		return variables.head
+	}
+	
+	def getConstRepresentation(Clock clock) {
+		val variables = ClockRepresentations.Matcher.on(traceEngine).getAllValuesOfrepresentation(clock)
+		if (variables.size > 1) {
+			throw new IllegalArgumentException("This clock has more than one const representations: " + clock + " " + variables)
+		}
+		return variables.head
+	}
+	
+		/**
+	 * Returns the Uppaal toRaise boolean flag of a Gamma typed-signal.
+	 */
+	protected def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
+		var DataVariableDeclaration variable 
+		val variables = event.allValuesOfTo.filter(DataVariableDeclaration)
+				.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
+		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
+			// This is an out event
+			variable = variables.filter[it.variable.head.name.equals(event.getOutEventName(port, instance))].head
+		}		
+		else {		
+			// Else, this is an in event
+			if (instance.isCascade) {
+				// Cascade components have no toRaise variables, therefore the isRaised is returned
+				variable = event.getIsRaisedVariable(port, instance)
+			}
+			else {
+				variable = variables.filter[it.variable.head.name.equals(event.toRaiseName(port, instance))].head
+			}	
+		}
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no toRaiseEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+		}
+		return variable
+	}	
+	
+	/**
+	 * Returns the Uppaal isRaised boolean flag of a Gamma typed-signal.
+	 */
+	protected def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
+		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
+			&& it.owner == instance && it.variable.head.name.equals(event.isRaisedName(port, instance))].head
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+		}
+		return variable
+	}
+	
+	/**
+	 * Returns the Uppaal out-event boolean flag of a Gamma typed-signal.
+	 */
+	protected def getOutVariable(Event event, Port port, ComponentInstance instance) {
+		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
+			&& it.owner == instance && it.variable.head.name.equals(event.getOutEventName(port, instance))].head
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+		}
+		return variable
+	}
+	
+	// Add to a certain reference
+	
 	def addToTraceTo(EObject oldRef, EObject newRef) {
 		for	(oldTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, oldRef)) { // Always one trace
 			if (oldTrace.from.size > 1) {
@@ -187,6 +331,8 @@ class Trace {
 			addToTrace(from, #{newRef}, expressionTrace)		
 		}		
 	}
+	
+	// Trace removal
 	
 	def removeFromTraces(EObject object) {
 		val traces = newHashSet

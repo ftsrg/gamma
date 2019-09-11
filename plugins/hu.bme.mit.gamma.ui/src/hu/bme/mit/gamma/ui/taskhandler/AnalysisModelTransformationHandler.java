@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTrans
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
+import hu.bme.mit.gamma.uppaal.composition.transformation.Namings;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -102,13 +103,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
 		if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof StateCoverage)) {
 			UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(),
-				transformer.getIsStableVarName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
+				Namings.getIsStableVariableName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 		}
 		if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof TransitionCoverage)) {
 			// Suffix present? If not, all transitions can be reached; if yes, some transitions
 			// are covered by transition fired in the same step, but the end is a stable state
-			String querySuffix = transformer.getIsStableVarName(); 
-			UppaalModelSerializer.createTransitionFireabilityQueries(transformer.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
+			String querySuffix = Namings.getIsStableVariableName(); 
+			UppaalModelSerializer.createTransitionFireabilityQueries(Namings.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
 				querySuffix, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 		}
 		transformer.dispose();

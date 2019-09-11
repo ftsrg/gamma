@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.PseudoState
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.State
@@ -58,7 +57,6 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.DistinctWrapperInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
@@ -96,7 +94,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperE
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.WrapperInEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ChoicesAndMerges
-import hu.bme.mit.gamma.uppaal.transformation.queries.ClockRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.CompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.DeclarationInitializations
@@ -106,7 +103,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.Entries
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryRaisingActionsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfStates
-import hu.bme.mit.gamma.uppaal.transformation.queries.EventRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
@@ -222,6 +218,7 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
 
 class CompositeToUppaalTransformer {
     // Transformation-related extensions
@@ -266,7 +263,6 @@ class CompositeToUppaalTransformer {
     protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
     protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	// isStable variable
-	protected final String isStableVarName = "isStable"
 	protected DataVariableDeclaration isStableVar
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
@@ -279,7 +275,6 @@ class CompositeToUppaalTransformer {
     // Transition ids
 	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
 	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
-    protected final String transitionIdVarName = "transitionId"
     protected DataVariableDeclaration transitionIdVar
     protected int transitionId = 0
     // Auxiliary transformer objects
@@ -289,6 +284,7 @@ class CompositeToUppaalTransformer {
     protected extension ExpressionCopier expCop
     protected final extension ExpressionEvaluator expEval
     protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
+    protected final extension EventHandler eventHandler = new EventHandler
     // Trace
     protected extension Trace traceModel
 
@@ -470,17 +466,6 @@ class CompositeToUppaalTransformer {
     }
     
     /**
-     * Returns whether the given instance is inside a cascade composite component.
-     */
-    private def isCascade(ComponentInstance instance) {
-    	if (instance.derivedType instanceof StatechartDefinition) {
-    		// Statecharts are cascade if contained by cascade composite components
-    		return instance.eContainer instanceof CascadeCompositeComponent
-   		}
-   		return instance.derivedType instanceof CascadeCompositeComponent
-    }
-    
-    /**
      * Creates a broadcast channel that will be responsible for finalizing an instance.
      * That is when all composite state entries are finalized.
      */
@@ -496,7 +481,7 @@ class CompositeToUppaalTransformer {
      * Creates a boolean variable that shows whether a cycle is in progress or a cycle ended.
      */
     private def createIsStableVar() {		
-    	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVarName)
+    	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVariableName)
     	isStableVar.initVar(true)
     }
     
@@ -504,7 +489,7 @@ class CompositeToUppaalTransformer {
      * Creates an integer variable that stores the id of a particular transition.
      */
     private def createTransitionIdVar() {		
-    	transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVarName)
+    	transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVariableName)
     	transitionIdVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
 			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
 				it.text = "-1"
@@ -1416,8 +1401,6 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-
-	 
     val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
     	val loopEdge = initLoc.createEdge(initLoc)
@@ -1652,7 +1635,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def CompareExpression createPeekClockCompare(MessageQueueTrace messageQueueTrace, Clock clock) {
-		createCompareExpression => [
+		return createCompareExpression => [
 			it.firstExpr = messageQueueTrace.peekFunction.messageValueScopeExp(messageEvent.variable.head)
 			it.operator = CompareOperator.EQUAL
 			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
@@ -1694,67 +1677,12 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
-	private def getPostfix(ComponentInstance instance) {
-		if (instance === null) {
-			return ""
-		}
-		return "Of" + instance.name
-	}
-	
 	private def getContainerMessageQueue(AsynchronousAdapter wrapper, Port port, Event event) {
 		val queues = QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(wrapper, port, event)
 		if (queues.size > 1) {
 			log(Level.WARNING, "Warning: more than one message queue " + wrapper.name + "." + port.name + "_" + event.name + ":" + queues)			
 		}
 		return queues.head
-	}
-	
-	private def getAsyncSchedulerChannelName(AsynchronousAdapter wrapper) {
-		return "async" + wrapper.name
-	}
-	
-	private def getSyncSchedulerChannelName(AsynchronousAdapter wrapper) {
-		return "sync" + wrapper.name
-	}
-	
-	private def getInitializedVariableName(AsynchronousAdapter wrapper) {
-		return "is"  + wrapper.name.toFirstUpper  + "Initialized"
-	}
-	
-	private def getAsyncSchedulerChannelName(AsynchronousComponentInstance instance) {
-		return "async" + instance.name
-	}
-	
-	private def getSyncSchedulerChannelName(AsynchronousComponentInstance instance) {
-		return "sync" + instance.name
-	}
-	
-	private def getInitializedVariableName(AsynchronousComponentInstance instance) {
-		return "is" + instance.name.toFirstUpper + "Initialized"
-	}
-	
-	private def getAsyncSchedulerChannel(AsynchronousAdapter wrapper) {
-		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.asyncSchedulerChannelName)].head
-	}
-	
-	private def getSyncSchedulerChannel(AsynchronousAdapter wrapper) {
-		wrapper.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.syncSchedulerChannelName)].head		
-	}
-	
-	private def getInitializedVariable(AsynchronousAdapter wrapper) {
-		wrapper.allValuesOfTo.filter(DataVariableDeclaration).filter[it.variable.head.name.startsWith(wrapper.initializedVariableName)].head		
-	}
-	
-	private def getAsyncSchedulerChannel(AsynchronousComponentInstance instance) {
-		instance.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(instance.asyncSchedulerChannelName)].head
-	}
-	
-	private def getSyncSchedulerChannel(AsynchronousComponentInstance instance) {
-		instance.allValuesOfTo.filter(ChannelVariableDeclaration).filter[it.variable.head.name.startsWith(instance.syncSchedulerChannelName)].head		
-	}
-	
-	private def getInitializedVariable(AsynchronousComponentInstance instance) {
-		instance.allValuesOfTo.filter(DataVariableDeclaration).filter[it.variable.head.name.startsWith(instance.initializedVariableName)].head		
 	}
 	
     /**
@@ -2200,52 +2128,6 @@ class CompositeToUppaalTransformer {
 		addToTrace(it.port, #{isRaised}, portTrace)
 	].build	
 	
-	/** 
-	 * Returns all events of the given ports that go in the given direction through the ports.
-	 */
-	protected def getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
-   		val events =  new HashSet<Event>
-   		for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.PROVIDED].map[it.interfaceRealization.interface]) {
-			events.addAll(anInterface.getAllEvents(direction.oppositeDirection))
-   		}
-   		for (anInterface : ports.filter[it.interfaceRealization.realizationMode == RealizationMode.REQUIRED].map[it.interfaceRealization.interface]) {
-			events.addAll(anInterface.getAllEvents(direction))
-   		}
-   		return events
-   	}
-   	
-   	/**
-   	 * Converts IN directions to OUT and vice versa.
-   	 */
-   	protected def getOppositeDirection(EventDirection direction) {
-   		switch (direction) {
-   			case EventDirection.IN:
-   				return EventDirection.OUT
-   			case EventDirection.OUT:
-   				return EventDirection.IN
-   			default:
-   				throw new IllegalArgumentException("Not known direction: " + direction)
-   		} 
-   	}
-   	
-   	/** 
-   	 * Returns all events of a given interface whose direction is not oppositeDirection.
-   	 * The parent interfaces are taken into considerations as well.
-   	 */ 
-   	 protected def Set<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
-   		if (anInterface === null) {
-   			return Collections.EMPTY_SET
-   		}
-   		val eventSet = new HashSet<Event>
-   		for (parentInterface : anInterface.parents) {
-   			eventSet.addAll(parentInterface.getAllEvents(oppositeDirection))
-   		}
-   		for (event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]) {
-   			eventSet.add(event)
-   		}
-   		return eventSet
-   	}
-	
 	 /**
      * This rule is responsible for transforming the output signals led out to the system interface.
      * It depends on initNTA.
@@ -2260,42 +2142,6 @@ class CompositeToUppaalTransformer {
 		// Saving the port
 		addToTrace(it.port, #{boolFlag}, portTrace)
 	].build
-	
-	protected def getOutEventName(Event event, Port port, ComponentInstance owner) {
-		return port.name + "_" + event.name + "Of" + owner.name
-	}
-	
-	/**
-	 * Returns the name of the toRaise boolean flag of the given event of the given port.
-	 */
-	protected def toRaiseName(Event event, Port port, ComponentInstance instance) {
-		if (!Collections.singletonList(port).getSemanticEvents(EventDirection.IN).contains(event)) {
-			throw new IllegalArgumentException("This event is not an in event: " + instance + "." + port.name + ". Port: " + event.name)
-		}
-		return "toRaise_" + port.name + "_" + event.name + "Of" + instance.name
-	}
-	
-	/**
-	 * Returns the name of the isRaised boolean flag of the given event of the given port.
-	 */
-	protected def isRaisedName(Event event, Port port, ComponentInstance instance) {
-		if (!Collections.singletonList(port).getSemanticEvents(EventDirection.IN).contains(event)) {
-			throw new IllegalArgumentException("This event is not an in event: " + event.name + ". Port: " + port.name + ". Owner: " + instance + ".")
-		}
-		return "isRaised_" + port.name + "_" + event.name + "Of" + instance.name
-	}
-	
-	protected def getValueOfName(Variable variable) {
-    	if (variable.name.startsWith("toRaise_")) {
-    		return variable.name.substring("toRaise_".length) + "Value"
-    	}
-    	else if (variable.name.startsWith("isRaised_")) {
-    		return variable.name.substring("isRaised_".length) + "Value"
-    	}
-    	else {
-    		return variable.name + "Value"
-    	}
-    }
 	
 	/**
      * This rule is responsible for connecting the parameters of actions and triggers to the parameters of events.
@@ -2320,8 +2166,6 @@ class CompositeToUppaalTransformer {
 		}
 	].build
     
-    
-    // Method getValueOfName has been merged into ExpressionTransformer
     
     /**
      * This rule is responsible for transforming the variables.
@@ -2636,23 +2480,6 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-	 * Returns the name of the committed entry location of the given composite state.
-	 */
-	private def String getEntryLocationNameOfState(State state) {
-		return "entryOf" + state.name.replaceAll(" ", "")
-	}
-	
-	/**
-	 * Returns the name of the committed exit location of the given composite state.
-	 */
-	private def String getExitLocationNameOfCompositeState(State state) {
-		if (!state.compositeState) {
-			throw new IllegalAccessException("State is not composite: " + state)
-		}
-		return ("exitOf" + state.name + id++).replaceAll(" ", "")
-	}
-	
-	/**
      * This rule is responsible for transforming all choices to committed locations.
      * It depends on regionsRule.
      */
@@ -2938,33 +2765,6 @@ class CompositeToUppaalTransformer {
 		edge.addGuard(isActiveVar, LogicalOperator.AND)
 	}
 	
-	// These dispatch methods are for getting the proper source and target location
-	// of a simple edge based on the type of the source/target Gamma state node.
-	
-	private def dispatch List<Location> getEdgeSource(EntryState entry) {
-		return entry.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList	
-	}
-	
-	private def dispatch List<Location> getEdgeSource(State state) {
-		return state.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].toList
-	}
-	
-	private def dispatch List<Location> getEdgeSource(StateNode stateNode) {
-		return stateNode.getAllValuesOfTo.filter(Location).toList
-	}
-	
-	private def dispatch List<Location> getEdgeTarget(State state) {
-		return state.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList
-	}
-	
-	private def dispatch List<Location> getEdgeTarget(EntryState entry) {
-		return entry.getAllValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].toList
-	}
-	
-	private def dispatch List<Location> getEdgeTarget(StateNode stateNode) {
-		return stateNode.getAllValuesOfTo.filter(Location).toList
-	}
-	
 	/**
 	 * Returns whether the given state node is a composite state.
 	 */
@@ -3008,16 +2808,6 @@ class CompositeToUppaalTransformer {
 				createSynchronizationEdge(subregion, location, owner, syncVar, enter)				
 			}		
 		}
-	}
-	
-	/**
-	 * Returns the name of the committed entry location of the given composite state.
-	 */
-	private def String getEntrySyncNameOfCompositeState(State state) {
-		if (!state.compositeState) {
-			throw new IllegalAccessException("State is not composite: " + state)
-		}
-		return ("entryChanOf" + state.name + (id++)).replaceAll(" ", "")
 	}
 	
 	/**
@@ -3336,34 +3126,6 @@ class CompositeToUppaalTransformer {
 		edge.setSynchronization(runCycleVar.variable.head, SynchronizationKind.RECEIVE)
 	}
 	
-	protected def getConstRepresentationName(Event event, Port port) {
-		return port.name + "_" + event.name
-	}
-	
-	protected def getConstRepresentationName(Clock clock) {
-		return clock.name + "Of" + (clock.eContainer as AsynchronousAdapter).name
-	}
-	
-	/**
-	 * Returns the Uppaal const representing the given signal.
-	 */
-	protected def getConstRepresentation(Event event, Port port) {		
-		var variables = EventRepresentations.Matcher.on(traceEngine).getAllValuesOfrepresentation(port, event)
-		// If the size is 0, it may be because it is a statechart level event and must be transferred to system level: see old code
-		if (variables.size != 1) {
-			throw new IllegalArgumentException("This event has not one const representations: " + event.name + " Port: " + port.name + " " + variables)
-		}
-		return variables.head
-	}
-	
-	protected def getConstRepresentation(Clock clock) {
-		val variables = ClockRepresentations.Matcher.on(traceEngine).getAllValuesOfrepresentation(clock)
-		if (variables.size > 1) {
-			throw new IllegalArgumentException("This clock has more than one const representations: " + clock + " " + variables)
-		}
-		return variables.head
-	}
-	
 	/**
 	 * Creates the Uppaal const representing the given signal.
 	 */
@@ -3417,59 +3179,6 @@ class CompositeToUppaalTransformer {
 			it.constantRepresentation = repr
 		]		
 	}
-	
-	/**
-	 * Returns the Uppaal toRaise boolean flag of a Gamma typed-signal.
-	 */
-	protected def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
-		var DataVariableDeclaration variable 
-		val variables = event.allValuesOfTo.filter(DataVariableDeclaration)
-				.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
-		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
-			// This is an out event
-			variable = variables.filter[it.variable.head.name.equals(event.getOutEventName(port, instance))].head
-		}		
-		else {		
-			// Else, this is an in event
-			if (instance.isCascade) {
-				// Cascade components have no toRaise variables, therefore the isRaised is returned
-				variable = event.getIsRaisedVariable(port, instance)
-			}
-			else {
-				variable = variables.filter[it.variable.head.name.equals(event.toRaiseName(port, instance))].head
-			}	
-		}
-		if (variable === null) {
-			throw new IllegalArgumentException("This event has no toRaiseEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
-		}
-		return variable
-	}	
-	
-	/**
-	 * Returns the Uppaal isRaised boolean flag of a Gamma typed-signal.
-	 */
-	protected def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
-		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
-			&& it.owner == instance && it.variable.head.name.equals(event.isRaisedName(port, instance))].head
-		if (variable === null) {
-			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
-		}
-		return variable
-	}
-	
-	/**
-	 * Returns the Uppaal out-event boolean flag of a Gamma typed-signal.
-	 */
-	protected def getOutVariable(Event event, Port port, ComponentInstance instance) {
-		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
-			&& it.owner == instance && it.variable.head.name.equals(event.getOutEventName(port, instance))].head
-		if (variable === null) {
-			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
-		}
-		return variable
-	}
-	
-	 // Method getValueOfName has been merged into ExpressionTransformer
 	
 	/**
      * This rule is responsible for transforming the timeout event triggers.
@@ -3991,9 +3700,6 @@ class CompositeToUppaalTransformer {
 		return finalizeSyncVars.head
 	}
 	
-	private def finalizeSyncVarName() {
-		return "finalize"
-	}
 	
 	/**
 	 * Places the negated form of the given expression onto the given edge.
@@ -4051,17 +3757,6 @@ class CompositeToUppaalTransformer {
 		return syncEdge		
 	}
 	
-	/**
-	 * Returns the name of the committed entry location of the given composite state.
-	 */
-	private def String getExitSyncNameOfCompositeState(State state) {
-		if (!state.compositeState) {
-			throw new IllegalAccessException("State is not composite: " + state)
-		}
-		return ("exitChanOf" + state.name + (id++)).replaceAll(" ", "")
-	}
-	
-    
     private def boolean isTopRegion(Region region) {
     	return !region.subregion
     }
@@ -4264,35 +3959,6 @@ class CompositeToUppaalTransformer {
     	}
     	return templateLocationMap
     }
-    
-    /**
-     * Returns the location name of a state.
-     */
-    private def String getLocationName(State state) {
-    	return state.name.replaceAll(" ","")
-    } 
-    
-    /**
-     * Returns the template name of a region.
-     */
-    private def String getRegionName(Region region) {
-    	var String templateName
-    	if (region.isSubregion) {
-			templateName = (region.name + "Of" + (region.eContainer as State).name)
-		}
-		else {			
-			templateName = (region.name + "OfStatechart")
-		}
-		return templateName.replaceAll(" ","")
-	}
-	
-	def getIsStableVarName() {
-		return isStableVarName
-	}
-	
-	def getTransitionIdVariableName() {
-		return transitionIdVarName
-	}
 	
 	def getTransitionIdVariableValue() {
 		return transitionId

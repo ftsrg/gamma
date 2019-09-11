@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
@@ -93,6 +94,14 @@ public class StatechartModelDerivedFeatures {
 		}
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
+	
+    public static boolean isCascade(ComponentInstance instance) {
+    	if (getDerivedType(instance) instanceof StatechartDefinition) {
+    		// Statecharts are cascade if contained by cascade composite components
+    		return instance.eContainer() instanceof CascadeCompositeComponent;
+   		}
+   		return getDerivedType(instance) instanceof CascadeCompositeComponent;
+    }
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
