@@ -158,7 +158,6 @@ import uppaal.declarations.ChannelVariableDeclaration
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
-import uppaal.declarations.Declarations
 import uppaal.declarations.DeclarationsFactory
 import uppaal.declarations.DeclarationsPackage
 import uppaal.declarations.ExpressionInitializer
@@ -278,7 +277,8 @@ class CompositeToUppaalTransformer {
     protected DataVariableDeclaration transitionIdVar
     protected int transitionId = 0
     // Auxiliary transformer objects
-    protected extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
+    protected extension NtaBuilder ntaBuilder
+    protected final extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
     // Auxiliary objects
     protected extension ExpressionTransformer expTransf
     protected extension ExpressionCopier expCop
@@ -316,7 +316,8 @@ class CompositeToUppaalTransformer {
         this.expCop = new ExpressionCopier(this.manipulation, this.traceModel) 
         this.expEval = new ExpressionEvaluator(this.engine)
         // Auxiliary transformation objects
-        this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.target, this.traceModel) 
+        this.ntaBuilder = new NtaBuilder(this.target, this.manipulation)
+        this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
     }
     
     new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
@@ -2234,45 +2235,6 @@ class CompositeToUppaalTransformer {
 	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, Type type,
 			DataVariablePrefix prefix, String name) {
 		throw new IllegalArgumentException("Not transformable variable type: " + type + "!")
-	}
-	
-	/**
-	 * This method is responsible for creating the variables in the resource depending on the received parameters.
-	 * It also creates the traces.
-	 */
-	private def DataVariableDeclaration createVariable(Declarations decl, DataVariablePrefix prefix, PredefinedType type, String name) {
-		val varContainer = decl.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
-			it.prefix = prefix
-		]
-		varContainer.createTypeAndVariable(type, name)		
-		return varContainer
-	}
-	
-	/**
-	 * This method is responsible for creating the variables in the resource depending on the received parameters.
-	 * It also creates the traces.
-	 */
-	private def ChannelVariableDeclaration createSynchronization(Declarations decl, boolean isBroadcast, boolean isUrgent, String name) {
-		val syncContainer = decl.createChild(declarations_Declaration, channelVariableDeclaration) as ChannelVariableDeclaration => [
-			it.broadcast = isBroadcast
-			it.urgent = isUrgent
-		]
-		syncContainer.createTypeAndVariable(target.chan, name)
-		return syncContainer
-	}
-	
-	/**
-	 * This method creates the variables of the given containers based on the given predefined type and name.
-	 */
-	private def createTypeAndVariable(VariableContainer container, PredefinedType type, String name) {		
-		container.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
-			it.referredType = type
-		]
-		// Creating variables for all statechart instances
-		container.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
-			it.container = container
-			it.name = name
-		]
 	}
 	
 	private def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
