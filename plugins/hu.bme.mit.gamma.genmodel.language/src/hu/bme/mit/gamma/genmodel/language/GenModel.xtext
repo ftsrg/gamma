@@ -69,7 +69,7 @@ CodeGeneration returns CodeGeneration:
 		'component' ':' component=[composite::Component]
 		(
 			'folder' ':' targetFolder+=STRING |
-			'package' ':' packageName+=STRING |
+			'base-package' ':' packageName+=STRING | // Java base package
 			'language' ':' language+=ProgrammingLanguage
 		)*
 	'}'
@@ -81,7 +81,7 @@ TestGeneration returns TestGeneration:
 		(
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING | // The name of the generated file
-			'package' ':' packageName+=STRING |
+			'base-package' ':' packageName+=STRING | // Java base package
 			'language' ':' language+=ProgrammingLanguage
 		)*
 	'}'

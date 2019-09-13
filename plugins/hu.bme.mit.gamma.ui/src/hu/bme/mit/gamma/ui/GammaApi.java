@@ -66,7 +66,7 @@ public class GammaApi {
 		// Xtext errors can be removed by cleaning the project in case of YakinduCompilation and TestGeneration tasks
 		boolean needsCleaning = false;
 		// Multiple compilations due to the dependencies between models
-		final int MAX_ITERATION_COUNT = 3;
+		final int MAX_ITERATION_COUNT = 5;
 		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
 			ResourceSet resourceSet = new ResourceSetImpl();
 			Resource resource = resourceSet.getResource(fileURI, true);
@@ -121,7 +121,7 @@ public class GammaApi {
 							TestGeneration testGeneration = (TestGeneration) task;
 							TestGenerationHandler handler = new TestGenerationHandler();
 							handler.setTargetFolder(testGeneration, file, parentFolderUri);
-							handler.execte(testGeneration, projectName);
+							handler.execute(testGeneration, projectName);
 							logger.log(Level.INFO, "The test generation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {
@@ -149,7 +149,7 @@ public class GammaApi {
 	}	
 	
 	/** 
-	 * Compilation order: interfaces <- statecharts <- everything else.
+	 * Compilation order: interfaces <- statecharts <- event priority <- analysis model, code <- test.
 	 * As everything depends on statecharts and statecharts depend on interfaces.
 	 * This way the user does not have to compile two or three times.
 	 */
@@ -163,10 +163,21 @@ public class GammaApi {
 				return genmodel.getTasks().stream()
 						.filter(it -> it instanceof StatechartCompilation)
 						.collect(Collectors.toList());
-			default: 
+			case 2: 
 				return genmodel.getTasks().stream()
-						.filter(it -> !(it instanceof YakinduCompilation))
+						.filter(it -> it instanceof EventPriorityTransformation)
 						.collect(Collectors.toList());
+			case 3: 
+				return genmodel.getTasks().stream()
+						.filter(it -> it instanceof AnalysisModelTransformation ||
+								it instanceof CodeGeneration)
+						.collect(Collectors.toList());
+			case 4: 
+				return genmodel.getTasks().stream()
+						.filter(it -> it instanceof TestGeneration)
+						.collect(Collectors.toList());
+			default: 
+				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}
 	}
 	

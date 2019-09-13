@@ -5,6 +5,8 @@ import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
@@ -17,16 +19,20 @@ class EventPriorityTransformer {
 	protected final StatechartDefinition statechart
 	
 	protected final extension EventPriorityDeterminer eventPriorityDeterminer = new EventPriorityDeterminer
+
+	protected Logger logger = Logger.getLogger("Gamma")
 	
 	new(StatechartDefinition statechart) {
-		this.gammaPackage = statechart.eContainer.clone as Package
-		this.statechart = gammaPackage.components.findFirst[it.helperEquals(statechart)] as StatechartDefinition
+		// No cloning to save resources, we process the original model
+		this.gammaPackage = statechart.eContainer as Package
+		this.statechart = statechart
 	}
 	
 	def execute() {
-		checkState(this.statechart.transitionPriority == TransitionPriority.OFF || 
-			this.statechart.transitionPriority == TransitionPriority.VALUE_BASED,
-			"Transition priority is neither off nor value-based: " + this.statechart.transitionPriority)
+		if (!(this.statechart.transitionPriority == TransitionPriority.OFF || 
+				this.statechart.transitionPriority == TransitionPriority.VALUE_BASED)) {
+			logger.log(Level.WARNING ,"Transition priority is neither off nor value-based: " + this.statechart.transitionPriority)
+		}
 		for (transition : statechart.transitions) {
 			if (transition.isTransitionTriggerPrioritized) {
 				val trigger = transition.trigger
@@ -48,19 +54,6 @@ class EventPriorityTransformer {
 			}
 		}
 		return gammaPackage
-	}
-	
-	private def helperEquals(EObject lhs, EObject rhs) {
-		val helper = new EqualityHelper
-		return helper.equals(lhs, rhs) 
-	}
-	
-	private def <T extends EObject> T clone(T element) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		val copier = new Copier(true, true)
-		val clone = copier.copy(element) as T
-		copier.copyReferences()
-		return clone
 	}
 	
 }

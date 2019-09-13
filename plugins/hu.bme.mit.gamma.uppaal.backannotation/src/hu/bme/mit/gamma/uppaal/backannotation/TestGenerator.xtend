@@ -94,7 +94,7 @@ class TestGenerator {
 		if (name.endsWith(suffix)) {
 			finalName = name.substring(0, name.length() - suffix.length());
 		} else {
-			finalName = gammaPackage.getName().toLowerCase();
+			finalName = name;
 		}
 		return YAKINDU_PACKAGE_NAME_PREFIX + "." + finalName
 	}
