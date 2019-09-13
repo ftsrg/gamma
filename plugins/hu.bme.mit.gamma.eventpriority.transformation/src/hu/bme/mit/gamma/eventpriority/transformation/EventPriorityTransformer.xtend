@@ -4,11 +4,12 @@ import hu.bme.mit.gamma.statechart.model.EventTrigger
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkState
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 class EventPriorityTransformer {
 	
@@ -23,6 +24,9 @@ class EventPriorityTransformer {
 	}
 	
 	def execute() {
+		checkState(this.statechart.transitionPriority == TransitionPriority.OFF || 
+			this.statechart.transitionPriority == TransitionPriority.VALUE_BASED,
+			"Transition priority is neither off nor value-based: " + this.statechart.transitionPriority)
 		for (transition : statechart.transitions) {
 			if (transition.isTransitionTriggerPrioritized) {
 				val trigger = transition.trigger
@@ -34,9 +38,11 @@ class EventPriorityTransformer {
 						"The event reference is not a port event reference: " + eventReference)
 					if (eventReference instanceof PortEventReference) {
 						val event = eventReference.event
-						checkState(transition.priority === null || transition.priority.intValue == 0,
+						checkState(transition.priority === null || transition.priority.intValue == 0 ||
+							transition.priority == event.priority,
 							"The transition priority is not null or 0: " + transition.priority)
 						transition.priority = event.priority
+						this.statechart.transitionPriority = TransitionPriority.VALUE_BASED
 					}
 				}
 			}
