@@ -440,7 +440,7 @@ EventDeclaration returns InterfaceModel::EventDeclaration:
 
 Event returns InterfaceModel::Event:
 	{InterfaceModel::Event}
-	'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')?
+	'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')? ('priority' '=' priority=INTEGER)?
 ;
 
 // Overriding it for the sake of EventParameterReferenceExpression
@@ -453,7 +453,7 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
 
-//Action Language Extensions
+// Action Language Extensions
 
 @Override 
 InlineStatement returns ActionModel::Statement:

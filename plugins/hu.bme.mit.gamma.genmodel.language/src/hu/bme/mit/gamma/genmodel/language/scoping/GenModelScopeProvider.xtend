@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 
 /**
  * This class contains custom scoping description.
@@ -44,6 +45,11 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				reference == GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COMPONENT) {
 			val genmodel = context.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten
+			return Scopes.scopeFor(components)
+		}
+			if (reference == GenmodelPackage.Literals.EVENT_PRIORITY_TRANSFORMATION__STATECHART) {
+			val genmodel = context.eContainer as GenModel
+			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
 		if (reference == GenmodelPackage.Literals.COVERAGE__INCLUDE ||

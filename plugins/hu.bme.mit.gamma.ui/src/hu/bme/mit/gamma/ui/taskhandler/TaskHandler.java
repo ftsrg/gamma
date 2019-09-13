@@ -30,6 +30,7 @@ import com.google.inject.Injector;
 import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -40,9 +41,9 @@ public abstract class TaskHandler {
 	protected String targetFolderUri;
 
 	public void setTargetFolder(Task task, IFile file, String parentFolderUri) {
+		checkArgument(task.getTargetFolder().size() <= 1);
 		// E.g., C:/Users/...
 		String projectLocation = file.getProject().getLocation().toString();
-		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
 			if (task instanceof CodeGeneration) {
@@ -81,6 +82,7 @@ public abstract class TaskHandler {
 				e.printStackTrace();
 				logger.log(Level.WARNING, e.getMessage() + System.lineSeparator() +
 						"Possibly you have two more model elements with the same name specified in the previous error message.");
+				DialogUtil.showErrorWithStackTrace("Statechart cannot be serialized.", e);
 				new File(parentFolder + File.separator + fileName).delete();
 				// Saving like an EMF model
 				String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";

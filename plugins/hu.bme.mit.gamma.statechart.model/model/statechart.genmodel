@@ -162,7 +162,9 @@
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//interface/EventDeclaration/direction"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//interface/EventDeclaration/event"/>
       </genClasses>
-      <genClasses ecoreClass="statechart.ecore#//interface/Event"/>
+      <genClasses ecoreClass="statechart.ecore#//interface/Event">
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//interface/Event/priority"/>
+      </genClasses>
       <genClasses ecoreClass="statechart.ecore#//interface/EventParameterReferenceExpression">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
             ecoreFeature="ecore:EReference statechart.ecore#//interface/EventParameterReferenceExpression/port"/>

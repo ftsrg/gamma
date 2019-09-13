@@ -39,6 +39,7 @@ import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
 
 /**
  * This class contains custom validation rules. 
@@ -133,6 +134,10 @@ class GenModelValidator extends AbstractGenModelValidator {
 				val parentPackage = interfaceMapping.gammaInterface.eContainer
 				packageImports.remove(parentPackage)
 			}
+		}
+		for (eventPriorityTransformationTask : genmodel.tasks.filter(EventPriorityTransformation)) {
+			val parentPackage = eventPriorityTransformationTask.statechart.eContainer
+			packageImports.remove(parentPackage)
 		}
 		for (packageImport : packageImports) {
 			val index = genmodel.packageImports.indexOf(packageImport);

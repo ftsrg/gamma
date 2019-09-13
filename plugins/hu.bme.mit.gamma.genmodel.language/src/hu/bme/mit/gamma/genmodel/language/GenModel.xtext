@@ -31,7 +31,7 @@ GenModel returns GenModel:
 ;
 
 Task returns Task:
-	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration
+	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration | EventPriorityTransformation
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -83,6 +83,16 @@ TestGeneration returns TestGeneration:
 			'file' ':' fileName+=STRING | // The name of the generated file
 			'package' ':' packageName+=STRING |
 			'language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
+
+EventPriorityTransformation returns EventPriorityTransformation:
+	'event-priority' '{'
+		'statechart' ':' statechart=[model::StatechartDefinition]
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING // The name of the generated file
 		)*
 	'}'
 ;

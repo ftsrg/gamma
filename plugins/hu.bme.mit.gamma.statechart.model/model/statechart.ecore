@@ -194,7 +194,9 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1"
           eType="#//interface/Event" containment="true"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+    </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression"
         eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
       <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1"

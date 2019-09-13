@@ -32,6 +32,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
+import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
@@ -121,6 +123,14 @@ public class GammaApi {
 							handler.setTargetFolder(testGeneration, file, parentFolderUri);
 							handler.execte(testGeneration, projectName);
 							logger.log(Level.INFO, "The test generation has been finished.");
+						}
+						else if (task instanceof EventPriorityTransformation) {
+							needsCleaning = true;
+							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
+							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler();
+							handler.setTargetFolder(eventPriorityTransformation, file, parentFolderUri);
+							handler.execute(eventPriorityTransformation);
+							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
 					}
 				}

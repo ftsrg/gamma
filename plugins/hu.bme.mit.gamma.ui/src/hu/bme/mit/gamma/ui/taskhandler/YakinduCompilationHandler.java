@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 
 public abstract class YakinduCompilationHandler extends TaskHandler {
 	
-	public void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
+	protected void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
 		String fileName = getNameWithoutExtension(getContainingFileName(yakinduCompilation.getStatechart()));
 		checkArgument(yakinduCompilation.getFileName().size() <= 1);
 		checkArgument(yakinduCompilation.getPackageName().size() <= 1);
@@ -27,4 +27,5 @@ public abstract class YakinduCompilationHandler extends TaskHandler {
 			yakinduCompilation.getPackageName().add(fileName);
 		}
 	}
+	
 }
