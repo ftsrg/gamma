@@ -2,7 +2,7 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class TimerInterfaceGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

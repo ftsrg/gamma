@@ -13,20 +13,20 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 class StatechartWrapperCodeGenerator {
 	
-	final String PACKAGE_NAME
-	final String YAKINDU_PACKAGE_NAME
+	protected final String PACKAGE_NAME
+	protected final String YAKINDU_PACKAGE_NAME
 	// 
-	final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	final extension Trace trace
-	final extension NameGenerator nameGenerator
-	final extension TypeTransformer typeTransformer
-	final extension EventDeclarationHandler gammaEventDeclarationHandler
-	final extension ComponentCodeGenerator componentCodeGenerator
+	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension Trace trace
+	protected final extension NameGenerator nameGenerator
+	protected final extension TypeTransformer typeTransformer
+	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
+	protected final extension ComponentCodeGenerator componentCodeGenerator
 	//
-	final String INSERT_QUEUE = "insertQueue"
-	final String PROCESS_QUEUE = "processQueue"
-	final String EVENT_QUEUE = "eventQueue"
-	final String EVENT_INSTANCE_NAME = "event"
+	protected final String INSERT_QUEUE = "insertQueue"
+	protected final String PROCESS_QUEUE = "processQueue"
+	protected final String EVENT_QUEUE = "eventQueue"
+	protected final String EVENT_INSTANCE_NAME = "event"
 
 	new(String packageName, String yakinduPackageName, Trace trace) {
 		this.PACKAGE_NAME = packageName

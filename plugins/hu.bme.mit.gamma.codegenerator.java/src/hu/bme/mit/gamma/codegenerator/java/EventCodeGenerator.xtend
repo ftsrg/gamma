@@ -2,8 +2,8 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class EventCodeGenerator {
 	
-	final String PACKAGE_NAME
-	final String CLASS_NAME = Namings.GAMMA_EVENT_CLASS
+	protected final String PACKAGE_NAME
+	protected final String CLASS_NAME = Namings.GAMMA_EVENT_CLASS
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

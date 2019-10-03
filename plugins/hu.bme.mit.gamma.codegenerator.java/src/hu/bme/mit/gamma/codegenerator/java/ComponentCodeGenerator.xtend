@@ -10,8 +10,8 @@ import java.util.HashSet
 
 class ComponentCodeGenerator {
 	
-	final extension EventDeclarationHandler gammaEventDeclarationHandler
-	final extension TypeTransformer typeTransformer
+	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
+	protected final extension TypeTransformer typeTransformer
 	
 	new(Trace trace) {
 		this.gammaEventDeclarationHandler = new EventDeclarationHandler(trace)

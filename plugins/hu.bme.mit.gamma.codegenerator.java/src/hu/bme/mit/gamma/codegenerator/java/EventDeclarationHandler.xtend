@@ -12,7 +12,7 @@ import java.util.Set
 
 class EventDeclarationHandler {
 	
-	final extension TypeTransformer typeTransformer
+	protected final extension TypeTransformer typeTransformer
 	
 	new(Trace trace) {
 		this.typeTransformer = new TypeTransformer(trace)

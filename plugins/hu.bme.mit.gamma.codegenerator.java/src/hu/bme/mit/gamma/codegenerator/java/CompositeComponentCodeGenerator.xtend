@@ -13,16 +13,16 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 
 class CompositeComponentCodeGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	// 
-	final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
-	final extension NameGenerator nameGenerator
-	final extension TypeTransformer typeTransformer
-	final extension ComponentCodeGenerator componentCodeGenerator
-	final extension EventDeclarationHandler gammaEventDeclarationHandler
+	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	protected final extension NameGenerator nameGenerator
+	protected final extension TypeTransformer typeTransformer
+	protected final extension ComponentCodeGenerator componentCodeGenerator
+	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	//
-	final extension Trace trace
+	protected final extension Trace trace
 
 	new(String packageName, Trace trace) {
 		this.PACKAGE_NAME = packageName

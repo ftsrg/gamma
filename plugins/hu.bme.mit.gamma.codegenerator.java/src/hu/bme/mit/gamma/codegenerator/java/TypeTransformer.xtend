@@ -7,7 +7,7 @@ import hu.bme.mit.gamma.expression.model.Type
 
 class TypeTransformer {
 	
-	protected extension Trace trace
+	protected final extension Trace trace
 	
 	new(Trace trace) {
 		this.trace = trace

@@ -2,10 +2,10 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class VirtualTimerServiceCodeGenerator {
 	
-	final String PACKAGE_NAME
-	final String CLASS_NAME = "VirtualTimerService"
-	final String UNIFIED_TIMER_INTERFACE_NAME = Namings.UNIFIED_TIMER_INTERFACE
-	final String ITIMER_CALLBACK_INTERFACE_NAME = Namings.TIMER_CALLBACK_INTERFACE
+	protected final String PACKAGE_NAME
+	protected final String CLASS_NAME = "VirtualTimerService"
+	protected final String UNIFIED_TIMER_INTERFACE_NAME = Namings.UNIFIED_TIMER_INTERFACE
+	protected final String ITIMER_CALLBACK_INTERFACE_NAME = Namings.TIMER_CALLBACK_INTERFACE
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

@@ -4,9 +4,9 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
 class ChannelCodeGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	//
-	final extension NameGenerator nameGenerator
+	protected final extension NameGenerator nameGenerator
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

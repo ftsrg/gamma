@@ -2,8 +2,8 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class TimerCallbackInterfaceGenerator {
 		
-	final String PACKAGE_NAME
-	final String INTERFACE_NAME = Namings.TIMER_CALLBACK_INTERFACE
+	protected final String PACKAGE_NAME
+	protected final String INTERFACE_NAME = Namings.TIMER_CALLBACK_INTERFACE
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

@@ -8,7 +8,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
 class NameGenerator {
 
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

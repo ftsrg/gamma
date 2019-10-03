@@ -13,9 +13,9 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 
 class ComponentInterfaceGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	//
-	final extension NameGenerator nameGenerator
+	protected final extension NameGenerator nameGenerator
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

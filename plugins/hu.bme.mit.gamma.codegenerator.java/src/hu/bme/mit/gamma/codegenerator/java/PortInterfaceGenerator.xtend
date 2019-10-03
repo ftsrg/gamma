@@ -5,10 +5,10 @@ import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
 class PortInterfaceGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	//
-	final extension EventDeclarationHandler gammaEventDeclarationHandler
-	final extension NameGenerator nameGenerator
+	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
+	protected final extension NameGenerator nameGenerator
 	
 	new(String packageName, Trace trace) {
 		this.PACKAGE_NAME = packageName

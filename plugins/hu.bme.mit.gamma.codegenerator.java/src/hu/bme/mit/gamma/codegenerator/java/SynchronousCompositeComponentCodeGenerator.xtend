@@ -12,18 +12,18 @@ import java.util.Collections
 
 class SynchronousCompositeComponentCodeGenerator {
 	
-	final String PACKAGE_NAME
+	protected final String PACKAGE_NAME
 	// 
-	final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	final extension Trace trace
-	final extension NameGenerator nameGenerator
-	final extension TypeTransformer typeTransformer
-	final extension EventDeclarationHandler gammaEventDeclarationHandler
-	final extension ComponentCodeGenerator componentCodeGenerator
-	final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
+	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension Trace trace
+	protected final extension NameGenerator nameGenerator
+	protected final extension TypeTransformer typeTransformer
+	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
+	protected final extension ComponentCodeGenerator componentCodeGenerator
+	protected final extension CompositeComponentCodeGenerator compositeComponentCodeGenerator
 	//
-	final String INSERT_QUEUE = "insertQueue"
-	final String EVENT_QUEUE = "eventQueue"
+	protected final String INSERT_QUEUE = "insertQueue"
+	protected final String EVENT_QUEUE = "eventQueue"
 
 	new(String packageName, String yakinduPackageName, Trace trace) {
 		this.PACKAGE_NAME = packageName

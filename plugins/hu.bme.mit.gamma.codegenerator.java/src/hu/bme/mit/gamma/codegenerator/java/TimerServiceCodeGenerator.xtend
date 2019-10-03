@@ -2,10 +2,10 @@ package hu.bme.mit.gamma.codegenerator.java
 
 class TimerServiceCodeGenerator {
 	
-	final String PACKAGE_NAME
-	final String YAKINDU_CLASS_NAME = Namings.YAKINDU_TIMER_CLASS
-	final String GAMMA_CLASS_NAME = Namings.GAMMA_TIMER_CLASS
-	final String UNIFIED_TIMER_CLASS_NAME = Namings.UNIFIED_TIMER_CLASS
+	protected final String PACKAGE_NAME
+	protected final String YAKINDU_CLASS_NAME = Namings.YAKINDU_TIMER_CLASS
+	protected final String GAMMA_CLASS_NAME = Namings.GAMMA_TIMER_CLASS
+	protected final String UNIFIED_TIMER_CLASS_NAME = Namings.UNIFIED_TIMER_CLASS
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName
