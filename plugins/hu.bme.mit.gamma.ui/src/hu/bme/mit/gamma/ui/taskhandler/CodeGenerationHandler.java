@@ -12,17 +12,19 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.logging.Level;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
+import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
+import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
-import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 
 public class CodeGenerationHandler extends TaskHandler {
 
@@ -65,7 +67,12 @@ public class CodeGenerationHandler extends TaskHandler {
 			String statechartFileName = statechartUri.substring(statechartUri.lastIndexOf("/") + 1);
 			String traceUri = statechartUri.substring(0, statechartUri.lastIndexOf("/") + 1) + "." + statechartFileName + ".y2g";
 			if (resourceSet.getResources().stream().noneMatch(it -> it.getURI().toString().equals(traceUri))) {
-				resourceSet.getResource(URI.createPlatformResourceURI(traceUri, true), true);
+				try {
+					resourceSet.getResource(URI.createPlatformResourceURI(traceUri, true), true);
+				} catch (Exception e) {
+					logger.log(Level.INFO, statechartFileName + " trace is not found. " +
+						"Wrapper is not generated for Gamma statecharts without trace.");
+				}
 			}
 		}
 	}
