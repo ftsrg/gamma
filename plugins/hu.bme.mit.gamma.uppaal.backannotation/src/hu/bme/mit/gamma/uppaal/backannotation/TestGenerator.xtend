@@ -124,6 +124,15 @@ class TestGenerator {
 			«componentClassName.toFirstLower».reset();
 		}
 		
+		@After
+		public void tearDown() {
+			// Only for override by potential subclasses
+			«IF component.needTimer»
+				«TIMER_OBJECT_NAME» = null;
+			«ENDIF»
+			«componentClassName.toFirstLower» = null;
+		}
+		
 		«trace.generateTestCases»
 	}
 	'''
@@ -137,6 +146,7 @@ class TestGenerator {
 		import static org.junit.Assert.«ASSERT_EQUALS»;
 		
 		import org.junit.Before;
+		import org.junit.After;
 		import org.junit.Test;
 	'''
 	
