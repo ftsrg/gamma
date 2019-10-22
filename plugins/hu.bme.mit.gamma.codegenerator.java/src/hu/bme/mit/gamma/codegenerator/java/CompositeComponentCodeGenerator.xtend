@@ -120,7 +120,7 @@ class CompositeComponentCodeGenerator {
 	
 	/**
 	 * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-	 * Note that in casacade composite an instance might be scheduled multiple times.
+	 * Note that in cascade composite an instance might be scheduled multiple times.
 	 */
 	dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
 		return component.components

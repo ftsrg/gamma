@@ -29,6 +29,14 @@ class ComponentCodeGenerator {
 	'''
 	
 	/** 
+	 * Returns all events of the given ports that go in the given direction through the port.
+	 */
+	protected def getSemanticEvents(Port port, EventDirection direction) {
+		return #[port].getSemanticEvents(direction)
+	}
+	
+	
+	/** 
 	 * Returns all events of the given ports that go in the given direction through the ports.
 	 */
 	protected def getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
