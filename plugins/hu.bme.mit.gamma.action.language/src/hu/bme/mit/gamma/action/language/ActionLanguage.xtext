@@ -129,7 +129,7 @@ ForStatement returns ActionModel::ForStatement:
 ;
 
 ReturnStatement returns ActionModel::ReturnStatement:
-	'return' expression=Expression
+	{ActionModel::ReturnStatement} 'return' (expression=Expression)?
 ;
 
 BreakStatement returns ActionModel::BreakStatement:

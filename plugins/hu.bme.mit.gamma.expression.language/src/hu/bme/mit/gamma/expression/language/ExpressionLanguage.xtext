@@ -246,7 +246,7 @@ SignumExpression returns Expression:
 AccessExpression returns Expression:
 	PrimaryExpression (
 		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
-		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*) ')' |
+		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
 		{RecordAccessExpression.operand=current} '.' field=ID |
 		{SelectExpression.operand=current} '.' 'select'
 	)*
