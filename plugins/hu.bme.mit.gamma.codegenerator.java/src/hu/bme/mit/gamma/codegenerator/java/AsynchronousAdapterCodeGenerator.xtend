@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collections
 
-class SynchronousComponentWrapperCodeGenerator {
+class AsynchronousAdapterCodeGenerator {
 	
 	protected final String PACKAGE_NAME
 	// 
@@ -41,7 +41,7 @@ class SynchronousComponentWrapperCodeGenerator {
 	/**
 	* Creates the Java code of the synchronous composite class, containing the statemachine instances.
 	*/
-	protected def createSynchronousComponentWrapperClass(AsynchronousAdapter component) {
+	protected def createAsynchronousAdapterClass(AsynchronousAdapter component) {
 		var clockId = 0
 	'''
 		package «component.generateComponentPackageName»;

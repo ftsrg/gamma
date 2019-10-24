@@ -59,9 +59,10 @@ class GlueCodeGenerator {
 	protected final extension TimerServiceCodeGenerator timerServiceCodeGenerator
 	protected final extension PortInterfaceGenerator portInterfaceGenerator
 	protected final extension ComponentInterfaceGenerator componentInterfaceGenerator
+	protected final extension ReflectiveComponentCodeGenerator reflectiveComponentCodeGenerator
 	protected final extension StatechartWrapperCodeGenerator statechartWrapperCodeGenerator
 	protected final extension SynchronousCompositeComponentCodeGenerator synchronousCompositeComponentCodeGenerator
-	protected final extension SynchronousComponentWrapperCodeGenerator synchronousComponentWrapperCodeGenerator
+	protected final extension AsynchronousAdapterCodeGenerator synchronousComponentWrapperCodeGenerator
 	protected final extension ChannelInterfaceGenerator channelInterfaceGenerator
 	protected final extension ChannelCodeGenerator channelCodeGenerator
 	protected final extension AsynchronousCompositeComponentCodeGenerator asynchronousCompositeComponentCodeGenerator
@@ -93,9 +94,10 @@ class GlueCodeGenerator {
 		this.timerServiceCodeGenerator = new TimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.portInterfaceGenerator  = new PortInterfaceGenerator(this.BASE_PACKAGE_NAME, trace)
 		this.componentInterfaceGenerator = new ComponentInterfaceGenerator(this.BASE_PACKAGE_NAME)
+		this.reflectiveComponentCodeGenerator = new ReflectiveComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
 		this.synchronousCompositeComponentCodeGenerator = new SynchronousCompositeComponentCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
-		this.synchronousComponentWrapperCodeGenerator = new SynchronousComponentWrapperCodeGenerator(this.BASE_PACKAGE_NAME, trace)
+		this.synchronousComponentWrapperCodeGenerator = new AsynchronousAdapterCodeGenerator(this.BASE_PACKAGE_NAME, trace)
 		this.channelInterfaceGenerator = new ChannelInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.channelCodeGenerator = new ChannelCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.asynchronousCompositeComponentCodeGenerator = new AsynchronousCompositeComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
@@ -238,6 +240,9 @@ class GlueCodeGenerator {
 				// Generating the interface for returning the Ports
 				val interfaceCode = it.statechartDefinition.generateComponentInterface
 				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.generatePortOwnerInterfaceName + ".java")
+				// Generating the reflective class
+				val reflectiveCode = it.statechartDefinition.generateReflectiveClass
+				reflectiveCode.saveCode(componentUri + File.separator + it.statechartDefinition.generateReflectiveComponentClassName + ".java")
 			].build		
 		}
 		return simpleComponentsRule
@@ -270,7 +275,7 @@ class GlueCodeGenerator {
 		if (synchronousComponentWrapperRule === null) {
 			 synchronousComponentWrapperRule = createRule(SynchronousComponentWrappers.instance).action [
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
-				val code = it.synchronousComponentWrapper.createSynchronousComponentWrapperClass
+				val code = it.synchronousComponentWrapper.createAsynchronousAdapterClass
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generateComponentClassName + ".java")
 				val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generatePortOwnerInterfaceName + ".java")
