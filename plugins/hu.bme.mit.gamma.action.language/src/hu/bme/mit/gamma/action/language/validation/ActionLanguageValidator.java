@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.BreakStatement;
 import hu.bme.mit.gamma.action.model.ChoiceStatement;
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
@@ -62,6 +63,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		}
 	}
 	
+	//TODO extract into separate util-file
 	private Collection<? extends NamedElement> getRecursiveContainerNamedElements(EObject ele){
 		List<NamedElement> ret = new ArrayList<NamedElement>();
 		ret.addAll(getNamedElements(ele));
@@ -71,6 +73,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		return ret;
 	}
 	
+	//TODO extract into separate util file
 	private Collection<? extends NamedElement> getNamedElements(EObject ele){
 		List<NamedElement> ret = new ArrayList<NamedElement>();
 		for(EObject obj : ele.eContents()) {
@@ -166,15 +169,41 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	public void CheckReturnStatementType(ReturnStatement rs) {
 		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
 		
-		Block containingBlock = (Block)rs.eContainer();
-		ProcedureDeclaration containingProcedure = (ProcedureDeclaration)containingBlock.eContainer();	//TODO go back until procedure, this fails in case of embedded scopes
-		Type containingProcedureType = containingProcedure.getType();
-		
+		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
+		Type containingProcedureType = null;
+		if(containingProcedure != null) {
+			containingProcedureType = containingProcedure.getType();
+		}
 		if(!typeDeterminator.equals(containingProcedureType, returnStatementType)) {
 			error("The type of the return statement (" + returnStatementType.toString().toLowerCase()
 					+ ") does not match the declared type of the procedure (" 
 					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
 					null);	//Underlines the whole line
 		}
+	}
+	
+	//TODO extract into util-class
+	private ProcedureDeclaration getContainingProcedure(Action action) {
+		EObject container = action.eContainer();
+		if (container instanceof ProcedureDeclaration) {
+			return (ProcedureDeclaration)container;
+		} else if (container instanceof Branch) {
+			return getContainingProcedure((Branch)container);
+		} else if (container instanceof Block) {
+			return getContainingProcedure((Action)container);
+		} else if (container instanceof ForStatement) {
+			return getContainingProcedure((Action)container);
+		} else {
+			return null;	//Not in a procedure
+		}
+	}
+	
+	//TODO extract into util-class
+	private ProcedureDeclaration getContainingProcedure(Branch branch) {
+		EObject container = branch.eContainer();
+		if (container instanceof Action) {
+			return getContainingProcedure((Action)container);
+		} 
+		throw new IllegalArgumentException("Unknown container for Branch.");
 	}
 }

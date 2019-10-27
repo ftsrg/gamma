@@ -17,6 +17,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ComparisonExpression;
@@ -30,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
@@ -39,6 +43,7 @@ import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
@@ -59,6 +64,34 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
 				error("Names must be unique!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			}
+		}
+	}
+	
+	@Check
+	public void checkIfThenElseExpression(IfThenElseExpression expression) {
+		ExpressionType expressionType = typeDeterminator.getType(expression.getCondition());
+		if (expressionType != ExpressionType.BOOLEAN) {
+			error("The condition of the if-then-else expression must be of type boolean, currently it is: " + expressionType.toString().toLowerCase(),
+					ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION);
+		}
+		if (typeDeterminator.getType(expression.getThen()) != typeDeterminator.getType(expression.getElse())) {
+			error("The return type of the else-branch does not match the type of the then-branch!", 
+					ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__ELSE);
+		}
+	}
+	
+	@Check
+	public void checkArrayLiteralExpression(ArrayLiteralExpression expression) {
+		ExpressionType referenceType = null;
+		for(Expression e : expression.getOperands()) {
+			ExpressionType examinedType = typeDeterminator.getType(e);
+			if(examinedType != referenceType) {
+				if(referenceType == null) {
+					referenceType = examinedType;
+				}else {
+					error("The operands of the ArrayLiteralExpression are not of the same type!", null);
+				}
 			}
 		}
 	}
@@ -101,7 +134,22 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			error("The referenced object is not a function declaration!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 		}
-				
+	}
+	
+	@Check
+	public void checkArrayAccessExpression(ArrayAccessExpression expression) {
+		if(!typeDeterminator.isInteger(expression.getArguments().get(0))) {
+			error("The index of the accessed element must be of type integer!", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+		}
+	}
+	
+	@Check
+	public void checkSelectExpression(SelectExpression expression){
+		if(!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
+				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.ENUMERATION) ||
+				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.INTEGER_RANGE))) {
+			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.getType(expression.getOperand()).toString(), null);
+		}
 	}
 	
 	@Check
@@ -259,6 +307,28 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 					}
 					else {
 						error("The right hand side must be of type enumeration literal.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+					}
+				}
+				//Additional checks for arrays
+				ArrayTypeDefinition arrayType = null;
+				if (variableDeclarationType instanceof ArrayTypeDefinition) {
+					arrayType = (ArrayTypeDefinition) variableDeclarationType;
+				}
+				else if (variableDeclarationType instanceof TypeReference &&
+						((TypeReference) variableDeclarationType).getReference().getType() instanceof ArrayTypeDefinition) {
+					arrayType = (ArrayTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
+				}
+				if (arrayType != null) {
+					if (initialExpression instanceof ArrayLiteralExpression) {
+						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
+						for(Expression e : rhs.getOperands()) {
+							if(!typeDeterminator.equals(arrayType.getElementType(), typeDeterminator.getType(e))) {
+								error("The elements on the right hand side must be of the declared type of the array.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+							}
+						}
+					}
+					else {
+						error("The right hand side must be of type array literal.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					}
 				}
 			}
