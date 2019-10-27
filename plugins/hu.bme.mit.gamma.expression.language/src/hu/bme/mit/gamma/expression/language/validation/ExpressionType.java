@@ -7,6 +7,7 @@ public enum ExpressionType {
 	DECIMAL, 
 	ENUMERATION, 
 	ARRAY,
+	INTEGER_RANGE,
 	RECORD,
 	VOID, 
 	ERROR

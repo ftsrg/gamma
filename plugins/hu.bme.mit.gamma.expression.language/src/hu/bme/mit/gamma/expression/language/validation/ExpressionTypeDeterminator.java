@@ -5,9 +5,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
@@ -24,17 +25,23 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.QuantifierExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -66,6 +73,15 @@ public class ExpressionTypeDeterminator {
 		if (expression instanceof EnumerationLiteralExpression) {
 			return getType((EnumerationLiteralExpression) expression);
 		}
+		if (expression instanceof IntegerRangeLiteralExpression) {
+			return getType((IntegerRangeLiteralExpression) expression);
+		}
+		if (expression instanceof RecordLiteralExpression) {
+			return getType((RecordLiteralExpression) expression);
+		}
+		if (expression instanceof ArrayLiteralExpression) {
+			return getType((ArrayLiteralExpression) expression);
+		}
 		if (expression instanceof ReferenceExpression) {
 			return getType((ReferenceExpression) expression);
 		}
@@ -77,6 +93,9 @@ public class ExpressionTypeDeterminator {
 		}
 		if (expression instanceof PredicateExpression) {
 			return getType((PredicateExpression) expression);
+		}
+		if (expression instanceof QuantifierExpression) {
+			return getType((QuantifierExpression) expression);
 		}
 		if (expression instanceof UnaryPlusExpression) {
 			return getArithmeticUnaryType((UnaryPlusExpression) expression);
@@ -102,9 +121,42 @@ public class ExpressionTypeDeterminator {
 		if (expression instanceof MultiplyExpression) {
 			return getArithmeticMultiaryType((MultiplyExpression) expression);
 		}
+		if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(arrayAccessExpression);
+			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+			return transform(arrayTypeDefinition.getElementType());
+		}
 		if (expression instanceof FunctionAccessExpression) {
-			//TODO extract into separate method
 			return transform(((ReferenceExpression)((FunctionAccessExpression) expression).getOperand()).getDeclaration().getType());
+			//What if it goes through a type reference / declaration?
+		}
+		if (expression instanceof RecordAccessExpression) {
+			RecordAccessExpression recordAccessExpression = (RecordAccessExpression)expression;
+			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
+			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) typeDefinition;
+			for(FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
+				if(fd.getName().equals(recordAccessExpression.getField())) {
+					return transform(fd.getType());
+				}
+			}
+		}
+		if (expression instanceof SelectExpression) {
+			SelectExpression selectExpression = (SelectExpression)expression;
+			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(selectExpression);
+			if(typeDefinition instanceof ArrayTypeDefinition) {
+				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
+				return transform(arrayTypeDefinition.getElementType());
+			}else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
+				return ExpressionType.INTEGER;
+			}else if (typeDefinition instanceof EnumerationTypeDefinition) {
+				return ExpressionType.ENUMERATION;
+			}else {
+				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + selectExpression.getOperand());
+			}
+		}
+		if (expression instanceof IfThenElseExpression) {
+			return getType(((IfThenElseExpression) expression).getThen());
 		}
 		if (expression == null) {
 			return ExpressionType.VOID;
@@ -136,6 +188,18 @@ public class ExpressionTypeDeterminator {
 		return ExpressionType.ENUMERATION;
 	}
 	
+	private ExpressionType getType(IntegerRangeLiteralExpression expression) {
+		return ExpressionType.INTEGER_RANGE;
+	}
+	
+	private ExpressionType getType(RecordLiteralExpression expression) {
+		return ExpressionType.RECORD;
+	}
+	
+	private ExpressionType getType(ArrayLiteralExpression expression) {
+		return ExpressionType.ARRAY;
+	}
+	
 	// References
 	
 	private ExpressionType getType(ReferenceExpression expression) {
@@ -158,6 +222,12 @@ public class ExpressionTypeDeterminator {
 	// Predicate
 	
 	private ExpressionType getType(PredicateExpression expression) {
+		return ExpressionType.BOOLEAN;
+	}
+	
+	// Quantifier
+	
+	private ExpressionType getType(QuantifierExpression expression) {
 		return ExpressionType.BOOLEAN;
 	}
 	
@@ -259,48 +329,9 @@ public class ExpressionTypeDeterminator {
 			Declaration declaration = referenceExpression.getDeclaration();
 			Type declarationType = declaration.getType();
 			return isNumber(transform(declarationType));
-		}else if(expression instanceof RecordAccessExpression) {
-			RecordAccessExpression rae = (RecordAccessExpression)expression;
-			RecordTypeDefinition rtd = (RecordTypeDefinition)findAccessExpressionTypeDefinition(rae);
-			List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
-			for(FieldDeclaration fd : fieldDeclarations) {
-				if(fd.getName().equals(rae.getField())) {
-					return isNumber(transform(fd.getType()));
-				}
-			}
-			return false;
+		}else {
+			return isNumber(getType(expression));
 		}
-		//TODO extend with other 'complex' expression types
-		return expression instanceof ArithmeticExpression;
-	}
-	
-	//TODO extract into separate util-file
-	public TypeDefinition findTypeDefinitionOfType(Type t) {
-		if(t instanceof TypeDefinition) {
-			return (TypeDefinition)t;
-		}else {	//t instanceof TypeReference
-			TypeReference tr = (TypeReference) t;
-			TypeDeclaration td = tr.getReference();
-			return findTypeDefinitionOfType(td.getType());
-		}
-	}
-	
-	//TODO extract into separate util-file
-	public TypeDefinition findAccessExpressionTypeDefinition(AccessExpression accessExpression) {
-		Declaration instanceDeclaration = findAccessExpressionInstanceDeclaration(accessExpression);
-		Type instanceDeclarationType = instanceDeclaration.getType();
-		return findTypeDefinitionOfType(instanceDeclarationType);
-	}
-	
-	//TODO extract into separate util-file
-	public Declaration findAccessExpressionInstanceDeclaration(AccessExpression accessExpression)/* throws Exception*/ {
-		//TODO extend for reference-chain
-		if(accessExpression.getOperand() instanceof ReferenceExpression) {	//TODO instead of instanceof -> 'has the eventual type of'
-			ReferenceExpression ref = (ReferenceExpression)accessExpression.getOperand();
-			return ref.getDeclaration();	//TODO while the chain of references goes on...
-		}
-		//throw new Exception("Not implemented feature");
-		return null;
 	}
 	
 	// Transform type
@@ -331,6 +362,9 @@ public class ExpressionTypeDeterminator {
 		if (type instanceof ArrayTypeDefinition) {
 			return ExpressionType.ARRAY;
 		}
+		if (type instanceof IntegerRangeTypeDefinition) {
+			return ExpressionType.INTEGER_RANGE;
+		}
 		if (type instanceof RecordTypeDefinition) {
 			return ExpressionType.RECORD;
 		}
@@ -340,11 +374,10 @@ public class ExpressionTypeDeterminator {
 			Type declaredType = declaration.getType();
 			return transform(declaredType);
 		}
-		//TODO extend with further types
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
 	
-	// Type equal
+	// Type equal (in case of complex types, only shallow comparison)
 	
 	public boolean equals(Type type, ExpressionType expressionType) {
 		return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
@@ -352,6 +385,9 @@ public class ExpressionTypeDeterminator {
 			type instanceof RationalTypeDefinition && expressionType == ExpressionType.RATIONAL ||
 			type instanceof DecimalTypeDefinition && expressionType == ExpressionType.DECIMAL ||
 			type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION ||
+			type instanceof ArrayTypeDefinition  && expressionType == ExpressionType.ARRAY ||
+			type instanceof IntegerRangeTypeDefinition && expressionType == ExpressionType.INTEGER_RANGE ||
+			type instanceof RecordTypeDefinition && expressionType == ExpressionType.RECORD ||
 			type instanceof VoidTypeDefinition && expressionType == ExpressionType.VOID ||
 			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
 	}

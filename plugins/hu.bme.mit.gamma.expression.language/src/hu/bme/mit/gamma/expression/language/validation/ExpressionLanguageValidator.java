@@ -13,24 +13,15 @@ package hu.bme.mit.gamma.expression.language.validation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
-import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression;
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ComparisonExpression;
-import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DivExpression;
-import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
@@ -40,26 +31,17 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
-import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
-import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
-import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
-import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
-import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 
 /**
  * This class contains custom validation rules. 
@@ -72,43 +54,18 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkNameUniqueness(NamedElement element) {
-		Collection<? extends NamedElement> namedElements = getRecursiveContainerContentsOfType(element, element.getClass());
+		Collection<? extends NamedElement> namedElements = ExpressionLanguageValidatorUtil.getRecursiveContainerContentsOfType(element, element.getClass());
 		namedElements.remove(element);
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
 				error("Names must be unique!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
-		
-	}
-	
-	//TODO extract into separate util-file
-	private Collection<? extends NamedElement> getRecursiveContainerContentsOfType(EObject ele, Class<? extends NamedElement> type){
-		List<NamedElement> ret = new ArrayList<NamedElement>();
-		ret.addAll(getContentsOfType(ele, type));
-		if(ele.eContainer() != null) {
-			ret.addAll(getRecursiveContainerContentsOfType(ele.eContainer(), type));
-		}
-		return ret;
-	}
-	
-	//TODO extract into separate util-file
-	private Collection<? extends NamedElement> getContentsOfType(EObject ele, Class<? extends NamedElement> type){
-		List<NamedElement> ret = new ArrayList<NamedElement>();
-		for(EObject obj : ele.eContents()) {
-			if(obj instanceof NamedElement) {
-				NamedElement ne = (NamedElement)obj;
-				if(type.isAssignableFrom(ne.getClass())) {
-					ret.add(ne);
-				}
-			}
-		}
-		return ret;
 	}
 	
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		RecordTypeDefinition rtd = (RecordTypeDefinition)typeDeterminator.findAccessExpressionTypeDefinition(recordAccessExpression);
+		RecordTypeDefinition rtd = (RecordTypeDefinition)ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
 		List<String> fieldDeclarationNames = new ArrayList<String>();
 		for(FieldDeclaration fd : fieldDeclarations) {
