@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
@@ -54,41 +53,13 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	
 	@Check
 	public void checkNameUniqueness(NamedElement element) {
-		Collection<? extends NamedElement> namedElements = getRecursiveContainerNamedElements(element);
+		Collection<? extends NamedElement> namedElements = ActionLanguageValidatorUtil.getRecursiveContainerNamedElements(element);
 		while(namedElements.remove(element)) {}
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
 				error("Names must be unique!!!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
-	}
-	
-	//TODO extract into separate util-file
-	private Collection<? extends NamedElement> getRecursiveContainerNamedElements(EObject ele){
-		List<NamedElement> ret = new ArrayList<NamedElement>();
-		ret.addAll(getNamedElements(ele));
-		if(ele.eContainer() != null) {
-			ret.addAll(getRecursiveContainerNamedElements(ele.eContainer()));
-		}
-		return ret;
-	}
-	
-	//TODO extract into separate util file
-	private Collection<? extends NamedElement> getNamedElements(EObject ele){
-		List<NamedElement> ret = new ArrayList<NamedElement>();
-		for(EObject obj : ele.eContents()) {
-			if(obj instanceof NamedElement) {
-				NamedElement ne = (NamedElement)obj;
-				ret.add(ne);
-			}else if(obj instanceof VariableDeclarationStatement) {
-				VariableDeclaration vd = ((VariableDeclarationStatement)obj).getVariableDeclaration();
-				ret.add(vd);
-			}else if(obj instanceof ConstantDeclarationStatement) {
-				ConstantDeclaration cd = ((ConstantDeclarationStatement)obj).getConstantDeclaration();
-				ret.add(cd);
-			}
-		}
-		return ret;
 	}
 	
 	@Check
