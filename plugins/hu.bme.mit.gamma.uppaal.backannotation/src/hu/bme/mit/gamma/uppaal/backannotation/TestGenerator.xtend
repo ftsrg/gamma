@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.uppaal.backannotation
 
 import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
@@ -35,6 +34,8 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TestGenerator {
 	// Constant strings
@@ -207,21 +208,6 @@ class TestGenerator {
 			«componentClassName.toFirstLower».schedule();
 		«ENDIF»
 	'''
-	
-	protected def CharSequence getFullContainmentHierarchy(State state) {
-		if (state === null) {
-			return ""
-		}
-		val parentRegion = state.eContainer as Region
-		var State parentState
-		if (parentRegion.eContainer instanceof State) {
-			parentState = parentRegion.eContainer as State
-		}
-		if (parentState === null) {
-			return parentRegion.name + "_" + state.name
-		}
-		return parentState.fullContainmentHierarchy + "_" + parentRegion.name + "_" + state.name
-	}
 	
 	protected def getParent(ComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")

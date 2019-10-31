@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RealizationMode
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
@@ -10,6 +11,8 @@ import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartWrapperCodeGenerator {
 	
@@ -41,7 +44,7 @@ class StatechartWrapperCodeGenerator {
 	/**
 	 * Creates the Java code for the given component.
 	 */
-	def createSimpleComponentClass(Component component) '''		
+	def createSimpleComponentClass(StatechartDefinition component) '''		
 		package «component.generateComponentPackageName»;
 		
 		«component.generateSimpleComponentImports»
@@ -185,6 +188,21 @@ class StatechartWrapperCodeGenerator {
 			/** Checks whether the wrapped statemachine is in the given state. */
 			public boolean isStateActive(State state) {
 				return «component.generateStatemachineInstanceName».isStateActive(state);
+			}
+			
+			public boolean isStateActive(String region, String state) {
+				switch (region) {
+					«FOR region : component.allRegions»
+						case "«region.name»":
+							switch (state) {
+								«FOR state : region.states»
+									case "«state.name»":
+										return isStateActive(State.«state.fullContainmentHierarchy»);
+								«ENDFOR»
+							}
+					«ENDFOR»
+				}
+				return false;
 			}
 			
 			«IF component.needTimer»

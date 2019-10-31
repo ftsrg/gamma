@@ -37,7 +37,7 @@ class ReflectiveComponentCodeGenerator {
 			private «component.generateComponentClassName» «wrappedComponentName»;
 			
 			«IF component.needTimer»
-				public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					this(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
 					«wrappedComponentName».setTimer(timer);
 				}
@@ -81,8 +81,33 @@ class ReflectiveComponentCodeGenerator {
 						«ENDFOR»
 					«ENDFOR»
 					default:
-						throw new IllegalArgumentException("Not known port-event combination: " + portEvent);
+						throw new IllegalArgumentException("Not known port-in event combination: " + portEvent);
 				}
+			}
+			
+			public boolean isRaisedEvent(String port, String event, Object[] parameters) {
+				String portEvent = port + "." + event;
+				switch (portEvent) {
+					«FOR port : component.ports»
+						«FOR outEvent : port.getSemanticEvents(EventDirection.OUT)»
+							case "«port.name».«outEvent.name»":
+								if («wrappedComponentName».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
+									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
+										 parameters[«i»].equals(«wrappedComponentName».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
+									«ENDFOR»
+									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
+								}
+								break;
+						«ENDFOR»
+					«ENDFOR»
+					default:
+						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
+				}
+				return false;
+			}
+			
+			public boolean isStateActive(String region, String state) {
+				return «wrappedComponentName».isStateActive(region, state);
 			}
 			
 			«component.generateScheduling»

@@ -113,29 +113,48 @@ public class StatechartModelDerivedFeatures {
 		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toList());
 	}
 	
-	public static Collection<StateNode> getStateNodes(CompositeElement compositeElement) {
+	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
 		Set<StateNode> stateNodes = new HashSet<StateNode>();
 		for (Region region : compositeElement.getRegions()) {
 			for (StateNode stateNode : region.getStateNodes()) {
 				stateNodes.add(stateNode);
 				if (stateNode instanceof State) {
 					State state = (State) stateNode;
-					stateNodes.addAll(getStateNodes(state));
+					stateNodes.addAll(getAllStateNodes(state));
 				}
 			}
 		}
 		return stateNodes;
 	}
 	
-	public static Collection<State> getStates(CompositeElement compositeElement) {
+	public static Collection<State> getAllStates(CompositeElement compositeElement) {
 		Set<State> states = new HashSet<State>();
-		for (StateNode stateNode : getStateNodes(compositeElement)) {
+		for (StateNode stateNode : getAllStateNodes(compositeElement)) {
 			if (stateNode instanceof State) {
 				State state = (State) stateNode;
 				states.add(state);
 			}
 		}
 		return states;
+	}
+	
+	public static Collection<State> getStates(Region region) {
+		Set<State> states = new HashSet<State>();
+		for (StateNode stateNode : region.getStateNodes()) {
+			if (stateNode instanceof State) {
+				State state = (State) stateNode;
+				states.add(state);
+			}
+		}
+		return states;
+	}
+	
+	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
+		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
+		for (State state : getAllStates(compositeElement)) {
+			regions.addAll(getAllRegions(state));
+		}
+		return regions;
 	}
 	
 	public static Region getParentRegion(StateNode node) {
@@ -160,6 +179,21 @@ public class StatechartModelDerivedFeatures {
 	public static State getParentState(StateNode node) {
 		Region parentRegion = getParentRegion(node);
 		return getParentState(parentRegion);
+	}
+	
+	public static String getFullContainmentHierarchy(State state) {
+		if (state == null) {
+			return "";
+		}
+		Region parentRegion = getParentRegion(state);
+		State parentState = null;
+		if (parentRegion.eContainer() instanceof State) {
+			parentState = getParentState(parentRegion);
+		}
+		if (parentState == null) {
+			return parentRegion.getName() + "_" + state.getName();
+		}
+		return getFullContainmentHierarchy(parentState) + "_" + parentRegion.getName() + "_" + state.getName();
 	}
 	
 	public static StatechartDefinition getContainingStatechart(EObject object) {

@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.codegenerator.java.queries.Interfaces
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.statechart.model.Package
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import java.io.File
 import java.io.FileWriter
@@ -235,7 +236,7 @@ class GlueCodeGenerator {
 		if (simpleComponentsRule === null) {
 			 simpleComponentsRule = createRule(SimpleYakinduComponents.instance).action [
 				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
-				val code = it.statechartDefinition.createSimpleComponentClass
+				val code = (it.statechartDefinition as StatechartDefinition).createSimpleComponentClass
 				code.saveCode(componentUri + File.separator + it.statechartDefinition.generateComponentClassName + ".java")
 				// Generating the interface for returning the Ports
 				val interfaceCode = it.statechartDefinition.generateComponentInterface
