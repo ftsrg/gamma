@@ -256,6 +256,22 @@ class StringTraceBackAnnotator {
 		return literal
 	}
 	
+	protected def createVariableLiteral(hu.bme.mit.gamma.expression.model.VariableDeclaration variable, Integer parameter) {
+		val paramType = variable.type
+		val literal = switch (paramType) {
+			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(parameter)]
+			BooleanTypeDefinition: {
+				if (parameter == 0) {
+					createFalseExpression
+				}
+				else {
+					createTrueExpression
+				}
+			}
+		}
+		return literal
+	}
+	
 	protected def addTimeElapse(Step step, int elapsedTime) {
 		val timeElapseActions = step.actions.filter(TimeElapse)
 		if (!timeElapseActions.empty) {
@@ -285,6 +301,15 @@ class StringTraceBackAnnotator {
 	protected def addOutEvent(Step step, Port port, Event event, Integer parameter) {
 		val eventRaise = createRaiseEventAct(port, event, parameter)
 		step.outEvents += eventRaise
+	}
+	
+	protected def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			hu.bme.mit.gamma.expression.model.VariableDeclaration variable,	Expression value) {
+		step.instanceStates += createInstanceVariableState => [
+			it.instance = instance
+			it.declaration = variable
+			it.value = value
+		]
 	}
 	
 	protected def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
@@ -370,46 +395,55 @@ class StringTraceBackAnnotator {
 			if (event === null) {
 				// Not an event, it might be a valueof
 				val params = uppaalVariable.allValuesOfFrom.filter(ParameterDeclaration) // These variables are traced to ParameterDeclarations only (and not events)
-					// Checking whether the variable is a parameter variable: valueOf variable					
-					if (params.size == 1) {
-						val paramedEvent = params.head.eContainer as Event // Getting the container Event of the ParameterDeclaration
-						// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
-						val matches = TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, uppaalVariable.owner, uppaalVariable.port, paramedEvent)
-						if (matches.size > 0) {
-							checkState(matches.size == 1, matches)
-							val match = matches.head
-							// Getting the valueof Uppaal variable
-							val uppaalVars = paramedEvent.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == uppaalVariable.owner]
-												.filter[it.variable.head.name == paramedEvent.getOutEventName(uppaalVariable.port, uppaalVariable.owner)] // Connected to isRaised variable
-							if (uppaalVars.size != 1) {
-								throw new IllegalArgumentException("Not one uppaal variable from parameter: " + paramedEvent.name + " " + uppaalVars)
+				// Checking whether the variable is a parameter variable: valueOf variable					
+				if (params.size == 1) {
+					val paramedEvent = params.head.eContainer as Event // Getting the container Event of the ParameterDeclaration
+					// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
+					val matches = TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, uppaalVariable.owner, uppaalVariable.port, paramedEvent)
+					if (matches.size > 0) {
+						checkState(matches.size == 1, matches)
+						val match = matches.head
+						// Getting the valueof Uppaal variable
+						val uppaalVars = paramedEvent.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == uppaalVariable.owner]
+											.filter[it.variable.head.name == paramedEvent.getOutEventName(uppaalVariable.port, uppaalVariable.owner)] // Connected to isRaised variable
+						if (uppaalVars.size != 1) {
+							throw new IllegalArgumentException("Not one uppaal variable from parameter: " + paramedEvent.name + " " + uppaalVars)
+						}
+						val uppaalVar = uppaalVars.head.variable.head
+						// Checking whether the bool event flag is raised (out events have one bool flag)
+						if (variableList.filter[it.key == uppaalVar].head.value >= 1) {
+							val rightValue = variableMap.value
+							val syncPort = match.systemPort
+							val raisedEvent = match.event
+							// Checking if it led out to an async composite system port
+							val asyncMatches = TopAsyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, null, syncPort, raisedEvent)
+							if (asyncMatches.size > 1) {
+								throw new IllegalArgumentException("More than one async system event: " + asyncMatches)
 							}
-							val uppaalVar = uppaalVars.head.variable.head
-							// Checking whether the bool event flag is raised (out events have one bool flag)
-							if (variableList.filter[it.key == uppaalVar].head.value >= 1) {
-								val rightValue = variableMap.value
-								val syncPort = match.systemPort
-								val raisedEvent = match.event
-								// Checking if it led out to an async composite system port
-								val asyncMatches = TopAsyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, null, syncPort, raisedEvent)
-								if (asyncMatches.size > 1) {
-									throw new IllegalArgumentException("More than one async system event: " + asyncMatches)
-								}
-								if (asyncMatches.size == 1) {
-									// Event is led out to an async system port
-									val asyncPort = asyncMatches.head.systemPort
-									step.addOutEvent(asyncPort, raisedEvent, rightValue)
-								}
-								else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent)  {
-									// Event is not led out to an async system port (sync or wrapper component)
-									step.addOutEvent(syncPort, match.event, rightValue)
-								}
+							if (asyncMatches.size == 1) {
+								// Event is led out to an async system port
+								val asyncPort = asyncMatches.head.systemPort
+								step.addOutEvent(asyncPort, raisedEvent, rightValue)
+							}
+							else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent)  {
+								// Event is not led out to an async system port (sync or wrapper component)
+								step.addOutEvent(syncPort, match.event, rightValue)
 							}
 						}
 					}
+				}
+				else {
 					// Else it is a regular variable
+					val gammaVariables = uppaalVariable.allValuesOfFrom.filter(hu.bme.mit.gamma.expression.model.VariableDeclaration) // These variables are traced to ParameterDeclarations only (and not events)
+					if (gammaVariables.size == 1) {
+						val gammaVariable = gammaVariables.head
+						val instance = uppaalVariable.owner
+						val rhs = gammaVariable.createVariableLiteral(variableMap.value)
+						step.addInstanceVariableState(instance, gammaVariable, rhs)
+					}
+				}
 			}
-			// Next, checking wheter it is an event without parameter (No valueOf) (Valueofs are taken care of in the if branch)
+			// Next, checking wheter it is an event without parameter (No valueOf) (ValueOfs are taken care of in the if branch)
 			else if (event.parameterDeclarations.empty) {
 				val matches = TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, uppaalVariable.owner, uppaalVariable.port, event)
 				if (matches.size > 0) {

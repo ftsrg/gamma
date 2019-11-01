@@ -39,7 +39,7 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
-		return expression.value.toString
+		return "(long) " + expression.value.toString
 	}
 	
 	def dispatch String serialize(TrueExpression expression) {
