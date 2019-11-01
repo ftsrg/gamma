@@ -36,9 +36,18 @@ class ReflectiveComponentCodeGenerator {
 		
 		«component.generateReflectiveImports»
 		
-		public class «component.generateReflectiveComponentClassName» {
+		public class «component.generateReflectiveComponentClassName» implements «Namings.REFLECTIVE_INTERFACE» {
 			
 			private «component.generateComponentClassName» «wrappedComponentName»;
+			// Wrapped contained components
+			«IF component instanceof CompositeComponent»
+				«FOR containedComponent : component.derivedComponents»
+					private «Namings.REFLECTIVE_INTERFACE» «containedComponent.name.toFirstLower» = null;
+				«ENDFOR»
+			«ELSEIF component instanceof AsynchronousAdapter»
+				private «Namings.REFLECTIVE_INTERFACE» «component.generateWrappedComponentName» = null;
+			«ENDIF»
+			
 			
 			«IF component.needTimer»
 				public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
@@ -48,7 +57,11 @@ class ReflectiveComponentCodeGenerator {
 			«ENDIF»
 			
 			public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
-				wrappedComponent = new «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+				«wrappedComponentName» = new «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+			}
+			
+			public «component.generateReflectiveComponentClassName»(«component.generateComponentClassName» «wrappedComponentName») {
+				this.«wrappedComponentName» = «wrappedComponentName»;
 			}
 			
 			public void reset() {
@@ -131,22 +144,25 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateReflectiveImports(Component component) '''
 		import «PACKAGE_NAME».*;
+		«IF component instanceof CompositeComponent»
+			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
+				import «containedComponentType.generateComponentPackageName».*;
+			«ENDFOR»
+		«ELSEIF component instanceof AsynchronousAdapter»
+			import «component.generateComponentPackageName».*;
+		«ENDIF»
 	'''
 	
 	protected def generateScheduling(Component component) '''
-		«IF component instanceof SynchronousComponent»
-			public void schedule() {
-				«wrappedComponentName».runCycle();
-			}
-		«ELSEIF component instanceof AsynchronousAdapter»
-			public void schedule() {
-				«wrappedComponentName».schedule();
-			}
-		«ELSE»
-			public void schedule(String instance) {
-«««				TODO
-			}
-		«ENDIF»
+		public void schedule(String instance) {
+			«IF component instanceof SynchronousComponent»
+					«wrappedComponentName».runCycle();
+			«ELSEIF component instanceof AsynchronousAdapter»
+					«wrappedComponentName».schedule();
+			«ELSE»
+	«««				TODO
+			«ENDIF»
+		}
 	'''
 	
 	protected def generateIsActiveState(Component component) '''
@@ -206,16 +222,22 @@ class ReflectiveComponentCodeGenerator {
 	'''
 	
 	protected def generateComponentValueGetters(Component component) '''
-		public Object getComponent(String component) {
+		public «Namings.REFLECTIVE_INTERFACE» getComponent(String component) {
 			switch (component) {
 				«IF component instanceof CompositeComponent»
 					«FOR containedComponent : component.derivedComponents»
 						case "«containedComponent.name»":
-							return «wrappedComponentName».get«containedComponent.name.toFirstUpper»();
+							if («containedComponent.name.toFirstLower» == null) {
+								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.generateReflectiveComponentClassName»(«wrappedComponentName».get«containedComponent.name.toFirstUpper»());
+							}
+							return «containedComponent.name.toFirstLower»;
 					«ENDFOR»
 				«ELSEIF component instanceof AsynchronousAdapter»
 					case "«component.generateWrappedComponentName»":
-						return «wrappedComponentName».get«component.generateWrappedComponentName.toFirstUpper»();
+						if («component.generateWrappedComponentName» == null) {
+							«component.generateWrappedComponentName» = new «component.generateReflectiveComponentClassName»(«wrappedComponentName».get«component.generateWrappedComponentName.toFirstUpper»());
+						}
+						return «component.generateWrappedComponentName»;
 				«ENDIF»
 			}
 			throw new IllegalArgumentException("Not known component: " + component);

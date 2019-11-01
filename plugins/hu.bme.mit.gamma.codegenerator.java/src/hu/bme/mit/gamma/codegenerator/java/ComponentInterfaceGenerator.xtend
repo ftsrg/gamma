@@ -61,4 +61,39 @@ class ComponentInterfaceGenerator {
 		'''
 		return interfaceCode
 	}
+	
+	protected def generateReflectiveInterface() '''
+		package «PACKAGE_NAME»;
+		
+		public interface «Namings.REFLECTIVE_INTERFACE» {
+			
+			public void reset();
+					
+			public String[] getPorts();
+					
+			public String[] getEvents(String port);
+					
+			public void raiseEvent(String port, String event, Object[] parameters);
+					
+			public boolean isRaisedEvent(String port, String event, Object[] parameters);
+			
+			public void schedule(String instance);
+			
+			public boolean isStateActive(String region, String state);
+			
+			public String[] getRegions();
+			
+			public String[] getStates(String region);
+			
+			public String[] getVariables();
+			
+			public Object getValue(String variable);
+			
+			public String[] getComponents();
+			
+			public ReflectiveComponentInterface getComponent(String component);
+			
+		}
+	'''
+	
 }

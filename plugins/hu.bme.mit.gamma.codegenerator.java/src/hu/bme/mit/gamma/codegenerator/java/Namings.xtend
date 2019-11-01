@@ -17,4 +17,7 @@ class Namings {
 	public static final String INTERFACE_PACKAGE_POSTFIX = "interfaces"
 	public static final String CHANNEL_PACKAGE_POSTFIX = "channels"
 	
+	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
+	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
+	
 }

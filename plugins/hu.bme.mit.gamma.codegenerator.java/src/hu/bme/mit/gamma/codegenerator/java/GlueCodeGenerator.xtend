@@ -141,10 +141,11 @@ class GlueCodeGenerator {
 		checkUniqueInterfaceNames
 		generateEventClass
 		if (topComponent.needTimer) {				
-			// Virtual timer is generated only if there are timing specs (triggers) in the model
+			// Virtual timer is generated only if there are timing specifications (triggers) in the model
 			generateTimerClasses	
 		}	
 		getPortInterfaceRule.fireAllCurrent
+		generateReflectiveInterfaceRule
 		getSimpleComponentDeclarationRule.fireAllCurrent
 		getSynchronousCompositeComponentsRule.fireAllCurrent
 		if (hasSynchronousWrapper) {
@@ -227,6 +228,12 @@ class GlueCodeGenerator {
 			].build		
 		}
 		return portInterfaceRule
+	}
+	
+	protected def generateReflectiveInterfaceRule() {
+		val interfaceUri = BASE_PACKAGE_URI
+		val reflectiveCode = generateReflectiveInterface
+		reflectiveCode.saveCode(interfaceUri + File.separator + Namings.REFLECTIVE_INTERFACE + ".java")
 	}
 	
 	/**
