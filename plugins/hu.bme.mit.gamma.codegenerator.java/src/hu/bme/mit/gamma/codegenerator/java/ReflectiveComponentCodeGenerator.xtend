@@ -17,8 +17,6 @@ class ReflectiveComponentCodeGenerator {
 	protected final extension TimingDeterminer timingDeterminer
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ComponentCodeGenerator componentCodeGenerator
-	//
-	final String wrappedComponentName = "wrappedComponent"
 
 	new(String packageName, Trace trace) {
 		this.PACKAGE_NAME = packageName
@@ -38,7 +36,7 @@ class ReflectiveComponentCodeGenerator {
 		
 		public class «component.generateReflectiveComponentClassName» implements «Namings.REFLECTIVE_INTERFACE» {
 			
-			private «component.generateComponentClassName» «wrappedComponentName»;
+			private «component.generateComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			// Wrapped contained components
 			«IF component instanceof CompositeComponent»
 				«FOR containedComponent : component.derivedComponents»
@@ -48,28 +46,27 @@ class ReflectiveComponentCodeGenerator {
 				private «Namings.REFLECTIVE_INTERFACE» «component.generateWrappedComponentName» = null;
 			«ENDIF»
 			
-			
 			«IF component.needTimer»
 				public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
 					this(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
-					«wrappedComponentName».setTimer(timer);
+					«Namings.REFLECTIVE_WRAPPED_COMPONENT».setTimer(timer);
 				}
 			«ENDIF»
 			
 			public «component.generateReflectiveComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
-				«wrappedComponentName» = new «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+				«Namings.REFLECTIVE_WRAPPED_COMPONENT» = new «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
 			}
 			
-			public «component.generateReflectiveComponentClassName»(«component.generateComponentClassName» «wrappedComponentName») {
-				this.«wrappedComponentName» = «wrappedComponentName»;
+			public «component.generateReflectiveComponentClassName»(«component.generateComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT») {
+				this.«Namings.REFLECTIVE_WRAPPED_COMPONENT» = «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			}
 			
 			public void reset() {
-				«wrappedComponentName».reset();
+				«Namings.REFLECTIVE_WRAPPED_COMPONENT».reset();
 			}
 			
-			public «component.generateComponentClassName» get«wrappedComponentName.toFirstUpper»() {
-				return «wrappedComponentName»;
+			public «component.generateComponentClassName» get«Namings.REFLECTIVE_WRAPPED_COMPONENT.toFirstUpper»() {
+				return «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
 			}
 			
 			public String[] getPorts() {
@@ -93,7 +90,7 @@ class ReflectiveComponentCodeGenerator {
 					«FOR port : component.ports»
 						«FOR inEvent : port.getSemanticEvents(EventDirection.IN)»
 							case "«port.name».«inEvent.name»":
-								«wrappedComponentName».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»parameters[«i»]«ENDFOR»);
+								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»parameters[«i»]«ENDFOR»);
 								break;
 						«ENDFOR»
 					«ENDFOR»
@@ -108,9 +105,9 @@ class ReflectiveComponentCodeGenerator {
 					«FOR port : component.ports»
 						«FOR outEvent : port.getSemanticEvents(EventDirection.OUT)»
 							case "«port.name».«outEvent.name»":
-								if («wrappedComponentName».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
+								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«wrappedComponentName».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
+										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
 									«ENDFOR»
 									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
 								}
@@ -134,7 +131,7 @@ class ReflectiveComponentCodeGenerator {
 			«component.generateVariableGetters»
 			
 			«component.generateVariableValueGetters»
-						
+			
 			«component.generateComponentGetters»
 			
 			«component.generateComponentValueGetters»
@@ -156,9 +153,9 @@ class ReflectiveComponentCodeGenerator {
 	protected def generateScheduling(Component component) '''
 		public void schedule(String instance) {
 			«IF component instanceof SynchronousComponent»
-					«wrappedComponentName».runCycle();
+					«Namings.REFLECTIVE_WRAPPED_COMPONENT».runCycle();
 			«ELSEIF component instanceof AsynchronousAdapter»
-					«wrappedComponentName».schedule();
+					«Namings.REFLECTIVE_WRAPPED_COMPONENT».schedule();
 			«ELSE»
 	«««				TODO
 			«ENDIF»
@@ -168,7 +165,7 @@ class ReflectiveComponentCodeGenerator {
 	protected def generateIsActiveState(Component component) '''
 		public boolean isStateActive(String region, String state) {
 			«IF component instanceof StatechartDefinition»
-				return «wrappedComponentName».isStateActive(region, state);
+				return «Namings.REFLECTIVE_WRAPPED_COMPONENT».isStateActive(region, state);
 			«ELSE»
 				return false;
 			«ENDIF»
@@ -207,7 +204,7 @@ class ReflectiveComponentCodeGenerator {
 				«IF component instanceof StatechartDefinition»
 					«FOR variable : component.variableDeclarations»
 						case "«variable.name»":
-							return «wrappedComponentName».get«variable.name.toFirstUpper»();
+							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»
 				«ENDIF»
 			}
@@ -228,14 +225,14 @@ class ReflectiveComponentCodeGenerator {
 					«FOR containedComponent : component.derivedComponents»
 						case "«containedComponent.name»":
 							if («containedComponent.name.toFirstLower» == null) {
-								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.generateReflectiveComponentClassName»(«wrappedComponentName».get«containedComponent.name.toFirstUpper»());
+								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.generateReflectiveComponentClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«containedComponent.name.toFirstUpper»());
 							}
 							return «containedComponent.name.toFirstLower»;
 					«ENDFOR»
 				«ELSEIF component instanceof AsynchronousAdapter»
 					case "«component.generateWrappedComponentName»":
 						if («component.generateWrappedComponentName» == null) {
-							«component.generateWrappedComponentName» = new «component.generateReflectiveComponentClassName»(«wrappedComponentName».get«component.generateWrappedComponentName.toFirstUpper»());
+							«component.generateWrappedComponentName» = new «component.generateReflectiveComponentClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.generateWrappedComponentName.toFirstUpper»());
 						}
 						return «component.generateWrappedComponentName»;
 				«ENDIF»
