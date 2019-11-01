@@ -258,6 +258,9 @@ class GlueCodeGenerator {
 				// Generating the interface that is able to return the Ports
 				val interfaceCode = it.synchronousCompositeComponent.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
+				// Generating the reflective class
+				val reflectiveCode = it.synchronousCompositeComponent.generateReflectiveClass
+				reflectiveCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generateReflectiveComponentClassName + ".java")
 			].build		
 		}
 		return synchronousCompositeComponentsRule

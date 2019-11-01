@@ -48,7 +48,7 @@ class CompositeComponentCodeGenerator {
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;
 		«ENDIF»
 		«FOR containedComponent : component.derivedComponents.map[it.derivedType]
-			.filter[!it.generateComponentPackageName.equals(component.generateComponentPackageName)].toSet»
+				.filter[!it.generateComponentPackageName.equals(component.generateComponentPackageName)].toSet»
 			import «containedComponent.generateComponentPackageName».*;
 		«ENDFOR»
 	'''

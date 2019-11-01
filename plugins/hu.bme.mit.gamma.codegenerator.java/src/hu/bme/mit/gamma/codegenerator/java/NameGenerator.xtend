@@ -98,7 +98,7 @@ class NameGenerator {
 	/**
 	 * Returns the type name of the interface of the wrapped Yakindu statemachine.
 	 */
-	protected def getYakinduRealizationModeName(Port port) {
+	protected def getYakinduInterfaceName(Port port) {
 		 if (port.name === null) {
 		 	return "SCInterface"
 		 }

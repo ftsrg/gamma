@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -11,6 +12,7 @@ import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import org.yakindu.sct.model.stext.stext.VariableDefinition
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -205,6 +207,18 @@ class StatechartWrapperCodeGenerator {
 				return false;
 			}
 			
+			«FOR port : component.allPorts»
+				«FOR yakinduInterface : port.allValuesOfFrom.filter(InterfaceScope)»
+					«FOR yakinduVariable : yakinduInterface.declarations.filter(VariableDefinition)»
+						«FOR gammaVariable : yakinduVariable.allValuesOfTo.filter(VariableDeclaration)»
+							public «gammaVariable.type.transformType» get«gammaVariable.name.toFirstUpper»() {
+								return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«yakinduVariable.name.toFirstUpper»();
+							}
+						«ENDFOR»
+					«ENDFOR»
+				«ENDFOR»
+			«ENDFOR»
+			
 			«IF component.needTimer»
 				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
 					«component.generateStatemachineInstanceName».setTimer(timer);
@@ -249,7 +263,7 @@ class StatechartWrapperCodeGenerator {
 	 * Generates code raising the Yakindu statechart event "connected" to the given port and component.
 	 */
 	protected def delegateCall(Event event, Component component, Port port) '''
-		«component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().raise«event.name.toFirstUpper»(«event.castArgument»);
+		«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().raise«event.name.toFirstUpper»(«event.castArgument»);
 	'''
 	
 	/**
@@ -265,7 +279,7 @@ class StatechartWrapperCodeGenerator {
 	 * E.g., generates code that raises event "b" of component "comp" if an "a"  out-event is raised inside the implemented component.
 	 */
 	protected def CharSequence registerListener(Component component, Port port, EventDirection oppositeDirection) '''
-		«component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().add(new «port.yakinduRealizationModeName»Listener() {
+		«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().getListeners().add(new «port.yakinduInterfaceName»Listener() {
 			«FOR event : port.interfaceRealization.interface.getAllEvents(oppositeDirection).map[it.eContainer as EventDeclaration] SEPARATOR "\n"»
 				@Override
 				public void on«event.event.toYakinduEvent(port).name.toFirstUpper»Raised(«event.generateParameter») {
@@ -298,14 +312,14 @@ class StatechartWrapperCodeGenerator {
 				«IF port.name === null»
 					return «component.generateStatemachineInstanceName».isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ELSE»
-					return «component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
+					return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ENDIF»
 			}
 «««		ValueOf checks
 			«IF event.toYakinduEvent(port).type !== null»
 				@Override
 				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					return «component.generateStatemachineInstanceName».get«port.yakinduRealizationModeName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+					return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
 				}
 			«ENDIF»
 		«ENDFOR»

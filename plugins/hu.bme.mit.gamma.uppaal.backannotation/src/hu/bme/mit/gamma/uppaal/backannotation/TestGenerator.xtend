@@ -228,7 +228,7 @@ class TestGenerator {
 	}
 	
 	/**
-	 * Instance names in the model contain the contaiment hierarchy from the root.
+	 * Instance names in the model contain the containment hierarchy from the root.
 	 * Instances in the generated do not, therefore the deletion of containment hierarchy is needed during test-generation.
 	 */
 	protected def getLocalName(ComponentInstance instance) {

@@ -1,9 +1,13 @@
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ReflectiveComponentCodeGenerator {
 	
@@ -106,11 +110,21 @@ class ReflectiveComponentCodeGenerator {
 				return false;
 			}
 			
-			public boolean isStateActive(String region, String state) {
-				return «wrappedComponentName».isStateActive(region, state);
-			}
+			«component.generateIsActiveState»
+			
+			«component.generateRegionGetter»
+			
+			«component.generateStateGetter»
 			
 			«component.generateScheduling»
+			
+			«component.generateVariableGetters»
+			
+			«component.generateVariableValueGetters»
+						
+			«component.generateComponentGetters»
+			
+			«component.generateComponentValueGetters»
 			
 		}
 	'''
@@ -134,4 +148,78 @@ class ReflectiveComponentCodeGenerator {
 			}
 		«ENDIF»
 	'''
+	
+	protected def generateIsActiveState(Component component) '''
+		public boolean isStateActive(String region, String state) {
+			«IF component instanceof StatechartDefinition»
+				return «wrappedComponentName».isStateActive(region, state);
+			«ELSE»
+				return false;
+			«ENDIF»
+		}
+	'''
+	
+	protected def generateRegionGetter(Component component) '''
+		public String[] getRegions() {
+			return new String[] { «IF component instanceof StatechartDefinition»«FOR region : component.allRegions SEPARATOR ", "»"«region.name»"«ENDFOR»«ENDIF» };
+		}
+	'''
+	
+	protected def generateStateGetter(Component component) '''
+		public String[] getStates(String region) {
+			switch (region) {
+				«IF component instanceof StatechartDefinition»
+					«FOR region : component.allRegions»
+						case "«region.name»":
+							return new String[] { «FOR state : region.states SEPARATOR ", "»"«state.name»"«ENDFOR» };
+					«ENDFOR»
+				«ENDIF»
+			}
+			throw new IllegalArgumentException("Not known region: " + region);
+		}
+	'''
+	
+	protected def generateVariableGetters(Component component) '''
+		public String[] getVariables() {
+			return new String[] { «IF component instanceof StatechartDefinition»«FOR variable : component.variableDeclarations SEPARATOR ", "»"«variable.name»"«ENDFOR»«ENDIF» };
+		}
+	'''
+	
+	protected def generateVariableValueGetters(Component component) '''
+		public Object getValue(String variable) {
+			switch (variable) {
+				«IF component instanceof StatechartDefinition»
+					«FOR variable : component.variableDeclarations»
+						case "«variable.name»":
+							return «wrappedComponentName».get«variable.name.toFirstUpper»();
+					«ENDFOR»
+				«ENDIF»
+			}
+			throw new IllegalArgumentException("Not known variable: " + variable);
+		}
+	'''
+	
+	protected def generateComponentGetters(Component component) '''
+		public String[] getComponents() {
+			return new String[] { «IF component instanceof CompositeComponent»«FOR containedComponent : component.derivedComponents SEPARATOR ", "»"«containedComponent.name»"«ENDFOR»«ELSEIF component instanceof AsynchronousAdapter»"«component.generateWrappedComponentName»"«ENDIF»};
+		}
+	'''
+	
+	protected def generateComponentValueGetters(Component component) '''
+		public Object getComponent(String component) {
+			switch (component) {
+				«IF component instanceof CompositeComponent»
+					«FOR containedComponent : component.derivedComponents»
+						case "«containedComponent.name»":
+							return «wrappedComponentName».get«containedComponent.name.toFirstUpper»();
+					«ENDFOR»
+				«ELSEIF component instanceof AsynchronousAdapter»
+					case "«component.generateWrappedComponentName»":
+						return «wrappedComponentName».get«component.generateWrappedComponentName.toFirstUpper»();
+				«ENDIF»
+			}
+			throw new IllegalArgumentException("Not known component: " + component);
+		}
+	'''
+	
 }
