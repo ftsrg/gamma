@@ -7,9 +7,6 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkState
 
