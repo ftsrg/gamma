@@ -10,8 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -37,6 +40,9 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 
 /**
  * This class contains custom scoping description.
@@ -122,6 +128,20 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
+		}
+		if (context instanceof EnumerationLiteralExpression) {
+			val parent = context.eContainer as InstanceVariableState
+			val enumerationDefinition = parent.declaration.type
+			if (enumerationDefinition instanceof TypeReference) {
+				val typeDeclaration = enumerationDefinition.reference
+				val typeDefinition = typeDeclaration.type
+				if (typeDefinition instanceof EnumerationTypeDefinition) {
+					return Scopes.scopeFor(typeDefinition.literals)
+				}
+			}
+			if (enumerationDefinition instanceof EnumerationTypeDefinition) {
+				return Scopes.scopeFor(enumerationDefinition.literals)
+			}
 		}
 		super.getScope(context, reference)
 	}

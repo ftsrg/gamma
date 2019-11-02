@@ -63,6 +63,7 @@ class ModelUnfolder {
 	private dispatch def void copyComponents(Component component, Package gammaPackage,
 			String containerInstanceName, Trace trace) {
 		// Simple statecharts are already cloned
+		
 	}
 	
 	private dispatch def void copyComponents(AbstractSynchronousCompositeComponent component,
