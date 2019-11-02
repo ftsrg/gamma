@@ -30,7 +30,7 @@ The plugin setup procedure should be done as follows:
 6. Generate the Model plugin of the trace model:
 `hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
 7. Run `hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` as a MWE2 Workflow.
-7. Run `hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/expression/language/GenerateActionLanguage.mwe2` as a MWE2 Workflow.
+7. Run `hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/action/language/GenerateActionLanguage.mwe2` as a MWE2 Workflow.
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
 9. Run `hu.bme.mit.gamma.yakindu.genmodel.language/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` as a MWE2 Workflow.
 10. Run `hu.bme.mit.gamma.trace.language/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` as a MWE2 Workflow.
