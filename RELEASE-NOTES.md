@@ -45,7 +45,7 @@
 * Content assist regarding the message queues of the asynchronous adapters is improved.
 * Validation rules regarding the priority of message queues of asynchronous adapters are extended.
 
-## 2018.02.28. - Version 2.1.0
+## 2019.02.28. - Version 2.1.0
 
 ### What is New
 
@@ -64,13 +64,13 @@
 * Compatibility issues with the new VIATRA version are resolved.
 * Queries generated with the GUI are now appended with an expression specifying activeness (isActive) when referring to states.
 
-## 2018.03.28. - Version 2.1.1
+## 2019.03.28. - Version 2.1.1
 
 ### Improvements
 
 * Validation rules regarding fork and join nodes are added.
 
-## 2018.05.25. - Version 2.1.2
+## 2019.05.25. - Version 2.1.2
 
 ### What is New
 
@@ -83,7 +83,7 @@
 * Validation rules regarding the control specifications of asynchronous adapters are added.
 * The Gamma-UPPAAL transformation has been optimized.
 
-## 2018.07.17. - Version 2.1.3
+## 2019.07.17. - Version 2.1.3
 
 ### What is New
 
@@ -93,3 +93,15 @@
 ### Improvements
  
 * Bugs regarding the generation of imports in the generated code and tests are fixed.
+
+## 2019.11.02. - Version 2.2.0
+
+### What is New
+
+* Gamma Constraint Language has been renamed to Gamma Expression Language.
+* Prioritized transitions in the GSL have been introduced.
+* A reflective API to the generated Java code has been introduced.
+
+### Improvements
+ 
+* Validation rules have been added.

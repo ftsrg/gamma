@@ -4,11 +4,11 @@
 
 The presented framework has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.17.0.
-* Xtext Complete SDK 2.17.0. (It contains Xtend, no need for the additional download
+* Eclipse Modeling Framework SDK 2.19.0.
+* Xtext Complete SDK 2.19.0. (It contains Xtend, no need for the additional download
 of Xtend.)
-* VIATRA SDK 2.1.1.
-* Yakindu Statechart Tools 3.5.3.
+* VIATRA SDK 2.2.1.
+* Yakindu Statechart Tools 3.5.8.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
@@ -17,8 +17,9 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
 The plugin setup procedure should be done as follows:
 1. Import all Eclipse projects from the `plugins` folder.
-2. Generate the Model and Edit plugins of the Gamma Constraint language: `hu.bme.mit.gamma.constraint.model`. The Model and Edit plugins can be generated from the ecore file using a genmodel.
-3. Generate the Model, Edit and Editor plugins of the Gamma Statechart language: `hu.bme.mit.gamma.statechart.model`. They can be generated the same way as in the previous step.
+2. Generate the Model and Edit plugins of the Gamma Expression Language: `hu.bme.mit.gamma.expression.model`. The Model and Edit plugins can be generated from the ecore file using a genmodel.
+3. Generate the Model and Edit plugins of the Gamma Action Language: `hu.bme.mit.gamma.action.model`. They can be generated the same way as in the previous step.
+3. Generate the Model, Edit and Editor plugins of the Gamma Statechart Language: `hu.bme.mit.gamma.statechart.model`. They can be generated the same way as in the previous step.
 4. Generate the Model plugin of the traceability projects:
 `hu.bme.mit.gamma.uppaal.transformation.traceability` and
 `hu.bme.mit.gamma.yakindu.transformation.traceability`. Again use the ecore file and the genmodel.
@@ -28,7 +29,8 @@ The plugin setup procedure should be done as follows:
 `hu.bme.mit.gamma.yakindu.genmodel`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the trace model:
 `hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
-7. Run `hu.bme.mit.gamma.constraint.language/src/hu/bme/mit/gamma/constraint/language/GenerateConstraintLanguage.mwe2` as a MWE2 Workflow.
+7. Run `hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` as a MWE2 Workflow.
+7. Run `hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/expression/language/GenerateActionLanguage.mwe2` as a MWE2 Workflow.
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
 9. Run `hu.bme.mit.gamma.yakindu.genmodel.language/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` as a MWE2 Workflow.
 10. Run `hu.bme.mit.gamma.trace.language/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` as a MWE2 Workflow.
@@ -45,7 +47,8 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 | Project | Model | Edit | Editor |
 |-|:-:|:-:|:-:|
 |`de.uni_paderborn.uppaal`| x | | |
-|`hu.bme.mit.gamma.constraint.model`| x | x | |
+|`hu.bme.mit.gamma.expression.model`| x | x | |
+|`hu.bme.mit.gamma.action.model`| x | x | |
 |`hu.bme.mit.gamma.statechart.model`| x | x | x |
 |`hu.bme.mit.gamma.trace.model`| x | | |
 |`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
@@ -55,7 +58,8 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 #### Code generation with MWE2 workflows:
 | Project | Path |
 |-|-|
-| `hu.bme.mit.gamma.constraint.language` | `/src/hu/bme/mit/gamma/constraint/language/GenerateConstraintLanguage.mwe2` |
+| `hu.bme.mit.gamma.expression.language` | `/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` |
+| `hu.bme.mit.gamma.action.language` | `/src/hu/bme/mit/gamma/expression/language/GenerateActionLanguage.mwe2` |
 | `hu.bme.mit.gamma.statechart.language` | `/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` |
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
 | `hu.bme.mit.gamma.yakindu.genmodel.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
