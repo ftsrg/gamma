@@ -47,7 +47,6 @@ class TestGenerator {
 	protected final String TEST_ANNOTATION = "@Test"	
 	protected final String TEST_NAME = "step"	
 	protected final String ASSERT_TRUE = "assertTrue"	
-	protected final String ASSERT_EQUALS = "assertEquals"
 	
 	protected final String[] notHandledStateNamePatterns = #['LocalReactionState[0-9]*','FinalState[0-9]*']
 	// Value is assigned by the execute methods
@@ -144,7 +143,6 @@ class TestGenerator {
 		«ENDIF»
 		
 		import static org.junit.Assert.«ASSERT_TRUE»;
-		import static org.junit.Assert.«ASSERT_EQUALS»;
 		
 		import org.junit.Before;
 		import org.junit.After;
