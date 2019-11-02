@@ -71,6 +71,9 @@ import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
 
 class StringTraceBackAnnotator {
 	
@@ -242,22 +245,15 @@ class StringTraceBackAnnotator {
 			return null
 		}
 		val paramType = event.parameterDeclarations.head.type
-		val literal = switch (paramType) {
-			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(parameter)]
-			BooleanTypeDefinition: {
-				if (parameter == 0) {
-					createFalseExpression
-				}
-				else {
-					createTrueExpression
-				}
-			}
-		}
-		return literal
+		return paramType.createLiteral(parameter)
 	}
 	
 	protected def createVariableLiteral(hu.bme.mit.gamma.expression.model.VariableDeclaration variable, Integer parameter) {
-		val paramType = variable.type
+		val type = variable.type
+		return type.createLiteral(parameter)
+	}
+	
+	private def createLiteral(Type paramType, Integer parameter) {
 		val literal = switch (paramType) {
 			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(parameter)]
 			BooleanTypeDefinition: {
@@ -268,6 +264,18 @@ class StringTraceBackAnnotator {
 					createTrueExpression
 				}
 			}
+			TypeReference: {
+				val typeDeclaration = paramType.reference
+				val type = typeDeclaration.type
+				switch (type) {
+					EnumerationTypeDefinition:
+						return createEnumerationLiteralExpression => [ it.reference = type.literals.get(parameter) ]				
+					default: 
+						throw new IllegalArgumentException("Not known type definition: " + type)
+				}
+			}
+			default: 
+				throw new IllegalArgumentException("Not known type: " + paramType)
 		}
 		return literal
 	}
@@ -438,12 +446,13 @@ class StringTraceBackAnnotator {
 					if (gammaVariables.size == 1) {
 						val gammaVariable = gammaVariables.head
 						val instance = uppaalVariable.owner
+						checkState(variableMap.value !== null)
 						val rhs = gammaVariable.createVariableLiteral(variableMap.value)
 						step.addInstanceVariableState(instance, gammaVariable, rhs)
 					}
 				}
 			}
-			// Next, checking wheter it is an event without parameter (No valueOf) (ValueOfs are taken care of in the if branch)
+			// Next, checking whether it is an event without parameter (No valueOf) (ValueOfs are taken care of in the if branch)
 			else if (event.parameterDeclarations.empty) {
 				val matches = TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, uppaalVariable.owner, uppaalVariable.port, event)
 				if (matches.size > 0) {

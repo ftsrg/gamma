@@ -12,7 +12,9 @@ package hu.bme.mit.gamma.uppaal.backannotation
 
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
@@ -30,12 +32,15 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 
 class ExpressionSerializer {
 	
 	def dispatch String serialize(Expression expression) {
 		throw new IllegalArgumentException("Not supported expression: " + expression)
+	}
+	
+	def dispatch String serialize(EnumerationLiteralExpression expression) {
+		return  "\"" + expression.reference.name + "\"";
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {

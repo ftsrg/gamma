@@ -62,7 +62,7 @@ class TestGenerator {
 	protected final Component component
 	protected final ExecutionTrace trace 
 	
-	protected final extension ExpressionSerializer expSer = new ExpressionSerializer
+	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
 	/**
 	 * Id is needed as a suffix to match the trace file.

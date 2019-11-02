@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.queries.AbstractSynchronousCompositeComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.AsynchronousCompositeComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.Interfaces
+import hu.bme.mit.gamma.codegenerator.java.queries.SimpleGammaComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.statechart.model.Package
@@ -71,6 +72,7 @@ class GlueCodeGenerator {
 	// Transformation rules
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> portInterfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsRule
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsReflectionRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> synchronousCompositeComponentsRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> synchronousComponentWrapperRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> channelsRule
@@ -146,6 +148,7 @@ class GlueCodeGenerator {
 		}	
 		getPortInterfaceRule.fireAllCurrent
 		generateReflectiveInterfaceRule
+		getSimpleComponentReflectionRule.fireAllCurrent
 		getSimpleComponentDeclarationRule.fireAllCurrent
 		getSynchronousCompositeComponentsRule.fireAllCurrent
 		if (hasSynchronousWrapper) {
@@ -236,6 +239,22 @@ class GlueCodeGenerator {
 		reflectiveCode.saveCode(interfaceUri + File.separator + Namings.REFLECTIVE_INTERFACE + ".java")
 	}
 	
+	
+	/**
+	 * Creates a reflective Java class for each Gamma component.
+	 */
+	protected def getSimpleComponentReflectionRule() {
+		if (simpleComponentsReflectionRule === null) {
+			 simpleComponentsReflectionRule = createRule(SimpleGammaComponents.instance).action [
+				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
+				// Generating the reflective class
+				val reflectiveCode = it.statechartDefinition.generateReflectiveClass
+				reflectiveCode.saveCode(componentUri + File.separator + it.statechartDefinition.generateReflectiveComponentClassName + ".java")
+			].build		
+		}
+		return simpleComponentsReflectionRule
+	}
+	
 	/**
 	 * Creates a Java class for each component transformed from Yakindu given in the component model.
 	 */
@@ -248,9 +267,6 @@ class GlueCodeGenerator {
 				// Generating the interface for returning the Ports
 				val interfaceCode = it.statechartDefinition.generateComponentInterface
 				interfaceCode.saveCode(componentUri + File.separator + it.statechartDefinition.generatePortOwnerInterfaceName + ".java")
-				// Generating the reflective class
-				val reflectiveCode = it.statechartDefinition.generateReflectiveClass
-				reflectiveCode.saveCode(componentUri + File.separator + it.statechartDefinition.generateReflectiveComponentClassName + ".java")
 			].build		
 		}
 		return simpleComponentsRule

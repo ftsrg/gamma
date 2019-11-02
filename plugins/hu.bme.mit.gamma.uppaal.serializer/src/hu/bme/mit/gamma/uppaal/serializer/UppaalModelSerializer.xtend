@@ -115,8 +115,9 @@ class UppaalModelSerializer {
 	 * @return The header of the XML file in a char sequence.
 	 */
 	private def static createHeader(NTA nta) '''
-		<?xml version="1.0" encoding="utf-8"?>
-		<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
+ллл		For some reason if this header is in, the xml file cannot be parsed
+ллл		<?xml version="1.0" encoding="utf-8"?>
+ллл		<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
 		<nta>
 		<declaration>
 		

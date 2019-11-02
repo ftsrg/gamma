@@ -1,5 +1,8 @@
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.Component
@@ -204,7 +207,7 @@ class ReflectiveComponentCodeGenerator {
 				«IF component instanceof StatechartDefinition»
 					«FOR variable : component.variableDeclarations»
 						case "«variable.name»":
-							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
+							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»()«IF variable.toBeConvertedToString».toString()«ENDIF»;
 					«ENDFOR»
 				«ENDIF»
 			}
@@ -240,5 +243,22 @@ class ReflectiveComponentCodeGenerator {
 			throw new IllegalArgumentException("Not known component: " + component);
 		}
 	'''
+	
+	/**
+	 * Enums are returned as strings.
+	 */
+	protected def toBeConvertedToString(VariableDeclaration variable) {
+		val type = variable.type
+		if (type instanceof EnumerableTypeDefinition) {
+			return true
+		}
+		if (type instanceof TypeReference) {
+			val reference = type.reference
+			if (reference.type instanceof EnumerableTypeDefinition) {
+				return true
+			}
+		}
+		return false
+	}
 	
 }

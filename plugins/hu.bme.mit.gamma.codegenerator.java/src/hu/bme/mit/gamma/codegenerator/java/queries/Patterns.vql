@@ -27,14 +27,14 @@ pattern traces(trace : Trace, from, to) {
 	Trace.to(trace, to);
 }
 
-pattern simpleComponents(statechartDefinition : Component) {
+pattern simpleGammaComponents(statechartDefinition : StatechartDefinition) {
 	StatechartDefinition(statechartDefinition);
 }
 
 pattern simpleYakinduComponents(statechartDefinition : Component) {
 	Statechart(yakinduStatechart);
 	find traces(_, yakinduStatechart, statechartDefinition);
-	find simpleComponents(statechartDefinition);
+	find simpleGammaComponents(statechartDefinition);
 }
 
 pattern abstractSynchronousCompositeComponents(synchronousCompositeComponent : AbstractSynchronousCompositeComponent) {
