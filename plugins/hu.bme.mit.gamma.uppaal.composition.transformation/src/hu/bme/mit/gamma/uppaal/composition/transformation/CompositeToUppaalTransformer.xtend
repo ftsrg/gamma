@@ -483,7 +483,7 @@ class CompositeToUppaalTransformer {
      */
     private def createIsStableVar() {		
     	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVariableName)
-    	isStableVar.initVar(true)
+    	isStableVar.initVar(false)
     }
     
     /**
@@ -1762,6 +1762,16 @@ class CompositeToUppaalTransformer {
     								.allValuesOfTo.filter(DataVariableDeclaration).head
     		firstEdge.createAssignmentExpression(edge_Update, isScheduledVar, false)
     	}
+    	// Creating a separate initial location so that the NTA can be initialized in !isStable
+    	val trueInitialLocation = schedulerTemplate.createChild(template_Location, location) as Location => [
+			it.name = "notIsStable"
+			it.locationTimeKind = LocationKind.URGENT
+		]
+		schedulerTemplate.init = trueInitialLocation
+		trueInitialLocation.createEdge(initLoc) => [
+			it.createAssignmentExpression(edge_Update, isStableVar, true)
+		]
+		// Returning last edge
     	return lastEdge
     }
     
