@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.List;
 import java.util.LinkedList;
 
-import hu.bme.mit.gamma.tutorial.extra.event.*;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.ITrafficLightCtrlStatemachine.*;
@@ -14,12 +13,12 @@ import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemac
 
 public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInterface {
 	// The wrapped Yakindu statemachine
-	private TrafficLightCtrlStatemachine trafficLightCtrlStatemachine = new TrafficLightCtrlStatemachine();
+	private TrafficLightCtrlStatemachine trafficLightCtrlStatemachine;
 	// Port instances
-	private LightCommands lightCommands = new LightCommands();
-	private Control control = new Control();
-	private PoliceInterrupt policeInterrupt = new PoliceInterrupt();
-	// Indicates which queues are active in this cycle
+	private LightCommands lightCommands;
+	private Control control;
+	private PoliceInterrupt policeInterrupt;
+	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
 	// Event queues for the synchronization of statecharts
@@ -27,11 +26,14 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
 	public TrafficLightCtrlStatechart() {
-		// Initializing and entering the wrapped statemachine
+		trafficLightCtrlStatemachine = new TrafficLightCtrlStatemachine();
+		lightCommands = new LightCommands();
+		control = new Control();
+		policeInterrupt = new PoliceInterrupt();
 		trafficLightCtrlStatemachine.setTimer(new TimerService());
 	}
 	
-	/** Resets the statemachine. Should be used only be the container (composite system) class. */
+	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
 		trafficLightCtrlStatemachine.init();
@@ -46,7 +48,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	
 	/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 	public void changeInsertQueue() {
-	    insertQueue = !insertQueue;
+		insertQueue = !insertQueue;
 	}
 	
 	/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -80,8 +82,8 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	/** Changes the insert queue and initiates a run. */
 	public void runAndRechangeInsertQueue() {
 		// First the insert queue is changed back, so self-event sending can work
-	    changeInsertQueue();
-	    runComponent();
+		changeInsertQueue();
+		runComponent();
 	}
 	
 	/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
@@ -102,17 +104,13 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 				}
 		}
 		trafficLightCtrlStatemachine.runCycle();
-	}    		
+	}
 	
 	// Inner classes representing Ports
 	public class LightCommands implements LightCommandsInterface.Provided {
 		private List<LightCommandsInterface.Listener.Provided> registeredListeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
 
-		@Override
-		public boolean isRaisedDisplayNone() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
-		}
 		@Override
 		public boolean isRaisedDisplayRed() {
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
@@ -126,14 +124,13 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
 		}
 		@Override
+		public boolean isRaisedDisplayNone() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
+		}
+		@Override
 		public void registerListener(final LightCommandsInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
 			trafficLightCtrlStatemachine.getSCILightCommands().getListeners().add(new SCILightCommandsListener() {
-				@Override
-				public void onDisplayNoneRaised() {
-					listener.raiseDisplayNone();
-				}
-				
 				@Override
 				public void onDisplayRedRaised() {
 					listener.raiseDisplayRed();
@@ -147,6 +144,11 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 				@Override
 				public void onDisplayGreenRaised() {
 					listener.raiseDisplayGreen();
+				}
+				
+				@Override
+				public void onDisplayNoneRaised() {
+					listener.raiseDisplayNone();
 				}
 			});
 		}
@@ -219,6 +221,36 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	public boolean isStateActive(State state) {
 		return trafficLightCtrlStatemachine.isStateActive(state);
 	}
+	
+	public boolean isStateActive(String region, String state) {
+		switch (region) {
+			case "normal":
+				switch (state) {
+					case "Yellow":
+						return isStateActive(State.main_region_Normal_normal_Yellow);
+					case "Green":
+						return isStateActive(State.main_region_Normal_normal_Green);
+					case "Red":
+						return isStateActive(State.main_region_Normal_normal_Red);
+				}
+			case "interrupted":
+				switch (state) {
+					case "BlinkingYellow":
+						return isStateActive(State.main_region_Interrupted_interrupted_BlinkingYellow);
+					case "Black":
+						return isStateActive(State.main_region_Interrupted_interrupted_Black);
+				}
+			case "main_region":
+				switch (state) {
+					case "Normal":
+						return isStateActive(State.main_region_Normal);
+					case "Interrupted":
+						return isStateActive(State.main_region_Interrupted);
+				}
+		}
+		return false;
+	}
+	
 	
 	public void setTimer(ITimer timer) {
 		trafficLightCtrlStatemachine.setTimer(timer);

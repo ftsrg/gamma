@@ -31,8 +31,8 @@ public interface LightCommandsInterface {
 			void raiseDisplayGreen();
 		}
 		
-		interface Required   {
+		interface Required  {
 		}
 		
 	}
-} 
+}

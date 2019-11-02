@@ -1,0 +1,1 @@
+E<> ((P_operatingOfOperatingOfcrossroad_controller.SecondaryPrepares && P_operatingOfOperatingOfcrossroad_controller.isActive)) && isStable

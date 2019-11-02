@@ -4,20 +4,20 @@ import java.util.Queue;
 import java.util.List;
 import java.util.LinkedList;
 
-import hu.bme.mit.gamma.tutorial.extra.event.*;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.extra.monitor.IMonitorStatemachine.*;
+import hu.bme.mit.gamma.tutorial.extra.*;
 import hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine;
 import hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State;
 
 public class MonitorStatechart implements MonitorStatechartInterface {
 	// The wrapped Yakindu statemachine
-	private MonitorStatemachine monitorStatemachine = new MonitorStatemachine();
+	private MonitorStatemachine monitorStatemachine;
 	// Port instances
-	private Monitor monitor = new Monitor();
-	private LightInputs lightInputs = new LightInputs();
-	// Indicates which queues are active in this cycle
+	private Monitor monitor;
+	private LightInputs lightInputs;
+	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
 	// Event queues for the synchronization of statecharts
@@ -25,10 +25,12 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
 	public MonitorStatechart() {
-		// Initializing and entering the wrapped statemachine
+		monitorStatemachine = new MonitorStatemachine();
+		monitor = new Monitor();
+		lightInputs = new LightInputs();
 	}
 	
-	/** Resets the statemachine. Should be used only be the container (composite system) class. */
+	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
 		monitorStatemachine.init();
@@ -43,7 +45,7 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 	
 	/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 	public void changeInsertQueue() {
-	    insertQueue = !insertQueue;
+		insertQueue = !insertQueue;
 	}
 	
 	/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -77,8 +79,8 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 	/** Changes the insert queue and initiates a run. */
 	public void runAndRechangeInsertQueue() {
 		// First the insert queue is changed back, so self-event sending can work
-	    changeInsertQueue();
-	    runComponent();
+		changeInsertQueue();
+		runComponent();
 	}
 	
 	/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
@@ -88,9 +90,6 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		while (!eventQueue.isEmpty()) {
 				Event event = eventQueue.remove();
 				switch (event.getEvent()) {
-					case "LightInputs.DisplayNone": 
-						monitorStatemachine.getSCILightInputs().raiseDisplayNone();
-					break;
 					case "LightInputs.DisplayRed": 
 						monitorStatemachine.getSCILightInputs().raiseDisplayRed();
 					break;
@@ -100,12 +99,15 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 					case "LightInputs.DisplayGreen": 
 						monitorStatemachine.getSCILightInputs().raiseDisplayGreen();
 					break;
+					case "LightInputs.DisplayNone": 
+						monitorStatemachine.getSCILightInputs().raiseDisplayNone();
+					break;
 					default:
 						throw new IllegalArgumentException("No such event!");
 				}
 		}
 		monitorStatemachine.runCycle();
-	}    		
+	}
 	
 	// Inner classes representing Ports
 	public class Monitor implements MonitorInterface.Provided {
@@ -143,11 +145,6 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		private List<LightCommandsInterface.Listener.Required> registeredListeners = new LinkedList<LightCommandsInterface.Listener.Required>();
 
 		@Override
-		public void raiseDisplayNone() {
-			getInsertQueue().add(new Event("LightInputs.DisplayNone", null));
-		}
-		
-		@Override
 		public void raiseDisplayRed() {
 			getInsertQueue().add(new Event("LightInputs.DisplayRed", null));
 		}
@@ -160,6 +157,11 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		@Override
 		public void raiseDisplayGreen() {
 			getInsertQueue().add(new Event("LightInputs.DisplayGreen", null));
+		}
+		
+		@Override
+		public void raiseDisplayNone() {
+			getInsertQueue().add(new Event("LightInputs.DisplayNone", null));
 		}
 
 		@Override
@@ -185,6 +187,24 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 	public boolean isStateActive(State state) {
 		return monitorStatemachine.isStateActive(state);
 	}
+	
+	public boolean isStateActive(String region, String state) {
+		switch (region) {
+			case "main_region":
+				switch (state) {
+					case "Red":
+						return isStateActive(State.main_region_Red);
+					case "Error":
+						return isStateActive(State.main_region_Error);
+					case "Green":
+						return isStateActive(State.main_region_Green);
+					case "Other":
+						return isStateActive(State.main_region_Other);
+				}
+		}
+		return false;
+	}
+	
 	
 	
 }

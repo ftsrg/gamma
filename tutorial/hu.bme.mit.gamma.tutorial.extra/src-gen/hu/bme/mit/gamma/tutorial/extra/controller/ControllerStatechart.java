@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.List;
 import java.util.LinkedList;
 
-import hu.bme.mit.gamma.tutorial.extra.event.*;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.extra.controller.IControllerStatemachine.*;
@@ -14,14 +13,14 @@ import hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State;
 
 public class ControllerStatechart implements ControllerStatechartInterface {
 	// The wrapped Yakindu statemachine
-	private ControllerStatemachine controllerStatemachine = new ControllerStatemachine();
+	private ControllerStatemachine controllerStatemachine;
 	// Port instances
-	private SecondaryControl secondaryControl = new SecondaryControl();
-	private PriorityControl priorityControl = new PriorityControl();
-	private PoliceInterrupt policeInterrupt = new PoliceInterrupt();
-	private SecondaryPolice secondaryPolice = new SecondaryPolice();
-	private PriorityPolice priorityPolice = new PriorityPolice();
-	// Indicates which queues are active in this cycle
+	private SecondaryControl secondaryControl;
+	private PriorityControl priorityControl;
+	private PoliceInterrupt policeInterrupt;
+	private SecondaryPolice secondaryPolice;
+	private PriorityPolice priorityPolice;
+	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
 	// Event queues for the synchronization of statecharts
@@ -29,11 +28,16 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
 	public ControllerStatechart() {
-		// Initializing and entering the wrapped statemachine
+		controllerStatemachine = new ControllerStatemachine();
+		secondaryControl = new SecondaryControl();
+		priorityControl = new PriorityControl();
+		policeInterrupt = new PoliceInterrupt();
+		secondaryPolice = new SecondaryPolice();
+		priorityPolice = new PriorityPolice();
 		controllerStatemachine.setTimer(new TimerService());
 	}
 	
-	/** Resets the statemachine. Should be used only be the container (composite system) class. */
+	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
 		controllerStatemachine.init();
@@ -48,7 +52,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	
 	/** Changes the event queues to which the events are put. Should be used only be a cascade container (composite system) class. */
 	public void changeInsertQueue() {
-	    insertQueue = !insertQueue;
+		insertQueue = !insertQueue;
 	}
 	
 	/** Returns whether the eventQueue containing incoming messages is empty. Should be used only be the container (composite system) class. */
@@ -82,8 +86,8 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	/** Changes the insert queue and initiates a run. */
 	public void runAndRechangeInsertQueue() {
 		// First the insert queue is changed back, so self-event sending can work
-	    changeInsertQueue();
-	    runComponent();
+		changeInsertQueue();
+		runComponent();
 	}
 	
 	/** Initiates a cycle run without changing the event queues. It is needed if this component is contained (wrapped) by another component.
@@ -101,7 +105,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 				}
 		}
 		controllerStatemachine.runCycle();
-	}    		
+	}
 	
 	// Inner classes representing Ports
 	public class SecondaryControl implements ControlInterface.Provided {
@@ -259,6 +263,33 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	public boolean isStateActive(State state) {
 		return controllerStatemachine.isStateActive(state);
 	}
+	
+	public boolean isStateActive(String region, String state) {
+		switch (region) {
+			case "operating":
+				switch (state) {
+					case "Init":
+						return isStateActive(State.main_region_Operating_operating_Init);
+					case "SecondaryPrepares":
+						return isStateActive(State.main_region_Operating_operating_SecondaryPrepares);
+					case "Priority":
+						return isStateActive(State.main_region_Operating_operating_Priority);
+					case "Secondary":
+						return isStateActive(State.main_region_Operating_operating_Secondary);
+					case "PriorityPrepares":
+						return isStateActive(State.main_region_Operating_operating_PriorityPrepares);
+				}
+			case "main_region":
+				switch (state) {
+					case "Interrupted":
+						return isStateActive(State.main_region_Interrupted);
+					case "Operating":
+						return isStateActive(State.main_region_Operating);
+				}
+		}
+		return false;
+	}
+	
 	
 	public void setTimer(ITimer timer) {
 		controllerStatemachine.setTimer(timer);
