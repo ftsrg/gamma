@@ -26,7 +26,7 @@ The plugin setup procedure should be done as follows:
 5. Generate the Model plugin of the UPPAAL metamodel:
 `de.uni_paderborn.uppaal`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the statechart generator model:
-`hu.bme.mit.gamma.yakindu.genmodel`. Again use the ecore file and the genmodel.
+`hu.bme.mit.gamma.genmodel.model`. Again use the ecore file and the genmodel.
 6. Generate the Model plugin of the trace model:
 `hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
 7. Run `hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` as a MWE2 Workflow.
