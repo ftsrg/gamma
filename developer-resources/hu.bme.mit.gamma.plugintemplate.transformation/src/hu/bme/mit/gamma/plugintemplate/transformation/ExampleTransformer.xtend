@@ -2,7 +2,10 @@ package hu.bme.mit.gamma.plugintemplate.transformation
 
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ChoiceStates
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.DeepHistoryStates
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ForkStates
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.InitialStates
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.JoinStates
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.MergeStates
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.Packages
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.Regions
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ShallowHistoryStates
@@ -46,6 +49,9 @@ class ExampleTransformer {
 	protected BatchTransformationRule<ShallowHistoryStates.Match, ShallowHistoryStates.Matcher> shallowHistoryStatesRule
 	protected BatchTransformationRule<DeepHistoryStates.Match, DeepHistoryStates.Matcher> deepHistoryStatesRule
 	protected BatchTransformationRule<ChoiceStates.Match, ChoiceStates.Matcher> choiceStatesRule
+	protected BatchTransformationRule<MergeStates.Match, MergeStates.Matcher> mergeStatesRule
+	protected BatchTransformationRule<ForkStates.Match, ForkStates.Matcher> forkStatesRule
+	protected BatchTransformationRule<JoinStates.Match, JoinStates.Matcher> joinStatesRule
 	protected BatchTransformationRule<States.Match, States.Matcher> statesRule
 	protected BatchTransformationRule<Transitions.Match, Transitions.Matcher> transitionsRule
 
@@ -72,6 +78,9 @@ class ExampleTransformer {
 		getShallowHistoryStatesRule.fireAllCurrent
 		getDeepHistoryStatesRule.fireAllCurrent
 		getChoiceStatesRule.fireAllCurrent
+		getMergeStatesRule.fireAllCurrent
+		getForkStatesRule.fireAllCurrent
+		getJoinStatesRule.fireAllCurrent
 		getTransitionsRule.fireAllCurrent
 		return trace
 	}
@@ -193,6 +202,54 @@ class ExampleTransformer {
 			].build
 		}
 		return choiceStatesRule
+	}
+	
+	private def getMergeStatesRule() {
+		if (mergeStatesRule === null) {
+			mergeStatesRule = createRule(MergeStates.instance).action [
+				val sourceMergeState = it.mergeState
+				val targetMergeState = createMergeState => [
+					it.name = sourceMergeState.name
+				]
+				val sourceParent = sourceMergeState.eContainer as Region
+				var targetParent = trace.getTargetRegion(sourceParent)
+				targetParent.stateNodes += targetMergeState
+				trace.put(sourceMergeState, targetMergeState)
+			].build
+		}
+		return mergeStatesRule
+	}
+	
+	private def getForkStatesRule() {
+		if (forkStatesRule === null) {
+			forkStatesRule = createRule(ForkStates.instance).action [
+				val sourceForkState = it.forkState
+				val targetForkState = createForkState => [
+					it.name = sourceForkState.name
+				]
+				val sourceParent = sourceForkState.eContainer as Region
+				var targetParent = trace.getTargetRegion(sourceParent)
+				targetParent.stateNodes += targetForkState
+				trace.put(sourceForkState, targetForkState)
+			].build
+		}
+		return forkStatesRule
+	}
+	
+	private def getJoinStatesRule() {
+		if (joinStatesRule === null) {
+			joinStatesRule = createRule(JoinStates.instance).action [
+				val sourceJoinState = it.joinState
+				val targetJoinState = createJoinState => [
+					it.name = sourceJoinState.name
+				]
+				val sourceParent = sourceJoinState.eContainer as Region
+				var targetParent = trace.getTargetRegion(sourceParent)
+				targetParent.stateNodes += targetJoinState
+				trace.put(sourceJoinState, targetJoinState)
+			].build
+		}
+		return joinStatesRule
 	}
 	
 	private def getStatesRule() {

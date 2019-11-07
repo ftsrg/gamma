@@ -2,7 +2,10 @@ package hu.bme.mit.gamma.plugintemplate.transformation
 
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ChoiceStateTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.DeepHistoryStateTraces
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ForkStateTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.InitialStateTraces
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.JoinStateTraces
+import hu.bme.mit.gamma.plugintemplate.transformation.patterns.MergeStateTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.PackageTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.RegionTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ShallowHistoryStateTraces
@@ -14,7 +17,10 @@ import hu.bme.mit.gamma.plugintemplate.transformation.traceability.TraceabilityF
 import hu.bme.mit.gamma.statechart.model.ChoiceState
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.DeepHistoryState
+import hu.bme.mit.gamma.statechart.model.ForkState
 import hu.bme.mit.gamma.statechart.model.InitialState
+import hu.bme.mit.gamma.statechart.model.JoinState
+import hu.bme.mit.gamma.statechart.model.MergeState
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.ShallowHistoryState
@@ -267,6 +273,79 @@ class Trace {
 	def getTargetState(ChoiceState sourceChoiceState) {
 		checkArgument(sourceChoiceState !== null)
 		val matches = ChoiceStateTraces.Matcher.on(tracingEngine).getAllValuesOftargetChoiceState(sourceChoiceState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// Source and target fork states
+	def put(ForkState sourceForkState, ForkState targetForkState) {
+		checkArgument(sourceForkState !== null)
+		checkArgument(targetForkState !== null)
+		trace.traces += createForkStateTrace => [
+			it.sourceForkState = sourceForkState
+			it.targetForkState = targetForkState
+		]
+	}
+	
+	def getSourceState(ForkState targetForkState) {
+		checkArgument(targetForkState !== null)
+		val matches = ForkStateTraces.Matcher.on(tracingEngine).getAllValuesOfsourceForkState(targetForkState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getTargetState(ForkState sourceForkState) {
+		checkArgument(sourceForkState !== null)
+		val matches = ForkStateTraces.Matcher.on(tracingEngine).getAllValuesOftargetForkState(sourceForkState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// Source and target merge states
+	def put(MergeState sourceMergeState, MergeState targetMergeState) {
+		checkArgument(sourceMergeState !== null)
+		checkArgument(targetMergeState !== null)
+		trace.traces += createMergeStateTrace => [
+			it.sourceMergeState = sourceMergeState
+			it.targetMergeState = targetMergeState
+		]
+	}
+	
+	def getSourceState(MergeState targetMergeState) {
+		checkArgument(targetMergeState !== null)
+		val matches = MergeStateTraces.Matcher.on(tracingEngine).getAllValuesOfsourceMergeState(targetMergeState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getTargetState(MergeState sourceMergeState) {
+		checkArgument(sourceMergeState !== null)
+		val matches = MergeStateTraces.Matcher.on(tracingEngine).getAllValuesOftargetMergeState(sourceMergeState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	
+	// Source and target join states
+	def put(JoinState sourceJoinState, JoinState targetJoinState) {
+		checkArgument(sourceJoinState !== null)
+		checkArgument(targetJoinState !== null)
+		trace.traces += createJoinStateTrace => [
+			it.sourceJoinState = sourceJoinState
+			it.targetJoinState = targetJoinState
+		]
+	}
+	
+	def getSourceState(JoinState targetJoinState) {
+		checkArgument(targetJoinState !== null)
+		val matches = JoinStateTraces.Matcher.on(tracingEngine).getAllValuesOfsourceJoinState(targetJoinState)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getTargetState(JoinState sourceJoinState) {
+		checkArgument(sourceJoinState !== null)
+		val matches = JoinStateTraces.Matcher.on(tracingEngine).getAllValuesOftargetJoinState(sourceJoinState)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
 	}

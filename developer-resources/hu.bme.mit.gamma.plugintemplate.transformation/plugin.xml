@@ -24,6 +24,9 @@
       <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.shallowHistoryStateTraces"/>
       <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.deepHistoryStateTraces"/>
       <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.choiceStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.mergeStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.forkStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.joinStateTraces"/>
       <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.stateTraces"/>
       <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.transitionTraces"/>
     </group>

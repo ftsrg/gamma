@@ -41,6 +41,24 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetChoiceState" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ChoiceState"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MergeStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceMergeState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//MergeState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetMergeState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//MergeState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ForkStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceForkState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ForkState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetForkState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ForkState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceJoinState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//JoinState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetJoinState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//JoinState"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>

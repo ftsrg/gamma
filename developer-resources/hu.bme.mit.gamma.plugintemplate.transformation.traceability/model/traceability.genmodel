@@ -39,6 +39,18 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ChoiceStateTrace/sourceChoiceState"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ChoiceStateTrace/targetChoiceState"/>
     </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//MergeStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MergeStateTrace/sourceMergeState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//MergeStateTrace/targetMergeState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ForkStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ForkStateTrace/sourceForkState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ForkStateTrace/targetForkState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//JoinStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//JoinStateTrace/sourceJoinState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//JoinStateTrace/targetJoinState"/>
+    </genClasses>
     <genClasses ecoreClass="traceability.ecore#//StateTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StateTrace/sourceState"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StateTrace/targetState"/>

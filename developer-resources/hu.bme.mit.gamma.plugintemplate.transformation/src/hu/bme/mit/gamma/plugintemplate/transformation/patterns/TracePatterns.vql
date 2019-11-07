@@ -38,6 +38,21 @@ pattern choiceStateTraces(sourceChoiceState : ChoiceState, targetChoiceState : C
 	ChoiceStateTrace.targetChoiceState(trace, targetChoiceState);
 }
 
+pattern mergeStateTraces(sourceMergeState : MergeState, targetMergeState : MergeState) {
+	MergeStateTrace.sourceMergeState(trace, sourceMergeState);
+	MergeStateTrace.targetMergeState(trace, targetMergeState);
+}
+
+pattern forkStateTraces(sourceForkState : ForkState, targetForkState : ForkState) {
+	ForkStateTrace.sourceForkState(trace, sourceForkState);
+	ForkStateTrace.targetForkState(trace, targetForkState);
+}
+
+pattern joinStateTraces(sourceJoinState : JoinState, targetJoinState : JoinState) {
+	JoinStateTrace.sourceJoinState(trace, sourceJoinState);
+	JoinStateTrace.targetJoinState(trace, targetJoinState);
+}
+
 pattern stateTraces(sourceState : State, targetState : State) {
 	StateTrace.sourceState(trace, sourceState);
 	StateTrace.targetState(trace, targetState);
