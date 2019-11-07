@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="traceability" nsURI="http://www.mit.bme.hu/gamma/plugintemplate/transformation/Traceability"
+    nsPrefix="hu.bme.mit.gamma.plugintemplate.transformation.traceability">
+  <eClassifiers xsi:type="ecore:EClass" name="S2STrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="traces" upperBound="-1"
+        eType="#//AbstractTrace" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourcePackage" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetPackage" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractTrace" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RegionTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceRegion" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Region"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetRegion" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Region"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceInitialState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//InitialState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetInitialState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//InitialState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceShallowHistoryState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetShallowHistoryState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceDeepHistoryState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetDeepHistoryState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ChoiceStateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceChoiceState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ChoiceState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetChoiceState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ChoiceState"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceTransition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Transition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetTransition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Transition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PackageTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourcePackage" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetPackage" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceStatechart" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetStatechart" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
+  </eClassifiers>
+</ecore:EPackage>

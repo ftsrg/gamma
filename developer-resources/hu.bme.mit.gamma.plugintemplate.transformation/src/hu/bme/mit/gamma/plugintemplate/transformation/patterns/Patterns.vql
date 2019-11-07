@@ -1,0 +1,51 @@
+package hu.bme.mit.gamma.plugintemplate.transformation.patterns
+
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+
+pattern packages(^package : Package) {
+	Package(^package);
+}
+
+pattern statecharts(statechart : StatechartDefinition) {
+	StatechartDefinition(statechart);
+}
+
+pattern regions(region : Region) {
+	Region(region);
+}
+
+pattern initialStates(initialState : InitialState) {
+	InitialState(initialState);
+}
+
+pattern shallowHistoryStates(shallowHistoryState : ShallowHistoryState) {
+	ShallowHistoryState(shallowHistoryState);
+}
+
+pattern deepHistoryStates(deepHistoryState : DeepHistoryState) {
+	DeepHistoryState(deepHistoryState);
+}
+
+pattern states(state : State) {
+	State(state);
+}
+
+pattern choiceStates(choiceState : ChoiceState) {
+	ChoiceState(choiceState);
+}
+
+pattern mergeStates(mergeState : MergeState) {
+	MergeState(mergeState);
+}
+
+pattern forkStates(forkState : ForkState) {
+	ForkState(forkState);
+}
+
+pattern joinStates(joinState : JoinState) {
+	JoinState(joinState);
+}
+
+pattern transitions(transition : Transition) {
+	Transition(transition);
+}

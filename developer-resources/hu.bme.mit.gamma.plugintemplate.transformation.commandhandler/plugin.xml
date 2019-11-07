@@ -19,7 +19,7 @@
          </menu>
        </menu>
     </menuContribution>
-    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.PackageExplorer#PopupMenu">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
     <menu label="Gamma Menu" id="gamma-menu-package">      	
 	   	<menu label="Gamma Submenu" id="gamma-submenu-package">
 		    <command commandId="hu.bme.mit.gamma.plugintemplate" label="Retrieve Model" style="push">
@@ -35,6 +35,6 @@
     </menuContribution>
   </extension>
   <extension point="org.eclipse.ui.handlers"> 
-  	<handler class="hu.bme.mit.gamma.plugintemplate.CommandHandler" commandId="hu.bme.mit.gamma.plugintemplate"/>
+  	<handler class="hu.bme.mit.gamma.plugintemplate.transformation.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.plugintemplate"/>
   </extension>
 </plugin>

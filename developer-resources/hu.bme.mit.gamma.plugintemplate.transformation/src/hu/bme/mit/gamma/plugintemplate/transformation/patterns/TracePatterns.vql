@@ -1,0 +1,49 @@
+package hu.bme.mit.gamma.plugintemplate.transformation.patterns
+
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/plugintemplate/transformation/Traceability"
+
+pattern packageTraces(sourcePackage : Package, targetPackage : Package) {
+	PackageTrace.sourcePackage(trace, sourcePackage);
+	PackageTrace.targetPackage(trace, targetPackage);
+}
+
+pattern statechartTraces(sourceStatechart : StatechartDefinition, targetStatechart : StatechartDefinition) {
+	StatechartTrace.sourceStatechart(trace, sourceStatechart);
+	StatechartTrace.targetStatechart(trace, targetStatechart);
+}
+
+pattern regionTraces(sourceRegion : Region, targetRegion : Region) {
+	RegionTrace.sourceRegion(trace, sourceRegion);
+	RegionTrace.targetRegion(trace, targetRegion);
+}
+
+pattern initialStateTraces(sourceInitialState : InitialState, targetInitialState : InitialState) {
+	InitialStateTrace.sourceInitialState(trace, sourceInitialState);
+	InitialStateTrace.targetInitialState(trace, targetInitialState);
+}
+
+pattern shallowHistoryStateTraces(sourceShallowHistoryState : ShallowHistoryState, targetShallowHistoryState : ShallowHistoryState) {
+	ShallowHistoryStateTrace.sourceShallowHistoryState(trace, sourceShallowHistoryState);
+	ShallowHistoryStateTrace.targetShallowHistoryState(trace, targetShallowHistoryState);
+}
+
+pattern deepHistoryStateTraces(sourceDeepHistoryState : DeepHistoryState, targetDeepHistoryState : DeepHistoryState) {
+	DeepHistoryStateTrace.sourceDeepHistoryState(trace, sourceDeepHistoryState);
+	DeepHistoryStateTrace.targetDeepHistoryState(trace, targetDeepHistoryState);
+}
+
+pattern choiceStateTraces(sourceChoiceState : ChoiceState, targetChoiceState : ChoiceState) {
+	ChoiceStateTrace.sourceChoiceState(trace, sourceChoiceState);
+	ChoiceStateTrace.targetChoiceState(trace, targetChoiceState);
+}
+
+pattern stateTraces(sourceState : State, targetState : State) {
+	StateTrace.sourceState(trace, sourceState);
+	StateTrace.targetState(trace, targetState);
+}
+
+pattern transitionTraces(sourceTransition : Transition, targetTransition : Transition) {
+	TransitionTrace.sourceTransition(trace, sourceTransition);
+	TransitionTrace.targetTransition(trace, targetTransition);
+}

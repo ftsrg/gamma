@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.plugintemplate.transformation.patterns.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.plugintemplate.transformation.patterns.Patterns" id="hu.bme.mit.gamma.plugintemplate.transformation.patterns.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.packages"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.statecharts"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.regions"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.initialStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.shallowHistoryStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.deepHistoryStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.states"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.choiceStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.mergeStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.forkStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.joinStates"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.transitions"/>
+    </group>
+  </extension>
+  <extension id="hu.bme.mit.gamma.plugintemplate.transformation.patterns.TracePatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.plugintemplate.transformation.patterns.TracePatterns" id="hu.bme.mit.gamma.plugintemplate.transformation.patterns.TracePatterns">
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.packageTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.statechartTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.regionTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.initialStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.shallowHistoryStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.deepHistoryStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.choiceStateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.stateTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.plugintemplate.transformation.patterns.transitionTraces"/>
+    </group>
+  </extension>
+</plugin>

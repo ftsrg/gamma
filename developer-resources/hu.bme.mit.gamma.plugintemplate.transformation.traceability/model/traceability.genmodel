@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/hu.bme.mit.gamma.plugintemplate.transformation.traceability/src"
+    creationIcons="false" editDirectory="/hu.bme.mit.gamma.plugintemplate.transformation.traceability.edit/src-gen"
+    editorDirectory="/hu.bme.mit.gamma.plugintemplate.transformation.traceability.editor/src-gen"
+    modelPluginID="hu.bme.mit.gamma.plugintemplate.transformation.traceability" modelName="Traceability"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" codeFormatting="true"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//model"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>traceability.ecore</foreignModel>
+  <testsDirectory xsi:nil="true"/>
+  <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.plugintemplate.transformation"
+      disposableProviderFactory="true" fileExtensions="s2s" ecorePackage="traceability.ecore#/">
+    <genClasses ecoreClass="traceability.ecore#//S2STrace">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference traceability.ecore#//S2STrace/traces"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//S2STrace/sourcePackage"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//S2STrace/targetPackage"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//AbstractTrace"/>
+    <genClasses ecoreClass="traceability.ecore#//RegionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//RegionTrace/sourceRegion"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//RegionTrace/targetRegion"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//InitialStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//InitialStateTrace/sourceInitialState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//InitialStateTrace/targetInitialState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ShallowHistoryStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ShallowHistoryStateTrace/sourceShallowHistoryState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ShallowHistoryStateTrace/targetShallowHistoryState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//DeepHistoryStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//DeepHistoryStateTrace/sourceDeepHistoryState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//DeepHistoryStateTrace/targetDeepHistoryState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ChoiceStateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ChoiceStateTrace/sourceChoiceState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ChoiceStateTrace/targetChoiceState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//StateTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StateTrace/sourceState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StateTrace/targetState"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//TransitionTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TransitionTrace/sourceTransition"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TransitionTrace/targetTransition"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//PackageTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PackageTrace/sourcePackage"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//PackageTrace/targetPackage"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//StatechartTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StatechartTrace/sourceStatechart"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//StatechartTrace/targetStatechart"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>
