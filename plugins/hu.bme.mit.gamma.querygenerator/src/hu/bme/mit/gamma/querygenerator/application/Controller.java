@@ -579,9 +579,9 @@ public class Controller {
 				Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
 				fileNameAndId = saveModel(traceModel, fileNameAndId);
 				// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
+				String packageName = file.getProject().getName().toLowerCase();
 				TestGenerator testGenerator = new TestGenerator(traceabilitySet,
-					traceModel, file.getProject().getName(),
-					"ExecutionTraceSimulation" + fileNameAndId.getValue());
+					traceModel, packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
 				String testClassCode = testGenerator.execute();
 				String testClassParentFolder = getTestGentFolder() + "/" + 
 						testGenerator.getPackageName().replaceAll("\\.", "\\/");

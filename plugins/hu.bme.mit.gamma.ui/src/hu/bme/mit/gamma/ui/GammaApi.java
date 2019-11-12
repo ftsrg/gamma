@@ -100,7 +100,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 						}
 					} else {
-						final String projectName = project.getName();
+						final String projectName = project.getName().toLowerCase();
 						if (task instanceof CodeGeneration) {
 							CodeGeneration codeGeneration = (CodeGeneration) task;
 							logger.log(Level.INFO, "Resource set content for Java code generation: " + resourceSet);

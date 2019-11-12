@@ -82,7 +82,8 @@ public class CommandHandler extends AbstractHandler {
 						// Decoding so spaces do not stir trouble
 						parentFolder = URI.decode(parentFolder);
 						logger.log(Level.INFO, "Resource set content for Java code generation: " + resSet);
-						GlueCodeGenerator generator = new GlueCodeGenerator(resSet, file.getProject().getName(), parentFolder);
+						String packageName = file.getProject().getName().toLowerCase();
+						GlueCodeGenerator generator = new GlueCodeGenerator(resSet, packageName, parentFolder);
 						generator.execute();
 						generator.dispose();
 						logger.log(Level.INFO, "The Java code generation has been finished.");

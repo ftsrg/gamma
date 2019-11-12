@@ -29,7 +29,6 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import static com.google.common.base.Preconditions.checkState
 
 class ExampleTransformer {
-
 	// Transformation-related extensions
 	protected final extension BatchTransformation transformation
 	protected final extension BatchTransformationStatements statements
