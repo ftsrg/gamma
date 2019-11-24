@@ -1803,7 +1803,7 @@ class CompositeToUppaalTransformer {
 		val template = lastEdge.parentTemplate
 		// Creating the clock
 		val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-		clockVar.createTypeAndVariable(target.clock, "orchestratorTimer" + (id++))
+		clockVar.createTypeAndVariable(target.clock, "timerOrchestrator" + (id++))
 		// Creating the location invariant
 		initLoc.createChild(location_Invariant, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.LESS_OR_EQUAL	
