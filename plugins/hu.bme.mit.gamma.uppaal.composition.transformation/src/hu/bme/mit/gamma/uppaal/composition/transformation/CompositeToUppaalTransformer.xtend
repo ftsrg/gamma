@@ -3154,11 +3154,15 @@ class CompositeToUppaalTransformer {
 				cloneEdge = edge
 			}
 			val template = cloneEdge.parentTemplate
-			val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, "timer" + (id++))
+			var clockVar = template.templateClock
+			if (clockVar === null) {
+				// Idea is a single clock variable in a template is enough
+				clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+				clockVar.createTypeAndVariable(target.clock, "timer" + (id++))
+			}
 			// Creating the trace
 			addToTrace(it.timeoutDeclaration, #{clockVar}, trace)
-			addToTrace(owner, #{clockVar}, instanceTrace)		
+			addToTrace(owner, #{clockVar}, instanceTrace)
 			val location = cloneEdge.source
 			val locInvariant = location.invariant
 			val newLoc = template.createChild(template_Location, getLocation) as Location => [
@@ -3191,6 +3195,13 @@ class CompositeToUppaalTransformer {
 			// Trace is created in the insertCompareExpression method
 		}	
 	].build
+	
+	protected def getTemplateClock(Template template) {
+		// The idea is that a template needs a single clock for optimization purpose
+		val clocks = template.declarations.declaration.filter(ClockVariableDeclaration)
+		checkState(clocks.size <= 1)
+		return clocks.head
+	}
 	
 	protected def convertToMs(TimeSpecification time) {
 		switch (time.unit) {

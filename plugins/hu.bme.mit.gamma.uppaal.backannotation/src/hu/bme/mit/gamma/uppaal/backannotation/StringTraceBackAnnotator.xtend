@@ -11,10 +11,13 @@
 package hu.bme.mit.gamma.uppaal.backannotation
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
@@ -71,9 +74,6 @@ import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.Type
 
 class StringTraceBackAnnotator {
 	
@@ -94,7 +94,7 @@ class StringTraceBackAnnotator {
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
 	new(ResourceSet resourceSet, String stringUppaalTrace) {
-//		val fileWriter = new FileWriter("F:\\eclipse_ws\\gamma_dev\\runtime-EclipseXtext\\hu.bme.mit.gamma.tutorial\\model\\trace.txt")
+//		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace.txt")
 //		fileWriter.write(stringUppaalTrace)
 //		fileWriter.flush
 //		fileWriter.close		
