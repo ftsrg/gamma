@@ -220,24 +220,24 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
 
 class CompositeToUppaalTransformer {
-    // Transformation-related extensions
-    protected extension BatchTransformation transformation
-    protected extension BatchTransformationStatements statements
-    // Transformation rule-related extensions
-    protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
-    protected extension IModelManipulations manipulation
+	// Transformation-related extensions
+	protected extension BatchTransformation transformation
+	protected extension BatchTransformationStatements statements
+	// Transformation rule-related extensions
+	protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	protected extension IModelManipulations manipulation
 	// Logger
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
 	// Arguments for the top level component
 	protected List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.expression.model.Expression>
 	// Engine on the Gamma resource 
-    protected ViatraQueryEngine engine
-    protected final ResourceSet resources
-    // The Gamma composite system to be transformed
-    protected final Component component
-    // The Gamma statechart that contains all ComponentDeclarations with the required instances
-    protected final Package sourceRoot
-    // Root element containing the traces
+	protected ViatraQueryEngine engine
+	protected final ResourceSet resources
+	// The Gamma composite system to be transformed
+	protected final Component component
+	// The Gamma statechart that contains all ComponentDeclarations with the required instances
+	protected final Package sourceRoot
+	// Root element containing the traces
 	protected final G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
@@ -249,99 +249,99 @@ class CompositeToUppaalTransformer {
 	// Gamma factory for the millisecond multiplication
 	protected final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
 	// UPPAAL packages
-    protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-    protected final extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
-    protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
-    protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
-    protected final extension TemplatesPackage temPackage = TemplatesPackage.eINSTANCE
-    protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
-    protected final extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
-    protected final extension SystemPackage sysPackage = SystemPackage.eINSTANCE
-    // UPPAAL factories
-    protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
-    protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-    protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
+	protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+	protected final extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
+	protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
+	protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
+	protected final extension TemplatesPackage temPackage = TemplatesPackage.eINSTANCE
+	protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
+	protected final extension StatementsPackage stmPackage = StatementsPackage.eINSTANCE
+	protected final extension SystemPackage sysPackage = SystemPackage.eINSTANCE
+	// UPPAAL factories
+	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
+	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+	protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	// isStable variable
 	protected DataVariableDeclaration isStableVar
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
 	// Minimal element set: no functions
-	protected boolean isMinimalElementSet	= false
-    // For the generation of pseudo locations
-    protected int id = 0
-    // For the async event queue constants
-    protected int constantVal = 1 // Starting from 1, as 0 means empty
-    // Transition ids
+	protected boolean isMinimalElementSet= false
+	// For the generation of pseudo locations
+	protected int id = 0
+	// For the async event queue constants
+	protected int constantVal = 1 // Starting from 1, as 0 means empty
+	// Transition ids
 	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
 	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
-    protected DataVariableDeclaration transitionIdVar
-    protected int transitionId = 0
-    // Auxiliary transformer objects
-    protected extension NtaBuilder ntaBuilder
-    protected final extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
-    // Auxiliary objects
-    protected extension ExpressionTransformer expTransf
-    protected extension ExpressionCopier expCop
-    protected final extension ExpressionEvaluator expEval
-    protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
-    protected final extension EventHandler eventHandler = new EventHandler
-    // Trace
-    protected extension Trace traceModel
+	protected DataVariableDeclaration transitionIdVar
+	protected int transitionId = 0
+	// Auxiliary transformer objects
+	protected extension NtaBuilder ntaBuilder
+	protected final extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
+	// Auxiliary objects
+	protected extension ExpressionTransformer expTransf
+	protected extension ExpressionCopier expCop
+	protected final extension ExpressionEvaluator expEval
+	protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
+	protected final extension EventHandler eventHandler = new EventHandler
+	// Trace
+	protected extension Trace traceModel
 
-    new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
-    		List<SynchronousComponentInstance> testedComponentsForStates,
+	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
+			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
-        this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
+		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
-        this.component = component
-        this.asyncScheduler = asyncScheduler
-        this.testedComponentsForStates += testedComponentsForStates // Only simple instances
-        this.testedComponentsForTransitions += testedComponentsForTransitions // Only simple instances
-        this.target = UppaalFactory.eINSTANCE.createNTA
-        // Connecting the two models in trace
-        this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
-        	it.gammaPackage = this.sourceRoot
-        	it.nta = this.target
-        ]
-        // Create VIATRA engine based on the Gamma resource
-        this.engine = ViatraQueryEngine.on(new EMFScope(this.resources));      
-        // Create VIATRA auxiliary objects
-        this.manipulation = new SimpleModelManipulations(engine)
-        this.transformation = BatchTransformation.forEngine(engine).build
-        this.statements = transformation.transformationStatements
-        // Trace
-        this.traceModel = new Trace(this.manipulation, this.traceRoot)
-        // Auxiliary objects
-        this.expTransf = new ExpressionTransformer(this.manipulation, this.traceModel)
-        this.expCop = new ExpressionCopier(this.manipulation, this.traceModel) 
-        this.expEval = new ExpressionEvaluator(this.engine)
-        // Auxiliary transformation objects
-        this.ntaBuilder = new NtaBuilder(this.target, this.manipulation)
-        this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
-    }
-    
-    new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
+		this.component = component
+		this.asyncScheduler = asyncScheduler
+		this.testedComponentsForStates += testedComponentsForStates // Only simple instances
+		this.testedComponentsForTransitions += testedComponentsForTransitions // Only simple instances
+		this.target = UppaalFactory.eINSTANCE.createNTA
+		// Connecting the two models in trace
+		this.traceRoot = TraceabilityFactory.eINSTANCE.createG2UTrace => [
+			it.gammaPackage = this.sourceRoot
+			it.nta = this.target
+		]
+		// Create VIATRA engine based on the Gamma resource
+		this.engine = ViatraQueryEngine.on(new EMFScope(this.resources));	  
+		// Create VIATRA auxiliary objects
+		this.manipulation = new SimpleModelManipulations(engine)
+		this.transformation = BatchTransformation.forEngine(engine).build
+		this.statements = transformation.transformationStatements
+		// Trace
+		this.traceModel = new Trace(this.manipulation, this.traceRoot)
+		// Auxiliary objects
+		this.expTransf = new ExpressionTransformer(this.manipulation, this.traceModel)
+		this.expCop = new ExpressionCopier(this.manipulation, this.traceModel) 
+		this.expEval = new ExpressionEvaluator(this.engine)
+		// Auxiliary transformation objects
+		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation)
+		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
+	}
+	
+	new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler, boolean isMinimalElementSet,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
-        this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
-        this.isMinimalElementSet = isMinimalElementSet
-        this.topComponentArguments.addAll(topComponentArguments)
-    }
-    
-    def execute() {
-    	initNta
-    	createMessageStructType
-    	createFinalizeSyncVar
-    	createIsStableVar
-    	if (!testedComponentsForTransitions.empty) {
-    		createTransitionIdVar
-    	}
-    	transformTopComponentArguments
-    	while (!areAllParametersTransformed) {
+		this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+		this.isMinimalElementSet = isMinimalElementSet
+		this.topComponentArguments.addAll(topComponentArguments)
+	}
+	
+	def execute() {
+		initNta
+		createMessageStructType
+		createFinalizeSyncVar
+		createIsStableVar
+		if (!testedComponentsForTransitions.empty) {
+			createTransitionIdVar
+		}
+		transformTopComponentArguments
+		while (!areAllParametersTransformed) {
 			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
 		}
-    	constantsRule.fireAllCurrent
+		constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
 		inputEventsRule.fireAllCurrent
@@ -418,119 +418,119 @@ class CompositeToUppaalTransformer {
 		cleanUp
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
-    }
-    
-    /**
-     * This method is responsible for the initialization of the NTA.
-     * It creates the global and system declaration collections and the predefined types.
-     */
-    private def initNta() {
-    	target.createChild(getNTA_GlobalDeclarations, globalDeclarations)
-    	target.createChild(getNTA_SystemDeclarations, systemDeclarations) as SystemDeclarations => [
-    		it.createChild(systemDeclarations_System, sysPackage.system)
-    	]
-    	target.createChild(getNTA_Int, predefinedType) as PredefinedType => [
-    		it.name = "integer"
-    		it.type = BuiltInType.INT
-    	]
-    	target.createChild(getNTA_Bool, predefinedType) as PredefinedType => [
-    		it.name = "boolean"
-    		it.type = BuiltInType.BOOL
-    	]
-    	target.createChild(getNTA_Void, predefinedType) as PredefinedType => [
-    		it.name = "void"
-    		it.type = BuiltInType.VOID
-    	]
-    	target.createChild(getNTA_Clock, predefinedType) as PredefinedType => [
-    		it.name = "clock"
-    		it.type = BuiltInType.CLOCK
-    	]
-    	target.createChild(getNTA_Chan, predefinedType) as PredefinedType => [
-    		it.name = "channel"
-    		it.type = BuiltInType.CHAN
-    	]
-    }
-    
-    private def createMessageStructType() {
-    	if (component instanceof AsynchronousComponent) {
-    		val messageTypeDecl = target.globalDeclarations.createChild(declarations_Declaration, typeDeclaration) as TypeDeclaration
-    		messageStructType = messageTypeDecl.createChild(typeDeclaration_Type, declaredType) as DeclaredType => [
-    			it.name = "Message"
-    			it.typeDeclaration = messageTypeDecl
-    		]
-    		messageStructTypeDef =	messageTypeDecl.createChild(typeDeclaration_TypeDefinition, structTypeSpecification) as StructTypeSpecification
-    		messageEvent = messageStructTypeDef.createChild(structTypeSpecification_Declaration, dataVariableDeclaration) as DataVariableDeclaration
+	}
+	
+	/**
+	 * This method is responsible for the initialization of the NTA.
+	 * It creates the global and system declaration collections and the predefined types.
+	 */
+	private def initNta() {
+		target.createChild(getNTA_GlobalDeclarations, globalDeclarations)
+		target.createChild(getNTA_SystemDeclarations, systemDeclarations) as SystemDeclarations => [
+			it.createChild(systemDeclarations_System, sysPackage.system)
+		]
+		target.createChild(getNTA_Int, predefinedType) as PredefinedType => [
+			it.name = "integer"
+			it.type = BuiltInType.INT
+		]
+		target.createChild(getNTA_Bool, predefinedType) as PredefinedType => [
+			it.name = "boolean"
+			it.type = BuiltInType.BOOL
+		]
+		target.createChild(getNTA_Void, predefinedType) as PredefinedType => [
+			it.name = "void"
+			it.type = BuiltInType.VOID
+		]
+		target.createChild(getNTA_Clock, predefinedType) as PredefinedType => [
+			it.name = "clock"
+			it.type = BuiltInType.CLOCK
+		]
+		target.createChild(getNTA_Chan, predefinedType) as PredefinedType => [
+			it.name = "channel"
+			it.type = BuiltInType.CHAN
+		]
+	}
+	
+	private def createMessageStructType() {
+		if (component instanceof AsynchronousComponent) {
+			val messageTypeDecl = target.globalDeclarations.createChild(declarations_Declaration, typeDeclaration) as TypeDeclaration
+			messageStructType = messageTypeDecl.createChild(typeDeclaration_Type, declaredType) as DeclaredType => [
+				it.name = "Message"
+				it.typeDeclaration = messageTypeDecl
+			]
+			messageStructTypeDef =	messageTypeDecl.createChild(typeDeclaration_TypeDefinition, structTypeSpecification) as StructTypeSpecification
+			messageEvent = messageStructTypeDef.createChild(structTypeSpecification_Declaration, dataVariableDeclaration) as DataVariableDeclaration
 			messageEvent.createTypeAndVariable(target.int, "event")
 			messageValue = messageStructTypeDef.createChild(structTypeSpecification_Declaration, dataVariableDeclaration) as DataVariableDeclaration
 			messageValue.createTypeAndVariable(target.int, "value")
-    	}
-    }
-    
-    /**
-     * Creates a broadcast channel that will be responsible for finalizing an instance.
-     * That is when all composite state entries are finalized.
-     */
-    private def createFinalizeSyncVar() {    	
+		}
+	}
+	
+	/**
+	 * Creates a broadcast channel that will be responsible for finalizing an instance.
+	 * That is when all composite state entries are finalized.
+	 */
+	private def createFinalizeSyncVar() {		
 		val finalizeVar = target.globalDeclarations.createSynchronization(true, false, finalizeSyncVarName)
 		for (instance : SimpleInstances.Matcher.on(engine).allValuesOfinstance) {
 			// Maybe strange solution,  composite state entry rules use it
 			addToTrace(instance, #{finalizeVar}, trace)
 		}
-    }
-    
-    /**
-     * Creates a boolean variable that shows whether a cycle is in progress or a cycle ended.
-     */
-    private def createIsStableVar() {		
-    	isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVariableName)
-    	isStableVar.initVar(false)
-    }
-    
-    /**
-     * Creates an integer variable that stores the id of a particular transition.
-     */
-    private def createTransitionIdVar() {		
-    	transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVariableName)
-    	transitionIdVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
+	}
+	
+	/**
+	 * Creates a boolean variable that shows whether a cycle is in progress or a cycle ended.
+	 */
+	private def createIsStableVar() {		
+		isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVariableName)
+		isStableVar.initVar(false)
+	}
+	
+	/**
+	 * Creates an integer variable that stores the id of a particular transition.
+	 */
+	private def createTransitionIdVar() {		
+		transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVariableName)
+		transitionIdVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
 			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
 				it.text = "-1"
 			]
 		]
-    }
-    
-    /**
-     * Initializes a bool variable with the given boolean value.
-     */
-    private def initVar(DataVariableDeclaration variable, boolean isTrue) {    	
-    	variable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
+	}
+	
+	/**
+	 * Initializes a bool variable with the given boolean value.
+	 */
+	private def initVar(DataVariableDeclaration variable, boolean isTrue) {		
+		variable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
 			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
 				it.text = isTrue.toString
 			]
 		]
-    }
-    
-    /**
-     * Creates a template with the given name and an initial location called InitLoc.
-     */
-    protected def createTemplateWithInitLoc(String templateName, String locationName) {
-    	val template = target.createChild(getNTA_Template, template) as Template => [
-    		it.name = templateName
-    		it.createChild(template_Declarations, localDeclarations)
-    	]
-    	val initLoc = template.createChild(template_Location, location) as Location => [
-    		it.name = locationName
-    	]
-    	template.init = initLoc
-    	return initLoc
-    }
-    
-    /**
-     * Creates a bool noInnerEvents function that shows whether there are unprocessed events in the queues of the automata.
-     */
-    private def createNoInnerEventsFunction() {    	
-    	target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
-    		it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
-    			it.createChild(function_ReturnType, typeReference) as TypeReference => [
+	}
+	
+	/**
+	 * Creates a template with the given name and an initial location called InitLoc.
+	 */
+	protected def createTemplateWithInitLoc(String templateName, String locationName) {
+		val template = target.createChild(getNTA_Template, template) as Template => [
+			it.name = templateName
+			it.createChild(template_Declarations, localDeclarations)
+		]
+		val initLoc = template.createChild(template_Location, location) as Location => [
+			it.name = locationName
+		]
+		template.init = initLoc
+		return initLoc
+	}
+	
+	/**
+	 * Creates a bool noInnerEvents function that shows whether there are unprocessed events in the queues of the automata.
+	 */
+	private def createNoInnerEventsFunction() {		
+		target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
+			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
+				it.createChild(function_ReturnType, typeReference) as TypeReference => [
 					it.referredType = target.bool
 				]
 				it.name = "noInnerEvents"
@@ -569,74 +569,74 @@ class CompositeToUppaalTransformer {
 						]
 					]
 				]
-    		]
-    	]
-    }
-    
-    
-    /**
-     * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable in disjunction with the third variable. E.g.: myFirstVariable = mySecondVariable || myThirdVariable.
-     */
-    private def void createAssignmentLogicalExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhsl, DataVariableDeclaration rhsr) {
+			]
+		]
+	}
+	
+	
+	/**
+	 * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable in disjunction with the third variable. E.g.: myFirstVariable = mySecondVariable || myThirdVariable.
+	 */
+	private def void createAssignmentLogicalExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhsl, DataVariableDeclaration rhsr) {
    		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-    		it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-    			it.identifier = lhs.variable.head // Only one variable is expected
-    		]
-    		it.operator = AssignmentOperator.EQUAL
-    		it.createChild(binaryExpression_SecondExpr, logicalExpression) as LogicalExpression => [
-    			it.operator = LogicalOperator.OR
-    			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-    				it.identifier = rhsl.variable.head // Only one variable is expected
-    			]
-    			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-    				it.identifier = rhsr.variable.head // Only one variable is expected
-    			]
-    		]
-    	]
-    }
-    
-    /**
-     * Responsible for creating the control template that enables the user to fire events.
-     */
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = lhs.variable.head // Only one variable is expected
+			]
+			it.operator = AssignmentOperator.EQUAL
+			it.createChild(binaryExpression_SecondExpr, logicalExpression) as LogicalExpression => [
+				it.operator = LogicalOperator.OR
+				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+					it.identifier = rhsl.variable.head // Only one variable is expected
+				]
+				it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
+					it.identifier = rhsr.variable.head // Only one variable is expected
+				]
+			]
+		]
+	}
+	
+	/**
+	 * Responsible for creating the control template that enables the user to fire events.
+	 */
 	val syncEnvironmentRule = createRule(TopUnwrappedSyncComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc("Environment", "InitLoc")
-    	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, null, null, null, null)) {
-    		val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) 
-    		log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)			
-    		val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-    		var Edge loopEdge
-    		if (!expressions.empty) {
-    			var boolean hasTrue = false
-    			var boolean hasFalse = false
-    			val hasValue = new HashSet<BigInteger>
-	    		for (expression : expressions) {
-	    			val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
-	    			if (!hasTrue && (expression instanceof TrueExpression)) {
-	    				hasTrue = true
+		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, null, null, null, null)) {
+			val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) 
+			log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)			
+			val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+			var Edge loopEdge
+			if (!expressions.empty) {
+				var boolean hasTrue = false
+				var boolean hasFalse = false
+				val hasValue = new HashSet<BigInteger>
+				for (expression : expressions) {
+					val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
+					if (!hasTrue && (expression instanceof TrueExpression)) {
+						hasTrue = true
 		   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)
 					}
-	    			else if (!hasFalse && (expression instanceof FalseExpression)) {
-	    				hasFalse = true
+					else if (!hasFalse && (expression instanceof FalseExpression)) {
+						hasFalse = true
 		   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)			
 					}
 					else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
 						loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)		
 					}
 					loopEdge.addGuard(isStableVar, LogicalOperator.AND) // isStable is needed on all parameter value loop edge	
-	    		}
-    		}
-    		else {
-    			loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-    			loopEdge.addGuard(isStableVar, LogicalOperator.AND)
-    		}
-    	}	
-    ].build   
-    
-    /**
-     * Appends a variable declaration as a guard to the guard of the given edge. The operator between the old and the new guard can be given too.
-     */
-    private def addGuard(Edge edge, DataVariableDeclaration guard, LogicalOperator operator) {
-    	if (edge.guard !== null) {
+				}
+			}
+			else {
+				loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+				loopEdge.addGuard(isStableVar, LogicalOperator.AND)
+			}
+		}	
+	].build   
+	
+	/**
+	 * Appends a variable declaration as a guard to the guard of the given edge. The operator between the old and the new guard can be given too.
+	 */
+	private def addGuard(Edge edge, DataVariableDeclaration guard, LogicalOperator operator) {
+		if (edge.guard !== null) {
 			// Getting the old reference
 			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
@@ -654,13 +654,13 @@ class CompositeToUppaalTransformer {
 				it.identifier = guard.variable.head
 			]
 		}
-    }
-    
-    /**
-     * Appends an Uppaal guard to the guard of the given edge. The operator between the old and the new guard can be given too.
-     */
-    private def addGuard(Edge edge, Expression guard, LogicalOperator operator) {
-    	if (edge.guard !== null && guard !== null) {
+	}
+	
+	/**
+	 * Appends an Uppaal guard to the guard of the given edge. The operator between the old and the new guard can be given too.
+	 */
+	private def addGuard(Edge edge, Expression guard, LogicalOperator operator) {
+		if (edge.guard !== null && guard !== null) {
 			// Getting the old reference
 			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
@@ -674,106 +674,106 @@ class CompositeToUppaalTransformer {
 		else {
 			edge.guard = guard
 		}
-    }
-    
-    /**
-     * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to isTrue.
-     */
-    private def createLoopEdgeWithBoolAssignment(Location location, DataVariableDeclaration variable, boolean isTrue) {
-    	val loopEdge = location.createEdge(location)
-    	// variable = isTrue
-    	loopEdge.createAssignmentExpression(edge_Update, variable, isTrue)
-    	return loopEdge
-    }
-    
-    /**
-     * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and puts a guard on it too,
-     * so the edge is only fireable if the variable-to-be-set is false.
-     */
-    private def createLoopEdgeWithGuardedBoolAssignment(Location location, DataVariableDeclaration variable) {
-    	val loopEdge = location.createLoopEdgeWithBoolAssignment(variable, true)
-    	val negationExpression = createNegationExpression as NegationExpression => [
-    		it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
+	}
+	
+	/**
+	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to isTrue.
+	 */
+	private def createLoopEdgeWithBoolAssignment(Location location, DataVariableDeclaration variable, boolean isTrue) {
+		val loopEdge = location.createEdge(location)
+		// variable = isTrue
+		loopEdge.createAssignmentExpression(edge_Update, variable, isTrue)
+		return loopEdge
+	}
+	
+	/**
+	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and puts a guard on it too,
+	 * so the edge is only fireable if the variable-to-be-set is false.
+	 */
+	private def createLoopEdgeWithGuardedBoolAssignment(Location location, DataVariableDeclaration variable) {
+		val loopEdge = location.createLoopEdgeWithBoolAssignment(variable, true)
+		val negationExpression = createNegationExpression as NegationExpression => [
+			it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head
 			]
-    	]
-    	// Only fireable if the bool variable is not already set
-    	loopEdge.addGuard(negationExpression, LogicalOperator.AND)
-    	return loopEdge
-    }
-    
-    /**
-     * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and sets the valueof variable
-     * according to the given Expression. 
-     */
-    protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-    				DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
-    	val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-    	val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
-    						.filter[it.owner == owner && it.port == port]
-    	if (valueOfVars.size != 1) {
-    		throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-    	}
-    	val valueOfVar = valueOfVars.head
+		]
+		// Only fireable if the bool variable is not already set
+		loopEdge.addGuard(negationExpression, LogicalOperator.AND)
+		return loopEdge
+	}
+	
+	/**
+	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and sets the valueof variable
+	 * according to the given Expression. 
+	 */
+	protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
+					DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
+		val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
+							.filter[it.owner == owner && it.port == port]
+		if (valueOfVars.size != 1) {
+			throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
+		}
+		val valueOfVar = valueOfVars.head
 		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
 		return loopEdge
-    }
-    
-    /**
-     * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
-     */
-    private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.expression.model.Expression expression) {
-    	if (!(expression instanceof IntegerLiteralExpression)) {
-    		return false
-    	}
-    	val anInt = expression as IntegerLiteralExpression
-    	for (exp : hasValue) {
-    		if (exp.equals(anInt.value)) {    			
-    			return true
-    		}
-    	}
-    	hasValue.add(anInt.value)
-    	return false
-    }
-    
-    /**
-     * Puts an assignment expression onto the given container. The left side is the given variable, the right is side either true or false". E.g.: myVariable = true.
-     */
-    protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, boolean isTrue) {
-    	container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-    		it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-    			it.identifier = variable.variable.head // Only one variable is expected
-    		]
-    		it.operator = AssignmentOperator.EQUAL
-    		it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-    			it.text = isTrue.toString
-    		]
-    	]
-    }
-    
-    /**
-     * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable". E.g.: myFirstVariable = mySecondVariable.
-     */
-    protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhs) {
+	}
+	
+	/**
+	 * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
+	 */
+	private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.expression.model.Expression expression) {
+		if (!(expression instanceof IntegerLiteralExpression)) {
+			return false
+		}
+		val anInt = expression as IntegerLiteralExpression
+		for (exp : hasValue) {
+			if (exp.equals(anInt.value)) {				
+				return true
+			}
+		}
+		hasValue.add(anInt.value)
+		return false
+	}
+	
+	/**
+	 * Puts an assignment expression onto the given container. The left side is the given variable, the right is side either true or false". E.g.: myVariable = true.
+	 */
+	protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, boolean isTrue) {
+		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = variable.variable.head // Only one variable is expected
+			]
+			it.operator = AssignmentOperator.EQUAL
+			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
+				it.text = isTrue.toString
+			]
+		]
+	}
+	
+	/**
+	 * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable". E.g.: myFirstVariable = mySecondVariable.
+	 */
+	protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhs) {
    		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-    		it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-    			it.identifier = lhs.variable.head // Only one variable is expected
-    		]
-    		it.operator = AssignmentOperator.EQUAL
-    		it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-    			it.identifier = rhs.variable.head // Only one variable is expected
-    		]
-    	]
-    }
-    
-    val eventConstantsRule = createRule(WrapperInEvents.instance).action [
-    	it.event.createConstRepresentation(it.port, it.wrapper)
-    ].build
-    
-    val clockConstantsRule = createRule(QueuesOfClocks.instance).action [
-    	it.clock.createConstRepresentation(it.wrapper)
-    ].build
-    
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = lhs.variable.head // Only one variable is expected
+			]
+			it.operator = AssignmentOperator.EQUAL
+			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = rhs.variable.head // Only one variable is expected
+			]
+		]
+	}
+	
+	val eventConstantsRule = createRule(WrapperInEvents.instance).action [
+		it.event.createConstRepresentation(it.port, it.wrapper)
+	].build
+	
+	val clockConstantsRule = createRule(QueuesOfClocks.instance).action [
+		it.clock.createConstRepresentation(it.wrapper)
+	].build
+	
 	val topMessageQueuesRule = createRule(TopMessageQueues.instance).action [
 		val queue = it.queue
 		// Creating the size const
@@ -853,7 +853,7 @@ class CompositeToUppaalTransformer {
 	protected def createMessageArray(MessageQueue queue, DataVariableDeclaration sizeConst, ComponentInstance owner) {
 		val messageVariableContainer = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
 			it.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
-    				it.referredType = messageStructType // Only one variable is expected
+					it.referredType = messageStructType // Only one variable is expected
 			]			
 		]
 		val messageArray = messageVariableContainer.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
@@ -862,8 +862,8 @@ class CompositeToUppaalTransformer {
 			// Creating the array size
 			it.createChild(variable_Index, valueIndex) as ValueIndex => [
 				it.createChild(valueIndex_SizeExpression, identifierExpression) as IdentifierExpression => [
-    				it.identifier = sizeConst.variable.head // Only one variable is expected
-    			]
+					it.identifier = sizeConst.variable.head // Only one variable is expected
+				]
 			]
 		]
 		return messageArray
@@ -882,7 +882,7 @@ class CompositeToUppaalTransformer {
 							it.identifier = messageArray
 							it.createChild(identifierExpression_Index, literalExpression) as LiteralExpression => [
 								it.text = "0"
-		    				]
+							]
 						]
 					]
 				]			
@@ -904,7 +904,7 @@ class CompositeToUppaalTransformer {
 					// Message emptyMessage;
 					val emptyMessageVar = it.declarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
 						it.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
-			    			it.referredType = messageStructType // Only one variable is expected
+							it.referredType = messageStructType // Only one variable is expected
 						]
 					]
 					emptyMessageVar.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
@@ -967,7 +967,7 @@ class CompositeToUppaalTransformer {
 									it.identifier = messageArray
 									it.createChild(identifierExpression_Index, identifierExpression) as IdentifierExpression => [
 										it.identifier = i.variable.head
-				    				]
+									]
 								]
 								it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
 									it.identifier = messageArray
@@ -1004,14 +1004,14 @@ class CompositeToUppaalTransformer {
 							]
 						]
 					]
-	    			// ...MessagesCapacity--;
-	    			it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-		    			it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
-		    				it.operator = IncrementDecrementOperator.DECREMENT
-			    			it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
+					// ...MessagesCapacity--;
+					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
+						it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
+							it.operator = IncrementDecrementOperator.DECREMENT
+							it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
 								it.identifier = capacityVar.variable.head
 							]
-		    			]
+						]
 					]
 				]		
 			]	
@@ -1039,7 +1039,7 @@ class CompositeToUppaalTransformer {
 					// Message emptyMessage;
 					val newMessageVar = it.declarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
 						it.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
-			    			it.referredType = messageStructType // Only one variable is expected
+							it.referredType = messageStructType // Only one variable is expected
 						]
 					]
 					val newMessageVariable = newMessageVar.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
@@ -1108,12 +1108,12 @@ class CompositeToUppaalTransformer {
 							]
 							// ...MessagesCapacity++;
 							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-				    			it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
-				    				it.operator = IncrementDecrementOperator.INCREMENT
-				    				it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
+								it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
+									it.operator = IncrementDecrementOperator.INCREMENT
+									it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
 										it.identifier = capacityVar.variable.head
 									]	
-				    			]
+								]
 							]
 						]
 					]
@@ -1149,32 +1149,32 @@ class CompositeToUppaalTransformer {
 		return isFullFunction
 	}
 	
-    val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
+	val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Environment" + id++, "InitLoc")
-    	val component = wrapper.wrappedComponent.type
-    	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
-    		val queue = wrapper.getContainerMessageQueue(match.systemPort /*Wrapper port*/, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(null) // Getting the owner
+		val component = wrapper.wrappedComponent.type
+		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
+			val queue = wrapper.getContainerMessageQueue(match.systemPort /*Wrapper port*/, match.event) // In what message queue this event is stored
+			val messageQueueTrace = queue.getTrace(null) // Getting the owner
 			// Creating the loop edge (or edges in case of parametered events)
 			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.systemPort, match.event, match.instance /*Sync owner*/)		
-    	}
-    	for (match : DistinctWrapperInEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-    		val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(null) // Getting the owner
+		}
+		for (match : DistinctWrapperInEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
+			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
+			val messageQueueTrace = queue.getTrace(null) // Getting the owner
 			// Creating the loop edge (or edges in case of parametered events)
 			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event, null)		
-    	}
+		}
 	].build
 	
 	val instanceWrapperEnvironmentRule = createRule(TopAsyncCompositeComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Environment" + id++, "InitLoc")
-    	// Creating in events
+		// Creating in events
 		for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, null, null, null, null)) {
 			val wrapper = match.instance.type as AsynchronousAdapter
 			val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
+			val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
 			// Creating the loop edge (or edges in case of parametered events)
 			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event, null /*no sync owner*/)
 		}
@@ -1192,45 +1192,45 @@ class CompositeToUppaalTransformer {
 		}
 		if (expressions.empty) {
 			val loopEdge = initLoc.createEdge(initLoc)
-		    loopEdge.createEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), createLiteralExpression => [it.text = "0"])
+			loopEdge.createEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), createLiteralExpression => [it.text = "0"])
 			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
 			loopEdge.addInitializedGuards
 		}
 	}
 	
-    val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
-    	if (!it.wrapper.clocks.empty) {
+	val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
+		if (!it.wrapper.clocks.empty) {
 			// Creating the template
 			val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Clock" + id++, "InitLoc")
-	    	// Creating clock events
+			// Creating clock events
 			wrapper.createClockEvents(initLoc, null /*no owner in this case*/)
 		}
 	].build
 	
-    val instanceWrapperClocksRule = createRule(TopAsyncCompositeComponents.instance).action [
+	val instanceWrapperClocksRule = createRule(TopAsyncCompositeComponents.instance).action [
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Clock" + id++, "InitLoc")
-    	// Creating clock events
-    	for (match : SimpleWrapperInstances.Matcher.on(engine).allMatches) {
+		// Creating clock events
+		for (match : SimpleWrapperInstances.Matcher.on(engine).allMatches) {
 			match.wrapper.createClockEvents(initLoc, match.instance)
 		}
 	].build
 	
 	protected def createClockEvents(AsynchronousAdapter wrapper, Location initLoc, AsynchronousComponentInstance owner) {
-    	val clockTemplate = initLoc.parentTemplate
-    	for (match : QueuesOfClocks.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-    		val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
-    		// Creating the loop edge
-    		val clockEdge = initLoc.createEdge(initLoc)
-    		// It can be fired only if the queue is not full
-    		clockEdge.addGuard(createNegationExpression => [
-    			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
-    		], LogicalOperator.AND)
-    		// It can be fired only if template is stable
-    		clockEdge.addGuard(isStableVar, LogicalOperator.AND)		
-    		// Only if the wrapper/instance is initialized
-    		clockEdge.addInitializedGuards
-    		// Creating an Uppaal clock var
+		val clockTemplate = initLoc.parentTemplate
+		for (match : QueuesOfClocks.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
+			val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
+			// Creating the loop edge
+			val clockEdge = initLoc.createEdge(initLoc)
+			// It can be fired only if the queue is not full
+			clockEdge.addGuard(createNegationExpression => [
+				it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
+			], LogicalOperator.AND)
+			// It can be fired only if template is stable
+			clockEdge.addGuard(isStableVar, LogicalOperator.AND)		
+			// Only if the wrapper/instance is initialized
+			clockEdge.addInitializedGuards
+			// Creating an Uppaal clock var
 			val clockVar = clockTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
 			clockVar.createTypeAndVariable(target.clock, match.clock.name + owner.postfix)
 			// Creating the trace
@@ -1274,7 +1274,7 @@ class CompositeToUppaalTransformer {
 				it.operator = CompareOperator.GREATER_OR_EQUAL	
 				it.transform(binaryExpression_SecondExpr, timeValue, null)		
 			], LogicalOperator.AND)
-    	}
+		}
 	}
 	
 	private def addFunctionCall(EObject container, EReference reference, Function function) {
@@ -1321,12 +1321,12 @@ class CompositeToUppaalTransformer {
 	private def addInitializedGuards(Edge edge) {
 		if (component instanceof AsynchronousAdapter) {
 			val isInitializedVar = component.initializedVariable
-    		edge.addGuard(isInitializedVar, LogicalOperator.AND)
+			edge.addGuard(isInitializedVar, LogicalOperator.AND)
 		}
 		if (component instanceof AsynchronousCompositeComponent) {
 			for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
 				val isInitializedVar = instance.initializedVariable
-    			edge.addGuard(isInitializedVar, LogicalOperator.AND)
+				edge.addGuard(isInitializedVar, LogicalOperator.AND)
 			}
 		}
 	}
@@ -1402,61 +1402,61 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
-    val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
+	val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
-    	val loopEdge = initLoc.createEdge(initLoc)
-    	val asyncSchedulerChannel = wrapper.asyncSchedulerChannel
-    	loopEdge.setSynchronization(asyncSchedulerChannel.variable.head, SynchronizationKind.SEND)
+		val loopEdge = initLoc.createEdge(initLoc)
+		val asyncSchedulerChannel = wrapper.asyncSchedulerChannel
+		loopEdge.setSynchronization(asyncSchedulerChannel.variable.head, SynchronizationKind.SEND)
 		// Adding isStable  guard
 		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
-    	loopEdge.addInitializedGuards // Only if the wrapper is initialized
+		loopEdge.addInitializedGuards // Only if the wrapper is initialized
 	].build
 	
 	val instanceWrapperSchedulerRule = createRule(TopAsyncCompositeComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Scheduler" + id++, "InitLoc")
-    	var Edge lastEdge = null
-    	for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
+		var Edge lastEdge = null
+		for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
 			switch (asyncScheduler) {
 				case FAIR: {
-	    			lastEdge = lastEdge.createFairScheduler(initLoc, instance)
+					lastEdge = lastEdge.createFairScheduler(initLoc, instance)
 				}
 				default: {
-		    		lastEdge = initLoc.createRandomScheduler(instance)
+					lastEdge = initLoc.createRandomScheduler(instance)
 				}
 			}
-    	}
+		}
 	].build
-    
-    private def createFairScheduler(Edge edge, Location initLoc, AsynchronousComponentInstance instance) {
+	
+	private def createFairScheduler(Edge edge, Location initLoc, AsynchronousComponentInstance instance) {
    		// TODO in case of a bad scheduling a deadlock may appear. Maybe the channels should be broadcast in this case?
    		var lastEdge = edge
    		val syncVariable = instance.asyncSchedulerChannel.variable.head
-    	if (lastEdge === null) {
-    		// Creating first edge
-    		lastEdge = initLoc.createEdge(initLoc)
-    		lastEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
-    		lastEdge.addInitializedGuards // Only if the instance is initialized
-    	}
-    	else {
-    		// Creating scheduling edges for all instances
-    		val schedulingEdge = createCommittedSyncTarget(lastEdge.target, syncVariable, "schedule" + instance.name)
-    		schedulingEdge.source.locationTimeKind = LocationKind.URGENT
-    		lastEdge.target = schedulingEdge.source
-    		lastEdge = schedulingEdge
-    	}
-    	return lastEdge
-    }
+		if (lastEdge === null) {
+			// Creating first edge
+			lastEdge = initLoc.createEdge(initLoc)
+			lastEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
+			lastEdge.addInitializedGuards // Only if the instance is initialized
+		}
+		else {
+			// Creating scheduling edges for all instances
+			val schedulingEdge = createCommittedSyncTarget(lastEdge.target, syncVariable, "schedule" + instance.name)
+			schedulingEdge.source.locationTimeKind = LocationKind.URGENT
+			lastEdge.target = schedulingEdge.source
+			lastEdge = schedulingEdge
+		}
+		return lastEdge
+	}
 
-    private def createRandomScheduler(Location initLoc, AsynchronousComponentInstance instance) {
-    	val syncVariable = instance.asyncSchedulerChannel.variable.head
-    	// Creating the loop edge
-    	val loopEdge = initLoc.createEdge(initLoc)
-    	loopEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
-    	loopEdge.addInitializedGuards // Only if the instance is initialized
-    	return loopEdge
-    }
-    
-    /**
+	private def createRandomScheduler(Location initLoc, AsynchronousComponentInstance instance) {
+		val syncVariable = instance.asyncSchedulerChannel.variable.head
+		// Creating the loop edge
+		val loopEdge = initLoc.createEdge(initLoc)
+		loopEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
+		loopEdge.addInitializedGuards // Only if the instance is initialized
+		return loopEdge
+	}
+	
+	/**
 	 * Responsible for creating a wrapper-sync connector template for a single synchronous composite component wrapped by a Wrapper.
 	 * Note that it only fires if there are top wrappers.
 	 * Depends on no rules.
@@ -1465,10 +1465,10 @@ class CompositeToUppaalTransformer {
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
 		val connectorTemplate = initLoc.parentTemplate
-    	val asyncChannel = wrapper.asyncSchedulerChannel // The wrapper is scheduled with this channel
-    	val syncChannel = wrapper.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-    	val initializedVar = wrapper.initializedVariable // This variable marks the wether the wrapper has been initialized
-    	val relayLoc = wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, null /*no owner in this case*/)
+		val asyncChannel = wrapper.asyncSchedulerChannel // The wrapper is scheduled with this channel
+		val syncChannel = wrapper.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
+		val initializedVar = wrapper.initializedVariable // This variable marks the wether the wrapper has been initialized
+		val relayLoc = wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, null /*no owner in this case*/)
 		// Needed so the entry events and event transmissions are transmitted to the proper queues 
 		connectorTemplate.init = relayLoc
 	].build
@@ -1482,9 +1482,9 @@ class CompositeToUppaalTransformer {
 		// Creating the template
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
 		val connectorTemplate = initLoc.parentTemplate
-    	val asyncChannel = it.instance.asyncSchedulerChannel // The wrapper is scheduled with this channel
-    	val syncChannel = it.instance.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-    	val initializedVar = it.instance.initializedVariable // This variable marks the wether the wrapper has been initialized
+		val asyncChannel = it.instance.asyncSchedulerChannel // The wrapper is scheduled with this channel
+		val syncChannel = it.instance.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
+		val initializedVar = it.instance.initializedVariable // This variable marks the wether the wrapper has been initialized
 		val relayLoc = it.wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, it.instance)
 		// Needed so the entry events and event transmissions are transmitted to the proper queues 
 		connectorTemplate.init = relayLoc
@@ -1493,87 +1493,87 @@ class CompositeToUppaalTransformer {
 	protected def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
 			ChannelVariableDeclaration syncChannel, DataVariableDeclaration initializedVar, AsynchronousComponentInstance owner) {
 		checkState(wrapper.controlSpecifications.map[it.trigger].filter(AnyTrigger).empty, "Any triggers are not supported in formal verification.")
-    	val synchronousComponent = wrapper.wrappedComponent.type
-    	val relayLocPair = initLoc.createRelayEdges(synchronousComponent, syncChannel, initializedVar)
-    	val waitingForRelayLoc = relayLocPair.key
-    	val relayLoc = relayLocPair.value
-    	// Sync composite in events
-    	for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, null, null, null, null)) {
-    		val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
-    		val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-    		
-    		// Creating the loop edge with the toRaise = true
-		    val loopEdge = initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
-		    // Creating the ...Value = ...Messages().value
-		    val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-		    if (!expressions.empty) {
-		    	val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == match.instance]
-    			if (valueOfVars.size != 1) {
-    				throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-    			}	
-	    		val valueOfVar = valueOfVars.head
-	    		// Creating the ...Messages().value expression
-	    		val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
-	    		// Creating the ...Value = ...Messages().value
+		val synchronousComponent = wrapper.wrappedComponent.type
+		val relayLocPair = initLoc.createRelayEdges(synchronousComponent, syncChannel, initializedVar)
+		val waitingForRelayLoc = relayLocPair.key
+		val relayLoc = relayLocPair.value
+		// Sync composite in events
+		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, null, null, null, null)) {
+			val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
+			val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
+			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
+			
+			// Creating the loop edge with the toRaise = true
+			val loopEdge = initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
+			// Creating the ...Value = ...Messages().value
+			val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+			if (!expressions.empty) {
+				val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == match.instance]
+				if (valueOfVars.size != 1) {
+					throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
+				}	
+				val valueOfVar = valueOfVars.head
+				// Creating the ...Messages().value expression
+				val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
+				// Creating the ...Value = ...Messages().value
 				loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
-		    }
-    		// "Basic" loop edge
-    		loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.systemPort, match.event, owner)
-    		// If this event is in a control spec, the wrapped syn component needs to be scheduled
-    		if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, match.systemPort, match.event)) {
-    			// Scheduling the sync
-    			val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-    			loopEdge.target = syncEdge.source
-    		}
-    	}
-    	// Creating edges for control events of wrapper
-    	for (match : RunOnceEventControl.Matcher.on(engine).getAllMatches(wrapper, null, null)
-    			.filter[!TopSyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent.type, it.port, null, null, it.event)]) {
-    		// No events of the wrapped component
-    		val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-    		// Creating the loop edge
-    		val edge = initLoc.createEdge(initLoc)
-    		edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
+			}
+			// "Basic" loop edge
+			loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.systemPort, match.event, owner)
+			// If this event is in a control spec, the wrapped syn component needs to be scheduled
+			if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, match.systemPort, match.event)) {
+				// Scheduling the sync
+				val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
+				loopEdge.target = syncEdge.source
+			}
+		}
+		// Creating edges for control events of wrapper
+		for (match : RunOnceEventControl.Matcher.on(engine).getAllMatches(wrapper, null, null)
+				.filter[!TopSyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent.type, it.port, null, null, it.event)]) {
+			// No events of the wrapped component
+			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
+			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
+			// Creating the loop edge
+			val edge = initLoc.createEdge(initLoc)
+			edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
 			val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-    		edge.target = syncEdge.source
-    	}
-    	// Creating edges for unused events of wrapper
-    	for (match : UnusedWrapperEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-    		val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-    		val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-    		// Creating the loop edge
-    		val edge = initLoc.createEdge(initLoc)
-    		edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
-    	}
-    	// Creating the loop edges for clock triggers
-    	for (match : RunOnceClockControl.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-    		val messageQueueTrace = match.queue.getTrace(owner)
-    		// Creating the scheduler sync edge
-    		val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-    		// Creating the edge checking for the events in the queue
-    		val edge = initLoc.createEdge(syncEdge.source)
+			edge.target = syncEdge.source
+		}
+		// Creating edges for unused events of wrapper
+		for (match : UnusedWrapperEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
+			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
+			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
+			// Creating the loop edge
+			val edge = initLoc.createEdge(initLoc)
+			edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
+		}
+		// Creating the loop edges for clock triggers
+		for (match : RunOnceClockControl.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
+			val messageQueueTrace = match.queue.getTrace(owner)
+			// Creating the scheduler sync edge
+			val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
+			// Creating the edge checking for the events in the queue
+			val edge = initLoc.createEdge(syncEdge.source)
 			edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE) // Setting the sync
 			// Guards checking higher priority queues
 			for (higherPirorityQueue : QueuePriorities.Matcher.on(engine).getAllValuesOfhigherPriotityQueue(wrapper, match.queue)) {
-    			edge.addPriorityGuard(wrapper, higherPirorityQueue, owner)
-    		}
-    		// ...Messages().event == clocksignal
-	    	val valueCompareExpression = createPeekClockCompare(messageQueueTrace, match.clock)
-    		edge.addGuard(valueCompareExpression, LogicalOperator.AND)
-    		// Shifting the message queue
-		    edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
+				edge.addPriorityGuard(wrapper, higherPirorityQueue, owner)
+			}
+			// ...Messages().event == clocksignal
+			val valueCompareExpression = createPeekClockCompare(messageQueueTrace, match.clock)
+			edge.addGuard(valueCompareExpression, LogicalOperator.AND)
+			// Shifting the message queue
+			edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
 			// Adding isStable  guard
 			edge.addGuard(isStableVar, LogicalOperator.AND)
-    	}
-    	return relayLoc
+		}
+		return relayLoc
 	}
 	
 	protected def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, AsynchronousAdapter wrapper,
 			MessageQueueTrace messageQueueTrace, Port port, Event event, ComponentInstance owner) {
 		// Putting the ? async channel to the loop edge
-    	edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE)
+		edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE)
 		// The event must be on the guard
 		// ...Messages().event == Port_event
 		val valueCompareExpression = createPeekValueCompare(messageQueueTrace, port, event)
@@ -1648,16 +1648,16 @@ class CompositeToUppaalTransformer {
 	private def messageValueScopeExp(FunctionDeclaration peekFunction, Variable variable) {
 		return createScopedIdentifierExpression => [
 			it.addFunctionCall(scopedIdentifierExpression_Scope, peekFunction.function)
-		    it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
+			it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable
 			]
-	    ]
+		]
 	}
 	
 	private def addPriorityGuard(Edge edge, AsynchronousAdapter wrapper, MessageQueue higherPirorityQueue, ComponentInstance owner) {
 		val higherPriorityQueueTrace = higherPirorityQueue.getTrace(owner) // No owner in this case
-    	// ...MessagesSize == 0
-	    val sizeCompareExpression = createCompareExpression => [
+		// ...MessagesSize == 0
+		val sizeCompareExpression = createCompareExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = higherPriorityQueueTrace.capacityVar.variable.head
 			]	
@@ -1686,7 +1686,7 @@ class CompositeToUppaalTransformer {
 		return queues.head
 	}
 	
-    /**
+	/**
 	 * Responsible for creating a scheduler template for TOP synchronous composite components.
 	 * Note that it only fires if there are TOP synchronous composite components.
 	 * Depends on all statechart mapping rules.
@@ -1727,43 +1727,43 @@ class CompositeToUppaalTransformer {
 		val orchestratorTemplate = lastEdge.parentTemplate
 		addToTrace(it.instance, #{orchestratorTemplate}, instanceTrace)
 	].build
-    
-    /**
-     * Responsible for creating the scheduler template that schedules the run of the automata.
-     * (A series edges with runCycle synchronizations and variable swapping on them.) 
-     */
-    private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent, ChannelVariableDeclaration chan) {
+	
+	/**
+	 * Responsible for creating the scheduler template that schedules the run of the automata.
+	 * (A series edges with runCycle synchronizations and variable swapping on them.) 
+	 */
+	private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent, ChannelVariableDeclaration chan) {
 		val initLoc = createTemplateWithInitLoc(compositeComponent.name + "Orchestrator" + id++, "InitLoc")
 		val schedulerTemplate = initLoc.parentTemplate
-    	val firstEdge = initLoc.createEdge(initLoc)
-    	// If a channel has been passed for async-sync synchronization
-    	if (chan !== null) {
-    		firstEdge.setSynchronization(chan.variable.head, SynchronizationKind.RECEIVE)
-    	}
-    	var lastEdge = firstEdge
-    	// Creating the scheduler of the whole system
-    	lastEdge = compositeComponent.scheduleTopComposite(lastEdge)
-    	// A final edge is needed to let all edges of committed locations to fire
-    	val finalLoc = schedulerTemplate.createChild(template_Location, location) as Location => [
+		val firstEdge = initLoc.createEdge(initLoc)
+		// If a channel has been passed for async-sync synchronization
+		if (chan !== null) {
+			firstEdge.setSynchronization(chan.variable.head, SynchronizationKind.RECEIVE)
+		}
+		var lastEdge = firstEdge
+		// Creating the scheduler of the whole system
+		lastEdge = compositeComponent.scheduleTopComposite(lastEdge)
+		// A final edge is needed to let all edges of committed locations to fire
+		val finalLoc = schedulerTemplate.createChild(template_Location, location) as Location => [
 			it.name = "final"
 			it.locationTimeKind = LocationKind.URGENT
 			it.comment = "To ensure all synchronizations to take place before an isStable state."
 		]
 		lastEdge.target = finalLoc
 		val beforeIsStableEdge = finalLoc.createEdge(initLoc)
-    	lastEdge = beforeIsStableEdge
-    	// Clearing raised out events on scheduling turn
-    	firstEdge.addFunctionCall(edge_Update, createClearFunction(compositeComponent).function)
-    	firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
-    	lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
-    	// Setting isScheduled variables
-    	for (region : InstanceRegions.Matcher.on(engine).allValuesOfregion) {
-    		val isScheduledVar = region.allValuesOfTo.filter(Template).head
-    								.allValuesOfTo.filter(DataVariableDeclaration).head
-    		firstEdge.createAssignmentExpression(edge_Update, isScheduledVar, false)
-    	}
-    	// Creating a separate initial location so that the NTA can be initialized in !isStable
-    	val trueInitialLocation = schedulerTemplate.createChild(template_Location, location) as Location => [
+		lastEdge = beforeIsStableEdge
+		// Clearing raised out events on scheduling turn
+		firstEdge.addFunctionCall(edge_Update, createClearFunction(compositeComponent).function)
+		firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
+		lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
+		// Setting isScheduled variables
+		for (region : InstanceRegions.Matcher.on(engine).allValuesOfregion) {
+			val isScheduledVar = region.allValuesOfTo.filter(Template).head
+									.allValuesOfTo.filter(DataVariableDeclaration).head
+			firstEdge.createAssignmentExpression(edge_Update, isScheduledVar, false)
+		}
+		// Creating a separate initial location so that the NTA can be initialized in !isStable
+		val trueInitialLocation = schedulerTemplate.createChild(template_Location, location) as Location => [
 			it.name = "notIsStable"
 			it.locationTimeKind = LocationKind.URGENT
 		]
@@ -1772,34 +1772,34 @@ class CompositeToUppaalTransformer {
 			it.createAssignmentExpression(edge_Update, isStableVar, true)
 		]
 		// Returning last edge
-    	return lastEdge
-    }
-    
-    /**
-     * Returns the maximum timeout value (specified as an integer literal) in the model.
-     */
-    private def getMaxTimeout() {
+		return lastEdge
+	}
+	
+	/**
+	 * Returns the maximum timeout value (specified as an integer literal) in the model.
+	 */
+	private def getMaxTimeout() {
 		val defaultValue = -1
 		try {
-	    	val maxValue = TimeoutValues.Matcher.on(engine).allMatches.map[
-	    		if (it.unit == TimeUnit.MILLISECOND) {
-		    		it.valueExp.evaluate
-		    	} else {
-		    		it.valueExp.evaluate * 1000
-		    	}    	
-	    	].max
-    		return maxValue 
-    	} catch (NoSuchElementException e) {
-    		return defaultValue
-    	}
-    }
-    
-    /**
-     * Creates a clock for the template of the given edge, sets the clock to "0" on the given edge,
-     *  and places an invariant on the target of the edge.
-     */
-    private def setOrchestratorTiming(Edge lastEdge, int timeout) {
-    	val initLoc = lastEdge.target
+			val maxValue = TimeoutValues.Matcher.on(engine).allMatches.map[
+				if (it.unit == TimeUnit.MILLISECOND) {
+					it.valueExp.evaluate
+				} else {
+					it.valueExp.evaluate * 1000
+				}		
+			].max
+			return maxValue 
+		} catch (NoSuchElementException e) {
+			return defaultValue
+		}
+	}
+	
+	/**
+	 * Creates a clock for the template of the given edge, sets the clock to "0" on the given edge,
+	 *  and places an invariant on the target of the edge.
+	 */
+	private def setOrchestratorTiming(Edge lastEdge, int timeout) {
+		val initLoc = lastEdge.target
 		val template = lastEdge.parentTemplate
 		// Creating the clock
 		val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
@@ -1816,54 +1816,54 @@ class CompositeToUppaalTransformer {
 		]
 		// Creating the clock reset
 		lastEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
-    }
-    
-    /**
-     * Creates the scheduling of the whole network of automata starting out from the given composite component
-     */
-    private def scheduleTopComposite(SynchronousComponent component, Edge previousLastEdge) {
-    	checkState (component instanceof AbstractSynchronousCompositeComponent ||
-    		component instanceof StatechartDefinition
-    	)
-    	var Edge lastEdge = previousLastEdge
-    	if (component instanceof SynchronousCompositeComponent) {
+	}
+	
+	/**
+	 * Creates the scheduling of the whole network of automata starting out from the given composite component
+	 */
+	private def scheduleTopComposite(SynchronousComponent component, Edge previousLastEdge) {
+		checkState (component instanceof AbstractSynchronousCompositeComponent ||
+			component instanceof StatechartDefinition
+		)
+		var Edge lastEdge = previousLastEdge
+		if (component instanceof SynchronousCompositeComponent) {
 			// Creating a new location is needed so the queue swap can be done after finalization of previous template
-    		lastEdge = component.swapQueuesOfContainedSimpleInstances(lastEdge)
-    	}
-    	if (component instanceof AbstractSynchronousCompositeComponent) {
-	    	for (instance : component.instancesToBeScheduled /*Cascades are scheduled in accordance with the execution list*/) {
-	    		lastEdge = instance.scheduleInstance(lastEdge)
-	    	}
-    	}
-    	else if (component instanceof StatechartDefinition) {
-    		val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
-    		checkState(instances.size == 1, instances)
-    		val instance = instances.head
-    		val swapEdge = lastEdge.target.createEdgeCommittedTarget("swapLocation" + id++) => [
-    			it.source.locationTimeKind = LocationKind.URGENT
+			lastEdge = component.swapQueuesOfContainedSimpleInstances(lastEdge)
+		}
+		if (component instanceof AbstractSynchronousCompositeComponent) {
+			for (instance : component.instancesToBeScheduled /*Cascades are scheduled in accordance with the execution list*/) {
+				lastEdge = instance.scheduleInstance(lastEdge)
+			}
+		}
+		else if (component instanceof StatechartDefinition) {
+			val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
+			checkState(instances.size == 1, instances)
+			val instance = instances.head
+			val swapEdge = lastEdge.target.createEdgeCommittedTarget("swapLocation" + id++) => [
+				it.source.locationTimeKind = LocationKind.URGENT
 			]
 			lastEdge.target = swapEdge.source
 			lastEdge = swapEdge
-    		lastEdge.createQueueSwap(instance)
-	    	lastEdge = instance.scheduleInstance(lastEdge)    	
-    	}
-    	return lastEdge
-    }
-    
-    /**
-     * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-     * Note that in cascade composite an instance might be scheduled multiple times.
-     */
-    private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
-    	return component.components
-    }
-    
-    private dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
-    	if (component.executionList.empty) {
-    		return component.components
-    	}
-    	return component.executionList
-    }
+			lastEdge.createQueueSwap(instance)
+			lastEdge = instance.scheduleInstance(lastEdge)		
+		}
+		return lastEdge
+	}
+	
+	/**
+	 * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
+	 * Note that in cascade composite an instance might be scheduled multiple times.
+	 */
+	private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
+		return component.components
+	}
+	
+	private dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
+		if (component.executionList.empty) {
+			return component.components
+		}
+		return component.executionList
+	}
 	
 	/**
 	 * Puts the queue swapping updates (isRaised = toRaised...) of all instances contained by the given topComposite onto the given edge.
@@ -1886,209 +1886,209 @@ class CompositeToUppaalTransformer {
 		}
 		return lastEdge
 	}
-    
-    /**
-     * Creates the scheduling (runCycle synchronizations and queue swapping updates) starting the given instance.
-     */
-    private def Edge scheduleInstance(SynchronousComponentInstance instance, Edge previousLastEdge) {
-    	var Edge lastEdge = previousLastEdge
-    	val instanceType = instance.type
-    	val parentComposite = instance.eContainer
-    	if (instanceType instanceof SynchronousCompositeComponent && parentComposite instanceof CascadeCompositeComponent) {
-    		val synchronousInstanceType = instanceType as SynchronousCompositeComponent
-    		lastEdge = synchronousInstanceType.swapQueuesOfContainedSimpleInstances(lastEdge)
-    	}
-    	if (instanceType instanceof AbstractSynchronousCompositeComponent) {
-    		for (containedInstance : instanceType.instancesToBeScheduled) {
-    			lastEdge = containedInstance.scheduleInstance(lastEdge)
-    		}
-    	}
-    	else if (instanceType instanceof StatechartDefinition) {
-    		return instance.scheduleStatechart(lastEdge)
-    	}
-    	return lastEdge
-    }
-    
-    /**
-     * Creates the scheduling of the given statechart instance, that is, the runCycle sync and 
-     * the reset of event queue in case of cascade instances.
-     */
-    private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
-    	var Collection<Edge> lastEdges = #[previousLastEdge]
-    	val statechart = instance.type as StatechartDefinition
-    	val finalizeSyncVar = instance.finalizeSyncVar
-    	// Syncing the templates with run cycles
-    	val schedulingOrder = statechart.schedulingOrder
-    		// Scheduling either top-down or bottom-up
+	
+	/**
+	 * Creates the scheduling (runCycle synchronizations and queue swapping updates) starting the given instance.
+	 */
+	private def Edge scheduleInstance(SynchronousComponentInstance instance, Edge previousLastEdge) {
+		var Edge lastEdge = previousLastEdge
+		val instanceType = instance.type
+		val parentComposite = instance.eContainer
+		if (instanceType instanceof SynchronousCompositeComponent && parentComposite instanceof CascadeCompositeComponent) {
+			val synchronousInstanceType = instanceType as SynchronousCompositeComponent
+			lastEdge = synchronousInstanceType.swapQueuesOfContainedSimpleInstances(lastEdge)
+		}
+		if (instanceType instanceof AbstractSynchronousCompositeComponent) {
+			for (containedInstance : instanceType.instancesToBeScheduled) {
+				lastEdge = containedInstance.scheduleInstance(lastEdge)
+			}
+		}
+		else if (instanceType instanceof StatechartDefinition) {
+			return instance.scheduleStatechart(lastEdge)
+		}
+		return lastEdge
+	}
+	
+	/**
+	 * Creates the scheduling of the given statechart instance, that is, the runCycle sync and 
+	 * the reset of event queue in case of cascade instances.
+	 */
+	private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
+		var Collection<Edge> lastEdges = #[previousLastEdge]
+		val statechart = instance.type as StatechartDefinition
+		val finalizeSyncVar = instance.finalizeSyncVar
+		// Syncing the templates with run cycles
+		val schedulingOrder = statechart.schedulingOrder
+			// Scheduling either top-down or bottom-up
 		val levelRegionAssociation = statechart.calculateSubregionLevels
 		var List<Integer> regionLevels
 		switch (schedulingOrder) {
-    		case TOP_DOWN: {
-    			regionLevels = levelRegionAssociation.keySet.sort
-    		}
-    		case BOTTOM_UP: {
-    			regionLevels = levelRegionAssociation.keySet.sort.reverseView
-    		}
-    		default: {
-    			throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
-    		}
-    	}
+			case TOP_DOWN: {
+				regionLevels = levelRegionAssociation.keySet.sort
+			}
+			case BOTTOM_UP: {
+				regionLevels = levelRegionAssociation.keySet.sort.reverseView
+			}
+			default: {
+				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
+			}
+		}
 		for (level : regionLevels) {
 			for (region: levelRegionAssociation.get(level)) {
 				lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
 			}
 		}
-    	// When all templates of an instance is synced, a finalize edge is put in the sequence
-    	val finalizeEdge = createCommittedSyncTarget(lastEdges.head.target,
-    		finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
-    	finalizeEdge.source.locationTimeKind = LocationKind.URGENT
-    	for (lastEdge : lastEdges) {
-    		lastEdge.target = finalizeEdge.source
-    	}
-    	val lastEdge = finalizeEdge
-    	// If the instance is cascade, the in events have to be cleared
-    	if (instance.isCascade) {
-    		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
-    			lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
-    		}
-    	}
-    	return lastEdge
-    }
-    
-    private def Map<Integer, List<Region>> calculateSubregionLevels(CompositeElement compositeElement) {
-    	val levelRegionMap = new HashMap<Integer, List<Region>>
-    	val levelRegionList = new ArrayList<Region>
-    	val containedRegion = compositeElement.regions.head
-    	if (containedRegion === null) {
-    		return levelRegionMap
-    	}
-    	val level = containedRegion.stateNodes.head.levelOfStateNode
-    	levelRegionMap.put(level, levelRegionList)
-    	for (region : compositeElement.regions) {
-    		levelRegionList += region
-    		for (state : region.stateNodes.filter(State)) {
-	    		val levelRegionSubmap = state.calculateSubregionLevels
-	    		for (key : levelRegionSubmap.keySet) {
-	    			val regionList = levelRegionMap.get(key)
-	    			if (regionList === null) {
-	    				levelRegionMap.put(key, levelRegionSubmap.get(key))
-	    			}
-	    			else {
-	    				regionList += levelRegionSubmap.get(key)
-	    			}
-	    		}
-    		}
-    	}
-    	return levelRegionMap
-    }
-    
-    /**
-     * Returns the instances whose event variables should be swapped at the same time starting from the given composite.
-     */
-    private def getSimpleInstancesInSameQueueSwap(SynchronousCompositeComponent composite) {
-    	return QueueSwapInstancesOfComposite.Matcher.on(engine).getAllValuesOfinstance(composite)
-    }
-    
-    /**
-     * Places the variable swap updates of the given instance to the given edge.
-     */
-    private def createQueueSwap(Edge edge, SynchronousComponentInstance instance) {
-    	for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
+		// When all templates of an instance is synced, a finalize edge is put in the sequence
+		val finalizeEdge = createCommittedSyncTarget(lastEdges.head.target,
+			finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
+		finalizeEdge.source.locationTimeKind = LocationKind.URGENT
+		for (lastEdge : lastEdges) {
+			lastEdge.target = finalizeEdge.source
+		}
+		val lastEdge = finalizeEdge
+		// If the instance is cascade, the in events have to be cleared
+		if (instance.isCascade) {
+			for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
+				lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
+			}
+		}
+		return lastEdge
+	}
+	
+	private def Map<Integer, List<Region>> calculateSubregionLevels(CompositeElement compositeElement) {
+		val levelRegionMap = new HashMap<Integer, List<Region>>
+		val levelRegionList = new ArrayList<Region>
+		val containedRegion = compositeElement.regions.head
+		if (containedRegion === null) {
+			return levelRegionMap
+		}
+		val level = containedRegion.stateNodes.head.levelOfStateNode
+		levelRegionMap.put(level, levelRegionList)
+		for (region : compositeElement.regions) {
+			levelRegionList += region
+			for (state : region.stateNodes.filter(State)) {
+				val levelRegionSubmap = state.calculateSubregionLevels
+				for (key : levelRegionSubmap.keySet) {
+					val regionList = levelRegionMap.get(key)
+					if (regionList === null) {
+						levelRegionMap.put(key, levelRegionSubmap.get(key))
+					}
+					else {
+						regionList += levelRegionSubmap.get(key)
+					}
+				}
+			}
+		}
+		return levelRegionMap
+	}
+	
+	/**
+	 * Returns the instances whose event variables should be swapped at the same time starting from the given composite.
+	 */
+	private def getSimpleInstancesInSameQueueSwap(SynchronousCompositeComponent composite) {
+		return QueueSwapInstancesOfComposite.Matcher.on(engine).getAllValuesOfinstance(composite)
+	}
+	
+	/**
+	 * Places the variable swap updates of the given instance to the given edge.
+	 */
+	private def createQueueSwap(Edge edge, SynchronousComponentInstance instance) {
+		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
 			// isRaised = toRaise
 			edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance),
 				 match.event.getToRaiseVariable(match.port, match.instance))			
 			// toRaise = false
 			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)										
-	    }
+		}
 	 }
-    
-    /**
-     * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
-     * between the given last runCycle edge and the init location.
-     */
-    private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,
-    		SchedulingOrder schedulingOrder, ComponentInstance owner) {
-    	val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
-    	val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
-    	val runCycleEdge = createCommittedSyncTarget(lastEdges.head.target,
-    		syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
-    	runCycleEdge.source.locationTimeKind = LocationKind.URGENT
-    	for (lastEdge : lastEdges) {
-    		lastEdge.target = runCycleEdge.source
-    	}
-    	var Collection<Region> regionsToExamine
-    	switch (schedulingOrder) {
-    		case TOP_DOWN: {
-    			regionsToExamine = region.parentRegions
-    		}
-    		case BOTTOM_UP: {
-    			regionsToExamine = region.subregions
-    		}
-    		default: {
-    			throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
-    		}
-    	}
-    	if (!regionsToExamine.empty) {
-    		val isScheduledVars = regionsToExamine.map[it.allValuesOfTo.filter(Template).head]
-    								.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
-	    	val isNotSchedulableGuard = createLogicalExpression(LogicalOperator.OR, 
-	    			isScheduledVars.map[variable | createIdentifierExpression => [
-	    				it.identifier = variable.variable.head
-	    			]
-	    		].toList
-	    	)
-	    	val isSchedulableGuard = createNegationExpression => [
-	    		it.negatedExpression = isNotSchedulableGuard.clone(true, true)
-	    	]
-    		runCycleEdge.addGuard(isSchedulableGuard, LogicalOperator.AND)
-    		// If the region is not schedulable
-    		val elseEdge = runCycleEdge.source.createEdge(runCycleEdge.target) => [
-    			it.guard = isNotSchedulableGuard
-    		]
-    		return #[runCycleEdge, elseEdge]
-    	}
-    	else {
-    		return #[runCycleEdge]
-    	}    	
-    }
-    
-    private def createLogicalExpression(LogicalOperator operator,
-    		Collection<? extends Expression> expressions) {
-    	checkState(!expressions.empty)
-    	if (expressions.size == 1) {
-    		return expressions.head
-    	}
-    	var logicalExpression = createLogicalExpression => [
-    		it.operator = operator
-    	]
-    	var i = 0
-    	for (expression : expressions) {
-    		if (i == 0) {
-    			logicalExpression.firstExpr = expression
-    		}
-    		else if (i == 1) {
-    			logicalExpression.secondExpr = expression
-    		}
-    		else {
-    			val oldExpression = logicalExpression.secondExpr
-    			logicalExpression = createLogicalExpression => [
-		    		it.operator = operator
-    				it.firstExpr = oldExpression
-    				it.secondExpr = expression
-		    	]
-    		}
-    		i++
-    	}
-    	return logicalExpression
-    }
-    
-    /**
-     * Creates the function that copies the state of the toRaise flags to the isRaised flags, and clears the toRaise flags.
-     */
-    protected def createClearFunction(SynchronousComponent component) {
-    	target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
-    		it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
-    			it.createChild(function_ReturnType, typeReference) as TypeReference => [
+	
+	/**
+	 * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
+	 * between the given last runCycle edge and the init location.
+	 */
+	private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,
+			SchedulingOrder schedulingOrder, ComponentInstance owner) {
+		val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
+		val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
+		val runCycleEdge = createCommittedSyncTarget(lastEdges.head.target,
+			syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
+		runCycleEdge.source.locationTimeKind = LocationKind.URGENT
+		for (lastEdge : lastEdges) {
+			lastEdge.target = runCycleEdge.source
+		}
+		var Collection<Region> regionsToExamine
+		switch (schedulingOrder) {
+			case TOP_DOWN: {
+				regionsToExamine = region.parentRegions
+			}
+			case BOTTOM_UP: {
+				regionsToExamine = region.subregions
+			}
+			default: {
+				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
+			}
+		}
+		if (!regionsToExamine.empty) {
+			val isScheduledVars = regionsToExamine.map[it.allValuesOfTo.filter(Template).head]
+									.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
+			val isNotSchedulableGuard = createLogicalExpression(LogicalOperator.OR, 
+					isScheduledVars.map[variable | createIdentifierExpression => [
+						it.identifier = variable.variable.head
+					]
+				].toList
+			)
+			val isSchedulableGuard = createNegationExpression => [
+				it.negatedExpression = isNotSchedulableGuard.clone(true, true)
+			]
+			runCycleEdge.addGuard(isSchedulableGuard, LogicalOperator.AND)
+			// If the region is not schedulable
+			val elseEdge = runCycleEdge.source.createEdge(runCycleEdge.target) => [
+				it.guard = isNotSchedulableGuard
+			]
+			return #[runCycleEdge, elseEdge]
+		}
+		else {
+			return #[runCycleEdge]
+		}		
+	}
+	
+	private def createLogicalExpression(LogicalOperator operator,
+			Collection<? extends Expression> expressions) {
+		checkState(!expressions.empty)
+		if (expressions.size == 1) {
+			return expressions.head
+		}
+		var logicalExpression = createLogicalExpression => [
+			it.operator = operator
+		]
+		var i = 0
+		for (expression : expressions) {
+			if (i == 0) {
+				logicalExpression.firstExpr = expression
+			}
+			else if (i == 1) {
+				logicalExpression.secondExpr = expression
+			}
+			else {
+				val oldExpression = logicalExpression.secondExpr
+				logicalExpression = createLogicalExpression => [
+					it.operator = operator
+					it.firstExpr = oldExpression
+					it.secondExpr = expression
+				]
+			}
+			i++
+		}
+		return logicalExpression
+	}
+	
+	/**
+	 * Creates the function that copies the state of the toRaise flags to the isRaised flags, and clears the toRaise flags.
+	 */
+	protected def createClearFunction(SynchronousComponent component) {
+		target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
+			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
+				it.createChild(function_ReturnType, typeReference) as TypeReference => [
 					it.referredType = target.void
 				]
 				it.name = "clearOutEvents" + id++
@@ -2107,22 +2107,22 @@ class CompositeToUppaalTransformer {
 							for (port : component.ports) {
 								for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
 									val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
-    								checkState(instances.size == 1, instances)
-    								val variable = event.getToRaiseVariable(port, instances.head)
+									checkState(instances.size == 1, instances)
+									val variable = event.getToRaiseVariable(port, instances.head)
 									it.createAssignmentExpression(expressionStatement_Expression, variable, false)										
 								}
 							}
 						]
 					}
 				]
-    		]
-    	]
-    }
-    
-    /**
-     * This rule is responsible for transforming the input signals.
-     * It depends on initNTA.
-     */
+			]
+		]
+	}
+	
+	/**
+	 * This rule is responsible for transforming the input signals.
+	 * It depends on initNTA.
+	 */
 	val inputEventsRule = createRule(InputInstanceEvents.instance).action [
 		if (!it.instance.isCascade) {
 			// Cascade components do not have a double event queue
@@ -2140,9 +2140,9 @@ class CompositeToUppaalTransformer {
 	].build	
 	
 	 /**
-     * This rule is responsible for transforming the output signals led out to the system interface.
-     * It depends on initNTA.
-     */
+	 * This rule is responsible for transforming the output signals led out to the system interface.
+	 * It depends on initNTA.
+	 */
 	val syncSystemOutputEventsRule = createRule(TopSyncSystemOutEvents.instance).action [
 		val boolFlag = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.getOutEventName(it.port, it.instance))
 		addToTrace(it.event, #{boolFlag}, trace)
@@ -2155,9 +2155,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for connecting the parameters of actions and triggers to the parameters of events.
-     * It depends on initNTA.
-     */
+	 * This rule is responsible for connecting the parameters of actions and triggers to the parameters of events.
+	 * It depends on initNTA.
+	 */
 	val eventParametersRule = createRule(ParameteredEvents.instance).action [
 		if (it.event.parameterDeclarations.size != 1) {
 			throw new IllegalArgumentException("The event has more than one parameters." + it.event)
@@ -2176,12 +2176,12 @@ class CompositeToUppaalTransformer {
 			addToTrace(port, #{eventValue}, portTrace)
 		}
 	].build
-    
-    
-    /**
-     * This rule is responsible for transforming the variables.
-     * It depends on initNTA.
-     */
+	
+	
+	/**
+	 * This rule is responsible for transforming the variables.
+	 * It depends on initNTA.
+	 */
 	val variablesRule = createRule(InstanceVariables.instance).action [
 		val variable = it.variable.transformVariable(it.variable.type, DataVariablePrefix.NONE,
 			it.variable.name + "Of" + instance.name)
@@ -2190,9 +2190,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the constants.
-     * It depends on initNTA.
-     */
+	 * This rule is responsible for transforming the constants.
+	 * It depends on initNTA.
+	 */
 	val constantsRule = createRule(ConstantDeclarations.instance).action [
 		it.constant.transformVariable(it.type, DataVariablePrefix.CONST, 
 			it.constant.name + "Of" + (it.constant.eContainer as Package).name)
@@ -2263,9 +2263,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the initializations of declarations.
-     * It depends on variablesRule and constantsRule.
-     */
+	 * This rule is responsible for transforming the initializations of declarations.
+	 * It depends on variablesRule and constantsRule.
+	 */
 	val declarationInitRule = createRule(DeclarationInitializations.instance).action [
 		val initExpression = it.initValue
 		for (uDeclaration : it.declaration.allValuesOfTo.filter(DataVariableDeclaration)) {
@@ -2297,9 +2297,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the bound parameters.
-     * It depends on initNTA.
-     */
+	 * This rule is responsible for transforming the bound parameters.
+	 * It depends on initNTA.
+	 */
 	val parametersRule = createRule(ParameterizedInstances.instance).action [
 		val instance = it.instance
 		val parameters = instance.derivedType.parameterDeclarations
@@ -2336,9 +2336,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming all regions to templates. (Top regions and subregions.)
-     * It depends on initNTA.
-     */
+	 * This rule is responsible for transforming all regions to templates. (Top regions and subregions.)
+	 * It depends on initNTA.
+	 */
 	val regionsRule = createRule(InstanceRegions.instance).action [
 		val instance = it.instance
 		val name = it.region.regionName
@@ -2365,17 +2365,6 @@ class CompositeToUppaalTransformer {
 		addToTrace(instance, #{template}, instanceTrace)
 	].build
 	
-	private def boolean isSubregion(Region region) {
-		return region.eContainer instanceof State
-	}
-	
-	private def getParentRegion(Region region) {
-		if (region.topRegion) {
-			return null
-		}
-		return (region.eContainer as State).parentRegion 
-	}
-	
 	private def List<Region> getParentRegions(Region region) {
 		if (region.topRegion) {
 			return #[]
@@ -2394,10 +2383,10 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the entry states to committed locations.
-     * If the parent regions is a subregion, a new init location is generated as well.
-     * It depends on regionsRule.
-     */
+	 * This rule is responsible for transforming the entry states to committed locations.
+	 * If the parent regions is a subregion, a new init location is generated as well.
+	 * It depends on regionsRule.
+	 */
 	val entriesRule = createRule(Entries.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
@@ -2427,10 +2416,10 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming all states to committed location -> edge -> locations.
-     * (The edge is there for the subregion synchronization and entry event assignment.)
-     * It depends on regionsRule.
-     */
+	 * This rule is responsible for transforming all states to committed location -> edge -> locations.
+	 * (The edge is there for the subregion synchronization and entry event assignment.)
+	 * It depends on regionsRule.
+	 */
 	val statesRule = createRule(States.instance).action [
 		val gammaState = it.state
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
@@ -2452,9 +2441,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming all choices to committed locations.
-     * It depends on regionsRule.
-     */
+	 * This rule is responsible for transforming all choices to committed locations.
+	 * It depends on regionsRule.
+	 */
 	val choicesRule = createRule(ChoicesAndMerges.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
@@ -2470,9 +2459,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming all same region transitions (whose sources and targets are in the same region) to edges.
-     * It depends on all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming all same region transitions (whose sources and targets are in the same region) to edges.
+	 * It depends on all the rules that create nodes.
+	 */
 	val sameRegionTransitionsRule = createRule(SameRegionTransitions.instance).action [
 		for (template : it.region.allValuesOfTo.filter(Template)) {
 			val owner = template.owner
@@ -2546,7 +2535,7 @@ class CompositeToUppaalTransformer {
 			if (lastLevel != ttarget.levelOfStateNode) {
 				targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
 				// The orthogonal regions of the composite states have to be activated
-				if (ttarget.isCompositeState) {			
+				if (ttarget.composite) {			
 					(ttarget as State).regions.setSubregions(visitedRegions, syncVar, true, owner)
 				}
 			}
@@ -2646,23 +2635,24 @@ class CompositeToUppaalTransformer {
 		if (tsource.levelOfStateNode == lastLevel) {
 			val region = tsource.eContainer as Region
 			visitedRegions.add(region)
-			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head {		
-				// Creating a the transition equivalent edge
-				val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
-				// Setting isScheduled variable to true upon firing 
-				val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
-				toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
-				addToTrace(transition, #{toHigherEdge}, trace)
-				addToTrace(owner, #{toHigherEdge}, instanceTrace)
-				// For test generation (after adding owner)
-				toHigherEdge.generateTransitionId
-				// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
-				val syncEdge = createCommittedSyncTarget(sourceLoc, syncVar.variable.head, "AcrossEntry" + id++)
-				toHigherEdge.target = syncEdge.source			
-				syncEdge.setTemplateActivation(region, false)
-				// No need to set the exit events, since exitAssignmentActionsOfStatesRule and exitEventRaisingActionsOfStatesRule do that
-				transition.toHigherTransitionRule(tsource.eContainer.eContainer as State, ttarget, visitedRegions, syncVar, lastLevel, owner)			
-			}
+			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head	
+			// Creating a the transition equivalent edge
+			val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
+			// Setting isScheduled variable to true upon firing 
+			val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
+			toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+			addToTrace(transition, #{toHigherEdge}, trace)
+			addToTrace(owner, #{toHigherEdge}, instanceTrace)
+			// For test generation (after adding owner)
+			toHigherEdge.generateTransitionId
+			// Getting the target of the deactivating edge
+			val targetLoc = region.getDeactivatingEdgeTarget(sourceLoc)
+			// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
+			val syncEdge = createCommittedSyncTarget(targetLoc, syncVar.variable.head, "AcrossEntry" + id++)
+			toHigherEdge.target = syncEdge.source			
+			syncEdge.setTemplateActivation(region, false)
+			// No need to set the exit events, since exitAssignmentActionsOfStatesRule and exitEventRaisingActionsOfStatesRule do that
+			transition.toHigherTransitionRule(tsource.eContainer.eContainer as State, ttarget, visitedRegions, syncVar, lastLevel, owner)			
 		}
 		// Highest level
 		else if (tsource.levelOfStateNode == ttarget.levelOfStateNode) {
@@ -2738,20 +2728,10 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Returns whether the given state node is a composite state.
+	 * This rule is responsible for creating synchronizations in the subregions of composite states
+	 * to make sure they get to the proper state at each entry.
+	 * It depends on all the rules that create nodes (including timeTriggersRule).
 	 */
-	private def boolean isCompositeState(StateNode state) {
-		if (!(state instanceof State)) {
-			return false
-		}
-		return CompositeStates.Matcher.on(engine).countMatches(state as State, null, null) != 0
-	}
-
-	/**
-     * This rule is responsible for creating synchronizations in the subregions of composite states
-     * to make sure they get to the proper state at each entry.
-     * It depends on all the rules that create nodes (including timeTriggersRule).
-     */
 	val compositeStateEntryRule = createRule(CompositeStates.instance).action [
 		for (entryEdge : it.compositeState.allValuesOfTo.filter(Edge)) {
 			val owner = entryEdge.owner as SynchronousComponentInstance
@@ -2803,14 +2783,7 @@ class CompositeToUppaalTransformer {
 		}
 		// In case of exit
 		else {
-			// If the region ha history, the target is the source (remembering last active state)
-			if (subregion.hasHistory) {
-				target = source
-			}
-			// The target is the inactive location to reduce state space
-			else {
-				target = source.parentTemplate.init
-			}
+			target = subregion.getDeactivatingEdgeTarget(source)
 		}
 		val realTarget = target
 		// Creating an edge with a ? synchronization and an "isActive" update
@@ -2826,6 +2799,17 @@ class CompositeToUppaalTransformer {
 		activationEdge.setSynchronization(syncVar.variable.head, SynchronizationKind.RECEIVE)
 		// Creating an update so it activates/deactivates the template
 		activationEdge.setTemplateActivation(subregion, enter)
+	}
+	
+	private def getDeactivatingEdgeTarget(Region region, Location source) {
+		// If the region ha history, the target is the source (remembering last active state)
+		if (region.hasHistory) {
+			return source
+		}
+		// The target is the inactive location to reduce state space
+		else {
+			return source.parentTemplate.init
+		}
 	}
 	
 	/**
@@ -2882,10 +2866,10 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for creating synchronizations in the subregions of composite states and exit transitions
-     * to make sure templates are deactivated at each exit.
-     * It depends on all the rules that create nodes and edges.
-     */
+	 * This rule is responsible for creating synchronizations in the subregions of composite states and exit transitions
+	 * to make sure templates are deactivated at each exit.
+	 * It depends on all the rules that create nodes and edges.
+	 */
 	private def compositeStateExitRule() {
 		for (compositeState : OutgoingTransitionsOfCompositeStates.Matcher.on(engine).allValuesOfcompositeState) {
 			// Iterating through all the instances that have the mapping of this particular composite state (compositeState)
@@ -2927,9 +2911,9 @@ class CompositeToUppaalTransformer {
 	}	
 	
 	/**
-     * This rule is responsible for transforming the event triggers.
-     * It depends on eventsRule and sameRegionTransitionsRule.
-     */
+	 * This rule is responsible for transforming the event triggers.
+	 * It depends on eventsRule and sameRegionTransitionsRule.
+	 */
 	val eventTriggersRule = createRule(EventTriggersOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			checkState(edge.guard === null) // Must this assert be true at all times?
@@ -3153,9 +3137,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the timeout event triggers.
-     * It depends on sameRegionTransitionsRule, toLowerTransitionsRule, ToHigherTransitionsRule and triggersRule.
-     */
+	 * This rule is responsible for transforming the timeout event triggers.
+	 * It depends on sameRegionTransitionsRule, toLowerTransitionsRule, ToHigherTransitionsRule and triggersRule.
+	 */
 	val timeTriggersRule = createRule(TimeTriggersOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner
@@ -3303,9 +3287,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the guards.
-     * It depends on sameRegionTransitionsRule, eventTriggersRule, timeTriggersRule and ExpressionTransformer.
-     */
+	 * This rule is responsible for transforming the guards.
+	 * It depends on sameRegionTransitionsRule, eventTriggersRule, timeTriggersRule and ExpressionTransformer.
+	 */
 	val guardsRule = createRule(GuardsOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			edge.transformGuard(it.guard)		
@@ -3337,9 +3321,9 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-     * This rule is responsible for transforming the updates.
-     * It depends on sameRegionTransitionsRule, exitAssignmentActionsOfStatesRule, exitEventRaisingActionsOfStatesRule and ExpressionTransformer.
-     */
+	 * This rule is responsible for transforming the updates.
+	 * It depends on sameRegionTransitionsRule, exitAssignmentActionsOfStatesRule, exitEventRaisingActionsOfStatesRule and ExpressionTransformer.
+	 */
 	val assignmentActionsRule = createRule(UpdatesOfTransitions.instance).action [
 		// No update on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
@@ -3349,9 +3333,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the entry event updates of states.
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the entry event updates of states.
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentStatement, edge.owner)
@@ -3360,10 +3344,10 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the entry event timeout actions of states. 
-     * (Initializing the timer to 0 on entering a state.)
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the entry event timeout actions of states. 
+	 * (Initializing the timer to 0 on entering a state.)
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			edge.transformTimeoutAction(edge_Update, it.setTimeoutAction, edge.owner)
@@ -3372,9 +3356,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the exit event updates of states.
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the exit event updates of states.
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			edge.transformAssignmentAction(edge_Update, it.assignmentStatement, edge.owner)
@@ -3384,9 +3368,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the raise event actions (raising events) of transitions. (No system out-events.)
-     * It depends on sameRegionTransitionsRule and eventsRule.
-     */
+	 * This rule is responsible for transforming the raise event actions (raising events) of transitions. (No system out-events.)
+	 * It depends on sameRegionTransitionsRule and eventsRule.
+	 */
 	val eventRaisingActionsRule = createRule(RaisingActionsOfTransitions.instance).action [
 		// No event raising on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
@@ -3398,9 +3382,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the event actions of transitions that raise signals led out to the system interface.
-     * It depends on sameRegionTransitionsRule, toLowerRegionTransitionsRule, toHigherRegionTransitionsRule and systemOutputSignalsRule.
-     */
+	 * This rule is responsible for transforming the event actions of transitions that raise signals led out to the system interface.
+	 * It depends on sameRegionTransitionsRule, toLowerRegionTransitionsRule, toHigherRegionTransitionsRule and systemOutputSignalsRule.
+	 */
 	val syncSystemEventRaisingActionsRule = createRule(RaiseTopSystemEventOfTransitions.instance).action [
 		// Only if the out event is led out to the main composite system
 		val owner = it.instance
@@ -3410,9 +3394,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the raising event actions (raising events) as entry events. (No out-events.)
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the raising event actions (raising events) as entry events. (No out-events.)
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val entryEventRaisingActionsRule = createRule(EntryRaisingActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner as SynchronousComponentInstance
@@ -3423,9 +3407,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the out-event actions (raising event) as entry events.
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the out-event actions (raising event) as entry events.
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val syncSystemEventRaisingOfEntryActionsRule = createRule(RaiseTopSystemEventStateEntryActions.instance).action [
 		// Only if the out event is led out to the main composite system
 		val owner = it.instance as SynchronousComponentInstance
@@ -3435,9 +3419,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the exit event event raisings of states. (No out-events.)
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the exit event event raisings of states. (No out-events.)
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val exitEventRaisingActionsOfStatesRule = createRule(ExitRaisingActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner as SynchronousComponentInstance
@@ -3449,9 +3433,9 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-     * This rule is responsible for transforming the out-event actions (raising event) as exit events.
-     * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
-     */
+	 * This rule is responsible for transforming the out-event actions (raising event) as exit events.
+	 * It depends on sameRegionTransitionsRule, ExpressionTransformer and all the rules that create nodes.
+	 */
 	val exitSystemEventRaisingActionsOfStatesRule = createRule(ExitRaisingActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner  as SynchronousComponentInstance
@@ -3470,12 +3454,12 @@ class CompositeToUppaalTransformer {
 		edge.createAssignmentExpression(edge_Update, toRaiseVar, true)
 		val exps = eventAction.arguments
 		if (!exps.empty) {
-	    	for (expression : exps) {
-//	    		val parameter = toRaiseEvent.parameterDeclarations.head
-		    	val assignment = edge.createAssignmentExpression(edge_Update, toRaiseEvent.getValueOfVariable(port, inInstance), expression, inInstance)
-		    	addToTrace(eventAction, #{assignment}, expressionTrace)
-		    }    		
-    	}
+			for (expression : exps) {
+//				val parameter = toRaiseEvent.parameterDeclarations.head
+				val assignment = edge.createAssignmentExpression(edge_Update, toRaiseEvent.getValueOfVariable(port, inInstance), expression, inInstance)
+				addToTrace(eventAction, #{assignment}, expressionTrace)
+			}			
+		}
 	}
 	
 	/**
@@ -3484,7 +3468,7 @@ class CompositeToUppaalTransformer {
 	private def createQueueInsertion(Edge edge, Port systemPort, Event toRaiseEvent, ComponentInstance inInstance, DataVariableDeclaration variable) {
 		val wrapper = inInstance.derivedType as AsynchronousAdapter
 		val queue = wrapper.getContainerMessageQueue(systemPort, toRaiseEvent) // In what message queue this event is stored
-    	val messageQueueTrace = queue.getTrace(inInstance) // Getting the owner
+		val messageQueueTrace = queue.getTrace(inInstance) // Getting the owner
 		val constRepresentation = toRaiseEvent.getConstRepresentation(systemPort)
 		if (variable === null) {  		
 			edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createLiteralExpression => [it.text = "0"])
@@ -3672,7 +3656,6 @@ class CompositeToUppaalTransformer {
 		return finalizeSyncVars.head
 	}
 	
-	
 	/**
 	 * Places the negated form of the given expression onto the given edge.
 	 */
@@ -3729,162 +3712,157 @@ class CompositeToUppaalTransformer {
 		return syncEdge		
 	}
 	
-    private def boolean isTopRegion(Region region) {
-    	return !region.subregion
-    }
-    
-    /**
-     * Returns whether the given region has deep history in one of its ancestor regions.
-     */
-    private def boolean hasHistoryAbove(Region region) {
-    	if (region.isTopRegion) {
-    		return false
-    	}
-    	val regionAbove = region.eContainer.eContainer as Region
-    	return RegionsWithDeepHistory.Matcher.on(engine).countMatches(regionAbove) > 0 || regionAbove.hasHistoryAbove
-    	
-    }
-    
-    /**
-     * Returns whether the region has history or not. (This determines where the synchronization edges have to be targeted.)
-     */
-    private def boolean hasHistory(Region region) {
-    	return (region.hasHistoryAbove || 
-    	RegionsWithShallowHistory.Matcher.on(engine).countMatches(region) > 0 ||
-    	RegionsWithDeepHistory.Matcher.on(engine).countMatches(region) > 0)
-    }    
-    
-    private def instantiateTemplates(Collection<Template> templates) {
+	/**
+	 * Returns whether the given region has deep history in one of its ancestor regions.
+	 */
+	private def boolean hasHistoryAbove(Region region) {
+		if (region.isTopRegion) {
+			return false
+		}
+		val regionAbove = region.eContainer.eContainer as Region
+		return RegionsWithDeepHistory.Matcher.on(engine).countMatches(regionAbove) > 0 || regionAbove.hasHistoryAbove
+	}
+	
+	/**
+	 * Returns whether the region has history or not. (This determines where the synchronization edges have to be targeted.)
+	 */
+	private def boolean hasHistory(Region region) {
+		return (region.hasHistoryAbove || 
+		RegionsWithShallowHistory.Matcher.on(engine).countMatches(region) > 0 ||
+		RegionsWithDeepHistory.Matcher.on(engine).countMatches(region) > 0)
+	}	
+	
+	private def instantiateTemplates(Collection<Template> templates) {
 		val instationList = target.systemDeclarations.system.createChild(system_InstantiationList, instantiationList) as InstantiationList 
 		for (template : templates) {
 			instationList.template += template
 		}
-    }
-    
-    private def instantiateUninstantiatedTemplates() {
+	}
+	
+	private def instantiateUninstantiatedTemplates() {
 		val instantiatedTemplates = target.systemDeclarations.system.instantiationList.map[it.template].flatten.toList
 		instantiateTemplates(target.template.filter[!instantiatedTemplates.contains(it)].toList /* Uninstantiated templates */)
-    }
-    
-    /**
-     * Responsible for simplifying the created Uppaal model where it is possible.
-     */
-    private def cleanUp() {
-    	deleteEntryLocations
-    	deleteChoices
-    }
-    
-    /**
-     * Deletes entry locations of simple states without entry actions.
-     */
-    private def deleteEntryLocations() {
-    	// Removing the unnecessary committed locations before the simple state locations
-    	for (simpleState : SimpleStates.Matcher.on(engine).allValuesOfstate) {
-    		for (entryEdge : simpleState.allValuesOfTo.filter(Edge)) {
-	    		if (entryEdge.plain) {	    			
-	    			val template = entryEdge.parentTemplate
-	    			// Retargeting the incoming edges to the target location
-	    			for (edge : template.edge.filter[it.target == entryEdge.source]) {
-	    				edge.target = entryEdge.target
-	    			}
-	    			template.location.remove(entryEdge.source)
-	    			// Removing them from the trace
+	}
+	
+	/**
+	 * Responsible for simplifying the created Uppaal model where it is possible.
+	 */
+	private def cleanUp() {
+		deleteEntryLocations
+		deleteChoices
+	}
+	
+	/**
+	 * Deletes entry locations of simple states without entry actions.
+	 */
+	private def deleteEntryLocations() {
+		// Removing the unnecessary committed locations before the simple state locations
+		for (simpleState : SimpleStates.Matcher.on(engine).allValuesOfstate) {
+			for (entryEdge : simpleState.allValuesOfTo.filter(Edge)) {
+				if (entryEdge.plain) {					
+					val template = entryEdge.parentTemplate
+					// Retargeting the incoming edges to the target location
+					for (edge : template.edge.filter[it.target == entryEdge.source]) {
+						edge.target = entryEdge.target
+					}
+					template.location.remove(entryEdge.source)
+					// Removing them from the trace
 					entryEdge.source.removeTrace
 					entryEdge.delete
-	    		}    		
-    		}
-    	}
-    }
-    
-    /**
-     * Deletes the choices and their in and outgoing edges, and creates new edges containing the necessary expressions. 
-     */
-    private def deleteChoices() {
-    	val aMap = new HashMap<Edge, Edge>
-    	// Creating the new edges
+				}			
+			}
+		}
+	}
+	
+	/**
+	 * Deletes the choices and their in and outgoing edges, and creates new edges containing the necessary expressions. 
+	 */
+	private def deleteChoices() {
+		val aMap = new HashMap<Edge, Edge>
+		// Creating the new edges
 		for (choice : EliminatableChoices.Matcher.on(engine).allValuesOfchoice) {
-    		for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
-    			val template = choiceLoc.parentTemplate
-    			val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
-    			val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
-    			for (inEdge : inEdges) {
-    				for (outEdge : outEdges) {
-    					val newEdge = inEdge.source.createEdge(outEdge.target)
-    					inEdge.copyTo(newEdge)
+			for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
+				val template = choiceLoc.parentTemplate
+				val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
+				val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
+				for (inEdge : inEdges) {
+					for (outEdge : outEdges) {
+						val newEdge = inEdge.source.createEdge(outEdge.target)
+						inEdge.copyTo(newEdge)
 						outEdge.copyTo(newEdge)
-    					aMap.put(inEdge, newEdge)
-    					aMap.put(outEdge, newEdge)
-    				}
-    			}
-    		}
-    	}
-    	// Deleting the choices and their in and outgoing transitions
-    	for (choice : EliminatableChoices.Matcher.on(engine).allValuesOfchoice) {
-    		for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
-    			val template = choiceLoc.parentTemplate
-    			val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
-    			val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
-    			for (inEdge : inEdges) {
-    				for (outEdge : outEdges) {
-    					for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, outEdge)) {
-               				aTrace.remove(trace_To, outEdge)
-              				aTrace.addTo(trace_To, aMap.get(outEdge))
-               			}
-               			for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-               				aTrace.remove(instanceTrace_Element, outEdge)
-               			}
-               			outEdge.delete
-    				}
-    				for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-               			aTrace.remove(trace_To, inEdge)
-              			aTrace.addTo(trace_To, aMap.get(inEdge))
-               		}
-               		for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-               			aTrace.remove(instanceTrace_Element, inEdge)
-               		}
-               		inEdge.delete
-    			}
-            	choiceLoc.removeTrace
-    			choiceLoc.parentTemplate.location.remove(choiceLoc)
-    		}
-    	} 
-    }
-    
-    /**
-     * Creates trace entries posteriorly to make it more complete.
-     */
-    private def void extendTrace() {
-    	clockLocationTraceRule.fireAllCurrent
-    }
-    
-    val clockLocationTraceRule = createRule(EdgesWithClock.instance).action [
-    	val source = it.edge.source
-    	val target = it.edge.target
-    	val state = source.allValuesOfFrom.head
-    	addToTrace(state, #{target}, trace)
-    ].build
+						aMap.put(inEdge, newEdge)
+						aMap.put(outEdge, newEdge)
+					}
+				}
+			}
+		}
+		// Deleting the choices and their in and outgoing transitions
+		for (choice : EliminatableChoices.Matcher.on(engine).allValuesOfchoice) {
+			for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
+				val template = choiceLoc.parentTemplate
+				val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
+				val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
+				for (inEdge : inEdges) {
+					for (outEdge : outEdges) {
+						for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, outEdge)) {
+			   				aTrace.remove(trace_To, outEdge)
+			  				aTrace.addTo(trace_To, aMap.get(outEdge))
+			   			}
+			   			for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
+			   				aTrace.remove(instanceTrace_Element, outEdge)
+			   			}
+			   			outEdge.delete
+					}
+					for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
+			   			aTrace.remove(trace_To, inEdge)
+			  			aTrace.addTo(trace_To, aMap.get(inEdge))
+			   		}
+			   		for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
+			   			aTrace.remove(instanceTrace_Element, inEdge)
+			   		}
+			   		inEdge.delete
+				}
+				choiceLoc.removeTrace
+				choiceLoc.parentTemplate.location.remove(choiceLoc)
+			}
+		} 
+	}
+	
+	/**
+	 * Creates trace entries posteriorly to make it more complete.
+	 */
+	private def void extendTrace() {
+		clockLocationTraceRule.fireAllCurrent
+	}
+	
+	val clockLocationTraceRule = createRule(EdgesWithClock.instance).action [
+		val source = it.edge.source
+		val target = it.edge.target
+		val state = source.allValuesOfFrom.head
+		addToTrace(state, #{target}, trace)
+	].build
    
-     /**
-     * Deletes and edge from its template and the trace model.
-     */
-    private def delete(Edge edge) {
-    	edge.parentTemplate.edge.remove(edge)
-    	edge.removeTrace 
-    }
-    
-    /**
-     * Copies the synchronization, guard and all the updates from the from edge to the to edge.
-     */
-    private def copyTo (Edge from, Edge to) {
-    	if (from.synchronization !== null && to.synchronization !== null) {
-    		if (from.synchronization.channelExpression != to.synchronization.channelExpression)
-    		throw new IllegalArgumentException("The target edge has synchronization: " + to)
-    	}
-    	if (from.synchronization !== null) {
-    		to.copySync(edge_Synchronization, from.synchronization)    	
-    	}
-    	if (from.guard !== null) {
-	    	if (to.guard === null) {
+	 /**
+	 * Deletes and edge from its template and the trace model.
+	 */
+	private def delete(Edge edge) {
+		edge.parentTemplate.edge.remove(edge)
+		edge.removeTrace 
+	}
+	
+	/**
+	 * Copies the synchronization, guard and all the updates from the from edge to the to edge.
+	 */
+	private def copyTo (Edge from, Edge to) {
+		if (from.synchronization !== null && to.synchronization !== null) {
+			if (from.synchronization.channelExpression != to.synchronization.channelExpression)
+			throw new IllegalArgumentException("The target edge has synchronization: " + to)
+		}
+		if (from.synchronization !== null) {
+			to.copySync(edge_Synchronization, from.synchronization)		
+		}
+		if (from.guard !== null) {
+			if (to.guard === null) {
 				to.copy(edge_Guard, from.guard)	
 			}
 			else {
@@ -3899,38 +3877,38 @@ class CompositeToUppaalTransformer {
 		for (update : from.update) {
 			to.copy(edge_Update, update)
 		}
-    }
-    
-    /**
-     * Returns whether the given edge is plain, i.e. it does not contain any synchronization, guard or update.
-     */
-    private def boolean isPlain(Edge edge) {
-    	return (edge.synchronization === null && edge.guard === null && edge.update.empty)
-    }
-    
-    /**
-     * Responsible for returning a map that contains all templates and their location names in a map.
-     */
-    def Map<String, String[]> getTemplateLocationsMap() {
-    	val templateLocationMap = new HashMap<String, String[]>
-    	// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
-    	for (instance : testedComponentsForStates) {
-    		val statechart = instance.type as StatechartDefinition
-    		val Set<Region> regions = newHashSet
-    		for (topRegion : statechart.regions) {
-    			regions += topRegion
-    			regions += topRegion.subregions
-    		}
-    		for (statechartRegion : regions) {
+	}
+	
+	/**
+	 * Returns whether the given edge is plain, i.e. it does not contain any synchronization, guard or update.
+	 */
+	private def boolean isPlain(Edge edge) {
+		return (edge.synchronization === null && edge.guard === null && edge.update.empty)
+	}
+	
+	/**
+	 * Responsible for returning a map that contains all templates and their location names in a map.
+	 */
+	def Map<String, String[]> getTemplateLocationsMap() {
+		val templateLocationMap = new HashMap<String, String[]>
+		// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
+		for (instance : testedComponentsForStates) {
+			val statechart = instance.type as StatechartDefinition
+			val Set<Region> regions = newHashSet
+			for (topRegion : statechart.regions) {
+				regions += topRegion
+				regions += topRegion.subregions
+			}
+			for (statechartRegion : regions) {
 					var array = new ArrayList<String>
 					for (state : statechartRegion.stateNodes.filter(State)) {
 						array.add(state.locationName)
 					}
 					templateLocationMap.put(statechartRegion.regionName + "Of" + instance.name, array)
-    		}
-    	}
-    	return templateLocationMap
-    }
+			}
+		}
+		return templateLocationMap
+	}
 	
 	def getTransitionIdVariableValue() {
 		return transitionId
@@ -3939,14 +3917,14 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Disposes of the transformer.
 	 */
-    def dispose() {
-        if (transformation !== null) {
-            transformation.dispose
-        }
-        transformation = null
-        return
-    }
-    
-    enum Scheduler {FAIR, RANDOM}
-    
+	def dispose() {
+		if (transformation !== null) {
+			transformation.dispose
+		}
+		transformation = null
+		return
+	}
+	
+	enum Scheduler {FAIR, RANDOM}
+	
 }

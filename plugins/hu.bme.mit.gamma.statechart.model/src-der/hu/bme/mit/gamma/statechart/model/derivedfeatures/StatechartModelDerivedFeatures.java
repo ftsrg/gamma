@@ -181,6 +181,13 @@ public class StatechartModelDerivedFeatures {
 		return getParentState(parentRegion);
 	}
 	
+	public static Region getParentRegion(Region region) {
+		if (isTopRegion(region)) {
+			return null;
+		}
+		return getParentRegion((State) region.eContainer());
+	}
+	
 	public static String getFullContainmentHierarchy(State state) {
 		if (state == null) {
 			return "";
@@ -308,6 +315,17 @@ public class StatechartModelDerivedFeatures {
 		}
 		State targetParentState = getParentState(target);
 		return getTargetAncestor(source, targetParentState);
+	}
+	
+	public static boolean isComposite(StateNode node) {
+		if (node instanceof State) {
+			return isComposite((State) node);
+		}
+		return false;
+	}
+	
+	public static boolean isComposite(State state) {
+		return !state.getRegions().isEmpty();
 	}
 	
 }
