@@ -193,20 +193,20 @@ public class StatechartModelDerivedFeatures {
 	/**
 	 * Returns whether the given region has deep history in one of its ancestor regions.
 	 */
-	private static boolean hasHistoryAbove(Region region) {
+	private static boolean hasDeepHistoryAbove(Region region) {
 		if (isTopRegion(region)) {
 			return false;
 		}
 		Region parentRegion = getParentRegion(region);
 		return parentRegion.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState) ||
-			hasHistoryAbove(parentRegion);
+			hasDeepHistoryAbove(parentRegion);
 	}
 	
 	/**
 	 * Returns whether the region has history or not.
 	 */
 	public static boolean hasHistory(Region region) {
-		return hasHistoryAbove(region) || 
+		return hasDeepHistoryAbove(region) || 
 			region.getStateNodes().stream().anyMatch(it -> it instanceof ShallowHistoryState) || 
 			region.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState);
 	}	
