@@ -12,6 +12,7 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
 import hu.bme.mit.gamma.statechart.model.CompositeElement;
+import hu.bme.mit.gamma.statechart.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
@@ -19,6 +20,7 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
+import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
@@ -187,6 +189,27 @@ public class StatechartModelDerivedFeatures {
 		}
 		return getParentRegion((State) region.eContainer());
 	}
+	
+	/**
+	 * Returns whether the given region has deep history in one of its ancestor regions.
+	 */
+	private static boolean hasHistoryAbove(Region region) {
+		if (isTopRegion(region)) {
+			return false;
+		}
+		Region parentRegion = getParentRegion(region);
+		return parentRegion.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState) ||
+			hasHistoryAbove(parentRegion);
+	}
+	
+	/**
+	 * Returns whether the region has history or not.
+	 */
+	public static boolean hasHistory(Region region) {
+		return hasHistoryAbove(region) || 
+			region.getStateNodes().stream().anyMatch(it -> it instanceof ShallowHistoryState) || 
+			region.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState);
+	}	
 	
 	public static String getFullContainmentHierarchy(State state) {
 		if (state == null) {

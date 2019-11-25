@@ -111,8 +111,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
 import hu.bme.mit.gamma.uppaal.transformation.queries.OutgoingTransitionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.RaisingActionsOfTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.RegionsWithDeepHistory
-import hu.bme.mit.gamma.uppaal.transformation.queries.RegionsWithShallowHistory
 import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
@@ -3711,26 +3709,6 @@ class CompositeToUppaalTransformer {
 		]
 		return syncEdge		
 	}
-	
-	/**
-	 * Returns whether the given region has deep history in one of its ancestor regions.
-	 */
-	private def boolean hasHistoryAbove(Region region) {
-		if (region.isTopRegion) {
-			return false
-		}
-		val regionAbove = region.eContainer.eContainer as Region
-		return RegionsWithDeepHistory.Matcher.on(engine).countMatches(regionAbove) > 0 || regionAbove.hasHistoryAbove
-	}
-	
-	/**
-	 * Returns whether the region has history or not. (This determines where the synchronization edges have to be targeted.)
-	 */
-	private def boolean hasHistory(Region region) {
-		return (region.hasHistoryAbove || 
-		RegionsWithShallowHistory.Matcher.on(engine).countMatches(region) > 0 ||
-		RegionsWithDeepHistory.Matcher.on(engine).countMatches(region) > 0)
-	}	
 	
 	private def instantiateTemplates(Collection<Template> templates) {
 		val instationList = target.systemDeclarations.system.createChild(system_InstantiationList, instantiationList) as InstantiationList 
