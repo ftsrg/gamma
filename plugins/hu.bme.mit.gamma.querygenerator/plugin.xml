@@ -16,4 +16,9 @@
       <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.simpleStatechartStates"/>
     </group>
   </extension>
+  <extension id="hu.bme.mit.gamma.querygenerator.patterns.TracePatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.querygenerator.patterns.TracePatterns" id="hu.bme.mit.gamma.querygenerator.patterns.TracePatterns">
+      <query-specification fqn="hu.bme.mit.gamma.querygenerator.patterns.statesToLocations"/>
+    </group>
+  </extension>
 </plugin>

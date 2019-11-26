@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
+import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
@@ -67,9 +68,10 @@ public class Controller {
 	
 	private View view;
 	
-	@SuppressWarnings("unused")
 	private ResourceSet resourceSet;
 	private ViatraQueryEngine engine;
+	private ResourceSet traceabilitySet;
+	private ViatraQueryEngine traceEngine;
 	// Indicates the actual verification process
 	private volatile Verifier verifier;
 	// Indicates the actual test generation process
@@ -85,12 +87,15 @@ public class Controller {
 	private final String TRACE_FOLDER_NAME = "trace";
 	
 	public Controller(View view, ResourceSet resourceSet, IFile file, boolean needsBackAnnotation) throws ViatraQueryException {
+		this.file = file;
 		this.view = view;
 		this.resourceSet = resourceSet;
 		logger.log(Level.INFO, "Resource set content for displaying model elements on GUI: " + resourceSet);
-		engine = ViatraQueryEngine.on(new EMFScope(resourceSet));
+		this.traceabilitySet = loadTraceability(); // For state-location
+		logger.log(Level.INFO, "Traceability resource set content: " + traceabilitySet);
+		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet));
+		this.traceEngine = ViatraQueryEngine.on(new EMFScope(this.traceabilitySet));
 		this.needsBackAnnotation = needsBackAnnotation;
-		this.file = file;
 	}
 	
 	public void initSelectorWithStates(JComboBox<String> selector) throws ViatraQueryException {
@@ -116,7 +121,7 @@ public class Controller {
 		}
 		fillComboBox(selector, entryList);
 	}
-
+	
 	public void initSelectorWithVariables(JComboBox<String> selector) throws ViatraQueryException {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
@@ -189,7 +194,6 @@ public class Controller {
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
 	}
 	
-	
 	public String parseRegular(String text, String operator) throws ViatraQueryException {
 		String result = text;
 		List<String> stateNames = this.getStateNames();
@@ -240,11 +244,22 @@ public class Controller {
 					null, splittedStateName[splittedStateName.length - 1] /* state */)) {
 				Region parentRegion = match.getParentRegion();
 				String templateName = "P_" + getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
-				String locationName = templateName +  "." + splittedStateName[splittedStateName.length - 1] /* state name */;
-				if (isSubregion(parentRegion)) {
-					locationName += " && " + templateName + ".isActive"; 
+				StringBuilder locationNames = new StringBuilder("(");
+				for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(match.getState().getName())) {
+					String templateLocationName = templateName +  "." + locationName;
+					if (locationNames.length() == 1) {
+						// First append
+						locationNames.append(templateLocationName);
+					}
+					else {
+						locationNames.append(" || " + templateLocationName);
+					}
 				}
-				return locationName;
+				locationNames.append(")");
+				if (isSubregion(parentRegion)) {
+					locationNames.append(" && " + templateName + ".isActive"); 
+				}
+				return locationNames.toString();
 			}
 		}
 		else {
@@ -280,7 +295,6 @@ public class Controller {
 	
 	/**
      * Returns the template name of a region.
-	 * @throws ViatraQueryException 
      */
     private String getRegionName(Region region) throws ViatraQueryException {
     	String templateName;
@@ -609,7 +623,7 @@ public class Controller {
 				serialize(traceModel, getTraceFolder(), fileNameAndId.getKey());
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, e.getMessage() + System.lineSeparator() +
-						"Possibly you have two more model elements with the same name specified in the previous error message.");
+					"Possibly you have two more model elements with the same name specified in the previous error message.");
 				new File(getTraceFolder() + File.separator + fileNameAndId.getKey()).delete();
 				// Saving like an EMF model
 				fileNameAndId = getFileName("gtr");

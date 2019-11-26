@@ -1,0 +1,16 @@
+package hu.bme.mit.gamma.querygenerator.patterns
+
+import "http://www.mit.bme.hu/gamma/expression/Model" 
+import "http://www.mit.bme.hu/gamma/statechart/Model"
+
+import "http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability"
+
+import "http://www.uni-paderborn.de/uppaal/templates/0.4.0"
+import "http://www.uni-paderborn.de/uppaal/core/0.4.0"
+
+pattern statesToLocations(stateName : java String, locationName : java String) {
+	Trace.from(trace, state);
+	State.name(state, stateName);
+	Trace.to(trace, location);
+	Location.name(location, locationName);
+}
