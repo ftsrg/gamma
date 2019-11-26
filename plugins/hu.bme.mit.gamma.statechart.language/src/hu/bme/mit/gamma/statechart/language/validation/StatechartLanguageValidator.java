@@ -27,11 +27,13 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -111,6 +113,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkUnsupportedTriggers(OpaqueTrigger trigger) {
 		error("Not supported trigger.", StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER);
+	}
+	
+	@Check
+	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
+		error("Expression statements are not supported in the GSL.", ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION);
 	}
 	
 	// Interfaces
