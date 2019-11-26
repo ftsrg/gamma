@@ -567,8 +567,8 @@ class CompositeToUppaalTransformer {
 						}
 						else {
 							it.createChild(returnStatement_ReturnExpression, negationExpression) as NegationExpression => [
-								it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [	
-									it.identifier = returnVal.variable.head	
+								it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
+									it.identifier = returnVal.variable.head
 								]
 							]
 						}
