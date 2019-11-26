@@ -105,7 +105,7 @@ public class View extends JFrame {
 
 	private JComboBox<String> stateSelector = new JComboBox<String>();
 	private JComboBox<String> variableSelector = new JComboBox<String>();
-	private JComboBox<String> operatorSelector = new JComboBox<String>(new String[] {"AND", "OR", "IMPLICATION", "NEGATION"});
+	private JComboBox<String> operatorSelector = new JComboBox<String>(new String[] {"AND", "OR", "IMPLICATION", "NEGATION", "EQUALITY"});
 
 	private JTextField resultText;
 	private JTextField optionalText;
@@ -312,6 +312,8 @@ public class View extends JFrame {
 					break;
 				case "NEGATION":
 					activeText.setText(activeText.getText() + "!");
+				case "EQUALITY":
+					activeText.setText(activeText.getText() + " == ");
 					break;
 				default:
 					break;
