@@ -354,11 +354,11 @@ class CompositeToUppaalTransformer {
 		toHigherRegionTransitionsRule.fireAllCurrent		
 	 	{eventTriggersRule.fireAllCurrent
 		timeTriggersRule.fireAllCurrent} // Should come right after eventTriggersRule		
-		guardsRule.fireAllCurrent
+		{guardsRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
 		transitionPriorityRule.fireAllCurrent 
 		// Guards placed onto the time "trigger edge": must be after transitionPriorityRule, so priorities are handled in case of timed transitions as well
-		swapGuardsOfTimeTriggerTransitions
+		swapGuardsOfTimeTriggerTransitions}
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
 		compositeStateEntryRule.fireAllCurrent 
@@ -3514,8 +3514,6 @@ class CompositeToUppaalTransformer {
 				val owner = edge.owner
 				for (higherPriorityTransition : prioritizedTransitions) {
 					val higherPriorityEdges = higherPriorityTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner]
-					// Timings are not returned like this, but this is not a problem
-					// due to the fact that timings are fired in isStable state
 					for (higherPriorityGuard : higherPriorityEdges.map[it.guard].filterNull) {
 						edge.addGuard(
 							createNegationExpression => [

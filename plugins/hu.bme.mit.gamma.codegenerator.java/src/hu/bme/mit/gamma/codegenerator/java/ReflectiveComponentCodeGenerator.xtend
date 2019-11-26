@@ -120,7 +120,7 @@ class ReflectiveComponentCodeGenerator {
 					default:
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
-				«IF !component.ports.empty»return false;«ENDIF»
+				«IF !component.ports.map[it.getSemanticEvents(EventDirection.OUT)].flatten.empty»return false;«ENDIF»
 			}
 			
 			«component.generateIsActiveState»
