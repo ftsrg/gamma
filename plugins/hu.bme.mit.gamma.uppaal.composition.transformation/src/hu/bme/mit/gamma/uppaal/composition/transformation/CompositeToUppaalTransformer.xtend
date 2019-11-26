@@ -355,7 +355,9 @@ class CompositeToUppaalTransformer {
 	 	{eventTriggersRule.fireAllCurrent
 		timeTriggersRule.fireAllCurrent} // Should come right after eventTriggersRule		
 		guardsRule.fireAllCurrent
-		// Guards placed onto the time "trigger edge"
+		defultChoiceTransitionsRule.fireAllCurrent
+		transitionPriorityRule.fireAllCurrent 
+		// Guards placed onto the time "trigger edge": must be after transitionPriorityRule, so priorities are handled in case of timed transitions as well
 		swapGuardsOfTimeTriggerTransitions
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
@@ -377,8 +379,6 @@ class CompositeToUppaalTransformer {
 		syncSystemEventRaisingOfEntryActionsRule.fireAllCurrent
 		compositeStateExitRule
 		entryTimeoutActionsOfStatesRule.fireAllCurrent
-		defultChoiceTransitionsRule.fireAllCurrent
-		transitionPriorityRule.fireAllCurrent 
 		isActiveRule.fireAllCurrent
 		// Creating urgent locations in front of composite states, so entry is not immediate
 		compositeStateEntryCompletion
