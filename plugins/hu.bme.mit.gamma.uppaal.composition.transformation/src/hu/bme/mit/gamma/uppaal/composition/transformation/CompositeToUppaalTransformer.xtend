@@ -560,11 +560,18 @@ class CompositeToUppaalTransformer {
 					// Return statement
 					val returnVal = lastTempVal
 					it.createChild(block_Statement, stmPackage.returnStatement) as ReturnStatement => [
-						it.createChild(returnStatement_ReturnExpression, negationExpression) as NegationExpression => [
-							it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [							
-								it.identifier = returnVal.variable.head							
+						if (returnVal  === null) {
+							it.createChild(returnStatement_ReturnExpression, literalExpression) as LiteralExpression => [
+								it.text = "true"
 							]
-						]
+						}
+						else {
+							it.createChild(returnStatement_ReturnExpression, negationExpression) as NegationExpression => [
+								it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [	
+									it.identifier = returnVal.variable.head	
+								]
+							]
+						}
 					]
 				]
 			]
