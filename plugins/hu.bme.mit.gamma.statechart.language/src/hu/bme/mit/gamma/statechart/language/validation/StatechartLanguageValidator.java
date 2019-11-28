@@ -518,7 +518,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				error("Transitions from choice nodes must not have triggers.", StatechartModelPackage.Literals.TRANSITION__TRIGGER);
 			}
 			if (transition.getGuard() == null) {
-				error("Transitions from choice nodes must have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
+				warning("Transitions from choice nodes should have guards if you want deterministic behavior.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
 		if (source instanceof ForkState) {
