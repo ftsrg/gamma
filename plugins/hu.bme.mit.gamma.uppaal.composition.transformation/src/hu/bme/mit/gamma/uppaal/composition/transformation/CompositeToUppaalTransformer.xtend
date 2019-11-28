@@ -3161,12 +3161,7 @@ class CompositeToUppaalTransformer {
 				cloneEdge = edge
 			}
 			val template = cloneEdge.parentTemplate
-			var clockVar = template.templateClock
-			if (clockVar === null) {
-				// Idea is a single clock variable in a template is enough
-				clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-				clockVar.createTypeAndVariable(target.clock, "timer" + (id++))
-			}
+			var clockVar = it.state.stateClock
 			// Creating the trace
 			addToTrace(it.timeoutDeclaration, #{clockVar}, trace)
 			addToTrace(owner, #{clockVar}, instanceTrace)
@@ -3203,10 +3198,19 @@ class CompositeToUppaalTransformer {
 		}	
 	].build
 	
-	protected def getTemplateClock(Template template) {
-		// The idea is that a template needs a single clock for optimization purpose
+	protected def getStateClock(State state) {
+		val template = state.allValuesOfTo.filter(Location).head.parentTemplate
+		// The idea is that a template needs a single clock if every state has a single timer
 		val clocks = template.declarations.declaration.filter(ClockVariableDeclaration)
-		checkState(clocks.size <= 1)
+		var ClockVariableDeclaration clockVar
+		if (clocks.empty || TimeTriggersOfTransitions.Matcher.on(engine)
+				.getAllValuesOftimeoutDeclaration(state, null, null, null, null).size > 1) {
+			// If the template has no clocks OR the state has more than one timer, a NEW clock has to be created
+			clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+			clockVar.createTypeAndVariable(target.clock, "timer" + (id++))
+			return clockVar
+		}
+		// The simple common template clock is enough
 		return clocks.head
 	}
 	

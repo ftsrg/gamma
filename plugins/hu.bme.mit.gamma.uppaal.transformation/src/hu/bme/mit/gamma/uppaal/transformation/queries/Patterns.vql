@@ -257,8 +257,8 @@ private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : Tim
 pattern timeTriggersOfTransitions(state : State, transition : Transition, timeoutEventReference : TimeoutEventReference,
 	timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification, name : java String) {
 	State.entryActions(state, timeoutAction);
-	SetTimeoutAction.timeoutDeclaration(timeoutAction, clockDeclaration);
-	TimeoutDeclaration.name(clockDeclaration, name);
+	SetTimeoutAction.timeoutDeclaration(timeoutAction, timeoutDeclaration);
+	TimeoutDeclaration.name(timeoutDeclaration, name);
 	SetTimeoutAction.time(timeoutAction, time);
 	Transition.sourceState(transition, state);
 	Transition.trigger(transition, trigger);
