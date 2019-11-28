@@ -3747,7 +3747,7 @@ class CompositeToUppaalTransformer {
 	 */
 	private def cleanUp() {
 		deleteEntryLocations
-		deleteChoices
+//		deleteChoices
 	}
 	
 	/**
@@ -3800,25 +3800,15 @@ class CompositeToUppaalTransformer {
 				val template = choiceLoc.parentTemplate
 				val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
 				val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
-				for (inEdge : inEdges) {
-					for (outEdge : outEdges) {
-						for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, outEdge)) {
-			   				aTrace.remove(trace_To, outEdge)
-			  				aTrace.addTo(trace_To, aMap.get(outEdge))
-			   			}
-			   			for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-			   				aTrace.remove(instanceTrace_Element, outEdge)
-			   			}
-			   			outEdge.delete
-					}
-					for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-			   			aTrace.remove(trace_To, inEdge)
-			  			aTrace.addTo(trace_To, aMap.get(inEdge))
+				for (edge : inEdges + outEdges) {
+					for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, edge)) {
+			   			aTrace.remove(trace_To, edge)
+			  			aTrace.addTo(trace_To, aMap.get(edge))
 			   		}
-			   		for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, inEdge)) {
-			   			aTrace.remove(instanceTrace_Element, inEdge)
+			   		for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, edge)) {
+			   			aTrace.remove(instanceTrace_Element, edge)
 			   		}
-			   		inEdge.delete
+			   		edge.delete
 				}
 				choiceLoc.removeTrace
 				choiceLoc.parentTemplate.location.remove(choiceLoc)
@@ -3844,7 +3834,8 @@ class CompositeToUppaalTransformer {
 	 * Deletes and edge from its template and the trace model.
 	 */
 	private def delete(Edge edge) {
-		edge.parentTemplate.edge.remove(edge)
+		val parentTemplate = edge.parentTemplate
+		parentTemplate.edge.remove(edge)
 		edge.removeTrace 
 	}
 	
