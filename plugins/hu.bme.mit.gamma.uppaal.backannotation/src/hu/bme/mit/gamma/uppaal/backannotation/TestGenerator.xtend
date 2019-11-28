@@ -52,6 +52,7 @@ class TestGenerator {
 	// Value is assigned by the execute methods
     protected final String packageName
 	protected final String className
+	protected final String componentClassInterfaceName = "ReflectiveComponentInterface"
 	protected final String componentClassName
 	
 	protected final ViatraQueryEngine engine
@@ -108,7 +109,7 @@ class TestGenerator {
 		
 		public class «className» {
 			
-			private static «componentClassName» «componentClassName.toFirstLower»;
+			private static «componentClassInterfaceName» «componentClassName.toFirstLower»;
 «««			Only if there are timing specifications in the model
 			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
@@ -138,9 +139,7 @@ class TestGenerator {
 	'''
 	
 	protected def generateImports(Component component) '''
-		«IF component.needTimer»
-			import «YAKINDU_PACKAGE_NAME_PREFIX».«TIMER_CLASS_NAME»;
-		«ENDIF»
+		import «YAKINDU_PACKAGE_NAME_PREFIX».*;
 		
 		import static org.junit.Assert.«ASSERT_TRUE»;
 		
@@ -168,7 +167,7 @@ class TestGenerator {
 					«ENDFOR»
 					// Checking variables
 					«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».getValue("«variableState.declaration.name»").equals(«variableState.value.serialize»));
+						«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
 					«ENDFOR»
 					// Checking of states
 					«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»

@@ -105,3 +105,16 @@
 ### Improvements
  
 * Validation rules have been added.
+
+## 2019.11.28. - Version 2.2.1
+
+### What is New
+
+* The reflective API has been extended with a checkVariableValue method.
+* The generated tests now access the class implementations through the reflective API (Java interface).
+
+### Improvements
+ 
+* Optimization regarding timings has been introduced.
+* State references in the query generator have been fixed.
+* Bugs in the reflective class wrapper have been fixed.
