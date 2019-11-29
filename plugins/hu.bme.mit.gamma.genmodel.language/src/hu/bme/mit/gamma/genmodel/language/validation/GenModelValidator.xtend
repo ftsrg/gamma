@@ -42,6 +42,8 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.statechart.model.TimeUnit
 
 /**
  * This class contains custom validation rules. 
@@ -102,6 +104,36 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkTimeSpecification(TimeSpecification timeSpecification) {
 		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
 			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE)
+		}
+	}
+	
+	@Check
+	def checkMinimumMaximumOrchestrationPeriodValues(AnalysisModelTransformation analysisModelTransformation) {
+		// TODO only integer values are handled now
+		val minimum = analysisModelTransformation.minimumOrchestratingPeriod.head
+		val minimumValue = minimum?.value
+		val maximum = analysisModelTransformation.maximumOrchestratingPeriod.head
+		val maximumValue = maximum?.value
+		if (minimumValue instanceof IntegerLiteralExpression) {
+			if (maximumValue instanceof IntegerLiteralExpression) {
+				var minimumIntegerValue = minimumValue.value.intValue
+				if (minimum.unit == TimeUnit.SECOND) {
+					minimumIntegerValue *= 1000
+				}
+				var maximumIntegerValue = maximumValue.value.intValue
+				if (maximum.unit == TimeUnit.SECOND) {
+					maximumIntegerValue *= 1000
+				}
+				if (minimumIntegerValue < 0) {
+					error("Time value must be positive.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
+				}
+				if (maximumIntegerValue < 0) {
+					error("Time value must be positive.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MAXIMUM_ORCHESTRATING_PERIOD)
+				}
+				if (maximumIntegerValue < minimumIntegerValue) {
+					error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
+				}
+			}
 		}
 	}
 	

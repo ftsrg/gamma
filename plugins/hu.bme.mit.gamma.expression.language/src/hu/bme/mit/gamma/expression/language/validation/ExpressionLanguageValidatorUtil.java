@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 
 public class ExpressionLanguageValidatorUtil {
+	
 	public static TypeDefinition findAccessExpressionTypeDefinition(AccessExpression accessExpression) {
 		Declaration instanceDeclaration = findAccessExpressionInstanceDeclaration(accessExpression);
 		Type instanceDeclarationType = instanceDeclaration.getType();

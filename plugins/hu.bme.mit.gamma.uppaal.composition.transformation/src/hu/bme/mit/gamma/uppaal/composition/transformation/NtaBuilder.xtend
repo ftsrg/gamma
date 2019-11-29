@@ -9,6 +9,14 @@ import uppaal.declarations.Declarations
 import uppaal.declarations.DeclarationsPackage
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableContainer
+import uppaal.expressions.ExpressionsPackage
+import uppaal.expressions.IdentifierExpression
+import uppaal.templates.Edge
+import uppaal.templates.Location
+import uppaal.templates.LocationKind
+import uppaal.templates.Synchronization
+import uppaal.templates.SynchronizationKind
+import uppaal.templates.TemplatesPackage
 import uppaal.types.PredefinedType
 import uppaal.types.TypeReference
 import uppaal.types.TypesPackage
@@ -20,6 +28,8 @@ class NtaBuilder {
 	// UPPAAL packages
 	protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
 	protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
+	protected final extension TemplatesPackage temPackage = TemplatesPackage.eINSTANCE
+	protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
 	
 	new(NTA nta, IModelManipulations manipulation) {
 		this.nta = nta
@@ -65,6 +75,65 @@ class NtaBuilder {
 		]
 	}
 	
+	/**
+	 * Responsible for creating an edge in the given template with the given source and target.
+	 */
+	def Edge createEdge(Location source, Location target) {
+		if (source.parentTemplate != target.parentTemplate) {
+			throw new IllegalArgumentException("The source and the target are in different templates." + source + " " + target)
+		}
+		val template = source.parentTemplate
+		template.createChild(template_Edge, edge) as Edge => [
+			it.source = source
+			it.target = target
+		]
+	}
+	
+	def Edge createEdgeCommittedTarget(Location target, String name) {
+		val template = target.parentTemplate
+		val syncLocation = template.createChild(template_Location, location) as Location => [
+			it.name = name
+			it.locationTimeKind = LocationKind.COMMITED
+			it.comment = "Synchronization location."
+		]
+		val syncEdge = syncLocation.createEdge(target)
+		return syncEdge		
+	}
+	
+	
+	/**
+	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
+	 * The target of the synchronized edge will be the given "target" location.
+	 */
+	def Edge createCommittedSyncTarget(Location target, Variable syncVar, String name) {
+		val syncEdge = target.createEdgeCommittedTarget(name) => [
+			it.comment = "Synchronization edge."
+			it.setSynchronization(syncVar, SynchronizationKind.SEND)
+		]
+		return syncEdge		
+	}
+	
+	/**
+	 * Responsible for placing a synchronization onto the given edge: "channel?/channel!".
+	 */
+	def setSynchronization(Edge edge, Variable syncVar, SynchronizationKind syncType) {
+		edge.createChild(edge_Synchronization, temPackage.synchronization) as Synchronization => [
+			it.kind = syncType
+			it.createChild(synchronization_ChannelExpression, identifierExpression) as IdentifierExpression => [
+				it.identifier = syncVar
+			]
+		]	
+	}
+	
+	/**
+	 * Responsible for creating a synchronization edge from the given source to target with the given sync channel and snyc kind.
+	 */
+	def Edge createEdgeWithSync(Location sourceLoc, Location targetLoc, Variable syncVar, SynchronizationKind syncKind) {
+		val loopEdge = sourceLoc.createEdge(targetLoc)
+		loopEdge.setSynchronization(syncVar, syncKind)	
+		return loopEdge
+	}
+		
 	def getNta() {
 		return nta
 	}

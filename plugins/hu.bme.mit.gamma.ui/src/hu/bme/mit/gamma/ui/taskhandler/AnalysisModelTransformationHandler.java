@@ -29,6 +29,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.TimeSpecification;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
@@ -87,9 +88,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		// thus, cannot be recognized by the SimpleInstanceHandler.contains method
 		testedComponentsForTransitions.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
+		TimeSpecification minimumOrchestratingPeriod = analysisModelTransformation.getMinimumOrchestratingPeriod().isEmpty() ? 
+				null : analysisModelTransformation.getMinimumOrchestratingPeriod().get(0); 
+		TimeSpecification maximumOrchestratingPeriod = analysisModelTransformation.getMaximumOrchestratingPeriod().isEmpty() ? 
+				null : analysisModelTransformation.getMaximumOrchestratingPeriod().get(0); 
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 			newTopComponent, analysisModelTransformation.getArguments(),
 			getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
+			minimumOrchestratingPeriod,
+			maximumOrchestratingPeriod,
 			analysisModelTransformation.isMinimalElementSet(),
 			testedComponentsForStates, testedComponentsForTransitions); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();

@@ -136,6 +136,7 @@ import java.util.HashSet
 import java.util.List
 import java.util.Map
 import java.util.NoSuchElementException
+import java.util.Optional
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -198,7 +199,6 @@ import uppaal.statements.StatementsPackage
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
-import uppaal.templates.Synchronization
 import uppaal.templates.SynchronizationKind
 import uppaal.templates.Template
 import uppaal.templates.TemplatesPackage
@@ -263,6 +263,9 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration isStableVar
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
+	// Orchestrating period for top sync components
+	protected TimeSpecification minimalOrchestratingPeriod
+	protected TimeSpecification maximalOrchestratingPeriod
 	// Minimal element set: no functions
 	protected boolean isMinimalElementSet= false
 	// For the generation of pseudo locations
@@ -280,7 +283,7 @@ class CompositeToUppaalTransformer {
 	// Auxiliary objects
 	protected extension ExpressionTransformer expTransf
 	protected extension ExpressionCopier expCop
-	protected final extension ExpressionEvaluator expEval
+	protected extension ExpressionEvaluator expEval
 	protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
 	protected final extension EventHandler eventHandler = new EventHandler
 	// Trace
@@ -318,11 +321,17 @@ class CompositeToUppaalTransformer {
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
 	}
 	
-	new(ResourceSet resourceSet, Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
-			Scheduler asyncScheduler, boolean isMinimalElementSet,
+	new(ResourceSet resourceSet, Component component,
+			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
+			Scheduler asyncScheduler,
+			TimeSpecification minimalOrchestratingPeriod,
+			TimeSpecification maximalOrchestratingPeriod,
+			boolean isMinimalElementSet,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
 		this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
+		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
 		this.isMinimalElementSet = isMinimalElementSet
 		this.topComponentArguments.addAll(topComponentArguments)
 	}
@@ -1700,12 +1709,22 @@ class CompositeToUppaalTransformer {
 		val lastEdge = it.syncComposite.createSchedulerTemplate(null)
 		// Creating timing for the orchestrator template
 		val initLoc = lastEdge.target
-		val maxTimeoutValue = getMaxTimeout
-		if (maxTimeoutValue != -1) {
-			// Setting the timing in the orchestrator template
-			lastEdge.setOrchestratorTiming(maxTimeoutValue.intValue)
+		val firstEdges = initLoc.parentTemplate.edge.filter[it.source === initLoc]
+		checkState(firstEdges.size == 1)
+		val firstEdge = firstEdges.head
+		val minTimeoutValue = if (minimalOrchestratingPeriod === null) {
+			Optional.ofNullable(null)
+		} else {
+			Optional.ofNullable(minimalOrchestratingPeriod.convertToMs.evaluate)
 		}
-		else {
+		val maxTimeoutValue = if (maximalOrchestratingPeriod === null) {
+			Optional.ofNullable(maxTimeout)
+		} else {
+			Optional.ofNullable(maximalOrchestratingPeriod.convertToMs.evaluate)
+		}
+		// Setting the timing in the orchestrator template
+		firstEdge.setOrchestratorTiming(minTimeoutValue, lastEdge, maxTimeoutValue)
+		if (!minTimeoutValue.present && !maxTimeoutValue.present) {
 			// If there is no timing, we set the loc to urgent
 			initLoc.locationTimeKind = LocationKind.URGENT
 		}
@@ -1784,18 +1803,13 @@ class CompositeToUppaalTransformer {
 	 * Returns the maximum timeout value (specified as an integer literal) in the model.
 	 */
 	private def getMaxTimeout() {
-		val defaultValue = -1
 		try {
-			val maxValue = TimeoutValues.Matcher.on(engine).allMatches.map[
-				if (it.unit == TimeUnit.MILLISECOND) {
-					it.valueExp.evaluate
-				} else {
-					it.valueExp.evaluate * 1000
-				}		
-			].max
-			return maxValue 
+			val maxValue = TimeoutValues.Matcher.on(engine).allValuesOftimeSpec
+				.map[it.convertToMs.evaluate]
+				.max
+			return maxValue
 		} catch (NoSuchElementException e) {
-			return defaultValue
+			return null
 		}
 	}
 	
@@ -1803,22 +1817,40 @@ class CompositeToUppaalTransformer {
 	 * Creates a clock for the template of the given edge, sets the clock to "0" on the given edge,
 	 *  and places an invariant on the target of the edge.
 	 */
-	private def setOrchestratorTiming(Edge lastEdge, int timeout) {
+	private def setOrchestratorTiming(Edge firstEdge, Optional<Integer> minTime, Edge lastEdge, Optional<Integer> maxTime) {
+		checkState(firstEdge.source === lastEdge.target)
+		if (!minTime.present && !maxTime.present) {
+			return
+		}
 		val initLoc = lastEdge.target
 		val template = lastEdge.parentTemplate
 		// Creating the clock
 		val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
 		clockVar.createTypeAndVariable(target.clock, "timerOrchestrator" + (id++))
+		// Creating the guard
+		if (minTime.present) {
+			firstEdge.addGuard(createCompareExpression => [
+				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+					it.identifier = clockVar.variable.head // Always one variable in the container
+				]
+				it.operator = CompareOperator.GREATER_OR_EQUAL
+				it.secondExpr = createLiteralExpression => [
+					it.text = minTime.get.toString
+				] 
+			], LogicalOperator.AND)
+		}
 		// Creating the location invariant
-		initLoc.createChild(location_Invariant, compareExpression) as CompareExpression => [
-			it.operator = CompareOperator.LESS_OR_EQUAL	
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
+		if (maxTime.present) {
+			initLoc.createChild(location_Invariant, compareExpression) as CompareExpression => [
+				it.operator = CompareOperator.LESS_OR_EQUAL	
+				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+					it.identifier = clockVar.variable.head // Always one variable in the container
+				]
+				it.secondExpr = createLiteralExpression => [
+					it.text = maxTime.get.toString
+				]
 			]
-			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-				it.text = timeout.toString
-			]		
-		]
+		}
 		// Creating the clock reset
 		lastEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
 	}
@@ -2694,29 +2726,6 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Responsible for creating a synchronization edge from the given source to target with the given sync channel and snyc kind.
-	 */
-	private def Edge createEdgeWithSync(Location sourceLoc, Location targetLoc, Variable syncVar, SynchronizationKind syncKind) {
-		val loopEdge = sourceLoc.createEdge(targetLoc)
-		loopEdge.setSynchronization(syncVar, syncKind)	
-		return loopEdge
-	}
-	
-	/**
-	 * Responsible for creating an edge in the given template with the given source and target.
-	 */
-	private def Edge createEdge(Location source, Location target) {
-		if (source.parentTemplate != target.parentTemplate) {
-			throw new IllegalArgumentException("The source and the target are in different templates." + source + " " + target)
-		}
-		val template = source.parentTemplate
-		template.createChild(template_Edge, edge) as Edge => [
-			it.source = source
-			it.target = target
-		]
-	}
-	
-	/**
 	 * Places an "isActive" guard onto the given edge based on the given variable.
 	 */
 	private def createIsActiveGuard(Edge edge) {
@@ -2834,18 +2843,6 @@ class CompositeToUppaalTransformer {
 				edge.createEventRaising(match.outPort, match.raisedEvent, match.instance, match.exitAction)
 			}
 		}
-	}
-	
-	/**
-	 * Responsible for placing a synchronization onto the given edge: "channel?/channel!".
-	 */
-	private def setSynchronization(Edge edge, Variable syncVar, SynchronizationKind syncType) {
-		edge.createChild(edge_Synchronization, temPackage.synchronization) as Synchronization => [
-			it.kind = syncType
-			it.createChild(synchronization_ChannelExpression, identifierExpression) as IdentifierExpression => [
-				it.identifier = syncVar
-			]
-		]	
 	}
 	
 	/**
@@ -3705,29 +3702,6 @@ class CompositeToUppaalTransformer {
 			it.secondExpr = rhs
 		]
 		return assignmentExpression
-	}
-	
-	private def Edge createEdgeCommittedTarget(Location target, String name) {
-		val template = target.parentTemplate
-		val syncLocation = template.createChild(template_Location, location) as Location => [
-			it.name = name
-			it.locationTimeKind = LocationKind.COMMITED
-			it.comment = "Synchronization location."
-		]
-		val syncEdge = syncLocation.createEdge(target)
-		return syncEdge		
-	}
-	
-	/**
-	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
-	 * The target of the synchronized edge will be the given "target" location.
-	 */
-	private def Edge createCommittedSyncTarget(Location target, Variable syncVar, String name) {
-		val syncEdge = target.createEdgeCommittedTarget(name) => [
-			it.comment = "Synchronization edge."
-			it.setSynchronization(syncVar, SynchronizationKind.SEND)
-		]
-		return syncEdge		
 	}
 	
 	private def instantiateTemplates(Collection<Template> templates) {

@@ -625,7 +625,7 @@ pattern runOnceClockControl(wrapper : AsynchronousAdapter, queue : MessageQueue,
 }
 
 // Max timeout
-pattern timeoutValues(valueExp : Expression, unit : TimeUnit) {
+pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit : TimeUnit) {
 	TimeSpecification.value(timeSpec, valueExp);
 	TimeSpecification.unit(timeSpec, unit);
 }
