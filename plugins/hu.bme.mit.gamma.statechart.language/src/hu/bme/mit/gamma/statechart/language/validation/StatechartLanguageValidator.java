@@ -64,6 +64,7 @@ import hu.bme.mit.gamma.statechart.model.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.model.TimeSpecification;
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
 import hu.bme.mit.gamma.statechart.model.TransitionPriority;
@@ -784,6 +785,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("The orientation of this transition is incorrect as the source and target are in orthogonal regions "
 				+ "of the following states: " +	commonAncestors.stream().map(it -> it.getName()).collect(Collectors.toSet())
 				+ ".", StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
+		}
+	}
+	
+	@Check
+	public void checkTimeSpecification(TimeSpecification timeSpecification) {
+		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
+			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
 		}
 	}
 	

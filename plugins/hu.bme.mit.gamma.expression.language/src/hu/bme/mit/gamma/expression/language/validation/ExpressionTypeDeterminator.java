@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
+import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.QuantifierExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -129,14 +130,14 @@ public class ExpressionTypeDeterminator {
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			return transform(((ReferenceExpression)((FunctionAccessExpression) expression).getOperand()).getDeclaration().getType());
-			//What if it goes through a type reference / declaration?
+			// What if it goes through a type reference / declaration?
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression)expression;
 			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
 			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) typeDefinition;
-			for(FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
-				if(fd.getName().equals(recordAccessExpression.getField())) {
+			for (FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
+				if (fd.getName().equals(recordAccessExpression.getField())) {
 					return transform(fd.getType());
 				}
 			}
@@ -144,19 +145,25 @@ public class ExpressionTypeDeterminator {
 		if (expression instanceof SelectExpression) {
 			SelectExpression selectExpression = (SelectExpression)expression;
 			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(selectExpression);
-			if(typeDefinition instanceof ArrayTypeDefinition) {
+			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
 				return transform(arrayTypeDefinition.getElementType());
-			}else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
+			}
+			else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
 				return ExpressionType.INTEGER;
-			}else if (typeDefinition instanceof EnumerationTypeDefinition) {
+			}
+			else if (typeDefinition instanceof EnumerationTypeDefinition) {
 				return ExpressionType.ENUMERATION;
-			}else {
+			}
+			else {
 				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + selectExpression.getOperand());
 			}
 		}
 		if (expression instanceof IfThenElseExpression) {
 			return getType(((IfThenElseExpression) expression).getThen());
+		}
+		if (expression instanceof OpaqueExpression) {
+			return ExpressionType.VOID;
 		}
 		if (expression == null) {
 			return ExpressionType.VOID;

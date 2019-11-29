@@ -42,6 +42,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
         eType="#//Coverage" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="minimalElementSet" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimumOrchestratingPeriod"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximumOrchestratingPeriod"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"

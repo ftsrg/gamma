@@ -40,6 +40,8 @@ import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
+import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 
 /**
  * This class contains custom validation rules. 
@@ -87,6 +89,19 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		if (analysisModelTransformation.coverages.filter(StateCoverage).size > 1) {
 			error("A single state coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+		}
+		if (analysisModelTransformation.minimumOrchestratingPeriod.size > 1) {
+			error("A single minimum orchestrating period can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
+		}
+		if (analysisModelTransformation.maximumOrchestratingPeriod.size > 1) {
+			error("A single maximum orchestrating period can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MAXIMUM_ORCHESTRATING_PERIOD)
+		}
+	}
+	
+	@Check
+	def checkTimeSpecification(TimeSpecification timeSpecification) {
+		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
+			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE)
 		}
 	}
 	

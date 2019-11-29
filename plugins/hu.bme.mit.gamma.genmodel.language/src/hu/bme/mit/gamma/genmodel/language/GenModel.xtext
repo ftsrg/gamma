@@ -110,9 +110,19 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'language' ':' language+=AnalysisLanguage |
 			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
 			'scheduler' ':' scheduler+=Scheduler |
+			'minimum-orchestrating-period' ':' minimumOrchestratingPeriod+=TimeSpecification |
+			'maximum-orchestrating-period' ':' maximumOrchestratingPeriod+=TimeSpecification |
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+TimeSpecification returns model::TimeSpecification:
+	value=AdditiveExpression unit=TimeUnit
+;
+
+enum TimeUnit returns model::TimeUnit:
+	MILLISECOND = 'ms' | SECOND = 's'
 ;
 
 enum Scheduler returns Scheduler:

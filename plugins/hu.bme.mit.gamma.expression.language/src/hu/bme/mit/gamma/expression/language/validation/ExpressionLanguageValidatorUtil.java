@@ -23,9 +23,10 @@ public class ExpressionLanguageValidatorUtil {
 	}
 	
 	public static TypeDefinition findTypeDefinitionOfType(Type t) {
-		if(t instanceof TypeDefinition) {
-			return (TypeDefinition)t;
-		}else {	//t instanceof TypeReference
+		if (t instanceof TypeDefinition) {
+			return (TypeDefinition) t;
+		}
+		else {	// t instanceof TypeReference
 			TypeReference tr = (TypeReference) t;
 			TypeDeclaration td = tr.getReference();
 			return findTypeDefinitionOfType(td.getType());
@@ -33,11 +34,11 @@ public class ExpressionLanguageValidatorUtil {
 	}
 	
 	public static Declaration findAccessExpressionInstanceDeclaration(AccessExpression accessExpression)/* throws Exception*/ {
-		if(accessExpression.getOperand() instanceof ReferenceExpression) {
+		if (accessExpression.getOperand() instanceof ReferenceExpression) {
 			ReferenceExpression ref = (ReferenceExpression)accessExpression.getOperand();
 			return ref.getDeclaration();
 		}
-		//TODO implement for Literal Expressions (e.g. IntegerRange)
+		// TODO implement for Literal Expressions (e.g. IntegerRange)
 		throw new IllegalArgumentException("Not implemented feature - the operand of the AccessExpression is: " + accessExpression.getOperand().toString() );
 	}
 	
@@ -45,7 +46,7 @@ public class ExpressionLanguageValidatorUtil {
 	public static Collection<? extends NamedElement> getRecursiveContainerContentsOfType(EObject ele, Class<? extends NamedElement> type){
 		List<NamedElement> ret = new ArrayList<NamedElement>();
 		ret.addAll(getContentsOfType(ele, type));
-		if(ele.eContainer() != null) {
+		if (ele.eContainer() != null) {
 			ret.addAll(getRecursiveContainerContentsOfType(ele.eContainer(), type));
 		}
 		return ret;
@@ -53,10 +54,10 @@ public class ExpressionLanguageValidatorUtil {
 	
 	public static Collection<? extends NamedElement> getContentsOfType(EObject ele, Class<? extends NamedElement> type){
 		List<NamedElement> ret = new ArrayList<NamedElement>();
-		for(EObject obj : ele.eContents()) {
-			if(obj instanceof NamedElement) {
+		for (EObject obj : ele.eContents()) {
+			if (obj instanceof NamedElement) {
 				NamedElement ne = (NamedElement)obj;
-				if(type.isAssignableFrom(ne.getClass())) {
+				if (type.isAssignableFrom(ne.getClass())) {
 					ret.add(ne);
 				}
 			}

@@ -86,10 +86,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		ExpressionType referenceType = null;
 		for(Expression e : expression.getOperands()) {
 			ExpressionType examinedType = typeDeterminator.getType(e);
-			if(examinedType != referenceType) {
+			if (examinedType != referenceType) {
 				if(referenceType == null) {
 					referenceType = examinedType;
-				}else {
+				}
+				else {
 					error("The operands of the ArrayLiteralExpression are not of the same type!", null);
 				}
 			}
@@ -101,10 +102,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		RecordTypeDefinition rtd = (RecordTypeDefinition)ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
 		List<String> fieldDeclarationNames = new ArrayList<String>();
-		for(FieldDeclaration fd : fieldDeclarations) {
+		for (FieldDeclaration fd : fieldDeclarations) {
 			fieldDeclarationNames.add(fd.getName());
 		}
-		if(!fieldDeclarationNames.contains(recordAccessExpression.getField())){
+		if (!fieldDeclarationNames.contains(recordAccessExpression.getField())){
 			error("The record type does not contain any fields with the given name.",
 					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD);
 		}
@@ -113,11 +114,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		
 		ReferenceExpression ref = (ReferenceExpression)functionAccessExpression.getOperand();
-		if(ref.getDeclaration() instanceof FunctionDeclaration) {
+		if (ref.getDeclaration() instanceof FunctionDeclaration) {
 			List<ParameterDeclaration> parameters = ((FunctionDeclaration)(ref).getDeclaration()).getParameterDeclarations();
-			if(arguments.size() != parameters.size()) {
+			if (arguments.size() != parameters.size()) {
 				error("The number of arguments does not match the number of declared parameters for the function!", 
 						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 			}
@@ -130,7 +130,8 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				}
 				++i;
 			}
-		}else {
+		}
+		else {
 			error("The referenced object is not a function declaration!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 		}
@@ -138,14 +139,14 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkArrayAccessExpression(ArrayAccessExpression expression) {
-		if(!typeDeterminator.isInteger(expression.getArguments().get(0))) {
+		if (!typeDeterminator.isInteger(expression.getArguments().get(0))) {
 			error("The index of the accessed element must be of type integer!", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 		}
 	}
 	
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
-		if(!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
+		if (!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
 				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.ENUMERATION) ||
 				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.INTEGER_RANGE))) {
 			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.getType(expression.getOperand()).toString(), null);

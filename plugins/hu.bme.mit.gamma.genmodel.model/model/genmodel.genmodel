@@ -46,6 +46,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/scheduler"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/coverages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/minimalElementSet"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/minimumOrchestratingPeriod"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/maximumOrchestratingPeriod"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>
