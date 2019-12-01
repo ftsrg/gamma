@@ -50,9 +50,6 @@ import hu.bme.mit.gamma.uppaal.backannotation.patterns.Traces
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableDelcarations
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableToEvent
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import java.io.BufferedReader
-import java.io.FileWriter
-import java.io.StringReader
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
@@ -61,6 +58,7 @@ import java.util.HashSet
 import java.util.LinkedList
 import java.util.Map
 import java.util.Map.Entry
+import java.util.Scanner
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -78,12 +76,15 @@ import static com.google.common.base.Preconditions.checkState
 
 class StringTraceBackAnnotator {
 	
+	protected final String ERROR_CONST = "[error]"
+	protected final String WARNING_CONST = "[warning]"
+	
 	protected final String STATE_CONST_PREFIX = "State"
 	protected final String STATE_CONST = "State:"
 	protected final String TRANSITIONS_CONST = "Transitions:"
 	protected final String DELAY_CONST = "Delay:" 
 	
-	protected final String stringUppaalTrace
+	protected final Scanner traceScanner
 	
 	protected final ResourceSet resourceSet
 	protected final ViatraQueryEngine engine
@@ -94,22 +95,23 @@ class StringTraceBackAnnotator {
 	protected final extension ExpressionModelFactory cntFact = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
-	new(ResourceSet resourceSet, String stringUppaalTrace) {
-		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
-		fileWriter.write(stringUppaalTrace)
-		fileWriter.flush
-		fileWriter.close		
-//		println(stringUppaalTrace)
-		this.stringUppaalTrace = stringUppaalTrace
+	new(ResourceSet resourceSet, Scanner traceScanner) {
+//		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
+//		while (traceScanner.hasNext) {
+//			fileWriter.write(traceScanner.nextLine + System.lineSeparator)
+//			fileWriter.flush
+//		}
+//		fileWriter.close
+		this.traceScanner = traceScanner
 		this.resourceSet = resourceSet
 		this.resourceSet.loadModels
-		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))	
+		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 	}
 
 	/**
 	 * Creates the Trace model.
 	 */
-	def ExecutionTrace execute() {
+	def ExecutionTrace execute() throws EmptyTraceException {
 		// Creating the trace component
 		val trace = createExecutionTrace => [
 			it.component = this.component
@@ -133,12 +135,18 @@ class StringTraceBackAnnotator {
 		// Actual step into we collect the actions
 		var step = createStep
 		
-		val reader = new BufferedReader(new StringReader(stringUppaalTrace))
 		var String line = null
 		var state = BackAnnotatorState.INITIAL
-		while ((line = reader.readLine) !== null) {
+		while (traceScanner.hasNext) {
+			line = traceScanner.nextLine
 			// Variable line contains a single line from the trace
 			switch (line) {
+				case line.contains(ERROR_CONST):
+					// If the condition is not well formed, an exception is thrown
+					throw new IllegalArgumentException("Error in the trace: " + line)
+				case line.contains(WARNING_CONST): {
+					// No operation
+				}
 				case STATE_CONST_PREFIX: // There is a bug where State is written instead of State:
 					state = BackAnnotatorState.STATE_LOCATIONS
 				case STATE_CONST:
@@ -155,6 +163,9 @@ class StringTraceBackAnnotator {
 				default:
 					// This is the place for the parsing
 					switch (state) {
+						case BackAnnotatorState.INITIAL: {
+							// Staying in this state
+						}
 						case BackAnnotatorState.STATE_LOCATIONS: {
 							lastActiveLocations = parseLocations(line)
 							state = BackAnnotatorState.STATE_VARIABLES					
@@ -193,6 +204,10 @@ class StringTraceBackAnnotator {
 			}
 		}
 		if (isFirstStep) {
+			if (lastActiveLocations === null && variableCollection === null) {
+				// Empty trace, no proof or counterexample
+				throw new EmptyTraceException
+			}
 			// In this case not a single step has been executed
 			val firstStep = createStep
 			firstStep.parseOutActions(lastActiveLocations, variableCollection)
@@ -798,3 +813,4 @@ class StringTraceBackAnnotator {
 }
 
 enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
+class EmptyTraceException extends Exception {}

@@ -16,15 +16,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -59,6 +58,7 @@ import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.uppaal.backannotation.EmptyTraceException;
 import hu.bme.mit.gamma.uppaal.backannotation.StringTraceBackAnnotator;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 
@@ -393,16 +393,6 @@ public class Controller {
 		}
 		return file;
 	}
-
-	private String readFromStream(InputStream ips) throws IOException {
-		String line;
-		StringBuilder text = new StringBuilder();
-		BufferedReader bf = new BufferedReader(new InputStreamReader(ips));
-		while ((line = bf.readLine()) != null) {
-			text.append(line + System.lineSeparator());
-		}
-		return text.toString();
-	}
 	
 	private ResourceSet loadTraceability() {
 		ResourceSet resSet = new ResourceSetImpl();
@@ -448,22 +438,6 @@ public class Controller {
 		Thread thread = new Thread(generatedTestVerifier);
     	thread.start();
     }
-    
-	private String deleteWarningLines(String trace) {
-		StringBuilder builder = new StringBuilder();
-		try (BufferedReader reader = new BufferedReader(new StringReader(trace))) {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				if (!line.contains("[warning]")) {
-					builder.append(line + System.lineSeparator());
-				}
-			}
-			return builder.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 	
 	private String getParameters() {
 		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getHashtableSize() + " " +
@@ -549,6 +523,7 @@ public class Controller {
 		
 		@Override
 		public ThreeStateBoolean doInBackground() throws Exception {
+			Scanner traceReader = null;
 			try {
 				// Disabling the verification buttons
 				view.setVerificationButtons(false);
@@ -563,33 +538,24 @@ public class Controller {
 				process = Runtime.getRuntime().exec(command.toString());
 				InputStream ips = process.getErrorStream();
 				// Reading the result of the command
-				String rawTrace = readFromStream(ips); // This is where the thread block
+				traceReader = new Scanner(ips);
 				if (isCancelled) {
 					// If the process is killed, this is where it can be checked
 					return ThreeStateBoolean.UNDEF;
 				}
-				if (rawTrace.isEmpty()) {
+				if (!traceReader.hasNext()) {
 					// No back annotation of empty lines
 					return handleEmptyLines(uppaalQuery);
-				}
-				// If the condition is not well formed, an exception is thrown
-				if (rawTrace.contains("[error]")) {
-					throw new IllegalArgumentException(rawTrace);
-				}
-				String trace = deleteWarningLines(rawTrace);
-				if (trace.isEmpty()) {
-					// No back annotation of empty lines
-					return handleEmptyLines(uppaalQuery);
-				}
-				if (!needsBackAnnotation) {
-					// If back-annotation is not needed, we return
-					return handleEmptyLines(uppaalQuery).opposite();
 				}
 				// Warning lines are now deleted if there was any
 				ResourceSet traceabilitySet = loadTraceability(); // For back-annotation
 				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
-				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, trace);
+				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
 				ExecutionTrace traceModel = backAnnotator.execute();
+				if (!needsBackAnnotation) {
+					// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
+					return handleEmptyLines(uppaalQuery).opposite();
+				}
 				Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
 				fileNameAndId = saveModel(traceModel, fileNameAndId);
 				// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
@@ -604,6 +570,8 @@ public class Controller {
 				logger.log(Level.INFO, "Test generation has been finished.");
 				// There is a generated trace, so the result is the opposite of the empty trace
 				return handleEmptyLines(uppaalQuery).opposite();
+			} catch (EmptyTraceException e) {
+				return handleEmptyLines(uppaalQuery);
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
@@ -613,6 +581,8 @@ public class Controller {
 				IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
 				ex.initCause(e);
 				throw ex;
+			} finally {
+				traceReader.close();
 			}
 		}
 
