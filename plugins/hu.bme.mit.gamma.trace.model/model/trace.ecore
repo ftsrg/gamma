@@ -7,6 +7,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="import" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="cycle" eType="#//Cycle"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Step">
     <eStructuralFeatures xsi:type="ecore:EReference" name="outEvents" upperBound="-1"
@@ -37,5 +39,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="InstanceState" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/SynchronousComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Cycle">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="steps" upperBound="-1"
+        eType="#//Step" containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

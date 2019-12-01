@@ -51,6 +51,7 @@ import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableDelcarations
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableToEvent
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import java.io.BufferedReader
+import java.io.FileWriter
 import java.io.StringReader
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
@@ -94,10 +95,10 @@ class StringTraceBackAnnotator {
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
 	new(ResourceSet resourceSet, String stringUppaalTrace) {
-//		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace.txt")
-//		fileWriter.write(stringUppaalTrace)
-//		fileWriter.flush
-//		fileWriter.close		
+		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
+		fileWriter.write(stringUppaalTrace)
+		fileWriter.flush
+		fileWriter.close		
 //		println(stringUppaalTrace)
 		this.stringUppaalTrace = stringUppaalTrace
 		this.resourceSet = resourceSet

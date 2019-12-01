@@ -116,7 +116,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
 	@Check
 	def checkInstanceSchedule(InstanceSchedule schedule) {
-		val executionTrace = schedule.eContainer.eContainer as ExecutionTrace
+		val executionTrace = EcoreUtil2.getRootContainer(schedule, true) as ExecutionTrace
 		val component = executionTrace.component
 		if (component !== null) {
 			if (!(component instanceof AsynchronousCompositeComponent)) {
@@ -129,7 +129,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	@Check
 	def checkInstanceSchedule(ComponentSchedule schedule) {
 		val step = schedule.eContainer as Step
-		val executionTrace = step.eContainer as ExecutionTrace
+		val executionTrace = EcoreUtil2.getRootContainer(step, true) as ExecutionTrace
 		val component = executionTrace.component
 		if (component !== null) {
 			if (!(component instanceof SynchronousComponent || component instanceof AsynchronousAdapter)) {

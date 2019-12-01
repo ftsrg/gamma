@@ -152,7 +152,13 @@ class TestGenerator {
 		var testId = 0
 		val builder = new StringBuilder
 		// Parsing the remaining lines
-		for (step : trace.steps) {
+		val steps = newArrayList
+		steps += trace.steps
+		if (trace.cycle !== null) {
+			// Cycle steps are not handled differently
+			steps += trace.cycle.steps
+		}
+		for (step : steps) {
 			val testMethod = '''
 				«TEST_ANNOTATION»
 				public void «TEST_NAME + testId++»() {

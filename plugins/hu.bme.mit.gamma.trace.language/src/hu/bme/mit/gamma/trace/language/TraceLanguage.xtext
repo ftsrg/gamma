@@ -20,7 +20,15 @@ import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ec
 ExecutionTrace returns ExecutionTrace:
 	'import' ^import=[StatechartModel::Package | STRING]
 	'trace' name=ID 'of' (component=[CompositeModel::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?)
-		steps+=Step (steps+=Step)*
+	steps+=Step
+	(steps+=Step)*
+	(cycle=Cycle)?
+;
+
+Cycle returns Cycle:
+	'cycle' '{'
+		(steps+=Step)+
+	'}'
 ;
 
 Step returns Step:
