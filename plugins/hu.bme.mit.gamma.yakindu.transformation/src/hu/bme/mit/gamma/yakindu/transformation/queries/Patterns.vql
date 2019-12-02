@@ -268,24 +268,24 @@ pattern transitionsWithTimeTriggers(source : State, transition : Transition, tri
 	TimeEventSpec.unit(trigger, unit);
 }
 
-pattern transitionsWithEffect(transition : Transition, action : Expression) {
+pattern transitionsWithEffect(transition : Transition) {
 	Transition.effect(transition, effect);
-	ReactionEffect.actions(effect, action);
+	ReactionEffect.actions(effect, _action);
 }
 
-private pattern statesWithLocalReactions(state : State, trigger : EventSpec, action : Expression) {
+private pattern statesWithLocalReactions(state : State, trigger : EventSpec, effect : ReactionEffect, action : Expression) {
 	find reactionToTrigger(state, reaction, trigger);
 	Reaction.effect(reaction, effect);
 	ReactionEffect.actions(effect, action);
 }
 
-pattern statesWithEntryEvents(state : State, trigger : EntryEvent, action : Expression) {
-	find statesWithLocalReactions(state, trigger, action);
+pattern statesWithEntryEvents(state : State, reactionEffect : ReactionEffect) {
+	find statesWithLocalReactions(state, trigger, reactionEffect, _action);
 	EntryEvent(trigger);
 }
 
-pattern statesWithExitEvents(state : State, trigger : ExitEvent, action : Expression) {
-	find statesWithLocalReactions(state, trigger, action);
+pattern statesWithExitEvents(state : State, reactionEffect : ReactionEffect) {
+	find statesWithLocalReactions(state, trigger, reactionEffect, _action);
 	ExitEvent(trigger);
 }
 
@@ -354,8 +354,8 @@ pattern guardsOfRegularLocalReactions(reaction : Reaction, expression : Expressi
 	Guard.expression(guard, expression);
 }
 
-pattern actionsOfRegularLocalReactions(reaction : Reaction, action : Expression) {
+pattern actionsOfRegularLocalReactions(reaction : Reaction, reactionEffect : ReactionEffect) {
 	find statesWithRegularLocalReactions(_, reaction);
-	Reaction.effect(reaction, effect);
-	ReactionEffect.actions(effect, action);
+	Reaction.effect(reaction, reactionEffect);
+	ReactionEffect.actions(reactionEffect, _action);
 }
