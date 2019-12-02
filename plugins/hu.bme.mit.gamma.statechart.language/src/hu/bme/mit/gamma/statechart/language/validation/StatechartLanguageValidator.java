@@ -307,6 +307,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
 			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
 		}
+		if (!raiseEvent.getArguments().isEmpty()) {
+			EObject eContainer = raiseEvent.eContainer();
+			for (EObject raiseEventObject : eContainer.eContents().stream()
+					.filter(it -> it instanceof RaiseEventAction)
+					.filter(it -> eContainer.eContents().indexOf(it) > eContainer.eContents().indexOf(raiseEvent))
+					.collect(Collectors.toList())) {
+				RaiseEventAction otherRaiseEvent = (RaiseEventAction) raiseEventObject;
+				if (otherRaiseEvent.getPort() == raiseEvent.getPort() &&
+						otherRaiseEvent.getEvent() == raiseEvent.getEvent() &&
+						!otherRaiseEvent.getArguments().isEmpty()) {
+					warning("This event raise argument is overriden by other event raise arguments.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+				}
+			}
+		}
+		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
+			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
+		}
 	}
 	
 	
