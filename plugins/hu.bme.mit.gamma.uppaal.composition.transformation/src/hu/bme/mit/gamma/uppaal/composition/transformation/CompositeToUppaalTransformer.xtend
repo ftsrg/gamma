@@ -3337,6 +3337,8 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
+	// TODO the order of actions is not necessarily preserved, as VIATRA returns the matches nondeterministically
+	
 	/**
 	 * This rule is responsible for transforming the updates.
 	 * It depends on sameRegionTransitionsRule, exitAssignmentActionsOfStatesRule, exitEventRaisingActionsOfStatesRule and ExpressionTransformer.
@@ -3443,7 +3445,7 @@ class CompositeToUppaalTransformer {
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner as SynchronousComponentInstance
 			for (match : RaiseInstanceEventStateExitActions.Matcher.on(engine).getAllMatches(it.state,
-				it.raiseEventAction, owner, it.raiseEventAction.port, it.raiseEventAction.event, null, null)) {
+					it.raiseEventAction, owner, it.raiseEventAction.port, it.raiseEventAction.event, null, null)) {
 				edge.createEventRaising(match.inPort, match.raisedEvent, match.inInstance, it.raiseEventAction)
 			}	
 		}		
@@ -3457,7 +3459,7 @@ class CompositeToUppaalTransformer {
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			val owner = edge.owner  as SynchronousComponentInstance
 			for (match : RaiseTopSystemEventStateExitActions.Matcher.on(engine).getAllMatches(null, it.state,
-				owner, it.raiseEventAction.port, it.raiseEventAction.event, it.raiseEventAction)) {
+					owner, it.raiseEventAction.port, it.raiseEventAction.event, it.raiseEventAction)) {
 				edge.createEventRaising(match.outPort, match.raisedEvent, match.instance, match.exitAction)				
 			}	
 		}		
