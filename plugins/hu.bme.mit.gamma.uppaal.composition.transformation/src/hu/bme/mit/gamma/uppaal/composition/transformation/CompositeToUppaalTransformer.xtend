@@ -104,7 +104,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryRaisingActionsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitRaisingActionsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
@@ -2621,7 +2620,7 @@ class CompositeToUppaalTransformer {
 	 */
 	private def setEntryEvents(Edge edge, State state, SynchronousComponentInstance owner) {
 		// Entry event updates
-		for (assignmentAction : EntryAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentStatement(state)) {
+		for (assignmentAction : state.entryActions.filter(AssignmentStatement)) {
 			edge.transformAssignmentAction(edge_Update, assignmentAction, owner)
 		}
 		// Entry event event raising
@@ -2832,7 +2831,7 @@ class CompositeToUppaalTransformer {
 	private def setExitEvents(Edge edge, State state, SynchronousComponentInstance owner) {
 		if (state !== null) {
 			// Assignment actions
-			for (action : ExitAssignmentsOfStates.Matcher.on(engine).getAllValuesOfassignmentStatement(state)) {
+			for (action : state.exitActions.filter(AssignmentStatement)) {
 				edge.transformAssignmentAction(edge_Update, action, owner)			
 			}		
 			// Signal raising actions
@@ -3346,7 +3345,9 @@ class CompositeToUppaalTransformer {
 	val assignmentActionsRule = createRule(UpdatesOfTransitions.instance).action [
 		// No update on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
-			edge.transformAssignmentAction(edge_Update, it.assignmentStatement, edge.owner)		
+			for (assignmentStatement : transition.effects.filter(AssignmentStatement)) {
+				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+			}		
 		}
 		// The trace is created by the ExpressionTransformer
 	].build
@@ -3357,7 +3358,9 @@ class CompositeToUppaalTransformer {
 	 */
 	val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
-			edge.transformAssignmentAction(edge_Update, it.assignmentStatement, edge.owner)
+			for (assignmentStatement : state.entryActions.filter(AssignmentStatement)) {
+				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+			}
 			// The trace is created by the ExpressionTransformer
 		}
 	].build
@@ -3380,7 +3383,9 @@ class CompositeToUppaalTransformer {
 	 */
 	val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
-			edge.transformAssignmentAction(edge_Update, it.assignmentStatement, edge.owner)
+			for (assignmentStatement : it.state.exitActions.filter(AssignmentStatement)) {
+				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+			}
 		}
 		// The trace is created by the ExpressionTransformer
 		// The loop synchronization edges already have the exit actions
@@ -3474,7 +3479,6 @@ class CompositeToUppaalTransformer {
 		val exps = eventAction.arguments
 		if (!exps.empty) {
 			for (expression : exps) {
-//				val parameter = toRaiseEvent.parameterDeclarations.head
 				val assignment = edge.createAssignmentExpression(edge_Update, toRaiseEvent.getValueOfVariable(port, inInstance), expression, inInstance)
 				addToTrace(eventAction, #{assignment}, expressionTrace)
 			}			

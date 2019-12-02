@@ -13,4 +13,5 @@ pattern statesToLocations(stateName : java String, locationName : java String) {
 	State.name(state, stateName);
 	Trace.to(trace, location);
 	Location.name(location, locationName);
+	Location.locationTimeKind(location, ::NORMAL);
 }
