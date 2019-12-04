@@ -649,11 +649,13 @@ public class Controller {
 			try {
 				if (contributeToView) {
 					ThreeStateBoolean result = get();
-					if (result == ThreeStateBoolean.TRUE) {
-						view.setVerificationLabelToTrue();
-					}
-					if (result == ThreeStateBoolean.FALSE) {
-						view.setVerificationLabelToFalse();
+					if (!isCancelled) {
+						if (result == ThreeStateBoolean.TRUE) {
+							view.setVerificationLabelToTrue();
+						}
+						else if (result == ThreeStateBoolean.FALSE) {
+							view.setVerificationLabelToFalse();
+						}
 					}
 				}
 			} catch (ExecutionException e) {
