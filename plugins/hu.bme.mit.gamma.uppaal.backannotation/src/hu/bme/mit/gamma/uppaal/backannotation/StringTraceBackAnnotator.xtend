@@ -377,7 +377,7 @@ class StringTraceBackAnnotator {
 			}
 			// Not parsing timers, as they are not needed and their parsing is complicated
 			// P_inner2OfSOftest.timer7<=0, P_inner2OfSOftest.timer7-P_inner2OfSOftest.timer9<=0,
-			if (!name.startsWith("timer") && !name.startsWith("#depth")) { // #depth is given in cases of A<>, maybe cycle?
+			if (!name.startsWith("timer") && !name.startsWith("#depth") && !name.startsWith("#tau")) { // #depth is given in cases of A<>, maybe cycle?
 				var Collection<VariableDeclaration> variableDeclarations
 				// Parsing isActive variables uniquely as their names do not differ
 				if (name == "isActive") {
