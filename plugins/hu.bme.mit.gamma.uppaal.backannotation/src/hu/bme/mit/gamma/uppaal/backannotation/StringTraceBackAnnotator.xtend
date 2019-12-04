@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.uppaal.backannotation.patterns.Traces
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableDelcarations
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableToEvent
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
+import java.io.BufferedReader
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
@@ -58,7 +59,6 @@ import java.util.HashSet
 import java.util.LinkedList
 import java.util.Map
 import java.util.Map.Entry
-import java.util.Scanner
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -84,7 +84,7 @@ class StringTraceBackAnnotator {
 	protected final String TRANSITIONS_CONST = "Transitions:"
 	protected final String DELAY_CONST = "Delay:" 
 	
-	protected final Scanner traceScanner
+	protected final BufferedReader traceScanner
 	
 	protected final ResourceSet resourceSet
 	protected final ViatraQueryEngine engine
@@ -95,7 +95,7 @@ class StringTraceBackAnnotator {
 	protected final extension ExpressionModelFactory cntFact = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
-	new(ResourceSet resourceSet, Scanner traceScanner) {
+	new(ResourceSet resourceSet, BufferedReader traceScanner) {
 //		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
 //		while (traceScanner.hasNext) {
 //			fileWriter.write(traceScanner.nextLine + System.lineSeparator)
@@ -134,11 +134,11 @@ class StringTraceBackAnnotator {
 		var Collection<Entry<Variable, Integer>> variableCollection
 		// Actual step into we collect the actions
 		var step = createStep
-		
+
 		var String line = null
 		var state = BackAnnotatorState.INITIAL
-		while (traceScanner.hasNext) {
-			line = traceScanner.nextLine
+		while (traceScanner.ready /* Needed, otherwise it blocks until an interruption comes */
+				&& (line = traceScanner.readLine) !== null) {
 			// Variable line contains a single line from the trace
 			switch (line) {
 				case line.contains(ERROR_CONST):
@@ -377,7 +377,7 @@ class StringTraceBackAnnotator {
 			}
 			// Not parsing timers, as they are not needed and their parsing is complicated
 			// P_inner2OfSOftest.timer7<=0, P_inner2OfSOftest.timer7-P_inner2OfSOftest.timer9<=0,
-			if (!name.startsWith("timer") && !name.startsWith("#depth")) { // #depth is given in cases of A<>, maybe cycle?
+			if (!name.startsWith("timer") && !name.startsWith("#depth") && !name.startsWith("#tau")) { // #depth is given in cases of A<>, maybe cycle?
 				var Collection<VariableDeclaration> variableDeclarations
 				// Parsing isActive variables uniquely as their names do not differ
 				if (name == "isActive") {
