@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -523,7 +523,7 @@ public class Controller {
 		
 		@Override
 		public ThreeStateBoolean doInBackground() throws Exception {
-			BufferedReader traceReader = null;
+			Scanner traceReader = null;
 			try {
 				// Disabling the verification buttons
 				view.setVerificationButtons(false);
@@ -538,17 +538,20 @@ public class Controller {
 				process = Runtime.getRuntime().exec(command.toString());
 				InputStream ips = process.getErrorStream();
 				// Reading the result of the command
-				traceReader = new BufferedReader(new InputStreamReader(ips));
+				traceReader = new Scanner(ips);
 				if (isCancelled) {
 					// If the process is killed, this is where it can be checked
 					return ThreeStateBoolean.UNDEF;
+				}
+				if (!traceReader.hasNext()) {
+					// No back annotation of empty lines
+					return handleEmptyLines(uppaalQuery);
 				}
 				// Warning lines are now deleted if there was any
 				ResourceSet traceabilitySet = loadTraceability(); // For back-annotation
 				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
 				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
 				ExecutionTrace traceModel = backAnnotator.execute();
-				logger.log(Level.INFO, "Back-annotation finished.");
 				if (!needsBackAnnotation) {
 					// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
 					return handleEmptyLines(uppaalQuery).opposite();
