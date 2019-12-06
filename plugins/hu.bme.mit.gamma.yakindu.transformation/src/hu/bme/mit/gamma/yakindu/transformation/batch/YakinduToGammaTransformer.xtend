@@ -1060,18 +1060,20 @@ class YakinduToGammaTransformer {
     	transitionList += gammaStatechart.transitions
     	transitionList.sort[lhs, rhs |
 			val lhsYakinduTransition = lhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
-			val lhsSource = lhsYakinduTransition.source
-			val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
-			val rhsYakinduTransition = rhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
-			val rhsSource = rhsYakinduTransition.source
-			val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
-			if (lhsSource == rhsSource) {
-		    	// Sorting according to priority
-				lhsPriority.compareTo(rhsPriority)
-			}
-			else {
-		    	// Sorting according to source name
-				lhs.sourceState.name.compareTo(rhs.sourceState.name)
+			if (lhsYakinduTransition !== null) {
+				val lhsSource = lhsYakinduTransition.source
+				val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
+				val rhsYakinduTransition = rhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+				val rhsSource = rhsYakinduTransition.source
+				val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
+				if (lhsSource == rhsSource) {
+			    	// Sorting according to priority
+					lhsPriority.compareTo(rhsPriority)
+				}
+				else {
+			    	// Sorting according to source name
+					lhs.sourceState.name.compareTo(rhs.sourceState.name)
+				}
 			}
 		]
     	gammaStatechart.transitions.clear

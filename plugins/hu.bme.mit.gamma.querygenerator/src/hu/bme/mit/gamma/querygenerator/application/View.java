@@ -312,6 +312,7 @@ public class View extends JFrame {
 					break;
 				case "NEGATION":
 					activeText.setText(activeText.getText() + "!");
+					break;
 				case "EQUALITY":
 					activeText.setText(activeText.getText() + " == ");
 					break;
