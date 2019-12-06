@@ -1065,15 +1065,17 @@ class YakinduToGammaTransformer {
 				val lhsSource = lhsYakinduTransition.source
 				val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
 				val rhsYakinduTransition = rhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
-				val rhsSource = rhsYakinduTransition.source
-				val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
-				if (lhsSource == rhsSource) {
-			    	// Sorting according to priority
-					lhsPriority.compareTo(rhsPriority)
-				}
-				else {
-			    	// Sorting according to source name
-					lhs.sourceState.name.compareTo(rhs.sourceState.name)
+				if (rhsYakinduTransition !== null) {
+					val rhsSource = rhsYakinduTransition.source
+					val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
+					if (lhsSource == rhsSource) {
+				    	// Sorting according to priority
+						lhsPriority.compareTo(rhsPriority)
+					}
+					else {
+				    	// Sorting according to source name
+						lhs.sourceState.name.compareTo(rhs.sourceState.name)
+					}
 				}
 			}
 		]
