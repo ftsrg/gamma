@@ -1060,6 +1060,7 @@ class YakinduToGammaTransformer {
     	transitionList += gammaStatechart.transitions
     	transitionList.sort[lhs, rhs |
 			val lhsYakinduTransition = lhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+			// Check transitions of local reactions (they are not mapped from a transition)
 			if (lhsYakinduTransition !== null) {
 				val lhsSource = lhsYakinduTransition.source
 				val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
