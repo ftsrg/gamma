@@ -245,8 +245,14 @@ class TestGenerator {
 		else {
 			parentName = parent.name
 		}
-		startIndex = instance.name.lastIndexOf(parentName) + parentName.length + 1 // "_" is counted too
-		return instance.name.substring(startIndex)
+		val instanceName = instance.name
+		startIndex = instanceName.lastIndexOf(parentName) + parentName.length + 1 // "_" is counted too
+		try {
+			val localName = instanceName.substring(startIndex)
+			return localName
+		} catch (StringIndexOutOfBoundsException e) {
+			throw new IllegalStateException("Instance " + parentName + " has a child with the same name. This makes test generation impossible.")
+		}
 	}
 	
 	protected def CharSequence getFullContainmentHierarchy(ComponentInstance actual, ComponentInstance child) {
