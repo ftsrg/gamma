@@ -1245,7 +1245,7 @@ class CompositeToUppaalTransformer {
 			clockEdge.addInitializedGuards
 			// Creating an Uppaal clock var
 			val clockVar = clockTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, match.clock.name + owner.postfix)
+			clockVar.createTypeAndVariable(target.clock, "timer" + match.clock.name + owner.postfix)
 			// Creating the trace
 			addToTrace(match.clock, #{clockVar}, trace)
 			// push....
@@ -1480,10 +1480,13 @@ class CompositeToUppaalTransformer {
 		val connectorTemplate = initLoc.parentTemplate
 		val asyncChannel = wrapper.asyncSchedulerChannel // The wrapper is scheduled with this channel
 		val syncChannel = wrapper.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-		val initializedVar = wrapper.initializedVariable // This variable marks the wether the wrapper has been initialized
+		val initializedVar = wrapper.initializedVariable // This variable marks the whether the wrapper has been initialized
 		val relayLoc = wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, null /*no owner in this case*/)
-		// Needed so the entry events and event transmissions are transmitted to the proper queues 
-		connectorTemplate.init = relayLoc
+		relayLoc.locationTimeKind = LocationKind.COMMITED
+		// A new entry is needed so the entry events and event transmissions are transmitted to the proper queues 
+		val initEdge = relayLoc.createEdgeCommittedTarget("ConnectorEntry" + id++)
+		initEdge.source.locationTimeKind = LocationKind.URGENT
+		connectorTemplate.init = initEdge.source
 	].build
 	
 	 /**
@@ -1497,10 +1500,13 @@ class CompositeToUppaalTransformer {
 		val connectorTemplate = initLoc.parentTemplate
 		val asyncChannel = it.instance.asyncSchedulerChannel // The wrapper is scheduled with this channel
 		val syncChannel = it.instance.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-		val initializedVar = it.instance.initializedVariable // This variable marks the wether the wrapper has been initialized
+		val initializedVar = it.instance.initializedVariable // This variable marks the whether the wrapper has been initialized
 		val relayLoc = it.wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, it.instance)
-		// Needed so the entry events and event transmissions are transmitted to the proper queues 
-		connectorTemplate.init = relayLoc
+		relayLoc.locationTimeKind = LocationKind.COMMITED
+		// A new entry is needed so the entry events and event transmissions are transmitted to the proper queues 
+		val initEdge = relayLoc.createEdgeCommittedTarget("ConnectorEntry" + id++)
+		initEdge.source.locationTimeKind = LocationKind.URGENT
+		connectorTemplate.init = initEdge.source
 	].build
 	
 	protected def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,

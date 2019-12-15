@@ -100,7 +100,6 @@ class NtaBuilder {
 		return syncEdge		
 	}
 	
-	
 	/**
 	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
 	 * The target of the synchronized edge will be the given "target" location.

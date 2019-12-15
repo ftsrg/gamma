@@ -388,7 +388,7 @@ class StringTraceBackAnnotator {
 					variableDeclarations = VariableDelcarations.Matcher.on(engine).getAllValuesOfvariableDeclaration(name)
 				}
 				if (variableDeclarations.size != 1) {
-					throw new IllegalArgumentException("More than one variable retrieved for " + variableValue + ": " + variableDeclarations.map[it.variable.head])
+					throw new IllegalArgumentException("Not one variable retrieved for " + variableValue + ": " + variableDeclarations.map[it.variable.head])
 				}
 				val value = splittedName.last
 				val variable = variableDeclarations.head.variable.head
