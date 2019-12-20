@@ -10,11 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.formatting;
 
+import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
-import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.util.Pair;
 
+import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAccess;
 
 /**
@@ -27,9 +28,12 @@ import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAc
  */
 public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	
+	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();
+
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess(); 
+		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess();
+		expressionLanguageFormatterUtil.format(c, f);
 		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
         c.setAutoLinewrap(105);
@@ -74,44 +78,17 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).before(f.getPortRule());
         c.setIndentationIncrement().before(f.getPortRule());
         c.setIndentationDecrement().after(f.getPortRule());
+		for (Keyword comma : f.findKeywords(",")) {
+            c.setNoSpace().before(comma);
+        }
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("]", "{")) {
             c.setLinewrap(1).before(p.getFirst());
         }
         // No space around guards
         c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
-        // No space around parentheses
-        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
-            c.setNoSpace().around(p.getFirst());
-            c.setNoSpace().before(p.getSecond());
-        }	    
-        // No space before commas
-        for (Keyword comma : f.findKeywords(",")) {
-            c.setNoSpace().before(comma);
-        }
-        for (Keyword comma : f.findKeywords(";")) {
-            c.setNoSpace().before(comma);
-        }
         // Space before [
-        for(Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
+        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
         	c.setSpace(" ").before(p.getFirst());
-        }
-        // No space before and after dots
-        for (Keyword dot : f.findKeywords(".")) {
-            c.setNoSpace().before(dot);
-            c.setNoSpace().after(dot);
-        }
-        // No space before and after double colons
-        for (Keyword dot : f.findKeywords("::")) {
-            c.setNoSpace().after(dot);
-        }	
-        // Setting indentation inside all curly brackets 
-        // Setting line wrap after each left curly bracket
-        // Setting line wrap around each right curly bracket
-        for(Pair<Keyword, Keyword> p : f.findKeywordPairs("{", "}")) {
-            c.setIndentationIncrement().after(p.getFirst());
-            c.setIndentationDecrement().before(p.getSecond());
-            c.setLinewrap().after(p.getFirst());
-            c.setLinewrap().around(p.getSecond());
         }
         // Interface events
         c.setLinewrap(1).after(f.getEventDeclarationRule());

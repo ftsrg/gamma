@@ -266,7 +266,7 @@ class CompositeToUppaalTransformer {
 	protected TimeSpecification minimalOrchestratingPeriod
 	protected TimeSpecification maximalOrchestratingPeriod
 	// Minimal element set: no functions
-	protected boolean isMinimalElementSet= false
+	protected boolean isMinimalElementSet = false
 	// For the generation of pseudo locations
 	protected int id = 0
 	// For the async event queue constants

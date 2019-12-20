@@ -10,10 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.formatting;
 
+import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
-import org.eclipse.xtext.Keyword;
-import org.eclipse.xtext.util.Pair;
+
+import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 
 /**
  * This class contains custom formatting declarations.
@@ -25,9 +26,12 @@ import org.eclipse.xtext.util.Pair;
  */
 public class GenModelFormatter extends AbstractDeclarativeFormatter {
 	
+	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();
+	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 		hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess f = (hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess) getGrammarAccess();
+		expressionLanguageFormatterUtil.format(c, f);
 		// Setting the maximum size of lines
         c.setAutoLinewrap(130);
         // Line break after these rules
@@ -77,21 +81,10 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getTestGenerationAccess().getLanguageAssignment_5_3_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
-		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
-			c.setIndentation(pair.getFirst(), pair.getSecond());
-			c.setLinewrap(1).after(pair.getFirst());
-			c.setLinewrap(1).before(pair.getSecond());
-			c.setLinewrap(1).after(pair.getSecond());
-		}
 		for (Keyword comma: f.findKeywords(",")) {
 			c.setNoLinewrap().before(comma);
 			c.setNoSpace().before(comma);
 		}
-        // No space around parentheses
-        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
-            c.setNoSpace().around(p.getFirst());
-            c.setNoSpace().before(p.getSecond());
-        }
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());
 		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule());

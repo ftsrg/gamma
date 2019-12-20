@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.expression.language.formatting;
 
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
-import org.eclipse.xtext.Keyword;
-import org.eclipse.xtext.util.Pair;
 
 /**
  * This class contains custom formatting declarations.
@@ -25,20 +23,12 @@ import org.eclipse.xtext.util.Pair;
  */
 public class ExpressionLanguageFormatter extends AbstractDeclarativeFormatter {
 	
+	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();
+	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 		hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess f = (hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess) getGrammarAccess();
-		for(Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
-			c.setIndentation(pair.getFirst(), pair.getSecond());
-			c.setLinewrap(1).after(pair.getFirst());
-			c.setLinewrap(1).before(pair.getSecond());
-			c.setLinewrap(1).after(pair.getSecond());
-		}
-		for(Keyword comma: f.findKeywords(",")) {
-			c.setNoLinewrap().before(comma);
-			c.setNoSpace().before(comma);
-			c.setLinewrap().after(comma);
-		}
+		expressionLanguageFormatterUtil.format(c, f);
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());
 		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule());

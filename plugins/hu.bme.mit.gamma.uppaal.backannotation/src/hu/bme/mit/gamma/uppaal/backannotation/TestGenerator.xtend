@@ -127,11 +127,15 @@ class TestGenerator {
 			
 			@After
 			public void tearDown() {
-				// Only for override by potential subclasses
+				stop();
+			}
+			
+			// Only for override by potential subclasses
+			protected void stop() {
 				«IF component.needTimer»
 					«TIMER_OBJECT_NAME» = null;
 				«ENDIF»
-				«componentClassName.toFirstLower» = null;
+				«componentClassName.toFirstLower» = null;				
 			}
 			
 			«trace.generateTestCases»
@@ -160,7 +164,8 @@ class TestGenerator {
 		}
 		for (step : steps) {
 			val testMethod = '''
-				«TEST_ANNOTATION»
+«««				Only the list step should be annotated with a @Test as it calls all previous steps recursively
+				«IF steps.indexOf(step) == steps.size - 1»«TEST_ANNOTATION»«ENDIF»
 				public void «TEST_NAME + testId++»() {
 					«IF testId !== 1»«TEST_NAME + (testId - 2)»();«ENDIF»
 					// Act
