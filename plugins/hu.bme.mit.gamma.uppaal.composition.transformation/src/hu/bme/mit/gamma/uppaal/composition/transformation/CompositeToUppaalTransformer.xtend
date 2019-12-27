@@ -1235,11 +1235,8 @@ class CompositeToUppaalTransformer {
 			val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
 			// Creating the loop edge
 			val clockEdge = initLoc.createEdge(initLoc)
-			// It can be fired only if the queue is not full
-			clockEdge.addGuard(createNegationExpression => [
-				it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
-			], LogicalOperator.AND)
-			// It can be fired only if template is stable
+			// It can be fired even when the queue is full to avoid DEADLOCKS (the function handles this)
+			// It can be fired only if the template is stable
 			clockEdge.addGuard(isStableVar, LogicalOperator.AND)		
 			// Only if the wrapper/instance is initialized
 			clockEdge.addInitializedGuards
