@@ -1347,8 +1347,8 @@ class CompositeToUppaalTransformer {
 	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
 		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
-				it.operator = logOp
-				it.secondExpr = originalExpression			
+			it.operator = logOp
+			it.secondExpr = originalExpression
 		]
 		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression)
 	}
@@ -1357,7 +1357,7 @@ class CompositeToUppaalTransformer {
 	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
 	 */
 	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression) {		
+			ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression) {
 		container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = compOp	
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
@@ -1367,8 +1367,28 @@ class CompositeToUppaalTransformer {
 		]
 	}
 	
+	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
+			Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
+		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
+				it.operator = logOp
+				it.secondExpr = originalExpression
+		]
+		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression)
+	}
+	
+	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
+			ClockVariableDeclaration clockVar, Expression timeExpression) {
+		container.createChild(reference, compareExpression) as CompareExpression => [
+			it.operator = compOp
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = clockVar.variable.head // Always one variable in the container
+			]
+			it.secondExpr = timeExpression
+		]
+	}
+	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
@@ -1391,7 +1411,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-		DataVariableDeclaration representation, Expression expression) {
+			DataVariableDeclaration representation, Expression expression) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
@@ -1414,12 +1434,8 @@ class CompositeToUppaalTransformer {
 	
 	val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
-		val loopEdge = initLoc.createEdge(initLoc)
-		val asyncSchedulerChannel = wrapper.asyncSchedulerChannel
-		loopEdge.setSynchronization(asyncSchedulerChannel.variable.head, SynchronizationKind.SEND)
-		// Adding isStable  guard
-		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
-		loopEdge.addInitializedGuards // Only if the wrapper is initialized
+		val asyncSchedulerChannelVariable = wrapper.asyncSchedulerChannel.variable.head
+		initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
 	].build
 	
 	val instanceWrapperSchedulerRule = createRule(TopAsyncCompositeComponents.instance).action [
@@ -1431,7 +1447,8 @@ class CompositeToUppaalTransformer {
 					lastEdge = lastEdge.createFairScheduler(initLoc, instance)
 				}
 				default: {
-					lastEdge = initLoc.createRandomScheduler(instance)
+					val asyncSchedulerChannelVariable = instance.asyncSchedulerChannel.variable.head
+					lastEdge = initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
 				}
 			}
 		}
@@ -1457,12 +1474,40 @@ class CompositeToUppaalTransformer {
 		return lastEdge
 	}
 
-	private def createRandomScheduler(Location initLoc, AsynchronousComponentInstance instance) {
-		val syncVariable = instance.asyncSchedulerChannel.variable.head
+	private def createRandomScheduler(Location initLoc, Variable asyncSchedulerChannelVariable) {
 		// Creating the loop edge
 		val loopEdge = initLoc.createEdge(initLoc)
-		loopEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
+		loopEdge.setSynchronization(asyncSchedulerChannelVariable, SynchronizationKind.SEND)
+		// Adding isStable guard
+		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
 		loopEdge.addInitializedGuards // Only if the instance is initialized
+		// Checking scheduler constraints
+		val minTimeoutValue = if (minimalOrchestratingPeriod === null) {
+			Optional.ofNullable(null)
+		} else {
+			Optional.ofNullable(minimalOrchestratingPeriod.convertToMs.evaluate)
+		}
+		val maxTimeoutValue = if (maximalOrchestratingPeriod === null) {
+			Optional.ofNullable(null)
+		} else {
+			Optional.ofNullable(maximalOrchestratingPeriod.convertToMs.evaluate)
+		}
+		if (minTimeoutValue.present || maxTimeoutValue.present) {
+			val parentTemplate = initLoc.parentTemplate
+			// Creating an Uppaal clock var
+			val clockVar = parentTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+			clockVar.createTypeAndVariable(target.clock, "timer" + asyncSchedulerChannelVariable.name + id++)
+			// Creating the guard
+			if (minTimeoutValue.present) {
+				loopEdge.createMinTimeGuard(clockVar, minTimeoutValue.get)
+			}
+			// Creating the location invariant
+			if (maxTimeoutValue.present) {
+				initLoc.createMaxTimeInvariant(clockVar, maxTimeoutValue.get)
+			}
+			// Creating the clock reset
+			loopEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
+		}
 		return loopEdge
 	}
 	
@@ -1831,30 +1876,39 @@ class CompositeToUppaalTransformer {
 		clockVar.createTypeAndVariable(target.clock, "timerOrchestrator" + (id++))
 		// Creating the guard
 		if (minTime.present) {
-			firstEdge.addGuard(createCompareExpression => [
-				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = clockVar.variable.head // Always one variable in the container
-				]
-				it.operator = CompareOperator.GREATER_OR_EQUAL
-				it.secondExpr = createLiteralExpression => [
-					it.text = minTime.get.toString
-				] 
-			], LogicalOperator.AND)
+			firstEdge.createMinTimeGuard(clockVar, minTime.get)
 		}
 		// Creating the location invariant
 		if (maxTime.present) {
-			initLoc.createChild(location_Invariant, compareExpression) as CompareExpression => [
-				it.operator = CompareOperator.LESS_OR_EQUAL	
-				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = clockVar.variable.head // Always one variable in the container
-				]
-				it.secondExpr = createLiteralExpression => [
-					it.text = maxTime.get.toString
-				]
-			]
+			initLoc.createMaxTimeInvariant(clockVar, maxTime.get)
 		}
 		// Creating the clock reset
 		lastEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
+	}
+	
+	private def createMinTimeGuard(Edge clockEdge, ClockVariableDeclaration clockVar, Integer minTime) {
+		clockEdge.addGuard(createCompareExpression => [
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = clockVar.variable.head // Always one variable in the container
+			]
+			it.operator = CompareOperator.GREATER_OR_EQUAL
+			it.secondExpr = createLiteralExpression => [
+				it.text = minTime.toString
+			] 
+		], LogicalOperator.AND)
+	}
+	
+	private def createMaxTimeInvariant(Location clockLocation, ClockVariableDeclaration clockVar, Integer maxTime) {
+		val locInvariant = clockLocation.invariant
+		val maxTimeExpression = createLiteralExpression => [
+			it.text = maxTime.toString
+		]
+		if (locInvariant !== null) {
+			clockLocation.insertLogicalExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, maxTimeExpression, locInvariant, LogicalOperator.AND)
+		} 
+		else {
+			clockLocation.insertCompareExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, maxTimeExpression)
+		}
 	}
 	
 	/**
@@ -3283,7 +3337,7 @@ class CompositeToUppaalTransformer {
 		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 			it.operator = logOp
-			it.secondExpr = originalExpression			
+			it.secondExpr = originalExpression
 		]
 		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression, timeoutEventReference)
 	}
@@ -3295,11 +3349,11 @@ class CompositeToUppaalTransformer {
 		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
 		val owner = clockVar.owner
 		val compExp = container.createChild(reference, compareExpression) as CompareExpression => [
-			it.operator = compOp	
+			it.operator = compOp
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = clockVar.variable.head // Always one variable in the container
 			]
-			it.transform(binaryExpression_SecondExpr, timeExpression, owner)		
+			it.transform(binaryExpression_SecondExpr, timeExpression, owner)
 		]
 		addToTrace(timeoutEventReference, #{compExp}, trace)
 		addToTrace(owner, #{clockVar}, instanceTrace)

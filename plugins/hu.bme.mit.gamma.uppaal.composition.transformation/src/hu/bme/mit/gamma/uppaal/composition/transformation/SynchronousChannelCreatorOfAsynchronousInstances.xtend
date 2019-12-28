@@ -39,7 +39,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 	protected def getTopWrapperSyncChannelRule() {
 		if (topWrapperSyncChannelRule === null) {
 			topWrapperSyncChannelRule = createRule(TopWrapperComponents.instance).action [
-				val asyncChannel = nta.globalDeclarations.createSynchronization(false, false, it.wrapper.asyncSchedulerChannelName)
+				val asyncChannel = nta.globalDeclarations.createSynchronization(true, false, it.wrapper.asyncSchedulerChannelName)
 				val syncChannel = nta.globalDeclarations.createSynchronization(false, false, it.wrapper.syncSchedulerChannelName)
 				val isInitializedVar = nta.globalDeclarations.createVariable(DataVariablePrefix.NONE, nta.bool,  it.wrapper.initializedVariableName)
 				addToTrace(it.wrapper, #{asyncChannel, syncChannel, isInitializedVar}, trace)
@@ -50,7 +50,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 	protected def getInstanceWrapperSyncChannelRule() {
 		if (instanceWrapperSyncChannelRule === null) {
 			instanceWrapperSyncChannelRule = createRule(SimpleWrapperInstances.instance).action [
-				val asyncChannel = nta.globalDeclarations.createSynchronization(false, false, it.instance.asyncSchedulerChannelName)
+				val asyncChannel = nta.globalDeclarations.createSynchronization(true, false, it.instance.asyncSchedulerChannelName)
 				val syncChannel = nta.globalDeclarations.createSynchronization(false, false, it.instance.syncSchedulerChannelName)
 				val isInitializedVar = nta.globalDeclarations.createVariable(DataVariablePrefix.NONE, nta.bool,  it.instance.initializedVariableName)
 				addToTrace(it.instance, #{asyncChannel, syncChannel, isInitializedVar}, trace) // No instanceTrace as it would be harder to retrieve the elements
