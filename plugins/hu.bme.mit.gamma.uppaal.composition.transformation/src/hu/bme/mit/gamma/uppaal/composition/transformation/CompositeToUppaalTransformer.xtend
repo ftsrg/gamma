@@ -364,9 +364,7 @@ class CompositeToUppaalTransformer {
 		timeTriggersRule.fireAllCurrent} // Should come right after eventTriggersRule		
 		{guardsRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
-		transitionPriorityRule.fireAllCurrent 
-		// Guards placed onto the time "trigger edge": must be after transitionPriorityRule, so priorities are handled in case of timed transitions as well
-		swapGuardsOfTimeTriggerTransitions}
+		transitionPriorityRule.fireAllCurrent}
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
 		compositeStateEntryRule.fireAllCurrent 
@@ -390,6 +388,8 @@ class CompositeToUppaalTransformer {
 		isActiveRule.fireAllCurrent
 		// Creating urgent locations in front of composite states, so entry is not immediate
 		compositeStateEntryCompletion
+		// Extend timed locations with outgoing edges from the original location
+		extendTimedLocations
 		// Creating a same level process list, note that it is before the orchestrator template: UPPAAL does not work correctly with priorities
 //		instantiateUninstantiatedTemplates
 		// New entries to traces, previous adding would cause trouble
@@ -1455,7 +1455,6 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	private def createFairScheduler(Edge edge, Location initLoc, AsynchronousComponentInstance instance) {
-   		// TODO in case of a bad scheduling a deadlock may appear. Maybe the channels should be broadcast in this case?
    		var lastEdge = edge
    		val syncVariable = instance.asyncSchedulerChannel.variable.head
 		if (lastEdge === null) {
@@ -3229,7 +3228,7 @@ class CompositeToUppaalTransformer {
 			val newEdge = location.createEdge(newLoc)
 			cloneEdge.source = newLoc
 			cloneEdge.setRunCycle
-			// Creating the owner trace for the clock edge (the isStable and isActive guards are set in swapGuardsOfTimeTriggerTransitions)
+			// Creating the owner trace for the clock edge
 			addToTrace(owner, #{newEdge}, instanceTrace)
 			// Converting to milliseconds
 			val timeValue = it.time.convertToMs
@@ -3248,6 +3247,8 @@ class CompositeToUppaalTransformer {
 				newEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)		
 			}		
 			// Trace is created in the insertCompareExpression method
+			// Adding isStable guard
+			newEdge.addGuard(isStableVar, LogicalOperator.AND)
 		}	
 	].build
 	
@@ -3298,36 +3299,21 @@ class CompositeToUppaalTransformer {
 		return multiplyExp
 	}
 	
-	/**
-	 * Places the guards of the extended edges onto the corresponding clock edges.
-	 */
-	protected def swapGuardsOfTimeTriggerTransitions() {
-		val matches = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allMatches
-		for (match : matches) {
-			val clockEdge = match.edge
-			val extendedEdge = clockEdge.otherEdgeOfClockEdge
-			if (extendedEdge.guard !== null) {
-				clockEdge.addGuard(extendedEdge.guard, LogicalOperator.AND)
-				extendedEdge.guard = null			
+	protected def extendTimedLocations() {
+		val edges = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allValuesOfedge
+		for (edge : edges) {
+			val parentTemplate = edge.parentTemplate
+			val timedLocation = edge.source
+			val outgoingEdges = newHashSet
+			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation &&
+				!it.allValuesOfFrom.empty /*This way synchronizations and other timed edges are not replicated*/
+			]
+			val targetLocation = edge.target
+			for (outgoingEdge : outgoingEdges) {
+				val clonedOutgoingEdge = outgoingEdge.clone as Edge
+				clonedOutgoingEdge.source = targetLocation
 			}
-			// Adding isStable and isActive guards
-			clockEdge.addGuard(isStableVar, LogicalOperator.AND)
-			// TODO no isActive guard, as clocks stuck in inactive templates can freeze ALL clocks -> deadlock
-			// clockEdge.createIsActiveGuard
 		}
-	}
-	
-	/**
-	 * Returns the extended edges of the given clock edge.
-	 */
-	private def getOtherEdgeOfClockEdge(Edge edge) {
-		val target = edge.target
-		val template = edge.parentTemplate
-		val edges = template.edge.filter[it.source == target]
-		if (edges.size != 1) {
-			throw new IllegalArgumentException("The clock edge has more than one extension edge!" + edge.source.name + "->" + edge.target.name)
-		}
-		return edges.head
 	}
 	
 	/**
@@ -3392,8 +3378,6 @@ class CompositeToUppaalTransformer {
 			edge.transform(edge_Guard, guard, edge.owner)
 		}
 	}
-	
-	// TODO the order of actions is not necessarily preserved, as VIATRA returns the matches nondeterministically
 	
 	/**
 	 * This rule is responsible for transforming the updates.

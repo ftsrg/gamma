@@ -36,7 +36,6 @@ import uppaal.templates.TemplatesPackage
  * This class is responsible for copying a tree of expressions.
  */
 class ExpressionCopier {
-	
     
 	final extension IModelManipulations manipulation	 
     // Factories
@@ -80,6 +79,9 @@ class ExpressionCopier {
 		]
 		if (object.guard !== null) {
 			edgeClone.copy(edge_Guard, object.guard)
+		}
+		if (object.synchronization !== null) {
+			edgeClone.synchronization = object.synchronization.clone(true, true)
 		}
 		if (object.update !== null) {
 			for (update : object.update) {
