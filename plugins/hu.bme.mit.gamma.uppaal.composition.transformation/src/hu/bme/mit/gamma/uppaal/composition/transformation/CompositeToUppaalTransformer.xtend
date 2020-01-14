@@ -215,6 +215,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 class CompositeToUppaalTransformer {
 	// Transformation-related extensions
@@ -3305,13 +3306,20 @@ class CompositeToUppaalTransformer {
 			val parentTemplate = edge.parentTemplate
 			val timedLocation = edge.source
 			val outgoingEdges = newHashSet
-			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation &&
-				!it.allValuesOfFrom.empty /*This way synchronizations and other timed edges are not replicated*/
+			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation && it !== edge
+//				&& !it.allValuesOfFrom.empty /*This way synchronizations and other timed edges are not replicated*/
 			]
 			val targetLocation = edge.target
 			for (outgoingEdge : outgoingEdges) {
 				val clonedOutgoingEdge = outgoingEdge.clone as Edge
 				clonedOutgoingEdge.source = targetLocation
+				val targetOutgoingEdges = newHashSet
+				targetOutgoingEdges += parentTemplate.edge.filter[it.source === targetLocation && it !== clonedOutgoingEdge]
+				for (targetOutgoingEdge : targetOutgoingEdges) {
+					if ((new EqualityHelper()).equals(clonedOutgoingEdge, targetOutgoingEdge)) {
+						clonedOutgoingEdge.delete
+					}
+				}
 			}
 		}
 	}
