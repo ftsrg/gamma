@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="ASCII"?>
+<hu.bme.mit.gamma.lowlevel.xsts.transformation:L2STrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.lowlevel.xsts.transformation="http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/traceability">
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.15"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.15/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.0"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.0/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.18"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.18/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.23"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.23/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.16"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.16/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.11"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.11/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.8"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.8/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.14"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.14/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.13"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.13/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.6"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.6/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.10"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.10/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.12"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.12/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.7"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.7/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.2"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.2/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.13"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.9"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.9/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.14"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.5"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.5/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.4"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.4/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.19"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.19/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.22"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.22/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.17"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.17/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.20"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.20/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.20"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.21"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.21/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.21"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.24"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.24/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.1"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.1/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.23"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:EventTrace">
+    <lowlevelEvent href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.3"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@eventDeclarations.3/@isRaised"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.24"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:StateTrace">
+    <lowlevelState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.0"/>
+    <xStsEnumLiteral href="Orion_Master_SM.xsts#//@typeDeclarations.0/@type/@literals.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:StateTrace">
+    <lowlevelState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.1"/>
+    <xStsEnumLiteral href="Orion_Master_SM.xsts#//@typeDeclarations.0/@type/@literals.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:StateTrace">
+    <lowlevelState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.2"/>
+    <xStsEnumLiteral href="Orion_Master_SM.xsts#//@typeDeclarations.0/@type/@literals.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:RegionTrace">
+    <lowlevelRegion href="Orion_Master_SM.lgsm#//@components.0/@regions.0"/>
+    <xStsRegionVariable href="Orion_Master_SM.xsts#//@variableDeclarations.25"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:StateTrace">
+    <lowlevelState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0"/>
+    <xStsEnumLiteral href="Orion_Master_SM.xsts#//@typeDeclarations.1/@type/@literals.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:RegionTrace">
+    <lowlevelRegion href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.2/@regions.0"/>
+    <xStsRegionVariable href="Orion_Master_SM.xsts#//@variableDeclarations.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:StateTrace">
+    <lowlevelState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0"/>
+    <xStsEnumLiteral href="Orion_Master_SM.xsts#//@typeDeclarations.2/@type/@literals.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:RegionTrace">
+    <lowlevelRegion href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.2/@regions.1"/>
+    <xStsRegionVariable href="Orion_Master_SM.xsts#//@variableDeclarations.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@variableDeclarations.4"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.28"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@variableDeclarations.2"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.29"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@variableDeclarations.3"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.30"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@variableDeclarations.1"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:VariableTrace">
+    <lowlevelVariable href="Orion_Master_SM.lgsm#//@components.0/@variableDeclarations.0"/>
+    <xStsVariable href="Orion_Master_SM.xsts#//@variableDeclarations.32"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.0"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.0/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.1"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.1/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.2"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.2/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.3"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.3/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.15"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.4"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.4/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.5"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.5/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.19"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.6"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.6/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.7"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.7/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.17"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:SimpleTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.8"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.8/@action/@actions.0/@assumption"/>
+    <lowlevelTransition href="Orion_Master_SM.lgsm#//@components.0/@transitions.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:MergeTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.9"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.9/@action/@actions.0/@assumption"/>
+    <lowlevelMergeState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.3"/>
+    <xStsMergeAction href="Orion_Master_SM.xsts#//@transitions.9/@action/@actions.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.lowlevel.xsts.transformation:MergeTransitionTrace">
+    <xStsTransition href="Orion_Master_SM.xsts#//@transitions.10"/>
+    <xStsPrecondition xsi:type="hu.bme.mit.gamma.expression:AndExpression" href="Orion_Master_SM.xsts#//@transitions.10/@action/@actions.0/@assumption"/>
+    <lowlevelMergeState href="Orion_Master_SM.lgsm#//@components.0/@regions.0/@stateNodes.5"/>
+    <xStsMergeAction href="Orion_Master_SM.xsts#//@transitions.10/@action/@actions.1"/>
+  </traces>
+  <lowlevelPackage href="Orion_Master_SM.lgsm#/"/>
+  <xSts href="Orion_Master_SM.xsts#/"/>
+</hu.bme.mit.gamma.lowlevel.xsts.transformation:L2STrace>

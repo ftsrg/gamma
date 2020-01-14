@@ -1,0 +1,81 @@
+package Channel
+import "interfaces"
+const LOST_MESSAGE_MAX_COUNT : integer := 3
+//@PrioritizedTransitions = order-based
+statechart ChannelStatechart [
+	port Output : provides StateMachine_Interface_For_Orion
+	port Input : requires StateMachine_Interface_For_Orion
+	port Operation : requires Operation
+] {
+	var lostMessageCount : integer := 0
+	transition from Choice1 to Merge17
+	transition from Choice1 to Merge20
+	transition from Choice10 to Merge22 [else]
+	transition from Choice10 to Choice5 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice11 to Merge19
+	transition from Choice11 to Merge20
+	transition from Choice12 to Choice1 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice12 to Merge17 [else]
+	transition from Choice13 to Merge15
+	transition from Choice13 to Merge20
+	transition from Choice14 to Choice11 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice14 to Merge19 [else]
+	transition from Choice2 to Merge20
+	transition from Choice2 to Merge21
+	transition from Choice3 to Merge21 [else]
+	transition from Choice3 to Choice2 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice4 to Choice9 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice4 to Merge16 [else]
+	transition from Choice5 to Merge22
+	transition from Choice5 to Merge20
+	transition from Choice6 to Choice7 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice6 to Merge18 [else]
+	transition from Choice7 to Merge20
+	transition from Choice7 to Merge18
+	transition from Choice8 to Merge15 [else]
+	transition from Choice8 to Choice13 [lostMessageCount < LOST_MESSAGE_MAX_COUNT]
+	transition from Choice9 to Merge16
+	transition from Choice9 to Merge20
+	transition from Correct to Choice3 when Input.OrionDisconn
+	transition from Correct to Choice6 when Input.OrionConnReq
+	transition from Correct to Choice14 when Input.OrionConnResp
+	transition from Correct to Choice4 when Input.OrionConnConf
+	transition from Correct to Choice8 when Input.OrionKeepAlive
+	transition from Correct to Choice10 when Input.OrionAppData
+	transition from Correct to Choice12 when Input.OrionDisconnCause
+	transition from Entry0 to Correct
+	transition from Merge15 to Correct / raise Output.OrionKeepAlive;
+	transition from Merge16 to Correct / raise Output.OrionConnConf;
+	transition from Merge17 to Correct / raise Output.OrionDisconnCause;
+	transition from Merge18 to Correct / raise Output.OrionConnReq;
+	transition from Merge19 to Correct / raise Output.OrionConnResp;
+	transition from Merge20 to Correct / lostMessageCount := lostMessageCount + 1;
+	transition from Merge21 to Correct / raise Output.OrionDisconn;
+	transition from Merge22 to Correct / raise Output.OrionAppData;
+	region MainRegion {
+		initial Entry0
+		state Correct
+		choice Choice1
+		choice Choice2
+		choice Choice3
+		choice Choice4
+		choice Choice5
+		choice Choice6
+		choice Choice7
+		choice Choice8
+		choice Choice9
+		choice Choice10
+		choice Choice11
+		choice Choice12
+		choice Choice13
+		choice Choice14
+		merge Merge15
+		merge Merge16
+		merge Merge17
+		merge Merge18
+		merge Merge19
+		merge Merge20
+		merge Merge21
+		merge Merge22
+	}
+}

@@ -1,0 +1,14 @@
+package async_orion_system
+
+import "MasterAsync/MasterAsync.gcd"
+import "SlaveAsync/SlaveAsync.gcd"
+
+async AsyncNoChannelOrionSystem [
+	
+] {
+	component master : Orion_Master_Adapter
+	component slave : Orion_Slave_Adapter
+	
+	channel [master.Send_StateMachine_Port] -o)- [slave.StateMachine_Port]
+	channel [slave.Send_StateMachine_Port] -o)- [master.StateMachine_Port]
+}

@@ -1,0 +1,1 @@
+A<> (((P_main_region_of_Orion_Master_SMOfStatechartOfmaster.Kapcsolodva_4)) && ((P_main_region_of_Orion_Master_SMOfStatechartOfmaster.Kapcsolodva_4))) && isStable
