@@ -215,7 +215,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 class CompositeToUppaalTransformer {
 	// Transformation-related extensions
@@ -3288,7 +3287,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Transforms gamma expression "100" into "100 * value" or "timeValue" into "timeValue * value"
+	 * Transforms Gamma expression "100" into "100 * value" or "timeValue" into "timeValue * value"
 	 */
 	protected def multiplyExpression(hu.bme.mit.gamma.expression.model.Expression base, long value) {
 		val multiplyExp = constrFactory.createMultiplyExpression => [
@@ -3301,23 +3300,32 @@ class CompositeToUppaalTransformer {
 	}
 	
 	protected def extendTimedLocations() {
-		val edges = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allValuesOfedge
-		for (edge : edges) {
-			val parentTemplate = edge.parentTemplate
-			val timedLocation = edge.source
+		val timedEdges = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allValuesOfedge
+		for (timedEdge : timedEdges) {
+			val parentTemplate = timedEdge.parentTemplate
+			val timedLocation = timedEdge.source
 			val outgoingEdges = newHashSet
-			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation && it !== edge
-//				&& !it.allValuesOfFrom.empty /*This way synchronizations and other timed edges are not replicated*/
+			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation && // Edges going out from the original location
+				!timedEdges.contains(it) && // No timed edges
+				!(it.synchronization !== null && // No entry and exit synch edges, as they are present in the target too
+					(it.synchronization.channelExpression.identifier.name.startsWith(Namings.entrySyncNamePrefix) ||
+						it.synchronization.channelExpression.identifier.name.startsWith(Namings.exitSyncNamePrefix)
+					)
+				)
 			]
-			val targetLocation = edge.target
+			val targetLocation = timedEdge.target
 			for (outgoingEdge : outgoingEdges) {
+				// Cloning all outgoing edges of original location
 				val clonedOutgoingEdge = outgoingEdge.clone as Edge
 				clonedOutgoingEdge.source = targetLocation
 				val targetOutgoingEdges = newHashSet
 				targetOutgoingEdges += parentTemplate.edge.filter[it.source === targetLocation && it !== clonedOutgoingEdge]
+				var isDuplicate = false
+				// Deleting the cloned edge if we find out it is a duplicate (maybe it is not needed anymore)
 				for (targetOutgoingEdge : targetOutgoingEdges) {
-					if ((new EqualityHelper()).equals(clonedOutgoingEdge, targetOutgoingEdge)) {
+					if (!isDuplicate && clonedOutgoingEdge.helperEquals(targetOutgoingEdge)) {
 						clonedOutgoingEdge.delete
+						isDuplicate = true
 					}
 				}
 			}
@@ -3871,7 +3879,7 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Copies the synchronization, guard and all the updates from the from edge to the to edge.
 	 */
-	private def copyTo (Edge from, Edge to) {
+	private def copyTo(Edge from, Edge to) {
 		if (from.synchronization !== null && to.synchronization !== null) {
 			if (from.synchronization.channelExpression != to.synchronization.channelExpression)
 			throw new IllegalArgumentException("The target edge has synchronization: " + to)

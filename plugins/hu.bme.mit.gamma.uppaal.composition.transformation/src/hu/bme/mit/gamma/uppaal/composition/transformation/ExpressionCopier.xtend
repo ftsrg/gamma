@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
+import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.expressions.ArithmeticExpression
 import uppaal.expressions.AssignmentExpression
@@ -202,6 +203,11 @@ class ExpressionCopier {
 		newExp.copyBinaryExpressions(expression.firstExpr, expression.secondExpr)
 		expression.addToExpressionTraceTo(newExp)
 		return newExp
+	}
+	
+	def helperEquals(EObject lhs, EObject rhs) {
+		val helperEquals = new EqualityHelper
+		return helperEquals.equals(lhs, rhs)
 	}
 	
 }

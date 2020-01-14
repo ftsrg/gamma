@@ -16,6 +16,9 @@ class Namings {
 	static var exitSyncId = 0
 	static var exitLocationId = 0
 	
+	public static var entrySyncNamePrefix = "entryChanOf"
+	public static var exitSyncNamePrefix = "exitChanOf"
+	
 	def static getAsyncSchedulerChannelName(AsynchronousAdapter wrapper) {
 		return "async" + wrapper.name
 	}
@@ -123,7 +126,7 @@ class Namings {
 		if (state.regions.empty) {
 			throw new IllegalAccessException("State is not composite: " + state)
 		}
-		return ("entryChanOf" + state.name + entrySyncId++).replaceAll(" ", "")
+		return (entrySyncNamePrefix + state.name + entrySyncId++).replaceAll(" ", "")
 	}
 	
 	/**
@@ -133,7 +136,7 @@ class Namings {
 		if (state.regions.empty) {
 			throw new IllegalAccessException("State is not composite: " + state)
 		}
-		return ("exitChanOf" + state.name + exitSyncId++).replaceAll(" ", "")
+		return (exitSyncNamePrefix + state.name + exitSyncId++).replaceAll(" ", "")
 	}
 	
 	def static getConstRepresentationName(Event event, Port port) {
