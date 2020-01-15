@@ -1209,8 +1209,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkInputPossibility(AsynchronousAdapter wrapper) {
-		if (getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN).isEmpty() &&
-				wrapper.getClocks().isEmpty()) {
+		Collection<Event> inputEvents = getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN);
+		if (inputEvents.isEmpty() && wrapper.getClocks().isEmpty()) {
 			warning("This asynchronous adapter can never be executed.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}

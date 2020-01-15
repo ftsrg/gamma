@@ -18,6 +18,9 @@ class Namings {
 	
 	public static var entrySyncNamePrefix = "entryChanOf"
 	public static var exitSyncNamePrefix = "exitChanOf"
+	public static var acrossRegionSyncNamePrefix = "AcrReg"
+	public static var clockNamePrefix = "timer"
+	
 	
 	def static getAsyncSchedulerChannelName(AsynchronousAdapter wrapper) {
 		return "async" + wrapper.name

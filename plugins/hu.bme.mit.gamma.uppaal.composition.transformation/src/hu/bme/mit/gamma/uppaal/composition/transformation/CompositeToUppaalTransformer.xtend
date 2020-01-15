@@ -1242,7 +1242,7 @@ class CompositeToUppaalTransformer {
 			clockEdge.addInitializedGuards
 			// Creating an Uppaal clock var
 			val clockVar = clockTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, "timer" + match.clock.name + owner.postfix)
+			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + match.clock.name + owner.postfix)
 			// Creating the trace
 			addToTrace(match.clock, #{clockVar}, trace)
 			// push....
@@ -1495,7 +1495,7 @@ class CompositeToUppaalTransformer {
 			val parentTemplate = initLoc.parentTemplate
 			// Creating an Uppaal clock var
 			val clockVar = parentTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, "timer" + asyncSchedulerChannelVariable.name + id++)
+			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + asyncSchedulerChannelVariable.name + id++)
 			// Creating the guard
 			if (minTimeoutValue.present) {
 				loopEdge.createMinTimeGuard(clockVar, minTimeoutValue.get)
@@ -2586,7 +2586,7 @@ class CompositeToUppaalTransformer {
 	 * than its source.
 	 */
 	val toLowerRegionTransitionsRule = createRule(ToLowerInstanceTransitions.instance).action [		
-		val syncVar = target.globalDeclarations.createSynchronization(true, false, "AcrReg" + id++)
+		val syncVar = target.globalDeclarations.createSynchronization(true, false, acrossRegionSyncNamePrefix + id++)
 		it.transition.toLowerTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.target.levelOfStateNode, it.instance)		
 	].build
 	
@@ -2714,7 +2714,7 @@ class CompositeToUppaalTransformer {
 	 * than its source.
 	 */
 	val toHigherRegionTransitionsRule = createRule(ToHigherInstanceTransitions.instance).action [		
-		val syncVar = target.globalDeclarations.createSynchronization(true, false, "AcrReg" + id++)
+		val syncVar = target.globalDeclarations.createSynchronization(true, false, acrossRegionSyncNamePrefix + id++)
 		it.transition.toHigherTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.source.levelOfStateNode, it.instance)
 	].build
 	
@@ -3220,7 +3220,7 @@ class CompositeToUppaalTransformer {
 			val location = cloneEdge.source
 			val locInvariant = location.invariant
 			val newLoc = template.createChild(template_Location, getLocation) as Location => [
-				it.name = "timer" + (id++)
+				it.name = clockNamePrefix + (id++)
 			]
 			// Creating the trace; this is why this rule depends on toLowerTransitionsRule and ToHigherTransitionsRule
 			addToTrace(it.state, #{newLoc}, trace)
@@ -3261,7 +3261,7 @@ class CompositeToUppaalTransformer {
 				.getAllValuesOftimeoutDeclaration(state, null, null, null, null).size > 1) {
 			// If the template has no clocks OR the state has more than one timer, a NEW clock has to be created
 			clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, "timer" + (id++))
+			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + (id++))
 			return clockVar
 		}
 		// The simple common template clock is enough
