@@ -1,7 +1,0 @@
-import "AsyncOrionSystem"
-analysis {
-	component : AsyncLoseAnyMessageSystem
-	language : UPPAAL
-//	minimum-orchestrating-period : 449 ms
-//	maximum-orchestrating-period : 449 ms
-}
