@@ -3,7 +3,7 @@ package orion_system
 import "Interface/Interfaces"
 import "Master/Orion_Master_SM"
 import "Slave/Orion_Slave_SM"
-import "ChannelTiming/Channel"
+import "ChannelTimingNew/Channel"
 
 sync OrionSystem [
 	
