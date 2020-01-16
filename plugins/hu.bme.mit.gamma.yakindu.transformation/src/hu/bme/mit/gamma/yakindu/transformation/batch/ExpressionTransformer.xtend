@@ -122,8 +122,8 @@ class ExpressionTransformer {
 		val interfaceMappings = statechartCompilation.interfaceMappings
 				.filter[it.yakinduInterface.events.contains(event)]
 		if (interfaceMappings.size != 1) {
-			throw new IllegalArgumentException("This Yakindu event is contained by more
-				than one Yakindu interface: " + event + " " + interfaceMappings)
+			throw new IllegalArgumentException("This Yakindu event is not contained by a
+				single Yakindu interface: " + event + " " + interfaceMappings)
 		}
 		val gammaInterface = interfaceMappings.head.gammaInterface
 		val gammaEvents = gammaInterface.events.map[it.event].filter[it.name == eventName]
@@ -138,8 +138,7 @@ class ExpressionTransformer {
 		val yInterface = (event.eContainer as InterfaceScope)
     	val gPorts = yInterface.allValuesOfTo.filter(Port)
     	if (gPorts.size != 1) {
-    		throw new IllegalArgumentException("More than one Gamma port connected to Yakindu interface: "
-    			+ gPorts)
+    		throw new IllegalArgumentException("Not one Gamma port connected to Yakindu interface: " + gPorts)
     	}
     	return gPorts.head
 	}
