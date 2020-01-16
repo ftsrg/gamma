@@ -3593,24 +3593,6 @@ class CompositeToUppaalTransformer {
 							LogicalOperator.AND
 						)
 					}
-					// Priorities regarding time trigger guards have to be handled separately due to the timing location mapping style
-//					val timeMatches = TimeTriggersOfTransitions.Matcher.on(engine).getAllMatches(null, higherPriorityTransition, null, null, null, null)
-//					if (!timeMatches.isEmpty) {
-//						val originalGuard = edge.guard
-//						for (timeMatch : timeMatches) {
-//							val clockVar = timeMatch.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
-//							val timeValue = timeMatch.time.convertToMs
-//							if (originalGuard !== null) {
-//								// The negation of Greater or equals is Less
-//								edge.insertLogicalExpression(edge_Guard, CompareOperator.LESS, clockVar,
-//									timeValue, originalGuard, timeMatch.timeoutEventReference, LogicalOperator.AND)		
-//							}
-//							else {
-//								edge.insertCompareExpression(edge_Guard, CompareOperator.LESS, clockVar,
-//									timeValue, timeMatch.timeoutEventReference)		
-//							}
-//						}
-//					}
 				}
 			}
 		}
