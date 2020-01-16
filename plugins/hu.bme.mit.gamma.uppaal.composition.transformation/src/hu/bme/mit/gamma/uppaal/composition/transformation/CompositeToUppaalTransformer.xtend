@@ -3235,14 +3235,14 @@ class CompositeToUppaalTransformer {
 			// Putting the expression onto the location and edge
 			if (locInvariant !== null) {
 				location.insertLogicalExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, locInvariant, it.timeoutEventReference, LogicalOperator.AND)
-			} 
+			}
 			else {
 				location.insertCompareExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)
 			}
 			val originalGuard = cloneEdge.guard
 			if (originalGuard !== null) {
 				newEdge.insertLogicalExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVar, timeValue, originalGuard, it.timeoutEventReference, LogicalOperator.OR)		
-			} 
+			}
 			else {
 				newEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)		
 			}		
@@ -3373,7 +3373,7 @@ class CompositeToUppaalTransformer {
 	].build
 	
 	/**
-	 * Responsible for placing the ttmcExpressions onto the given edge. It is needed to ensure that "isActive"
+	 * Responsible for placing the Gamma expressions onto the given edge. It is needed to ensure that "isActive"
 	 * variables are handled correctly (if they are present).
 	 */
 	private def transformGuard(Edge edge, hu.bme.mit.gamma.expression.model.Expression guard) {
@@ -3386,7 +3386,7 @@ class CompositeToUppaalTransformer {
 				it.operator = LogicalOperator.AND
 				it.secondExpr = oldGuard
 			]		
-			// This is the transformation of the regular TTMC guard
+			// This is the transformation of the regular Gamma guard
 			andExpression.transform(binaryExpression_FirstExpr, guard, edge.owner)
 		}
 		// If there is no "isActive" reference, it is transformed regularly
@@ -3593,6 +3593,24 @@ class CompositeToUppaalTransformer {
 							LogicalOperator.AND
 						)
 					}
+					// Priorities regarding time trigger guards have to be handled separately due to the timing location mapping style
+//					val timeMatches = TimeTriggersOfTransitions.Matcher.on(engine).getAllMatches(null, higherPriorityTransition, null, null, null, null)
+//					if (!timeMatches.isEmpty) {
+//						val originalGuard = edge.guard
+//						for (timeMatch : timeMatches) {
+//							val clockVar = timeMatch.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
+//							val timeValue = timeMatch.time.convertToMs
+//							if (originalGuard !== null) {
+//								// The negation of Greater or equals is Less
+//								edge.insertLogicalExpression(edge_Guard, CompareOperator.LESS, clockVar,
+//									timeValue, originalGuard, timeMatch.timeoutEventReference, LogicalOperator.AND)		
+//							}
+//							else {
+//								edge.insertCompareExpression(edge_Guard, CompareOperator.LESS, clockVar,
+//									timeValue, timeMatch.timeoutEventReference)		
+//							}
+//						}
+//					}
 				}
 			}
 		}
@@ -3659,9 +3677,9 @@ class CompositeToUppaalTransformer {
 			val finalizeEdge = template.createFinalizeEdge("FinalizeBefore" + it.name.toFirstUpper.replaceAll(" ", ""), commLoc)			
 			val incomingEdges = new HashSet<Edge>(template.edge.filter[it.target == commLoc && it != finalizeEdge].toSet)
 			for (incomingEdge : incomingEdges) {
-				val ttmcSource = incomingEdge.source.allValuesOfFrom.head as StateNode
+				val gammaSource = incomingEdge.source.allValuesOfFrom.head as StateNode
 				// If not an entry edge: normal entry, history entry
-				if (!(ttmcSource.isEntryStateReachable || ttmcSource == it.compositeState)) {
+				if (!(gammaSource.isEntryStateReachable || gammaSource == it.compositeState)) {
 					incomingEdge.target = finalizeEdge.source
 				}
 			}
