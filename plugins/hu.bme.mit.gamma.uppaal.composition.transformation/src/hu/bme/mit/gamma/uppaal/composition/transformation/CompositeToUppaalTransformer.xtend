@@ -364,7 +364,8 @@ class CompositeToUppaalTransformer {
 		timeTriggersRule.fireAllCurrent} // Should come right after eventTriggersRule		
 		{guardsRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
-		transitionPriorityRule.fireAllCurrent}
+		transitionPriorityRule.fireAllCurrent
+		transitionTimedTransitionPriorityRule.fireAllCurrent}
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
 		compositeStateEntryRule.fireAllCurrent 
@@ -3592,6 +3593,36 @@ class CompositeToUppaalTransformer {
 							],
 							LogicalOperator.AND
 						)
+					}
+				}
+			}
+		}
+	].build
+	
+	val transitionTimedTransitionPriorityRule = createRule(Transitions.instance).action [
+		// Priorities regarding time trigger guards have to be handled separately due to 
+		// the timing location mapping style
+		val containingStatechart = it.transition.containingStatechart
+		if (containingStatechart.transitionPriority != TransitionPriority.OFF) {
+			val prioritizedTransitions = it.transition.prioritizedTransitions
+			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
+				for (higherPriorityTransition : prioritizedTransitions) {
+					val timeMatches = TimeTriggersOfTransitions.Matcher.on(engine).getAllMatches(null, higherPriorityTransition, null, null, null, null)
+					if (!timeMatches.isEmpty) {
+						val originalGuard = edge.guard
+						for (timeMatch : timeMatches) {
+							val clockVar = timeMatch.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
+							val timeValue = timeMatch.time.convertToMs
+							if (originalGuard !== null) {
+								// The negation of "greater or equals" is "less"
+								edge.insertLogicalExpression(edge_Guard, CompareOperator.LESS, clockVar,
+									timeValue, originalGuard, timeMatch.timeoutEventReference, LogicalOperator.AND)
+							}
+							else {
+								edge.insertCompareExpression(edge_Guard, CompareOperator.LESS, clockVar,
+									timeValue, timeMatch.timeoutEventReference)
+							}
+						}
 					}
 				}
 			}
