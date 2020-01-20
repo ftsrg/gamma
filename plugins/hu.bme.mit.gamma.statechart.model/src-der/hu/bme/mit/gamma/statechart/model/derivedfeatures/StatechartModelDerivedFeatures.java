@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.statechart.model.derivedfeatures;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -188,6 +189,32 @@ public class StatechartModelDerivedFeatures {
 			return null;
 		}
 		return getParentRegion((State) region.eContainer());
+	}
+	
+	public static List<hu.bme.mit.gamma.statechart.model.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
+		List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(lhs);
+		ancestors.retainAll(getAncestors(rhs));
+		return ancestors;
+	}
+	
+	public static List<hu.bme.mit.gamma.statechart.model.State> getAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
+			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
+			List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(parentState);
+			ancestors.add(parentState);
+			return ancestors;
+		}
+		return new ArrayList<hu.bme.mit.gamma.statechart.model.State>();
+	}
+	
+	public static List<Region> getRegionAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
+			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
+			List<Region> ancestors = getRegionAncestors(parentState);
+			ancestors.add((Region) node.eContainer());
+			return ancestors;
+		}
+		return new ArrayList<Region>();
 	}
 	
 	/**

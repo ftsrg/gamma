@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -44,6 +45,7 @@ import hu.bme.mit.gamma.statechart.model.AnyTrigger;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
 import hu.bme.mit.gamma.statechart.model.Clock;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
+import hu.bme.mit.gamma.statechart.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.model.EntryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventTrigger;
@@ -781,28 +783,27 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	private void checkTransitionOrientation(Transition transition) {
-		StateNode sourceState = transition.getSourceState();
-		StateNode targetState = transition.getTargetState();
-		if (sourceState.eContainer() == targetState.eContainer()) {
-			// Transitions in same region are permitted
+		if (StatechartModelDerivedFeatures.isSameRegion(transition) ||
+				StatechartModelDerivedFeatures.isToLower(transition) ||
+				StatechartModelDerivedFeatures.isToHigher(transition)) {
+			// These transitions are permitted
 			return;
 		}
-		Collection<hu.bme.mit.gamma.statechart.model.State> commonAncestors =
-				getCommonAncestors(sourceState, targetState);
-		Region sourceParentRegion = StatechartModelDerivedFeatures.getParentRegion(sourceState);
-		if (StatechartModelDerivedFeatures.isSubregion(sourceParentRegion)) {
-			hu.bme.mit.gamma.statechart.model.State parentSourceState =
-				StatechartModelDerivedFeatures.getParentState(sourceState);
-			Collection<hu.bme.mit.gamma.statechart.model.State> acceptableAncestors =
-				getAncestors(parentSourceState);
-			// Transitions going out of the state are allowed
-			commonAncestors.removeAll(acceptableAncestors);
+		StateNode sourceState = transition.getSourceState();
+		StateNode targetState = transition.getTargetState();
+		List<Region> sourceRegionAncestors = StatechartModelDerivedFeatures.getRegionAncestors(sourceState);
+		List<Region> targetRegionAncestors = StatechartModelDerivedFeatures.getRegionAncestors(targetState);
+		for (Region sourceRegionAncestor : sourceRegionAncestors) {
+			CompositeElement sourceCompositeElement = (CompositeElement) sourceRegionAncestor.eContainer();
+			for (Region targetRegionAncestor : targetRegionAncestors) {
+				if (sourceCompositeElement.getRegions().contains(sourceRegionAncestor) &&
+						sourceCompositeElement.getRegions().contains(targetRegionAncestor)) {
+					error("The orientation of this transition is incorrect as the source and target are in orthogonal regions of: " +
+							((NamedElement) sourceCompositeElement).getName() + ".", StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
+				}
+			}
 		}
-		if (!commonAncestors.isEmpty()) {
-			error("The orientation of this transition is incorrect as the source and target are in orthogonal regions "
-				+ "of the following states: " +	commonAncestors.stream().map(it -> it.getName()).collect(Collectors.toSet())
-				+ ".", StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
-		}
+		
 	}
 	
 	@Check
@@ -811,22 +812,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
 		}
 	}
-	
-	private Collection<hu.bme.mit.gamma.statechart.model.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
-		Collection<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(lhs);
-		ancestors.retainAll(getAncestors(rhs));
-		return ancestors;
-	}
-	
-	private Collection<hu.bme.mit.gamma.statechart.model.State> getAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
-			Collection<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(parentState);
-			ancestors.add(parentState);
-			return ancestors;
-		}
-		return new HashSet<hu.bme.mit.gamma.statechart.model.State>();
-	}
+
 	
 	// Composite system
 	
