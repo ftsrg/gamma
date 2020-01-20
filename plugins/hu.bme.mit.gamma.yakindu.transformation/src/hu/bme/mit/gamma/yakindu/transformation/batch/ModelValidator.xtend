@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
+import hu.bme.mit.gamma.yakindu.transformation.queries.EmptyChoiceTransitions
 import hu.bme.mit.gamma.yakindu.transformation.queries.EntryOrExitReactionWithGuards
 import hu.bme.mit.gamma.yakindu.transformation.queries.NamesWithIncorrectCharacters
 import hu.bme.mit.gamma.yakindu.transformation.queries.RaisedInEvents
@@ -40,6 +41,7 @@ class ModelValidator {
     	checkUniqueNames
     	checkInEventRaisings
     	checkOutEventRaisings
+    	checkEmptyChoiceTransitions
     }
 
 	/**
@@ -63,7 +65,7 @@ class ModelValidator {
 		val idMatcher = engine.getMatcher(NamesWithIncorrectCharacters.instance)
 		for (idMatch : idMatcher.allMatches.filter[!it.namedElement.name.nullOrEmpty]) {
 			throw new IllegalArgumentException("The following named element has an incorrect name: " +
-				idMatch.namedElement.name + ". Only letters, underscore and digits are permitted.")	
+				idMatch.namedElement.name + ". Only letters, underscore and digits are permitted.")
 		}
 	}
 	
@@ -95,7 +97,18 @@ class ModelValidator {
 		for (raisedOutEventMatch : raisedOutEventsMatcher.allMatches) {
 			throw new IllegalArgumentException("The following OUT event is used by the statechart: " + raisedOutEventMatch.event + ".")	
 		}
-	}	
+	}
 	
+	
+		/**
+	 * This method checks whether any out-events are used as triggers.
+	 */
+	private def checkEmptyChoiceTransitions() throws Exception {
+		val emptyTransitionsMatcher = engine.getMatcher(EmptyChoiceTransitions.instance)
+		for (emptyTransitionsMatch : emptyTransitionsMatcher.allMatches) {
+			val transition = emptyTransitionsMatch.transition
+			throw new IllegalArgumentException("The following transition contains neither a trigger nor a guard: " +
+				transition.source.name + " -> " + transition.target.name + ". Use a default trigger or a guard!")	
+		}
+	}
 }
-		

@@ -62,3 +62,9 @@ pattern raisedOutEvents(event : EventDefinition) {
 	FeatureCall.feature(featureCall, event);
 	EventDefinition.direction(event, ::OUT);
 }
+
+pattern emptyChoiceTransitions(transition : Transition) {
+	Choice(choice);
+	Transition.source(transition, choice);
+	neg Transition.trigger(transition, _trigger);
+}
