@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
 import hu.bme.mit.gamma.yakindu.transformation.queries.EntryOrExitReactionWithGuards
+import hu.bme.mit.gamma.yakindu.transformation.queries.NamesWithIncorrectCharacters
 import hu.bme.mit.gamma.yakindu.transformation.queries.RaisedInEvents
 import hu.bme.mit.gamma.yakindu.transformation.queries.RaisedOutEvents
 import hu.bme.mit.gamma.yakindu.transformation.queries.StatesWithSameName
@@ -35,6 +36,7 @@ class ModelValidator {
     
     def checkModel() {
     	checkEntryAndExitLocalReactions
+    	checkIds
     	checkUniqueNames
     	checkInEventRaisings
     	checkOutEventRaisings
@@ -55,12 +57,23 @@ class ModelValidator {
 	}
 	
 	/**
+	 * This method checks whether there are incorrect names.
+	 */
+	private def checkIds() throws Exception {
+		val idMatcher = engine.getMatcher(NamesWithIncorrectCharacters.instance)
+		for (idMatch : idMatcher.allMatches.filter[!it.namedElement.name.nullOrEmpty]) {
+			throw new IllegalArgumentException("The following named element has an incorrect name: " +
+				idMatch.namedElement.name + ". Only letters, underscore and digits are permitted.")	
+		}
+	}
+	
+	/**
 	 * This method checks whether there are multiple states with the same name.
 	 */
 	private def checkUniqueNames() throws Exception {
 		val uniqueNamesMatcher = engine.getMatcher(StatesWithSameName.instance)
 		for (uniqueNamesMatch : uniqueNamesMatcher.allMatches) {
-			throw new IllegalArgumentException("The following states have the same name: " + uniqueNamesMatch.lhs + " and " + uniqueNamesMatch.rhs + ".")	
+			throw new IllegalArgumentException("The following states have the same name: " + uniqueNamesMatch.lhs + " and " + uniqueNamesMatch.rhs + ".")
 		}
 	}
 	

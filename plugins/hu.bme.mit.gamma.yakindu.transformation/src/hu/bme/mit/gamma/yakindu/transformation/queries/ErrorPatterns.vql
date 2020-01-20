@@ -34,6 +34,11 @@ pattern entryOrExitReactionWithGuards(state : State) {
 	ExitEvent(exitEvent);
 }
 
+pattern namesWithIncorrectCharacters(namedElement : NamedElement) {
+	NamedElement.name(namedElement, name);
+	check(!name.matches("[_A-Za-z][_A-Za-z0-9\\s]*"));
+}
+
 pattern statesWithSameName(lhs : State, rhs : State, name : java String) {	
  	State.name(lhs, name);
  	State.name(rhs, name);
