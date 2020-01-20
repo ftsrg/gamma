@@ -220,10 +220,12 @@ public class StatechartModelDerivedFeatures {
 		if (parentRegion.eContainer() instanceof State) {
 			parentState = getParentState(parentRegion);
 		}
+		String parentRegionName = parentRegion.getName();
+		parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
 		if (parentState == null) {
-			return parentRegion.getName() + "_" + state.getName();
+			return parentRegionName + "_" + state.getName();
 		}
-		return getFullContainmentHierarchy(parentState) + "_" + parentRegion.getName() + "_" + state.getName();
+		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + state.getName();
 	}
 	
 	public static StatechartDefinition getContainingStatechart(EObject object) {

@@ -15,6 +15,7 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import org.yakindu.sct.model.stext.stext.InternalScope
 
 class StatechartWrapperCodeGenerator {
 	
@@ -206,7 +207,8 @@ class StatechartWrapperCodeGenerator {
 				}
 				return false;
 			}
-			
+
+«««			Getters for variables on named interfaces
 			«FOR port : component.allPorts»
 				«FOR yakinduInterface : port.allValuesOfFrom.filter(InterfaceScope)»
 					«FOR yakinduVariable : yakinduInterface.declarations.filter(VariableDefinition)»
@@ -217,6 +219,17 @@ class StatechartWrapperCodeGenerator {
 						«ENDFOR»
 					«ENDFOR»
 				«ENDFOR»
+			«ENDFOR»
+			
+«««			Getters for variables on non-named interfaces
+			«FOR yakinduVariable : component.variableDeclarations
+					.map[it.allValuesOfFrom.filter(VariableDefinition).head].filterNull SEPARATOR "\n"»
+				«IF (yakinduVariable.eContainer instanceof InterfaceScope && (yakinduVariable.eContainer as InterfaceScope).name.nullOrEmpty)
+					 	|| yakinduVariable.eContainer instanceof InternalScope»
+					public «yakinduVariable.allValuesOfTo.filter(VariableDeclaration).head.type.transformType» get«yakinduVariable.name.toFirstUpper»() {
+						return «component.generateStatemachineInstanceName».get«yakinduVariable.name.toFirstUpper»();
+					}
+				«ENDIF»
 			«ENDFOR»
 			
 			«IF component.needTimer»
