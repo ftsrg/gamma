@@ -1,0 +1,437 @@
+import "missionView"
+trace MissionTrace of Mission
+step {
+	assert {
+		states {
+			station.Idle,
+			satellite.NotRecharging,
+			satellite.WaitingPing,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		elapse 30000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			station.Waiting,
+			satellite.WaitingPing,
+			station.Operation,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 99,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 98,
+			satellite.recharging = false,
+			satellite.data = 99
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 97,
+			satellite.recharging = false,
+			satellite.data = 99
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 96,
+			satellite.recharging = false,
+			satellite.data = 98
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 95,
+			satellite.recharging = false,
+			satellite.data = 98
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 94,
+			satellite.recharging = false,
+			satellite.data = 97
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 93,
+			satellite.recharging = false,
+			satellite.data = 97
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 92,
+			satellite.recharging = false,
+			satellite.data = 96
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Waiting,
+			satellite.Sending,
+			station.Operation,
+			satellite.Consuming,
+			satellite.batteryVariable = 91,
+			satellite.recharging = false,
+			satellite.data = 96
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		raise control.shutdown
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 90,
+			satellite.recharging = false,
+			satellite.data = 95
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 89,
+			satellite.recharging = false,
+			satellite.data = 95
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 88,
+			satellite.recharging = false,
+			satellite.data = 94
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 87,
+			satellite.recharging = false,
+			satellite.data = 94
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 86,
+			satellite.recharging = false,
+			satellite.data = 93
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 85,
+			satellite.recharging = false,
+			satellite.data = 93
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 84,
+			satellite.recharging = false,
+			satellite.data = 92
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 83,
+			satellite.recharging = false,
+			satellite.data = 92
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 82,
+			satellite.recharging = false,
+			satellite.data = 91
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 81,
+			satellite.recharging = false,
+			satellite.data = 91
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.NotRecharging,
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Consuming,
+			satellite.batteryVariable = 80,
+			satellite.recharging = false,
+			satellite.data = 90
+		}
+	}
+}
+step {
+	act {
+		elapse 1000
+		schedule component
+	}
+	assert {
+		states {
+			satellite.Transmitting,
+			station.Idle,
+			satellite.Sending,
+			satellite.Recharging,
+			satellite.Consuming,
+			satellite.batteryVariable = 79,
+			satellite.recharging = true,
+			satellite.data = 90
+		}
+	}
+}

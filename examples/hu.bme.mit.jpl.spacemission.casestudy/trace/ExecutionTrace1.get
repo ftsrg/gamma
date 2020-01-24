@@ -1,0 +1,49 @@
+import "missionView"
+trace MissionTrace of Mission
+step {
+	assert {
+		states {
+			satellite.NotRecharging,
+			station.Idle,
+			satellite.WaitingPing,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		elapse 30000
+		schedule component
+	}
+	assert {
+		states {
+			station.Operation,
+			satellite.NotRecharging,
+			station.Waiting,
+			satellite.WaitingPing,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
+step {
+	act {
+		schedule component
+	}
+	assert {
+		states {
+			satellite.Sending,
+			satellite.Consuming,
+			station.Operation,
+			satellite.NotRecharging,
+			station.Waiting,
+			satellite.Transmitting,
+			satellite.batteryVariable = 100,
+			satellite.recharging = false,
+			satellite.data = 100
+		}
+	}
+}
