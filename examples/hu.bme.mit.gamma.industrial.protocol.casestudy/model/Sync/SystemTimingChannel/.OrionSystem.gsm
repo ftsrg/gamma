@@ -2,11 +2,11 @@
 <hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="orion_systemView">
   <constantDeclarations name="T0">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
   </constantDeclarations>
   <constantDeclarations name="T1">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
   </constantDeclarations>
   <components xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousCompositeComponent" name="OrionSystem">
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">

@@ -2,19 +2,19 @@
 <hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="async_orion_systemView">
   <constantDeclarations name="START0">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
   </constantDeclarations>
   <constantDeclarations name="END1">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="14"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
   </constantDeclarations>
   <constantDeclarations name="START2">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="4"/>
   </constantDeclarations>
   <constantDeclarations name="END3">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="14"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="9"/>
   </constantDeclarations>
   <components xsi:type="hu.bme.mit.gamma.statechart.composite:AsynchronousCompositeComponent" name="OrionSystemAsync">
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">

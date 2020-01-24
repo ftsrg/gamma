@@ -5,7 +5,6 @@ import "SlaveAsync/SlaveAsync.gcd"
 import "ChannelTimingAsync/Channel.gcd"
 
 async OrionSystemAsync [
-	
 ] {
 	component master : Orion_Master_Adapter
 	component masterSlaveChannel : Channel_Adapter

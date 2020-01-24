@@ -5,53 +5,23 @@ statechart ChannelStatechart [
 	port Output : provides StateMachine_Interface_For_Orion
 	port Input : requires StateMachine_Interface_For_Orion
 ] {
-	transition from Entry0 to IdleOrionConnReq
-	transition from Entry1 to IdleOrionAppData
-	transition from Entry2 to IdleOrionConnResp
-	transition from Entry3 to IdleOrionDisconn
-	transition from Entry4 to IdleOrionConnConf
-	transition from Entry5 to IdleOrionDisconnCause
-	transition from Entry6 to IdleOrionKeepAlive
-	transition from IdleOrionAppData to IdleOrionAppData when Input.OrionAppData / raise
-		Output.OrionAppData;
-	transition from IdleOrionConnConf to IdleOrionConnConf when Input.OrionConnConf / raise
-		Output.OrionConnConf;
-	transition from IdleOrionConnReq to IdleOrionConnReq when Input.OrionConnReq / raise
-		Output.OrionConnReq;
-	transition from IdleOrionConnResp to IdleOrionConnResp when Input.OrionConnResp / raise
-		Output.OrionConnResp;
+	transition from Entry0 to IdleOrionDisconn
 	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionDisconn / raise
 		Output.OrionDisconn;
-	transition from IdleOrionDisconnCause to IdleOrionDisconnCause when Input.OrionDisconnCause / raise
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionDisconnCause / raise
 		Output.OrionDisconnCause;
-	transition from IdleOrionKeepAlive to IdleOrionKeepAlive when Input.OrionKeepAlive / raise
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionConnReq / raise
+		Output.OrionConnReq;
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionAppData / raise
+		Output.OrionAppData;
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionKeepAlive / raise
 		Output.OrionKeepAlive;
-	region OrionConnRespRegion {
-		initial Entry2
-		state IdleOrionConnResp
-	}
-	region OrionDisconnCauseRegion {
-		initial Entry5
-		state IdleOrionDisconnCause
-	}
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionConnConf / raise
+		Output.OrionConnConf;
+	transition from IdleOrionDisconn to IdleOrionDisconn when Input.OrionConnResp / raise
+		Output.OrionConnResp;
 	region OrionDisconnRegion {
-		initial Entry3
-		state IdleOrionDisconn
-	}
-	region OrionAppDataRegion {
-		initial Entry1
-		state IdleOrionAppData
-	}
-	region OrionConnConfRegion {
-		initial Entry4
-		state IdleOrionConnConf
-	}
-	region OrionKeepAliveRegion {
-		initial Entry6
-		state IdleOrionKeepAlive
-	}
-	region OrionConnReqRegion {
 		initial Entry0
-		state IdleOrionConnReq
+		state IdleOrionDisconn
 	}
 }

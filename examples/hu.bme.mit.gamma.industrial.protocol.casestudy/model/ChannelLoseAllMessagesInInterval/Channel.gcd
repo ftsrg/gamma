@@ -1,7 +1,7 @@
 package Channel
 import "interfaces"
-const START : integer := 9
-const END : integer := 14
+const START : integer := 4
+const END : integer := 9
 @PrioritizedTransitions = order-based
 statechart ChannelStatechart [
 	port Output : provides StateMachine_Interface_For_Orion

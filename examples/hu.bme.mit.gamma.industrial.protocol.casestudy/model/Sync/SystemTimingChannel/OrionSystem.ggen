@@ -2,6 +2,6 @@ import "OrionSystem"
 analysis {
 	component : OrionSystem
 	language : UPPAAL
-	minimum-orchestrating-period : 150 ms
-	maximum-orchestrating-period : 150 ms
+	minimum-orchestrating-period : 349 ms
+	maximum-orchestrating-period : 349 ms
 }

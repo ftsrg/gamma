@@ -1,12 +1,10 @@
 package orion_system
 
-import "Interface/Interfaces"
 import "Master/Orion_Master_SM"
 import "Slave/Orion_Slave_SM"
 import "ChannelIdeal/Channel"
 
 cascade OrionSystem [
-	
 ] {
 	component master : Orion_Master_SM
 	component masterSlaveChannel : ChannelStatechart

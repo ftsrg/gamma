@@ -1,13 +1,12 @@
 package orion_master_sm
 import "Interface/Interfaces"
-//@PrioritizedTransitions = order-based
 statechart Orion_Master_SM [
 	port Block_Port : requires Block_Interface_ForOrion
+	port Connection_Port : requires Connection_Interface_For_Orion
 	port StateMachine_Port : requires StateMachine_Interface_For_Orion
 	port Send_StateMachine_Port : provides StateMachine_Interface_For_Orion
 	port Process_StateMachine_Port : provides StateMachine_Interface_For_Orion
 ] {
-//	var enterKapcsolodvaCount : integer
 	timeout TimoeutKeepAliveReceiveTimeout_3
 	timeout TimeoutKapcsolodik_2
 	timeout TimeoutZarva_0
@@ -19,7 +18,7 @@ statechart Orion_Master_SM [
 	transition from Kapcsolodik_2 to _6_in_main_region_of_Orion_Master_SM when timeout
 		TimeoutKapcsolodik_2
 	transition from Kapcsolodva_4 to _4_in_main_region_of_Orion_Master_SM when
-		Block_Port.Operation_Call_Disconn
+		Connection_Port.Operation_Call_Disconn
 	transition from KeepAliveSendTimeout_1 to KeepAliveSendTimeout_1 when timeout
 		TimeoutKeepAliveSendTimeout_1 / raise Send_StateMachine_Port.OrionKeepAlive;
 	transition from init_5_in_main_region_of_Orion_Master_SM to Zarva_0
@@ -37,7 +36,7 @@ statechart Orion_Master_SM [
 		StateMachine_Port.OrionConnConf
 	transition from Kapcsolodva_4 to _4_in_main_region_of_Orion_Master_SM when
 		Block_Port.Operation_Call_Invalid
-	transition from Zarva_0 to Kapcsolodik_2 when Block_Port.Operation_Call_Connect / raise
+	transition from Zarva_0 to Kapcsolodik_2 when Connection_Port.Operation_Call_Connect / raise
 		Send_StateMachine_Port.OrionConnReq;
 	transition from Kapcsolodik_2 to _6_in_main_region_of_Orion_Master_SM when
 		StateMachine_Port.OrionKeepAlive
@@ -54,7 +53,7 @@ statechart Orion_Master_SM [
 	transition from KeepAliveReceiveTimeout_3 to KeepAliveReceiveTimeout_3 when
 		StateMachine_Port.OrionKeepAlive
 	transition from _4_in_main_region_of_Orion_Master_SM to Zarva_0 / raise
-		Send_StateMachine_Port.OrionDisconn; //enterKapcsolodvaCount := 3;
+		Send_StateMachine_Port.OrionDisconn;
 	transition from _6_in_main_region_of_Orion_Master_SM to Zarva_0 / raise
 		Send_StateMachine_Port.OrionDisconn;
 	transition from Kapcsolodva_4 to _4_in_main_region_of_Orion_Master_SM when
@@ -67,7 +66,6 @@ statechart Orion_Master_SM [
 			entry / set TimeoutKapcsolodik_2 := 5 s;
 		}
 		state Kapcsolodva_4 {
-//			entry / enterKapcsolodvaCount := enterKapcsolodvaCount + 1;
 			region region_1_in_Kapcsolodva_4 {
 				state KeepAliveSendTimeout_1 {
 					entry / set TimeoutKeepAliveSendTimeout_1 := 4 s;

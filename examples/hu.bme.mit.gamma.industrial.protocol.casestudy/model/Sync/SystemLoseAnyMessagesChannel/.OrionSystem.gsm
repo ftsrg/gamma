@@ -2,38 +2,43 @@
 <hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.action="http://www.mit.bme.hu/gamma/action/Model" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="orion_systemView">
   <constantDeclarations name="LOST_MESSAGE_MAX_COUNT0">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="3"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
   </constantDeclarations>
   <constantDeclarations name="LOST_MESSAGE_MAX_COUNT1">
     <type xsi:type="hu.bme.mit.gamma.expression:IntegerTypeDefinition"/>
-    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="3"/>
+    <expression xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="5"/>
   </constantDeclarations>
   <components xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousCompositeComponent" name="OrionSystem">
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
-      <providedPort instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
+      <providedPort instance="//@components.0/@components.0" port="//@components.1/@ports.3"/>
       <requiredPort instance="//@components.0/@components.1" port="//@components.2/@ports.1"/>
     </channels>
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
       <providedPort instance="//@components.0/@components.1" port="//@components.2/@ports.0"/>
-      <requiredPort instance="//@components.0/@components.2" port="//@components.3/@ports.1"/>
+      <requiredPort instance="//@components.0/@components.2" port="//@components.3/@ports.2"/>
     </channels>
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
-      <providedPort instance="//@components.0/@components.2" port="//@components.3/@ports.2"/>
+      <providedPort instance="//@components.0/@components.2" port="//@components.3/@ports.3"/>
       <requiredPort instance="//@components.0/@components.3" port="//@components.4/@ports.1"/>
     </channels>
     <channels xsi:type="hu.bme.mit.gamma.statechart.composite:SimpleChannel">
       <providedPort instance="//@components.0/@components.3" port="//@components.4/@ports.0"/>
-      <requiredPort instance="//@components.0/@components.0" port="//@components.1/@ports.1"/>
+      <requiredPort instance="//@components.0/@components.0" port="//@components.1/@ports.2"/>
     </channels>
     <components name="master" type="//@components.1"/>
     <components name="masterSlaveChannel" type="//@components.2"/>
     <components name="slave" type="//@components.3"/>
     <components name="slaveMasterChannel" type="//@components.4"/>
   </components>
-  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Orion_Master_SM" transitionPriority="ORDER_BASED">
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Orion_Master_SM">
     <ports name="Block_Port">
       <interfaceRealization realizationMode="REQUIRED">
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="Connection_Port">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2"/>
       </interfaceRealization>
     </ports>
     <ports name="StateMachine_Port">
@@ -103,11 +108,11 @@
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.2">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
       </effects>
     </transitions>
@@ -118,8 +123,8 @@
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
@@ -127,7 +132,7 @@
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.3"/>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
       </effects>
     </transitions>
@@ -136,21 +141,21 @@
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.1/@timeoutDeclarations.2"/>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0"/>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
         </eventReference>
       </trigger>
@@ -158,21 +163,21 @@
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.2/@regions.0/@stateNodes.0"/>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
         </eventReference>
       </trigger>
@@ -180,40 +185,40 @@
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.1">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.4">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
         </eventReference>
       </trigger>
@@ -224,50 +229,50 @@
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.1" targetState="//@components.1/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0" targetState="//@components.1/@regions.0/@stateNodes.2/@regions.1/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.3" targetState="//@components.1/@regions.0/@stateNodes.0">
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.5" targetState="//@components.1/@regions.0/@stateNodes.0">
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.1/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.1/@regions.0/@stateNodes.2" targetState="//@components.1/@regions.0/@stateNodes.3">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.1/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
         </eventReference>
       </trigger>
     </transitions>
   </components>
-  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="ChannelStatechart">
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="ChannelStatechart" transitionPriority="ORDER_BASED">
     <ports name="Output">
       <interfaceRealization>
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1"/>
@@ -276,11 +281,6 @@
     <ports name="Input">
       <interfaceRealization realizationMode="REQUIRED">
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1"/>
-      </interfaceRealization>
-    </ports>
-    <ports name="Operation">
-      <interfaceRealization realizationMode="REQUIRED">
-        <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2"/>
       </interfaceRealization>
     </ports>
     <regions name="MainRegion">
@@ -485,10 +485,15 @@
       </effects>
     </transitions>
   </components>
-  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Orion_Slave_SM" transitionPriority="ORDER_BASED">
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="Orion_Slave_SM">
     <ports name="Block_Port">
       <interfaceRealization realizationMode="REQUIRED">
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0"/>
+      </interfaceRealization>
+    </ports>
+    <ports name="Connection_Port">
+      <interfaceRealization realizationMode="REQUIRED">
+        <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2"/>
       </interfaceRealization>
     </ports>
     <ports name="StateMachine_Port">
@@ -556,11 +561,11 @@
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.4">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.5">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
       </effects>
     </transitions>
@@ -571,14 +576,14 @@
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.1">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
         </eventReference>
       </trigger>
@@ -586,7 +591,7 @@
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0"/>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
         </eventReference>
       </trigger>
@@ -594,20 +599,20 @@
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.4">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.4">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
         </eventReference>
       </trigger>
@@ -615,23 +620,23 @@
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.3" targetState="//@components.3/@regions.0/@stateNodes.1"/>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.5" targetState="//@components.3/@regions.0/@stateNodes.1">
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.4">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.4">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
         </eventReference>
       </trigger>
@@ -640,64 +645,64 @@
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:TimeoutEventReference" timeout="//@components.3/@timeoutDeclarations.2"/>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.0/@regions.1/@stateNodes.0">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.4" targetState="//@components.3/@regions.0/@stateNodes.1">
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
         <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.4">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.5/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.2" targetState="//@components.3/@regions.0/@stateNodes.5">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.4/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.1" targetState="//@components.3/@regions.0/@stateNodes.2">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.2/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.6/@event"/>
       </effects>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.1">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.2">
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
     <transitions sourceState="//@components.3/@regions.0/@stateNodes.0" targetState="//@components.3/@regions.0/@stateNodes.4">
       <trigger xsi:type="hu.bme.mit.gamma.statechart:EventTrigger">
-        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.0">
-          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+        <eventReference xsi:type="hu.bme.mit.gamma.statechart:PortEventReference" port="//@components.3/@ports.1">
+          <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2/@events.1/@event"/>
         </eventReference>
       </trigger>
     </transitions>
@@ -707,12 +712,12 @@
           <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
         </eventReference>
       </trigger>
-      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.2">
+      <effects xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.3">
         <event href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1/@events.3/@event"/>
       </effects>
     </transitions>
   </components>
-  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="ChannelStatechart">
+  <components xsi:type="hu.bme.mit.gamma.statechart:StatechartDefinition" name="ChannelStatechart" transitionPriority="ORDER_BASED">
     <ports name="Output">
       <interfaceRealization>
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1"/>
@@ -721,11 +726,6 @@
     <ports name="Input">
       <interfaceRealization realizationMode="REQUIRED">
         <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.1"/>
-      </interfaceRealization>
-    </ports>
-    <ports name="Operation">
-      <interfaceRealization realizationMode="REQUIRED">
-        <interface href="platform:/resource/hu.bme.mit.gamma.prolan.orion/model/Interface/Interfaces.gcd#//@interfaces.2"/>
       </interfaceRealization>
     </ports>
     <regions name="MainRegion">

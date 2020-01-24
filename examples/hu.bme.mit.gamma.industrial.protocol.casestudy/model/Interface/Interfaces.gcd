@@ -1,8 +1,6 @@
 package interfaces
 interface Block_Interface_ForOrion {
 	out event Operation_Call_SendData
-	out event Operation_Call_Connect
-	out event Operation_Call_Disconn
 	out event Operation_Call_Invalid
 }
 interface StateMachine_Interface_For_Orion {
@@ -13,6 +11,10 @@ interface StateMachine_Interface_For_Orion {
 	out event OrionKeepAlive
 	out event OrionConnConf
 	out event OrionConnResp
+}
+interface Connection_Interface_For_Orion {
+	out event Operation_Call_Connect
+	out event Operation_Call_Disconn
 }
 interface Operation {
 	out event fail

@@ -1,6 +1,6 @@
 package Channel
 import "interfaces"
-const LOST_MESSAGE_MAX_COUNT : integer := 6
+const LOST_MESSAGE_MAX_COUNT : integer := 5
 @PrioritizedTransitions = order-based
 statechart ChannelStatechart [
 	port Output : provides StateMachine_Interface_For_Orion

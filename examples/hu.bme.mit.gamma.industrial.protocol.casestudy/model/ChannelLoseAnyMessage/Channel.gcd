@@ -1,11 +1,10 @@
 package Channel
 import "interfaces"
-const LOST_MESSAGE_MAX_COUNT : integer := 3
-//@PrioritizedTransitions = order-based
+const LOST_MESSAGE_MAX_COUNT : integer := 5
+@PrioritizedTransitions = order-based
 statechart ChannelStatechart [
 	port Output : provides StateMachine_Interface_For_Orion
 	port Input : requires StateMachine_Interface_For_Orion
-	port Operation : requires Operation
 ] {
 	var lostMessageCount : integer := 0
 	transition from Choice1 to Merge17

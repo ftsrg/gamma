@@ -1,14 +1,13 @@
 package orion_slave_sm
 import "Interface/Interfaces"
-//@PrioritizedTransitions = order-based
 statechart Orion_Slave_SM [
 	port Block_Port : requires Block_Interface_ForOrion
+	port Connection_Port : requires Connection_Interface_For_Orion
 	port StateMachine_Port : requires StateMachine_Interface_For_Orion
 	port Send_StateMachine_Port : provides StateMachine_Interface_For_Orion
 	port Process_StateMachine_Port : provides StateMachine_Interface_For_Orion
 	port Handle_StateMachine_Port : provides StateMachine_Interface_For_Orion
 ] {
-//	var enterKapcsolodvaCount : integer
 	timeout TimeoutKeepAliveReceiveTimeout_4
 	timeout TimeoutKapcsolodik_3
 	timeout TimeoutKeepAliveSendTimeout_0
@@ -53,12 +52,11 @@ statechart Orion_Slave_SM [
 		Send_StateMachine_Port.OrionConnResp;
 	transition from Kapcsolodva_1 to Zarva_2 when StateMachine_Port.OrionDisconnCause
 	transition from Kapcsolodva_1 to _5_in_main_region_of_Orion_Slave_SM when
-		Block_Port.Operation_Call_Disconn
+		Connection_Port.Operation_Call_Disconn
 	transition from KeepAliveSendTimeout_0 to KeepAliveSendTimeout_0 when
 		Block_Port.Operation_Call_SendData / raise Send_StateMachine_Port.OrionAppData;
 	region main_region_of_Orion_Slave_SM {
 		state Kapcsolodva_1 {
-//			entry / enterKapcsolodvaCount := enterKapcsolodvaCount + 1;
 			region region_1_in_Kapcsolodva_1 {
 				state KeepAliveSendTimeout_0 {
 					entry / set TimeoutKeepAliveSendTimeout_0 := 4 s;

@@ -1,18 +1,16 @@
 package orion_system
 
-import "Interface/Interfaces"
 import "Master/Orion_Master_SM"
 import "Slave/Orion_Slave_SM"
 import "ChannelLoseAnyMessage/Channel"
 
 sync OrionSystem [
-	
 ] {
 	component master : Orion_Master_SM
 	component masterSlaveChannel : ChannelStatechart
 	component slave : Orion_Slave_SM
 	component slaveMasterChannel : ChannelStatechart
-	
+		
 	channel [master.Send_StateMachine_Port] -o)- [masterSlaveChannel.Input]
 	channel [masterSlaveChannel.Output] -o)- [slave.StateMachine_Port]
 	channel [slave.Send_StateMachine_Port] -o)- [slaveMasterChannel.Input]
