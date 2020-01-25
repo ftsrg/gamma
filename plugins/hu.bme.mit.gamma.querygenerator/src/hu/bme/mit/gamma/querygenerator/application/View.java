@@ -98,6 +98,13 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
 	
+	private JMenuItem testGenerationTimeoutMenu;	
+	private ButtonGroup testGenerationTimeoutGroup;
+	private JRadioButtonMenuItem sec15;
+	private JRadioButtonMenuItem sec30;
+	private JRadioButtonMenuItem sec60;
+	private JRadioButtonMenuItem sec90;
+	
 	private JTextArea exampleTextArea;
 	private JTextArea helpTextArea;
 	
@@ -195,6 +202,25 @@ public class View extends JFrame {
 	 	hashtableSizeMenu.add(size512M);
 	 		
 	 	modelCheckingOptionsMenu.add(hashtableSizeMenu);
+	 	
+	    // Setting the test generation timeout
+	 	testGenerationTimeoutMenu = new JMenu("Test Generation Timeout");
+	 	sec15 = new JRadioButtonMenuItem("15 sec");
+	 	sec30 = new JRadioButtonMenuItem("30 sec");
+	 	sec60 = new JRadioButtonMenuItem("60 sec");
+	 	sec90 = new JRadioButtonMenuItem("90 sec");
+	 	sec15.setSelected(true);
+	 	testGenerationTimeoutGroup = new ButtonGroup();
+	 	testGenerationTimeoutGroup.add(sec15);
+	 	testGenerationTimeoutGroup.add(sec30);
+	 	testGenerationTimeoutGroup.add(sec60);
+	 	testGenerationTimeoutGroup.add(sec90);
+	 	testGenerationTimeoutMenu.add(sec15);
+	 	testGenerationTimeoutMenu.add(sec30);
+	 	testGenerationTimeoutMenu.add(sec60);
+	 	testGenerationTimeoutMenu.add(sec90);
+	 		
+	 	optionsMenu.add(testGenerationTimeoutMenu);
 	 	
 	    // Setting the state space reduction
 	 	spaceStateReductionMenu = new JMenu("State Space Reduction");
@@ -621,6 +647,20 @@ public class View extends JFrame {
 		}
 		// 64 MB is deafult
 		return 64;
+	}
+	
+	protected int getTestGenerationTmeout() {
+		if (sec30.isSelected()) {
+			return 30;
+		}
+		if (sec60.isSelected()) {
+			return 60;
+		}
+		if (sec90.isSelected()) {
+			return 90;
+		}
+		// 15 sec is deafult
+		return 15;
 	}
 	
 	protected String getStateSpaceReduction() {

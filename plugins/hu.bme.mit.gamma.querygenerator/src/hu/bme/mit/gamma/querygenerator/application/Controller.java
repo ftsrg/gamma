@@ -687,8 +687,8 @@ public class Controller {
 	     */
     	@Override
 	    public void run() {
-	    	final int TIMEOUT = 40;
 	    	final int SLEEP_INTERVAL = 250;
+	    	final int TIMEOUT = view.getTestGenerationTmeout() * (1000 / SLEEP_INTERVAL);
 	    	Verifier verifier = null;
 	    	StringBuilder buffer = new StringBuilder();
 	    	// Disabling the verification buttons
