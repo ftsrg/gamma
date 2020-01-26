@@ -48,9 +48,7 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
-import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.Variable
-import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.ArithmeticExpression
 import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.AssignmentExpression
@@ -66,6 +64,8 @@ import uppaal.expressions.LogicalOperator
 import uppaal.expressions.MinusExpression
 import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
+
+import static com.google.common.base.Preconditions.checkState
 
 class ExpressionTransformer {
     // For model creation
@@ -147,16 +147,11 @@ class ExpressionTransformer {
 	
 	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression, ComponentInstance owner) {		
 		var Variable declaration
-		val dataDeclaration = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration).head
-		// Checking the constants individually as they do not have an owner
-		if (dataDeclaration.prefix == DataVariablePrefix.CONST) {
-			declaration = dataDeclaration.variable.head
-		}
-		// Normal variables
-		else {
-			// TODO
-			declaration = expression.declaration.allValuesOfTo.filter(VariableDeclaration).filter[it.owner == owner].head.variable.head
-		}
+		val dataDeclarations = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration)
+		checkState(dataDeclarations.size == 1)
+		val dataDeclaration = dataDeclarations.head
+		declaration = dataDeclaration.variable.head
+		// Normal variables: no owner is needed as now every instance has its own statechart declaration
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
 			newExp.identifier = declaration
 		addToTrace(expression, #{newExp}, expressionTrace)
