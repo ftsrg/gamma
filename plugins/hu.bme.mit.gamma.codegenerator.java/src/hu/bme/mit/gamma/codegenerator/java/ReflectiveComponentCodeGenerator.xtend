@@ -93,7 +93,7 @@ class ReflectiveComponentCodeGenerator {
 					«FOR port : component.ports»
 						«FOR inEvent : port.getSemanticEvents(EventDirection.IN)»
 							case "«port.name».«inEvent.name»":
-								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»parameters[«i»]«ENDFOR»);
+								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«IF !inEvent.parameterDeclarations.empty»(«inEvent.parameterDeclarations.head.type.transformType») «ENDIF»parameters[«i»]«ENDFOR»);
 								break;
 						«ENDFOR»
 					«ENDFOR»
