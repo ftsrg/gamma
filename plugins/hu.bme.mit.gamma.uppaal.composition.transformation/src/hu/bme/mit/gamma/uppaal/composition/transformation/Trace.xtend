@@ -346,6 +346,18 @@ class Trace {
 				traceRoot.traces.remove(oldTrace)
 			}		
 		}
+		val fromTraces = newHashSet
+		fromTraces += Traces.Matcher.on(traceEngine).getAllValuesOftrace(object, null)
+		for	(oldTrace : fromTraces) { // Always one trace
+			val traceRoot = oldTrace.eContainer as G2UTrace
+			if (oldTrace.from.size > 1) {
+				oldTrace.remove(trace_From, object)
+			}
+			else {
+				traceRoot.traces.remove(oldTrace)
+			}		
+		}
+		// Expression
 		val expTraces = new HashSet<ExpressionTrace>(ExpressionTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, object).toSet)
 		for	(oldTrace : expTraces) { // Always one trace
 			val traceRoot = oldTrace.eContainer as G2UTrace
@@ -356,6 +368,17 @@ class Trace {
 				traceRoot.traces.remove(oldTrace)
 			}		
 		}
+		val fromExpTraces = new HashSet<ExpressionTrace>(ExpressionTraces.Matcher.on(traceEngine).getAllValuesOftrace(object, null).toSet)
+		for	(oldTrace : fromExpTraces) { // Always one trace
+			val traceRoot = oldTrace.eContainer as G2UTrace
+			if (oldTrace.from.size > 1) {
+				oldTrace.remove(expressionTrace_From, object)
+			}
+			else {
+				traceRoot.traces.remove(oldTrace)
+			}		
+		}
+		// Instances
 		val instanceTraces = new HashSet<InstanceTrace>(InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, object).toSet)
 		for	(oldTrace : instanceTraces) { // Always one trace
 			val traceRoot = oldTrace.eContainer as G2UTrace
@@ -421,6 +444,10 @@ class Trace {
 	}
 	
 	def dispatch void removeTrace(LiteralExpression object) {
+		object.removeFromTraces
+	}
+	
+	def void removeGammaElementFromTrace(EObject object) {
 		object.removeFromTraces
 	}
 	

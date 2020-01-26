@@ -623,8 +623,8 @@ class CompositeToUppaalTransformer {
 				var boolean hasTrue = false
 				var boolean hasFalse = false
 				val hasValue = new HashSet<BigInteger>
+				val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
 				for (expression : expressions) {
-					val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
 					if (!hasTrue && (expression instanceof TrueExpression)) {
 						hasTrue = true
 		   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)
@@ -637,6 +637,13 @@ class CompositeToUppaalTransformer {
 						loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)		
 					}
 					loopEdge.addGuard(isStableVar, LogicalOperator.AND) // isStable is needed on all parameter value loop edge	
+				}
+				// Adding a different value if the type is an integer
+				if (!hasValue.empty) {
+					val maxValue = hasValue.max
+					val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
+					loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, biggerThanMax)		
+					biggerThanMax.removeGammaElementFromTrace
 				}
 			}
 			else {
@@ -721,7 +728,7 @@ class CompositeToUppaalTransformer {
 	 * according to the given Expression. 
 	 */
 	protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-					DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
+			DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
 		val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
 		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
 							.filter[it.owner == owner && it.port == port]
