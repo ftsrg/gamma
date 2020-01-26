@@ -146,6 +146,7 @@
     <genClasses ecoreClass="statechart.ecore#//OpaqueTrigger">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//OpaqueTrigger/trigger"/>
     </genClasses>
+    <genClasses ecoreClass="statechart.ecore#//OnCycleTrigger"/>
     <nestedGenPackages prefix="Interface" basePackage="hu.bme.mit.gamma.statechart.model"
         disposableProviderFactory="true" fileExtensions="gim" ecorePackage="statechart.ecore#//interface">
       <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//interface/EventDirection">

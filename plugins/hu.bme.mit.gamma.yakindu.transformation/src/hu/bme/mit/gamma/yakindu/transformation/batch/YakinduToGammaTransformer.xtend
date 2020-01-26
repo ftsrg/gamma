@@ -769,9 +769,9 @@ class YakinduToGammaTransformer {
     	if (gammaTransition.trigger !== null) {
     		throw new IllegalArgumentException("The following transition already has a trigger: " + gammaTransition)
     	}
-    	val anyTrigger = gammaTransition.createChild(transition_Trigger, anyTrigger)
+    	val onCycleTrigger = gammaTransition.createChild(transition_Trigger, onCycleTrigger)
     	// Creating the trace
-    	addToTrace(yTrigger, #{anyTrigger}, trace)
+    	addToTrace(yTrigger, #{onCycleTrigger}, trace)
     ].build
     
     /**

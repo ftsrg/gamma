@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.model.Clock
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.EventTrigger
+import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PortEventReference
@@ -2995,6 +2996,10 @@ class CompositeToUppaalTransformer {
 			addToTrace(it.trigger, #{triggerGuard}, trace)		
 		}
 	].build
+	
+	private def dispatch Expression transformTrigger(OnCycleTrigger trigger, ComponentInstance owner) {
+		return createLiteralExpression => [it.text = "true"]			
+	}
 	
 	private def dispatch Expression transformTrigger(AnyTrigger trigger, ComponentInstance owner) {
 		return owner.derivedType.ports.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)			
