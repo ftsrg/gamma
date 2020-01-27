@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
@@ -120,8 +121,22 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			return Scopes.scopeFor(variables)
 		}
 		if (context instanceof EnumerationLiteralExpression) {
-			val parent = context.eContainer as InstanceVariableState
-			val enumerationDefinition = parent.declaration.type
+			
+			var Type enumerationDefinition
+			val parent = context.eContainer
+			switch parent {
+				InstanceVariableState: {
+					enumerationDefinition = parent.declaration.type
+				}
+				RaiseEventAct: {
+					val parameterDeclarations = parent.event.parameterDeclarations
+					if (!parameterDeclarations.empty) {
+						enumerationDefinition = parameterDeclarations.head.type
+					}
+				}
+				default:
+					throw new IllegalArgumentException("Not known enumeration use!")
+			}
 			if (enumerationDefinition instanceof TypeReference) {
 				val typeDeclaration = enumerationDefinition.reference
 				val typeDefinition = typeDeclaration.type
