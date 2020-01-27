@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeReference
 
 class TypeTransformer {
 	
@@ -42,7 +43,7 @@ class TypeTransformer {
 	/**
 	 * Returns the Java type equivalent of the Gamma type.
 	 */
-	protected def transformType(Type type) {
+	protected def String transformType(Type type) {
 		switch (type) {
 			IntegerTypeDefinition: {
 				val types = type.getAllValuesOfFrom.filter(org.yakindu.base.types.Type).toSet
@@ -62,6 +63,8 @@ class TypeTransformer {
 				return "boolean"
 			DecimalTypeDefinition: 
 				return "double"
+			TypeReference:
+				return type.reference.name
 			default:
 				throw new IllegalArgumentException("Not known type: " + type)
 		}
