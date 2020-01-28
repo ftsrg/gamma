@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -11,6 +12,7 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class ReflectiveComponentCodeGenerator {
 	
@@ -93,7 +95,7 @@ class ReflectiveComponentCodeGenerator {
 					«FOR port : component.ports»
 						«FOR inEvent : port.getSemanticEvents(EventDirection.IN)»
 							case "«port.name».«inEvent.name»":
-								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«IF !inEvent.parameterDeclarations.empty»(«inEvent.parameterDeclarations.head.type.transformType») «ENDIF»parameters[«i»]«ENDFOR»);
+								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«inEvent.parameterDeclarations.get(i).type.generateParameterCast('''parameters[«i»]''')»«ENDFOR»);
 								break;
 						«ENDFOR»
 					«ENDFOR»
@@ -243,6 +245,16 @@ class ReflectiveComponentCodeGenerator {
 			throw new IllegalArgumentException("Not known component: " + component);
 		}
 	'''
+	
+	protected def generateParameterCast(Type type, String parameter) {
+		if (type instanceof TypeReference) {
+			val typeDeclaration = type.reference
+			if (typeDeclaration.type instanceof EnumerableTypeDefinition) {
+				return '''«typeDeclaration.name».valueOf(«parameter».toString())'''
+			}
+		}
+		return '''(«type.transformType») «parameter»'''
+	}
 	
 	/**
 	 * Enums are returned as strings.
