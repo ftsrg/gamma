@@ -2583,7 +2583,8 @@ class CompositeToUppaalTransformer {
 	private def generateTransitionId(Edge edge) {
 		val owner = edge.owner as SynchronousComponentInstance
 		// testedComponentsForTransitions stores the instances to which tests need to be generated
-		if (testedComponentsForTransitions.exists[it.contains(owner)]) {
+		if (testedComponentsForTransitions.exists[it.contains(owner)] &&
+				edge.source.allValuesOfFrom.filter(EntryState).empty /*No initial edges*/) {
 			edge.createAssignmentExpression(edge_Update, transitionIdVar,
 				createLiteralExpression => [it.text = (transitionId++).toString]
 			)
