@@ -3667,32 +3667,6 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	private def boolean isEntryStateReachable(StateNode node) {
-		if (node instanceof EntryState) {
-			return true
-		}
-		if (!(node instanceof PseudoState)) {
-			return false
-		}
-		// Imagine that an entry state and a regular are is targeted to the same choice
-		// Then the compositeStateEntryRuleCompletion cannot be executed properly
-		var reachedEntry = false
-		var unreachableEntry = false
-		for (incomingTransition: node.incomingTransitions) {
-			val source = incomingTransition.sourceState
-			if (source.isEntryStateReachable) {
-				reachedEntry = true
-			}
-			else {
-				unreachableEntry = true
-			}
-		}
-		if (reachedEntry && unreachableEntry) {
-			throw new IllegalStateException("An entry state and a regular state are targeted to the same choice.")
-		}
-		return reachedEntry
-	}
-	
 	/**
 	 * Places the negated form of the given expression onto the given edge.
 	 */
