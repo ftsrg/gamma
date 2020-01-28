@@ -98,7 +98,7 @@ class CompositeComponentCodeGenerator {
 «««		ValueOf checks
 			«IF !event.parameterDeclarations.empty»
 				@Override
-				public «event.toYakinduEvent(connector.compositeSystemPort).type.eventParameterType» get«event.name.toFirstUpper»Value() {
+				public «event.parameterDeclarations.head.type.transformType» get«event.name.toFirstUpper»Value() {
 					return «event.name.toFirstLower»Value;
 				}
 			«ENDIF»

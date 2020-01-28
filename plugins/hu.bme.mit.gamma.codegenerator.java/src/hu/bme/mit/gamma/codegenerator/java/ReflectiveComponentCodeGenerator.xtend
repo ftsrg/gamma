@@ -1,9 +1,9 @@
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.Component
@@ -12,7 +12,6 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class ReflectiveComponentCodeGenerator {
 	
@@ -112,7 +111,7 @@ class ReflectiveComponentCodeGenerator {
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
+										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»()«IF outEvent.parameterDeclarations.get(i).toBeConvertedToString».toString()«ENDIF»)
 									«ENDFOR»
 									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
 								}
@@ -259,7 +258,7 @@ class ReflectiveComponentCodeGenerator {
 	/**
 	 * Enums are returned as strings.
 	 */
-	protected def toBeConvertedToString(VariableDeclaration variable) {
+	protected def toBeConvertedToString(Declaration variable) {
 		val type = variable.type
 		if (type instanceof EnumerableTypeDefinition) {
 			return true

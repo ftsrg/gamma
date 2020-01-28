@@ -105,7 +105,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					«FOR event : Collections.singletonList(portBinding.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
 						boolean isRaised«event.name.toFirstUpper»;
 						«IF !event.parameterDeclarations.empty»
-							«event.toYakinduEvent(portBinding.compositeSystemPort).type.eventParameterType» «event.name.toFirstLower»Value;
+							«event.parameterDeclarations.head.type.transformType» «event.name.toFirstLower»Value;
 						«ENDIF»
 					«ENDFOR»
 					

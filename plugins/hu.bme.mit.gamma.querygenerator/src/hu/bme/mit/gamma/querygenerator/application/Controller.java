@@ -196,6 +196,9 @@ public class Controller {
 	
 	public String parseRegular(String text, String operator) throws ViatraQueryException {
 		String result = text;
+		if (text.contains("deadlock")) {
+			return text;
+		}
 		List<String> stateNames = this.getStateNames();
 		List<String> variableNames = this.getVariableNames();
 		for (String stateName : stateNames) {
