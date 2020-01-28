@@ -339,7 +339,6 @@ class CompositeToUppaalTransformer {
 	def execute() {
 		initNta
 		createMessageStructType
-		createFinalizeSyncVar
 		createIsStableVar
 		if (!testedComponentsForTransitions.empty) {
 			createTransitionIdVar
@@ -388,8 +387,6 @@ class CompositeToUppaalTransformer {
 		compositeStateExitRule
 		entryTimeoutActionsOfStatesRule.fireAllCurrent
 		isActiveRule.fireAllCurrent
-		// Creating urgent locations in front of composite states, so entry is not immediate
-		compositeStateEntryCompletion
 		// Extend timed locations with outgoing edges from the original location
 		extendTimedLocations
 		// Creating a same level process list, note that it is before the orchestrator template: UPPAAL does not work correctly with priorities
@@ -471,18 +468,6 @@ class CompositeToUppaalTransformer {
 			messageEvent.createTypeAndVariable(target.int, "event")
 			messageValue = messageStructTypeDef.createChild(structTypeSpecification_Declaration, dataVariableDeclaration) as DataVariableDeclaration
 			messageValue.createTypeAndVariable(target.int, "value")
-		}
-	}
-	
-	/**
-	 * Creates a broadcast channel that will be responsible for finalizing an instance.
-	 * That is when all composite state entries are finalized.
-	 */
-	private def createFinalizeSyncVar() {		
-		val finalizeVar = target.globalDeclarations.createSynchronization(true, false, finalizeSyncVarName)
-		for (instance : SimpleInstances.Matcher.on(engine).allValuesOfinstance) {
-			// Maybe strange solution,  composite state entry rules use it
-			addToTrace(instance, #{finalizeVar}, trace)
 		}
 	}
 	
@@ -2017,7 +2002,6 @@ class CompositeToUppaalTransformer {
 	private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
 		var Collection<Edge> lastEdges = #[previousLastEdge]
 		val statechart = instance.type as StatechartDefinition
-		val finalizeSyncVar = instance.finalizeSyncVar
 		// Syncing the templates with run cycles
 		val schedulingOrder = statechart.schedulingOrder
 			// Scheduling either top-down or bottom-up
@@ -2039,14 +2023,10 @@ class CompositeToUppaalTransformer {
 				lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
 			}
 		}
-		// When all templates of an instance is synced, a finalize edge is put in the sequence
-		val finalizeEdge = createCommittedSyncTarget(lastEdges.head.target,
-			finalizeSyncVar.variable.head, "finalize" + instance.name + id++)
-		finalizeEdge.source.locationTimeKind = LocationKind.URGENT
-		for (lastEdge : lastEdges) {
-			lastEdge.target = finalizeEdge.source
+		val lastEdge = createEdgeCommittedTarget(lastEdges.head.target, "finalizing" + id++ + instance.name)
+		for (runCycleEdge : lastEdges) {
+			runCycleEdge.target = lastEdge.source
 		}
-		val lastEdge = finalizeEdge
 		// If the instance is cascade, the in events have to be cleared
 		if (instance.isCascade) {
 			for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
@@ -3687,36 +3667,6 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	/**
-	 * Creates completion locations before composite state entries to make sure the instance behaves correctly in one cycle.
-	 */
-	private def void compositeStateEntryCompletion() {
-		compositeStateEntryRuleCompletion.fireAllCurrent
-		toLowerRegionTransitionCompletion.fireAllCurrent
-	}
-	
-	val compositeStateEntryRuleCompletion = createRule(CompositeStates.instance).action [
-		for (commLoc : it.compositeState.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED]) {
-			// Solving the problem: the finalize should take into the deepest state at once
-			// From the entry node (an loop edge-history) finalize location should be skipped
-			val template = commLoc.parentTemplate
-			val finalizeEdge = template.createFinalizeEdge("FinalizeBefore" + it.name.toFirstUpper.replaceAll(" ", ""), commLoc)			
-			val incomingEdges = new HashSet<Edge>(template.edge.filter[it.target == commLoc && it != finalizeEdge].toSet)
-			for (incomingEdge : incomingEdges) {
-				val gammaSource = incomingEdge.source.allValuesOfFrom.head as StateNode
-				// If not an entry edge: normal entry, history entry
-				if (!(gammaSource.isEntryStateReachable || gammaSource == it.compositeState)) {
-					incomingEdge.target = finalizeEdge.source
-				}
-			}
-			// If the finalize location has no incoming edges, it is unnecessary
-			if (template.edge.filter[it.target == finalizeEdge.source].empty) {
-				template.remove(template_Location, finalizeEdge.source)
-				template.remove(template_Edge, finalizeEdge)
-			}
-		}		
-	].build
-	
 	private def boolean isEntryStateReachable(StateNode node) {
 		if (node instanceof EntryState) {
 			return true
@@ -3741,41 +3691,6 @@ class CompositeToUppaalTransformer {
 			throw new IllegalStateException("An entry state and a regular state are targeted to the same choice.")
 		}
 		return reachedEntry
-	}
-	
-	val toLowerRegionTransitionCompletion = createRule(ToLowerInstanceTransitions.instance).action [
-		val owner = it.instance
-		// The owner filter is needed as ToLowerInstanceTransitionsMatcher returns each transition for each instance
-		for (toLowerEdge : it.transition.allValuesOfTo.filter(Edge).filter[it.owner == owner]) {
-			val template = toLowerEdge.parentTemplate
-			val finalizeEdge = template.createFinalizeEdge("FinalizeBefore" + it.target.name.toFirstUpper.replaceAll(" ", ""), toLowerEdge.target)			
-			toLowerEdge.target = finalizeEdge.source
-		}
-	].build
-	
-	/**
-	 * Creates the finalizing location and edge of the given target.
-	 */
-	private def Edge createFinalizeEdge(Template template, String locationName, Location target) {
-		val owner = template.owner
-		val finalizeSyncVar = owner.finalizeSyncVar			
-		val finalizeLoc = template.createChild(template_Location, location) as Location 
-		finalizeLoc.name = locationName + (id++)
-		finalizeLoc.locationTimeKind = LocationKind.URGENT
-		val finalizeEdge = finalizeLoc.createEdge(target)
-		finalizeEdge.setSynchronization(finalizeSyncVar.variable.head, SynchronizationKind.RECEIVE)
-		return finalizeEdge
-	}
-	
-	/**
-	 * Returns the finalize broadcast channel of the given instance.
-	 */
-	private def getFinalizeSyncVar(ComponentInstance instance) {
-		val finalizeSyncVars = instance.allValuesOfTo.filter(ChannelVariableDeclaration)
-		if (finalizeSyncVars.size != 1) {
-			throw new IllegalArgumentException("The number of the finalizeSyncVars of this instance is not 1: " + finalizeSyncVars)
-		}
-		return finalizeSyncVars.head
 	}
 	
 	/**
