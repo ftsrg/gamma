@@ -27,6 +27,14 @@ pattern traces(trace : Trace, from, to) {
 	Trace.to(trace, to);
 }
 
+// Type declarations
+
+pattern typeDeclarations(typeDeclaration : TypeDeclaration) {
+	TypeDeclaration(typeDeclaration);
+}
+
+// Composition
+
 pattern simpleGammaComponents(statechartDefinition : StatechartDefinition) {
 	StatechartDefinition(statechartDefinition);
 }

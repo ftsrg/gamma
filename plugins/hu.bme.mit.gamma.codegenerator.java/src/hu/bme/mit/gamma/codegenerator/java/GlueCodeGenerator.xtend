@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.codegenerator.java.queries.Interfaces
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleGammaComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
+import hu.bme.mit.gamma.codegenerator.java.queries.TypeDeclarations
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
@@ -53,6 +54,7 @@ class GlueCodeGenerator {
 	// Trace
 	// Auxiliary transformer objects
 	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension TypeDeclarationGenerator typeDeclarationGenerator
 	protected final extension NameGenerator nameGenerator
 	protected final extension EventCodeGenerator eventCodeGenerator
 	protected final extension VirtualTimerServiceCodeGenerator virtualTimerServiceCodeGenerator
@@ -70,6 +72,7 @@ class GlueCodeGenerator {
 	protected final extension AsynchronousCompositeComponentCodeGenerator asynchronousCompositeComponentCodeGenerator
 	
 	// Transformation rules
+	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> typeDeclarationRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> portInterfaceRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsRule
 	protected BatchTransformationRule<? extends IPatternMatch, ? extends ViatraQueryMatcher<?>> simpleComponentsReflectionRule
@@ -90,6 +93,7 @@ class GlueCodeGenerator {
 		//
 		val trace = new Trace(this.engine)
 		this.nameGenerator = new NameGenerator(this.BASE_PACKAGE_NAME)
+		this.typeDeclarationGenerator = new TypeDeclarationGenerator(this.BASE_PACKAGE_NAME)
 		this.eventCodeGenerator = new EventCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.virtualTimerServiceCodeGenerator = new VirtualTimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
 		this.timerInterfaceGenerator = new TimerInterfaceGenerator(this.BASE_PACKAGE_NAME)
@@ -145,7 +149,8 @@ class GlueCodeGenerator {
 		if (topComponent.needTimer) {				
 			// Virtual timer is generated only if there are timing specifications (triggers) in the model
 			generateTimerClasses	
-		}	
+		}
+		getTypeDeclarationRule.fireAllCurrent
 		getPortInterfaceRule.fireAllCurrent
 		generateReflectiveInterfaceRule
 		getSimpleComponentReflectionRule.fireAllCurrent
@@ -220,6 +225,16 @@ class GlueCodeGenerator {
 		unifiedTimerClass.saveCode(BASE_PACKAGE_URI + File.separator + timerServiceCodeGenerator.unifiedClassName + ".java")
 	}
 	
+	protected def getTypeDeclarationRule() {
+		if (typeDeclarationRule === null) {
+			 typeDeclarationRule = createRule(TypeDeclarations.instance).action [
+				val code = it.typeDeclaration.serialize
+				code.saveCode(BASE_PACKAGE_URI + File.separator + it.typeDeclaration.name + ".java")
+			].build		
+		}
+		return typeDeclarationRule
+	}
+	
 	/**
 	 * Creates a Java interface for each Port Interface.
 	 */
@@ -238,7 +253,6 @@ class GlueCodeGenerator {
 		val reflectiveCode = generateReflectiveInterface
 		reflectiveCode.saveCode(interfaceUri + File.separator + Namings.REFLECTIVE_INTERFACE + ".java")
 	}
-	
 	
 	/**
 	 * Creates a reflective Java class for each Gamma component.

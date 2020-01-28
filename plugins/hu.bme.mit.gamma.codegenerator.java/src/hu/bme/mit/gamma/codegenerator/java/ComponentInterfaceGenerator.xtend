@@ -41,6 +41,7 @@ class ComponentInterfaceGenerator {
 		val interfaceCode = '''
 			package «component.generateComponentPackageName»;
 			
+			import «PACKAGE_NAME».*;
 			«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
 				import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«interfaceName»;
 			«ENDFOR»
