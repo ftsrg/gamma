@@ -85,7 +85,6 @@ class UppaalModelSerializer {
 		}
 	}
 	
-	
 	/**
 	 * Creates some easy temporal logical queries checking the fireability of the transitions.
 	 * The created q file can be loaded by the UPPAAL.
@@ -94,11 +93,11 @@ class UppaalModelSerializer {
 	 *            The path for the output file. It contains the file name also,
 	 *            except for the file extension.
 	 */
-	def static createTransitionFireabilityQueries(String variableName, int maxId, String suffix,
-			String parentFolder, String fileName) {
+	def static createTransitionFireabilityQueries(String variableName, Pair<Integer, Integer> idInterval,
+			String suffix, String parentFolder, String fileName) {
 		try {
 			var writer = new FileWriter(parentFolder + File.separator + fileName, true)
-			val fireabilityQueries = createTransitionFireabilityQueries(variableName, maxId, suffix)
+			val fireabilityQueries = createTransitionFireabilityQueries(variableName, idInterval, suffix)
 			writer.append(fireabilityQueries.toString)
 			writer.close
 			// information message, about the completion of the transformation.
@@ -219,7 +218,6 @@ class UppaalModelSerializer {
 		</template>
 		«ENDFOR»
 	'''
-	 
 	
 	/**
 	 * Create the footer of the XML file, which contains the instantiation of 
@@ -268,8 +266,8 @@ class UppaalModelSerializer {
 	 * Returns a set of queries that checks whether the location equivalent of states are reachable in the model.
 	 * It does not generate queries for LocalReactionStates.
 	 */
-	private def static createTransitionFireabilityQueries(String variableName, int maxId, String suffix) '''
-		«FOR i : 0 ..< maxId»
+	private def static createTransitionFireabilityQueries(String variableName, Pair<Integer, Integer> idInterval, String suffix) '''
+		«FOR i : idInterval.key ..< idInterval.value»
 			E<> «variableName» == «i»«IF !suffix.nullOrEmpty» && «suffix»«ENDIF»
 		«ENDFOR»
 	'''

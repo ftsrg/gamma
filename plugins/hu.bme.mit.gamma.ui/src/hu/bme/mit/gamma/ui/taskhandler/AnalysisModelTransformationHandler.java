@@ -116,7 +116,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Suffix present? If not, all transitions can be reached; if yes, some transitions
 			// are covered by transition fired in the same step, but the end is a stable state
 			String querySuffix = Namings.getIsStableVariableName(); 
-			UppaalModelSerializer.createTransitionFireabilityQueries(Namings.getTransitionIdVariableName(), transformer.getTransitionIdVariableValue(),
+			UppaalModelSerializer.createTransitionFireabilityQueries(Namings.getTransitionIdVariableName(), transformer.getTransitionIdVariableIntervalValue(),
 				querySuffix, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
 		}
 		transformer.dispose();

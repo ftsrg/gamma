@@ -142,7 +142,7 @@ public class StatechartModelDerivedFeatures {
 	}
 	
 	public static Collection<State> getStates(Region region) {
-		Set<State> states = new HashSet<State>();
+		List<State> states = new ArrayList<State>();
 		for (StateNode stateNode : region.getStateNodes()) {
 			if (stateNode instanceof State) {
 				State state = (State) stateNode;

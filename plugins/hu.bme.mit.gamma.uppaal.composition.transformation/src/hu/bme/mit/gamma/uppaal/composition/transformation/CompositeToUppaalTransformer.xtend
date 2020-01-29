@@ -275,7 +275,8 @@ class CompositeToUppaalTransformer {
 	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
 	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
 	protected DataVariableDeclaration transitionIdVar
-	protected int transitionId = 0
+	protected final int INITIAL_TRANSITION_ID = 1
+	protected int transitionId = INITIAL_TRANSITION_ID
 	// Auxiliary transformer objects
 	protected extension NtaBuilder ntaBuilder
 	protected final extension SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
@@ -2004,23 +2005,20 @@ class CompositeToUppaalTransformer {
 		// Syncing the templates with run cycles
 		val schedulingOrder = statechart.schedulingOrder
 			// Scheduling either top-down or bottom-up
-		val levelRegionAssociation = statechart.calculateSubregionLevels
-		var List<Integer> regionLevels
+		var List<Region> regionsToBeScheduled
 		switch (schedulingOrder) {
 			case TOP_DOWN: {
-				regionLevels = levelRegionAssociation.keySet.sort
+				regionsToBeScheduled = statechart.regionsTopDown
 			}
 			case BOTTOM_UP: {
-				regionLevels = levelRegionAssociation.keySet.sort.reverseView
+				regionsToBeScheduled = statechart.regionsBottomUp
 			}
 			default: {
 				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
 			}
 		}
-		for (level : regionLevels) {
-			for (region: levelRegionAssociation.get(level)) {
-				lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
-			}
+		for (region: regionsToBeScheduled) {
+			lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
 		}
 		val lastEdge = createEdgeCommittedTarget(lastEdges.head.target, "finalizing" + id++ + instance.name)
 		for (runCycleEdge : lastEdges) {
@@ -2035,31 +2033,26 @@ class CompositeToUppaalTransformer {
 		return lastEdge
 	}
 	
-	private def Map<Integer, List<Region>> calculateSubregionLevels(CompositeElement compositeElement) {
-		val levelRegionMap = new HashMap<Integer, List<Region>>
-		val levelRegionList = new ArrayList<Region>
-		val containedRegion = compositeElement.regions.head
-		if (containedRegion === null) {
-			return levelRegionMap
-		}
-		val level = containedRegion.stateNodes.head.levelOfStateNode
-		levelRegionMap.put(level, levelRegionList)
+	private def List<Region> getRegionsTopDown(CompositeElement compositeElement) {
+		val regions = newArrayList
 		for (region : compositeElement.regions) {
-			levelRegionList += region
-			for (state : region.stateNodes.filter(State)) {
-				val levelRegionSubmap = state.calculateSubregionLevels
-				for (key : levelRegionSubmap.keySet) {
-					val regionList = levelRegionMap.get(key)
-					if (regionList === null) {
-						levelRegionMap.put(key, levelRegionSubmap.get(key))
-					}
-					else {
-						regionList += levelRegionSubmap.get(key)
-					}
-				}
+			regions += region
+			for (substate : region.states.filter[it.composite]) {
+				regions += substate.regionsTopDown
 			}
 		}
-		return levelRegionMap
+		return regions
+	}
+	
+	private def List<Region> getRegionsBottomUp(CompositeElement compositeElement) {
+		val regions = newArrayList
+		for (region : compositeElement.regions) {
+			for (substate : region.states.filter[it.composite]) {
+				regions += substate.regionsBottomUp
+			}
+			regions += region
+		}
+		return regions
 	}
 	
 	/**
@@ -3880,8 +3873,8 @@ class CompositeToUppaalTransformer {
 		return templateLocationMap
 	}
 	
-	def getTransitionIdVariableValue() {
-		return transitionId
+	def getTransitionIdVariableIntervalValue() {
+		return new Pair(INITIAL_TRANSITION_ID, transitionId)
 	}
 	
 	/**
