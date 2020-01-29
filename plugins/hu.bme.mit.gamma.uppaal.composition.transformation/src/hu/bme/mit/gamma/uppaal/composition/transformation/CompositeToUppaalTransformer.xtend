@@ -98,7 +98,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.CompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.DeclarationInitializations
 import hu.bme.mit.gamma.uppaal.transformation.queries.DefaultTransitionsOfChoices
-import hu.bme.mit.gamma.uppaal.transformation.queries.EliminatableChoices
 import hu.bme.mit.gamma.uppaal.transformation.queries.Entries
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryRaisingActionsOfStates
@@ -107,7 +106,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitRaisingActionsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
 import hu.bme.mit.gamma.uppaal.transformation.queries.OutgoingTransitionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.RaisingActionsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
@@ -115,7 +113,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
 import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.Traces
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
@@ -3731,7 +3728,6 @@ class CompositeToUppaalTransformer {
 	 */
 	private def cleanUp() {
 		deleteEntryLocations
-//		deleteChoices
 	}
 	
 	/**
@@ -3741,7 +3737,7 @@ class CompositeToUppaalTransformer {
 		// Removing the unnecessary committed locations before the simple state locations
 		for (simpleState : SimpleStates.Matcher.on(engine).allValuesOfstate) {
 			for (entryEdge : simpleState.allValuesOfTo.filter(Edge)) {
-				if (entryEdge.plain) {					
+				if (entryEdge.plain) {
 					val template = entryEdge.parentTemplate
 					// Retargeting the incoming edges to the target location
 					for (edge : template.edge.filter[it.target == entryEdge.source]) {
@@ -3751,53 +3747,9 @@ class CompositeToUppaalTransformer {
 					// Removing them from the trace
 					entryEdge.source.removeTrace
 					entryEdge.delete
-				}			
-			}
-		}
-	}
-	
-	/**
-	 * Deletes the choices and their in and outgoing edges, and creates new edges containing the necessary expressions. 
-	 */
-	private def deleteChoices() {
-		val aMap = new HashMap<Edge, Edge>
-		// Creating the new edges
-		for (choice : EliminatableChoices.Matcher.on(engine).allValuesOfchoice) {
-			for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
-				val template = choiceLoc.parentTemplate
-				val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
-				val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
-				for (inEdge : inEdges) {
-					for (outEdge : outEdges) {
-						val newEdge = inEdge.source.createEdge(outEdge.target)
-						inEdge.copyTo(newEdge)
-						outEdge.copyTo(newEdge)
-						aMap.put(inEdge, newEdge)
-						aMap.put(outEdge, newEdge)
-					}
 				}
 			}
 		}
-		// Deleting the choices and their in and outgoing transitions
-		for (choice : EliminatableChoices.Matcher.on(engine).allValuesOfchoice) {
-			for (choiceLoc : choice.allValuesOfTo.filter(Location)) {
-				val template = choiceLoc.parentTemplate
-				val inEdges = new HashSet<Edge>(template.edge.filter[it.target == choiceLoc].toSet)
-				val outEdges = new HashSet<Edge>(template.edge.filter[it.source == choiceLoc].toSet)
-				for (edge : inEdges + outEdges) {
-					for (aTrace : Traces.Matcher.on(traceEngine).getAllValuesOftrace(null, edge)) {
-			   			aTrace.remove(trace_To, edge)
-			  			aTrace.addTo(trace_To, aMap.get(edge))
-			   		}
-			   		for (aTrace : InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(null, edge)) {
-			   			aTrace.remove(instanceTrace_Element, edge)
-			   		}
-			   		edge.delete
-				}
-				choiceLoc.removeTrace
-				choiceLoc.parentTemplate.location.remove(choiceLoc)
-			}
-		} 
 	}
 	
 	/**
@@ -3813,7 +3765,7 @@ class CompositeToUppaalTransformer {
 		val state = source.allValuesOfFrom.head
 		addToTrace(state, #{target}, trace)
 	].build
-   
+	
 	 /**
 	 * Deletes and edge from its template and the trace model.
 	 */
@@ -3821,35 +3773,6 @@ class CompositeToUppaalTransformer {
 		val parentTemplate = edge.parentTemplate
 		parentTemplate.edge.remove(edge)
 		edge.removeTrace 
-	}
-	
-	/**
-	 * Copies the synchronization, guard and all the updates from the from edge to the to edge.
-	 */
-	private def copyTo(Edge from, Edge to) {
-		if (from.synchronization !== null && to.synchronization !== null) {
-			if (from.synchronization.channelExpression != to.synchronization.channelExpression)
-			throw new IllegalArgumentException("The target edge has synchronization: " + to)
-		}
-		if (from.synchronization !== null) {
-			to.copySync(edge_Synchronization, from.synchronization)		
-		}
-		if (from.guard !== null) {
-			if (to.guard === null) {
-				to.copy(edge_Guard, from.guard)	
-			}
-			else {
-				val toGuard = to.guard
-				to.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
-					it.firstExpr = toGuard
-					it.operator = LogicalOperator.AND
-					it.copy(binaryExpression_SecondExpr, from.guard)	
-				]
-			}		
-		}
-		for (update : from.update) {
-			to.copy(edge_Update, update)
-		}
 	}
 	
 	/**
