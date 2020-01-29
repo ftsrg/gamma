@@ -31,7 +31,6 @@ import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PortEventReference
-import hu.bme.mit.gamma.statechart.model.PseudoState
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
@@ -2109,6 +2108,7 @@ class CompositeToUppaalTransformer {
 				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
 			}
 		}
+		regionsToExamine += region // If the actual region has not been scheduled yet (it can happen via composite state entries)
 		if (!regionsToExamine.empty) {
 			val isScheduledVars = regionsToExamine.map[it.allValuesOfTo.filter(Template).head]
 									.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
@@ -2448,10 +2448,12 @@ class CompositeToUppaalTransformer {
 	
 	private def List<Region> getParentRegions(Region region) {
 		if (region.topRegion) {
-			return #[]
+			return newArrayList
 		}
 		val parentRegion = region.parentRegion
-		return (#[parentRegion] + parentRegion.parentRegions).toList
+		val parentRegions = newArrayList(parentRegion)
+		parentRegions += parentRegion.parentRegions
+		return parentRegions
 	}
 	
 	private def List<Region> getSubregions(Region region) {
@@ -2858,6 +2860,11 @@ class CompositeToUppaalTransformer {
 		activationEdge.setSynchronization(syncVar.variable.head, SynchronizationKind.RECEIVE)
 		// Creating an update so it activates/deactivates the template
 		activationEdge.setTemplateActivation(subregion, enter)
+		if (enter && subregion.hasHistory) {
+			// In history scheduling variable setting is needed (if there is no history, the scheduling is done by the initial edge)
+			val isScheduledVar = target.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
+			activationEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+		}
 	}
 	
 	private def getDeactivatingEdgeTarget(Region region, Location source) {
