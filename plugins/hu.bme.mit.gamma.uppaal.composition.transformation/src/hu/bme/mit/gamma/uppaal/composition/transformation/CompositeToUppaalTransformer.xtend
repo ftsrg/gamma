@@ -2552,8 +2552,7 @@ class CompositeToUppaalTransformer {
 			val target = getEdgeTarget(it.target).filter(Location).filter[it.parentTemplate == template].head
 			val edge = source.createEdge(target)
 			// Updating the scheduling variable
-			val isScheduledVar = template.allValuesOfTo.filter(DataVariableDeclaration).head
-			edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+			edge.setIsScheduledVar
 			// Creating the trace
 			addToTrace(it.transition, #{edge}, trace)		
 			addToTrace(owner, #{edge}, instanceTrace)		
@@ -2561,6 +2560,14 @@ class CompositeToUppaalTransformer {
 			edge.generateTransitionId
 		}
 	].build
+	
+	private def setIsScheduledVar(Edge edge) {
+		val template = edge.parentTemplate
+		val isScheduledVars = template.allValuesOfTo.filter(DataVariableDeclaration)
+		checkState(isScheduledVars.size == 1)
+		val isScheduledVar = isScheduledVars.head
+		edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+	}
 	
 	private def generateTransitionId(Edge edge) {
 		val owner = edge.owner as SynchronousComponentInstance
@@ -2599,8 +2606,7 @@ class CompositeToUppaalTransformer {
 			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
 			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
 			// Updating the scheduling variable upon firing
-			val isScheduledVar = toLowerEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
-			toLowerEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+			toLowerEdge.setIsScheduledVar
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
 			// For test generation (after adding owner)
@@ -2723,8 +2729,7 @@ class CompositeToUppaalTransformer {
 			// Creating a the transition equivalent edge
 			val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
 			// Setting isScheduled variable to true upon firing 
-			val isScheduledVar = toHigherEdge.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
-			toHigherEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+			toHigherEdge.setIsScheduledVar
 			addToTrace(transition, #{toHigherEdge}, trace)
 			addToTrace(owner, #{toHigherEdge}, instanceTrace)
 			// For test generation (after adding owner)
@@ -2862,8 +2867,7 @@ class CompositeToUppaalTransformer {
 		activationEdge.setTemplateActivation(subregion, enter)
 		if (enter && subregion.hasHistory) {
 			// In history scheduling variable setting is needed (if there is no history, the scheduling is done by the initial edge)
-			val isScheduledVar = target.parentTemplate.allValuesOfTo.filter(DataVariableDeclaration).head
-			activationEdge.createAssignmentExpression(edge_Update, isScheduledVar, true)
+			activationEdge.setIsScheduledVar
 		}
 	}
 	
