@@ -1768,6 +1768,8 @@ class CompositeToUppaalTransformer {
 			// If there is no timing, we set the loc to urgent
 			initLoc.locationTimeKind = LocationKind.URGENT
 		}
+		// Reset transition id variable to reduce state space
+		firstEdge.resetTransitionIdVariableIfNeeded
 	].build
 	
 	/**
@@ -2569,6 +2571,14 @@ class CompositeToUppaalTransformer {
 				edge.source.allValuesOfFrom.filter(EntryState).empty /*No initial edges*/) {
 			edge.createAssignmentExpression(edge_Update, transitionIdVar,
 				createLiteralExpression => [it.text = (transitionId++).toString]
+			)
+		}
+	}
+	
+	private def resetTransitionIdVariableIfNeeded(Edge edge) {
+		if (!testedComponentsForTransitions.empty) {
+			edge.createAssignmentExpression(edge_Update, transitionIdVar,
+				createLiteralExpression => [it.text = "0"]
 			)
 		}
 	}
