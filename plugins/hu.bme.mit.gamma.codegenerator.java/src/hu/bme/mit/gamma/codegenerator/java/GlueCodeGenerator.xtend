@@ -166,13 +166,14 @@ class GlueCodeGenerator {
 		getAsynchronousCompositeComponentsRule.fireAllCurrent
 	}	
 	
-	/**
-	 * Checks whether the ports are connected properly.
-	 */
 	protected def checkUniqueInterfaceNames() {
 		val interfaces = Interfaces.Matcher.on(engine).allValuesOfinterface
 		val nameSet = new HashSet<String>
 		for (name : interfaces.map[it.name.toLowerCase]) {
+			if (name.equals("state")) {
+				throw new IllegalArgumentException("Interface cannot be named \"state\"!")
+			}
+			// Checking colliding interface names
 			if (nameSet.contains(name)) {
 				throw new IllegalArgumentException("Same interface names: " + name + "! Interface names must differ in more than just their initial character!")
 			}
