@@ -355,7 +355,7 @@ class ExpressionTransformer {
 	}
 	
 	/**
-	 * Returns the Uppaal valueof variable of a gamma parametered-event.
+	 * Returns the Uppaal valueof variable of a Gamma parametered-event.
 	 */
 	protected def getValueOfVariable(Event event, Port port, ComponentInstance owner) {
 		if (event.parameterDeclarations.size != 1) {

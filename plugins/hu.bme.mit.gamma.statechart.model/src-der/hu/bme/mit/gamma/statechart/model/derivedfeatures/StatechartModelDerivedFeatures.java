@@ -191,6 +191,29 @@ public class StatechartModelDerivedFeatures {
 		return getParentRegion((State) region.eContainer());
 	}
 	
+	public static List<Region> getParentRegions(Region region) {
+		if (isTopRegion(region)) {
+			return new ArrayList<Region>();
+		}
+		Region parentRegion = getParentRegion(region);
+		List<Region> parentRegions = new ArrayList<Region>();
+		parentRegions.add(parentRegion);
+		parentRegions.addAll(getParentRegions(parentRegion));
+		return parentRegions;
+	}
+	
+	public static List<Region> getSubregions(Region region) {
+		List<Region> subregions = new ArrayList<Region>();
+		for (List<Region> stateSubregions : getStates(region).stream().map(it -> it.getRegions())
+				.collect(Collectors.toList())) {
+			for (Region subregion : stateSubregions) {
+				subregions.add(subregion);
+				subregions.addAll(getSubregions(subregion));
+			}
+		}
+		return subregions;
+	}
+	
 	public static List<hu.bme.mit.gamma.statechart.model.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
 		List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(lhs);
 		ancestors.retainAll(getAncestors(rhs));

@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.EventTrigger
 import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
@@ -33,28 +32,23 @@ import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.UnaryTrigger
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.DistinctWrapperInEvents
@@ -66,7 +60,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceVariab
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuePriorities
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueueSwapInstancesOfComposite
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfClocks
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventOfTransitions
@@ -77,9 +70,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystem
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateExitActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceClockControl
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventControl
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TimeoutValues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncCompositeComponents
@@ -121,12 +112,10 @@ import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
-import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Map
-import java.util.NoSuchElementException
 import java.util.Optional
 import java.util.Set
 import java.util.logging.Level
@@ -227,9 +216,10 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration messageEvent
 	protected DataVariableDeclaration messageValue
 	// Gamma factory for the millisecond multiplication
-	protected final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
-	// UPPAAL packages
+	final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
+	// Gamma package
 	protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+	// UPPAAL packages
 	protected final extension UppaalPackage upPackage = UppaalPackage.eINSTANCE
 	protected final extension DeclarationsPackage declPackage = DeclarationsPackage.eINSTANCE
 	protected final extension TypesPackage typPackage = TypesPackage.eINSTANCE
@@ -258,20 +248,25 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration transitionIdVar
 	protected final int INITIAL_TRANSITION_ID = 1
 	protected int transitionId = INITIAL_TRANSITION_ID
-	// Auxiliary transformer objects
+	// Trace
+	protected extension Trace traceModel
+	// Auxiliary objects
 	protected extension NtaBuilder ntaBuilder
+	protected extension ExpressionTransformer expressionTransformer
+	protected extension ExpressionCopier expressionCopier
+	protected extension ExpressionEvaluator expressionEvaluator
+	protected extension CompareExpressionCreator compareExpressionCreator
+	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
+	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
+	protected final extension EventHandler eventHandler = new EventHandler
+    protected final extension Cloner cloner = new Cloner
+    protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
+	// Auxiliary transformer objects
 	protected final AsynchronousConstantsCreator asynchronousConstantsCreator
 	protected final SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
 	protected final MessageQueueCreator messageQueueCreator
-	// Auxiliary objects
-	protected extension ExpressionTransformer expTransf
-	protected extension ExpressionCopier expCop
-	protected extension ExpressionEvaluator expEval
-	protected final extension SimpleInstanceHandler simpInstHandl = new SimpleInstanceHandler
-	protected final extension EventHandler eventHandler = new EventHandler
-	// Trace
-	protected extension Trace traceModel
-
+	protected final OrchestratorCreator orchestratorCreator
+	
 	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
@@ -298,10 +293,13 @@ class CompositeToUppaalTransformer {
 		// Trace
 		this.traceModel = new Trace(this.manipulation, this.traceRoot)
 		// Auxiliary objects
-		this.expTransf = new ExpressionTransformer(this.manipulation, this.traceModel)
-		this.expCop = new ExpressionCopier(this.manipulation, this.traceModel) 
-		this.expEval = new ExpressionEvaluator(this.engine)
-		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation)
+		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.traceModel)
+		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
+		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
+		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.manipulation, this.expressionTransformer)
+		this.compareExpressionCreator = new CompareExpressionCreator(this.ntaBuilder, this.manipulation,
+			this.expressionTransformer, this.traceModel)
 		// Creating UPPAAL variable and type structures as multiple auxiliary transformers need them
 		initNta
 		createMessageStructType
@@ -312,8 +310,10 @@ class CompositeToUppaalTransformer {
 		// Auxiliary transformation objects
 		this.asynchronousConstantsCreator = new AsynchronousConstantsCreator(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
-		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expTransf, this.traceModel, 
+		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
+		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
+			this.compareExpressionCreator, this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
 	}
 	
 	new(ResourceSet resourceSet, Component component,
@@ -388,9 +388,9 @@ class CompositeToUppaalTransformer {
 		{synchronousChannelCreatorOfAsynchronousInstances.getTopWrapperSyncChannelRule.fireAllCurrent
 		synchronousChannelCreatorOfAsynchronousInstances.getInstanceWrapperSyncChannelRule.fireAllCurrent}
 		// Creating the sync schedulers: here the scheduler template and the priorities are set
-		{topSyncOrchestratorRule.fireAllCurrent
-		topWrappedSyncOrchestratorRule.fireAllCurrent
-		instanceWrapperSyncOrchestratorRule.fireAllCurrent}
+		{orchestratorCreator.getTopSyncOrchestratorRule.fireAllCurrent
+		orchestratorCreator.getTopWrappedSyncOrchestratorRule.fireAllCurrent
+		orchestratorCreator.getInstanceWrapperSyncOrchestratorRule.fireAllCurrent}
 		// Message queue structures
 		{messageQueueCreator.getTopMessageQueuesRule.fireAllCurrent
 		messageQueueCreator.getInstanceMessageQueuesRule.fireAllCurrent}
@@ -490,21 +490,7 @@ class CompositeToUppaalTransformer {
 			]
 		]
 	}
-	
-	/**
-	 * Creates a template with the given name and an initial location called InitLoc.
-	 */
-	protected def createTemplateWithInitLoc(String templateName, String locationName) {
-		val template = target.createChild(getNTA_Template, template) as Template => [
-			it.name = templateName
-			it.createChild(template_Declarations, localDeclarations)
-		]
-		val initLoc = template.createChild(template_Location, location) as Location => [
-			it.name = locationName
-		]
-		template.init = initLoc
-		return initLoc
-	}
+
 	
 	/**
 	 * Creates a bool noInnerEvents function that shows whether there are unprocessed events in the queues of the automata.
@@ -629,50 +615,6 @@ class CompositeToUppaalTransformer {
 	].build   
 	
 	/**
-	 * Appends a variable declaration as a guard to the guard of the given edge. The operator between the old and the new guard can be given too.
-	 */
-	private def addGuard(Edge edge, DataVariableDeclaration guard, LogicalOperator operator) {
-		if (edge.guard !== null) {
-			// Getting the old reference
-			val oldGuard = edge.guard as Expression
-			// Creating the new andExpression that will contain the same reference and the regular guard expression
-			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
-				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = guard.variable.head
-				]
-				it.operator = operator
-				it.secondExpr = oldGuard
-			]
-		}
-		// If there is no guard yet
-		else {
-			edge.createChild(edge_Guard, identifierExpression) as IdentifierExpression => [
-				it.identifier = guard.variable.head
-			]
-		}
-	}
-	
-	/**
-	 * Appends an Uppaal guard to the guard of the given edge. The operator between the old and the new guard can be given too.
-	 */
-	private def addGuard(Edge edge, Expression guard, LogicalOperator operator) {
-		if (edge.guard !== null && guard !== null) {
-			// Getting the old reference
-			val oldGuard = edge.guard as Expression
-			// Creating the new andExpression that will contain the same reference and the regular guard expression
-			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
-				it.firstExpr = guard
-				it.operator = operator
-				it.secondExpr = oldGuard
-			]
-		}
-		// If there is no guard yet
-		else {
-			edge.guard = guard
-		}
-	}
-	
-	/**
 	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to isTrue.
 	 */
 	private def createLoopEdgeWithBoolAssignment(Location location, DataVariableDeclaration variable, boolean isTrue) {
@@ -731,37 +673,6 @@ class CompositeToUppaalTransformer {
 		hasValue.add(anInt.value)
 		return false
 	}
-	
-	/**
-	 * Puts an assignment expression onto the given container. The left side is the given variable, the right is side either true or false". E.g.: myVariable = true.
-	 */
-	protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, boolean isTrue) {
-		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
-			it.operator = AssignmentOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-				it.text = isTrue.toString
-			]
-		]
-	}
-	
-	/**
-	 * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable". E.g.: myFirstVariable = mySecondVariable.
-	 */
-	protected def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhs) {
-   		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = lhs.variable.head // Only one variable is expected
-			]
-			it.operator = AssignmentOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = rhs.variable.head // Only one variable is expected
-			]
-		]
-	}
-	
 	
 	val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
 		// Creating the template
@@ -888,47 +799,6 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
-	private def addFunctionCall(EObject container, EReference reference, Function function) {
-		if (isMinimalElementSet && function.isInlinable) {
-			log(Level.INFO, "Inlining " + function.name)
-			// Deleting the function from the model tree
-			val functionContainer = function.eContainer as FunctionDeclaration
-			functionContainer.remove
-			val block = function.block
-			for (statement : block.statement) {
-				if (statement instanceof ExpressionStatement) {
-					val expression = statement.expression
-					val referenceObject = container.eGet(reference, true)
-					if (referenceObject instanceof List) {
-						referenceObject += expression.clone(true, true)
-					}
-					else {
-						// Then only one element is expected
-						checkState(block.statement.size == 1)
-						container.eSet(reference, expression)
-					}
-				}
-			}
-		}
-		else {
-			container.createChild(reference, functionCallExpression) as FunctionCallExpression => [
-				it.function = function
-			]
-		}
-	}
-	
-	private def boolean isInlinable(Function function) {
-		val statements = function.block.statement
-		if (statements.forall[it instanceof ExpressionStatement]) {
-			// Block of assignments or a single expression
-			return (statements.filter(ExpressionStatement)
-				.map[it.expression]
-				.forall[it instanceof AssignmentExpression]) ||
-				(statements.size == 1)
-		}
-		return false
-	}
-	
 	private def addInitializedGuards(Edge edge) {
 		if (component instanceof AsynchronousAdapter) {
 			val isInitializedVar = component.initializedVariable
@@ -940,52 +810,6 @@ class CompositeToUppaalTransformer {
 				edge.addGuard(isInitializedVar, LogicalOperator.AND)
 			}
 		}
-	}
-	
-	/**
-	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
-	 */
-	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
-		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
-			it.operator = logOp
-			it.secondExpr = originalExpression
-		]
-		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression)
-	}
-	
-	/**
-	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
-	 */
-	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-			ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression) {
-		container.createChild(reference, compareExpression) as CompareExpression => [
-			it.operator = compOp	
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
-			]
-			it.transform(binaryExpression_SecondExpr, timeExpression, null)		
-		]
-	}
-	
-	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-			Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
-		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
-				it.operator = logOp
-				it.secondExpr = originalExpression
-		]
-		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression)
-	}
-	
-	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-			ClockVariableDeclaration clockVar, Expression timeExpression) {
-		container.createChild(reference, compareExpression) as CompareExpression => [
-			it.operator = compOp
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
-			]
-			it.secondExpr = timeExpression
-		]
 	}
 	
 	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
@@ -1347,460 +1171,15 @@ class CompositeToUppaalTransformer {
 		return queues.head
 	}
 	
-	/**
-	 * Responsible for creating a scheduler template for TOP synchronous composite components.
-	 * Note that it only fires if there are TOP synchronous composite components.
-	 * Depends on all statechart mapping rules.
-	 */
-	val topSyncOrchestratorRule = createRule(TopUnwrappedSyncComponents.instance).action [		
-		val lastEdge = it.syncComposite.createSchedulerTemplate(null)
-		// Creating timing for the orchestrator template
-		val initLoc = lastEdge.target
-		val firstEdges = initLoc.parentTemplate.edge.filter[it.source === initLoc]
-		checkState(firstEdges.size == 1)
-		val firstEdge = firstEdges.head
-		val minTimeoutValue = if (minimalOrchestratingPeriod === null) {
-			Optional.ofNullable(null)
-		} else {
-			Optional.ofNullable(minimalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		val maxTimeoutValue = if (maximalOrchestratingPeriod === null) {
-			Optional.ofNullable(maxTimeout)
-		} else {
-			Optional.ofNullable(maximalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		// Setting the timing in the orchestrator template
-		firstEdge.setOrchestratorTiming(minTimeoutValue, lastEdge, maxTimeoutValue)
-		if (!minTimeoutValue.present && !maxTimeoutValue.present) {
-			// If there is no timing, we set the loc to urgent
-			initLoc.locationTimeKind = LocationKind.URGENT
-		}
-		// Reset transition id variable to reduce state space
-		firstEdge.resetTransitionIdVariableIfNeeded
-	].build
+
 	
-	/**
-	 * Responsible for creating a scheduler template for a single synchronous composite component wrapped by a Wrapper.
-	 * Note that it only fires if there are top wrappers.
-	 * Depends on topWrapperSyncChannelRule and all statechart mapping rules.
-	 */
-	val topWrappedSyncOrchestratorRule = createRule(TopWrapperComponents.instance).action [		
-		val lastEdge = it.composite.createSchedulerTemplate(it.wrapper.syncSchedulerChannel)
-		lastEdge.setSynchronization(it.wrapper.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
-	].build
+
 	
-	 /**
-	 * Responsible for creating a scheduler template for all synchronous composite components wrapped by wrapper instances.
-	 * Note that it only fires if there are wrapper instances.
-	 * Depends on allWrapperSyncChannelRule and all statechart mapping rules.
-	 */
-	val instanceWrapperSyncOrchestratorRule = createRule(SimpleWrapperInstances.instance).action [		
-		val lastEdge = it.component.createSchedulerTemplate(it.instance.syncSchedulerChannel)
-		lastEdge.setSynchronization(it.instance.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
-		val orchestratorTemplate = lastEdge.parentTemplate
-		addToTrace(it.instance, #{orchestratorTemplate}, instanceTrace)
-	].build
+
 	
-	/**
-	 * Responsible for creating the scheduler template that schedules the run of the automata.
-	 * (A series edges with runCycle synchronizations and variable swapping on them.) 
-	 */
-	private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent, ChannelVariableDeclaration chan) {
-		val initLoc = createTemplateWithInitLoc(compositeComponent.name + "Orchestrator" + id++, "InitLoc")
-		val schedulerTemplate = initLoc.parentTemplate
-		val firstEdge = initLoc.createEdge(initLoc)
-		// If a channel has been passed for async-sync synchronization
-		if (chan !== null) {
-			firstEdge.setSynchronization(chan.variable.head, SynchronizationKind.RECEIVE)
-		}
-		var lastEdge = firstEdge
-		// Creating the scheduler of the whole system
-		lastEdge = compositeComponent.scheduleTopComposite(lastEdge)
-		// A final edge is needed to let all edges of committed locations to fire
-		val finalLoc = schedulerTemplate.createChild(template_Location, location) as Location => [
-			it.name = "final"
-			it.locationTimeKind = LocationKind.URGENT
-			it.comment = "To ensure all synchronizations to take place before an isStable state."
-		]
-		lastEdge.target = finalLoc
-		val beforeIsStableEdge = finalLoc.createEdge(initLoc)
-		lastEdge = beforeIsStableEdge
-		// Clearing raised out events on scheduling turn
-		firstEdge.addFunctionCall(edge_Update, createClearFunction(compositeComponent).function)
-		firstEdge.createAssignmentExpression(edge_Update, isStableVar, false)
-		lastEdge.createAssignmentExpression(edge_Update, isStableVar, true)
-		// Setting isScheduled variables
-		for (region : InstanceRegions.Matcher.on(engine).allValuesOfregion) {
-			val isScheduledVar = region.allValuesOfTo.filter(Template).head
-									.allValuesOfTo.filter(DataVariableDeclaration).head
-			firstEdge.createAssignmentExpression(edge_Update, isScheduledVar, false)
-		}
-		// Creating a separate initial location so that the NTA can be initialized in !isStable
-		val trueInitialLocation = schedulerTemplate.createChild(template_Location, location) as Location => [
-			it.name = "notIsStable"
-			it.locationTimeKind = LocationKind.URGENT
-		]
-		schedulerTemplate.init = trueInitialLocation
-		trueInitialLocation.createEdge(initLoc) => [
-			it.createAssignmentExpression(edge_Update, isStableVar, true)
-		]
-		// Returning last edge
-		return lastEdge
-	}
+
 	
-	/**
-	 * Returns the maximum timeout value (specified as an integer literal) in the model.
-	 */
-	private def getMaxTimeout() {
-		try {
-			val maxValue = TimeoutValues.Matcher.on(engine).allValuesOftimeSpec
-				.map[it.convertToMs.evaluate]
-				.max
-			return maxValue
-		} catch (NoSuchElementException e) {
-			return null
-		}
-	}
-	
-	/**
-	 * Creates a clock for the template of the given edge, sets the clock to "0" on the given edge,
-	 *  and places an invariant on the target of the edge.
-	 */
-	private def setOrchestratorTiming(Edge firstEdge, Optional<Integer> minTime, Edge lastEdge, Optional<Integer> maxTime) {
-		checkState(firstEdge.source === lastEdge.target)
-		if (!minTime.present && !maxTime.present) {
-			return
-		}
-		val initLoc = lastEdge.target
-		val template = lastEdge.parentTemplate
-		// Creating the clock
-		val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-		clockVar.createTypeAndVariable(target.clock, "timerOrchestrator" + (id++))
-		// Creating the guard
-		if (minTime.present) {
-			firstEdge.createMinTimeGuard(clockVar, minTime.get)
-		}
-		// Creating the location invariant
-		if (maxTime.present) {
-			initLoc.createMaxTimeInvariant(clockVar, maxTime.get)
-		}
-		// Creating the clock reset
-		lastEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
-	}
-	
-	private def createMinTimeGuard(Edge clockEdge, ClockVariableDeclaration clockVar, Integer minTime) {
-		clockEdge.addGuard(createCompareExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
-			]
-			it.operator = CompareOperator.GREATER_OR_EQUAL
-			it.secondExpr = createLiteralExpression => [
-				it.text = minTime.toString
-			] 
-		], LogicalOperator.AND)
-	}
-	
-	private def createMaxTimeInvariant(Location clockLocation, ClockVariableDeclaration clockVar, Integer maxTime) {
-		val locInvariant = clockLocation.invariant
-		val maxTimeExpression = createLiteralExpression => [
-			it.text = maxTime.toString
-		]
-		if (locInvariant !== null) {
-			clockLocation.insertLogicalExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, maxTimeExpression, locInvariant, LogicalOperator.AND)
-		} 
-		else {
-			clockLocation.insertCompareExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, maxTimeExpression)
-		}
-	}
-	
-	/**
-	 * Creates the scheduling of the whole network of automata starting out from the given composite component
-	 */
-	private def scheduleTopComposite(SynchronousComponent component, Edge previousLastEdge) {
-		checkState (component instanceof AbstractSynchronousCompositeComponent ||
-			component instanceof StatechartDefinition
-		)
-		var Edge lastEdge = previousLastEdge
-		if (component instanceof SynchronousCompositeComponent) {
-			// Creating a new location is needed so the queue swap can be done after finalization of previous template
-			lastEdge = component.swapQueuesOfContainedSimpleInstances(lastEdge)
-		}
-		if (component instanceof AbstractSynchronousCompositeComponent) {
-			for (instance : component.instancesToBeScheduled /*Cascades are scheduled in accordance with the execution list*/) {
-				lastEdge = instance.scheduleInstance(lastEdge)
-			}
-		}
-		else if (component instanceof StatechartDefinition) {
-			val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
-			checkState(instances.size == 1, instances)
-			val instance = instances.head
-			val swapEdge = lastEdge.target.createEdgeCommittedTarget("swapLocation" + id++) => [
-				it.source.locationTimeKind = LocationKind.URGENT
-			]
-			lastEdge.target = swapEdge.source
-			lastEdge = swapEdge
-			lastEdge.createQueueSwap(instance)
-			lastEdge = instance.scheduleInstance(lastEdge)		
-		}
-		return lastEdge
-	}
-	
-	/**
-	 * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-	 * Note that in cascade composite an instance might be scheduled multiple times.
-	 */
-	private dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
-		return component.components
-	}
-	
-	private dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
-		if (component.executionList.empty) {
-			return component.components
-		}
-		return component.executionList
-	}
-	
-	/**
-	 * Puts the queue swapping updates (isRaised = toRaised...) of all instances contained by the given topComposite onto the given edge.
-	 */
-	private def Edge swapQueuesOfContainedSimpleInstances(SynchronousCompositeComponent topComposite, Edge previousLastEdge) {
-		var Edge lastEdge = previousLastEdge
-		val swapLocation = lastEdge.parentTemplate.createChild(template_Location, location) as Location => [
-			it.name = "swapLocation" + id++
-			it.locationTimeKind = LocationKind.URGENT
-		]
-		val swapEdge = swapLocation.createEdge(lastEdge.target)
-		lastEdge.target = swapEdge.source
-		lastEdge = swapEdge
-		val sameQueueSwapInstances = topComposite.simpleInstancesInSameQueueSwap
-		Logger.getLogger("GammaLogger").log(Level.INFO, "Instances with the same swap schedule in " + topComposite.name + ": " +sameQueueSwapInstances)
-		// Swapping queues of instances whose queues have not yet been swapped
-		for (queueSwapInstance : sameQueueSwapInstances) {
-			// Creating updates of a single instance
-			lastEdge.createQueueSwap(queueSwapInstance)
-		}
-		return lastEdge
-	}
-	
-	/**
-	 * Creates the scheduling (runCycle synchronizations and queue swapping updates) starting the given instance.
-	 */
-	private def Edge scheduleInstance(SynchronousComponentInstance instance, Edge previousLastEdge) {
-		var Edge lastEdge = previousLastEdge
-		val instanceType = instance.type
-		val parentComposite = instance.eContainer
-		if (instanceType instanceof SynchronousCompositeComponent && parentComposite instanceof CascadeCompositeComponent) {
-			val synchronousInstanceType = instanceType as SynchronousCompositeComponent
-			lastEdge = synchronousInstanceType.swapQueuesOfContainedSimpleInstances(lastEdge)
-		}
-		if (instanceType instanceof AbstractSynchronousCompositeComponent) {
-			for (containedInstance : instanceType.instancesToBeScheduled) {
-				lastEdge = containedInstance.scheduleInstance(lastEdge)
-			}
-		}
-		else if (instanceType instanceof StatechartDefinition) {
-			return instance.scheduleStatechart(lastEdge)
-		}
-		return lastEdge
-	}
-	
-	/**
-	 * Creates the scheduling of the given statechart instance, that is, the runCycle sync and 
-	 * the reset of event queue in case of cascade instances.
-	 */
-	private def Edge scheduleStatechart(SynchronousComponentInstance instance, Edge previousLastEdge) {
-		var Collection<Edge> lastEdges = #[previousLastEdge]
-		val statechart = instance.type as StatechartDefinition
-		// Syncing the templates with run cycles
-		val schedulingOrder = statechart.schedulingOrder
-			// Scheduling either top-down or bottom-up
-		var List<Region> regionsToBeScheduled
-		switch (schedulingOrder) {
-			case TOP_DOWN: {
-				regionsToBeScheduled = statechart.regionsTopDown
-			}
-			case BOTTOM_UP: {
-				regionsToBeScheduled = statechart.regionsBottomUp
-			}
-			default: {
-				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
-			}
-		}
-		for (region: regionsToBeScheduled) {
-			lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
-		}
-		val lastEdge = createEdgeCommittedTarget(lastEdges.head.target, "finalizing" + id++ + instance.name)
-		for (runCycleEdge : lastEdges) {
-			runCycleEdge.target = lastEdge.source
-		}
-		// If the instance is cascade, the in events have to be cleared
-		if (instance.isCascade) {
-			for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
-				lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
-			}
-		}
-		return lastEdge
-	}
-	
-	private def List<Region> getRegionsTopDown(CompositeElement compositeElement) {
-		val regions = newArrayList
-		for (region : compositeElement.regions) {
-			regions += region
-			for (substate : region.states.filter[it.composite]) {
-				regions += substate.regionsTopDown
-			}
-		}
-		return regions
-	}
-	
-	private def List<Region> getRegionsBottomUp(CompositeElement compositeElement) {
-		val regions = newArrayList
-		for (region : compositeElement.regions) {
-			for (substate : region.states.filter[it.composite]) {
-				regions += substate.regionsBottomUp
-			}
-			regions += region
-		}
-		return regions
-	}
-	
-	/**
-	 * Returns the instances whose event variables should be swapped at the same time starting from the given composite.
-	 */
-	private def getSimpleInstancesInSameQueueSwap(SynchronousCompositeComponent composite) {
-		return QueueSwapInstancesOfComposite.Matcher.on(engine).getAllValuesOfinstance(composite)
-	}
-	
-	/**
-	 * Places the variable swap updates of the given instance to the given edge.
-	 */
-	private def createQueueSwap(Edge edge, SynchronousComponentInstance instance) {
-		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
-			// isRaised = toRaise
-			edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance),
-				 match.event.getToRaiseVariable(match.port, match.instance))			
-			// toRaise = false
-			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)										
-		}
-	 }
-	
-	/**
-	 * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
-	 * between the given last runCycle edge and the init location.
-	 */
-	private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,
-			SchedulingOrder schedulingOrder, ComponentInstance owner) {
-		val template = region.allValuesOfTo.filter(Template).filter[it.owner == owner].head
-		val syncVar = template.allValuesOfTo.filter(ChannelVariableDeclaration).head
-		val runCycleEdge = createCommittedSyncTarget(lastEdges.head.target,
-			syncVar.variable.head, "Run" + template.name.toFirstUpper + id++)
-		runCycleEdge.source.locationTimeKind = LocationKind.URGENT
-		for (lastEdge : lastEdges) {
-			lastEdge.target = runCycleEdge.source
-		}
-		var Collection<Region> regionsToExamine
-		switch (schedulingOrder) {
-			case TOP_DOWN: {
-				regionsToExamine = region.parentRegions
-			}
-			case BOTTOM_UP: {
-				regionsToExamine = region.subregions
-			}
-			default: {
-				throw new IllegalArgumentException("Not known scheduling order: " + schedulingOrder)
-			}
-		}
-		regionsToExamine += region // If the actual region has not been scheduled yet (it can happen via composite state entries)
-		if (!regionsToExamine.empty) {
-			val isScheduledVars = regionsToExamine.map[it.allValuesOfTo.filter(Template).head]
-									.map[it.allValuesOfTo.filter(DataVariableDeclaration).head]
-			val isNotSchedulableGuard = createLogicalExpression(LogicalOperator.OR, 
-					isScheduledVars.map[variable | createIdentifierExpression => [
-						it.identifier = variable.variable.head
-					]
-				].toList
-			)
-			val isSchedulableGuard = createNegationExpression => [
-				it.negatedExpression = isNotSchedulableGuard.clone(true, true)
-			]
-			runCycleEdge.addGuard(isSchedulableGuard, LogicalOperator.AND)
-			// If the region is not schedulable
-			val elseEdge = runCycleEdge.source.createEdge(runCycleEdge.target) => [
-				it.guard = isNotSchedulableGuard
-			]
-			return #[runCycleEdge, elseEdge]
-		}
-		else {
-			return #[runCycleEdge]
-		}		
-	}
-	
-	private def createLogicalExpression(LogicalOperator operator,
-			Collection<? extends Expression> expressions) {
-		checkState(!expressions.empty)
-		if (expressions.size == 1) {
-			return expressions.head
-		}
-		var logicalExpression = createLogicalExpression => [
-			it.operator = operator
-		]
-		var i = 0
-		for (expression : expressions) {
-			if (i == 0) {
-				logicalExpression.firstExpr = expression
-			}
-			else if (i == 1) {
-				logicalExpression.secondExpr = expression
-			}
-			else {
-				val oldExpression = logicalExpression.secondExpr
-				logicalExpression = createLogicalExpression => [
-					it.operator = operator
-					it.firstExpr = oldExpression
-					it.secondExpr = expression
-				]
-			}
-			i++
-		}
-		return logicalExpression
-	}
-	
-	/**
-	 * Creates the function that copies the state of the toRaise flags to the isRaised flags, and clears the toRaise flags.
-	 */
-	protected def createClearFunction(SynchronousComponent component) {
-		target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
-			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
-				it.createChild(function_ReturnType, typeReference) as TypeReference => [
-					it.referredType = target.void
-				]
-				it.name = "clearOutEvents" + id++
-				it.createChild(function_Block, stmPackage.block) as Block => [
-					// Reseting system out-signals
-					if (component instanceof AbstractSynchronousCompositeComponent) {
-						for (match : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
-							it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
-								// out-signal = false
-								it.createAssignmentExpression(expressionStatement_Expression, match.event.getToRaiseVariable(match.port, match.instance), false)										
-							]
-						} 
-					}
-					else if (component instanceof StatechartDefinition) {
-						it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
-							for (port : component.ports) {
-								for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
-									val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
-									checkState(instances.size == 1, instances)
-									val variable = event.getToRaiseVariable(port, instances.head)
-									it.createAssignmentExpression(expressionStatement_Expression, variable, false)										
-								}
-							}
-						]
-					}
-				]
-			]
-		]
-	}
+
 	
 	/**
 	 * This rule is responsible for transforming the input signals.
@@ -2048,25 +1427,6 @@ class CompositeToUppaalTransformer {
 		addToTrace(instance, #{template}, instanceTrace)
 	].build
 	
-	private def List<Region> getParentRegions(Region region) {
-		if (region.topRegion) {
-			return newArrayList
-		}
-		val parentRegion = region.parentRegion
-		val parentRegions = newArrayList(parentRegion)
-		parentRegions += parentRegion.parentRegions
-		return parentRegions
-	}
-	
-	private def List<Region> getSubregions(Region region) {
-		val subregions = new ArrayList<Region>
-		for (subregion : region.stateNodes.filter(State).map[it.regions].flatten) {
-			subregions += subregion
-			subregions += subregion.subregions
-		}
-		return subregions
-	}
-	
 	/**
 	 * This rule is responsible for transforming the entry states to committed locations.
 	 * If the parent regions is a subregion, a new init location is generated as well.
@@ -2182,13 +1542,7 @@ class CompositeToUppaalTransformer {
 		}
 	}
 	
-	private def resetTransitionIdVariableIfNeeded(Edge edge) {
-		if (!testedComponentsForTransitions.empty) {
-			edge.createAssignmentExpression(edge_Update, transitionIdVar,
-				createLiteralExpression => [it.text = "0"]
-			)
-		}
-	}
+
 	
 	/**
 	 * This rule is responsible for transforming transitions whose targets are in a lower abstraction level (lower region)
@@ -2829,37 +2183,6 @@ class CompositeToUppaalTransformer {
 		return clocks.head
 	}
 	
-	protected def convertToMs(TimeSpecification time) {
-		switch (time.unit) {
-			case SECOND: {
-				val newValue = time.value.multiplyExpression(1000)
-				// Maybe strange changing the S to MS in the View model 
-				// New expression needs to be contained in a resource because of the expression trace mechanism) 
-				// Somehow the tracing works, in a way that the original (1 s) expression is not changed
-				time.value = newValue
-				time.unit = TimeUnit.MILLISECOND
-				newValue
-			}
-			case MILLISECOND:
-				time.value
-			default: 
-				throw new IllegalArgumentException("Not known unit: " + time.unit)
-		}
-	}
-	
-	/**
-	 * Transforms Gamma expression "100" into "100 * value" or "timeValue" into "timeValue * value"
-	 */
-	protected def multiplyExpression(hu.bme.mit.gamma.expression.model.Expression base, long value) {
-		val multiplyExp = constrFactory.createMultiplyExpression => [
-			it.operands += base
-			it.operands += constrFactory.createIntegerLiteralExpression => [
-				it.value = BigInteger.valueOf(value)
-			]
-		]
-		return multiplyExp
-	}
-	
 	protected def extendTimedLocations() {
 		val timedEdges = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allValuesOfedge
 		for (timedEdge : timedEdges) {
@@ -2891,35 +2214,6 @@ class CompositeToUppaalTransformer {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
-	 */
-	private def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
-		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
-			it.operator = logOp
-			it.secondExpr = originalExpression
-		]
-		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression, timeoutEventReference)
-	}
-	
-	/**
-	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
-	 */
-	private def insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-		ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
-		val owner = clockVar.owner
-		val compExp = container.createChild(reference, compareExpression) as CompareExpression => [
-			it.operator = compOp
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
-			]
-			it.transform(binaryExpression_SecondExpr, timeExpression, owner)
-		]
-		addToTrace(timeoutEventReference, #{compExp}, trace)
-		addToTrace(owner, #{clockVar}, instanceTrace)
 	}
 	
 	/**
@@ -3241,30 +2535,6 @@ class CompositeToUppaalTransformer {
 		val negatedExp = createNegationExpression
 		negatedExp.copy(negationExpression_NegatedExpression, expression)
 		edge.addGuard(negatedExp, LogicalOperator.AND)
-	}
-	
-	/**
-	 * Responsible for creating an assignment expression with the given variable reference and the given expression.
-	 */
-	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, hu.bme.mit.gamma.expression.model.Expression rhs, ComponentInstance owner) {
-		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
-			it.operator = AssignmentOperator.EQUAL
-			it.transform(binaryExpression_SecondExpr, rhs, owner)
-		]
-		return assignmentExpression
-	}
-	private def AssignmentExpression createAssignmentExpression(EObject container, EReference reference, VariableContainer variable, Expression rhs) {
-		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
-			it.operator = AssignmentOperator.EQUAL
-			it.secondExpr = rhs
-		]
-		return assignmentExpression
 	}
 	
 	private def instantiateTemplates(Collection<Template> templates) {
