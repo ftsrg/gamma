@@ -46,6 +46,7 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
@@ -65,7 +66,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventCo
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncCompositeComponents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
@@ -105,7 +105,6 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Map
-import java.util.Optional
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -253,6 +252,7 @@ class CompositeToUppaalTransformer {
 	protected OrchestratorCreator orchestratorCreator
 	protected EnvironmentCreator environmentCreator
 	protected AsynchronousClockTemplateCreator asynchronousClockTemplateCreator
+	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
 	
 	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			List<SynchronousComponentInstance> testedComponentsForStates,
@@ -330,6 +330,9 @@ class CompositeToUppaalTransformer {
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
+		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
+			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionEvaluator, this.assignmentExpressionCreator,
+			this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.asyncScheduler)
 	}
 	
 	def execute() {
@@ -401,8 +404,8 @@ class CompositeToUppaalTransformer {
 		environmentCreator.getInstanceWrapperEnvironmentRule.fireAllCurrent}
 		{asynchronousClockTemplateCreator.getTopWrapperClocksRule.fireAllCurrent
 		asynchronousClockTemplateCreator.getInstanceWrapperClocksRule.fireAllCurrent}
-		{topWrapperSchedulerRule.fireAllCurrent
-		instanceWrapperSchedulerRule.fireAllCurrent}
+		{asynchronousSchedulerTemplateCreator.getTopWrapperSchedulerRule.fireAllCurrent
+		asynchronousSchedulerTemplateCreator.getInstanceWrapperSchedulerRule.fireAllCurrent}
 		{topWrapperConnectorRule.fireAllCurrent
 		instanceWrapperConnectorRule.fireAllCurrent}
 		// Creating a same level process list
@@ -546,84 +549,6 @@ class CompositeToUppaalTransformer {
 				]
 			]
 		]
-	}
-	
-	val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
-		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
-		val asyncSchedulerChannelVariable = wrapper.asyncSchedulerChannel.variable.head
-		initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
-	].build
-	
-	val instanceWrapperSchedulerRule = createRule(TopAsyncCompositeComponents.instance).action [
-		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Scheduler" + id++, "InitLoc")
-		var Edge lastEdge = null
-		for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
-			switch (asyncScheduler) {
-				case FAIR: {
-					lastEdge = lastEdge.createFairScheduler(initLoc, instance)
-				}
-				default: {
-					val asyncSchedulerChannelVariable = instance.asyncSchedulerChannel.variable.head
-					lastEdge = initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
-				}
-			}
-		}
-	].build
-	
-	private def createFairScheduler(Edge edge, Location initLoc, AsynchronousComponentInstance instance) {
-   		var lastEdge = edge
-   		val syncVariable = instance.asyncSchedulerChannel.variable.head
-		if (lastEdge === null) {
-			// Creating first edge
-			lastEdge = initLoc.createEdge(initLoc)
-			lastEdge.setSynchronization(syncVariable, SynchronizationKind.SEND)
-			lastEdge.addInitializedGuards // Only if the instance is initialized
-		}
-		else {
-			// Creating scheduling edges for all instances
-			val schedulingEdge = createCommittedSyncTarget(lastEdge.target, syncVariable, "schedule" + instance.name)
-			schedulingEdge.source.locationTimeKind = LocationKind.URGENT
-			lastEdge.target = schedulingEdge.source
-			lastEdge = schedulingEdge
-		}
-		return lastEdge
-	}
-
-	private def createRandomScheduler(Location initLoc, Variable asyncSchedulerChannelVariable) {
-		// Creating the loop edge
-		val loopEdge = initLoc.createEdge(initLoc)
-		loopEdge.setSynchronization(asyncSchedulerChannelVariable, SynchronizationKind.SEND)
-		// Adding isStable guard
-		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
-		loopEdge.addInitializedGuards // Only if the instance is initialized
-		// Checking scheduler constraints
-		val minTimeoutValue = if (minimalOrchestratingPeriod === null) {
-			Optional.ofNullable(null)
-		} else {
-			Optional.ofNullable(minimalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		val maxTimeoutValue = if (maximalOrchestratingPeriod === null) {
-			Optional.ofNullable(null)
-		} else {
-			Optional.ofNullable(maximalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		if (minTimeoutValue.present || maxTimeoutValue.present) {
-			val parentTemplate = initLoc.parentTemplate
-			// Creating an Uppaal clock var
-			val clockVar = parentTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + asyncSchedulerChannelVariable.name + id++)
-			// Creating the guard
-			if (minTimeoutValue.present) {
-				loopEdge.createMinTimeGuard(clockVar, minTimeoutValue.get)
-			}
-			// Creating the location invariant
-			if (maxTimeoutValue.present) {
-				initLoc.createMaxTimeInvariant(clockVar, maxTimeoutValue.get)
-			}
-			// Creating the clock reset
-			loopEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
-		}
-		return loopEdge
 	}
 	
 	/**
@@ -2301,7 +2226,5 @@ class CompositeToUppaalTransformer {
 		transformation = null
 		return
 	}
-	
-	enum Scheduler {FAIR, RANDOM}
 	
 }

@@ -100,7 +100,7 @@ class AsynchronousClockTemplateCreator {
 		}
 	}
 	
-	protected def createClockEvents(AsynchronousAdapter wrapper, Location initLoc, AsynchronousComponentInstance owner) {
+	private def createClockEvents(AsynchronousAdapter wrapper, Location initLoc, AsynchronousComponentInstance owner) {
 		val clockTemplate = initLoc.parentTemplate
 		for (match : QueuesOfClocks.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
 			val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
