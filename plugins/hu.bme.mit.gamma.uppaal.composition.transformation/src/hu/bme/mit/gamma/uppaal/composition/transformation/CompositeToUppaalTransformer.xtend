@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
-import hu.bme.mit.gamma.statechart.model.Clock
 import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.EventTrigger
 import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
@@ -36,40 +35,28 @@ import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.UnaryTrigger
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceVariables
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuePriorities
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateExitActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseTopSystemEventStateExitActions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceClockControl
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RunOnceEventControl
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ChoicesAndMerges
 import hu.bme.mit.gamma.uppaal.transformation.queries.CompositeStates
@@ -93,9 +80,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
-import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import java.util.AbstractMap.SimpleEntry
@@ -138,7 +123,6 @@ import uppaal.declarations.system.InstantiationList
 import uppaal.declarations.system.SystemPackage
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.AssignmentOperator
-import uppaal.expressions.CompareExpression
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
@@ -253,6 +237,7 @@ class CompositeToUppaalTransformer {
 	protected EnvironmentCreator environmentCreator
 	protected AsynchronousClockTemplateCreator asynchronousClockTemplateCreator
 	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
+	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
 	
 	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			List<SynchronousComponentInstance> testedComponentsForStates,
@@ -333,6 +318,8 @@ class CompositeToUppaalTransformer {
 		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionEvaluator, this.assignmentExpressionCreator,
 			this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.asyncScheduler)
+		this.asynchronousConnectorTemplateCreator = new AsynchronousConnectorTemplateCreator(this.ntaBuilder, this.manipulation, this.assignmentExpressionCreator,
+			this.asynchronousComponentHelper, this.expressionTransformer, this.traceModel, this.isStableVar, this.messageEvent, this.messageValue)
 	}
 	
 	def execute() {
@@ -406,8 +393,8 @@ class CompositeToUppaalTransformer {
 		asynchronousClockTemplateCreator.getInstanceWrapperClocksRule.fireAllCurrent}
 		{asynchronousSchedulerTemplateCreator.getTopWrapperSchedulerRule.fireAllCurrent
 		asynchronousSchedulerTemplateCreator.getInstanceWrapperSchedulerRule.fireAllCurrent}
-		{topWrapperConnectorRule.fireAllCurrent
-		instanceWrapperConnectorRule.fireAllCurrent}
+		{asynchronousConnectorTemplateCreator.getTopWrapperConnectorRule.fireAllCurrent
+		asynchronousConnectorTemplateCreator.getInstanceWrapperConnectorRule.fireAllCurrent}
 		// Creating a same level process list
 		instantiateUninstantiatedTemplates
 		if (!isMinimalElementSet) {
@@ -549,234 +536,6 @@ class CompositeToUppaalTransformer {
 				]
 			]
 		]
-	}
-	
-	/**
-	 * Responsible for creating a wrapper-sync connector template for a single synchronous composite component wrapped by a Wrapper.
-	 * Note that it only fires if there are top wrappers.
-	 * Depends on no rules.
-	 */
-	val topWrapperConnectorRule = createRule(TopWrapperComponents.instance).action [		
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
-		val connectorTemplate = initLoc.parentTemplate
-		val asyncChannel = wrapper.asyncSchedulerChannel // The wrapper is scheduled with this channel
-		val syncChannel = wrapper.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-		val initializedVar = wrapper.initializedVariable // This variable marks the whether the wrapper has been initialized
-		val relayLoc = wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, null /*no owner in this case*/)
-		relayLoc.locationTimeKind = LocationKind.COMMITED
-		// A new entry is needed so the entry events and event transmissions are transmitted to the proper queues 
-		val initEdge = relayLoc.createEdgeCommittedTarget("ConnectorEntry" + id++)
-		initEdge.source.locationTimeKind = LocationKind.URGENT
-		connectorTemplate.init = initEdge.source
-	].build
-	
-	 /**
-	 * Responsible for creating a scheduler template for all synchronous composite components wrapped by wrapper instances.
-	 * Note that it only fires if there are wrapper instances.
-	 * Depends on no rules.
-	 */
-	val instanceWrapperConnectorRule = createRule(SimpleWrapperInstances.instance).action [		
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Connector" + id++, "DefaultLoc")
-		val connectorTemplate = initLoc.parentTemplate
-		val asyncChannel = it.instance.asyncSchedulerChannel // The wrapper is scheduled with this channel
-		val syncChannel = it.instance.syncSchedulerChannel // The wrapped sync component is scheduled with this channel
-		val initializedVar = it.instance.initializedVariable // This variable marks the whether the wrapper has been initialized
-		val relayLoc = it.wrapper.createConnectorEdges(initLoc, asyncChannel, syncChannel, initializedVar, it.instance)
-		relayLoc.locationTimeKind = LocationKind.COMMITED
-		// A new entry is needed so the entry events and event transmissions are transmitted to the proper queues 
-		val initEdge = relayLoc.createEdgeCommittedTarget("ConnectorEntry" + id++)
-		initEdge.source.locationTimeKind = LocationKind.URGENT
-		connectorTemplate.init = initEdge.source
-	].build
-	
-	protected def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
-			ChannelVariableDeclaration syncChannel, DataVariableDeclaration initializedVar, AsynchronousComponentInstance owner) {
-		checkState(wrapper.controlSpecifications.map[it.trigger].filter(AnyTrigger).empty, "Any triggers are not supported in formal verification.")
-		val synchronousComponent = wrapper.wrappedComponent.type
-		val relayLocPair = initLoc.createRelayEdges(synchronousComponent, syncChannel, initializedVar)
-		val waitingForRelayLoc = relayLocPair.key
-		val relayLoc = relayLocPair.value
-		// Sync composite in events
-		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, null, null, null, null)) {
-			val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
-			val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-			
-			// Creating the loop edge with the toRaise = true
-			val loopEdge = initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
-			// Creating the ...Value = ...Messages().value
-			val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-			if (!expressions.empty) {
-				val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == match.instance]
-				if (valueOfVars.size != 1) {
-					throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-				}	
-				val valueOfVar = valueOfVars.head
-				// Creating the ...Messages().value expression
-				val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
-				// Creating the ...Value = ...Messages().value
-				loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
-			}
-			// "Basic" loop edge
-			loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.systemPort, match.event, owner)
-			// If this event is in a control spec, the wrapped syn component needs to be scheduled
-			if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, match.systemPort, match.event)) {
-				// Scheduling the sync
-				val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-				loopEdge.target = syncEdge.source
-			}
-		}
-		// Creating edges for control events of wrapper
-		for (match : RunOnceEventControl.Matcher.on(engine).getAllMatches(wrapper, null, null)
-				.filter[!TopSyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent.type, it.port, null, null, it.event)]) {
-			// No events of the wrapped component
-			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-			// Creating the loop edge
-			val edge = initLoc.createEdge(initLoc)
-			edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
-			val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-			edge.target = syncEdge.source
-		}
-		// Creating edges for unused events of wrapper
-		for (match : UnusedWrapperEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
-			// Creating the loop edge
-			val edge = initLoc.createEdge(initLoc)
-			edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
-		}
-		// Creating the loop edges for clock triggers
-		for (match : RunOnceClockControl.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-			val messageQueueTrace = match.queue.getTrace(owner)
-			// Creating the scheduler sync edge
-			val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-			// Creating the edge checking for the events in the queue
-			val edge = initLoc.createEdge(syncEdge.source)
-			edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE) // Setting the sync
-			// Guards checking higher priority queues
-			for (higherPirorityQueue : QueuePriorities.Matcher.on(engine).getAllValuesOfhigherPriotityQueue(wrapper, match.queue)) {
-				edge.addPriorityGuard(wrapper, higherPirorityQueue, owner)
-			}
-			// ...Messages().event == clocksignal
-			val valueCompareExpression = createPeekClockCompare(messageQueueTrace, match.clock)
-			edge.addGuard(valueCompareExpression, LogicalOperator.AND)
-			// Shifting the message queue
-			edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
-			// Adding isStable  guard
-			edge.addGuard(isStableVar, LogicalOperator.AND)
-		}
-		return relayLoc
-	}
-	
-	protected def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, AsynchronousAdapter wrapper,
-			MessageQueueTrace messageQueueTrace, Port port, Event event, ComponentInstance owner) {
-		// Putting the ? async channel to the loop edge
-		edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE)
-		// The event must be on the guard
-		// ...Messages().event == Port_event
-		val valueCompareExpression = createPeekValueCompare(messageQueueTrace, port, event)
-		edge.addGuard(valueCompareExpression, LogicalOperator.AND)
-		// The priority needs to be on the guard
-		for (higherPirorityQueue : QueuePriorities.Matcher.on(engine).getAllValuesOfhigherPriotityQueue(wrapper, messageQueueTrace.queue)) {
-			edge.addPriorityGuard(wrapper, higherPirorityQueue, owner)
-		}
-		// Adding isStable  guard
-		edge.addGuard(isStableVar, LogicalOperator.AND)
-		// Shifting the message queue
-		edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
-	}
-	
-	protected def createRelayEdges(Location initLoc, SynchronousComponent syncComposite,
-			ChannelVariableDeclaration syncChan, DataVariableDeclaration initializedVar) {
-		val parentTemplate = initLoc.parentTemplate
-		val relayLoc = parentTemplate.createChild(template_Location, location) as Location => [
-			it.name = "RelayLoc"
-		]
-		val finishRelayEdge = relayLoc.createEdge(initLoc)
-		val waitingForRelayLoc = parentTemplate.createChild(template_Location, location) as Location => [
-			it.name = "WaitingRelayLoc"
-		]
-		val waitingRelaySyncEdge = waitingForRelayLoc.createEdge(relayLoc)
-		waitingRelaySyncEdge.setSynchronization(syncChan.variable.head, SynchronizationKind.RECEIVE)
-		// Creating relay edges
-		val originalGuards = new HashSet<Expression>
-		for (outEventMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(syncComposite, null, null, null, null)) {
-			val relayEdge = relayLoc.createEdge(relayLoc)
-			val outVariable = outEventMatch.event.getOutVariable(outEventMatch.port, outEventMatch.instance)
-			// Adding out-event guard
-			val guard = relayEdge.addGuard(outVariable, LogicalOperator.AND)
-			originalGuards += guard
-			// Resetting the out-event variable
-			relayEdge.createAssignmentExpression(edge_Update, outVariable, false)
-			for (queueMatch : EventsIntoMessageQueues.Matcher.on(engine).getAllMatches(null, outEventMatch.systemPort, outEventMatch.event, null, null, null)) {
-				var DataVariableDeclaration valueOfVar = null
-				if (!outEventMatch.event.parameterDeclarations.empty) {
-					valueOfVar = outEventMatch.event.getValueOfVariable(outEventMatch.port/* Not sure if correct port*/, outEventMatch.instance)
-				}
-				relayEdge.createQueueInsertion(queueMatch.inPort, queueMatch.raisedEvent, queueMatch.inInstance, valueOfVar)
-			}
-		}
-		// Putting "default" guard on the finish relay edge
-		finishRelayEdge.createDefaultExpression(originalGuards)
-		// Setting the isStable = true, needed after the initialization 
-		finishRelayEdge.createAssignmentExpression(edge_Update, initializedVar, true)
-		return new Pair<Location, Location>(waitingForRelayLoc, relayLoc)
-	}
-	
-	protected def CompareExpression createPeekValueCompare(MessageQueueTrace messageQueueTrace, Port port, Event event) {
-		createCompareExpression => [
-			it.firstExpr = messageQueueTrace.peekFunction.messageValueScopeExp(messageEvent.variable.head)
-			it.operator = CompareOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = event.getConstRepresentation(port).variable.head
-			]	
-		]
-	}
-	
-	protected def CompareExpression createPeekClockCompare(MessageQueueTrace messageQueueTrace, Clock clock) {
-		return createCompareExpression => [
-			it.firstExpr = messageQueueTrace.peekFunction.messageValueScopeExp(messageEvent.variable.head)
-			it.operator = CompareOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clock.getConstRepresentation().variable.head
-			]	
-		]
-	}
-	
-	private def messageValueScopeExp(FunctionDeclaration peekFunction, Variable variable) {
-		return createScopedIdentifierExpression => [
-			it.addFunctionCall(scopedIdentifierExpression_Scope, peekFunction.function)
-			it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
-				it.identifier = variable
-			]
-		]
-	}
-	
-	private def addPriorityGuard(Edge edge, AsynchronousAdapter wrapper, MessageQueue higherPirorityQueue, ComponentInstance owner) {
-		val higherPriorityQueueTrace = higherPirorityQueue.getTrace(owner) // No owner in this case
-		// ...MessagesSize == 0
-		val sizeCompareExpression = createCompareExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = higherPriorityQueueTrace.capacityVar.variable.head
-			]	
-			it.operator = CompareOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-				it.text = "0"
-			]	
-		]
-		edge.addGuard(sizeCompareExpression, LogicalOperator.AND)		
-	}
-	
-	private def createDefaultExpression(Edge edge, Collection<? extends Expression> expressions) {
-		for (exp : expressions) {
-			val negatedExp = createNegationExpression as NegationExpression => [
-				it.negatedExpression = exp.clone(true, true)
-			]
-			edge.addGuard(negatedExp, LogicalOperator.AND)
-		}
 	}
 	
 	/**
@@ -1176,7 +935,11 @@ class CompositeToUppaalTransformer {
 			toLowerEdge.setTarget(syncEdge.source)
 			// Entry events must NOT be done here as they have to be after exit events and regular assignments!	
 			// All the orthogonal regions except for the visited one have to be set to the right state
-			(ttarget as State).regions.setSubregions(visitedRegions, syncVar, true, owner)			
+			(ttarget as State).regions.setSubregions(visitedRegions, syncVar, true, owner)
+			// If the source is a composite state, its subregions must be deactivated
+			if (tsource instanceof State) {
+				tsource.allRegions.setSubregions(emptySet, syncVar, false, owner)
+			}
 		}
 		else {
 			val region = ttarget.eContainer as Region
