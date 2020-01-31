@@ -47,6 +47,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 		}
 		return topWrapperSyncChannelRule
 	}
+	
 	protected def getInstanceWrapperSyncChannelRule() {
 		if (instanceWrapperSyncChannelRule === null) {
 			instanceWrapperSyncChannelRule = createRule(SimpleWrapperInstances.instance).action [
