@@ -54,7 +54,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceVariab
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuePriorities
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfClocks
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateExitActions
@@ -145,7 +144,6 @@ import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.ExpressionsPackage
-import uppaal.expressions.FunctionCallExpression
 import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalExpression
@@ -254,6 +252,7 @@ class CompositeToUppaalTransformer {
 	protected MessageQueueCreator messageQueueCreator
 	protected OrchestratorCreator orchestratorCreator
 	protected EnvironmentCreator environmentCreator
+	protected AsynchronousClockTemplateCreator asynchronousClockTemplateCreator
 	
 	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			List<SynchronousComponentInstance> testedComponentsForStates,
@@ -329,6 +328,8 @@ class CompositeToUppaalTransformer {
 			this.compareExpressionCreator, this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
+		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
+			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
 	}
 	
 	def execute() {
@@ -398,8 +399,8 @@ class CompositeToUppaalTransformer {
 		{environmentCreator.getTopSyncEnvironmentRule.fireAllCurrent // sync environment
 		environmentCreator.getTopWrapperEnvironmentRule.fireAllCurrent
 		environmentCreator.getInstanceWrapperEnvironmentRule.fireAllCurrent}
-		{topWrapperClocksRule.fireAllCurrent
-		instanceWrapperClocksRule.fireAllCurrent}
+		{asynchronousClockTemplateCreator.getTopWrapperClocksRule.fireAllCurrent
+		asynchronousClockTemplateCreator.getInstanceWrapperClocksRule.fireAllCurrent}
 		{topWrapperSchedulerRule.fireAllCurrent
 		instanceWrapperSchedulerRule.fireAllCurrent}
 		{topWrapperConnectorRule.fireAllCurrent
@@ -545,82 +546,6 @@ class CompositeToUppaalTransformer {
 				]
 			]
 		]
-	}
-	
-	val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
-		if (!it.wrapper.clocks.empty) {
-			// Creating the template
-			val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Clock" + id++, "InitLoc")
-			// Creating clock events
-			wrapper.createClockEvents(initLoc, null /*no owner in this case*/)
-		}
-	].build
-	
-	val instanceWrapperClocksRule = createRule(TopAsyncCompositeComponents.instance).action [
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Clock" + id++, "InitLoc")
-		// Creating clock events
-		for (match : SimpleWrapperInstances.Matcher.on(engine).allMatches) {
-			match.wrapper.createClockEvents(initLoc, match.instance)
-		}
-	].build
-	
-	protected def createClockEvents(AsynchronousAdapter wrapper, Location initLoc, AsynchronousComponentInstance owner) {
-		val clockTemplate = initLoc.parentTemplate
-		for (match : QueuesOfClocks.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-			val messageQueueTrace = match.queue.getTrace(owner) // Getting the queue trace with respect to the owner
-			// Creating the loop edge
-			val clockEdge = initLoc.createEdge(initLoc)
-			// It can be fired even when the queue is full to avoid DEADLOCKS (the function handles this)
-			// It can be fired only if the template is stable
-			clockEdge.addGuard(isStableVar, LogicalOperator.AND)		
-			// Only if the wrapper/instance is initialized
-			clockEdge.addInitializedGuards
-			// Creating an Uppaal clock var
-			val clockVar = clockTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + match.clock.name + owner.postfix)
-			// Creating the trace
-			addToTrace(match.clock, #{clockVar}, trace)
-			// push....
-			clockEdge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-		   		// No addFunctionCall method as there are arguments
-		   		it.function = messageQueueTrace.pushFunction.function
-		   		it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
-		   			it.identifier = match.clock.constRepresentation.variable.head
-		   		]
-		   		it.createChild(functionCallExpression_Argument, literalExpression) as LiteralExpression => [
-		   			it.text = "0"
-		   		]
-		   	]
-		   	// clock = 0
-		   	clockEdge.createChild(edge_Update, assignmentExpression) as AssignmentExpression => [
-		   		it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-		   			it.identifier = clockVar.variable.head
-		   		]
-		   		it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-		   			it.text = "0"
-		   		]
-		   	]
-			// Transforming S to MS
-			val timeSpec = match.clock.timeSpecification
-			val timeValue = timeSpec.convertToMs
-			val locInvariant = initLoc.invariant
-			// Putting the clock expression onto the location as invariant
-			if (locInvariant !== null) {
-				initLoc.insertLogicalExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, locInvariant, LogicalOperator.AND)
-			} 
-			else {
-				initLoc.insertCompareExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue)
-			}
-			// Putting the clock expression onto the location as guard
-			clockEdge.addGuard(createCompareExpression as CompareExpression => [
-				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = clockVar.variable.head // Always one variable in the container
-				]
-				it.operator = CompareOperator.GREATER_OR_EQUAL	
-				it.transform(binaryExpression_SecondExpr, timeValue, null)		
-			], LogicalOperator.AND)
-		}
 	}
 	
 	val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
