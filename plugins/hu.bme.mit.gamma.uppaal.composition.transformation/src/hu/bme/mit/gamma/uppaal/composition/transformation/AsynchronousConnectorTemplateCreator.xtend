@@ -135,7 +135,7 @@ class AsynchronousConnectorTemplateCreator {
 		}
 	}
 	
-	protected def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
+	private def createConnectorEdges(AsynchronousAdapter wrapper, Location initLoc, ChannelVariableDeclaration asyncChannel,
 			ChannelVariableDeclaration syncChannel, DataVariableDeclaration initializedVar, AsynchronousComponentInstance owner) {
 		checkState(wrapper.controlSpecifications.map[it.trigger].filter(AnyTrigger).empty, "Any triggers are not supported in formal verification.")
 		val synchronousComponent = wrapper.wrappedComponent.type
@@ -214,7 +214,7 @@ class AsynchronousConnectorTemplateCreator {
 		return relayLoc
 	}
 	
-	protected def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, AsynchronousAdapter wrapper,
+	private def void createConnectorEdge(Edge edge, ChannelVariableDeclaration asyncChannel, AsynchronousAdapter wrapper,
 			MessageQueueTrace messageQueueTrace, Port port, Event event, ComponentInstance owner) {
 		// Putting the ? async channel to the loop edge
 		edge.setSynchronization(asyncChannel.variable.head, SynchronizationKind.RECEIVE)
@@ -232,7 +232,7 @@ class AsynchronousConnectorTemplateCreator {
 		edge.addFunctionCall(edge_Update, messageQueueTrace.shiftFunction.function)
 	}
 	
-	protected def createRelayEdges(Location initLoc, SynchronousComponent syncComposite,
+	private def createRelayEdges(Location initLoc, SynchronousComponent syncComposite,
 			ChannelVariableDeclaration syncChan, DataVariableDeclaration initializedVar) {
 		val parentTemplate = initLoc.parentTemplate
 		val relayLoc = parentTemplate.createChild(template_Location, location) as Location => [
@@ -269,7 +269,7 @@ class AsynchronousConnectorTemplateCreator {
 		return new Pair<Location, Location>(waitingForRelayLoc, relayLoc)
 	}
 	
-	protected def CompareExpression createPeekValueCompare(MessageQueueTrace messageQueueTrace, Port port, Event event) {
+	private def CompareExpression createPeekValueCompare(MessageQueueTrace messageQueueTrace, Port port, Event event) {
 		createCompareExpression => [
 			it.firstExpr = messageQueueTrace.peekFunction.messageValueScopeExp(messageEvent.variable.head)
 			it.operator = CompareOperator.EQUAL
@@ -279,7 +279,7 @@ class AsynchronousConnectorTemplateCreator {
 		]
 	}
 	
-	protected def CompareExpression createPeekClockCompare(MessageQueueTrace messageQueueTrace, Clock clock) {
+	private def CompareExpression createPeekClockCompare(MessageQueueTrace messageQueueTrace, Clock clock) {
 		return createCompareExpression => [
 			it.firstExpr = messageQueueTrace.peekFunction.messageValueScopeExp(messageEvent.variable.head)
 			it.operator = CompareOperator.EQUAL

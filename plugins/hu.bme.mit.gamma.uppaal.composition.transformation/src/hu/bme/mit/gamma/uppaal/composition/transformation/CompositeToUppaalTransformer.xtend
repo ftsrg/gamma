@@ -11,36 +11,22 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.EntryState
-import hu.bme.mit.gamma.statechart.model.EventTrigger
-import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
-import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
@@ -116,8 +102,6 @@ import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.LocalDeclarations
 import uppaal.declarations.SystemDeclarations
 import uppaal.declarations.TypeDeclaration
-import uppaal.declarations.Variable
-import uppaal.declarations.VariableContainer
 import uppaal.declarations.VariableDeclaration
 import uppaal.declarations.system.InstantiationList
 import uppaal.declarations.system.SystemPackage
@@ -144,12 +128,9 @@ import uppaal.templates.Template
 import uppaal.templates.TemplatesPackage
 import uppaal.types.BuiltInType
 import uppaal.types.DeclaredType
-import uppaal.types.IntegerBounds
 import uppaal.types.PredefinedType
-import uppaal.types.RangeTypeSpecification
 import uppaal.types.StructTypeSpecification
 import uppaal.types.TypeReference
-import uppaal.types.TypesFactory
 import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkState
@@ -197,7 +178,6 @@ class CompositeToUppaalTransformer {
 	// UPPAAL factories
 	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-	protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
 	// isStable variable
 	protected DataVariableDeclaration isStableVar
 	// Async scheduler
@@ -218,6 +198,8 @@ class CompositeToUppaalTransformer {
 	// Trace
 	protected extension Trace traceModel
 	// Auxiliary objects
+	protected extension VariableTransformer variableTransformer
+	protected extension TriggerTransformer triggerTransformer
 	protected extension NtaBuilder ntaBuilder
 	protected extension ExpressionTransformer expressionTransformer
 	protected extension ExpressionCopier expressionCopier
@@ -287,10 +269,12 @@ class CompositeToUppaalTransformer {
 		// Trace
 		this.traceModel = new Trace(this.manipulation, this.traceRoot)
 		// Auxiliary objects
+		this.triggerTransformer = new TriggerTransformer(this.traceModel)
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.traceModel)
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
+		this.variableTransformer = new VariableTransformer(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.ntaBuilder, 
 			this.manipulation, this.expressionTransformer)
 		this.compareExpressionCreator = new CompareExpressionCreator(this.ntaBuilder, this.manipulation,
@@ -617,69 +601,6 @@ class CompositeToUppaalTransformer {
 			it.constant.name + "Of" + (it.constant.eContainer as Package).name)
 		// Traces are created in the createVariable method
 	].build
-	
-	// Type references, such as enums
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.expression.model.TypeDeclaration type, DataVariablePrefix prefix, String name) {
-		val declaredType = type.type
-		return variable.transformVariable(declaredType, prefix, name)	
-	}
-	
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
-			hu.bme.mit.gamma.expression.model.TypeReference type, DataVariablePrefix prefix, String name) {
-		val referredType = type.reference
-		return variable.transformVariable(referredType, prefix, name)	
-	}
-	
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable,
-			EnumerationTypeDefinition type, DataVariablePrefix prefix, String name) {
-		val uppaalVar = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration  => [
-			it.prefix = prefix
-		]
-		uppaalVar.createIntTypeWithRangeAndVariable(
-			createLiteralExpression => [it.text = "0"],
-			createLiteralExpression => [it.text = (type.literals.size - 1).toString],
-			name
-		)
-		// Creating the trace
-		addToTrace(variable, #{uppaalVar}, trace)
-		return uppaalVar	
-	}
-	
-	// Constant, variable and parameter declarations
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, IntegerTypeDefinition type,
-			DataVariablePrefix prefix, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, prefix, target.int, name)
-		addToTrace(variable, #{uppaalVar}, trace)	
-		return uppaalVar	 
-	}
-	
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, BooleanTypeDefinition type,
-			DataVariablePrefix prefix, String name) {
-		val uppaalVar = createVariable(target.globalDeclarations, prefix, target.bool, name)
-		addToTrace(variable, #{uppaalVar}, trace)
-		return uppaalVar
-	}
-	
-	private def dispatch DataVariableDeclaration transformVariable(Declaration variable, Type type,
-			DataVariablePrefix prefix, String name) {
-		throw new IllegalArgumentException("Not transformable variable type: " + type + "!")
-	}
-	
-	private def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
-			Expression upperBound, String name) {		
-		container.createChild(variableContainer_TypeDefinition, rangeTypeSpecification) as RangeTypeSpecification => [
-			it.createChild(rangeTypeSpecification_Bounds, integerBounds) as IntegerBounds => [
-				it.lowerBound = lowerBound
-				it.upperBound = upperBound
-			]
-		]
-		// Creating variables for all statechart instances
-		container.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
-			it.container = container
-			it.name = name
-		]
-	}
 	
 	/**
 	 * This rule is responsible for transforming the initializations of declarations.
@@ -1312,146 +1233,6 @@ class CompositeToUppaalTransformer {
 		}
 	].build
 	
-	private def dispatch Expression transformTrigger(OnCycleTrigger trigger, ComponentInstance owner) {
-		return createLiteralExpression => [it.text = "true"]			
-	}
-	
-	private def dispatch Expression transformTrigger(AnyTrigger trigger, ComponentInstance owner) {
-		return owner.derivedType.ports.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)			
-	}
-	
-	private def Expression createLogicalExpressionOfPortInEvents(Collection<Port> ports,
-			LogicalOperator operator, ComponentInstance owner) {
-		val events = ports.map[#[it].getSemanticEvents(EventDirection.IN)].flatten
-		val eventCount = events.size
-		if (eventCount == 0) {
-			return createLiteralExpression => [
-				it.text = "false"
-			]
-		}
-		if (eventCount == 1) {
-			val port = ports.head
-			val event = events.head
-			return createIdentifierExpression => [
-				it.identifier = event.getIsRaisedVariable(port, owner).variable.head
-			]
-		}
-		var i = 0
-		var orExpression = createLogicalExpression => [
-			it.operator = operator
-		]
-		for (port : ports) {
-			for (event : #[port].getSemanticEvents(EventDirection.IN)) {
-				if (i == 0) {
-					orExpression.firstExpr = createIdentifierExpression => [
-						it.identifier = event.getIsRaisedVariable(port, owner).variable.head
-					]
-				}
-				else if (i == 1) {
-					orExpression.secondExpr = createIdentifierExpression => [
-						it.identifier = event.getIsRaisedVariable(port, owner).variable.head
-					]
-				}
-				else {
-					orExpression = orExpression.createLogicalExpression(
-						LogicalOperator.OR,
-						createIdentifierExpression => [
-							it.identifier = event.getIsRaisedVariable(port, owner).variable.head
-						]
-					)
-				}
-			}
-		}
-		return orExpression
-	}
-	
-	private def createLogicalExpression(Expression lhs, LogicalOperator operator,
-			Expression rhs) {
-		return createLogicalExpression => [
-			it.firstExpr = lhs
-			it.operator = operator
-			it.secondExpr = rhs
-		]
-	}
-	
-	private def dispatch Expression transformTrigger(EventTrigger trigger, ComponentInstance owner) {
-		return trigger.eventReference.transformEventTrigger(owner)
-	}
-	
-	private def dispatch Expression transformTrigger(BinaryTrigger trigger, ComponentInstance owner) {
-		switch (trigger.type) {
-			case AND: {
-				return createLogicalExpression => [
-					it.firstExpr = trigger.leftOperand.transformTrigger(owner)
-					it.operator = LogicalOperator.AND
-					it.secondExpr = trigger.rightOperand.transformTrigger(owner)
-				]
-			}
-			case EQUAL: {
-				return createCompareExpression => [
-					it.firstExpr = trigger.leftOperand.transformTrigger(owner)
-					it.operator = CompareOperator.EQUAL
-					it.secondExpr = trigger.rightOperand.transformTrigger(owner)
-				]
-			}
-			case IMPLY: {
-				return createLogicalExpression => [
-					it.firstExpr = trigger.leftOperand.transformTrigger(owner)
-					it.operator = LogicalOperator.IMPLY
-					it.secondExpr = trigger.rightOperand.transformTrigger(owner)
-				]
-			}
-			case OR: {
-				return createLogicalExpression => [
-					it.firstExpr = trigger.leftOperand.transformTrigger(owner)
-					it.operator = LogicalOperator.OR
-					it.secondExpr = trigger.rightOperand.transformTrigger(owner)
-				]
-			}
-			case XOR: {
-				return createLogicalExpression => [
-					it.firstExpr = trigger.leftOperand.transformTrigger(owner)
-					it.operator = LogicalOperator.XOR
-					it.secondExpr = trigger.rightOperand.transformTrigger(owner)
-				]
-			}
-			default: {
-				throw new IllegalArgumentException
-			}
-		}
-	}
-	
-	private def dispatch Expression transformTrigger(UnaryTrigger trigger, ComponentInstance owner) {
-		switch (trigger.getType) {
-			case NOT: {
-				return createNegationExpression => [
-					it.negatedExpression = trigger.operand.transformTrigger(owner)
-				]
-			}
-			default: {
-				throw new IllegalArgumentException
-			}
-		}
-	}
-
-	private def dispatch Expression transformEventTrigger(PortEventReference reference, ComponentInstance owner) {
-		val port = reference.port
-		val event = reference.event
-		return createIdentifierExpression => [
-			it.identifier = event.getIsRaisedVariable(port, owner).variable.head
-		]
-	}
-
-	private def dispatch Expression transformEventTrigger(AnyPortEventReference reference, ComponentInstance owner) {
-		val port = #[reference.getPort]
-		return port.createLogicalExpressionOfPortInEvents(LogicalOperator.OR, owner)
-	}
-	
-	private def dispatch Expression transformEventTrigger(TimeoutEventReference reference, ComponentInstance owner) {
-		throw new UnsupportedOperationException("Timeout triggers are not supported in complex triggers, as the
-			actual clock value is not known in this context.")
-	}
-
 	/**
 	 * Places a runCycle synchronization onto the given edge.
 	 */

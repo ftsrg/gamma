@@ -259,10 +259,10 @@ class Trace {
 		return variables.head
 	}
 	
-		/**
+	/**
 	 * Returns the Uppaal toRaise boolean flag of a Gamma typed-signal.
 	 */
-	protected def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
+	def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
 		var DataVariableDeclaration variable 
 		val variables = event.allValuesOfTo.filter(DataVariableDeclaration)
 				.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
@@ -289,7 +289,7 @@ class Trace {
 	/**
 	 * Returns the Uppaal isRaised boolean flag of a Gamma typed-signal.
 	 */
-	protected def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
+	def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
 			&& it.owner == instance && it.variable.head.name.equals(event.isRaisedName(port, instance))].head
 		if (variable === null) {
@@ -301,7 +301,7 @@ class Trace {
 	/**
 	 * Returns the Uppaal out-event boolean flag of a Gamma typed-signal.
 	 */
-	protected def getOutVariable(Event event, Port port, ComponentInstance instance) {
+	def getOutVariable(Event event, Port port, ComponentInstance instance) {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
 			&& it.owner == instance && it.variable.head.name.equals(event.getOutEventName(port, instance))].head
 		if (variable === null) {

@@ -49,7 +49,7 @@ class AsynchronousConstantsCreator {
 		this.modelTrace = modelTrace
 	}
 	
-	protected def getEventConstantsRule() {
+	def getEventConstantsRule() {
 		if (eventConstantsRule === null) {
 			eventConstantsRule = createRule(WrapperInEvents.instance).action [
 				it.event.createConstRepresentation(it.port, it.wrapper)
@@ -58,7 +58,7 @@ class AsynchronousConstantsCreator {
 		return eventConstantsRule
 	}
 	
-	protected def getClockConstantsRule() {
+	def getClockConstantsRule() {
 		if (clockConstantsRule === null) {
 			clockConstantsRule = createRule(QueuesOfClocks.instance).action [
 				it.clock.createConstRepresentation(it.wrapper)

@@ -90,7 +90,7 @@ class MessageQueueCreator {
 		this.messageValue = messageValue
 	}
 	
-	protected def getTopMessageQueuesRule() {
+	def getTopMessageQueuesRule() {
 		if (topMessageQueuesRule === null) {
 			topMessageQueuesRule = createRule(TopMessageQueues.instance).action [
 				val queue = it.queue
@@ -115,7 +115,7 @@ class MessageQueueCreator {
 		}
 	}
 	
-	protected def getInstanceMessageQueuesRule() {
+	def getInstanceMessageQueuesRule() {
 		if (instanceMessageQueuesRule === null) {
 			instanceMessageQueuesRule = createRule(InstanceMessageQueues.instance).action [
 				val queue = it.queue
@@ -143,7 +143,7 @@ class MessageQueueCreator {
 		}
 	}
 	
-	protected def createCapacityConst(MessageQueue queue, boolean hasEventsFromOtherComponents, ComponentInstance owner) {
+	private def createCapacityConst(MessageQueue queue, boolean hasEventsFromOtherComponents, ComponentInstance owner) {
 		val sizeConst = createVariable(target.globalDeclarations, DataVariablePrefix.CONST, target.int,
 			queue.name.toUpperCase + "_CAPACITY" + owner.postfix)
 		if (hasEventsFromOtherComponents) {
@@ -163,7 +163,7 @@ class MessageQueueCreator {
 		return sizeConst
 	}
 	
-	protected def createSizeVar(MessageQueue queue, ComponentInstance owner) {
+	private def createSizeVar(MessageQueue queue, ComponentInstance owner) {
 		val capacityVar = createVariable(target.globalDeclarations, DataVariablePrefix.NONE, target.int,
 			queue.name + "Size" + owner.postfix)
 		capacityVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
@@ -174,7 +174,7 @@ class MessageQueueCreator {
 		return capacityVar
 	}
 	
-	protected def createMessageArray(MessageQueue queue, DataVariableDeclaration sizeConst, ComponentInstance owner) {
+	private def createMessageArray(MessageQueue queue, DataVariableDeclaration sizeConst, ComponentInstance owner) {
 		val messageVariableContainer = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
 			it.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
 				it.referredType = messageStructType // Only one variable is expected
@@ -193,7 +193,7 @@ class MessageQueueCreator {
 		return messageArray
 	}
 	
-	protected def createPeekFunction(MessageQueue queue, Variable messageArray, ComponentInstance owner) {
+	private def createPeekFunction(MessageQueue queue, Variable messageArray, ComponentInstance owner) {
 		val peekFunction = target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
 				it.createChild(function_ReturnType, typeReference) as TypeReference => [
@@ -215,7 +215,7 @@ class MessageQueueCreator {
 		return peekFunction	
 	}
 	
-	protected def createShiftFunction(MessageQueue queue, Variable messageArray, DataVariableDeclaration capacityVar, ComponentInstance owner) {
+	private def createShiftFunction(MessageQueue queue, Variable messageArray, DataVariableDeclaration capacityVar, ComponentInstance owner) {
 		val shiftFunction = target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
 				it.createChild(function_ReturnType, typeReference) as TypeReference => [
@@ -343,7 +343,7 @@ class MessageQueueCreator {
 		return shiftFunction	
 	}
 	
-	protected def createPushFunction(MessageQueue queue, Variable messageArray, DataVariableDeclaration capacityVar,
+	private def createPushFunction(MessageQueue queue, Variable messageArray, DataVariableDeclaration capacityVar,
 		DataVariableDeclaration sizeConst, ComponentInstance owner) {
 		val pushFunction = target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
@@ -447,7 +447,7 @@ class MessageQueueCreator {
 		return pushFunction
 	}
 	
-	protected def createIsFullFunction(MessageQueue queue, DataVariableDeclaration capacityVar, DataVariableDeclaration sizeConst, ComponentInstance owner) {
+	private def createIsFullFunction(MessageQueue queue, DataVariableDeclaration capacityVar, DataVariableDeclaration sizeConst, ComponentInstance owner) {
 		val isFullFunction = target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
 				it.createChild(function_ReturnType, typeReference) as TypeReference => [

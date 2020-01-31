@@ -273,10 +273,10 @@ class OrchestratorCreator {
 		return lastEdge
 	}
 	
-		/**
+	/**
 	 * Creates the function that copies the state of the toRaise flags to the isRaised flags, and clears the toRaise flags.
 	 */
-	protected def createClearFunction(SynchronousComponent component) {
+	private def createClearFunction(SynchronousComponent component) {
 		nta.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
 				it.createChild(function_ReturnType, typeReference) as TypeReference => [

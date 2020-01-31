@@ -36,7 +36,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 		this.modelTrace = modelTrace
 	}
 	
-	protected def getTopWrapperSyncChannelRule() {
+	def getTopWrapperSyncChannelRule() {
 		if (topWrapperSyncChannelRule === null) {
 			topWrapperSyncChannelRule = createRule(TopWrapperComponents.instance).action [
 				val asyncChannel = nta.globalDeclarations.createSynchronization(true, false, it.wrapper.asyncSchedulerChannelName)
@@ -48,7 +48,7 @@ class SynchronousChannelCreatorOfAsynchronousInstances {
 		return topWrapperSyncChannelRule
 	}
 	
-	protected def getInstanceWrapperSyncChannelRule() {
+	def getInstanceWrapperSyncChannelRule() {
 		if (instanceWrapperSyncChannelRule === null) {
 			instanceWrapperSyncChannelRule = createRule(SimpleWrapperInstances.instance).action [
 				val asyncChannel = nta.globalDeclarations.createSynchronization(true, false, it.instance.asyncSchedulerChannelName)
