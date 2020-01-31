@@ -17,13 +17,11 @@ import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableContainer
 import uppaal.expressions.AssignmentExpression
-import uppaal.expressions.AssignmentOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.ExpressionsPackage
 import uppaal.expressions.FunctionCallExpression
 import uppaal.expressions.IdentifierExpression
-import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalExpression
 import uppaal.expressions.LogicalOperator
 import uppaal.statements.ExpressionStatement

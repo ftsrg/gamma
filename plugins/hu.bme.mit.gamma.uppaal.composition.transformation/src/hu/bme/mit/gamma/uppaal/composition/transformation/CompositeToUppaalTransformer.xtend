@@ -14,11 +14,7 @@ import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FalseExpression
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
@@ -43,7 +39,6 @@ import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
@@ -51,7 +46,6 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.DistinctWrapperInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
@@ -61,7 +55,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEve
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuePriorities
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfClocks
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventOfTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateEntryActions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEventStateExitActions
@@ -74,10 +67,8 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperI
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncCompositeComponents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
@@ -108,7 +99,6 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
-import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
@@ -120,8 +110,6 @@ import java.util.Optional
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -201,13 +189,13 @@ class CompositeToUppaalTransformer {
 	protected List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.expression.model.Expression>
 	// Engine on the Gamma resource 
 	protected ViatraQueryEngine engine
-	protected final ResourceSet resources
+	protected ResourceSet resources
 	// The Gamma composite system to be transformed
-	protected final Component component
+	protected Component component
 	// The Gamma statechart that contains all ComponentDeclarations with the required instances
-	protected final Package sourceRoot
+	protected Package sourceRoot
 	// Root element containing the traces
-	protected final G2UTrace traceRoot
+	protected G2UTrace traceRoot
 	// The root element of the Uppaal automaton
 	protected NTA target
 	// Message struct types
@@ -215,8 +203,6 @@ class CompositeToUppaalTransformer {
 	protected StructTypeSpecification messageStructTypeDef
 	protected DataVariableDeclaration messageEvent
 	protected DataVariableDeclaration messageValue
-	// Gamma factory for the millisecond multiplication
-	final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
 	// Gamma package
 	protected final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	// UPPAAL packages
@@ -256,20 +242,44 @@ class CompositeToUppaalTransformer {
 	protected extension ExpressionCopier expressionCopier
 	protected extension ExpressionEvaluator expressionEvaluator
 	protected extension CompareExpressionCreator compareExpressionCreator
-	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
+	protected extension AsynchronousComponentHelper asynchronousComponentHelper
+	protected extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
 	protected final extension EventHandler eventHandler = new EventHandler
     protected final extension Cloner cloner = new Cloner
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	// Auxiliary transformer objects
-	protected final AsynchronousConstantsCreator asynchronousConstantsCreator
-	protected final SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
-	protected final MessageQueueCreator messageQueueCreator
-	protected final OrchestratorCreator orchestratorCreator
+	protected AsynchronousConstantsCreator asynchronousConstantsCreator
+	protected SynchronousChannelCreatorOfAsynchronousInstances synchronousChannelCreatorOfAsynchronousInstances
+	protected MessageQueueCreator messageQueueCreator
+	protected OrchestratorCreator orchestratorCreator
+	protected EnvironmentCreator environmentCreator
 	
 	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			List<SynchronousComponentInstance> testedComponentsForStates,
+			List<SynchronousComponentInstance> testedComponentsForTransitions) {
+		this.initialize(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+	}
+	
+	new(ResourceSet resourceSet, Component component,
+			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
+			Scheduler asyncScheduler,
+			TimeSpecification minimalOrchestratingPeriod,
+			TimeSpecification maximalOrchestratingPeriod,
+			boolean isMinimalElementSet,
+			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
+		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
+		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
+		this.isMinimalElementSet = isMinimalElementSet
+		this.topComponentArguments.addAll(topComponentArguments)
+		// The above parameters have to be set before calling initialize
+		this.initialize(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+	}
+	
+	private def initialize(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
+			List<SynchronousComponentInstance> testedComponentsForStates,
+			List<SynchronousComponentInstance> testedComponentsForTransitions) {
 		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
 		this.component = component
@@ -297,9 +307,12 @@ class CompositeToUppaalTransformer {
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
-		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.manipulation, this.expressionTransformer)
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.ntaBuilder, 
+			this.manipulation, this.expressionTransformer)
 		this.compareExpressionCreator = new CompareExpressionCreator(this.ntaBuilder, this.manipulation,
 			this.expressionTransformer, this.traceModel)
+		this.asynchronousComponentHelper = new AsynchronousComponentHelper(this.component, this.engine,
+			this.manipulation, this.expressionTransformer, this.ntaBuilder, this.traceModel)
 		// Creating UPPAAL variable and type structures as multiple auxiliary transformers need them
 		initNta
 		createMessageStructType
@@ -314,21 +327,8 @@ class CompositeToUppaalTransformer {
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
 			this.compareExpressionCreator, this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
-	}
-	
-	new(ResourceSet resourceSet, Component component,
-			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
-			Scheduler asyncScheduler,
-			TimeSpecification minimalOrchestratingPeriod,
-			TimeSpecification maximalOrchestratingPeriod,
-			boolean isMinimalElementSet,
-			List<SynchronousComponentInstance> testedComponentsForStates,
-			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
-		this(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
-		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
-		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
-		this.isMinimalElementSet = isMinimalElementSet
-		this.topComponentArguments.addAll(topComponentArguments)
+		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
+			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 	}
 	
 	def execute() {
@@ -395,9 +395,9 @@ class CompositeToUppaalTransformer {
 		{messageQueueCreator.getTopMessageQueuesRule.fireAllCurrent
 		messageQueueCreator.getInstanceMessageQueuesRule.fireAllCurrent}
 		// "Environment" rules
-		{syncEnvironmentRule.fireAllCurrent // sync environment
-		topWrapperEnvironmentRule.fireAllCurrent
-		instanceWrapperEnvironmentRule.fireAllCurrent}
+		{environmentCreator.getTopSyncEnvironmentRule.fireAllCurrent // sync environment
+		environmentCreator.getTopWrapperEnvironmentRule.fireAllCurrent
+		environmentCreator.getInstanceWrapperEnvironmentRule.fireAllCurrent}
 		{topWrapperClocksRule.fireAllCurrent
 		instanceWrapperClocksRule.fireAllCurrent}
 		{topWrapperSchedulerRule.fireAllCurrent
@@ -490,7 +490,6 @@ class CompositeToUppaalTransformer {
 			]
 		]
 	}
-
 	
 	/**
 	 * Creates a bool noInnerEvents function that shows whether there are unprocessed events in the queues of the automata.
@@ -546,181 +545,6 @@ class CompositeToUppaalTransformer {
 				]
 			]
 		]
-	}
-	
-	
-	/**
-	 * Puts an assignment expression onto the given container. The left side is the first given variable, the right side is the second given variable in disjunction with the third variable. E.g.: myFirstVariable = mySecondVariable || myThirdVariable.
-	 */
-	private def void createAssignmentLogicalExpression(EObject container, EReference reference, DataVariableDeclaration lhs, DataVariableDeclaration rhsl, DataVariableDeclaration rhsr) {
-   		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = lhs.variable.head // Only one variable is expected
-			]
-			it.operator = AssignmentOperator.EQUAL
-			it.createChild(binaryExpression_SecondExpr, logicalExpression) as LogicalExpression => [
-				it.operator = LogicalOperator.OR
-				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = rhsl.variable.head // Only one variable is expected
-				]
-				it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-					it.identifier = rhsr.variable.head // Only one variable is expected
-				]
-			]
-		]
-	}
-	
-	/**
-	 * Responsible for creating the control template that enables the user to fire events.
-	 */
-	val syncEnvironmentRule = createRule(TopUnwrappedSyncComponents.instance).action [
-		val initLoc = createTemplateWithInitLoc("Environment", "InitLoc")
-		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, null, null, null, null)) {
-			val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) 
-			log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)			
-			val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-			var Edge loopEdge
-			if (!expressions.empty) {
-				var boolean hasTrue = false
-				var boolean hasFalse = false
-				val hasValue = new HashSet<BigInteger>
-				val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
-				for (expression : expressions) {
-					if (!hasTrue && (expression instanceof TrueExpression)) {
-						hasTrue = true
-		   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)
-					}
-					else if (!hasFalse && (expression instanceof FalseExpression)) {
-						hasFalse = true
-		   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)			
-					}
-					else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
-						loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)		
-					}
-					loopEdge.addGuard(isStableVar, LogicalOperator.AND) // isStable is needed on all parameter value loop edge	
-				}
-				// Adding a different value if the type is an integer
-				if (!hasValue.empty) {
-					val maxValue = hasValue.max
-					val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-					loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, biggerThanMax)		
-					biggerThanMax.removeGammaElementFromTrace
-				}
-			}
-			else {
-				loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-				loopEdge.addGuard(isStableVar, LogicalOperator.AND)
-			}
-		}	
-	].build   
-	
-	/**
-	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to isTrue.
-	 */
-	private def createLoopEdgeWithBoolAssignment(Location location, DataVariableDeclaration variable, boolean isTrue) {
-		val loopEdge = location.createEdge(location)
-		// variable = isTrue
-		loopEdge.createAssignmentExpression(edge_Update, variable, isTrue)
-		return loopEdge
-	}
-	
-	/**
-	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and puts a guard on it too,
-	 * so the edge is only fireable if the variable-to-be-set is false.
-	 */
-	private def createLoopEdgeWithGuardedBoolAssignment(Location location, DataVariableDeclaration variable) {
-		val loopEdge = location.createLoopEdgeWithBoolAssignment(variable, true)
-		val negationExpression = createNegationExpression as NegationExpression => [
-			it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
-				it.identifier = variable.variable.head
-			]
-		]
-		// Only fireable if the bool variable is not already set
-		loopEdge.addGuard(negationExpression, LogicalOperator.AND)
-		return loopEdge
-	}
-	
-	/**
-	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and sets the valueof variable
-	 * according to the given Expression. 
-	 */
-	protected def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-			DataVariableDeclaration isRaisedVar, ComponentInstance owner, hu.bme.mit.gamma.expression.model.Expression expression) {
-		val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
-							.filter[it.owner == owner && it.port == port]
-		if (valueOfVars.size != 1) {
-			throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-		}
-		val valueOfVar = valueOfVars.head
-		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
-		return loopEdge
-	}
-	
-	/**
-	 * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
-	 */
-	private def hasValue(Set<BigInteger> hasValue, hu.bme.mit.gamma.expression.model.Expression expression) {
-		if (!(expression instanceof IntegerLiteralExpression)) {
-			return false
-		}
-		val anInt = expression as IntegerLiteralExpression
-		for (exp : hasValue) {
-			if (exp.equals(anInt.value)) {				
-				return true
-			}
-		}
-		hasValue.add(anInt.value)
-		return false
-	}
-	
-	val topWrapperEnvironmentRule = createRule(TopWrapperComponents.instance).action [
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Environment" + id++, "InitLoc")
-		val component = wrapper.wrappedComponent.type
-		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
-			val queue = wrapper.getContainerMessageQueue(match.systemPort /*Wrapper port*/, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(null) // Getting the owner
-			// Creating the loop edge (or edges in case of parametered events)
-			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.systemPort, match.event, match.instance /*Sync owner*/)		
-		}
-		for (match : DistinctWrapperInEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
-			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(null) // Getting the owner
-			// Creating the loop edge (or edges in case of parametered events)
-			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event, null)		
-		}
-	].build
-	
-	val instanceWrapperEnvironmentRule = createRule(TopAsyncCompositeComponents.instance).action [
-		// Creating the template
-		val initLoc = createTemplateWithInitLoc(it.asyncComposite.name + "Environment" + id++, "InitLoc")
-		// Creating in events
-		for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, null, null, null, null)) {
-			val wrapper = match.instance.type as AsynchronousAdapter
-			val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
-			// Creating the loop edge (or edges in case of parametered events)
-			initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event, null /*no sync owner*/)
-		}
-	].build
-	
-	protected def void createEnvironmentLoopEdges(Location initLoc, MessageQueueTrace messageQueueTrace, Port port, Event event, SynchronousComponentInstance owner) {
-		// Checking the parameters
-		val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(port, event)
-		for (expression : expressions) {
-			// New edge is needed in every iteration!
-			val loopEdge = initLoc.createEdge(initLoc)
-			loopEdge.createEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), expression, owner)
-			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
-			loopEdge.addInitializedGuards
-		}
-		if (expressions.empty) {
-			val loopEdge = initLoc.createEdge(initLoc)
-			loopEdge.createEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), createLiteralExpression => [it.text = "0"])
-			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
-			loopEdge.addInitializedGuards
-		}
 	}
 	
 	val topWrapperClocksRule = createRule(TopWrapperComponents.instance).action [
@@ -797,64 +621,6 @@ class CompositeToUppaalTransformer {
 				it.transform(binaryExpression_SecondExpr, timeValue, null)		
 			], LogicalOperator.AND)
 		}
-	}
-	
-	private def addInitializedGuards(Edge edge) {
-		if (component instanceof AsynchronousAdapter) {
-			val isInitializedVar = component.initializedVariable
-			edge.addGuard(isInitializedVar, LogicalOperator.AND)
-		}
-		if (component instanceof AsynchronousCompositeComponent) {
-			for (instance : SimpleWrapperInstances.Matcher.on(engine).allValuesOfinstance) {
-				val isInitializedVar = instance.initializedVariable
-				edge.addGuard(isInitializedVar, LogicalOperator.AND)
-			}
-		}
-	}
-	
-	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
-		// !isFull...
-		val isNotFull = createNegationExpression => [
-			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
-		 ]
-		edge.addGuard(isNotFull, LogicalOperator.AND)
-		// push....
-		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression, instance)
-	}
-	
-	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
-		// No addFunctionCall method as there are arguments
-		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-			it.function = messageQueueTrace.pushFunction.function
-			   	it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
-			   		it.identifier = representation.variable.head
-			   	]
-			it.transform(functionCallExpression_Argument, expression, instance)
-		]
-	}
-	
-	protected def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, Expression expression) {
-		// !isFull...
-		val isNotFull = createNegationExpression => [
-			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
-		 ]
-		edge.addGuard(isNotFull, LogicalOperator.AND)
-		// push....
-		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression)
-	}
-	
-	protected def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace, DataVariableDeclaration representation, Expression expression) {
-		// No addFunctionCall method as there are arguments
-		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
-			it.function = messageQueueTrace.pushFunction.function
-			it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
-				it.identifier = representation.variable.head
-			]
-			it.argument += expression
-		]
 	}
 	
 	val topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
@@ -1162,24 +928,6 @@ class CompositeToUppaalTransformer {
 			edge.addGuard(negatedExp, LogicalOperator.AND)
 		}
 	}
-	
-	private def getContainerMessageQueue(AsynchronousAdapter wrapper, Port port, Event event) {
-		val queues = QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(wrapper, port, event)
-		if (queues.size > 1) {
-			log(Level.WARNING, "Warning: more than one message queue " + wrapper.name + "." + port.name + "_" + event.name + ":" + queues)			
-		}
-		return queues.head
-	}
-	
-
-	
-
-	
-
-	
-
-	
-
 	
 	/**
 	 * This rule is responsible for transforming the input signals.
@@ -1541,8 +1289,6 @@ class CompositeToUppaalTransformer {
 			)
 		}
 	}
-	
-
 	
 	/**
 	 * This rule is responsible for transforming transitions whose targets are in a lower abstraction level (lower region)
@@ -2394,22 +2140,6 @@ class CompositeToUppaalTransformer {
 				val assignment = edge.createAssignmentExpression(edge_Update, toRaiseEvent.getValueOfVariable(port, inInstance), expression, inInstance)
 				addToTrace(eventAction, #{assignment}, expressionTrace)
 			}			
-		}
-	}
-	
-	/**
-	 * Places a message insert in a queue equivalent update on the given edge.
-	 */
-	private def createQueueInsertion(Edge edge, Port systemPort, Event toRaiseEvent, ComponentInstance inInstance, DataVariableDeclaration variable) {
-		val wrapper = inInstance.derivedType as AsynchronousAdapter
-		val queue = wrapper.getContainerMessageQueue(systemPort, toRaiseEvent) // In what message queue this event is stored
-		val messageQueueTrace = queue.getTrace(inInstance) // Getting the owner
-		val constRepresentation = toRaiseEvent.getConstRepresentation(systemPort)
-		if (variable === null) {  		
-			edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createLiteralExpression => [it.text = "0"])
-		}
-		else {
-			edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createIdentifierExpression => [it.identifier = variable.variable.head])
 		}
 	}
 	
