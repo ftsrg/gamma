@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
-import hu.bme.mit.gamma.uppaal.transformation.queries.Events
 import hu.bme.mit.gamma.uppaal.transformation.queries.FromChoiceToHigherTransition
 import hu.bme.mit.gamma.uppaal.transformation.queries.InOutTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.NamedElements
@@ -150,13 +149,13 @@ class ModelValidator {
 	private def checkNames() {
 		val variablesMatcher = engine.getMatcher(VariableDeclarations.instance)
 		val costantsMatcher = engine.getMatcher(ConstantDeclarations.instance)
-		val signalsMatcher = engine.getMatcher(Events.instance)
+//		val signalsMatcher = engine.getMatcher(Events.instance)
 		val statesMatcher = engine.getMatcher(States.instance)
 		val variables = variablesMatcher.allMatches.map[it.variable.name]
 		val constants = costantsMatcher.allMatches.map[it.name]
-		val signals = signalsMatcher.allMatches.map[it.event.name]
+//		val signals = signalsMatcher.allMatches.map[it.event.name]
 		val states = statesMatcher.allMatches.map[it.state.name].toSet
-		for (varName : variables + constants + signals) {
+		for (varName : variables + constants/* + signals*/) {
 			if (states.contains(varName)) {
 				throw new IllegalArgumentException("This variable is used as a declaration name and a state name as well: " + varName)
 			}
@@ -169,7 +168,7 @@ class ModelValidator {
 	def checkUppaalKeywords() {
 		val names = engine.getMatcher(NamedElements.instance).allValuesOfname
 		val uppaalKeywords = #{"init",  "system", "process", "urgent" , "broadcast" , "chan" , "int",
-			"bool" , "void" , "true", "false", "clock"}
+			"bool" , "void" , "true", "false", "clock", "const", "return"}
 		for (name : names) {
 			if (uppaalKeywords.contains(name)) {
 				throw new IllegalArgumentException(name + " is an UPPAAL keyword, therefore it cannot be used in the model.")

@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.queries.EventToEvent
 import hu.bme.mit.gamma.codegenerator.java.queries.Traces
 import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.yakindu.base.types.Event
@@ -35,7 +36,8 @@ class Trace {
 	protected def Event toYakinduEvent(hu.bme.mit.gamma.statechart.model.interface_.Event event, Port port) {
 		val yEvents = EventToEvent.Matcher.on(engine).getAllValuesOfyEvent(port, event)
 		if (yEvents.size != 1) {
-			throw new IllegalArgumentException("Not one Yakindu event mapped to Gamma event. Gamma port: " + port.name + ". " + "Gamma event: " + event.name + ". Yakindu event size: " + yEvents.size + ". Yakindu events:" + yEvents)
+			val component = port.eContainer as Component
+			throw new IllegalArgumentException("Not one Yakindu event mapped to Gamma event. Gamma component: " + component.name + ". Gamma port: " + port.name + ". " + "Gamma event: " + event.name + ". Yakindu event size: " + yEvents.size + ". Yakindu events:" + yEvents)
 		}
 		return yEvents.head
 	}

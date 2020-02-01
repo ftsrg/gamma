@@ -842,8 +842,8 @@ class CompositeToUppaalTransformer {
 		}
 		// On top level
 		if (tsource.eContainer == ttarget.eContainer) {
-			val targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head 
-			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
+			val targetLoc = ttarget.getLocation(owner)
+			val sourceLoc = tsource.getLocation(owner)
 			val toLowerEdge = sourceLoc.createEdge(targetLoc)		
 			// Updating the scheduling variable upon firing
 			toLowerEdge.setIsScheduledVar
@@ -867,7 +867,7 @@ class CompositeToUppaalTransformer {
 			var Location targetLoc 
 			// If it is an intermediate region, the normal location is the target
 			if (lastLevel != ttarget.levelOfStateNode) {
-				targetLoc = ttarget.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
+				targetLoc = ttarget.getLocation(owner)
 				// The orthogonal regions of the composite states have to be activated
 				if (ttarget.composite) {			
 					(ttarget as State).regions.setSubregions(visitedRegions, syncVar, true, owner)
@@ -890,6 +890,14 @@ class CompositeToUppaalTransformer {
 				}
 			}
 		}
+	}
+	
+	private def getLocation(StateNode node, SynchronousComponentInstance owner) {
+		val targets = node.allValuesOfTo.filter(Location).filter[it.owner == owner]
+		if (targets.size == 1) {
+			return targets.head
+		}
+		return targets.filter[it.locationTimeKind == LocationKind.NORMAL].head 
 	}
 	
 	/**
@@ -969,7 +977,7 @@ class CompositeToUppaalTransformer {
 		if (tsource.levelOfStateNode == lastLevel) {
 			val region = tsource.eContainer as Region
 			visitedRegions.add(region)
-			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head	
+			val sourceLoc = tsource.getLocation(owner)
 			// Creating a the transition equivalent edge
 			val toHigherEdge = sourceLoc.createEdge(sourceLoc)		
 			// Setting isScheduled variable to true upon firing 
@@ -990,7 +998,7 @@ class CompositeToUppaalTransformer {
 		// Highest level
 		else if (tsource.levelOfStateNode == ttarget.levelOfStateNode) {
 			visitedRegions.add(tsource.eContainer as Region)
-			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
+			val sourceLoc = tsource.getLocation(owner)
 			val targetLoc = getEdgeTarget(ttarget).filter[it.owner == owner].head
 			// Sync edge on the highest level with exit events
 			val syncEdge = createEdgeWithSync(sourceLoc, targetLoc, syncVar.variable.head, SynchronizationKind.RECEIVE)			
@@ -1012,7 +1020,7 @@ class CompositeToUppaalTransformer {
 		// Intermediate levels
 		else {	
 			visitedRegions.add(tsource.eContainer as Region)		
-			val sourceLoc = tsource.allValuesOfTo.filter(Location).filter[it.locationTimeKind == LocationKind.NORMAL].filter[it.owner == owner].head
+			val sourceLoc = tsource.getLocation(owner)
 			// Loop edge with exit events and deactivation
 			val loopEdge = createEdgeWithSync(sourceLoc, sourceLoc, syncVar.variable.head, SynchronizationKind.RECEIVE)
 			loopEdge.setExitEvents(tsource as State, owner)
