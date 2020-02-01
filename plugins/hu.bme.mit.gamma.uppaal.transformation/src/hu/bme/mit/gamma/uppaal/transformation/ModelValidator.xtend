@@ -108,7 +108,7 @@ class ModelValidator {
 			for (choiceTransitionsMatch : choiceTransitionsMatches) {
 				transitions.append(" " + choiceTransitionsMatch.transition)
 			}
-			throw new IllegalArgumentException("A transition must not go to a higher level hierarchy node if its source is a choice:" + transitions.toString())
+			throw new IllegalArgumentException("A transition must not go to a higher level hierarchy node if its source is a choice and the region has history:" + transitions.toString())
 		}
 	}
 	

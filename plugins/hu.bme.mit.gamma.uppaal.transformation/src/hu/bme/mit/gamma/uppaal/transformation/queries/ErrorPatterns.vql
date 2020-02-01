@@ -27,10 +27,34 @@ pattern inOutTransitions(transition : Transition, source : StateNode, target : S
 	neg find toLowerTransitions(source, target, transition, _);
 }
 
+///
 pattern fromChoiceToHigherTransition(transition : Transition, choice : ChoiceState, target : StateNode) {
+	find hasHistory(region);
+	Region.stateNodes(region, choice);
 	ChoiceState(choice);
 	find toHigherTransitions(choice, target, transition, _);
 }
+
+private pattern hasHistory(region : Region) {
+	Region.stateNodes(region, historyNode);
+	ShallowHistoryState(historyNode);
+} or {
+	find hasDeepHistory(region);
+} or {
+	find regionToParentRegion+(region, parentRegion);
+	find hasDeepHistory(parentRegion);
+}
+
+private pattern hasDeepHistory(region : Region) {
+	Region.stateNodes(region, historyNode);
+	DeepHistoryState(historyNode);
+}
+
+private pattern regionToParentRegion(region : Region, parentRegion : Region) {
+	Region.stateNodes(parentRegion, state);
+	State.regions(state, region);
+}
+///
 
 private pattern eventParameter(transition : Transition, event : Event, valueOfParameter : ParameterDeclaration) {
 	Transition.trigger(transition, trigger);
