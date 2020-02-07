@@ -33,13 +33,10 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 /**
@@ -99,41 +96,13 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 			VariableDeclaration variableDeclaration = (VariableDeclaration) reference.getDeclaration();
 			try {
 				Type variableDeclarationType = variableDeclaration.getType();
-				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(assignment.getRhs());
-				if (!typeDeterminator.equals(variableDeclarationType, rightHandSideExpressionType)) {
-					error("The types of the variable declaration and the right hand side expression are not the same: " +
-							typeDeterminator.transform(variableDeclarationType).toString().toLowerCase() + " and " +
-							rightHandSideExpressionType.toString().toLowerCase() + ".",
-							ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
-				}
-				// Additional checks for enumerations
-				EnumerationTypeDefinition enumType = null;
-				if (variableDeclarationType instanceof EnumerationTypeDefinition) {
-					enumType = (EnumerationTypeDefinition) variableDeclarationType;
-				}
-				else if (variableDeclarationType instanceof TypeReference &&
-						((TypeReference) variableDeclarationType).getReference().getType() instanceof EnumerationTypeDefinition) {
-					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
-				}
-				if (enumType != null) {
-					if (assignment.getRhs() instanceof EnumerationLiteralExpression) {
-						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) assignment.getRhs();
-						if (!enumType.getLiterals().contains(rhs.getReference())) {
-							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
-									ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
-						}
-					}
-					else {
-						error("The right hand side must be of type enumeration literal.", ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
-					}
-				}
+				checkTypeAndExpressionConformance(variableDeclarationType, assignment.getRhs(), ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
 	}
 
-	
 	@Check
 	public void CheckReturnStatementType(ReturnStatement rs) {
 		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());

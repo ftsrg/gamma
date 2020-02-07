@@ -148,7 +148,7 @@ class ExpressionTransformer {
 	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression, ComponentInstance owner) {		
 		var Variable declaration
 		val dataDeclarations = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration)
-		checkState(dataDeclarations.size == 1)
+		checkState(dataDeclarations.size == 1, "Probably you do not use event parameters correctly: " + dataDeclarations.size)
 		val dataDeclaration = dataDeclarations.head
 		declaration = dataDeclaration.variable.head
 		// Normal variables: no owner is needed as now every instance has its own statechart declaration
@@ -362,7 +362,7 @@ class ExpressionTransformer {
 			throw new IllegalArgumentException("This event has not one parameter: " + event + " - " + event.parameterDeclarations)
 		}
 		val parameter = event.parameterDeclarations.head
-		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == owner]
+		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
 							.filter[it.port == port]
 		if (variables.size != 1) {
 			throw new IllegalArgumentException("This event has more than one UPPAAL valueof variables: " + event)

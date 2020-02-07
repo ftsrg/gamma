@@ -3,7 +3,10 @@ package hu.bme.mit.gamma.expression.language.validation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -34,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.QuantifierExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -167,6 +171,13 @@ public class ExpressionTypeDeterminator {
 		}
 		if (expression == null) {
 			return ExpressionType.VOID;
+		}
+		// EventParameterReferences
+		Optional<EObject> parameter = expression.eCrossReferences().stream().filter(it -> it instanceof ParameterDeclaration).findFirst();
+		if (parameter.isPresent()) {
+			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
+			Type declarationType = parameterDeclaration.getType();
+			return transform(declarationType);
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression);
 	}
@@ -336,7 +347,7 @@ public class ExpressionTypeDeterminator {
 			Declaration declaration = referenceExpression.getDeclaration();
 			Type declarationType = declaration.getType();
 			return isNumber(transform(declarationType));
-		}else {
+		} else {
 			return isNumber(getType(expression));
 		}
 	}

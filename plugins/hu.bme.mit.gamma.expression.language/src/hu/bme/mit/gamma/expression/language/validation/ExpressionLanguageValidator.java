@@ -13,7 +13,9 @@ package hu.bme.mit.gamma.expression.language.validation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -28,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
@@ -203,8 +206,29 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			// in expression, semantics not known
 		}
 		else if (expression instanceof BinaryExpression) {
-			// equivalence and comparison
-			// No need to validate equivalence, it is interpreted between anything
+			// Equivalence
+			if (expression instanceof EquivalenceExpression) {
+				EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
+				Expression lhs = equivalenceExpression.getLeftOperand();
+				Expression rhs = equivalenceExpression.getRightOperand();
+				if (lhs instanceof ReferenceExpression) {
+					checkTypeAndExpressionConformance(((ReferenceExpression) lhs).getDeclaration().getType(), rhs,
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+				}
+				else if (rhs instanceof ReferenceExpression) {
+					checkTypeAndExpressionConformance(((ReferenceExpression) rhs).getDeclaration().getType(), lhs,
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+				}
+				else {
+					ExpressionType leftHandSideExpressionType = typeDeterminator.getType(lhs);
+					ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
+					if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
+						error("The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " +
+							rightHandSideExpressionType, ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+					}
+				}
+			}
+			// Comparison
 			if (expression instanceof ComparisonExpression) {
 				ComparisonExpression binaryExpression = (ComparisonExpression) expression;
 				if (!typeDeterminator.isNumber(binaryExpression.getLeftOperand())) {
@@ -217,6 +241,35 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				}
 			}
 		}	
+	}
+	
+	protected void checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
+		ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
+		if (!typeDeterminator.equals(type, rightHandSideExpressionType)) {
+			error("The types of the variable declaration and the right hand side expression are not the same: " +
+					typeDeterminator.transform(type).toString().toLowerCase() + " and " +
+					rightHandSideExpressionType.toString().toLowerCase() + ".", feature);
+		}
+		// Additional checks for enumerations
+		EnumerationTypeDefinition enumType = null;
+		if (type instanceof EnumerationTypeDefinition) {
+			enumType = (EnumerationTypeDefinition) type;
+		}
+		else if (type instanceof TypeReference &&
+				((TypeReference) type).getReference().getType() instanceof EnumerationTypeDefinition) {
+			enumType = (EnumerationTypeDefinition) ((TypeReference) type).getReference().getType();
+		}
+		if (enumType != null) {
+			if (rhs instanceof EnumerationLiteralExpression) {
+				EnumerationLiteralExpression rhsLiteral = (EnumerationLiteralExpression) rhs;
+				if (!enumType.getLiterals().contains(rhsLiteral.getReference())) {
+					error("This is not a valid literal of the enum type: " + rhsLiteral.getReference().getName() + ".", feature);
+				}
+			}
+			else {
+				error("The right hand side must be of type enumeration literal.", feature);
+			}
+		}
 	}
 	
 	@Check
@@ -310,7 +363,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 						error("The right hand side must be of type enumeration literal.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					}
 				}
-				//Additional checks for arrays
+				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
 				if (variableDeclarationType instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) variableDeclarationType;
