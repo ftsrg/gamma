@@ -443,8 +443,8 @@ public class Controller {
     }
 	
 	private String getParameters() {
-		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getHashtableSize() + " " +
-				getStateSpaceReduction();
+		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getResuseStateSpace() + " " +
+				getHashtableSize() + " " + getStateSpaceReduction();
 	}
 	
 	private String getSearchOrder() {
@@ -490,6 +490,13 @@ public class Controller {
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getStateSpaceReduction());
 		}
+	}
+	
+	private String getResuseStateSpace() {
+		if (view.isReuseStateSpace()) {
+			return "-T";
+		}
+		return "";
 	}
 	
 	private String getDiagnosticTrace() {
@@ -581,9 +588,17 @@ public class Controller {
 			} catch (FileNotFoundException e) {
 				throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
 			} catch (Throwable e) {
-				IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
-				ex.initCause(e);
-				throw ex;
+				final String errorMessage = "Cannot handle deadlock predicate for models with priorities or guarded broadcast receivers.";
+				if (e.getMessage().contains(errorMessage)) {
+					// Not a big problem
+					logger.log(Level.SEVERE, errorMessage);
+					return ThreeStateBoolean.UNDEF;
+				}
+				else {
+					IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
+					ex.initCause(e);
+					throw ex;
+				}
 			} finally {
 				traceReader.close();
 			}
@@ -699,6 +714,15 @@ public class Controller {
 	    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getGeneratedQueryFile())))) {
 	    		String uppaalQuery;
 	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    			// Reuse state space trick: we copy all the queries into a single string
+	    			if (view.isReuseStateSpace()) {
+	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + System.lineSeparator());
+	    				while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    					queryBuilder.append(uppaalQuery + System.lineSeparator());
+	    				}
+	    				uppaalQuery = queryBuilder.toString();
+	    			}
+	    			//
 	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
 	    			verifier = new Verifier(uppaalQuery, false);
 	    			verifier.execute();
@@ -708,54 +732,59 @@ public class Controller {
     					++elapsedTime;
     				}
     				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
-    					String stateName = "";
-						if (!uppaalQuery.equals("A[] not deadlock")) {
-							if (uppaalQuery.startsWith("E<> ")) {
-								stateName =  uppaalQuery.substring("E<> ".length());
-							}
-						}
-						if (stateName.endsWith( " && isStable")) {
-							stateName = stateName.substring(0, stateName.length() - " && isStable".length());
-						}
-    					if (stateName.startsWith("P_")) {
-    						stateName = stateName.substring("P_".length());
-    					}
     					String resultSentence = null;
-    					ThreeStateBoolean result = verifier.get();
-    					if (uppaalQuery.equals("A[] not deadlock")) {
-    						// Deadlock query
-    						switch (result) {
-    							case TRUE:
-    								resultSentence = "No deadlock.";
-    							break;
-    							case FALSE:
-    								resultSentence = "There can be deadlock in the system.";
-    							break;
-    							case UNDEF:
-    								// Theoretically unreachable because of !cancelled
-    								resultSentence = "Not determined if there can be deadlock.";
-    							break;
-    						}
+    					if (view.isReuseStateSpace()) {
+    						resultSentence = "Test generation finished.";
     					}
     					else {
-    						// Reachability query
-    						String isReachableString  = null;
-    						switch (result) {
-								case TRUE:
-									isReachableString = "reachable";
-								break;
-								case FALSE:
-									isReachableString = "unreachable";
-								break;
-								case UNDEF:
-    								// Theoretically unreachable because of !cancelled
-									isReachableString = "undefined";
-								break;
-    						}
-    						resultSentence = stateName + " is " + isReachableString + ".";
+	    					String stateName = "";
+							if (!uppaalQuery.equals("A[] not deadlock")) {
+								if (uppaalQuery.startsWith("E<> ")) {
+									stateName =  uppaalQuery.substring("E<> ".length());
+								}
+							}
+							if (stateName.endsWith( " && isStable")) {
+								stateName = stateName.substring(0, stateName.length() - " && isStable".length());
+							}
+	    					if (stateName.startsWith("P_")) {
+	    						stateName = stateName.substring("P_".length());
+	    					}
+	    					ThreeStateBoolean result = verifier.get();
+	    					if (uppaalQuery.equals("A[] not deadlock")) {
+	    						// Deadlock query
+	    						switch (result) {
+	    							case TRUE:
+	    								resultSentence = "No deadlock.";
+	    							break;
+	    							case FALSE:
+	    								resultSentence = "There can be deadlock in the system.";
+	    							break;
+	    							case UNDEF:
+	    								// Theoretically unreachable because of !cancelled
+	    								resultSentence = "Not determined if there can be deadlock.";
+	    							break;
+	    						}
+	    					}
+	    					else {
+	    						// Reachability query
+	    						String isReachableString  = null;
+	    						switch (result) {
+									case TRUE:
+										isReachableString = "reachable";
+									break;
+									case FALSE:
+										isReachableString = "unreachable";
+									break;
+									case UNDEF:
+	    								// Theoretically unreachable because of !cancelled
+										isReachableString = "undefined";
+									break;
+	    						}
+	    						resultSentence = stateName + " is " + isReachableString + ".";
+	    					}
     					}
-						buffer.append(resultSentence + System.lineSeparator());
-						Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
+    					buffer.append(resultSentence + System.lineSeparator());
+    					Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
     				}
     				else if (elapsedTime >= TIMEOUT) {
     					Logger.getLogger("GammaLogger").log(Level.INFO, "Timeout...");

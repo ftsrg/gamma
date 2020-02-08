@@ -98,7 +98,11 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
 	
-	private JMenuItem testGenerationTimeoutMenu;	
+	private JMenu testGenerationTimeoutMenu;
+
+	private JRadioButtonMenuItem allQueriesItem;
+	
+	private JMenuItem testGenerationTimeoutMenuItem;
 	private ButtonGroup testGenerationTimeoutGroup;
 	private JRadioButtonMenuItem sec15;
 	private JRadioButtonMenuItem sec30;
@@ -173,7 +177,7 @@ public class View extends JFrame {
 	 	someTrace = new JRadioButtonMenuItem("Some");
 	 	shortestTrace = new JRadioButtonMenuItem("Shortest");
 	 	fastestTrace = new JRadioButtonMenuItem("Fastest");
-	 	shortestTrace.setSelected(true);
+	 	someTrace.setSelected(true);
 	 	traceGroup = new ButtonGroup();
 	 	traceGroup.add(someTrace);
 	 	traceGroup.add(shortestTrace);
@@ -204,7 +208,12 @@ public class View extends JFrame {
 	 	modelCheckingOptionsMenu.add(hashtableSizeMenu);
 	 	
 	    // Setting the test generation timeout
-	 	testGenerationTimeoutMenu = new JMenu("Test Generation Timeout");
+	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
+	 	
+	 	allQueriesItem = new JRadioButtonMenuItem("Reuse State Space");
+//	 	allQueriesItem.setSelected(true);
+	 	
+	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
 	 	sec15 = new JRadioButtonMenuItem("15 sec");
 	 	sec30 = new JRadioButtonMenuItem("30 sec");
 	 	sec60 = new JRadioButtonMenuItem("60 sec");
@@ -215,10 +224,13 @@ public class View extends JFrame {
 	 	testGenerationTimeoutGroup.add(sec30);
 	 	testGenerationTimeoutGroup.add(sec60);
 	 	testGenerationTimeoutGroup.add(sec90);
-	 	testGenerationTimeoutMenu.add(sec15);
-	 	testGenerationTimeoutMenu.add(sec30);
-	 	testGenerationTimeoutMenu.add(sec60);
-	 	testGenerationTimeoutMenu.add(sec90);
+	 	testGenerationTimeoutMenuItem.add(sec15);
+	 	testGenerationTimeoutMenuItem.add(sec30);
+	 	testGenerationTimeoutMenuItem.add(sec60);
+	 	testGenerationTimeoutMenuItem.add(sec90);
+
+	 	testGenerationTimeoutMenu.add(allQueriesItem);
+	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
 	 		
 	 	optionsMenu.add(testGenerationTimeoutMenu);
 	 	
@@ -633,6 +645,10 @@ public class View extends JFrame {
 		}
 		// Shortest is default
 		return "Shortest";
+	}
+	
+	protected boolean isReuseStateSpace() {
+		return allQueriesItem.isSelected();
 	}
 	
 	protected int getHashTableSize() {
