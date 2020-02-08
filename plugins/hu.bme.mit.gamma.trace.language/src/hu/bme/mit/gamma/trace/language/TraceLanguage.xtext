@@ -47,7 +47,11 @@ Step returns Step:
 ;
 
 Act returns Act:
-	RaiseEventAct | TimeElapse | InstanceSchedule | ComponentSchedule;
+	Reset | RaiseEventAct | TimeElapse | InstanceSchedule | ComponentSchedule;
+	
+Reset returns Reset:
+	{Reset} 'reset'
+;
 
 RaiseEventAct returns RaiseEventAct:
 	'raise' port=[StatechartModel::Port] '.' event=[InterfaceModel::Event] (':' arguments+=Expression)?

@@ -84,6 +84,8 @@ class StringTraceBackAnnotator {
 	protected final String TRANSITIONS_CONST = "Transitions:"
 	protected final String DELAY_CONST = "Delay:" 
 	
+	
+	
 	protected final Scanner traceScanner
 	
 	protected final ResourceSet resourceSet
@@ -129,6 +131,9 @@ class StringTraceBackAnnotator {
 		}
 		// Back-annotating the steps
 		var isFirstStep = true
+		// First active locations - needed for state space reuse and unspecified system resets
+		var Collection<Location> firstActiveLocations
+		
 		// Collections to store the locations and variable values in
 		var Collection<Location> lastActiveLocations
 		var Collection<Entry<Variable, Integer>> variableCollection
@@ -168,6 +173,19 @@ class StringTraceBackAnnotator {
 						}
 						case BackAnnotatorState.STATE_LOCATIONS: {
 							lastActiveLocations = parseLocations(line)
+							if (firstActiveLocations === null) {
+								// Storing the first active locations so we know when the model is reset
+								firstActiveLocations = lastActiveLocations
+							}
+							else {
+								// Checking whether the model has been reset
+								if (firstActiveLocations.isInitialState(lastActiveLocations)) {
+									// Reseting every variable as it is a "first step" (not lastActiveLocations)
+									isFirstStep = true
+									variableCollection = null
+									step = createStep
+								}
+							}
 							state = BackAnnotatorState.STATE_VARIABLES					
 						}
 						case BackAnnotatorState.STATE_VARIABLES: {
@@ -181,6 +199,9 @@ class StringTraceBackAnnotator {
 							if (isStepStarted(line) && isFirstStep) {
 								// New step is created in the first step
 								val firstStep = createStep
+								// Reseting on the first step
+								firstStep.actions += createReset
+								//
 								firstStep.parseOutActions(lastActiveLocations, variableCollection)
 								trace.steps += firstStep
 								isFirstStep = false
@@ -210,6 +231,7 @@ class StringTraceBackAnnotator {
 			}
 			// In this case not a single step has been executed
 			val firstStep = createStep
+			firstStep.actions += createReset
 			firstStep.parseOutActions(lastActiveLocations, variableCollection)
 			trace.steps += firstStep
 		}
@@ -790,6 +812,10 @@ class StringTraceBackAnnotator {
     protected def getAllExpressionValuesOfFrom(EObject to) {
     	return ExpressionTraces.Matcher.on(engine).getAllValuesOffrom(null, to)
     }
+    
+    protected def isInitialState(Collection<Location> initialState, Collection<Location> actualState) {
+		return actualState.containsAll(initialState) && initialState.containsAll(actualState)
+	}
     
     /**
 	 * Returns the name of the isRaised boolean flag of the given event of the given port.

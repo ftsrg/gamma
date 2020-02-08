@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.WrapperInstanceContainer
@@ -61,8 +62,8 @@ class TestGenerator {
 	
 	protected final Package gammaPackage
 	protected final Component component
-	protected final ExecutionTrace trace 
-	
+	protected final ExecutionTrace trace
+	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
 	/**
@@ -122,7 +123,6 @@ class TestGenerator {
 				«ELSE»
 					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 				«ENDIF»
-				«componentClassName.toFirstLower».reset();
 			}
 			
 			@After
@@ -191,6 +191,10 @@ class TestGenerator {
 		}		
 		return builder.toString
 	}
+	
+	protected def dispatch serialize(Reset reset) '''
+		«componentClassName.toFirstLower».reset();
+	'''
 	
 	protected def dispatch serialize(RaiseEventAct raiseEvent) '''
 		«componentClassName.toFirstLower».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»", new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»});

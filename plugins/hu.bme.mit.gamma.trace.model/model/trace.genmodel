@@ -43,5 +43,6 @@
     <genClasses ecoreClass="trace.ecore#//Cycle">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Cycle/steps"/>
     </genClasses>
+    <genClasses ecoreClass="trace.ecore#//Reset"/>
   </genPackages>
 </genmodel:GenModel>
