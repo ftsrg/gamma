@@ -81,8 +81,15 @@ class StatechartWrapperCodeGenerator {
 			/** Resets the statemachine. Must be called to initialize the component. */
 			@Override
 			public void reset() {
+				// Clearing the in events
+				«INSERT_QUEUE» = true;
+				«PROCESS_QUEUE» = false;
+				«EVENT_QUEUE»1.clear();
+				«EVENT_QUEUE»2.clear();
+				//
 				«component.generateStatemachineInstanceName».init();
 				«component.generateStatemachineInstanceName».enter();
+				notifyListeners();
 			}
 			
 			/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -172,6 +179,17 @@ class StatechartWrapperCodeGenerator {
 					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						return registeredListeners;
 					}
+					
+					/** Notifying the registered listeners. */
+					public void notifyListeners() {
+						«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)»
+							if (isRaised«event.name.toFirstUpper»()) {
+								for («port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
+									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»get«event.name.toFirstUpper»Value()«ENDIF»);
+								}
+							}
+						«ENDFOR»
+					}
 
 				}
 				
@@ -181,6 +199,12 @@ class StatechartWrapperCodeGenerator {
 				}
 			«ENDFOR»
 			
+			/** Notifies all registered listeners in each contained port. */
+			public void notifyListeners() {
+				«FOR port : component.ports»
+					get«port.name.toFirstUpper»().notifyListeners();
+				«ENDFOR»
+			}
 			
 			«IF component.hasNamelessInterface»
 				public SCInterface getInterface() {
@@ -235,7 +259,6 @@ class StatechartWrapperCodeGenerator {
 			«IF component.needTimer»
 				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
 					«component.generateStatemachineInstanceName».setTimer(timer);
-					reset();
 				}
 			«ENDIF»
 			

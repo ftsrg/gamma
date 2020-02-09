@@ -72,9 +72,15 @@ class SynchronousCompositeComponentCodeGenerator {
 			public void reset() {
 				«FOR instance : component.components»
 					«instance.name».reset();
-				«ENDFOR»								
+				«ENDFOR»
+				«IF component instanceof CascadeCompositeComponent»
+					// Setting only a single queue for cascade statecharts
+					«FOR instance : component.components.filter[it.type instanceof StatechartDefinition]»
+						«instance.name».change«INSERT_QUEUE.toFirstUpper»();
+					«ENDFOR»
+				«ENDIF»			
 				// Initializing chain of listeners and events 
-				initListenerChain();
+				notifyListeners();
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -88,12 +94,6 @@ class SynchronousCompositeComponentCodeGenerator {
 				«FOR channelMatch : BroadcastChannels.Matcher.on(engine).getAllMatches(component, null, null, null)»
 					«channelMatch.providedPort.instance.name».get«channelMatch.providedPort.port.name.toFirstUpper»().registerListener(«channelMatch.requiredPort.instance.name».get«channelMatch.requiredPort.port.name.toFirstUpper»());
 				«ENDFOR»
-				«IF component instanceof CascadeCompositeComponent»
-					// Setting only a single queue for cascade statecharts
-					«FOR instance : component.components.filter[it.type instanceof StatechartDefinition]»
-						«instance.name».change«INSERT_QUEUE.toFirstUpper»();
-					«ENDFOR»
-				«ENDIF»
 			}
 			
 			// Inner classes representing Ports
@@ -175,19 +175,13 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			/** Notifies all registered listeners in each contained port. */
-			private void notifyListeners() {
+			public void notifyListeners() {
+				«FOR subcomponent : component.components»
+					«subcomponent.name».notifyListeners();
+				«ENDFOR»
 				«FOR portBinding : component.portBindings»
 					get«portBinding.compositeSystemPort.name.toFirstUpper»().notifyListeners();
 				«ENDFOR»
-			}
-			
-			/** Needed for the right event notification after initialization, as event notification from contained components
-			 * does not happen automatically (see the port implementations and runComponent method). */
-			public void initListenerChain() {
-				«FOR instance : component.components.filter[!(it.type instanceof StatechartDefinition)]»
-					«instance.name».initListenerChain();
-				«ENDFOR»
-				notifyListeners();
 			}
 			
 			«IF component instanceof SynchronousCompositeComponent»
@@ -251,6 +245,7 @@ class SynchronousCompositeComponentCodeGenerator {
 							«instance.name».setTimer(timer);
 						«ENDIF»
 					«ENDFOR»
+					reset();
 				}
 			«ENDIF»
 			
