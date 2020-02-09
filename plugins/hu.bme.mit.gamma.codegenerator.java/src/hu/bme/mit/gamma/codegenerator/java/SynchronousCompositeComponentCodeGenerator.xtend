@@ -176,6 +176,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			
 			/** Notifies all registered listeners in each contained port. */
 			public void notifyListeners() {
+«««				This subcomponent notification is necessery in hierarchical composite components
 				«FOR subcomponent : component.components»
 					«subcomponent.name».notifyListeners();
 				«ENDFOR»
