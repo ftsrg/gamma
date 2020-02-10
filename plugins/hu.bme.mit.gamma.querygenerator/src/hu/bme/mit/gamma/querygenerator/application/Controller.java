@@ -428,7 +428,7 @@ public class Controller {
 	 * Verifies the given Uppaal query.
 	 */
 	public void verify(String uppaalQuery) {
-		verifier = new Verifier(uppaalQuery, true);
+		verifier = new Verifier(uppaalQuery, true, true);
 		// Starting the worker
 		verifier.execute();
 	}
@@ -518,7 +518,9 @@ public class Controller {
 	/** Runnable class responsible for the execution of formal verification. */
 	class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		// The query needs to be added to UPPAAL in addition to the model
-		private String uppaalQuery;		
+		private String originalUppaalQueries;
+		// If this is true, the steps of the trace models generated from originalUppaalQueries are put into a single ExecutionTrace model
+		private boolean isSingleTraceModelExpected;
 		// Process running the UPPAAL verification
 		private Process process;
 		// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
@@ -526,62 +528,50 @@ public class Controller {
 		// Indicates whether it should contribute to the View in any form
 		private boolean contributeToView;
 		
-		public Verifier(String uppaalQuery, boolean contributeToView) {
-			this.uppaalQuery = uppaalQuery;
+		public Verifier(String uppaalQuery, boolean contributeToView, boolean isSingleTraceModelExpected) {
+			this.originalUppaalQueries = uppaalQuery;
 			this.contributeToView = contributeToView;
+			this.isSingleTraceModelExpected = isSingleTraceModelExpected;
 		}
 		
 		@Override
 		public ThreeStateBoolean doInBackground() throws Exception {
-			Scanner traceReader = null;
 			try {
 				// Disabling the verification buttons
 				view.setVerificationButtons(false);
-				// Writing the query to a temporary file
-				File tempQueryfile = writeToFile(uppaalQuery, getParentFolder(), ".temporary_query.q");
-				// Deleting the file on the exit of the JVM
-				tempQueryfile.deleteOnExit();
-				// verifyta -t1 TestOneComponent.xml asd.q 
-				StringBuilder command = new StringBuilder();
-				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
-				// Executing the command
-				process = Runtime.getRuntime().exec(command.toString());
-				InputStream ips = process.getErrorStream();
-				// Reading the result of the command
-				traceReader = new Scanner(ips);
-				if (isCancelled) {
-					// If the process is killed, this is where it can be checked
-					return ThreeStateBoolean.UNDEF;
+				// Common traceability and execution trace
+				ResourceSet traceabilitySet = loadTraceability();
+				ExecutionTrace traceModel = null;
+				// Verification starts
+				if (isSingleTraceModelExpected) {
+					String[] uppaalQueries = originalUppaalQueries.split(System.lineSeparator());
+					for (String uppaalQuery : uppaalQueries) {
+						try {
+							if (traceModel == null) {
+								traceModel = verifyQuery(uppaalQuery, traceabilitySet);
+							}
+							else {
+								ExecutionTrace additionalTrace = verifyQuery(uppaalQuery, traceabilitySet);
+								traceModel.getSteps().addAll(additionalTrace.getSteps());
+							}
+						} catch (NotBackannotatedException e) {
+							logger.log(Level.INFO, "Query " + uppaalQuery + " does not yield a trace.");
+						}
+						catch (Exception e) {
+							logger.log(Level.WARNING, e.getMessage());
+						}
+					}
 				}
-				if (!traceReader.hasNext()) {
-					// No back annotation of empty lines
-					return handleEmptyLines(uppaalQuery);
+				else {
+					traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
 				}
-				// Warning lines are now deleted if there was any
-				ResourceSet traceabilitySet = loadTraceability(); // For back-annotation
-				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
-				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
-				ExecutionTrace traceModel = backAnnotator.execute();
-				if (!needsBackAnnotation) {
-					// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
-					return handleEmptyLines(uppaalQuery).opposite();
-				}
-				Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
-				fileNameAndId = saveModel(traceModel, fileNameAndId);
-				// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
-				String packageName = file.getProject().getName().toLowerCase();
-				TestGenerator testGenerator = new TestGenerator(traceabilitySet,
-					traceModel, packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
-				String testClassCode = testGenerator.execute();
-				String testClassParentFolder = getTestGentFolder() + "/" + 
-						testGenerator.getPackageName().replaceAll("\\.", "\\/");
-				writeToFile(testClassCode, testClassParentFolder,
-						"ExecutionTraceSimulation" + fileNameAndId.getValue() + ".java");
-				logger.log(Level.INFO, "Test generation has been finished.");
+				serializeTestCode(traceModel, traceabilitySet);
 				// There is a generated trace, so the result is the opposite of the empty trace
-				return handleEmptyLines(uppaalQuery).opposite();
+				return handleEmptyLines(originalUppaalQueries).opposite();
 			} catch (EmptyTraceException e) {
-				return handleEmptyLines(uppaalQuery);
+				return handleEmptyLines(originalUppaalQueries);
+			} catch (NotBackannotatedException e) {
+				return e.getThreeStateBoolean();
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
@@ -599,9 +589,61 @@ public class Controller {
 					ex.initCause(e);
 					throw ex;
 				}
+			}
+		}
+		
+		private ExecutionTrace verifyQuery(String actualUppaalQuery, ResourceSet traceabilitySet)
+				throws IOException, NotBackannotatedException, EmptyTraceException {
+			Scanner traceReader = null;
+			try {
+				// Writing the query to a temporary file
+				File tempQueryfile = writeToFile(actualUppaalQuery, getParentFolder(), ".temporary_query.q");
+				// Deleting the file on the exit of the JVM
+				tempQueryfile.deleteOnExit();
+				// verifyta -t0 -T TestOneComponent.xml asd.q 
+				StringBuilder command = new StringBuilder();
+				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
+				// Executing the command
+				process = Runtime.getRuntime().exec(command.toString());
+				InputStream ips = process.getErrorStream();
+				// Reading the result of the command
+				traceReader = new Scanner(ips);
+				if (isCancelled) {
+					// If the process is killed, this is where it can be checked
+					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF);
+				}
+				if (!traceReader.hasNext()) {
+					// No back annotation of empty lines
+					throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries));
+				}
+				// Warning lines are now deleted if there was any
+				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
+				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
+				ExecutionTrace traceModel = backAnnotator.execute();
+				if (!needsBackAnnotation) {
+					// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
+					throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries).opposite());
+				} 
+				return traceModel;
 			} finally {
 				traceReader.close();
 			}
+		}
+		
+		private void serializeTestCode(ExecutionTrace traceModel, ResourceSet traceabilitySet)
+				throws CoreException, IOException, FileNotFoundException {
+			Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
+			fileNameAndId = saveModel(traceModel, fileNameAndId);
+			// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
+			String packageName = file.getProject().getName().toLowerCase();
+			TestGenerator testGenerator = new TestGenerator(traceabilitySet,
+					traceModel, packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
+			String testClassCode = testGenerator.execute();
+			String testClassParentFolder = getTestGentFolder() + "/" + 
+					testGenerator.getPackageName().replaceAll("\\.", "\\/");
+			writeToFile(testClassCode, testClassParentFolder,
+					"ExecutionTraceSimulation" + fileNameAndId.getValue() + ".java");
+			logger.log(Level.INFO, "Test generation has been finished.");
 		}
 
 		private Entry<String, Integer> saveModel(ExecutionTrace traceModel, Entry<String, Integer> fileNameAndId)
@@ -715,7 +757,7 @@ public class Controller {
 	    		String uppaalQuery;
 	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
 	    			// Reuse state space trick: we copy all the queries into a single string
-	    			if (view.isReuseStateSpace()) {
+	    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
 	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + System.lineSeparator());
 	    				while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
 	    					queryBuilder.append(uppaalQuery + System.lineSeparator());
@@ -724,7 +766,7 @@ public class Controller {
 	    			}
 	    			//
 	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
-	    			verifier = new Verifier(uppaalQuery, false);
+	    			verifier = new Verifier(uppaalQuery, false, view.isSingleTraceModelNeeded());
 	    			verifier.execute();
     				int elapsedTime = 0;
     				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {
@@ -733,8 +775,8 @@ public class Controller {
     				}
     				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
     					String resultSentence = null;
-    					if (view.isReuseStateSpace()) {
-    						resultSentence = "Test generation finished.";
+    					if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
+    						resultSentence = "Test generation has been finished.";
     					}
     					else {
 	    					String stateName = "";
@@ -827,6 +869,18 @@ public class Controller {
     	
     }
     
+}
+
+class NotBackannotatedException extends Exception {
+	private ThreeStateBoolean threeStateBoolean;
+	
+	NotBackannotatedException(ThreeStateBoolean threeStateBoolean) {
+		this.threeStateBoolean = threeStateBoolean;
+	}
+	
+	public ThreeStateBoolean getThreeStateBoolean() {
+		return threeStateBoolean;
+	}
 }
 
 enum ThreeStateBoolean {

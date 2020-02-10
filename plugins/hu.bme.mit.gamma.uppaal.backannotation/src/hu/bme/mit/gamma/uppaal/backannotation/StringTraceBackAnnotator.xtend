@@ -84,8 +84,6 @@ class StringTraceBackAnnotator {
 	protected final String TRANSITIONS_CONST = "Transitions:"
 	protected final String DELAY_CONST = "Delay:" 
 	
-	
-	
 	protected final Scanner traceScanner
 	
 	protected final ResourceSet resourceSet
