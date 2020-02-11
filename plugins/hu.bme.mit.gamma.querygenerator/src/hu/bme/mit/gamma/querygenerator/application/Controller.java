@@ -632,7 +632,7 @@ public class Controller {
 		
 		private void serializeTestCode(ExecutionTrace traceModel, ResourceSet traceabilitySet)
 				throws CoreException, IOException, FileNotFoundException {
-			Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
+			Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get
 			fileNameAndId = saveModel(traceModel, fileNameAndId);
 			// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
 			String packageName = file.getProject().getName().toLowerCase();

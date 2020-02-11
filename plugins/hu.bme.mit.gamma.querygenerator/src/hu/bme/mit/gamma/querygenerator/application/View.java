@@ -109,6 +109,8 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem sec30;
 	private JRadioButtonMenuItem sec60;
 	private JRadioButtonMenuItem sec90;
+	private JRadioButtonMenuItem sec180;
+	private JRadioButtonMenuItem sec360;
 	
 	private JTextArea exampleTextArea;
 	private JTextArea helpTextArea;
@@ -220,16 +222,22 @@ public class View extends JFrame {
 	 	sec30 = new JRadioButtonMenuItem("30 sec");
 	 	sec60 = new JRadioButtonMenuItem("60 sec");
 	 	sec90 = new JRadioButtonMenuItem("90 sec");
+	 	sec180 = new JRadioButtonMenuItem("180 sec");
+	 	sec360 = new JRadioButtonMenuItem("360 sec");
 	 	sec15.setSelected(true);
 	 	testGenerationTimeoutGroup = new ButtonGroup();
 	 	testGenerationTimeoutGroup.add(sec15);
 	 	testGenerationTimeoutGroup.add(sec30);
 	 	testGenerationTimeoutGroup.add(sec60);
 	 	testGenerationTimeoutGroup.add(sec90);
+	 	testGenerationTimeoutGroup.add(sec180);
+	 	testGenerationTimeoutGroup.add(sec360);
 	 	testGenerationTimeoutMenuItem.add(sec15);
 	 	testGenerationTimeoutMenuItem.add(sec30);
 	 	testGenerationTimeoutMenuItem.add(sec60);
 	 	testGenerationTimeoutMenuItem.add(sec90);
+	 	testGenerationTimeoutMenuItem.add(sec180);
+	 	testGenerationTimeoutMenuItem.add(sec360);
 
 	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
 	 	testGenerationTimeoutMenu.add(singleTraceModelItem);
@@ -681,6 +689,12 @@ public class View extends JFrame {
 		}
 		if (sec90.isSelected()) {
 			return 90;
+		}
+		if (sec180.isSelected()) {
+			return 180;
+		}
+		if (sec360.isSelected()) {
+			return 360;
 		}
 		// 15 sec is deafult
 		return 15;
