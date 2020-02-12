@@ -520,7 +520,7 @@ public class Controller {
 		// The query needs to be added to UPPAAL in addition to the model
 		private String originalUppaalQueries;
 		// If this is true, the steps of the trace models generated from originalUppaalQueries are put into a single ExecutionTrace model
-		private boolean isSingleTraceModelExpected;
+		private boolean isSingleTraceModelFromMultipleQueries;
 		// Process running the UPPAAL verification
 		private Process process;
 		// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
@@ -531,7 +531,7 @@ public class Controller {
 		public Verifier(String uppaalQuery, boolean contributeToView, boolean isSingleTraceModelExpected) {
 			this.originalUppaalQueries = uppaalQuery;
 			this.contributeToView = contributeToView;
-			this.isSingleTraceModelExpected = isSingleTraceModelExpected;
+			this.isSingleTraceModelFromMultipleQueries = isSingleTraceModelExpected;
 		}
 		
 		@Override
@@ -543,7 +543,7 @@ public class Controller {
 				ResourceSet traceabilitySet = loadTraceability();
 				ExecutionTrace traceModel = null;
 				// Verification starts
-				if (isSingleTraceModelExpected) {
+				if (isSingleTraceModelFromMultipleQueries) {
 					String[] uppaalQueries = originalUppaalQueries.split(System.lineSeparator());
 					for (String uppaalQuery : uppaalQueries) {
 						try {
@@ -604,6 +604,7 @@ public class Controller {
 				StringBuilder command = new StringBuilder();
 				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
 				// Executing the command
+				logger.log(Level.INFO, "Executing command: " + command.toString());
 				process = Runtime.getRuntime().exec(command.toString());
 				InputStream ips = process.getErrorStream();
 				// Reading the result of the command
@@ -758,15 +759,17 @@ public class Controller {
 	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
 	    			// Reuse state space trick: we copy all the queries into a single string
 	    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
-	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + System.lineSeparator());
+	    				final String separator = System.lineSeparator();
+	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + separator);
 	    				while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
-	    					queryBuilder.append(uppaalQuery + System.lineSeparator());
+	    					queryBuilder.append(uppaalQuery + separator);
 	    				}
-	    				uppaalQuery = queryBuilder.toString();
+	    				uppaalQuery = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
 	    			}
 	    			//
 	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
-	    			verifier = new Verifier(uppaalQuery, false, view.isSingleTraceModelNeeded());
+	    			verifier = new Verifier(uppaalQuery, false, view.isSingleTraceModelNeeded() &&
+	    					!view.isReuseStateSpace());
 	    			verifier.execute();
     				int elapsedTime = 0;
     				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {
