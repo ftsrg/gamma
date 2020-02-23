@@ -15,7 +15,6 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.declarationInitializations"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.events"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.inEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.eventParameters"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.topRegions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.subregions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.regions"/>

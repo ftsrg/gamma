@@ -73,14 +73,6 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 	Event.name(event, name);
 }
 
-pattern eventParameters(event : Event, param : ParameterDeclaration) {
-	EventTrigger.arguments(trigger, reference);
-	ReferenceExpression.declaration(reference, param);
-	EventTrigger.eventReference(trigger, portEventReference);
-	PortEventReference.event(portEventReference, event);
-	Event.parameterDeclarations(event, param);
-}
-
 pattern topRegions(gammaPackage : Package, statechart : StatechartDefinition, topRegion : Region, name : java String) {
 	Package.components(gammaPackage, statechart);
 	StatechartDefinition.regions(statechart, topRegion);

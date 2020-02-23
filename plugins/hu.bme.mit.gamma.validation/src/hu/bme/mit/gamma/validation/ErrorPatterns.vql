@@ -426,14 +426,11 @@ private pattern transitionsWithAssignment(transition : Transition, variableDecla
 	ReferenceExpression.declaration(reference, variableDeclaration);
 }
 
-
-
 private pattern guardlessTriggeredTransitionsWithAssignment(region : Region, transition : Transition, port : Port, event : Event, variableDeclaration : VariableDeclaration) {
 	Region.stateNodes(region, node);
 	find guardlessTriggeredTransitions(node, transition, port, event); 
 	find transitionsWithAssignment(transition, variableDeclaration);
 }
-
 
 private pattern guardedTriggeredTransitionsWithAssignment(region : Region, transition : Transition, port : Port, event : Event, variableDeclaration : VariableDeclaration, guardReference : Declaration) {
 	Region.stateNodes(region, node);
@@ -451,15 +448,12 @@ private pattern orthogonalRegions(region1 : Region, region2 : Region) {
 	region1 != region2;
 }
 
-
 @Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
 	message = "The transition has the same trigger as another one in a parallel region, and assigns a value to the same variable as the other transition." ,
 	severity = "warning", 
 	symmetric = {transition1, transition2},
 	key = {transition1, transition2}
 )
-
-
 pattern sameTriggerDifferentAssignment(transition1 : Transition, transition2 : Transition, variable : VariableDeclaration) {	
 	find orthogonalRegions(region1, region2);
 	find guardlessTriggeredTransitionsWithAssignment(region1, transition1, port, event, variable);

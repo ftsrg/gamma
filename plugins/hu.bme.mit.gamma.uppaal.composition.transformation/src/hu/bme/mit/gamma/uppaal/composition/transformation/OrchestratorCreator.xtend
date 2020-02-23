@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.statechart.model.CompositeElement
+import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -11,9 +12,11 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueueSwapInstancesOfComposite
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
@@ -29,6 +32,8 @@ import java.util.NoSuchElementException
 import java.util.Optional
 import java.util.logging.Level
 import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
@@ -86,6 +91,7 @@ class OrchestratorCreator {
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	protected final extension EventHandler eventHandler = new EventHandler
 	protected final extension Cloner cloner = new Cloner
+	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension ExpressionEvaluator expressionEvaluator
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
@@ -107,6 +113,7 @@ class OrchestratorCreator {
 		this.modelTrace = modelTrace
 		this.transitionIdVar = transitionIdVar
 		this.isStableVar = isStableVar
+		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.modelTrace)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.assignmentExpressionCreator = assignmentExpressionCreator
 		this.compareExpressionCreator = compareExpressionCreator
@@ -144,6 +151,9 @@ class OrchestratorCreator {
 				}
 				// Reset transition id variable to reduce state space
 				firstEdge.resetTransitionIdVariableIfNeeded
+				// Reset input event parameter values to reduce state spac
+				// (output event parameters values are reset in clearEventsFunction)
+				lastEdge.resetInputEventParameterValues
 			].build
 		}
 	}
@@ -210,6 +220,22 @@ class OrchestratorCreator {
 				createLiteralExpression => [it.text = "0"]
 			)
 		}
+	}
+	
+	private def resetInputEventParameterValues(Edge edge) {
+		for (match : InputInstanceEvents.Matcher.on(engine).allMatches) {
+			if (match.event.doesParameterVariableNeedReset) {
+				edge.resetParameterVariable(edge_Update, match.event, match.port, match.instance)
+			}
+		}
+	}
+	
+	private def doesParameterVariableNeedReset(Event event) {
+		return true /*TODO If event is transient*/ && ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
+	}
+	
+	private def resetParameterVariable(EObject container, EReference reference, Event event, Port port, SynchronousComponentInstance instance) {
+		container.createAssignmentExpression(reference, event.getValueOfVariable(port, instance), 0)
 	}
 	
 	/**
@@ -291,19 +317,32 @@ class OrchestratorCreator {
 								// out-signal = false
 								it.createAssignmentExpression(expressionStatement_Expression, match.event.getToRaiseVariable(match.port, match.instance), false)										
 							]
+							if (match.event.doesParameterVariableNeedReset) {
+								it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
+									// out-signal value = 0
+									it.resetParameterVariable(expressionStatement_Expression, match.event, match.port, match.instance)									
+								]
+							}
 						} 
 					}
 					else if (component instanceof StatechartDefinition) {
-						it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
-							for (port : component.ports) {
-								for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
-									val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
-									checkState(instances.size == 1, instances)
-									val variable = event.getToRaiseVariable(port, instances.head)
-									it.createAssignmentExpression(expressionStatement_Expression, variable, false)										
+						for (port : component.ports) {
+							for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
+								val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
+								checkState(instances.size == 1, instances)
+								val instance = instances.head
+								val variable = event.getToRaiseVariable(port, instance)
+								it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
+									it.createAssignmentExpression(expressionStatement_Expression, variable, false)
+								]
+								if (event.doesParameterVariableNeedReset) {
+									it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
+										// out-signal value = 0
+										it.resetParameterVariable(expressionStatement_Expression, event, port, instance)									
+									]
 								}
 							}
-						]
+						}
 					}
 				]
 			]
@@ -397,8 +436,7 @@ class OrchestratorCreator {
 			// toRaise = false
 			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)										
 		}
-	 }
-	
+	}
 	
 	/**
 	 * Creates the scheduling (runCycle synchronizations and queue swapping updates) starting the given instance.
