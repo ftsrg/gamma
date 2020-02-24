@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.Transition;
 import hu.bme.mit.gamma.statechart.model.TransitionPriority;
 import hu.bme.mit.gamma.statechart.model.Trigger;
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
@@ -1113,18 +1114,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkCascadeLoopChannels(SimpleChannel channel) {
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
-		if (StatechartModelDerivedFeatures.getDerivedType(instance) instanceof CascadeCompositeComponent &&
+		if (StatechartModelDerivedFeatures.getDerivedType(instance) instanceof AbstractSynchronousCompositeComponent &&
 				instance == channel.getRequiredPort().getInstance()) {			
-			warning("Verification cannot be executed if ports of a cascade component are connected to each other.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
 		}
 	}
 	
 	@Check
 	public void checkCascadeLoopChannels(BroadcastChannel channel) {
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
-		if (StatechartModelDerivedFeatures.getDerivedType(instance)  instanceof CascadeCompositeComponent &&
+		if (StatechartModelDerivedFeatures.getDerivedType(instance)  instanceof AbstractSynchronousCompositeComponent &&
 				channel.getRequiredPorts().stream().anyMatch(it -> it.getInstance() == instance)) {			
-			warning("Verification cannot be executed if ports of a cascade component are connected to each other.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
 		}
 	}
 	

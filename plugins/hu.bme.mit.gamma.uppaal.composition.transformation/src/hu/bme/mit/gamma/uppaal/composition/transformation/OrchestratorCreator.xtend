@@ -151,9 +151,6 @@ class OrchestratorCreator {
 				}
 				// Reset transition id variable to reduce state space
 				firstEdge.resetTransitionIdVariableIfNeeded
-				// Reset input event parameter values to reduce state spac
-				// (output event parameters values are reset in clearEventsFunction)
-				lastEdge.resetInputEventParameterValues
 			].build
 		}
 	}
@@ -489,10 +486,13 @@ class OrchestratorCreator {
 		for (runCycleEdge : lastEdges) {
 			runCycleEdge.target = lastEdge.source
 		}
-		// If the instance is cascade, the in events have to be cleared
-		if (instance.isCascade) {
-			for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
-				lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
+		// If the instance is cascade, the in events MUST be cleared;
+		// Same thing is done for synchronous instances for optimization purposes
+		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
+			lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
+			// Also, parameter value variables are also reset for optimization purposes (if possible)
+			if (match.event.doesParameterVariableNeedReset) {
+				lastEdge.resetParameterVariable(edge_Update, match.event, match.port, match.instance)
 			}
 		}
 		return lastEdge
