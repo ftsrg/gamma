@@ -219,14 +219,6 @@ class OrchestratorCreator {
 		}
 	}
 	
-	private def resetInputEventParameterValues(Edge edge) {
-		for (match : InputInstanceEvents.Matcher.on(engine).allMatches) {
-			if (match.event.doesParameterVariableNeedReset) {
-				edge.resetParameterVariable(edge_Update, match.event, match.port, match.instance)
-			}
-		}
-	}
-	
 	private def doesParameterVariableNeedReset(Event event) {
 		return true /*TODO If event is transient*/ && ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
 	}

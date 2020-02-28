@@ -66,7 +66,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		namedElements.remove(element);
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
-				error("Names must be unique!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+				error("In a Gamma model every identifier must be unique.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
