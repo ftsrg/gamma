@@ -38,8 +38,8 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 		// Setting the maximum size of lines
         c.setAutoLinewrap(105);
         // Line break between import keywords
-        c.setLinewrap(1).after(f.getPackageAccess().getNameAssignment_1());
-        c.setLinewrap(1).after(f.getPackageAccess().getImportsAssignment_2_1());
+        c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getNameAssignment_1());
+		c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getImportsAssignment_2_1());
         // Line break after declarations
         c.setLinewrap(1).after(f.getConstantDeclarationRule());
         c.setLinewrap(1).after(f.getFunctionDeclarationRule());

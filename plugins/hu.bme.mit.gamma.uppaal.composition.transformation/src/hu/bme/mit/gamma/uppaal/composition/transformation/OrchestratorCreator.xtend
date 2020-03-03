@@ -221,7 +221,7 @@ class OrchestratorCreator {
 	}
 	
 	private def doesParameterVariableNeedReset(Event event) {
-		return event.persistency == Persistency.PERSISTENT && 
+		return event.persistency == Persistency.TRANSIENT && 
 			ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
 	}
 	
