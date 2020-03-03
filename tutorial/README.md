@@ -3,8 +3,6 @@ The goal of this tutorial is to try out the Gamma framework for modeling composi
 ## Installation
 Install Gamma using the following instructions.
 
-Gamma is tested to work with Eclipse Photon.
-
 - Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2018-09/r/eclipse-ide-java-and-dsl-developers).
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
   - Install VIATRA 2.1.0 from update site http://download.eclipse.org/viatra/updates/release/2.1.0
