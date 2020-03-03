@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Persistency
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
@@ -220,7 +221,8 @@ class OrchestratorCreator {
 	}
 	
 	private def doesParameterVariableNeedReset(Event event) {
-		return true /*TODO If event is transient*/ && ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
+		return event.persistency == Persistency.PERSISTENT && 
+			ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
 	}
 	
 	private def resetParameterVariable(EObject container, EReference reference, Event event, Port port, SynchronousComponentInstance instance) {
