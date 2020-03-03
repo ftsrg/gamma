@@ -446,7 +446,11 @@ EventDeclaration returns InterfaceModel::EventDeclaration:
 
 Event returns InterfaceModel::Event:
 	{InterfaceModel::Event}
-	'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')? ('priority' '=' priority=INTEGER)?
+	(persistency=Persistency)? 'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')? ('priority' '=' priority=INTEGER)?
+;
+
+enum Persistency returns InterfaceModel::Persistency:
+	PERSISTENT = 'persistent' | TRANSIENT = 'transient'
 ;
 
 // Overriding it for the sake of EventParameterReferenceExpression

@@ -154,6 +154,10 @@
         <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//interface/EventDirection/OUT"/>
         <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//interface/EventDirection/INOUT"/>
       </genEnums>
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//interface/Persistency">
+        <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//interface/Persistency/TRANSIENT"/>
+        <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//interface/Persistency/PERSISTENT"/>
+      </genEnums>
       <genClasses ecoreClass="statechart.ecore#//interface/Interface">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"
             ecoreFeature="ecore:EReference statechart.ecore#//interface/Interface/parents"/>
@@ -165,6 +169,7 @@
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//interface/Event">
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//interface/Event/priority"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//interface/Event/persistency"/>
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//interface/EventParameterReferenceExpression">
         <genFeatures notify="false" createChild="false" propertySortChoices="true"

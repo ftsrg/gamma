@@ -197,6 +197,7 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Event" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" eType="#//interface/Persistency"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="EventParameterReferenceExpression"
         eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
@@ -206,6 +207,10 @@
           eType="#//interface/Event"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
           eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="Persistency">
+      <eLiterals name="TRANSIENT"/>
+      <eLiterals name="PERSISTENT" value="1"/>
     </eClassifiers>
   </eSubpackages>
   <eSubpackages name="composite" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
