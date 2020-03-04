@@ -431,7 +431,7 @@ public class Controller {
 	 * Verifies the given Uppaal query.
 	 */
 	public void verify(String uppaalQuery) {
-		verifier = new Verifier(uppaalQuery, true, true);
+		verifier = new Verifier(uppaalQuery, true, false);
 		// Starting the worker
 		verifier.execute();
 	}
@@ -547,10 +547,10 @@ public class Controller {
 		// Indicates whether it should contribute to the View in any form
 		private boolean contributeToView;
 		
-		public Verifier(String uppaalQuery, boolean contributeToView, boolean isSingleTraceModelExpected) {
+		public Verifier(String uppaalQuery, boolean contributeToView, boolean isSingleTraceModelFromMultipleQueries) {
 			this.originalUppaalQueries = uppaalQuery;
 			this.contributeToView = contributeToView;
-			this.isSingleTraceModelFromMultipleQueries = isSingleTraceModelExpected;
+			this.isSingleTraceModelFromMultipleQueries = isSingleTraceModelFromMultipleQueries;
 		}
 		
 		@Override
