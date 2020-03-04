@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithou
 import hu.bme.mit.gamma.uppaal.transformation.queries.FromChoiceToHigherTransition
 import hu.bme.mit.gamma.uppaal.transformation.queries.InOutTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.NamedElements
-import hu.bme.mit.gamma.uppaal.transformation.queries.ProhibitedEventParameterReferences
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
 import hu.bme.mit.gamma.uppaal.transformation.queries.VariableDeclarations
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -52,7 +51,6 @@ class ModelValidator {
     	checkConstants
     	checkInOutTransitions
     	checkChoiceTransitions 
-    	checkSignalParameterValues
     	checkFloatVariables
     	checkNames
     	checkUppaalKeywords
@@ -109,21 +107,6 @@ class ModelValidator {
 				transitions.append(" " + choiceTransitionsMatch.transition)
 			}
 			throw new IllegalArgumentException("A transition must not go to a higher level hierarchy node if its source is a choice and the region has history:" + transitions.toString())
-		}
-	}
-	
-	/**
-	 * This method checks whether there are assignment expression with non-active parameter values on the right hand side. If so, it throws an exception.
-	 */
-	private def checkSignalParameterValues() {
-		val parameterValueMatcher = engine.getMatcher(ProhibitedEventParameterReferences.instance)
-		val parameterValueMatches = parameterValueMatcher.allMatches
-		if (parameterValueMatches.size != 0) {
-			val transitions = new StringBuilder()
-			for (parameterValueMatch : parameterValueMatches) {
-				transitions.append(parameterValueMatch.source.name + "->" + parameterValueMatch.target.name + ":" + parameterValueMatch.valueOfParameter.name + System.lineSeparator)
-			}
-			throw new IllegalArgumentException("An assignment expression must not have non-active parameter values on the right hand side:" + transitions.toString())
 		}
 	}
 	

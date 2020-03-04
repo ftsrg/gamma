@@ -869,7 +869,6 @@ class YakinduToGammaTransformer {
 		if (eventDefinition.parameterDeclarations.size != 1) {
 			throw new IllegalArgumentException("This event has more than one parameters: " + eventDefinition.parameterDeclarations.size + " " + eventDefinition)
 		}
-		val eventDefinitionParameter = eventDefinition.parameterDeclarations.head
     	// Creating the signal event (trigger)
     	if (gammaTransition.trigger instanceof EventTrigger) {
     		val eventTrigger = gammaTransition.trigger as EventTrigger
@@ -880,13 +879,7 @@ class YakinduToGammaTransformer {
     	else {
     		throw new IllegalArgumentException("The EventTrigger must contain one event: " + gammaTransition)
     	}
-    	val gammaTransitionTrigger = gammaTransition.trigger
-    	val reference = gammaTransitionTrigger.createChild(argumentedElement_Arguments, referenceExpression) as ReferenceExpression => [
-    		it.declaration = eventDefinitionParameter
-    	]
     	// Valueof expressions are in ExpressionTraces now
-    	// Creating the trace
-    	addToTrace(yEventValueReference, #{reference}, expressionTrace)
     }
     
     /**

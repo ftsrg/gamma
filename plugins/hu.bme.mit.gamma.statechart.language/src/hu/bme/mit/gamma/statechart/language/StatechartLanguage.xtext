@@ -133,7 +133,7 @@ OpaqueTrigger returns OpaqueTrigger:
 ;
 
 EventTrigger returns EventTrigger:
-	eventReference=EventReference ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
+	eventReference=EventReference
 ;
 
 EventReference returns EventReference:

@@ -54,23 +54,3 @@ private pattern regionToParentRegion(region : Region, parentRegion : Region) {
 	Region.stateNodes(parentRegion, state);
 	State.regions(state, region);
 }
-///
-
-private pattern eventParameter(transition : Transition, event : Event, valueOfParameter : ParameterDeclaration) {
-	Transition.trigger(transition, trigger);
-	EventTrigger.eventReference(trigger, portEventReference);
-	EventTrigger.arguments(trigger, reference);
-	PortEventReference.event(portEventReference, event);
-	ReferenceExpression.declaration(reference, valueOfParameter);
-	Event.parameterDeclarations(event, valueOfParameter);
-}
-
-pattern prohibitedEventParameterReferences(source : StateNode, target : StateNode, valueOfParameter : ParameterDeclaration) {	
-	Transition.sourceState(transition, source);
-	Transition.targetState(transition, target);
-	Transition.effects(transition, assignment);
-	AssignmentStatement.rhs(assignment, reference);
-	ReferenceExpression.declaration(reference, valueOfParameter);
-	Event.parameterDeclarations(_, valueOfParameter); // It must be an event parameter
-	neg find eventParameter(transition, _, valueOfParameter);	
-}
