@@ -32,6 +32,8 @@ import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -164,6 +166,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<TypeDeclaration> usedTypeDeclarations =
 				EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(_package), TypeReference.class)
 				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
+		Collection<EnumerationLiteralDefinition> usedEnumLiterals =
+				EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(_package), EnumerationLiteralExpression.class)
+				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
 		// Collecting the used components and interfaces
 		for (Component component : _package.getComponents()) {
 			for (Port port : component.getPorts()) {
@@ -188,7 +193,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			components.retainAll(usedComponents);
 			Collection<TypeDeclaration> typeDeclarations = new HashSet<TypeDeclaration>(importedPackage.getTypeDeclarations());
 			typeDeclarations.retainAll(usedTypeDeclarations);
-			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty()) {
+			Collection<EnumerationLiteralDefinition> enumDefinitions =
+					EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(importedPackage), EnumerationLiteralDefinition.class);
+			enumDefinitions.retainAll(usedEnumLiterals);
+			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
 				int index = _package.getImports().indexOf(importedPackage);
 				warning("No component or interface or type declaration from this imported package is used.", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
 			}
