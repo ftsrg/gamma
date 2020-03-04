@@ -584,6 +584,9 @@ public class Controller {
 				else {
 					traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
 				}
+				if (traceModel == null) {
+					throw new IllegalArgumentException("None of the specified queries resulted in a trace.");
+				}
 				serializeTestCode(traceModel, traceabilitySet);
 				// There is a generated trace, so the result is the opposite of the empty trace
 				return handleEmptyLines(originalUppaalQueries).opposite();
