@@ -8,10 +8,15 @@ import "http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability"
 import "http://www.uni-paderborn.de/uppaal/templates/0.4.0"
 import "http://www.uni-paderborn.de/uppaal/core/0.4.0"
 
-pattern statesToLocations(stateName : java String, locationName : java String) {
+pattern statesToLocations(regionName : java String, stateName : java String,
+		templateName : java String, locationName : java String) {
 	Trace.from(trace, state);
+	Region.stateNodes(region, state);
+	Region.name(region, regionName);
 	State.name(state, stateName);
 	Trace.to(trace, location);
+	Template.location(template, location);
+	Template.name(template, templateName);
 	Location.name(location, locationName);
 	Location.locationTimeKind(location, ::NORMAL);
 }

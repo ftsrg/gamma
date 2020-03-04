@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
+import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations.Match;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
@@ -101,7 +102,7 @@ public class Controller {
 	public void initSelectorWithStates(JComboBox<String> selector) throws ViatraQueryException {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
-		// In case of composite systems
+		// In the case of composite systems
 		if (isCompositeSystem()) {
 			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
@@ -111,7 +112,7 @@ public class Controller {
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getRegion().getName() + "." + statesMatch.getStateName();
 				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
@@ -125,7 +126,7 @@ public class Controller {
 	public void initSelectorWithVariables(JComboBox<String> selector) throws ViatraQueryException {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
-		// In case of composite systems
+		// In the case of composite systems
 		if (isCompositeSystem()) {
 			for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
@@ -133,7 +134,7 @@ public class Controller {
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartVariables.Match statesMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getVariable().getName();
 				entryList.add(entry);
@@ -144,7 +145,7 @@ public class Controller {
 	
 	public List<String> getStateNames() throws ViatraQueryException {
 		List<String> stateNames = new ArrayList<String>();
-		// In case of composite systems
+		// In the case of composite systems
 		if (isCompositeSystem()) {
 			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
@@ -154,7 +155,7 @@ public class Controller {
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getRegionName() + "." + statesMatch.getStateName();
 				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
@@ -168,14 +169,14 @@ public class Controller {
 	public List<String> getVariableNames() throws ViatraQueryException {
 		List<String> variableNames = new ArrayList<String>();
 		if (isCompositeSystem()) {
-			// In case of composite systems
+			// In the case of composite systems
 			for (InstanceVariables.Match variableMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = variableMatch.getInstance().getName() + "." + variableMatch.getVariable().getName();
 				variableNames.add(entry);
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartVariables.Match variableMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = variableMatch.getVariable().getName();
 				variableNames.add(entry);
@@ -241,15 +242,18 @@ public class Controller {
 		logger.log(Level.INFO, stateName);
 		String[] splittedStateName = stateName.split("\\.");
 		if (isCompositeSystem()) {
-			// In case of composite systems
+			// In the case of composite systems
 			for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0],
 					null, splittedStateName[splittedStateName.length - 2] /* parent region */,
 					null, splittedStateName[splittedStateName.length - 1] /* state */)) {
 				Region parentRegion = match.getParentRegion();
-				String templateName = "P_" + getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
+				String templateName = getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
+				String processName = "P_" + templateName;
 				StringBuilder locationNames = new StringBuilder("(");
-				for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(match.getState().getName())) {
-					String templateLocationName = templateName +  "." + locationName;
+				for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(null,
+						match.getState().getName(),
+						templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
+					String templateLocationName = processName +  "." + locationName;
 					if (locationNames.length() == 1) {
 						// First append
 						locationNames.append(templateLocationName);
@@ -260,13 +264,13 @@ public class Controller {
 				}
 				locationNames.append(")");
 				if (isSubregion(parentRegion)) {
-					locationNames.append(" && " + templateName + ".isActive"); 
+					locationNames.append(" && " + processName + ".isActive"); 
 				}
 				return locationNames.toString();
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match match : SimpleStatechartStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0], null, splittedStateName[1])) {
 				Region parentRegion = (Region) match.getState().eContainer();
 				return "P_" + getRegionName(parentRegion) + "." + splittedStateName[1];
