@@ -52,7 +52,6 @@ import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
-import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations.Match;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
@@ -448,21 +447,30 @@ public class Controller {
 	
 	private String getParameters() {
 		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getResuseStateSpace() + " " +
-				getHashtableSize() + " " + getStateSpaceReduction();
+				getMemoryReductionTechniques() + " " + getHashtableSize() + " " + getStateSpaceReduction();
 	}
 	
 	private String getSearchOrder() {
 		final String paremterName = "-o ";
 		switch (view.getSelectedSearchOrder()) {
 		case "Breadth First":
-			// BFS
 			return paremterName + "0";
 		case "Depth First":
-			// DFS
 			return paremterName + "1";
 		case "Random Depth First":
-			// Random DFS
-			return paremterName + "2";			
+			return paremterName + "2";
+		case "Optimal First":
+			if (view.getSelectedTrace().equals("Shortest") || view.getSelectedTrace().equals("Fastest")) {
+				return paremterName + "3";	
+			}
+			// BFS
+			return paremterName + "0"; 
+		case "Random Optimal Depth First":
+			if (view.getSelectedTrace().equals("Shortest") || view.getSelectedTrace().equals("Fastest")) {
+				return paremterName + "4";
+			}
+			// BFS
+			return paremterName + "0"; 
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getSelectedSearchOrder());
 		}
@@ -494,6 +502,13 @@ public class Controller {
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getStateSpaceReduction());
 		}
+	}
+	
+	private String getMemoryReductionTechniques() {
+		if (view.isDisableMemoryReduction()) {
+			return "-C";
+		}
+		return "";
 	}
 	
 	private String getResuseStateSpace() {

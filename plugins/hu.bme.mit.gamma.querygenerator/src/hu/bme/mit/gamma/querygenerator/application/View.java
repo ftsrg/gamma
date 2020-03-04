@@ -78,6 +78,8 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem breadthFirst;
 	private JRadioButtonMenuItem depthFirst;
 	private JRadioButtonMenuItem randomDepthFirst;
+	private JRadioButtonMenuItem optimalFirst;
+	private JRadioButtonMenuItem randomOptimalDepthFirst;
 	
 	private JMenuItem traceMenu;	
 	private ButtonGroup traceGroup;
@@ -97,6 +99,8 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem noSpaceStateReduction;
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
+	
+	private JRadioButtonMenuItem disableMemoryReduction;
 	
 	private JMenu testGenerationTimeoutMenu;
 
@@ -164,14 +168,20 @@ public class View extends JFrame {
 		breadthFirst = new JRadioButtonMenuItem("Breadth First");
 		depthFirst = new JRadioButtonMenuItem("Depth First");
 		randomDepthFirst = new JRadioButtonMenuItem("Random Depth First");
+		optimalFirst = new JRadioButtonMenuItem("Optimal First");
+		randomOptimalDepthFirst = new JRadioButtonMenuItem("Random Optimal Depth First");
 		breadthFirst.setSelected(true);
 		searchOrderGroup = new ButtonGroup();
 		searchOrderGroup.add(breadthFirst);
 		searchOrderGroup.add(depthFirst);
 		searchOrderGroup.add(randomDepthFirst);
+		searchOrderGroup.add(optimalFirst);
+		searchOrderGroup.add(randomOptimalDepthFirst);
 	    traversalMenu.add(breadthFirst);
 	    traversalMenu.add(depthFirst);
 	    traversalMenu.add(randomDepthFirst);
+	    traversalMenu.add(optimalFirst);
+	    traversalMenu.add(randomOptimalDepthFirst);
 		
 	    modelCheckingOptionsMenu.add(traversalMenu);
 	    
@@ -214,7 +224,6 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
 	 	
 	 	reuseStateSpaceItem = new JRadioButtonMenuItem("Reuse State Space");
-//	 	allQueriesItem.setSelected(true);
 	 	singleTraceModelItem = new JRadioButtonMenuItem("Single Trace Model");
 	 	
 	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
@@ -239,7 +248,7 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenuItem.add(sec180);
 	 	testGenerationTimeoutMenuItem.add(sec360);
 
-	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
+//	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
 	 	testGenerationTimeoutMenu.add(singleTraceModelItem);
 	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
 	 		
@@ -260,6 +269,10 @@ public class View extends JFrame {
 	 	spaceStateReductionMenu.add(aggressiveSpaceStateReduction);
 	 		
 	 	modelCheckingOptionsMenu.add(spaceStateReductionMenu);
+	 	
+	 	// Disable memory reduction techniques
+	 	disableMemoryReduction = new JRadioButtonMenuItem("Disable Memory Reduction"); 
+	 	modelCheckingOptionsMenu.add(disableMemoryReduction);
 	 	
 		// Setting the temporal logical operators using JComboBox		
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
@@ -640,6 +653,12 @@ public class View extends JFrame {
 		if (randomDepthFirst.isSelected()) {
 			return "Random Depth First";
 		}
+		if (optimalFirst.isSelected()) {
+			return "Optimal First";
+		}
+		if (randomOptimalDepthFirst.isSelected()) {
+			return "Random Optimal Depth First";
+		}
 		// BFS is default
 		return "Breadth First";
 	}
@@ -709,6 +728,10 @@ public class View extends JFrame {
 		}
 		// 64 MB is deafult
 		return "Conservative";
+	}
+	
+	protected boolean isDisableMemoryReduction() {
+		return disableMemoryReduction.isSelected();
 	}
 
 	private void setFrameSizeSmaller() {
