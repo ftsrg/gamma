@@ -16,6 +16,7 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import org.yakindu.sct.model.stext.stext.InternalScope
+import hu.bme.mit.gamma.statechart.model.interface_.Persistency
 
 class StatechartWrapperCodeGenerator {
 	
@@ -272,6 +273,9 @@ class StatechartWrapperCodeGenerator {
 		import java.util.Queue;
 		import java.util.List;
 		import java.util.LinkedList;
+		«IF component.ports.getSemanticEvents(EventDirection.OUT).exists[it.persistency == Persistency.PERSISTENT]»
+			import java.lang.reflect.Field;
+		«ENDIF»
 		
 		import «PACKAGE_NAME».interfaces.*;
 		// Yakindu listeners
@@ -355,7 +359,21 @@ class StatechartWrapperCodeGenerator {
 			«IF event.toYakinduEvent(port).type !== null»
 				@Override
 				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+					«IF event.persistency == Persistency.PERSISTENT»
+						try {
+							// Using reflection to retrieve the value of the persistent private field
+							Class<? extends «port.yakinduInterfaceName»> interfaceClass = «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().getClass();
+							Field field = interfaceClass.getDeclaredField("«event.name»Value");
+							field.setAccessible(true);
+							«event.toYakinduEvent(port).type.eventParameterType» value = field.get«event.toYakinduEvent(port).type.eventParameterType.toFirstUpper»(«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»());
+							field.setAccessible(false);
+							return value;
+						} catch (Exception e) {
+							throw new IllegalStateException(e);
+						}
+					«ELSE»
+						return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+					«ENDIF»
 				}
 			«ENDIF»
 		«ENDFOR»
