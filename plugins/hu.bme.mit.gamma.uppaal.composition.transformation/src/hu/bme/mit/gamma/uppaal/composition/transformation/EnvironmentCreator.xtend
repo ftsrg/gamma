@@ -34,6 +34,8 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class EnvironmentCreator {
 	// Logger
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
@@ -84,7 +86,7 @@ class EnvironmentCreator {
 				val loopEdges = newHashMap
 				// Simple event raisings
 				for (systemPort : it.syncComposite.ports) {
-					for (inEvent : systemPort.interfaceRealization.interface.events.map[it.event]) {
+					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = null // Needed as now a port with only in events can be bound to multiple instance ports
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 							val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance)
@@ -102,9 +104,10 @@ class EnvironmentCreator {
 				}
 				// Parameter adding if necessary
 				for (systemPort : it.syncComposite.ports) {
-					for (inEvent : systemPort.interfaceRealization.interface.events.map[it.event]) {
+					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+							// Collecting parameter values for each instant event
 							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
 							if (!expressions.empty) {
 								// Removing original edge from the model
@@ -114,25 +117,37 @@ class EnvironmentCreator {
 								var boolean hasFalse = false
 								val hasValue = new HashSet<BigInteger>
 								for (expression : expressions) {
+									// Putting variables raising for ALL instance parameters
 				   					val clonedLoopEdge = loopEdge.clone(true, true)
 									if (!hasTrue && (expression instanceof TrueExpression)) {
 										hasTrue = true
-										template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)
+										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
+										}
+										template.edge += clonedLoopEdge
 									}
 									else if (!hasFalse && (expression instanceof FalseExpression)) {
 										hasFalse = true
-					   					template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)
+										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
+										}
+										template.edge += clonedLoopEdge
 									}
 									else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
-						   				template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)	
-									}
+										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
+										}
+										template.edge += clonedLoopEdge									}
 								}
 								// Adding a different value if the type is an integer
 								if (!hasValue.empty) {
 				   					val clonedLoopEdge = loopEdge.clone(true, true)
 									val maxValue = hasValue.max
 									val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-									template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, biggerThanMax)
+									for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+										clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, biggerThanMax)
+									}
+									template.edge += clonedLoopEdge
 									biggerThanMax.removeGammaElementFromTrace
 								}
 							}
@@ -143,7 +158,7 @@ class EnvironmentCreator {
 		}
 	}
 	
-	private def extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {
+	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {
 		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
 							.filter[it.owner == owner && it.port == port]
 		if (valueOfVars.size != 1) {
@@ -151,7 +166,6 @@ class EnvironmentCreator {
 		}
 		val valueOfVar = valueOfVars.head
 		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
-		return loopEdge
 	}
 	
 	/**
@@ -228,7 +242,7 @@ class EnvironmentCreator {
 		}
 	}
 	
-	private def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
+	private def void createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
 			DataVariableDeclaration representation, Expression expression, SynchronousComponentInstance instance) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
@@ -239,7 +253,7 @@ class EnvironmentCreator {
 		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression, instance)
 	}
 	
-	private def createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
+	private def void createEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
 			DataVariableDeclaration representation, uppaal.expressions.Expression expression) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [

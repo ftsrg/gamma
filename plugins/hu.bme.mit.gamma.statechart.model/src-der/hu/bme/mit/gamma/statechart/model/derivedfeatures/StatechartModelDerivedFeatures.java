@@ -36,7 +36,9 @@ import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 
 public class StatechartModelDerivedFeatures {
 
@@ -47,6 +49,44 @@ public class StatechartModelDerivedFeatures {
 	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
+	}
+	
+	public static Collection<Event> getInputEvents(Port port) {
+		List<Event> events = new ArrayList<Event>();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.IN)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		return events;
+	}
+	
+	public static Collection<Event> getOutputEvents(Port port) {
+		List<Event> events = new ArrayList<Event>();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.IN)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		return events;
 	}
 	
 	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
