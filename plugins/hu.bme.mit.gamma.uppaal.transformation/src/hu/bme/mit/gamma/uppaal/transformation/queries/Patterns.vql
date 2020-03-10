@@ -292,24 +292,6 @@ pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : 
 	RaiseEventAction(raiseEventAction);
 }
 
-private pattern transitionParameterAndGuard(transition : Transition, port : Port, event : Event,
-		parameter : ParameterDeclaration, guard : Expression) {
-	Transition.trigger(transition, trigger);
-	EventTrigger.eventReference(trigger, eventReference);
-	PortEventReference.port(eventReference, port);
-	PortEventReference.event(eventReference, event);
-	Event.parameterDeclarations(event, parameter);
-	Transition.guard(transition, guard);
-} or {
-	Transition.trigger(transition, trigger);
-	find triggerToTrigger+(trigger, containedTrigger);
-	EventTrigger.eventReference(containedTrigger, eventReference);
-	PortEventReference.port(eventReference, port);
-	PortEventReference.event(eventReference, event);
-	Event.parameterDeclarations(event, parameter);
-	Transition.guard(transition, guard);
-}
-
 private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Trigger) {
 	BinaryTrigger.leftOperand(trigger, containedTrigger);
 } or {
@@ -344,12 +326,12 @@ private pattern parameterValue(rootExpression : EqualityExpression, port : Port,
 }
 
 pattern valuesOfEventParameters(port : Port, event : Event, expression : Expression) {
-	find transitionParameterAndGuard(_, port, event, parameter, equalityExpression);
-	find parameterValue(equalityExpression, port, event, parameter, expression);
+	Transition.guard(_, equalityExpression);
+	find parameterValue(equalityExpression, port, event, _parameter, expression);
 } or {
-	find transitionParameterAndGuard(_, port, event, parameter, guard);		
+	Transition.guard(_, guard);		
 	find expressionToExpression+(guard, equalityExpression);
-	find parameterValue(equalityExpression, port, event, parameter, expression);
+	find parameterValue(equalityExpression, port, event, _parameter, expression);
 } 
 
 pattern entryRaisingActionsOfStates(state : State, raiseEventAction : RaiseEventAction) {

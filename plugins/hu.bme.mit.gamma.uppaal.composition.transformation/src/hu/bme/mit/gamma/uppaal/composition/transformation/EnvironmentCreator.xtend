@@ -1,5 +1,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
@@ -19,7 +21,6 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import java.math.BigInteger
 import java.util.HashSet
-import java.util.List
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -84,6 +85,7 @@ class EnvironmentCreator {
 		if (topSyncEnvironmentRule === null) {
 			topSyncEnvironmentRule = createRule(TopUnwrappedSyncComponents.instance).action [
 				val initLoc = createTemplateWithInitLoc("Environment", "InitLoc")
+				val template = initLoc.parentTemplate
 				val loopEdges = newHashMap
 				// Simple event raisings
 				for (systemPort : it.syncComposite.ports) {
@@ -107,19 +109,19 @@ class EnvironmentCreator {
 				for (systemPort : it.syncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
+						var boolean hasTrue = false
+						var boolean hasFalse = false
+						val hasValue = new HashSet<BigInteger>
+						val hasEnum = new HashSet<EnumerationLiteralDefinition>
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 							// Collecting parameter values for each instant event
 							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
 							if (!expressions.empty) {
-								// Removing original edge from the model
-								val template = loopEdge.parentTemplate
+								// Removing original edge from the model - only if there is a valid expression
 								template.edge -= loopEdge
-								var boolean hasTrue = false
-								var boolean hasFalse = false
-								val hasValue = new HashSet<BigInteger>
 								for (expression : expressions) {
 									// Putting variables raising for ALL instance parameters
-				   					val clonedLoopEdge = loopEdge.clone(true, true)
+			   						val clonedLoopEdge = loopEdge.clone(true, true)
 									if (!hasTrue && (expression instanceof TrueExpression)) {
 										hasTrue = true
 										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
@@ -134,11 +136,14 @@ class EnvironmentCreator {
 										}
 										template.edge += clonedLoopEdge
 									}
-									else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
-										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+									else if (!hasValue(hasValue, expression) && !hasEnum(hasEnum, expression) &&
+											!(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
+										log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name + " : " + expression)
+				   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
 										}
-										template.edge += clonedLoopEdge									}
+										template.edge += clonedLoopEdge	
+									}
 								}
 								// Adding a different value if the type is an integer
 								if (!hasValue.empty) {
@@ -183,6 +188,20 @@ class EnvironmentCreator {
 			}
 		}
 		hasValue.add(anInt.value)
+		return false
+	}
+	
+	private def hasEnum(Set<EnumerationLiteralDefinition> hasValue, Expression expression) {
+		if (!(expression instanceof EnumerationLiteralExpression)) {
+			return false
+		}
+		val anEnum = expression as EnumerationLiteralExpression
+		for (exp : hasValue) {
+			if (exp.equals(anEnum.reference)) {				
+				return true
+			}
+		}
+		hasValue.add(anEnum.reference)
 		return false
 	}
 	
@@ -238,9 +257,9 @@ class EnvironmentCreator {
 					for (inEvent : systemPort.inputEvents) {
 						for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
 							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-							var List<Expression> expressionList
+							var Set<Expression> expressionList
 							if (!parameterMap.containsKey(new Pair(systemPort, inEvent))) {
-								expressionList = newArrayList
+								expressionList = newHashSet
 								parameterMap.put(new Pair(systemPort, inEvent), expressionList)
 							}
 							else {
