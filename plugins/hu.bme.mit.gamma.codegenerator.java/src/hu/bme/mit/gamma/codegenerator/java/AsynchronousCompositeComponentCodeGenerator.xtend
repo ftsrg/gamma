@@ -4,6 +4,8 @@ import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class AsynchronousCompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
@@ -38,7 +40,7 @@ class AsynchronousCompositeComponentCodeGenerator {
 				private «instance.type.generateComponentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
-			«FOR port : component.portBindings.map[it.compositeSystemPort]»
+			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
 			«ENDFOR»
 			// Channel instances
@@ -89,28 +91,32 @@ class AsynchronousCompositeComponentCodeGenerator {
 			}
 			
 			// Inner classes representing Ports
-			«FOR portDef : component.portBindings SEPARATOR "\n"»
-				public class «portDef.compositeSystemPort.name.toFirstUpper» implements «portDef.compositeSystemPort.interfaceRealization.interface.generateName».«portDef.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+			«FOR systemPort : component.ports SEPARATOR "\n"»
+				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.generateName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 				
-					«portDef.delegateRaisingMethods» 
+					«systemPort.delegateRaisingMethods» 
 					
-					«portDef.delegateOutMethods»
+					«systemPort.delegateOutMethods»
 					
 					@Override
-					public void registerListener(«portDef.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portDef.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
-						«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().registerListener(listener);
+					public void registerListener(«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+						«FOR portDef : systemPort.portBindings»
+							«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().registerListener(listener);
+						«ENDFOR»
 					}
 					
 					@Override
-					public List<«portDef.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portDef.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
-						return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
+					public List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+						«FOR portDef : systemPort.portBindings»
+							return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
+						«ENDFOR»
 					}
 					
 				}
 				
 				@Override
-				public «portDef.compositeSystemPort.name.toFirstUpper» get«portDef.compositeSystemPort.name.toFirstUpper»() {
-					return «portDef.compositeSystemPort.name.toFirstLower»;
+				public «systemPort.name.toFirstUpper» get«systemPort.name.toFirstUpper»() {
+					return «systemPort.name.toFirstLower»;
 				}
 			«ENDFOR»
 			

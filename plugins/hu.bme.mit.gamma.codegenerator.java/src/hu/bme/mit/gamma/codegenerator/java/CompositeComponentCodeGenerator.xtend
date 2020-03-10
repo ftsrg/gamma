@@ -1,13 +1,11 @@
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import java.util.Collections
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -54,32 +52,38 @@ class CompositeComponentCodeGenerator {
 	'''
 	
 	/**
-	 * Generates methods that for in-event raisings in case of composite components.
+	 * Generates methods that for in-event raisings in the case of composite components.
 	 */
-	def CharSequence delegateRaisingMethods(PortBinding connector) '''
-		«FOR event : Collections.singletonList(connector.instancePortReference.port).getSemanticEvents(EventDirection.IN) SEPARATOR "\n"»
+	def CharSequence delegateRaisingMethods(Port systemPort) '''
+		«FOR event : systemPort.inputEvents SEPARATOR "\n"»
 			@Override
 			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
-				«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«event.parameterDeclarations.head.eventParameterValue»);
+				«FOR connector : systemPort.portBindings»
+					«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«event.parameterDeclarations.head.eventParameterValue»);
+				«ENDFOR»	
 			}
 		«ENDFOR»
 	'''
 	
 	/**
-	 * Generates methods for out-event check delegations in case of composite components.
+	 * Generates methods for out-event check delegations in the case of composite components.
 	 */
-	protected def CharSequence delegateOutMethods(PortBinding connector) '''
+	protected def CharSequence delegateOutMethods(Port systemPort) '''
 «««		Simple flag checks
-		«FOR event : Collections.singletonList(connector.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
+		«FOR event : systemPort.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
-				return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
+				«FOR connector : systemPort.portBindings»
+					return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
+				«ENDFOR»
 			}
 «««		ValueOf checks
 			«IF !event.parameterDeclarations.empty»
 				@Override
-				public «event.toYakinduEvent(connector.compositeSystemPort).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«event.name.toFirstUpper»Value();
+				public «event.toYakinduEvent(systemPort).type.eventParameterType» get«event.name.toFirstUpper»Value() {
+					«FOR connector : systemPort.portBindings»
+						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«event.name.toFirstUpper»Value();
+					«ENDFOR»
 				}
 			«ENDIF»
 		«ENDFOR»
@@ -88,9 +92,9 @@ class CompositeComponentCodeGenerator {
 	/**
 	 * Generates methods for own out-event checks in case of composite components.
 	 */
-	protected def CharSequence implementOutMethods(PortBinding connector) '''
+	protected def CharSequence implementOutMethods(Port systemPort) '''
 «««		Simple flag checks
-		«FOR event : Collections.singletonList(connector.compositeSystemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
+		«FOR event : systemPort.outputEvents SEPARATOR "\n"»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return isRaised«event.name.toFirstUpper»;

@@ -932,7 +932,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Port instancePort = portBinding.getInstancePortReference().getPort();
 		ComponentInstance instance = portBinding.getInstancePortReference().getInstance();
 		CompositeComponent composite = (CompositeComponent) portBinding.eContainer();
-		if (composite.getPortBindings().stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
+		if (!StatechartModelDerivedFeatures.getOutputEvents(systemPort).isEmpty() &&
+				composite.getPortBindings().stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
 			error("This system port is connected to multiple ports of instances!",
 					CompositePackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT);
 		}

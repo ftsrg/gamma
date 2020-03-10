@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
@@ -100,6 +101,20 @@ public class StatechartModelDerivedFeatures {
 			return getAllPorts((AsynchronousAdapter)component);
 		}		
 		return component.getPorts();
+	}
+	
+	public static Collection<PortBinding> getPortBindings(Port port) {
+		EObject component = port.eContainer();
+		List<PortBinding> portBindings = new ArrayList<PortBinding>();
+		if (component instanceof CompositeComponent) {
+			CompositeComponent compositeComponent = (CompositeComponent) component;
+			for (PortBinding portBinding : compositeComponent.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) {
+					portBindings.add(portBinding);
+				}
+			}
+		}		
+		return portBindings;
 	}
 	
 	public static EventSource getEventSource(EventReference eventReference) {

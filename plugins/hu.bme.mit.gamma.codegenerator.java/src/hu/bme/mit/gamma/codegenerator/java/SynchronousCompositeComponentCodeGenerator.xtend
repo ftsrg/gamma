@@ -10,6 +10,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collections
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class SynchronousCompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
@@ -40,7 +42,7 @@ class SynchronousCompositeComponentCodeGenerator {
 	*/
 	protected def createSynchronousCompositeComponentClass(AbstractSynchronousCompositeComponent component) '''
 		package «component.generateComponentPackageName»;
-	
+
 		«component.generateCompositeSystemImports»
 		
 		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
@@ -49,7 +51,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				private «instance.type.generateComponentClassName» «instance.name»;
 			«ENDFOR»
 			// Port instances
-			«FOR port : component.portBindings.map[it.compositeSystemPort]»
+			«FOR port : component.ports»
 				private «port.name.toFirstUpper» «port.name.toFirstLower»;
 			«ENDFOR»
 			«component.generateParameterDeclarationFields»
@@ -97,30 +99,32 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			// Inner classes representing Ports
-			«FOR portBinding : component.portBindings SEPARATOR "\n"»
-				public class «portBinding.compositeSystemPort.name.toFirstUpper» implements «portBinding.compositeSystemPort.interfaceRealization.interface.generateName».«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
-					private List<«portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+			«FOR systemPort : component.ports SEPARATOR "\n"»
+				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.generateName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+					private List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 
 «««					Cascade components need their raised events saved (multiple schedule of a component in a single turn)
-					«FOR event : Collections.singletonList(portBinding.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
+					«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
 						boolean isRaised«event.name.toFirstUpper»;
 						«IF !event.parameterDeclarations.empty»
 							«event.parameterDeclarations.head.type.transformType» «event.name.toFirstLower»Value;
 						«ENDIF»
 					«ENDFOR»
 					
-					public «portBinding.compositeSystemPort.name.toFirstUpper»() {
+					public «systemPort.name.toFirstUpper»() {
 						// Registering the listener to the contained component
-						«portBinding.instancePortReference.instance.name».get«portBinding.instancePortReference.port.name.toFirstUpper»().registerListener(new «portBinding.compositeSystemPort.name.toFirstUpper»Util());
+						«FOR portBinding : systemPort.portBindings»
+							«portBinding.instancePortReference.instance.name».get«portBinding.instancePortReference.port.name.toFirstUpper»().registerListener(new «portBinding.compositeSystemPort.name.toFirstUpper»Util());
+						«ENDFOR»
 					}
 					
-					«portBinding.delegateRaisingMethods» 
+					«systemPort.delegateRaisingMethods» 
 					
-					«portBinding.implementOutMethods»
+					«systemPort.implementOutMethods»
 					
 					// Class for the setting of the boolean fields (events)
-					private class «portBinding.compositeSystemPort.name.toFirstUpper»Util implements «portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
-						«FOR event : Collections.singletonList(portBinding.compositeSystemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
+					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
 							@Override
 							public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
 								isRaised«event.name.toFirstUpper» = true;
@@ -132,27 +136,27 @@ class SynchronousCompositeComponentCodeGenerator {
 					}
 					
 					@Override
-					public void registerListener(«portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						listeners.add(listener);
 					}
 					
 					@Override
-					public List<«portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						return listeners;
 					}
 					
 					/** Resetting the boolean event flags to false. */
 					public void clear() {
-						«FOR event : Collections.singletonList(portBinding.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
+						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
 							isRaised«event.name.toFirstUpper» = false;
 						«ENDFOR»
 					}
 					
 					/** Notifying the registered listeners. */
 					public void notifyListeners() {
-						«FOR event : Collections.singletonList(portBinding.compositeSystemPort).getSemanticEvents(EventDirection.OUT)»
+						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
 							if (isRaised«event.name.toFirstUpper») {
-								for («portBinding.compositeSystemPort.interfaceRealization.interface.generateName».Listener.«portBinding.compositeSystemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
+								for («systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
 									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»«event.name.toFirstLower»Value«ENDIF»);
 								}
 							}
@@ -162,8 +166,8 @@ class SynchronousCompositeComponentCodeGenerator {
 				}
 				
 				@Override
-				public «portBinding.compositeSystemPort.name.toFirstUpper» get«portBinding.compositeSystemPort.name.toFirstUpper»() {
-					return «portBinding.compositeSystemPort.name.toFirstLower»;
+				public «systemPort.name.toFirstUpper» get«systemPort.name.toFirstUpper»() {
+					return «systemPort.name.toFirstLower»;
 				}
 			«ENDFOR»
 			
@@ -210,7 +214,7 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			/** Changes event queues and initiates a cycle run.
-				This should be the execution point from an asynchronous component. */
+			 * This should be the execution point from an asynchronous component. */
 			@Override
 			public void runCycle() {
 				«IF component instanceof SynchronousCompositeComponent»
