@@ -53,6 +53,9 @@ private pattern relevantEvents(port : Port, event : Event) {
 } or {
 	RaiseEventAction.port(raiseEventAction, port);
 	RaiseEventAction.event(raiseEventAction, event);
+} or {
+	EventParameterReferenceExpression.port(reference, port);
+	EventParameterReferenceExpression.event(reference, event);
 }
 
 private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {

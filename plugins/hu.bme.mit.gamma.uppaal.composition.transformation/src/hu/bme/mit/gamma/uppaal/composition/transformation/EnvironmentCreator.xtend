@@ -53,6 +53,7 @@ class EnvironmentCreator {
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
+	protected final extension Cloner cloner = new Cloner
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
@@ -80,54 +81,69 @@ class EnvironmentCreator {
 		if (topSyncEnvironmentRule === null) {
 			topSyncEnvironmentRule = createRule(TopUnwrappedSyncComponents.instance).action [
 				val initLoc = createTemplateWithInitLoc("Environment", "InitLoc")
-				for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, null, null, null, null)) {
-					val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) 
-					log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)			
-					val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-					var Edge loopEdge
-					if (!expressions.empty) {
-						var boolean hasTrue = false
-						var boolean hasFalse = false
-						val hasValue = new HashSet<BigInteger>
-						val isRaisedVar = match.event.getIsRaisedVariable(match.port, match.instance)	
-						for (expression : expressions) {
-							if (!hasTrue && (expression instanceof TrueExpression)) {
-								hasTrue = true
-				   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)
+				val loopEdges = newHashMap
+				// Simple event raisings
+				for (systemPort : it.syncComposite.ports) {
+					for (inEvent : systemPort.interfaceRealization.interface.events.map[it.event]) {
+						var Edge loopEdge = null // Needed as now a port with only in events can be bound to multiple instance ports
+						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+							val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance)
+							log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)
+							if (loopEdge === null) {
+								loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+								loopEdge.addGuard(isStableVar, LogicalOperator.AND)
+								loopEdges.put(new Pair(systemPort, inEvent), loopEdge)
 							}
-							else if (!hasFalse && (expression instanceof FalseExpression)) {
-								hasFalse = true
-				   				loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)			
+							else {
+								loopEdge.extendLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
 							}
-							else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
-								loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, expression)		
-							}
-							loopEdge.addGuard(isStableVar, LogicalOperator.AND) // isStable is needed on all parameter value loop edge	
-						}
-						// Adding a different value if the type is an integer
-						if (!hasValue.empty) {
-							val maxValue = hasValue.max
-							val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-							loopEdge = initLoc.createValueOfLoopEdge(match.port, match.event, toRaiseVar, isRaisedVar, match.instance, biggerThanMax)		
-							biggerThanMax.removeGammaElementFromTrace
 						}
 					}
-					else {
-						loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-						loopEdge.addGuard(isStableVar, LogicalOperator.AND)
+				}
+				// Parameter adding if necessary
+				for (systemPort : it.syncComposite.ports) {
+					for (inEvent : systemPort.interfaceRealization.interface.events.map[it.event]) {
+						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
+						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+							if (!expressions.empty) {
+								// Removing original edge from the model
+								val template = loopEdge.parentTemplate
+								template.edge -= loopEdge
+								var boolean hasTrue = false
+								var boolean hasFalse = false
+								val hasValue = new HashSet<BigInteger>
+								for (expression : expressions) {
+				   					val clonedLoopEdge = loopEdge.clone(true, true)
+									if (!hasTrue && (expression instanceof TrueExpression)) {
+										hasTrue = true
+										template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)
+									}
+									else if (!hasFalse && (expression instanceof FalseExpression)) {
+										hasFalse = true
+					   					template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)
+									}
+									else if (!hasValue(hasValue, expression) && !(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
+						   				template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, expression)	
+									}
+								}
+								// Adding a different value if the type is an integer
+								if (!hasValue.empty) {
+				   					val clonedLoopEdge = loopEdge.clone(true, true)
+									val maxValue = hasValue.max
+									val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
+									template.edge += clonedLoopEdge.extendValueOfLoopEdge(match.port, match.event, match.instance, biggerThanMax)
+									biggerThanMax.removeGammaElementFromTrace
+								}
+							}
+						}
 					}
-				}	
+				}
 			].build
 		}
-	} 
+	}
 	
-	/**
-	 * Creates a loop edge onto the given location that sets the toRaise flag of the give signal to true and sets the valueof variable
-	 * according to the given Expression. 
-	 */
-	private def createValueOfLoopEdge(Location location, Port port, Event event, DataVariableDeclaration toRaiseVar,
-			DataVariableDeclaration isRaisedVar, ComponentInstance owner, Expression expression) {
-		val loopEdge = location.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+	private def extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {
 		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
 							.filter[it.owner == owner && it.port == port]
 		if (valueOfVars.size != 1) {

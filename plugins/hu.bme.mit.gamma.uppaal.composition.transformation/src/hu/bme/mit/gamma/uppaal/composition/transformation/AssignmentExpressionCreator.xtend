@@ -16,6 +16,7 @@ import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalExpression
 import uppaal.expressions.LogicalOperator
 import uppaal.expressions.NegationExpression
+import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 
@@ -145,6 +146,18 @@ class AssignmentExpressionCreator {
 	 */
 	def createLoopEdgeWithGuardedBoolAssignment(Location location, DataVariableDeclaration variable) {
 		val loopEdge = location.createLoopEdgeWithBoolAssignment(variable, true)
+		val negationExpression = createNegationExpression as NegationExpression => [
+			it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
+				it.identifier = variable.variable.head
+			]
+		]
+		// Only fireable if the bool variable is not already set
+		loopEdge.addGuard(negationExpression, LogicalOperator.AND)
+		return loopEdge
+	}
+	
+	def extendLoopEdgeWithGuardedBoolAssignment(Edge loopEdge, DataVariableDeclaration variable) {
+		loopEdge.createAssignmentExpression(edge_Update, variable, true)
 		val negationExpression = createNegationExpression as NegationExpression => [
 			it.createChild(negationExpression_NegatedExpression, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head
