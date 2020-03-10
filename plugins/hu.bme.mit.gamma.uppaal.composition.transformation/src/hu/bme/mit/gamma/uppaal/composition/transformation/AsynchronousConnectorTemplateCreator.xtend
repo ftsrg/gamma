@@ -46,6 +46,8 @@ import uppaal.templates.TemplatesPackage
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class AsynchronousConnectorTemplateCreator {
 	// Transformation rule-related extensions
 	protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
@@ -143,32 +145,43 @@ class AsynchronousConnectorTemplateCreator {
 		val waitingForRelayLoc = relayLocPair.key
 		val relayLoc = relayLocPair.value
 		// Sync composite in events
-		for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, null, null, null, null)) {
-			val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
-			val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with owner
-			// Creating the loop edge with the toRaise = true
-			val loopEdge = initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
-			// Creating the ...Value = ...Messages().value
-			val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-			if (!expressions.empty) {
-				val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == match.instance]
-				if (valueOfVars.size != 1) {
-					throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-				}	
-				val valueOfVar = valueOfVars.head
-				// Creating the ...Messages().value expression
-				val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
+		for (systemPort : synchronousComponent.ports) {
+			for (inEvent : systemPort.inputEvents) {
+			var Edge loopEdge // Now a single input port can be bound to multiple instance ports
+			for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(synchronousComponent, systemPort, null, null, inEvent)) {
+				val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance) // The event that needs to be raised
+				val queue = wrapper.getContainerMessageQueue(match.systemPort, match.event) // In what message queue this event is stored
+				val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with owner
+				// Creating the loop edge with the toRaise = true
+				if (loopEdge === null) {
+					loopEdge = initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
+				}
+				else {
+					loopEdge.createAssignmentExpression(edge_Update, toRaiseVar, true)
+				}
 				// Creating the ...Value = ...Messages().value
-				loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
+				val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+				if (!expressions.empty) {
+					val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo
+							.filter(DataVariableDeclaration).filter[it.owner == match.instance]
+					if (valueOfVars.size != 1) {
+						throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
+					}	
+					val valueOfVar = valueOfVars.head
+					// Creating the ...Messages().value expression
+					val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
+					// Creating the ...Value = ...Messages().value
+					loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
+				}
+				// "Basic" loop edge
+				loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.systemPort, match.event, owner)
+				// If this event is in a control spec, the wrapped sync component needs to be scheduled
+				if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, match.systemPort, match.event)) {
+					// Scheduling the sync
+					val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
+					loopEdge.target = syncEdge.source
+				}
 			}
-			// "Basic" loop edge
-			loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.systemPort, match.event, owner)
-			// If this event is in a control spec, the wrapped sync component needs to be scheduled
-			if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, match.systemPort, match.event)) {
-				// Scheduling the sync
-				val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-				loopEdge.target = syncEdge.source
 			}
 		}
 		// Creating edges for control events of wrapper
