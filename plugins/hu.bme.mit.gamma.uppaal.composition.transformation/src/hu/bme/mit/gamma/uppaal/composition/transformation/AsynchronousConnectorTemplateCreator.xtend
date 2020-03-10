@@ -174,13 +174,16 @@ class AsynchronousConnectorTemplateCreator {
 						loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
 					}
 				}
-				// "Basic" loop edge
-				loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, systemPort, inEvent, owner)
-				// If this event is in a control spec, the wrapped sync component needs to be scheduled
-				if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, systemPort, inEvent)) {
-					// Scheduling the sync
-					val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
-					loopEdge.target = syncEdge.source
+				// If an event is not forwarded to a message queue, the loopEdge remains null
+				if (loopEdge !== null) {
+					// "Basic" loop edge
+					loopEdge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, systemPort, inEvent, owner)
+					// If this event is in a control spec, the wrapped sync component needs to be scheduled
+					if (RunOnceEventControl.Matcher.on(engine).hasMatch(wrapper, systemPort, inEvent)) {
+						// Scheduling the sync
+						val syncEdge = waitingForRelayLoc.createCommittedSyncTarget(syncChannel.variable.head, "schedule" + id++)
+						loopEdge.target = syncEdge.source
+					}
 				}
 			}
 		}
@@ -189,7 +192,7 @@ class AsynchronousConnectorTemplateCreator {
 				.filter[!TopSyncSystemInEvents.Matcher.on(engine).hasMatch(it.wrapper.wrappedComponent.type, it.port, null, null, it.event)]) {
 			// No events of the wrapped component
 			val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
-			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with onwer
+			val messageQueueTrace = queue.getTrace(owner) // Getting the queue trace in accordance with owner
 			// Creating the loop edge
 			val edge = initLoc.createEdge(initLoc)
 			edge.createConnectorEdge(asyncChannel, wrapper, messageQueueTrace, match.port, match.event, owner)
