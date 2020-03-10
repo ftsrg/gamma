@@ -73,6 +73,7 @@ import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.trace.model.TraceUtil
 
 class StringTraceBackAnnotator {
 	
@@ -95,6 +96,8 @@ class StringTraceBackAnnotator {
 	protected final extension ExpressionModelFactory cntFact = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
+	protected final extension TraceUtil traceUtil = new TraceUtil
+	
 	new(ResourceSet resourceSet, Scanner traceScanner) {
 //		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
 //		while (traceScanner.hasNext) {
@@ -262,6 +265,8 @@ class StringTraceBackAnnotator {
 	
 	protected def addInEvent(Step step, Port port, Event event, Integer parameter) {
 		val eventRaise = createRaiseEventAct(port, event, parameter)
+		// Not storing the same event raising twice
+		step.actions.removeIf[it instanceof RaiseEventAct && (it as RaiseEventAct).isOverWritten(eventRaise)]
 		step.actions += eventRaise
 	}
 	
