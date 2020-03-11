@@ -292,7 +292,16 @@ public class StatechartModelDerivedFeatures {
 			ancestors.add((Region) node.eContainer());
 			return ancestors;
 		}
-		return new ArrayList<Region>();
+		Region parentRegion = (Region) node.eContainer();
+		List<Region> regionList = new ArrayList<Region>();
+		regionList.add(parentRegion);
+		return regionList;
+	}
+	
+	public static List<Region> getCommonRegionAncestors(StateNode lhs, StateNode rhs) {
+		List<Region> ancestors = getRegionAncestors(lhs);
+		ancestors.retainAll(getRegionAncestors(rhs));
+		return ancestors;
 	}
 	
 	/**
@@ -387,32 +396,29 @@ public class StatechartModelDerivedFeatures {
 	}
 	
 	public static boolean isToHigherAndLower(Transition transition) {
-		return isToLowerOrHigherAndLower(transition.getSourceState(), transition.getTargetState()) &&
-				!isToLower(transition.getSourceState(), transition.getTargetState());
+		return isToHigherAndLower(transition.getSourceState(), transition.getTargetState());
 	}
 	
-	public static boolean isToLowerOrHigherAndLower(StateNode source, StateNode target) {
-		if (isToLower(source, target)) {
-			return true;
-		}
-		Region sourceParentRegion = getParentRegion(source);
-		if (isTopRegion(sourceParentRegion)) {
+	public static boolean isToHigherAndLower(StateNode source, StateNode target) {
+		List<Region> sourceAncestors = getRegionAncestors(source);
+		List<Region> targetAncestors = getRegionAncestors(target);
+		List<Region> commonAncestors = new ArrayList<Region>(sourceAncestors);
+		commonAncestors.retainAll(targetAncestors);
+		if (commonAncestors.isEmpty()) {
+			// Top region orthogonal invalid transitions
 			return false;
 		}
-		State sourceParentState = getParentState(source);
-		return isToLower(sourceParentState, target);
-	}
-	
-	public static boolean isToHigherOrHigherAndLower(StateNode source, StateNode target) {
-		if (isToHigher(source, target)) {
-			return true;
-		}
-		Region targetParentRegion = getParentRegion(target);
-		if (isTopRegion(targetParentRegion)) {
+		sourceAncestors.removeAll(commonAncestors);
+		if (sourceAncestors.isEmpty()) {
+			// To lower level
 			return false;
 		}
-		State targetParentState = getParentState(target);
-		return isToLower(source, targetParentState);
+		targetAncestors.removeAll(commonAncestors);
+		if (targetAncestors.isEmpty()) {
+			// To higher level
+			return false;
+		}
+		return true;
 	}
 	
 	public static StateNode getSourceAncestor(Transition transition) {

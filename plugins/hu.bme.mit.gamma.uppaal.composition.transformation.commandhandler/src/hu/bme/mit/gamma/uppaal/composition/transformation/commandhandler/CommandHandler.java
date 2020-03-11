@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerT
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -118,6 +119,14 @@ public class CommandHandler extends AbstractHandler {
 		// Unfolding the given system
 		Trace trace = new ModelUnfolder().unfold(gammaPackage);
 		Component topComponent = trace.getTopComponent();
+		// Transforming unhandled transitions to two transitions connected by a choice
+		UnhandledTransitionTransformer unhandledTransitionTransformer = new UnhandledTransitionTransformer();
+		trace.getPackage().getComponents().stream()
+			.filter(it -> it instanceof StatechartDefinition)
+			.forEach(it -> {
+				unhandledTransitionTransformer.execute((StatechartDefinition) it);
+			}
+		);
 		// Saving the Package of the unfolded model
 		String flattenedModelFileName = "." + fileNameWithoutExtenstion + ".gsm";
 		normalSave(trace.getPackage(), parentFolder, flattenedModelFileName);

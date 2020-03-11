@@ -770,10 +770,10 @@ class CompositeToUppaalTransformer {
 	val choicesRule = createRule(ChoicesAndMerges.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
+			val pseudoState = it.pseudoState
 			val choiceLocation = template.createChild(template_Location, location) as Location => [
-				it.name = "Choice" + id++
+				it.name = if (pseudoState.name !== null) pseudoState.name else "Choice" + id++
 				it.locationTimeKind = LocationKind.COMMITED	
-				it.comment = "Choice"
 			]
 			// Creating the trace
 			addToTrace(it.pseudoState, #{choiceLocation}, trace)

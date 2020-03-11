@@ -29,6 +29,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.TimeSpecification;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
@@ -38,6 +39,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Namings;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
@@ -60,6 +62,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		Package gammaPackage = (Package) component.eContainer();
 		Trace trace = new ModelUnfolder().unfold(gammaPackage);
 		Component newTopComponent = trace.getTopComponent();
+		// Transforming unhandled transitions to two transitions connected by a choice
+		UnhandledTransitionTransformer unhandledTransitionTransformer = new UnhandledTransitionTransformer();
+		trace.getPackage().getComponents().stream()
+			.filter(it -> it instanceof StatechartDefinition)
+			.forEach(it -> {
+				unhandledTransitionTransformer.execute((StatechartDefinition) it);
+			}
+		);
 		// Saving the Package of the unfolded model
 		String flattenedModelFileName = "." + analysisModelTransformation.getFileName().get(0) + ".gsm";
 		normalSave(trace.getPackage(), targetFolderUri, flattenedModelFileName);

@@ -36,7 +36,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -47,7 +46,6 @@ import hu.bme.mit.gamma.statechart.model.AnyTrigger;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
 import hu.bme.mit.gamma.statechart.model.Clock;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.model.EntryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventTrigger;
@@ -794,25 +792,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	private void checkTransitionOrientation(Transition transition) {
 		if (StatechartModelDerivedFeatures.isSameRegion(transition) ||
 				StatechartModelDerivedFeatures.isToLower(transition) ||
-				StatechartModelDerivedFeatures.isToHigher(transition)) {
+				StatechartModelDerivedFeatures.isToHigher(transition) || 
+				StatechartModelDerivedFeatures.isToHigherAndLower(transition)) {
 			// These transitions are permitted
 			return;
 		}
-		StateNode sourceState = transition.getSourceState();
-		StateNode targetState = transition.getTargetState();
-		List<Region> sourceRegionAncestors = StatechartModelDerivedFeatures.getRegionAncestors(sourceState);
-		List<Region> targetRegionAncestors = StatechartModelDerivedFeatures.getRegionAncestors(targetState);
-		for (Region sourceRegionAncestor : sourceRegionAncestors) {
-			CompositeElement sourceCompositeElement = (CompositeElement) sourceRegionAncestor.eContainer();
-			for (Region targetRegionAncestor : targetRegionAncestors) {
-				if (sourceCompositeElement.getRegions().contains(sourceRegionAncestor) &&
-						sourceCompositeElement.getRegions().contains(targetRegionAncestor)) {
-					error("The orientation of this transition is incorrect as the source and target are in orthogonal regions of: " +
-							((NamedElement) sourceCompositeElement).getName() + ".", StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
-				}
-			}
-		}
-		
+		error("The orientation of this transition is incorrect as the source and target are in orthogonal regions.",
+			StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
 	}
 	
 	@Check
