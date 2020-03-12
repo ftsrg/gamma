@@ -1,11 +1,9 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
@@ -20,6 +18,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComp
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import java.math.BigInteger
+import java.util.Collection
 import java.util.HashSet
 import java.util.Set
 import java.util.logging.Level
@@ -53,6 +52,8 @@ class EnvironmentCreator {
 	protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
 	// UPPAAL factories
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+	// Gamma factories
+	protected final extension ExpressionModelFactory emFact = ExpressionModelFactory.eINSTANCE
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
@@ -61,6 +62,7 @@ class EnvironmentCreator {
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
+	protected final extension ExpressionEvaluator expressionEvaluator
 	// Rules
 	protected BatchTransformationRule<TopUnwrappedSyncComponents.Match, TopUnwrappedSyncComponents.Matcher> topSyncEnvironmentRule
 	protected BatchTransformationRule<TopWrapperComponents.Match, TopWrapperComponents.Matcher> topWrapperEnvironmentRule
@@ -74,6 +76,7 @@ class EnvironmentCreator {
 		this.manipulation = manipulation
 		this.assignmentExpressionCreator = assignmentExpressionCreator
 		this.asynchronousComponentHelper = asynchronousComponentHelper
+		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.modelTrace = modelTrace
 		this.isStableVar = isStableVar
 	}
@@ -109,59 +112,70 @@ class EnvironmentCreator {
 				for (systemPort : it.syncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
-						var boolean hasTrue = false
-						var boolean hasFalse = false
-						val hasValue = new HashSet<BigInteger>
-						val hasEnum = new HashSet<EnumerationLiteralDefinition>
+						var Collection<Expression> expressionSet = new HashSet
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 							// Collecting parameter values for each instant event
-							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-							if (!expressions.empty) {
-								// Removing original edge from the model - only if there is a valid expression
-								template.edge -= loopEdge
-								for (expression : expressions) {
-									// Putting variables raising for ALL instance parameters
-			   						val clonedLoopEdge = loopEdge.clone(true, true)
-									if (!hasTrue && (expression instanceof TrueExpression)) {
-										hasTrue = true
-										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
-										}
-										template.edge += clonedLoopEdge
-									}
-									else if (!hasFalse && (expression instanceof FalseExpression)) {
-										hasFalse = true
-										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
-										}
-										template.edge += clonedLoopEdge
-									}
-									else if (!hasValue(hasValue, expression) && !hasEnum(hasEnum, expression) &&
-											!(expression instanceof TrueExpression) && !(expression instanceof FalseExpression)) {
-										log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name + " : " + expression)
-				   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
-										}
-										template.edge += clonedLoopEdge	
-									}
+							expressionSet += ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+						}
+						// Removing the expression duplications (that are evaluated to the same expression)
+						val expressions = expressionSet.removeDuplicatedExpressions
+						if (!expressions.empty) {
+							// Removing original edge from the model - only if there is a valid expression
+							template.edge -= loopEdge
+							for (expression : expressions) {
+								// Putting variables raising for ALL instance parameters
+		   						val clonedLoopEdge = loopEdge.clone(true, true)
+		   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
 								}
-								// Adding a different value if the type is an integer
-								if (!hasValue.empty) {
-				   					val clonedLoopEdge = loopEdge.clone(true, true)
-									val maxValue = hasValue.max
-									val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-									for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-										clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, biggerThanMax)
-									}
-									template.edge += clonedLoopEdge
-									biggerThanMax.removeGammaElementFromTrace
+								template.edge += clonedLoopEdge
+								expression.removeGammaElementFromTrace
+							}
+							// Adding a different value if the type is an integer
+							if (expressionSet.filter(EnumerationLiteralExpression).empty &&
+									!expressions.empty) {
+			   					val clonedLoopEdge = loopEdge.clone(true, true)
+								val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
+								val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
+								for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, biggerThanMax)
 								}
+								template.edge += clonedLoopEdge
+								biggerThanMax.removeGammaElementFromTrace
 							}
 						}
 					}
 				}
 			].build
 		}
+	}
+	
+	private def removeDuplicatedExpressions(Collection<Expression> expressions) {
+		val integerValues = newHashSet
+		val booleanValues = newHashSet
+		val evaluatedExpressions = <Expression>newHashSet
+		for (expression : expressions) {
+			try {
+				// Integers and enums
+				val value = expression.evaluate
+				if (!integerValues.contains(value)) {
+					integerValues += value
+					evaluatedExpressions += createIntegerLiteralExpression => [
+						it.value = BigInteger.valueOf(value)
+					]
+				}
+			} catch (Exception e) {}
+			// Excluding branches
+			try {
+				// Boolean
+				val bool = expression.evaluateBoolean
+				if (!booleanValues.contains(bool)) {
+					booleanValues += bool
+					evaluatedExpressions += if (bool) {createTrueExpression} else {createFalseExpression}
+				}
+			} catch (Exception e) {}
+		}
+		return evaluatedExpressions
 	}
 	
 	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {
@@ -172,37 +186,6 @@ class EnvironmentCreator {
 		}
 		val valueOfVar = valueOfVars.head
 		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
-	}
-	
-	/**
-	 * Returns whether the given set contains an IntegerLiteralExpression identical to the given Expression.
-	 */
-	private def hasValue(Set<BigInteger> hasValue, Expression expression) {
-		if (!(expression instanceof IntegerLiteralExpression)) {
-			return false
-		}
-		val anInt = expression as IntegerLiteralExpression
-		for (exp : hasValue) {
-			if (exp.equals(anInt.value)) {				
-				return true
-			}
-		}
-		hasValue.add(anInt.value)
-		return false
-	}
-	
-	private def hasEnum(Set<EnumerationLiteralDefinition> hasValue, Expression expression) {
-		if (!(expression instanceof EnumerationLiteralExpression)) {
-			return false
-		}
-		val anEnum = expression as EnumerationLiteralExpression
-		for (exp : hasValue) {
-			if (exp.equals(anEnum.reference)) {				
-				return true
-			}
-		}
-		hasValue.add(anEnum.reference)
-		return false
 	}
 	
 	def getTopWrapperEnvironmentRule() {
@@ -285,7 +268,8 @@ class EnvironmentCreator {
 								}
 						}
 						else {
-							for (expression : expressionList) {
+							val expressionSet = expressionList.removeDuplicatedExpressions
+							for (expression : expressionSet) {
 								// New edge is needed in every iteration!
 								val loopEdge = initLoc.createEdge(initLoc)
 								loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
