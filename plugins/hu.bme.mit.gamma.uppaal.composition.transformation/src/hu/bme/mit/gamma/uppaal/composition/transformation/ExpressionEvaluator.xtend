@@ -35,8 +35,8 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
 
+// There is an expression evaluator in the Expression Model plugin, but that does not handle parameter declarations
 class ExpressionEvaluator {
-	
 	// Engine on the Gamma resource 
 	protected final ViatraQueryEngine engine
 	

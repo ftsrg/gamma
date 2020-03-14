@@ -9,7 +9,8 @@ Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.expression.model.impl,
- hu.bme.mit.gamma.expression.model.util
+ hu.bme.mit.gamma.expression.model.util,
+ hu.bme.mit.gamma.expression.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport
 Bundle-ActivationPolicy: lazy

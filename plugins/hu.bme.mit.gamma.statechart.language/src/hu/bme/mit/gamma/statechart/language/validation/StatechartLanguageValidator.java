@@ -253,6 +253,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
+	public void checkTimeSpecifications(TimeSpecification timeSpecification) {
+		try {
+			int value = expressionEvaluator.evaluateInteger(timeSpecification.getValue());
+			if (value <= 0) {
+				error("Time specifications must have positive values: " + value, StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
+			}
+		} catch (IllegalArgumentException e) {
+			// Untransformable expression, it contains variable declarations
+		}
+	}
+	
+	@Check
 	public void checkTransitionPriority(Transition transition) {
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		if (transition.getPriority() != null && !transition.getPriority().equals(BigInteger.ZERO) &&
