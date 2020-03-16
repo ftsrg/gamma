@@ -43,6 +43,11 @@ pattern instanceVariables(instance : SynchronousComponentInstance, variable : Va
 	StatechartDefinition.variableDeclarations(statechart, variable);
 }
 
+pattern instanceTimeouts(instance : SynchronousComponentInstance, timeout : TimeoutDeclaration) {
+	find simpleInstances(instance, statechart);
+	StatechartDefinition.timeoutDeclarations(statechart, timeout);
+}
+
 // To filter out events that are not used
 private pattern relevantEvents(port : Port, event : Event) {
 	PortEventReference.port(portEventReference, port);

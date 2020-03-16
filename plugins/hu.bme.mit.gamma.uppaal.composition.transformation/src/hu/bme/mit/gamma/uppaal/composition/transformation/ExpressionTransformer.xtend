@@ -49,6 +49,7 @@ import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelMan
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.Variable
+import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.ArithmeticExpression
 import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.AssignmentExpression
@@ -92,18 +93,27 @@ class ExpressionTransformer {
 	
 	
 	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action, ComponentInstance owner) {
+		val clockVariable = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
+		val boolVariable = action.timeoutDeclaration.allValuesOfTo.filter(DataVariableDeclaration).head
+		val clockExp = container.createAssignmentExpression(reference, clockVariable, "0")
+		val boolExp = container.createAssignmentExpression(reference, boolVariable, "false")
+		addToTrace(action, #{clockExp}, expressionTrace)
+		addToTrace(action, #{boolExp}, expressionTrace)
+	}
+	
+	private def createAssignmentExpression(EObject container, EReference reference,
+			VariableDeclaration variable, String literal) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.operator = AssignmentOperator.EQUAL
 		]
-		val timeVar = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
 		newExp.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-			it.identifier = timeVar.variable.head
+			it.identifier = variable.variable.head
 		]
 		// Always setting the timer to 0 at entry
 		newExp.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-			it.text = "0"
+			it.text = literal
 		]
-		addToTrace(action, #{newExp}, expressionTrace)
+		return newExp
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, Expression expression, ComponentInstance owner) {

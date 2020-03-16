@@ -6,6 +6,7 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.simpleInstances"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceContainer"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceTimeouts"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.inputInstanceEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameteredEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.topSyncSystemInEvents"/>

@@ -12,6 +12,7 @@ import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collection
+import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DeclarationsFactory
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
@@ -22,7 +23,6 @@ import uppaal.types.TypesFactory
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TriggerTransformer {
-	
 	// UPPAAL factories
 	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
@@ -172,8 +172,10 @@ class TriggerTransformer {
 	}
 	
 	def dispatch Expression transformEventTrigger(TimeoutEventReference reference, ComponentInstance owner) {
-		throw new UnsupportedOperationException("Timeout triggers are not supported in complex triggers, as the
-			actual clock value is not known in this context.")
+		val boolVariable = reference.timeout.allValuesOfTo.filter(DataVariableDeclaration).head
+		return createIdentifierExpression => [
+			it.identifier = boolVariable.variable.head
+		]
 	}
 	
 }

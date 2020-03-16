@@ -231,7 +231,6 @@ pattern allSubregionsOfCompositeStates(compositeState : State, region : Region) 
 
 pattern eventTriggersOfTransitions(transition : Transition, trigger : Trigger) {
 	Transition.trigger(transition, trigger);
-	neg find timeTriggers(trigger, _, _);
 }
 
 pattern simpleEventTriggersOfTransitions(transition : Transition, trigger : EventTrigger, port : Port, event : Event) {
@@ -241,21 +240,9 @@ pattern simpleEventTriggersOfTransitions(transition : Transition, trigger : Even
 	PortEventReference.event(eventReference, event);
 }
 
-private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : TimeoutEventReference,
-		timeoutDeclaration : TimeoutDeclaration) {
-	EventTrigger.eventReference(trigger, timeoutEventReference);
-	TimeoutEventReference.timeout(timeoutEventReference, timeoutDeclaration);
-}
-
-// Only one set timeout action per timeout declaration is allowed -> the time value is obvious
-pattern timeTriggersOfTransitions(state : State, transition : Transition, timeoutEventReference : TimeoutEventReference,
-	timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification, name : java String) {
+pattern setTimeoutActions(timeoutAction : SetTimeoutAction, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
 	SetTimeoutAction.timeoutDeclaration(timeoutAction, timeoutDeclaration);
-	TimeoutDeclaration.name(timeoutDeclaration, name); // Only one set timeout action per timeout declaration
 	SetTimeoutAction.time(timeoutAction, time);
-	Transition.sourceState(transition, state); // On
-	Transition.trigger(transition, trigger);
-	find timeTriggers(trigger, timeoutEventReference, timeoutDeclaration);
 }
 
 pattern guardsOfTransitions(transition : Transition, guard : Expression) {

@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -71,36 +70,7 @@ class CompareExpressionCreator {
 	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
 	 */
 	def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-			hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, TimeoutEventReference timeoutEventReference, LogicalOperator logOp) {
-		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
-			it.operator = logOp
-			it.secondExpr = originalExpression
-		]
-		andExpression.insertCompareExpression(binaryExpression_FirstExpr, compOp, clockVar, timeExpression, timeoutEventReference)
-	}
-	
-	/**
-	 * Responsible for creating a compare expression that compares the given clock variable to the given expression.
-	 */
-	def void insertCompareExpression(EObject container, EReference reference, CompareOperator compOp,
-			ClockVariableDeclaration clockVar, hu.bme.mit.gamma.expression.model.Expression timeExpression, TimeoutEventReference timeoutEventReference) {		
-		val owner = clockVar.owner
-		val compExp = container.createChild(reference, compareExpression) as CompareExpression => [
-			it.operator = compOp
-			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = clockVar.variable.head // Always one variable in the container
-			]
-			it.transform(binaryExpression_SecondExpr, timeExpression, owner)
-		]
-		addToTrace(timeoutEventReference, #{compExp}, trace)
-		addToTrace(owner, #{clockVar}, instanceTrace)
-	}
-	
-	/**
-	 * Responsible for creating an AND logical expression containing an already existing expression and a clock expression.
-	 */
-	def insertLogicalExpression(EObject container, EReference reference, CompareOperator compOp, ClockVariableDeclaration clockVar,
-		hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
+			hu.bme.mit.gamma.expression.model.Expression timeExpression, Expression originalExpression, LogicalOperator logOp) {
 		val andExpression = container.createChild(reference, logicalExpression) as LogicalExpression => [
 			it.operator = logOp
 			it.secondExpr = originalExpression
@@ -140,6 +110,21 @@ class CompareExpressionCreator {
 			]
 			it.secondExpr = timeExpression
 		]
+	}
+	
+	def insertLogicalExpression(EObject container, EReference reference,
+			Expression newExpression, LogicalOperator logOp) {
+		val originalExpression = container.eGet(reference) as Expression
+		if (originalExpression === null) {
+			container.eSet(reference, newExpression)
+		}
+		else {
+			container.createChild(reference, logicalExpression) as LogicalExpression => [
+					it.firstExpr = originalExpression
+					it.operator = logOp
+					it.secondExpr = newExpression
+			]
+		}
 	}
 	
 }

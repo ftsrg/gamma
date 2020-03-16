@@ -32,6 +32,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerT
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceTimeouts
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceVariables
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameteredEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstances
@@ -62,9 +63,9 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.OutgoingTransitionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.RaisingActionsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
+import hu.bme.mit.gamma.uppaal.transformation.queries.SetTimeoutActions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
-import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.TimeoutActionsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
@@ -316,6 +317,8 @@ class CompositeToUppaalTransformer {
 		}
 		constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
+		timeoutsRule.fireAllCurrent
+		setTimeoutActionsRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
 		inputEventsRule.fireAllCurrent
 		syncSystemOutputEventsRule.fireAllCurrent
@@ -327,12 +330,10 @@ class CompositeToUppaalTransformer {
 		sameRegionTransitionsRule.fireAllCurrent
 		toLowerRegionTransitionsRule.fireAllCurrent
 		toHigherRegionTransitionsRule.fireAllCurrent		
-	 	{eventTriggersRule.fireAllCurrent
-		timeTriggersRule.fireAllCurrent} // Should come right after eventTriggersRule		
+	 	eventTriggersRule.fireAllCurrent	
 		{guardsRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
-		transitionPriorityRule.fireAllCurrent
-		transitionTimedTransitionPriorityRule.fireAllCurrent}
+		transitionPriorityRule.fireAllCurrent}
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
 		compositeStateEntryRule.fireAllCurrent 
@@ -356,8 +357,6 @@ class CompositeToUppaalTransformer {
 		timeoutActionsOfTransitionsRule.fireAllCurrent
 		compositeStateExitRule
 		isActiveRule.fireAllCurrent
-		// Extend timed locations with outgoing edges from the original location
-		extendTimedLocations
 		// Creating a same level process list, note that it is before the orchestrator template: UPPAAL does not work correctly with priorities
 //		instantiateUninstantiatedTemplates
 		// New entries to traces, previous adding would cause trouble
@@ -596,6 +595,34 @@ class CompositeToUppaalTransformer {
 		addToTrace(it.instance, #{variable}, instanceTrace)		
 		// Traces are created in the transformVariable method
 	].build
+	
+	/**
+	 * This rule is responsible for transforming the timeout declarations.
+	 * It depends on initNTA.
+	 */
+	val timeoutsRule = createRule(InstanceTimeouts.instance).action [
+		// Clock variable
+		val clockVariable = target.globalDeclarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+		clockVariable.createTypeAndVariable(target.clock, clockNamePrefix + (id++))
+		// Bool variable
+		val boolVariable = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.timeout.name + "of" + it.instance.name)
+		boolVariable.variable.head => [
+			it.initializer = createExpressionInitializer => [
+				it.expression = createLiteralExpression => [it.text = "true"]
+			]
+		]
+		addToTrace(it.instance, #{clockVariable, boolVariable}, instanceTrace)
+		addToTrace(it.timeout, #{clockVariable, boolVariable}, trace)		
+	].build
+	
+	private def getClockTemplateInitLoc() {
+		val templateName = "ClockTemplate"
+		var clockTemplate = nta.template.filter[it.name == templateName].head
+		if (clockTemplate === null) {
+			return createTemplateWithInitLoc("ClockTemplate", "initLoc")
+		}
+		return clockTemplate.location.head
+	}
 	
 	/**
 	 * This rule is responsible for transforming the constants.
@@ -1269,138 +1296,33 @@ class CompositeToUppaalTransformer {
 		edge.setSynchronization(runCycleVar.variable.head, SynchronizationKind.RECEIVE)
 	}
 	
-	/**
-	 * This rule is responsible for transforming the timeout event triggers.
-	 * It depends on sameRegionTransitionsRule, toLowerTransitionsRule, ToHigherTransitionsRule and triggersRule.
-	 */
-	val timeTriggersRule = createRule(TimeTriggersOfTransitions.instance).action [
-		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
-			val owner = edge.owner
-			var Edge cloneEdge
-			// This rule comes right after the signal trigger rule
-			if (edge.guard !== null) {
-				// If it contains a guard, it contains a trigger, and the signals are in an OR relationship
-				cloneEdge = edge.clone as Edge
-				cloneEdge.guard.removeTrace
-				cloneEdge.guard = null
-				addToTrace(owner, #{cloneEdge}, instanceTrace)
-			}
-			else {
-				cloneEdge = edge
-			}
-			val template = cloneEdge.parentTemplate
-			var clockVar = it.state.stateClock
-			// Creating the trace
-			addToTrace(it.timeoutDeclaration, #{clockVar}, trace)
-			addToTrace(owner, #{clockVar}, instanceTrace)
-			val location = cloneEdge.source
-			val locInvariant = location.invariant
-			val newLoc = template.createChild(template_Location, getLocation) as Location => [
-				it.name = clockNamePrefix + (id++)
+	val setTimeoutActionsRule = createRule(SetTimeoutActions.instance).action [
+		val clockVariable = it.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
+		val boolVariable = it.timeoutDeclaration.allValuesOfTo.filter(DataVariableDeclaration).head
+		val initLoc = clockTemplateInitLoc
+		val timeValue = it.time.convertToMs
+		// Loop edge
+		val loopEdge = initLoc.createEdge(initLoc)
+		loopEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVariable,
+			timeValue)
+		loopEdge.addGuard(createNegationExpression => [
+			it.negatedExpression = createIdentifierExpression => [
+				it.identifier = boolVariable.variable.head
 			]
-			// Creating the trace; this is why this rule depends on toLowerTransitionsRule and ToHigherTransitionsRule
-			addToTrace(it.state, #{newLoc}, trace)
-			addToTrace(owner, #{newLoc}, instanceTrace)			
-			val newEdge = location.createEdge(newLoc)
-			cloneEdge.source = newLoc
-			cloneEdge.setRunCycle
-			// Creating the owner trace for the clock edge
-			addToTrace(owner, #{newEdge}, instanceTrace)
-			// Converting to milliseconds
-			val timeValue = it.time.convertToMs
-			// Putting the expression onto the location and edge
-			if (locInvariant !== null) {
-				location.insertLogicalExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, locInvariant, it.timeoutEventReference, LogicalOperator.AND)
-			}
-			else {
-				location.insertCompareExpression(location_Invariant, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)
-			}
-			val originalGuard = cloneEdge.guard
-			if (originalGuard !== null) {
-				newEdge.insertLogicalExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVar, timeValue, originalGuard, it.timeoutEventReference, LogicalOperator.OR)		
-			}
-			else {
-				newEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)		
-			}		
-			// Trace is created in the insertCompareExpression method
-			// Adding isStable guard
-			newEdge.addGuard(isStableVar, LogicalOperator.AND)
-			// To avoid deadlock, we go into the normal location if the invariant holds
-			// Otherwise, we go to the newLoc as the timeout already happened
-			val entryEdges = it.state.allValuesOfTo.filter(Edge)
-			checkState(entryEdges.size == 1)
-			val entryEdge = entryEdges.head
-			val clonedEntryEdge = entryEdge.clone(true, true)
-			clonedEntryEdge.target = newLoc
-			template.edge += clonedEntryEdge
-			val originalEntryEdgeGuard = entryEdge.guard
-			if (originalEntryEdgeGuard !== null) {
-				entryEdge.insertLogicalExpression(edge_Guard, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, originalGuard, it.timeoutEventReference, LogicalOperator.OR)		
-			}
-			else {
-				entryEdge.insertCompareExpression(edge_Guard, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)		
-			}	
-			val clonedEntryEdgeGuard = clonedEntryEdge.guard
-			if (clonedEntryEdgeGuard !== null) {
-				clonedEntryEdge.insertLogicalExpression(edge_Guard, CompareOperator.GREATER, clockVar, timeValue, clonedEntryEdgeGuard, it.timeoutEventReference, LogicalOperator.AND)		
-			}
-			else {
-				clonedEntryEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER, clockVar, timeValue, it.timeoutEventReference)		
-			}
-			// TODO Error
-			addToTrace(it.state, #{clonedEntryEdge}, trace)
-			addToTrace(owner, #{clonedEntryEdge}, instanceTrace)
-		}	
+		], LogicalOperator.AND)
+		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
+		loopEdge.createAssignmentExpression(edge_Update, boolVariable, true)
+		// Location invariant
+		val orExpression = createLogicalExpression => [
+			it.firstExpr = createIdentifierExpression => [
+				it.identifier = boolVariable.variable.head
+			]
+			it.operator = LogicalOperator.OR
+			it.insertCompareExpression(binaryExpression_SecondExpr, CompareOperator.LESS_OR_EQUAL,
+				clockVariable, timeValue)
+		]
+		initLoc.insertLogicalExpression(location_Invariant, orExpression, LogicalOperator.AND)
 	].build
-	
-	protected def getStateClock(State state) {
-		val template = state.allValuesOfTo.filter(Location).head.parentTemplate
-		// The idea is that a template needs a single clock if every state has a single timer
-		val clocks = template.declarations.declaration.filter(ClockVariableDeclaration)
-		var ClockVariableDeclaration clockVar
-		if (clocks.empty || TimeTriggersOfTransitions.Matcher.on(engine)
-				.getAllValuesOftimeoutDeclaration(state, null, null, null, null).size > 1) {
-			// If the template has no clocks OR the state has more than one timer, a NEW clock has to be created
-			clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(target.clock, clockNamePrefix + (id++))
-			return clockVar
-		}
-		// The simple common template clock is enough
-		return clocks.head
-	}
-	
-	protected def extendTimedLocations() {
-		val timedEdges = EdgesWithClock.Matcher.on(ViatraQueryEngine.on(new EMFScope(target))).allValuesOfedge
-		for (timedEdge : timedEdges) {
-			val parentTemplate = timedEdge.parentTemplate
-			val timedLocation = timedEdge.source
-			val outgoingEdges = newHashSet
-			outgoingEdges += parentTemplate.edge.filter[it.source === timedLocation && // Edges going out from the original location
-				!timedEdges.contains(it) && // No timed edges
-				!(it.synchronization !== null && // No entry and exit synch edges, as they are present in the target too
-					(it.synchronization.channelExpression.identifier.name.startsWith(Namings.entrySyncNamePrefix) ||
-						it.synchronization.channelExpression.identifier.name.startsWith(Namings.exitSyncNamePrefix)
-					)
-				)
-			]
-			val targetLocation = timedEdge.target
-			for (outgoingEdge : outgoingEdges) {
-				// Cloning all outgoing edges of original location
-				val clonedOutgoingEdge = outgoingEdge.clone as Edge
-				clonedOutgoingEdge.source = targetLocation
-				val targetOutgoingEdges = newHashSet
-				targetOutgoingEdges += parentTemplate.edge.filter[it.source === targetLocation && it !== clonedOutgoingEdge]
-				var isDuplicate = false
-				// Deleting the cloned edge if we find out it is a duplicate (maybe it is not needed anymore)
-				for (targetOutgoingEdge : targetOutgoingEdges) {
-					if (!isDuplicate && clonedOutgoingEdge.helperEquals(targetOutgoingEdge)) {
-						clonedOutgoingEdge.delete
-						isDuplicate = true
-					}
-				}
-			}
-		}
-	}
 	
 	/**
 	 * This rule is responsible for transforming the guards.
@@ -1470,7 +1392,6 @@ class CompositeToUppaalTransformer {
 	 */
 	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
-			// TODO new entry edge should be introduced
 			for (timeoutAction : state.entryActions.filter(SetTimeoutAction)) {
 				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
 			}
@@ -1630,7 +1551,6 @@ class CompositeToUppaalTransformer {
 			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 				val owner = edge.owner
 				for (higherPriorityTransition : prioritizedTransitions) {
-					// TODO timed - timed transition priorities might cause deadlock
 					val higherPriorityEdges = higherPriorityTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner]
 					for (higherPriorityGuard : higherPriorityEdges.map[it.guard].filterNull) {
 						edge.addGuard(
@@ -1639,37 +1559,6 @@ class CompositeToUppaalTransformer {
 							],
 							LogicalOperator.AND
 						)
-					}
-				}
-			}
-		}
-	].build
-	
-	val transitionTimedTransitionPriorityRule = createRule(Transitions.instance).action [
-		// Priorities regarding time trigger guards have to be handled separately due to 
-		// the timing location mapping style
-		val containingStatechart = it.transition.containingStatechart
-		if (containingStatechart.transitionPriority != TransitionPriority.OFF) {
-			val prioritizedTransitions = it.transition.prioritizedTransitions
-			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
-				for (higherPriorityTransition : prioritizedTransitions) {
-					// TODO timed - timed transition priorities might cause deadlock
-					val timeMatches = TimeTriggersOfTransitions.Matcher.on(engine).getAllMatches(null, higherPriorityTransition, null, null, null, null)
-					if (!timeMatches.isEmpty) {
-						val originalGuard = edge.guard
-						for (timeMatch : timeMatches) {
-							val clockVar = timeMatch.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
-							val timeValue = timeMatch.time.convertToMs
-							if (originalGuard !== null) {
-								// The negation of "greater or equals" is "less"
-								edge.insertLogicalExpression(edge_Guard, CompareOperator.LESS, clockVar,
-									timeValue, originalGuard, timeMatch.timeoutEventReference, LogicalOperator.AND)
-							}
-							else {
-								edge.insertCompareExpression(edge_Guard, CompareOperator.LESS, clockVar,
-									timeValue, timeMatch.timeoutEventReference)
-							}
-						}
 					}
 				}
 			}
