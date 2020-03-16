@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.Region
+import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
@@ -56,6 +57,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfState
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitRaisingActionsOfStatesWithTransitions
+import hu.bme.mit.gamma.uppaal.transformation.queries.ExitTimeoutActionsOfStatesWithTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.GuardsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.OutgoingTransitionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.RaisingActionsOfTransitions
@@ -63,6 +65,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
 import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
+import hu.bme.mit.gamma.uppaal.transformation.queries.TimeoutActionsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
@@ -348,8 +351,10 @@ class CompositeToUppaalTransformer {
 		syncSystemEventRaisingActionsRule.fireAllCurrent
 		entryEventRaisingActionsRule.fireAllCurrent
 		syncSystemEventRaisingOfEntryActionsRule.fireAllCurrent
-		compositeStateExitRule
 		entryTimeoutActionsOfStatesRule.fireAllCurrent
+		exitTimeoutActionsOfStatesRule.fireAllCurrent
+		timeoutActionsOfTransitionsRule.fireAllCurrent
+		compositeStateExitRule
 		isActiveRule.fireAllCurrent
 		// Extend timed locations with outgoing edges from the original location
 		extendTimedLocations
@@ -929,6 +934,10 @@ class CompositeToUppaalTransformer {
 		for (assignmentAction : state.entryActions.filter(AssignmentStatement)) {
 			edge.transformAssignmentAction(edge_Update, assignmentAction, owner)
 		}
+		// Set timeout actions
+		for (timeoutAction : state.entryActions.filter(SetTimeoutAction)) {
+			edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+		}
 		// Entry event event raising
 		for (match : RaiseInstanceEventStateEntryActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
 			edge.createEventRaising(match.inPort, match.raisedEvent, match.inInstance, match.entryAction)
@@ -1142,7 +1151,11 @@ class CompositeToUppaalTransformer {
 			// Assignment actions
 			for (action : state.exitActions.filter(AssignmentStatement)) {
 				edge.transformAssignmentAction(edge_Update, action, owner)			
-			}		
+			}
+			// Set timeout actions
+			for (timeoutAction : state.exitActions.filter(SetTimeoutAction)) {
+				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+			}
 			// Signal raising actions
 			for (match : RaiseInstanceEventStateExitActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
 				edge.createEventRaising(match.inPort, match.raisedEvent, match.inInstance, match.exitAction)
@@ -1312,6 +1325,31 @@ class CompositeToUppaalTransformer {
 			// Trace is created in the insertCompareExpression method
 			// Adding isStable guard
 			newEdge.addGuard(isStableVar, LogicalOperator.AND)
+			// To avoid deadlock, we go into the normal location if the invariant holds
+			// Otherwise, we go to the newLoc as the timeout already happened
+			val entryEdges = it.state.allValuesOfTo.filter(Edge)
+			checkState(entryEdges.size == 1)
+			val entryEdge = entryEdges.head
+			val clonedEntryEdge = entryEdge.clone(true, true)
+			clonedEntryEdge.target = newLoc
+			template.edge += clonedEntryEdge
+			val originalEntryEdgeGuard = entryEdge.guard
+			if (originalEntryEdgeGuard !== null) {
+				entryEdge.insertLogicalExpression(edge_Guard, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, originalGuard, it.timeoutEventReference, LogicalOperator.OR)		
+			}
+			else {
+				entryEdge.insertCompareExpression(edge_Guard, CompareOperator.LESS_OR_EQUAL, clockVar, timeValue, it.timeoutEventReference)		
+			}	
+			val clonedEntryEdgeGuard = clonedEntryEdge.guard
+			if (clonedEntryEdgeGuard !== null) {
+				clonedEntryEdge.insertLogicalExpression(edge_Guard, CompareOperator.GREATER, clockVar, timeValue, clonedEntryEdgeGuard, it.timeoutEventReference, LogicalOperator.AND)		
+			}
+			else {
+				clonedEntryEdge.insertCompareExpression(edge_Guard, CompareOperator.GREATER, clockVar, timeValue, it.timeoutEventReference)		
+			}
+			// TODO Error
+			addToTrace(it.state, #{clonedEntryEdge}, trace)
+			addToTrace(owner, #{clonedEntryEdge}, instanceTrace)
 		}	
 	].build
 	
@@ -1432,7 +1470,28 @@ class CompositeToUppaalTransformer {
 	 */
 	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
-			edge.transformTimeoutAction(edge_Update, it.setTimeoutAction, edge.owner)
+			// TODO new entry edge should be introduced
+			for (timeoutAction : state.entryActions.filter(SetTimeoutAction)) {
+				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+			}
+			// The trace is created by the ExpressionTransformer
+		}
+	].build
+	
+	val exitTimeoutActionsOfStatesRule = createRule(ExitTimeoutActionsOfStatesWithTransitions.instance).action [
+		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
+			for (timeoutAction : state.exitActions.filter(SetTimeoutAction)) {
+				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+			}
+			// The trace is created by the ExpressionTransformer
+		}
+	].build
+	
+	val timeoutActionsOfTransitionsRule = createRule(TimeoutActionsOfTransitions.instance).action [
+		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
+			for (timeoutAction : it.transition.effects.filter(SetTimeoutAction)) {
+				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+			}
 			// The trace is created by the ExpressionTransformer
 		}
 	].build
@@ -1571,6 +1630,7 @@ class CompositeToUppaalTransformer {
 			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 				val owner = edge.owner
 				for (higherPriorityTransition : prioritizedTransitions) {
+					// TODO timed - timed transition priorities might cause deadlock
 					val higherPriorityEdges = higherPriorityTransition.allValuesOfTo.filter(Edge).filter[it.owner == owner]
 					for (higherPriorityGuard : higherPriorityEdges.map[it.guard].filterNull) {
 						edge.addGuard(
@@ -1593,6 +1653,7 @@ class CompositeToUppaalTransformer {
 			val prioritizedTransitions = it.transition.prioritizedTransitions
 			for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 				for (higherPriorityTransition : prioritizedTransitions) {
+					// TODO timed - timed transition priorities might cause deadlock
 					val timeMatches = TimeTriggersOfTransitions.Matcher.on(engine).getAllMatches(null, higherPriorityTransition, null, null, null, null)
 					if (!timeMatches.isEmpty) {
 						val originalGuard = edge.guard

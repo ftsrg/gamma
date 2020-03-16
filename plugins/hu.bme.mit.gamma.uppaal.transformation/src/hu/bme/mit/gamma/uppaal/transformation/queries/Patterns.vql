@@ -247,13 +247,13 @@ private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : Tim
 	TimeoutEventReference.timeout(timeoutEventReference, timeoutDeclaration);
 }
 
+// Only one set timeout action per timeout declaration is allowed -> the time value is obvious
 pattern timeTriggersOfTransitions(state : State, transition : Transition, timeoutEventReference : TimeoutEventReference,
 	timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification, name : java String) {
-	State.entryActions(state, timeoutAction);
 	SetTimeoutAction.timeoutDeclaration(timeoutAction, timeoutDeclaration);
-	TimeoutDeclaration.name(timeoutDeclaration, name);
+	TimeoutDeclaration.name(timeoutDeclaration, name); // Only one set timeout action per timeout declaration
 	SetTimeoutAction.time(timeoutAction, time);
-	Transition.sourceState(transition, state);
+	Transition.sourceState(transition, state); // On
 	Transition.trigger(transition, trigger);
 	find timeTriggers(trigger, timeoutEventReference, timeoutDeclaration);
 }
@@ -272,9 +272,24 @@ pattern entryAssignmentsOfStates(state : State) {
 	AssignmentStatement(assignmentStatement);
 }
 
-pattern entryTimeoutActionsOfStates(state : State, setTimeoutAction : SetTimeoutAction) {
+pattern entryTimeoutActionsOfStates(state : State) {
 	State.entryActions(state, setTimeoutAction);
 	SetTimeoutAction(setTimeoutAction);
+}
+
+pattern timeoutActionsOfTransitions(transition : Transition) {
+	Transition.effects(transition, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+private pattern exitTimeoutActionsOfStates(state : State) { 
+	State.exitActions(state, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+pattern exitTimeoutActionsOfStatesWithTransitions(state : State, outgoingTransition : Transition) {
+	Transition.sourceState(outgoingTransition, state);
+	find exitTimeoutActionsOfStates(state);
 }
 
 private pattern exitAssignmentsOfStates(state : State) { 
@@ -290,14 +305,6 @@ pattern exitAssignmentsOfStatesWithTransitions(state : State, outgoingTransition
 pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {
 	Transition.effects(transition, raiseEventAction);
 	RaiseEventAction(raiseEventAction);
-}
-
-private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Trigger) {
-	BinaryTrigger.leftOperand(trigger, containedTrigger);
-} or {
-	BinaryTrigger.rightOperand(trigger, containedTrigger);
-} or {
-	UnaryTrigger.operand(trigger, containedTrigger);
 }
 
 private pattern expressionToExpression(from : Expression, to : Expression) {
