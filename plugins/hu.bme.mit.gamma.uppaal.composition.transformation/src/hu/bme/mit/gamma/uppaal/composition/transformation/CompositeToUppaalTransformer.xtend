@@ -68,6 +68,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.SameRegionTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SetTimeoutActions
 import hu.bme.mit.gamma.uppaal.transformation.queries.SimpleStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
+import hu.bme.mit.gamma.uppaal.transformation.queries.TimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.TimeoutActionsOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ToHigherTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
@@ -623,16 +624,20 @@ class CompositeToUppaalTransformer {
 		// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
 		if (states.size == 1) {
 			val state = states.head
-			val timeouts = EntryTimeTriggersOfTransitions.Matcher.on(engine).getAllValuesOftimeoutDeclaration(state, null, null)
-			// We can optimize, if all outgoing transitions use (potentially) only this timeout
-			if (timeouts.size == 1) {
-				checkState(timeout == timeouts.head)
-				val parentRegion = state.parentRegion
-				val template = parentRegion.allValuesOfTo.filter(Template).head
-				if (!template.hasClock) {
-					traceModel.putClock(template, createClockVariable)
+			val triggeredTransitions = TimeTriggersOfTransitions.Matcher.on(engine).getAllValuesOftransition(timeout)
+			// We can optimize, if this timeout is used for triggering the transitions of only this state
+			if (state.outgoingTransitions.containsAll(triggeredTransitions)) {
+				val timeouts = EntryTimeTriggersOfTransitions.Matcher.on(engine).getAllValuesOftimeoutDeclaration(state, null, null)
+				// We can optimize, if all outgoing transitions use (potentially) only this timeout
+				if (timeouts.size == 1) {
+					checkState(timeout == timeouts.head)
+					val parentRegion = state.parentRegion
+					val template = parentRegion.allValuesOfTo.filter(Template).head
+					if (!template.hasClock) {
+						traceModel.putClock(template, createClockVariable)
+					}
+					return template.getClock
 				}
-				return template.getClock
 			}
 		}
 		// We cannot optimize

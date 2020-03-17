@@ -254,25 +254,24 @@ private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Tr
 	UnaryTrigger.operand(trigger, containedTrigger);
 }
 
-pattern entrySetTimeoutActions(state : State, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+private pattern entrySetTimeoutActions(state : State, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
 	find setTimeoutActions(timeoutAction, timeoutDeclaration, time);
 	State.entryActions(state, timeoutAction);
 }
 
-private pattern entrySetTimeoutActionsWithTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification,
-		trigger : Trigger) {
-	find entrySetTimeoutActions(state, timeoutDeclaration, time);
-	Transition.sourceState(transition, state);
+pattern timeTriggersOfTransitions(transition : Transition, timeoutDeclaration : TimeoutDeclaration) {
 	Transition.trigger(transition, trigger);
-}
-
-pattern entryTimeTriggersOfTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
-	find entrySetTimeoutActionsWithTransitions(state, transition, timeoutDeclaration, time, trigger);
 	find triggerToTrigger+(trigger, timeTrigger);
 	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
 } or {
-	find entrySetTimeoutActionsWithTransitions(state, transition, timeoutDeclaration, time, timeTrigger);
+	Transition.trigger(transition, timeTrigger);
 	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
+}
+
+pattern entryTimeTriggersOfTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	find entrySetTimeoutActions(state, timeoutDeclaration, time);
+	Transition.sourceState(transition, state);
+	find timeTriggersOfTransitions(transition, timeoutDeclaration);
 }
 
 pattern setTimeoutActions(timeoutAction : SetTimeoutAction, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {

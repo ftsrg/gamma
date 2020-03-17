@@ -476,7 +476,9 @@ class OrchestratorCreator {
 		for (region: regionsToBeScheduled) {
 			lastEdges = region.createRunCycleEdge(lastEdges, schedulingOrder, instance)
 		}
-		val lastEdge = createEdgeCommittedTarget(lastEdges.head.target, "finalizing" + id++ + instance.name)
+		val lastEdge = createEdgeCommittedTarget(lastEdges.head.target, "finalizing" + id++ + instance.name) => [
+			it.source.locationTimeKind = LocationKind.URGENT
+		]
 		for (runCycleEdge : lastEdges) {
 			runCycleEdge.target = lastEdge.source
 		}
