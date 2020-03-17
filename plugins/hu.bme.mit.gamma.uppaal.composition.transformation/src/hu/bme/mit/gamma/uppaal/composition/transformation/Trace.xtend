@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import java.util.Collections
 import java.util.HashSet
 import java.util.List
+import java.util.Map
 import java.util.Set
 import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
@@ -34,6 +35,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.declarations.ChannelVariableDeclaration
+import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.FunctionDeclaration
@@ -48,6 +50,9 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 import uppaal.templates.Synchronization
+import uppaal.templates.Template
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
@@ -62,6 +67,8 @@ class Trace {
 	final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	// Auxiliary objects 
 	final extension EventHandler eventHandler = new EventHandler
+	// Clock creation helper map
+	final Map<Template, ClockVariableDeclaration> clockMap = newHashMap
 	
 	new(IModelManipulations manipulation, G2UTrace traceRoot) {
 		this.manipulation = manipulation
@@ -105,6 +112,21 @@ class Trace {
 			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
 		}
 		return traces.head		
+	}
+	
+	def hasClock(Template template) {
+		checkState(template !== null)
+		return clockMap.containsKey(template)
+	}
+	
+	def getClock(Template template) {
+		checkState(template.hasClock)
+		return clockMap.get(template)
+	}
+	
+	def putClock(Template template, ClockVariableDeclaration clock) {
+		checkState(template !== null && clock !== null)
+		clockMap.put(template, clock)
 	}
 	
 	/** 

@@ -240,6 +240,41 @@ pattern simpleEventTriggersOfTransitions(transition : Transition, trigger : Even
 	PortEventReference.event(eventReference, event);
 }
 
+private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : TimeoutEventReference,
+		timeoutDeclaration : TimeoutDeclaration) {
+	EventTrigger.eventReference(trigger, timeoutEventReference);
+	TimeoutEventReference.timeout(timeoutEventReference, timeoutDeclaration);
+}
+
+private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Trigger) {
+	BinaryTrigger.leftOperand(trigger, containedTrigger);
+} or {
+	BinaryTrigger.rightOperand(trigger, containedTrigger);
+} or {
+	UnaryTrigger.operand(trigger, containedTrigger);
+}
+
+pattern entrySetTimeoutActions(state : State, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	find setTimeoutActions(timeoutAction, timeoutDeclaration, time);
+	State.entryActions(state, timeoutAction);
+}
+
+private pattern entrySetTimeoutActionsWithTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification,
+		trigger : Trigger) {
+	find entrySetTimeoutActions(state, timeoutDeclaration, time);
+	Transition.sourceState(transition, state);
+	Transition.trigger(transition, trigger);
+}
+
+pattern entryTimeTriggersOfTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	find entrySetTimeoutActionsWithTransitions(state, transition, timeoutDeclaration, time, trigger);
+	find triggerToTrigger+(trigger, timeTrigger);
+	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
+} or {
+	find entrySetTimeoutActionsWithTransitions(state, transition, timeoutDeclaration, time, timeTrigger);
+	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
+}
+
 pattern setTimeoutActions(timeoutAction : SetTimeoutAction, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
 	SetTimeoutAction.timeoutDeclaration(timeoutAction, timeoutDeclaration);
 	SetTimeoutAction.time(timeoutAction, time);

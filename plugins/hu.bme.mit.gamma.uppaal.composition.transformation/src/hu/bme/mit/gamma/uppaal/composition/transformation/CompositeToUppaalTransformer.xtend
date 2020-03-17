@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
@@ -54,6 +55,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.DefaultTransitionsOfChoice
 import hu.bme.mit.gamma.uppaal.transformation.queries.Entries
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryAssignmentsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryRaisingActionsOfStates
+import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryTimeoutActionsOfStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventTriggersOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExitAssignmentsOfStatesWithTransitions
@@ -317,33 +319,33 @@ class CompositeToUppaalTransformer {
 		}
 		constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
-		timeoutsRule.fireAllCurrent
-		setTimeoutActionsRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
 		inputEventsRule.fireAllCurrent
 		syncSystemOutputEventsRule.fireAllCurrent
 		eventParametersRule.fireAllCurrent
-		regionsRule.fireAllCurrent
+		{regionsRule.fireAllCurrent
+		timeoutsRule.fireAllCurrent // After regions rule as optimization relies on the regions
+		clockTemplateRule.fireAllCurrent}
 		entriesRule.fireAllCurrent
 		statesRule.fireAllCurrent
 		choicesRule.fireAllCurrent
 		sameRegionTransitionsRule.fireAllCurrent
 		toLowerRegionTransitionsRule.fireAllCurrent
-		toHigherRegionTransitionsRule.fireAllCurrent		
-	 	eventTriggersRule.fireAllCurrent	
+		toHigherRegionTransitionsRule.fireAllCurrent
+	 	eventTriggersRule.fireAllCurrent
 		{guardsRule.fireAllCurrent
 		defultChoiceTransitionsRule.fireAllCurrent
 		transitionPriorityRule.fireAllCurrent}
 		// Executed here, so locations created by timeTriggersRule have initialization edges (templates do not stick in timer locations)
 		// Must be executed after swapGuardsOfTimeTriggerTransitions, otherwise an exception is thrown
-		compositeStateEntryRule.fireAllCurrent 
+		compositeStateEntryRule.fireAllCurrent
 		entryAssignmentActionsOfStatesRule.fireAllCurrent
 		exitAssignmentActionsOfStatesRule.fireAllCurrent
 		exitEventRaisingActionsOfStatesRule.fireAllCurrent
 		exitSystemEventRaisingActionsOfStatesRule.fireAllCurrent
 		assignmentActionsRule.fireAllCurrent[
 			!ToHigherTransitions.Matcher.on(engine).allValuesOftransition.contains(it.transition)
-		]	
+		]
 		// Across region entry events are set here so they are situated after the exit events and regular transition assignments
 		toLowerRegionEntryEventTransitionsRule.fireAllCurrent
 		eventRaisingActionsRule.fireAllCurrent[
@@ -601,19 +603,47 @@ class CompositeToUppaalTransformer {
 	 * It depends on initNTA.
 	 */
 	val timeoutsRule = createRule(InstanceTimeouts.instance).action [
-		// Clock variable
-		val clockVariable = target.globalDeclarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-		clockVariable.createTypeAndVariable(target.clock, clockNamePrefix + (id++))
-		// Bool variable
-		val boolVariable = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.timeout.name + "of" + it.instance.name)
+		// Clock variable - optimization
+		val clockVariable = it.timeout.clock
+		// Bool variable - it has to be created every time due to the invariants in the timer location
+		val boolVariable = target.globalDeclarations.createVariable(DataVariablePrefix.NONE,
+			target.bool, it.timeout.name + "of" + it.instance.name)
 		boolVariable.variable.head => [
 			it.initializer = createExpressionInitializer => [
+				 // They are true at start (due to location invariants in the timer location)
 				it.expression = createLiteralExpression => [it.text = "true"]
 			]
 		]
 		addToTrace(it.instance, #{clockVariable, boolVariable}, instanceTrace)
 		addToTrace(it.timeout, #{clockVariable, boolVariable}, trace)		
 	].build
+	
+	private def getClock(TimeoutDeclaration timeout) {
+		val states = EntryTimeTriggersOfTransitions.Matcher.on(engine).getAllValuesOfstate(null, timeout, null)
+		// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
+		if (states.size == 1) {
+			val state = states.head
+			val timeouts = EntryTimeTriggersOfTransitions.Matcher.on(engine).getAllValuesOftimeoutDeclaration(state, null, null)
+			// We can optimize, if all outgoing transitions use (potentially) only this timeout
+			if (timeouts.size == 1) {
+				checkState(timeout == timeouts.head)
+				val parentRegion = state.parentRegion
+				val template = parentRegion.allValuesOfTo.filter(Template).head
+				if (!template.hasClock) {
+					traceModel.putClock(template, createClockVariable)
+				}
+				return template.getClock
+			}
+		}
+		// We cannot optimize
+		return createClockVariable
+	}
+	
+	private def createClockVariable() {
+		val clockVariable = target.globalDeclarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+		clockVariable.createTypeAndVariable(target.clock, clockNamePrefix + (id++))
+		return clockVariable
+	}
 	
 	private def getClockTemplateInitLoc() {
 		val templateName = "ClockTemplate"
@@ -1296,7 +1326,7 @@ class CompositeToUppaalTransformer {
 		edge.setSynchronization(runCycleVar.variable.head, SynchronizationKind.RECEIVE)
 	}
 	
-	val setTimeoutActionsRule = createRule(SetTimeoutActions.instance).action [
+	val clockTemplateRule = createRule(SetTimeoutActions.instance).action [
 		val clockVariable = it.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).head
 		val boolVariable = it.timeoutDeclaration.allValuesOfTo.filter(DataVariableDeclaration).head
 		val initLoc = clockTemplateInitLoc

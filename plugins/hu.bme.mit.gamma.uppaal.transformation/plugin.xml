@@ -34,6 +34,8 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.allSubregionsOfCompositeStates"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.eventTriggersOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.simpleEventTriggersOfTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.entrySetTimeoutActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.entryTimeTriggersOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.setTimeoutActions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.guardsOfTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.updatesOfTransitions"/>
