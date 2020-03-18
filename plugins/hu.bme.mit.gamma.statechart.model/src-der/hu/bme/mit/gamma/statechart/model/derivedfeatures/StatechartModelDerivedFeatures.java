@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
@@ -50,6 +51,20 @@ public class StatechartModelDerivedFeatures {
 	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
+	}
+	
+	public static Collection<StatechartDefinition> getContainedStatecharts(SynchronousComponent component) {
+		List<StatechartDefinition> statecharts = new ArrayList<StatechartDefinition>();
+		if (component instanceof StatechartDefinition) {
+			statecharts.add((StatechartDefinition) component);
+		}
+		else {
+			AbstractSynchronousCompositeComponent composite = (AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : composite.getComponents()) {
+				statecharts.addAll(getContainedStatecharts(instance.getType()));
+			}
+		}
+		return statecharts;
 	}
 	
 	public static Collection<Event> getInputEvents(Port port) {

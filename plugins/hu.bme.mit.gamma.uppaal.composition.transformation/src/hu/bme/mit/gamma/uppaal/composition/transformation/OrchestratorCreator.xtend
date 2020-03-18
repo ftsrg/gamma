@@ -62,6 +62,8 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
+import uppaal.statements.StatementsFactory
 
 class OrchestratorCreator {
 	// Transformation rule-related extensions
@@ -81,6 +83,7 @@ class OrchestratorCreator {
 	// UPPAAL factories
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
+	protected final extension StatementsFactory stmFact = StatementsFactory.eINSTANCE
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
@@ -152,6 +155,8 @@ class OrchestratorCreator {
 				}
 				// Reset transition id variable to reduce state space
 				firstEdge.resetTransitionIdVariableIfNeeded
+				// Reset clocks to reduce state space
+				firstEdge.resetClocks(it.syncComposite)
 			].build
 		}
 	}
@@ -226,7 +231,7 @@ class OrchestratorCreator {
 	}
 	
 	private def resetParameterVariable(EObject container, EReference reference, Event event, Port port, SynchronousComponentInstance instance) {
-		container.createAssignmentExpression(reference, event.getValueOfVariable(port, instance), 0)
+		container.createAssignmentExpression(reference, event.getValueOfVariable(port, instance), "0")
 	}
 	
 	/**
@@ -565,6 +570,39 @@ class OrchestratorCreator {
 		else {
 			return #[runCycleEdge]
 		}		
+	}
+	
+	private def resetClocks(Edge edge, SynchronousComponent component) {
+		edge.addFunctionCall(edge_Update, createClockResettingFunction(component).function)
+	}
+	
+	private def createClockResettingFunction(SynchronousComponent component) {
+		nta.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
+			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
+				it.createChild(function_ReturnType, typeReference) as TypeReference => [
+					it.referredType = nta.void
+				]
+				it.name = "resetClocks" + id++
+				it.createChild(function_Block, stmPackage.block) as Block => [
+					for (clock : component.containedStatecharts
+							.map[it.timeoutDeclarations].flatten
+							.map[it.allValuesOfTo].flatten.toSet
+							.filter(ClockVariableDeclaration)) {
+						val booleanVariables = clock.allValuesOfFrom.filter(TimeoutDeclaration)
+												.map[it.allValuesOfTo].flatten.filter(DataVariableDeclaration)
+						val andExpression = createLogicalExpression(LogicalOperator.AND,
+							booleanVariables.map[variable | createIdentifierExpression => [it.identifier = variable.variable.head]].toList
+						)
+						it.statement += createIfStatement => [
+							it.ifExpression = andExpression
+							it.thenStatement = createExpressionStatement => [
+								it.createAssignmentExpression(expressionStatement_Expression, clock, "0")
+							]
+						]
+					}
+				]
+			]
+		]
 	}
 	
 }

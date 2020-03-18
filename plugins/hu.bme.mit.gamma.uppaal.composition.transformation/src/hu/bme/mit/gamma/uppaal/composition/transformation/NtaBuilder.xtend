@@ -281,7 +281,7 @@ class NtaBuilder {
 				logicalExpression.secondExpr = expression
 			}
 			else {
-				val oldExpression = logicalExpression.secondExpr
+				val oldExpression = logicalExpression
 				logicalExpression = createLogicalExpression => [
 					it.operator = operator
 					it.firstExpr = oldExpression

@@ -19,6 +19,7 @@ import uppaal.expressions.NegationExpression
 import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
+import uppaal.declarations.VariableDeclaration
 
 class AssignmentExpressionCreator {
 	// NTA builder
@@ -57,14 +58,14 @@ class AssignmentExpressionCreator {
 	/**
 	 * Puts an assignment expression onto the given container. The left side is the given variable, the right side is an integer value". E.g.: myVariable = 0.
 	 */
-	def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, Integer value) {
+	def void createAssignmentExpression(EObject container, EReference reference, VariableDeclaration variable, String value) {
 		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head // Only one variable is expected
 			]
 			it.operator = AssignmentOperator.EQUAL
 			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-				it.text = value.toString
+				it.text = value
 			]
 		]
 	}
