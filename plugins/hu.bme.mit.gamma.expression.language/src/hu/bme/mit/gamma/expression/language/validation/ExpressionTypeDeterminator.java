@@ -172,14 +172,18 @@ public class ExpressionTypeDeterminator {
 		if (expression == null) {
 			return ExpressionType.VOID;
 		}
-		// EventParameterReferences
-		Optional<EObject> parameter = expression.eCrossReferences().stream().filter(it -> it instanceof ParameterDeclaration).findFirst();
+		// EventParameterReferences: they are contained in StatechartModelPackage
+		Optional<EObject> parameter = getParameter(expression);
 		if (parameter.isPresent()) {
 			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
 			Type declarationType = parameterDeclaration.getType();
 			return transform(declarationType);
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression);
+	}
+
+	private Optional<EObject> getParameter(Expression expression) {
+		return expression.eCrossReferences().stream().filter(it -> it instanceof ParameterDeclaration).findFirst();
 	}
 	
 	// Extension methods
@@ -408,6 +412,30 @@ public class ExpressionTypeDeterminator {
 			type instanceof RecordTypeDefinition && expressionType == ExpressionType.RECORD ||
 			type instanceof VoidTypeDefinition && expressionType == ExpressionType.VOID ||
 			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
+	}
+	
+	public EnumerationTypeDefinition getEnumType(Expression expression) {
+		if (expression instanceof EnumerationLiteralExpression) {
+			EnumerationLiteralExpression literal = (EnumerationLiteralExpression) expression;
+			return (EnumerationTypeDefinition) literal.getReference().eContainer();
+		}
+		if (expression instanceof ReferenceExpression) {
+			ReferenceExpression reference = (ReferenceExpression) expression;
+			return (EnumerationTypeDefinition) reference.getDeclaration().getType();
+		}
+		Optional<EObject> parameter = getParameter(expression);
+		if (parameter.isPresent()) {
+			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
+			Type type = parameterDeclaration.getType();
+			if (type instanceof TypeReference) {
+				final TypeReference typeReference = (TypeReference) type;
+				return (EnumerationTypeDefinition) typeReference.getReference().getType();
+			}
+			else {
+				return (EnumerationTypeDefinition) type;
+			}
+		}
+		throw new IllegalArgumentException("Not known expression: " + expression);
 	}
 	
 }

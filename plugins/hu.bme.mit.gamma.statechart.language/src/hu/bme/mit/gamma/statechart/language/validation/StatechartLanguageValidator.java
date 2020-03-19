@@ -93,6 +93,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
+import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
+import hu.bme.mit.gamma.statechart.model.interface_.Persistency;
 
 /**
  * This class contains custom validation rules. 
@@ -153,6 +155,33 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		}
 		return null;
+	}
+	
+	@Check
+	public void checkEventPersistency(Event event) {
+		if (event.getPersistency() == Persistency.PERSISTENT) {
+			if (event.getParameterDeclarations().isEmpty()) {
+				error("A persistent event must have a parameter.", InterfacePackage.Literals.EVENT__PERSISTENCY);
+			}
+		}
+	}
+	
+	@Check
+	public void checkParameterCount(Event event) {
+		if (event.getParameterDeclarations().size() > 1) {
+			error("An event can have at most one parameter.", ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS);
+		}
+	}
+	
+	@Check
+	public void checkParameterName(Event event) {
+		if (event.getParameterDeclarations().size() == 1) {
+			final ParameterDeclaration parameterDeclaration = event.getParameterDeclarations().get(0);
+			if (!parameterDeclaration.getName().equals(event.getName() + "Value")) {
+				warning("This parameter should be named " + event.getName() + "Value to be consistent with the namings of integrated modeling languages",
+					ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS);
+			}
+		}
 	}
 	
 	// Statechart
@@ -322,13 +351,17 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkTransitionEventRaisings(RaiseEventAction raiseEvent) {
 		Port port = raiseEvent.getPort();
 		Event event = raiseEvent.getEvent();
-		if (!getSemanticEvents(Collections.singleton(port), EventDirection.OUT).contains(event)) {
+		final EList<ParameterDeclaration> parameterDeclarations = event.getParameterDeclarations();
+		final EList<Expression> arguments = raiseEvent.getArguments();
+		if (!StatechartModelDerivedFeatures.getOutputEvents(port).contains(event)) {
 			error("This event is not an out event.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
+			return;
 		}
-		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
-			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
+		if (arguments.size() != parameterDeclarations.size()) {
+			error("The number of arguments must match the number of parameters.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			return;
 		}
-		if (!raiseEvent.getArguments().isEmpty()) {
+		if (!arguments.isEmpty()) {
 			EObject eContainer = raiseEvent.eContainer();
 			for (EObject raiseEventObject : eContainer.eContents().stream()
 					.filter(it -> it instanceof RaiseEventAction)
@@ -342,8 +375,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				}
 			}
 		}
-		if (!raiseEvent.getArguments().isEmpty() && raiseEvent.getEvent().getParameterDeclarations().isEmpty()) {
-			error("This event is not parametric.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT);
+		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
+			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
+				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(), arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			}
 		}
 	}
 	

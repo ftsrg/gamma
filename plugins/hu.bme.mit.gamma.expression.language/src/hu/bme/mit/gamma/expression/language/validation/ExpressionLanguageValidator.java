@@ -28,7 +28,6 @@ import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -48,6 +47,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
@@ -69,6 +69,18 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
 				error("In a Gamma model every identifier must be unique.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			}
+		}
+	}
+	
+	@Check
+	public void checkTypeDeclaration(TypeDeclaration typeDeclaration) {
+		Type type = typeDeclaration.getType();
+		if (type instanceof TypeReference) {
+			TypeReference typeReference = (TypeReference) type;
+			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
+			if (typeDeclaration == referencedTypeDeclaration) {
+				error("A type declaration cannot reference itself as a type definition.", ExpressionModelPackage.Literals.DECLARATION__TYPE);
 			}
 		}
 	}
@@ -119,26 +131,28 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		ReferenceExpression ref = (ReferenceExpression)functionAccessExpression.getOperand();
-		if (ref.getDeclaration() instanceof FunctionDeclaration) {
-			List<ParameterDeclaration> parameters = ((FunctionDeclaration)(ref).getDeclaration()).getParameterDeclarations();
-			if (arguments.size() != parameters.size()) {
-				error("The number of arguments does not match the number of declared parameters for the function!", 
-						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-			}
-			int i = 0;
-			for(Expression arg : arguments) {
-				ExpressionType argumentType = typeDeterminator.getType(arg);
-				if(!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
-					error("The types of the arguments and the types of the declared function parameters do not match!",
+		if (functionAccessExpression.getOperand() instanceof ReferenceExpression) {
+			ReferenceExpression ref = (ReferenceExpression) functionAccessExpression.getOperand();
+			if (ref.getDeclaration() instanceof FunctionDeclaration) {
+				final FunctionDeclaration functionDeclaration = (FunctionDeclaration) ref.getDeclaration();
+				List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
+				if (arguments.size() != parameters.size()) {
+					error("The number of arguments does not match the number of declared parameters for the function!", 
 							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 				}
-				++i;
+				int i = 0;
+				for (Expression arg : arguments) {
+					ExpressionType argumentType = typeDeterminator.getType(arg);
+					if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
+						error("The types of the arguments and the types of the declared function parameters do not match!",
+								ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+					}
+					++i;
+				}
 			}
-		}
-		else {
-			error("The referenced object is not a function declaration!",
-					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			else {
+				error("The referenced object is not a function declaration!", ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			}
 		}
 	}
 	
@@ -262,14 +276,9 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			enumType = (EnumerationTypeDefinition) ((TypeReference) type).getReference().getType();
 		}
 		if (enumType != null) {
-			if (rhs instanceof EnumerationLiteralExpression) {
-				EnumerationLiteralExpression rhsLiteral = (EnumerationLiteralExpression) rhs;
-				if (!enumType.getLiterals().contains(rhsLiteral.getReference())) {
-					error("This is not a valid literal of the enum type: " + rhsLiteral.getReference().getName() + ".", feature);
-				}
-			}
-			else {
-				error("The right hand side must be of type enumeration literal.", feature);
+			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumType(rhs);
+			if (enumType != rhsType) {
+				error("The right hand side is not the same type of enumeration as the left hand side.", feature);
 			}
 		}
 	}
@@ -354,15 +363,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
 				}
 				if (enumType != null) {
-					if (initialExpression instanceof EnumerationLiteralExpression) {
-						EnumerationLiteralExpression rhs = (EnumerationLiteralExpression) initialExpression;
-						if (!enumType.getLiterals().contains(rhs.getReference())) {
-							error("This is not a valid literal of the enum type: " + rhs.getReference().getName() + ".",
-									ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
-						}
-					}
-					else {
-						error("The right hand side must be of type enumeration literal.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+					final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumType(initialExpression);
+					if (enumType != rhsType) {
+						error("The right hand side is not the same type of enumeration as the left hand side.",
+								ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 					}
 				}
 				// Additional checks for arrays
