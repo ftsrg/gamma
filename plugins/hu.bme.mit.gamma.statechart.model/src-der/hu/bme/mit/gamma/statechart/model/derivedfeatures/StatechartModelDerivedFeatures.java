@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
 import hu.bme.mit.gamma.statechart.model.CompositeElement;
@@ -19,6 +21,7 @@ import hu.bme.mit.gamma.statechart.model.EventSource;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
+import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
@@ -43,6 +46,19 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 
 public class StatechartModelDerivedFeatures {
+	
+	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
+		if (element instanceof RaiseEventAction) {
+			RaiseEventAction raiseEventAction = (RaiseEventAction) element;
+			Event event = raiseEventAction.getEvent();
+			return event.getParameterDeclarations();
+		}
+		if (element instanceof ComponentInstance) {
+			ComponentInstance instance = (ComponentInstance) element;
+			return getDerivedType(instance).getParameterDeclarations();
+		}
+		throw new IllegalArgumentException("Not supported element: " + element);
+	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
 		return interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED &&

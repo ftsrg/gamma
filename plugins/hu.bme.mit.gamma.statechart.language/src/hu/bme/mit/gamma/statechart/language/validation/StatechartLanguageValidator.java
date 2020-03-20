@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -124,6 +125,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
 		error("Expression statements are not supported in the GSL.", ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION);
+	}
+	
+	// Expressions
+	
+	@Check
+	public void checkArgumentTypes(ArgumentedElement element) {
+		List<Expression> arguments = element.getArguments();
+		List<ParameterDeclaration> parameterDeclarations = StatechartModelDerivedFeatures.getParameterDeclarations(element);
+		if (arguments.size() != parameterDeclarations.size()) {
+			error("The number of arguments must match the number of parameters.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			return;
+		}
+		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
+			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
+				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(), arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			}
+		}
 	}
 	
 	// Interfaces
@@ -996,6 +1014,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkInstancePortReference(InstancePortReference reference) {
 		ComponentInstance instance = reference.getInstance();
+		if (instance == null) {
+			return;
+		}
 		Port port = reference.getPort();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		Collection<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);

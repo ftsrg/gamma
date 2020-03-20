@@ -38,8 +38,8 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 		// Setting the maximum size of lines
         c.setAutoLinewrap(110);
         // Line break between import keywords
-        c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getNameAssignment_1());
-		c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getImportsAssignment_2_1());
+        c.setLinewrap(1, 1, 2).after(f.getPackageAccess().getNameAssignment_1());
+		c.setLinewrap(1, 1, 2).after(f.getPackageAccess().getImportsAssignment_2_1());
         // Line break after declarations
         c.setLinewrap(1).after(f.getConstantDeclarationRule());
         c.setLinewrap(1).after(f.getFunctionDeclarationRule());
@@ -66,14 +66,16 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getStateAccess().getExitActionsActionParserRuleCall_3_1_0_2_2_0());
         c.setLinewrap(1).after(f.getStateAccess().getExitActionsAssignment_3_1_0_2_2());
         // Composite system rules   
-        c.setLinewrap(1).after(f.getClockDeclarationRule());
-        c.setLinewrap(1).after(f.getControlSpecificaitonRule());
-        c.setLinewrap(1).after(f.getMessageQueueRule());
-        c.setLinewrap(1).after(f.getPortBindingRule());
+        c.setLinewrap(1, 1, 2).after(f.getClockDeclarationRule());
+        c.setLinewrap(1, 1, 2).after(f.getControlSpecificaitonRule());
+        c.setLinewrap(1, 1, 2).after(f.getMessageQueueRule());
+        c.setLinewrap(1, 1, 2).after(f.getPortBindingRule());
         c.setLinewrap(1).after(f.getChannelRule());
-        c.setLinewrap(1).after(f.getSynchronousComponentInstanceRule());
-        c.setLinewrap(1).after(f.getAsynchronousComponentInstanceRule());
-        c.setLinewrap(1).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_5_3_2_1());
+        c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());
+        c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
+        c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_5_3_2_1());
+        // Set line wrap after bindings and components
+        
         // Right indentation around ports
         c.setLinewrap(1).before(f.getPortRule());
         c.setIndentationIncrement().before(f.getPortRule());
@@ -106,7 +108,6 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());
-		c.setLinewrap(0, 1, 1).after(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule());
 	}
 }

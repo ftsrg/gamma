@@ -273,15 +273,19 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			error("The types of the variable declaration and the right hand side expression are not the same: " +
 					typeDeterminator.transform(type).toString().toLowerCase() + " and " +
 					rightHandSideExpressionType.toString().toLowerCase() + ".", feature);
+			return;
 		}
 		// Additional checks for enumerations
 		EnumerationTypeDefinition enumType = null;
 		if (type instanceof EnumerationTypeDefinition) {
 			enumType = (EnumerationTypeDefinition) type;
 		}
-		else if (type instanceof TypeReference &&
-				((TypeReference) type).getReference().getType() instanceof EnumerationTypeDefinition) {
-			enumType = (EnumerationTypeDefinition) ((TypeReference) type).getReference().getType();
+		else if (type instanceof TypeReference){
+			final TypeReference typeReference = (TypeReference) type;
+			final Type referencedType = typeReference.getReference().getType();
+			if (referencedType instanceof EnumerationTypeDefinition) {
+				enumType = (EnumerationTypeDefinition) referencedType;
+			}
 		}
 		if (enumType != null) {
 			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumType(rhs);
