@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -336,6 +337,21 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 		if (transition.getTrigger() == null) {
 			error("This transition must have a trigger.", StatechartModelPackage.Literals.TRANSITION__TRIGGER);
+		}
+	}
+	
+	@Check
+	public void checkTransitionTriggers(ElseExpression elseExpression) {
+		EObject container = elseExpression.eContainer();
+		if (!(container instanceof Transition)) {
+			error("Else expressions must be an atomic guard in the expression.", container, elseExpression.eContainingFeature());
+		}
+		Transition transition = (Transition) container;
+		StateNode node = transition.getSourceState();
+		List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
+		outgoingTransitions.remove(transition);
+		if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
+			error("Only a single transition with and else expression can go out of a certain node.", container, elseExpression.eContainingFeature());
 		}
 	}
 	
