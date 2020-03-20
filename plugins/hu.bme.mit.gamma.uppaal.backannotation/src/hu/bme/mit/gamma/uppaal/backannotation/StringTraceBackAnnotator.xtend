@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceFactory
+import hu.bme.mit.gamma.trace.model.TraceUtil
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.EventRepresentations
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.ExpressionTraces
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.Functions
@@ -73,7 +74,8 @@ import uppaal.templates.Location
 import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.trace.model.TraceUtil
+
+import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class StringTraceBackAnnotator {
 	
@@ -294,7 +296,7 @@ class StringTraceBackAnnotator {
 		return type.createLiteral(parameter)
 	}
 	
-	private def createLiteral(Type paramType, Integer parameter) {
+	private def Expression createLiteral(Type paramType, Integer parameter) {
 		val literal = switch (paramType) {
 			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(parameter)]
 			BooleanTypeDefinition: {
@@ -308,6 +310,9 @@ class StringTraceBackAnnotator {
 			TypeReference: {
 				val typeDeclaration = paramType.reference
 				val type = typeDeclaration.type
+				if (type.isPrimitive) {
+					return type.createLiteral(parameter)
+				}
 				switch (type) {
 					EnumerationTypeDefinition:
 						return createEnumerationLiteralExpression => [ it.reference = type.literals.get(parameter) ]				
