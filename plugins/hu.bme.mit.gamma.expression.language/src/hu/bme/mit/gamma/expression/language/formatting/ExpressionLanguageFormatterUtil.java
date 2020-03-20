@@ -16,7 +16,7 @@ public class ExpressionLanguageFormatterUtil {
 		}
         // No space around parentheses
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
-            c.setNoSpace().around(p.getFirst());
+            c.setNoSpace().after(p.getFirst());
             c.setNoSpace().before(p.getSecond());
         }
 		for (Keyword dot : f.findKeywords(".")) {

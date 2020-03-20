@@ -16,6 +16,8 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -64,7 +66,8 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkNameUniqueness(NamedElement element) {
-		Collection<? extends NamedElement> namedElements = ExpressionLanguageValidatorUtil.getRecursiveContainerContentsOfType(element, element.getClass());
+		EObject root = EcoreUtil.getRootContainer(element);
+		Collection<? extends NamedElement> namedElements = EcoreUtil2.getAllContentsOfType(root, element.getClass());
 		namedElements.remove(element);
 		for (NamedElement elem : namedElements) {
 			if (element.getName().equals(elem.getName())) {
@@ -116,7 +119,12 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		RecordTypeDefinition rtd = (RecordTypeDefinition)ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
+		if (true) {
+			// Blocked as it throws exceptions
+			return;
+		}
+		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageValidatorUtil.
+				findAccessExpressionTypeDefinition(recordAccessExpression);
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
 		List<String> fieldDeclarationNames = new ArrayList<String>();
 		for (FieldDeclaration fd : fieldDeclarations) {

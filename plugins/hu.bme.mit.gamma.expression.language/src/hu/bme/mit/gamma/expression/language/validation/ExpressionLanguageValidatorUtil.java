@@ -8,6 +8,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -57,7 +58,7 @@ public class ExpressionLanguageValidatorUtil {
 		List<NamedElement> ret = new ArrayList<NamedElement>();
 		for (EObject obj : ele.eContents()) {
 			if (obj instanceof NamedElement) {
-				NamedElement ne = (NamedElement)obj;
+				NamedElement ne = (NamedElement) obj;
 				if (type.isAssignableFrom(ne.getClass())) {
 					ret.add(ne);
 				}

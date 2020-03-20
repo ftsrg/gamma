@@ -36,7 +36,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 		expressionLanguageFormatterUtil.format(c, f);
 		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
-        c.setAutoLinewrap(105);
+        c.setAutoLinewrap(110);
         // Line break between import keywords
         c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getNameAssignment_1());
 		c.setLinewrap(0, 1, 2).after(f.getPackageAccess().getImportsAssignment_2_1());
@@ -84,17 +84,29 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("]", "{")) {
             c.setLinewrap(1).before(p.getFirst());
         }
-        // No space around guards
+        // No space around guards 
         c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
+        // No space before parameters and arguments 
+        c.setNoSpace().before(f.getStatechartDefinitionAccess().getGroup_3());
+        c.setNoSpace().before(f.getSynchronousCompositeComponentAccess().getGroup_2());
+        c.setNoSpace().before(f.getCascadeCompositeComponentAccess().getGroup_2());
+        c.setNoSpace().before(f.getAsynchronousAdapterAccess().getGroup_2());
+        c.setNoSpace().before(f.getAsynchronousCompositeComponentAccess().getGroup_2());
+        c.setNoSpace().before(f.getAsynchronousComponentInstanceAccess().getGroup_4());
+        c.setNoSpace().before(f.getSynchronousComponentInstanceAccess().getGroup_4());
+        c.setNoSpace().before(f.getEventAccess().getGroup_4());
+        c.setNoSpace().before(f.getRaiseEventActionAccess().getGroup_4());
         // Space before [
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
         	c.setSpace(" ").before(p.getFirst());
         }
+        c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
         // Interface events
         c.setLinewrap(1).after(f.getEventDeclarationRule());
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());
+		c.setLinewrap(0, 1, 1).after(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule());
 	}
 }
