@@ -33,6 +33,8 @@ import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransforma
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 
+import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class GlueCodeGenerator {
 	// Transformation-related extensions
 	extension BatchTransformation transformation 
@@ -229,8 +231,10 @@ class GlueCodeGenerator {
 	protected def getTypeDeclarationRule() {
 		if (typeDeclarationRule === null) {
 			 typeDeclarationRule = createRule(TypeDeclarations.instance).action [
-				val code = it.typeDeclaration.serialize
-				code.saveCode(BASE_PACKAGE_URI + File.separator + it.typeDeclaration.name + ".java")
+			 	if (!it.typeDeclaration.type.primitive) {
+					val code = it.typeDeclaration.serialize
+					code.saveCode(BASE_PACKAGE_URI + File.separator + it.typeDeclaration.name + ".java")
+				}
 			].build		
 		}
 		return typeDeclarationRule

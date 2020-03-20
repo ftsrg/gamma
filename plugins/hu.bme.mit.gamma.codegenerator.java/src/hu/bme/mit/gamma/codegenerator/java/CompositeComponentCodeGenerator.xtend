@@ -38,9 +38,7 @@ class CompositeComponentCodeGenerator {
 		import java.util.List;
 		import java.util.LinkedList;
 		
-		«IF component.needTimer»
-			import «PACKAGE_NAME».*;
-		«ENDIF»
+		import «PACKAGE_NAME».*;
 		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».*;
 		«IF component instanceof AsynchronousCompositeComponent»
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;

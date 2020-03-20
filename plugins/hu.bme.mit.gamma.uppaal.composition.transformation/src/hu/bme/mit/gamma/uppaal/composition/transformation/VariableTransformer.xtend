@@ -44,7 +44,7 @@ class VariableTransformer {
 		this.traceModel = traceModel
 	}
 	
-	// Type references, such as enums
+	// Type references, such as enums and typedefs for primitive types
 	def dispatch DataVariableDeclaration transformVariable(Declaration variable,
 			TypeDeclaration type, DataVariablePrefix prefix, String name) {
 		val declaredType = type.type

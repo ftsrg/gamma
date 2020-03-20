@@ -6,6 +6,8 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 
+import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+
 class TypeTransformer {
 	
 	protected final extension Trace trace
@@ -63,8 +65,12 @@ class TypeTransformer {
 				return "boolean"
 			DecimalTypeDefinition: 
 				return "double"
-			TypeReference:
+			TypeReference: {
+				if (type.reference.type.primitive) {
+					return type.reference.type.transformType
+				}
 				return type.reference.name
+			}
 			default:
 				throw new IllegalArgumentException("Not known type: " + type)
 		}

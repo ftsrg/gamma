@@ -70,7 +70,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getControlSpecificaitonRule());
         c.setLinewrap(1, 1, 2).after(f.getMessageQueueRule());
         c.setLinewrap(1, 1, 2).after(f.getPortBindingRule());
-        c.setLinewrap(1).after(f.getChannelRule());
+        c.setLinewrap(1, 1, 2).after(f.getChannelRule());
         c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_5_3_2_1());
