@@ -20,6 +20,11 @@ pattern namedElements(element : NamedElement, name : java String) {
 	NamedElement.name(element, name);
 }
 
+pattern assignedVariables(variableDeclaration : VariableDeclaration) {
+	AssignmentStatement.lhs(_, referenceExpression);
+	ReferenceExpression.declaration(referenceExpression, variableDeclaration);
+}
+
 pattern variableDeclarations(variable : VariableDeclaration, name : java String, type) {
 	VariableDeclaration.name(variable, name); 
 	VariableDeclaration.type(variable, type);
@@ -141,7 +146,6 @@ private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : Ch
 	Transition.sourceState(outTransition, choice2);
 	// Assignment action of input transition
 	Transition.effects(inTransition, assignmentStatement);
-	AssignmentStatement(assignmentStatement);
 	AssignmentStatement.lhs(assignmentStatement, referenceExpression);
 	ReferenceExpression.declaration(referenceExpression, variable);
 	// Guard of output transition refers to the updated variable

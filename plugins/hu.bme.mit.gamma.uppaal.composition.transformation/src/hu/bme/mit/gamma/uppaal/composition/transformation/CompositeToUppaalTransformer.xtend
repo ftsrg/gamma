@@ -47,6 +47,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToHigherInstan
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ToLowerInstanceTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
+import hu.bme.mit.gamma.uppaal.transformation.queries.AssignedVariables
 import hu.bme.mit.gamma.uppaal.transformation.queries.ChoicesAndMerges
 import hu.bme.mit.gamma.uppaal.transformation.queries.CompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
@@ -388,7 +389,8 @@ class CompositeToUppaalTransformer {
 		asynchronousConnectorTemplateCreator.getInstanceWrapperConnectorRule.fireAllCurrent}
 		// Creating a same level process list
 		instantiateUninstantiatedTemplates
-		if (!isMinimalElementSet) {
+		if (!isMinimalElementSet && false) {
+			// Delete "&& false" if needed for debugging
 			createNoInnerEventsFunction
 		}
 		cleanUp
@@ -593,7 +595,9 @@ class CompositeToUppaalTransformer {
 	 * It depends on initNTA.
 	 */
 	val variablesRule = createRule(InstanceVariables.instance).action [
-		val variable = it.variable.transformVariable(it.variable.type, DataVariablePrefix.NONE,
+		val prefix = if (AssignedVariables.Matcher.on(engine).hasMatch(it.variable)) {
+				DataVariablePrefix.NONE } else { DataVariablePrefix.CONST }
+		val variable = it.variable.transformVariable(it.variable.type, prefix,
 			it.variable.name + "Of" + instance.name)
 		addToTrace(it.instance, #{variable}, instanceTrace)		
 		// Traces are created in the transformVariable method
