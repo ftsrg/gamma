@@ -258,7 +258,8 @@ public class ExpressionTypeDeterminator {
 	private ExpressionType getArithmeticType(Collection<ExpressionType> collection) {
 		// Wrong types, not suitable for arithmetic operations
 		if (collection.stream().anyMatch(it -> !isNumber(it))) {
-			throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
+//			throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
+			return ExpressionType.ERROR;
 		}
 		// All types are numbers
 		if (collection.stream().anyMatch(it -> it == ExpressionType.DECIMAL)) {

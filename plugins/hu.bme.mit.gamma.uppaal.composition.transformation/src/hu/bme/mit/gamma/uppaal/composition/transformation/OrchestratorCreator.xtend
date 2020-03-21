@@ -117,7 +117,7 @@ class OrchestratorCreator {
 		this.modelTrace = modelTrace
 		this.transitionIdVar = transitionIdVar
 		this.isStableVar = isStableVar
-		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.modelTrace)
+		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.modelTrace)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.assignmentExpressionCreator = assignmentExpressionCreator
 		this.compareExpressionCreator = compareExpressionCreator

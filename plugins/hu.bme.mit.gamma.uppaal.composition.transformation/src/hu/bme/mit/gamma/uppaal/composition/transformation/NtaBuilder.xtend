@@ -38,6 +38,7 @@ import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import uppaal.expressions.ArithmeticOperator
 
 class NtaBuilder {
 	// NTA target model
@@ -283,6 +284,36 @@ class NtaBuilder {
 			else {
 				val oldExpression = logicalExpression
 				logicalExpression = createLogicalExpression => [
+					it.operator = operator
+					it.firstExpr = oldExpression
+					it.secondExpr = expression
+				]
+			}
+			i++
+		}
+		return logicalExpression
+	}
+	
+	def createArithmeticExpression(ArithmeticOperator operator,
+			Collection<? extends Expression> expressions) {
+		checkArgument(!expressions.empty)
+		if (expressions.size == 1) {
+			return expressions.head
+		}
+		var logicalExpression = createArithmeticExpression => [
+			it.operator = operator
+		]
+		var i = 0
+		for (expression : expressions) {
+			if (i == 0) {
+				logicalExpression.firstExpr = expression
+			}
+			else if (i == 1) {
+				logicalExpression.secondExpr = expression
+			}
+			else {
+				val oldExpression = logicalExpression
+				logicalExpression = createArithmeticExpression => [
 					it.operator = operator
 					it.firstExpr = oldExpression
 					it.secondExpr = expression

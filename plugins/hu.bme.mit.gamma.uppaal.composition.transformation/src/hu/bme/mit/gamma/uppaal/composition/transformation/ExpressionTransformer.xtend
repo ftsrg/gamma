@@ -70,7 +70,8 @@ import static com.google.common.base.Preconditions.checkState
 
 class ExpressionTransformer {
     // For model creation
-	final extension IModelManipulations manipulation	
+	final extension IModelManipulations manipulation
+	final extension NtaBuilder ntaBuilder
     // Packages
     final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
@@ -78,8 +79,9 @@ class ExpressionTransformer {
     // Trace
     protected final extension Trace traceModel
     
-	new(IModelManipulations manipulation, Trace traceModel) {
+	new(IModelManipulations manipulation, NtaBuilder ntaBuilder, Trace traceModel) {
 		this.manipulation = manipulation
+		this.ntaBuilder = ntaBuilder
 		this.traceModel = traceModel
 	}
 	
@@ -90,7 +92,6 @@ class ExpressionTransformer {
 		newExp.transformBinaryExpressions(action.lhs, action.rhs, owner)
 		addToTrace(action, #{newExp}, expressionTrace)
 	}
-	
 	
 	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action, ComponentInstance owner) {
 		val clockVariable = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
@@ -284,13 +285,16 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, AddExpression expression, ComponentInstance owner) {
-		if (expression.operands.size > 2) {
-			throw new IllegalArgumentException("The following expression has more than two operands: " + expression)
-		}
-		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.ADD
-		]		
-		newExp.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+		]
+		val transformedExpressions = newArrayList
+		for (subExpression : expression.operands) {
+			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			transformedExpressions += temp.firstExpr
+		}
+		val newExp = createArithmeticExpression(ArithmeticOperator.ADD, transformedExpressions)
+		container.eSet(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
@@ -303,13 +307,16 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, MultiplyExpression expression, ComponentInstance owner) {
-		if (expression.operands.size > 2) {
-			throw new IllegalArgumentException("The following expression has more than two operands: " + expression)
-		}
-		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.MULTIPLICATE
-		]		
-		newExp.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+		]
+		val transformedExpressions = newArrayList
+		for (subExpression : expression.operands) {
+			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			transformedExpressions += temp.firstExpr
+		}
+		val newExp = createArithmeticExpression(ArithmeticOperator.MULTIPLICATE, transformedExpressions)
+		container.eSet(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	

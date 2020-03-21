@@ -22,6 +22,9 @@ public class ExpressionLanguageFormatterUtil {
 		for (Keyword dot : f.findKeywords(".")) {
             c.setNoSpace().around(dot);
         }
+		for (Keyword exclamationMark : f.findKeywords("!")) {
+            c.setNoSpace().after(exclamationMark);
+        }
 		for (Keyword comma : f.findKeywords(";")) {
             c.setNoSpace().before(comma);
         }
