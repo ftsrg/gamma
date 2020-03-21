@@ -10,7 +10,7 @@
       <!-- @generated expression -->
       <package
             uri="http://www.mit.bme.hu/gamma/expression/Model"
-            class="hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelPackage"
+            class="hu.bme.mit.gamma.expression.model.ExpressionModelPackage"
             genModel="model/expression.genmodel"/>
    </extension>
 

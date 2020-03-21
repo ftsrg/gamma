@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UPPAAL Query Generator
 Bundle-SymbolicName: hu.bme.mit.gamma.querygenerator;singleton:=true
-Bundle-Version: 2.2.1.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.querygenerator.application,
  hu.bme.mit.gamma.querygenerator.patterns

@@ -118,3 +118,22 @@
 * Optimization regarding timings has been introduced.
 * State references in the query generator have been fixed.
 * Bugs in the reflective class wrapper have been fixed.
+
+## 2020.03.21. - Version 2.3.0
+
+### What is New
+
+* Gamma now depends on VIATRA 2.3.1 and Yakindu 3.5.10.
+* Typedefs can now be used for primitive types.
+* Ports can now be bound to multiple instance ports in a composite component if they contain only input events.
+* Persistent events have been introduced.
+* Multiple test now can be generated in a single JUnit file using the query generator GUI.
+* Oncycle triggers can now be used in statechart.
+
+### Improvements
+ 
+* Optimizations regarding event, timing and variable declarations in the UPPAAL transformation have been introduced.
+* A state reference bug in the query generator has been fixed.
+* New validation rules in the Gamma text editor have been introduced.
+* A timeout trigger bug regarding statechart complex triggers in the UPPAAL transformation has been fixed.
+* Various UPPAAL back-annotation bugs have been fixed.
