@@ -4,11 +4,11 @@
 
 The presented framework has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.19.0.
-* Xtext Complete SDK 2.19.0. (It contains Xtend, no need for the additional download
+* Eclipse Modeling Framework SDK 2.21.0.
+* Xtext Complete SDK 2.21.0. (It contains Xtend, no need for the additional download
 of Xtend.)
-* VIATRA SDK 2.2.1.
-* Yakindu Statechart Tools 3.5.8.
+* VIATRA SDK 2.3.1.
+* Yakindu Statechart Tools 3.5.10.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
