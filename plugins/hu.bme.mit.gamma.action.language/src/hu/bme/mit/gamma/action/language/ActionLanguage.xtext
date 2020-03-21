@@ -1,0 +1,149 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.action.language.ActionLanguage with hu.bme.mit.gamma.expression.language.ExpressionLanguage
+
+import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
+import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+
+Action returns ActionModel::Action:
+	Block | 
+	Statement
+;
+
+@Override
+FunctionDeclaration returns ConstraintModel::FunctionDeclaration:
+	LambdaDeclaration | ProcedureDeclaration
+;
+
+ProcedureDeclaration returns ActionModel::ProcedureDeclaration:
+	'procedure' name=ID ('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')? ':' type=Type
+	body=Block
+;
+
+Block returns ActionModel::Block:
+	{ActionModel::Block}
+	'{' 
+		(actions+=Action)*
+	'}'
+;
+
+Statement returns ActionModel::Statement:
+	InlineStatement | 
+	MultilineStatement
+;
+
+InlineStatement returns ActionModel::Statement:
+	(VariableDeclarationStatement |
+	ConstantDeclarationStatement |
+	
+	ExpressionStatement |
+	
+	ReturnStatement |
+	BreakStatement |
+	
+	AssignmentStatement 
+	)
+	
+	';'
+;
+
+MultilineStatement returns ActionModel::Statement:
+	IfStatement |
+	SwitchStatement |
+	ForStatement |
+	
+	ChoiceStatement
+;
+
+VariableDeclarationStatement returns ActionModel::VariableDeclarationStatement:
+	variableDeclaration = VariableDeclaration
+;
+
+ConstantDeclarationStatement returns ActionModel::ConstantDeclarationStatement:
+	constantDeclaration = ConstantDeclaration
+;
+
+ExpressionStatement returns ActionModel::ExpressionStatement:
+	expression=Expression
+;
+
+IfBranch returns ActionModel::Branch:
+	'(' guard=Expression ')'
+	action=Action
+;
+
+ElseBranch returns ActionModel::Branch:
+	guard=ElseExpression
+	action=Action
+;
+
+SwitchBranch returns ActionModel::Branch:
+	guard=Expression ':'
+	action=Action
+;
+
+DefaultBranch returns ActionModel::Branch:
+	guard=DefaultExpression ':'
+	action=Action
+;
+
+ChoiceBranch returns ActionModel::Branch:
+	'[' guard=Expression ']'
+	action=Action
+;
+
+// Xtext bug - DefaultExpression had to be introduced to tackle the problem in the generated StatechartLanguageSemanticSequencer class
+// DefaultExpression has the same semantics as ElseExpression (but it is used in DefaultBranch)
+DefaultExpression returns ConstraintModel::DefaultExpression:
+	{ConstraintModel::DefaultExpression} 'default'
+;
+
+IfStatement returns ActionModel::IfStatement:
+	{ActionModel::IfStatement}
+	'if' conditionals+=IfBranch
+	(=> 'elsif' conditionals+=IfBranch)*
+	(=> conditionals+=ElseBranch)?
+;
+
+SwitchStatement returns ActionModel::SwitchStatement:
+	'switch' '(' controlExpression=Expression ')'
+	'{'
+	('case' cases+=SwitchBranch ('case' cases+=SwitchBranch)*)
+	(cases+=DefaultBranch)?
+	'}'
+;
+
+ForStatement returns ActionModel::ForStatement:
+	'for' '(' parameter=ParameterDeclaration'in'range=Expression')'
+	(=> body=Action)
+	(=> 'then' then=Action)?
+;
+
+ReturnStatement returns ActionModel::ReturnStatement:
+	{ActionModel::ReturnStatement} 'return' (expression=Expression)?
+;
+
+BreakStatement returns ActionModel::BreakStatement:
+	{ActionModel::BreakStatement}
+	'break'
+;
+
+ChoiceStatement returns ActionModel::ChoiceStatement:
+	'choice'
+	'{'
+	('branch' branches+=ChoiceBranch ('branch' branches+=ChoiceBranch)*)
+	'}'
+;
+
+AssignmentStatement returns ActionModel::AssignmentStatement:
+	lhs=ReferenceExpression ':=' rhs=Expression
+;

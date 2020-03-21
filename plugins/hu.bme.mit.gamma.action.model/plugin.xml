@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated action -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/action/Model"
+            class="hu.bme.mit.gamma.action.model.ActionModelPackage"
+            genModel="model/action.genmodel"/>
+   </extension>
+
+</plugin>

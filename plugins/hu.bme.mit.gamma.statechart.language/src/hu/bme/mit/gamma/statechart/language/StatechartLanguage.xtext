@@ -8,13 +8,16 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage with hu.bme.mit.gamma.constraint.language.ConstraintLanguage
+grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage 
+	with hu.bme.mit.gamma.action.language.ActionLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model" 
-import "http://www.mit.bme.hu/gamma/constraint/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
+ 
 
 Package returns Package:
 	'package' name=ID
@@ -53,6 +56,7 @@ enum Imply returns BinaryType:
 ;
 
 Trigger returns Trigger:
+	OnCycleTrigger |
 	AnyTrigger |
 	ComplexTrigger
 ;
@@ -62,7 +66,9 @@ Trigger returns Trigger:
  * The other trigger rules have precedence rules and defined according to left recursion.
  */
 SimpleTrigger returns SimpleTrigger:
+	OnCycleTrigger |
 	AnyTrigger |
+	OpaqueTrigger |
 	EventTrigger
 ;
 
@@ -103,7 +109,7 @@ enum Not returns UnaryType:
 ;
 
 UnaryTrigger returns Trigger:
-	NotTrigger | EventTrigger
+	NotTrigger | EventTrigger | OpaqueTrigger 
 ;
 
 NotTrigger returns UnaryTrigger:
@@ -114,12 +120,20 @@ ParenthesesTrigger returns Trigger:
 	'('EqualTrigger')'
 ;
 
+OnCycleTrigger returns OnCycleTrigger:
+	{OnCycleTrigger} 'cycle'
+;
+
 AnyTrigger returns AnyTrigger:
 	{AnyTrigger} 'any'
 ;
 
+OpaqueTrigger returns OpaqueTrigger:
+	trigger=STRING
+;
+
 EventTrigger returns EventTrigger:
-	eventReference=EventReference ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
+	eventReference=EventReference
 ;
 
 EventReference returns EventReference:
@@ -145,29 +159,6 @@ PortEventReference returns PortEventReference:
 	port=[Port] '.' event=[InterfaceModel::Event]
 ;
 
-Action:
-	RaiseEventAction |
-	SetTimeoutAction |
-	DeactivateTimeoutAction |
-	AssignmentAction
-;
-
-RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (parameters+=Expression)(',' parameters+=Expression)* ')')?
-;
-
-SetTimeoutAction returns SetTimeoutAction:
-	'set' timeoutDeclaration=[TimeoutDeclaration] ':=' time=TimeSpecification
-;
-
-DeactivateTimeoutAction returns DeactivateTimeoutAction:
-	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
-;
-
-AssignmentAction returns AssignmentAction:
-	lhs=ReferenceExpression ':=' rhs=Expression
-;
-
 Port returns Port:
 	'port' name=ID ':' interfaceRealization=InterfaceRealization
 ;
@@ -181,7 +172,10 @@ enum RealizationMode returns RealizationMode:
 ;
 
 StatechartDefinition returns StatechartDefinition:
-	('@Schedule' '=' schedulingOrder=SchedulingOrder)?
+	(
+		('@Schedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@PrioritizedTransitions' '=' transitionPriority=TransitionPriority)?
+	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
 		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
@@ -205,10 +199,13 @@ enum SchedulingOrder returns SchedulingOrder:
 	TOP_DOWN = 'top-down' | BOTTOM_UP = 'bottom-up'
 ;
 
+enum TransitionPriority returns TransitionPriority:
+	OFF = 'off' | ORDER_BASED = 'order-based' | VALUE_BASED = 'value-based'
+;
 
 StatechartReference returns StatechartReference:
 	{StatechartReference}
-	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((parameters+=Expression)(',' parameters+=Expression)*)? ')')?
+	'reference' reference=[CompositeModel::SynchronousComponent] ('(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')')?
 ;
 
 Region returns Region:
@@ -219,13 +216,12 @@ Region returns Region:
 
 Transition returns Transition:
 	('@' annotation=ID)?
-	'transition'
-	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
+	'transition' ('(' priority=INTEGER ')')?
 	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
 	(
 		('when' trigger=Trigger)?
 		('[' guard=Expression ']')?
-		('/' (effects+=Action) (';' effects+=Action)*)?
+		('/' ( => effects+=Action)* )?
 	)
 ;
 
@@ -242,8 +238,8 @@ State returns State:
 		(
 			(
 				('invariant' invariants+=Expression)*
-				('entry' '/' (entryActions+=Action)(';' entryActions+=Action)* )?
-				('exit' '/' (exitActions+=Action)(';' exitActions+=Action)* )?
+				('entry' '/' (=> entryActions+=Action)* )?
+				('exit' '/' (=> exitActions+=Action)* )?
 			)
 			(regions+=Region)*
 		)
@@ -295,7 +291,7 @@ DeepHistoryState returns DeepHistoryState:
 
 // Composition language 
  
-Component returns Component:
+Component returns CompositeModel::Component:
 	SynchronousComponent |
 	AsynchronousComponent
 ;
@@ -409,11 +405,11 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 ;
 
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 AsynchronousComponentInstance returns CompositeModel::AsynchronousComponentInstance:
-	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' parameters+=Expression (',' parameters+=Expression)* ')')?
+	'component' name=ID ':' type=[CompositeModel::AsynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 Channel returns CompositeModel::Channel:
@@ -450,7 +446,11 @@ EventDeclaration returns InterfaceModel::EventDeclaration:
 
 Event returns InterfaceModel::Event:
 	{InterfaceModel::Event}
-	'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')?
+	(persistency=Persistency)? 'event' name=ID ('(' (parameterDeclarations+=ParameterDeclaration) (','(parameterDeclarations+=ParameterDeclaration))* ')')? ('priority' '=' priority=INTEGER)?
+;
+
+enum Persistency returns InterfaceModel::Persistency:
+	PERSISTENT = 'persistent' | TRANSIENT = 'transient'
 ;
 
 // Overriding it for the sake of EventParameterReferenceExpression
@@ -461,5 +461,41 @@ PrimaryExpression returns ConstraintModel::Expression:
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
 	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+
+
+// Action Language Extensions
+
+@Override 
+InlineStatement returns ActionModel::Statement:
+	(VariableDeclarationStatement |
+	ConstantDeclarationStatement |
+	
+	ExpressionStatement |
+	
+	ReturnStatement |
+	BreakStatement |
+	
+	AssignmentStatement |
+	
+	//Extensions:
+	RaiseEventAction |
+	SetTimeoutAction |
+	DeactivateTimeoutAction 
+	)
+	
+	';'
+;
+
+RaiseEventAction returns RaiseEventAction:
+	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
+;
+
+SetTimeoutAction returns SetTimeoutAction:
+	'set' timeoutDeclaration=[TimeoutDeclaration] ':=' time=TimeSpecification
+;
+
+DeactivateTimeoutAction returns DeactivateTimeoutAction:
+	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
+;
 
 	

@@ -8,26 +8,38 @@
 	import hu.bme.mit.gamma.tutorial.extra.tutorial.*;
 	import hu.bme.mit.gamma.tutorial.extra.monitor.*;
 	
-	public class MonitoredCrossroad implements MonitoredCrossroadInterface {			
+	public class MonitoredCrossroad implements MonitoredCrossroadInterface {
 		// Component instances
-		private Crossroad crossroad = new Crossroad();
-		private MonitorStatechart monitor = new MonitorStatechart();
+		private Crossroad crossroad;
+		private MonitorStatechart monitor;
 		// Port instances
-		private Police police = new Police();
-		private PriorityOutput priorityOutput = new PriorityOutput();
-		private SecondaryOutput secondaryOutput = new SecondaryOutput();
-		private MonitorOutput monitorOutput = new MonitorOutput();
+		private Police police;
+		private PriorityOutput priorityOutput;
+		private SecondaryOutput secondaryOutput;
+		private MonitorOutput monitorOutput;
 		
-		public MonitoredCrossroad(ITimer timer) {
+		public MonitoredCrossroad(UnifiedTimerInterface timer) {
+			crossroad = new Crossroad();
+			monitor = new MonitorStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
+			monitorOutput = new MonitorOutput();
 			setTimer(timer);
 			init();
 		}
 		
 		public MonitoredCrossroad() {
+			crossroad = new Crossroad();
+			monitor = new MonitorStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
+			monitorOutput = new MonitorOutput();
 			init();
 		}
 		
-		/** Resets the contained statemachines recursively. Should be used only be the container (composite system) class. */
+		/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 		@Override
 		public void reset() {
 			crossroad.reset();
@@ -92,21 +104,16 @@
 		public class PriorityOutput implements LightCommandsInterface.Provided {
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayRed;
 			boolean isRaisedDisplayYellow;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
 			
 			public PriorityOutput() {
 				// Registering the listener to the contained component
 				crossroad.getPriorityOutput().registerListener(new PriorityOutputUtil());
 			}
 			
-			
-			@Override
-			public boolean isRaisedDisplayNone() {
-				return isRaisedDisplayNone;
-			}
 			
 			@Override
 			public boolean isRaisedDisplayRed() {
@@ -123,13 +130,13 @@
 				return isRaisedDisplayGreen;
 			}
 			
+			@Override
+			public boolean isRaisedDisplayNone() {
+				return isRaisedDisplayNone;
+			}
+			
 			// Class for the setting of the boolean fields (events)
 			private class PriorityOutputUtil implements LightCommandsInterface.Listener.Provided {
-				@Override
-				public void raiseDisplayNone() {
-					isRaisedDisplayNone = true;
-				}
-				
 				@Override
 				public void raiseDisplayRed() {
 					isRaisedDisplayRed = true;
@@ -143,6 +150,11 @@
 				@Override
 				public void raiseDisplayGreen() {
 					isRaisedDisplayGreen = true;
+				}
+				
+				@Override
+				public void raiseDisplayNone() {
+					isRaisedDisplayNone = true;
 				}
 			}
 			
@@ -158,19 +170,14 @@
 			
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
-				isRaisedDisplayNone = false;
 				isRaisedDisplayRed = false;
 				isRaisedDisplayYellow = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
 			}
 			
 			/** Notifying the registered listeners. */
 			public void notifyListeners() {
-				if (isRaisedDisplayNone) {
-					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayNone();
-					}
-				}
 				if (isRaisedDisplayRed) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayRed();
@@ -184,6 +191,11 @@
 				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayGreen();
+					}
+				}
+				if (isRaisedDisplayNone) {
+					for (LightCommandsInterface.Listener.Provided listener : listeners) {
+						listener.raiseDisplayNone();
 					}
 				}
 			}
@@ -198,21 +210,16 @@
 		public class SecondaryOutput implements LightCommandsInterface.Provided {
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayRed;
 			boolean isRaisedDisplayYellow;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
 			
 			public SecondaryOutput() {
 				// Registering the listener to the contained component
 				crossroad.getSecondaryOutput().registerListener(new SecondaryOutputUtil());
 			}
 			
-			
-			@Override
-			public boolean isRaisedDisplayNone() {
-				return isRaisedDisplayNone;
-			}
 			
 			@Override
 			public boolean isRaisedDisplayRed() {
@@ -229,13 +236,13 @@
 				return isRaisedDisplayGreen;
 			}
 			
+			@Override
+			public boolean isRaisedDisplayNone() {
+				return isRaisedDisplayNone;
+			}
+			
 			// Class for the setting of the boolean fields (events)
 			private class SecondaryOutputUtil implements LightCommandsInterface.Listener.Provided {
-				@Override
-				public void raiseDisplayNone() {
-					isRaisedDisplayNone = true;
-				}
-				
 				@Override
 				public void raiseDisplayRed() {
 					isRaisedDisplayRed = true;
@@ -249,6 +256,11 @@
 				@Override
 				public void raiseDisplayGreen() {
 					isRaisedDisplayGreen = true;
+				}
+				
+				@Override
+				public void raiseDisplayNone() {
+					isRaisedDisplayNone = true;
 				}
 			}
 			
@@ -264,19 +276,14 @@
 			
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
-				isRaisedDisplayNone = false;
 				isRaisedDisplayRed = false;
 				isRaisedDisplayYellow = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
 			}
 			
 			/** Notifying the registered listeners. */
 			public void notifyListeners() {
-				if (isRaisedDisplayNone) {
-					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayNone();
-					}
-				}
 				if (isRaisedDisplayRed) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayRed();
@@ -290,6 +297,11 @@
 				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayGreen();
+					}
+				}
+				if (isRaisedDisplayNone) {
+					for (LightCommandsInterface.Listener.Provided listener : listeners) {
+						listener.raiseDisplayNone();
 					}
 				}
 			}
@@ -423,11 +435,11 @@
 		}
 
 		/** Setter for the timer e.g., a virtual timer. */
-		public void setTimer(ITimer timer) {
+		public void setTimer(UnifiedTimerInterface timer) {
 			crossroad.setTimer(timer);
 		}
 		
-		/**  Getter for component instances, e.g. enabling to check their states. */
+		/**  Getter for component instances, e.g., enabling to check their states. */
 		public Crossroad getCrossroad() {
 			return crossroad;
 		}

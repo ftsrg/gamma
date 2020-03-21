@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.backannotation.patterns
 
-import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/expression/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
@@ -39,10 +39,13 @@ pattern instanceContainer(containerInstace : ComponentInstance, instance : Compo
 	AsynchronousCompositeComponent.components(type, instance);
 }
 
-pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncComposite : AbstractSynchronousCompositeComponent, syncIntance : SynchronousComponentInstance) {
+pattern wrapperInstanceContainer(wrapperInstance : AsynchronousComponentInstance, syncInstance : SynchronousComponentInstance) {
 	find asynchronousSimpleInstances(wrapperInstance, wrapper);
 	find wrappers(wrapper, syncComposite);
-	AbstractSynchronousCompositeComponent.components(syncComposite, syncIntance);
+	AbstractSynchronousCompositeComponent.components(syncComposite, syncInstance);
+} or {
+	find asynchronousSimpleInstances(wrapperInstance, wrapper);
+	AsynchronousAdapter.wrappedComponent(wrapper, syncInstance);
 }
 
 private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {
@@ -58,28 +61,34 @@ private pattern componentDeclarationEvents(type : Component, port : Port, realiz
 	EventDeclaration.event(eventDeclaration, event);
 }
 
-pattern inputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
-	find simpleInstances(instance, statechart);
+private pattern statechartInEvents(statechart : StatechartDefinition, port : Port, event : Event) {
 	find componentDeclarationEvents(statechart, port, RealizationMode::PROVIDED, eventDeclaration, event);
 	// OUT events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::OUT);
 } or {
-	find simpleInstances(instance, statechart);
 	find componentDeclarationEvents(statechart, port, RealizationMode::REQUIRED, eventDeclaration, event);
 	// IN events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::IN);
 }
 
-pattern outputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
+pattern inputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
 	find simpleInstances(instance, statechart);
+	find statechartInEvents(statechart, port, event);
+}
+
+private pattern statechartOutEvents(statechart : StatechartDefinition, port : Port, event : Event) {
 	find componentDeclarationEvents(statechart, port, RealizationMode::PROVIDED, eventDeclaration, event);
-	// OUT events are NOT returned
+	// IN events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::IN);
 } or {
-	find simpleInstances(instance, statechart);
 	find componentDeclarationEvents(statechart, port, RealizationMode::REQUIRED, eventDeclaration, event);
-	// IN events are NOT returned
+	// OUT events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::OUT);
+}
+
+pattern outputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find simpleInstances(instance, statechart);
+	find statechartOutEvents(statechart, port, event);
 }
 
 /**
@@ -285,6 +294,10 @@ pattern wrapperInEvents(wrapper : AsynchronousAdapter, port : Port, event : Even
 	find wrappers(wrapper, composite);
 	find syncSystemInEvents(composite, port, _instance, _instancePort, event);
 } or {
+	// Now the explicit wrapping of statecharts is also supported
+	find wrappers(wrapper, statechart);
+	find statechartInEvents(statechart, port, event);
+} or {
 	find distinctWrapperInEvents(wrapper, port, event);
 }
 
@@ -292,6 +305,10 @@ pattern wrapperOutEvents(wrapper : AsynchronousAdapter, port : Port, event : Eve
 	// This is delegated down to the events and ports of sync instances
 	find wrappers(wrapper, composite);
 	find syncSystemOutEvents(composite, port, _instance, _instancePort, event);
+} or {
+	// Now the explicit wrapping of statecharts is also supported
+	find wrappers(wrapper, statechart);
+	find statechartOutEvents(statechart, port, event);
 }
 
 pattern wrapperInstanceInEvents(instance : AsynchronousComponentInstance, port : Port, event : Event) {

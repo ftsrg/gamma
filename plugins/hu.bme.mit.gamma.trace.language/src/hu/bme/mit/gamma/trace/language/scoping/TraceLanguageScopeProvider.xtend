@@ -10,16 +10,26 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
-import hu.bme.mit.gamma.trace.model.InstanceState
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TracePackage
 import java.util.Collection
@@ -29,14 +39,6 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
-import hu.bme.mit.gamma.statechart.model.Component
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
  * This class contains custom scoping description.
@@ -54,7 +56,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) {
-			val executionTrace = (context as RaiseEventAct).eContainer.eContainer as ExecutionTrace
+			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			val ports = new HashSet<Port>(component.ports)
 			if (component instanceof AsynchronousAdapter) {
@@ -77,7 +79,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}	
 		if (context instanceof InstanceSchedule && reference == TracePackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
-			val executionTrace = (context as InstanceSchedule).eContainer.eContainer as ExecutionTrace
+			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			if (component instanceof AsynchronousCompositeComponent) {
 				val instances = component.asynchronousInstances
@@ -85,12 +87,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		if (reference == TracePackage.Literals.INSTANCE_STATE__INSTANCE) {
-			val executionTrace = if (context instanceof InstanceState) {
-				context.eContainer.eContainer as ExecutionTrace
-			}
-			else if (context instanceof Step) {
-				context.eContainer as ExecutionTrace
-			}
+			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			val simpleSyncInstances = component.synchronousInstances
 			return Scopes.scopeFor(simpleSyncInstances)	
@@ -99,7 +96,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val instanceState = context as InstanceStateConfiguration
 			val instance = instanceState.instance
 			val instanceType = instance.type
-			val executionTrace = context.eContainer.eContainer as ExecutionTrace
+			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val states = new HashSet<State>
 			if (instanceType === null) {
 				val component = executionTrace.component
@@ -113,7 +110,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			return Scopes.scopeFor(states)
 		}
-		if (context instanceof InstanceVariableState && reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
+		if (context instanceof InstanceVariableState && reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 			val instanceVariableState = context as InstanceVariableState
 			val instance = instanceVariableState.instance
 			val instanceType = instance.type
@@ -122,6 +119,34 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
+		}
+		if (context instanceof EnumerationLiteralExpression) {
+			
+			var Type enumerationDefinition
+			val parent = context.eContainer
+			switch parent {
+				InstanceVariableState: {
+					enumerationDefinition = parent.declaration.type
+				}
+				RaiseEventAct: {
+					val parameterDeclarations = parent.event.parameterDeclarations
+					if (!parameterDeclarations.empty) {
+						enumerationDefinition = parameterDeclarations.head.type
+					}
+				}
+				default:
+					throw new IllegalArgumentException("Not known enumeration use!")
+			}
+			if (enumerationDefinition instanceof TypeReference) {
+				val typeDeclaration = enumerationDefinition.reference
+				val typeDefinition = typeDeclaration.type
+				if (typeDefinition instanceof EnumerationTypeDefinition) {
+					return Scopes.scopeFor(typeDefinition.literals)
+				}
+			}
+			if (enumerationDefinition instanceof EnumerationTypeDefinition) {
+				return Scopes.scopeFor(enumerationDefinition.literals)
+			}
 		}
 		super.getScope(context, reference)
 	}

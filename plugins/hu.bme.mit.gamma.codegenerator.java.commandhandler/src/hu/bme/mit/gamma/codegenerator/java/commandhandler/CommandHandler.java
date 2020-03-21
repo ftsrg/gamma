@@ -34,11 +34,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class CommandHandler extends AbstractHandler {
@@ -70,9 +70,9 @@ public class CommandHandler extends AbstractHandler {
 						List<URI> uriList = new ArrayList<URI>();
 						obtainTraceURIs(file.getProject(), simpleStatechartFileNames, uriList);
 						if (simpleStatechartFileNames.size() != uriList.size()) {
-							throw new IllegalStateException("Some trace model is not found: " +
+							logger.log(Level.INFO, "Some trace model is not found: " +
 									simpleStatechartFileNames + System.lineSeparator() + uriList + System.lineSeparator() +
-									"This is probably due to the renaming of generated .gcd files.");
+									"Wrapper is not generated for the Gamma statecharts without trace.");
 						}
 						for (URI uri : uriList) {
 							loadResource(resSet, uri);
@@ -82,7 +82,8 @@ public class CommandHandler extends AbstractHandler {
 						// Decoding so spaces do not stir trouble
 						parentFolder = URI.decode(parentFolder);
 						logger.log(Level.INFO, "Resource set content for Java code generation: " + resSet);
-						GlueCodeGenerator generator = new GlueCodeGenerator(resSet, file.getProject().getName(), parentFolder);
+						String packageName = file.getProject().getName().toLowerCase();
+						GlueCodeGenerator generator = new GlueCodeGenerator(resSet, packageName, parentFolder);
 						generator.execute();
 						generator.dispose();
 						logger.log(Level.INFO, "The Java code generation has been finished.");

@@ -12,4 +12,4 @@ public interface MonitorStatechartInterface {
 	
 	void runCycle();
 	
-} 
+}

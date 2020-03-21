@@ -2,9 +2,12 @@
   <extension id="hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns" id="hu.bme.mit.gamma.uppaal.composition.transformation.queries.Patterns">
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameterizedInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameterizedInstancesWithParameters"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.simpleInstances"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceContainer"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.referencedDeclarations"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.instanceTimeouts"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.inputInstanceEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.parameteredEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.composition.transformation.queries.topSyncSystemInEvents"/>

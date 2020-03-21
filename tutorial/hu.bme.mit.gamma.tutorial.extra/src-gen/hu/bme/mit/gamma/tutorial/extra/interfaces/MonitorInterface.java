@@ -25,8 +25,8 @@ public interface MonitorInterface {
 			void raiseError();
 		}
 		
-		interface Required   {
+		interface Required  {
 		}
 		
 	}
-} 
+}

@@ -1,14 +1,18 @@
 package hu.bme.mit.gamma.tutorial.extra;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Virtual timer service implementation.
  */
-public class VirtualTimerService implements ITimer {
-	
+public class VirtualTimerService implements UnifiedTimerInterface {
+	// Yakindu timer
 	private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
+	// Gamma timer
+	Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
 	
 	/**
 	 * Timer task that reflects a time event. It's internally used by TimerService.
@@ -63,14 +67,12 @@ public class VirtualTimerService implements ITimer {
 		}
 	}
 	
-	@Override
 	public void setTimer(ITimerCallback callback, int eventID, long time, boolean isPeriodic) {	
 		// Creating a new TimerTask for given event and storing it
 		TimeEventTask timerTask = new TimeEventTask(callback, eventID, time, isPeriodic);
 		timerTaskList.add(timerTask);
 	}
 	
-	@Override
 	public void unsetTimer(ITimerCallback callback, int eventID) {
 		for (TimeEventTask timer : new ArrayList<TimeEventTask>(timerTaskList)) {
 			if (timer.callback.equals(callback) && timer.eventID == eventID) {
@@ -82,6 +84,23 @@ public class VirtualTimerService implements ITimer {
 	public void elapse(long amount) {
 		for (TimeEventTask timer : timerTaskList) {
 			timer.elapse(amount);
+		}
+		for (Object object : elapsedTime.keySet()) {
+			elapsedTime.put(object, elapsedTime.get(object) + amount);
+		}
+	}
+	
+	public void saveTime(Object object) {
+		elapsedTime.put(object, Long.valueOf(0));
+	}
+	
+	public long getElapsedTime(Object object, TimeUnit timeUnit) {
+		long elapsedTime = this.elapsedTime.get(object);
+		switch (timeUnit) {
+			case MILLISECOND:
+				return elapsedTime;
+			default:
+				throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
 		}
 	}
 

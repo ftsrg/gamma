@@ -11,8 +11,10 @@
 package hu.bme.mit.gamma.validation
 
 import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/action/Model"
+import "http://www.mit.bme.hu/gamma/expression/Model"
 
 // 1. Unused events
 
@@ -420,7 +422,7 @@ pattern sameTrigger(transition1 : Transition, transition2 : Transition) {
 
 private pattern transitionsWithAssignment(transition : Transition, variableDeclaration : Declaration) {	
 	Transition.effects(transition, assignmentAction);
-	AssignmentAction.lhs(assignmentAction, reference);
+	AssignmentStatement.lhs(assignmentAction, reference);
 	ReferenceExpression.declaration(reference, variableDeclaration);
 }
 
@@ -463,6 +465,7 @@ pattern sameTriggerDifferentAssignment(transition1 : Transition, transition2 : T
 	find guardedTriggeredTransitionsWithAssignment(region2, transition2, port, event, variable, guardReference);
 	transition1 != transition2;
 }
+
 
 // 20. Same trigger in parallel regions with raising the same event
 
@@ -659,10 +662,12 @@ private pattern eventParameter(transition : Transition, event : Event, valueOfPa
     severity = "error",
     key = {transition}
 )
+
 pattern prohibitedEventParameterReferences(transition : Transition) {
     Transition.effects(transition, assignment);
-    AssignmentAction.rhs(assignment, reference);
+    AssignmentStatement.rhs(assignment, reference);
     ReferenceExpression.declaration(reference, valueOfParameter2);
     find eventParameter(transition, _event2, valueOfParameter);
     valueOfParameter != valueOfParameter2;
 }
+

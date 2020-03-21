@@ -10,14 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
-import hu.bme.mit.gamma.constraint.model.AndExpression
-import hu.bme.mit.gamma.constraint.model.ConstantDeclaration
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DefinableDeclaration
-import hu.bme.mit.gamma.constraint.model.NotExpression
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.genmodel.model.GenModel
+import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.statechart.model.BinaryTrigger
 import hu.bme.mit.gamma.statechart.model.BinaryType
 import hu.bme.mit.gamma.statechart.model.ChoiceState
@@ -45,9 +48,9 @@ import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.Trigger
-import hu.bme.mit.gamma.yakindu.genmodel.GenModel
-import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
+import hu.bme.mit.gamma.statechart.model.composite.CompositePackage
 import hu.bme.mit.gamma.yakindu.transformation.queries.ActionsOfRegularLocalReactions
 import hu.bme.mit.gamma.yakindu.transformation.queries.Choices
 import hu.bme.mit.gamma.yakindu.transformation.queries.CompositeStateRegions
@@ -104,6 +107,7 @@ import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.EventDefinition
 import org.yakindu.sct.model.stext.stext.EventSpec
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
+import org.yakindu.sct.model.stext.stext.ReactionEffect
 import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
@@ -140,8 +144,10 @@ class YakinduToGammaTransformer {
     protected StatechartDefinition gammaStatechart
     
     // Packages of the metamodels
+    extension CompositePackage compPackage = CompositePackage.eINSTANCE
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
-    extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+    extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
+    extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
     
     extension ExpressionTransformer expTransf
@@ -158,6 +164,8 @@ class YakinduToGammaTransformer {
     		else statechartCompilation.packageName.head
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
+    		// Yakindu models are always prioritized
+    		it.transitionPriority = TransitionPriority.ORDER_BASED
     	]
         gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
     		it.name = packageName
@@ -174,7 +182,7 @@ class YakinduToGammaTransformer {
         val resourceSet = (genmodel.eResource).resourceSet
         val genmodelResourceSetScope = new EMFScope(resourceSet)
         genmodelEngine = ViatraQueryEngine.on(genmodelResourceSetScope)
-        runOnceEngine = new RunOnceQueryEngine(yakinduStatechart);
+        runOnceEngine = new RunOnceQueryEngine(yakinduStatechart)
         // Initializing an engine on the Trace resource too
         val traceScope = new EMFScope(traceRoot)        
         traceEngine = ViatraQueryEngine.on(traceScope) 
@@ -223,6 +231,8 @@ class YakinduToGammaTransformer {
     	transformValueOfLocalReactions
     	transformGuardsOfRegularLocalReactions
     	transformEffectsOfRegularLocalReactions
+    	// Sorting transitions in accordance with priority
+    	sortTransitions
 		// The created EMF models are returned
 		return new SimpleEntry<Package, Y2GTrace>(gammaPackage, traceRoot)
     }
@@ -469,11 +479,11 @@ class YakinduToGammaTransformer {
     		val gammaFinalState = finalStateTopRegionMatch.finalState.getAllValuesOfTo.filter(State).head
     		// Creating and entry event of the Gamma final state that sets the "end" variable to false
     		val variableDeclaration = endVariable
-    		gammaFinalState.createChild(state_EntryActions, assignmentAction) as AssignmentAction => [
-    			it.createChild(assignmentAction_Lhs, referenceExpression) as ReferenceExpression => [
+    		gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentStatement => [
+    			it.createChild(assignmentStatement_Lhs, referenceExpression) as ReferenceExpression => [
     				it.declaration = variableDeclaration    					
     			]
-    			it.createChild(assignmentAction_Rhs, trueExpression)
+    			it.createChild(assignmentStatement_Rhs, trueExpression)
     		]
     		// Now the Yakindu final state is mapped to and "end" variable too in addition to a Gamma State
     		addToTrace(finalStateTopRegionMatch.finalState, #{variableDeclaration}, trace)
@@ -593,10 +603,10 @@ class YakinduToGammaTransformer {
      * This rule depends on topRegionRule.
      */    
      val variablesRule = createRule(Variables.instance).action [
-    	var DefinableDeclaration gammaVariable
+    	var InitializableElement gammaVariable
 	    // If the Yakindu variable is a constant, a constantDeclaration is created
 	    if (it.isReadOnly) {
-	    	gammaVariable = gammaPackage.createChild(constraintSpecification_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
+	    	gammaVariable = gammaPackage.createChild(expressionPackage_ConstantDeclarations, constantDeclaration) as ConstantDeclaration    			
 	    	setVariable(it.variable, gammaVariable, it.name, it.type.name)
 	    }
 	    // Otherwise a plain variableDeclaration is created	in the statechart
@@ -610,7 +620,7 @@ class YakinduToGammaTransformer {
     /**
      * Responsible for initializing the created gammaVariables. Used to avoid code duplication.
      */
-    private def setVariable(VariableDefinition yVariable, DefinableDeclaration gammaVariable, String name, String typeName) {    	    	
+    private def setVariable(VariableDefinition yVariable, InitializableElement gammaVariable, String name, String typeName) {    	    	
 	    gammaVariable.name = name
 	    // The type is created by the createType method
 	    gammaVariable.createType(typeName)
@@ -627,7 +637,7 @@ class YakinduToGammaTransformer {
     		case "string":
     			typeContainer.createChild(declaration_Type, integerTypeDefinition)
     		case "real":
-    			typeContainer.createChild(declaration_Type, realTypeDefinition)
+    			typeContainer.createChild(declaration_Type, decimalTypeDefinition)
     		case "boolean":
     			typeContainer.createChild(declaration_Type, booleanTypeDefinition)
     	}
@@ -639,8 +649,8 @@ class YakinduToGammaTransformer {
      */ 
     val variableInitRule = createRule(VariableInits.instance).action [
     	val yVariable = it.variable
-    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(DefinableDeclaration)) {
-	    	gammaVariable.transform(definableDeclaration_Expression, yVariable.initialValue)
+    	for (gammaVariable : yVariable.getAllValuesOfTo.filter(InitializableElement)) {
+	    	gammaVariable.transform(initializableElement_Expression, yVariable.initialValue)
 	    	// The trace is created by the Expression Transformer
     	}
     ].build
@@ -759,9 +769,9 @@ class YakinduToGammaTransformer {
     	if (gammaTransition.trigger !== null) {
     		throw new IllegalArgumentException("The following transition already has a trigger: " + gammaTransition)
     	}
-    	val anyTrigger = gammaTransition.createChild(transition_Trigger, anyTrigger)
+    	val onCycleTrigger = gammaTransition.createChild(transition_Trigger, onCycleTrigger)
     	// Creating the trace
-    	addToTrace(yTrigger, #{anyTrigger}, trace)
+    	addToTrace(yTrigger, #{onCycleTrigger}, trace)
     ].build
     
     /**
@@ -859,7 +869,6 @@ class YakinduToGammaTransformer {
 		if (eventDefinition.parameterDeclarations.size != 1) {
 			throw new IllegalArgumentException("This event has more than one parameters: " + eventDefinition.parameterDeclarations.size + " " + eventDefinition)
 		}
-		val eventDefinitionParameter = eventDefinition.parameterDeclarations.head
     	// Creating the signal event (trigger)
     	if (gammaTransition.trigger instanceof EventTrigger) {
     		val eventTrigger = gammaTransition.trigger as EventTrigger
@@ -870,13 +879,7 @@ class YakinduToGammaTransformer {
     	else {
     		throw new IllegalArgumentException("The EventTrigger must contain one event: " + gammaTransition)
     	}
-    	val gammaTransitionTrigger = gammaTransition.trigger
-    	val reference = gammaTransitionTrigger.createChild(parameterizedElement_Parameters, referenceExpression) as ReferenceExpression => [
-    		it.declaration = eventDefinitionParameter
-    	]
     	// Valueof expressions are in ExpressionTraces now
-    	// Creating the trace
-    	addToTrace(yEventValueReference, #{reference}, expressionTrace)
     }
     
     /**
@@ -885,7 +888,10 @@ class YakinduToGammaTransformer {
      */
     val transitionEffectsRule = createRule(TransitionsWithEffect.instance).action [
     	val gammaTransition = it.transition.getAllValuesOfTo.filter(Transition).head
-    	gammaTransition.transform(transition_Effects, it.action)
+    	for (action : (it.transition.effect as ReactionEffect).actions) {
+    		// For loop is needed as VIATRA returns matches (and thus, actions) in a nondeterministic order
+	    	gammaTransition.transform(transition_Effects, action)
+    	}
     	// The trace is created by the ExpressionTransformer
     ].build
     
@@ -896,8 +902,11 @@ class YakinduToGammaTransformer {
     private def entryEventsRule() {
     	for (stateEntryMatch : runOnceEngine.getAllMatches(StatesWithEntryEvents.instance)) {
     		val gammaState = stateEntryMatch.state.getAllValuesOfTo.filter(State).head
-    		gammaState.transform(state_EntryActions, stateEntryMatch.action)
-    		// The trace is created by the ExpressionTransformer
+    		for (action : stateEntryMatch.reactionEffect.actions) {
+	    		// For loop is needed as VIATRA returns matches (and thus, actions) in a nondeterministic order
+	    		gammaState.transform(state_EntryActions, action)
+	    		// The trace is created by the ExpressionTransformer
+    		}
     	}		
     }
     
@@ -908,8 +917,11 @@ class YakinduToGammaTransformer {
     private def exitEventsRule() {
     	for (stateExitMatch : runOnceEngine.getAllMatches(StatesWithExitEvents.instance)) {
     		val gammaState = stateExitMatch.state.getAllValuesOfTo.filter(State).head
-    		gammaState.transform(state_ExitActions, stateExitMatch.action)
-    		// The trace is created by the ExpressionTransformer
+    		for (action : stateExitMatch.reactionEffect.actions) {
+	    		// For loop is needed as VIATRA returns matches (and thus, actions) in a nondeterministic order
+	    		gammaState.transform(state_ExitActions, action)
+	    		// The trace is created by the ExpressionTransformer
+    		}
     	}		
     }
     
@@ -958,30 +970,6 @@ class YakinduToGammaTransformer {
 	    	it.targetState = target
 	    ]   
 	    return transition
-    }
-    
-    /**
-     * Returns whether the given Yakindu state has entry events.
-     */
-    private def hasEntryEvent(org.yakindu.sct.model.sgraph.State state) {
-    	for (entryEventMatch : runOnceEngine.getAllMatches(StatesWithEntryEvents.instance)) {
-    		if (entryEventMatch.state == state) {
-    			return true
-    		}
-    	}
-    	return false
-    }
-    
-    /**
-     * Returns whether the given Yakindu state has exit events.
-     */
-    private def hasExitEvent(org.yakindu.sct.model.sgraph.State state) {
-    	for (exitEventMatch : runOnceEngine.getAllMatches(StatesWithExitEvents.instance)) {
-    		if (exitEventMatch.state == state) {
-    			return true
-    		}
-    	}
-    	return false
     }
     
     /**
@@ -1049,9 +1037,43 @@ class YakinduToGammaTransformer {
     		// Filtering is important, so the right edge is fetched from the trace
     		val gammaTransition = localReactionAction.reaction.getAllValuesOfTo.filter(Transition)
     								.filter[sourceState == targetState].head
-			gammaTransition.transform(transition_Effects, localReactionAction.action)
-			// The trace is created by the ExpressionTransformer
+    		for (action : localReactionAction.reactionEffect.actions) {
+	    		// For loop is needed as VIATRA returns matches (and thus, actions) in a nondeterministic order
+				gammaTransition.transform(transition_Effects, action)
+				// The trace is created by the ExpressionTransformer
+			}
     	}
+    }
+    
+    /**
+     * Sorts the transitions in accordance with 1) their priorities and 2) the names of their sources.
+     */
+    protected def sortTransitions() {
+    	val transitionList = newArrayList
+    	transitionList += gammaStatechart.transitions
+    	transitionList.sort[lhs, rhs |
+			val lhsYakinduTransition = lhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+			// Check transitions of local reactions (they are not mapped from a transition)
+			if (lhsYakinduTransition !== null) {
+				val lhsSource = lhsYakinduTransition.source
+				val lhsPriority = lhsSource.outgoingTransitions.indexOf(lhsYakinduTransition)
+				val rhsYakinduTransition = rhs.allValuesOfFrom.filter(org.yakindu.sct.model.sgraph.Transition).head
+				if (rhsYakinduTransition !== null) {
+					val rhsSource = rhsYakinduTransition.source
+					val rhsPriority = rhsSource.outgoingTransitions.indexOf(rhsYakinduTransition)
+					if (lhsSource == rhsSource) {
+				    	// Sorting according to priority
+						lhsPriority.compareTo(rhsPriority)
+					}
+					else {
+				    	// Sorting according to source name
+						lhs.sourceState.name.compareTo(rhs.sourceState.name)
+					}
+				}
+			}
+		]
+    	gammaStatechart.transitions.clear
+    	gammaStatechart.transitions += transitionList
     }
     
     def dispose() {

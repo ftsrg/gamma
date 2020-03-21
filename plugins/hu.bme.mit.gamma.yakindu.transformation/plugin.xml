@@ -2,9 +2,11 @@
   <extension id="hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns" id="hu.bme.mit.gamma.yakindu.transformation.queries.ErrorPatterns">
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.entryOrExitReactionWithGuards"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.namesWithIncorrectCharacters"/>
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.statesWithSameName"/>
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.raisedInEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.raisedOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.yakindu.transformation.queries.emptyChoiceTransitions"/>
     </group>
   </extension>
   <extension id="hu.bme.mit.gamma.yakindu.transformation.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">

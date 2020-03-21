@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/genmodel/Model" nsPrefix="hu.bme.mit.gamma.yakindu.genmodel">
+  <eClassifiers xsi:type="ecore:EClass" name="GenModel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartImports" upperBound="-1"
+        eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="packageImports" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
+        eType="#//Task" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="traceImports" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Task" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetFolder" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InterfaceCompilation" eSuperTypes="#//YakinduCompilation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartCompilation" eSuperTypes="#//YakinduCompilation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="interfaceMappings" upperBound="-1"
+        eType="#//InterfaceMapping" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="statechartName" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
+        lowerBound="1" upperBound="-1" eType="#//ProgrammingLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
+        lowerBound="1" upperBound="-1" eType="#//AnalysisLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="scheduler" unique="false"
+        upperBound="-1" eType="#//Scheduler"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
+        eType="#//Coverage" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="minimalElementSet" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimumOrchestratingPeriod"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximumOrchestratingPeriod"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
+        eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RealizationMode"
+        defaultValueLiteral="PROVIDED"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduInterface" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.sct.model.stext/model/SText.ecore#//InterfaceScope"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaInterface" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Interface"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventMappings" upperBound="-1"
+        eType="#//EventMapping" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventMapping">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduEvent" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.base.types/model/types.ecore#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaEvent" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Event"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ProgrammingLanguage">
+    <eLiterals name="JAVA"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="AnalysisLanguage">
+    <eLiterals name="UPPAAL"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
+      eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
+        eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
+        lowerBound="1" upperBound="-1" eType="#//ProgrammingLanguage"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Scheduler">
+    <eLiterals name="RANDOM"/>
+    <eLiterals name="FAIR" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="exclude" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventPriorityTransformation" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
+  </eClassifiers>
+</ecore:EPackage>

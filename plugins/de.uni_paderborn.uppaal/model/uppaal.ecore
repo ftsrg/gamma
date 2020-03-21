@@ -693,7 +693,7 @@
         </eAnnotations>
         <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
           <details key="AtMostOneDefaultItem" value="self.item->select(oclIsKindOf(DefaultChannelPriority))->size() &lt;= 1"/>
-          <details key="EachChannelContainedAtMostOnce" value="self.item->select(oclIsKindOf(ChannelList)).oclAsType(ChannelList)->collect(channelExpression)->isUnique(variable)"/>
+          <details key="EachChannelContainedAtMostOnce" value="self.item->select(oclIsKindOf(ChannelList)).oclAsType(ChannelList)->collect(channelExpression)->isUnique(identifier)"/>
         </eAnnotations>
         <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
           <details key="constraints" value="AtMostOneDefaultItem EachChannelContainedAtMostOnce"/>
@@ -715,7 +715,7 @@
           <details key="documentation" value="A list of synchronization channel variables, used to assign these channels a common priority."/>
         </eAnnotations>
         <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore/OCL">
-          <details key="ChannelVariablesOnly" value="self.channelExpression->forAll(&#xD;&#xA;&#x9;(not identifier.typeDefinition.oclIsUndefined()) implies identifier.typeDefinition.baseType = types::BuiltInType::CHAN&#xD;&#xA;)"/>
+          <details key="ChannelVariablesOnly" value="self.channelExpression->collect(identifier)->select(oclIsKindOf(Variable)).oclAsType(Variable)->forAll(&#xA;&#x9;(not typeDefinition.oclIsUndefined()) implies typeDefinition.baseType = types::BuiltInType::CHAN&#xA;)"/>
         </eAnnotations>
         <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
           <details key="constraints" value="ChannelVariablesOnly"/>

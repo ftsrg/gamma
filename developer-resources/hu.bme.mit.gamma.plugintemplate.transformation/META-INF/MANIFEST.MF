@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Plugin Template Example Statechart Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.plugintemplate.transformation;singleton:=true
+Bundle-Version: 2.3.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Export-Package: hu.bme.mit.gamma.plugintemplate.transformation,
+ hu.bme.mit.gamma.plugintemplate.transformation.patterns
+Require-Bundle: hu.bme.mit.gamma.statechart.model,
+ org.eclipse.viatra.transformation.runtime.emf,
+ org.eclipse.viatra.transformation.evm,
+ org.eclipse.emf.ecore,
+ org.eclipse.viatra.query.runtime,
+ org.eclipse.viatra.query.runtime.rete,
+ org.eclipse.viatra.query.runtime.localsearch,
+ org.eclipse.xtext.xbase.lib,
+ hu.bme.mit.gamma.plugintemplate.transformation.traceability
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: hu.bme.mit.gamma.plugintemplate.transformation
+Import-Package: org.apache.log4j

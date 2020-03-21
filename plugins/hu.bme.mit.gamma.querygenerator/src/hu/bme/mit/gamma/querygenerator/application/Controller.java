@@ -16,15 +16,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -34,6 +33,7 @@ import javax.swing.JComboBox;
 import javax.swing.SwingWorker;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -51,12 +51,14 @@ import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
+import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.uppaal.backannotation.EmptyTraceException;
 import hu.bme.mit.gamma.uppaal.backannotation.StringTraceBackAnnotator;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
 
@@ -68,6 +70,8 @@ public class Controller {
 	
 	private ResourceSet resourceSet;
 	private ViatraQueryEngine engine;
+	private ResourceSet traceabilitySet;
+	private ViatraQueryEngine traceEngine;
 	// Indicates the actual verification process
 	private volatile Verifier verifier;
 	// Indicates the actual test generation process
@@ -83,26 +87,31 @@ public class Controller {
 	private final String TRACE_FOLDER_NAME = "trace";
 	
 	public Controller(View view, ResourceSet resourceSet, IFile file, boolean needsBackAnnotation) throws ViatraQueryException {
+		this.file = file;
 		this.view = view;
 		this.resourceSet = resourceSet;
 		logger.log(Level.INFO, "Resource set content for displaying model elements on GUI: " + resourceSet);
-		engine = ViatraQueryEngine.on(new EMFScope(resourceSet));
+		this.traceabilitySet = loadTraceability(); // For state-location
+		logger.log(Level.INFO, "Traceability resource set content: " + traceabilitySet);
+		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet));
+		this.traceEngine = ViatraQueryEngine.on(new EMFScope(this.traceabilitySet));
 		this.needsBackAnnotation = needsBackAnnotation;
-		this.file = file;
 	}
 	
 	public void initSelectorWithStates(JComboBox<String> selector) throws ViatraQueryException {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
-		// In case of composite systems
-		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
-			String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
-			if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-				entryList.add(entry);				
+		// In the case of composite systems
+		if (isCompositeSystem()) {
+			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
+				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
+				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
+					entryList.add(entry);				
+				}
 			}
 		}
-		// In case of single statecharts
-		if (selector.getItemCount() == 0) {
+		else {
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getRegion().getName() + "." + statesMatch.getStateName();
 				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
@@ -112,17 +121,19 @@ public class Controller {
 		}
 		fillComboBox(selector, entryList);
 	}
-
+	
 	public void initSelectorWithVariables(JComboBox<String> selector) throws ViatraQueryException {
 		// Needed to ensure the items in the selector are sorted
 		List<String> entryList = new ArrayList<String>();
-		// In case of composite systems
-		for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
-			String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
-			entryList.add(entry);
+		// In the case of composite systems
+		if (isCompositeSystem()) {
+			for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
+				String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
+				entryList.add(entry);
+			}
 		}
-		// In case of single statecharts
-		if (selector.getItemCount() == 0) {
+		else {
+			// In the case of single statecharts
 			for (SimpleStatechartVariables.Match statesMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getVariable().getName();
 				entryList.add(entry);
@@ -133,7 +144,7 @@ public class Controller {
 	
 	public List<String> getStateNames() throws ViatraQueryException {
 		List<String> stateNames = new ArrayList<String>();
-		// In case of composite systems
+		// In the case of composite systems
 		if (isCompositeSystem()) {
 			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
@@ -143,7 +154,7 @@ public class Controller {
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
 				String entry = statesMatch.getRegionName() + "." + statesMatch.getStateName();
 				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
@@ -157,14 +168,14 @@ public class Controller {
 	public List<String> getVariableNames() throws ViatraQueryException {
 		List<String> variableNames = new ArrayList<String>();
 		if (isCompositeSystem()) {
-			// In case of composite systems
+			// In the case of composite systems
 			for (InstanceVariables.Match variableMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = variableMatch.getInstance().getName() + "." + variableMatch.getVariable().getName();
 				variableNames.add(entry);
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartVariables.Match variableMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
 				String entry = variableMatch.getVariable().getName();
 				variableNames.add(entry);
@@ -183,9 +194,11 @@ public class Controller {
 		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
 	}
 	
-	
 	public String parseRegular(String text, String operator) throws ViatraQueryException {
 		String result = text;
+		if (text.contains("deadlock")) {
+			return text;
+		}
 		List<String> stateNames = this.getStateNames();
 		List<String> variableNames = this.getVariableNames();
 		for (String stateName : stateNames) {
@@ -228,24 +241,35 @@ public class Controller {
 		logger.log(Level.INFO, stateName);
 		String[] splittedStateName = stateName.split("\\.");
 		if (isCompositeSystem()) {
-			// In case of composite systems
+			// In the case of composite systems
 			for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0],
 					null, splittedStateName[splittedStateName.length - 2] /* parent region */,
 					null, splittedStateName[splittedStateName.length - 1] /* state */)) {
-//				logger.log(Level.INFO, "Region " + splittedStateName[splittedStateName.length - 2]);
-//				logger.log(Level.INFO, "State " + splittedStateName[splittedStateName.length - 1]);
-//				logger.log(Level.INFO, stateName + "->" + Arrays.asList(splittedStateName));
 				Region parentRegion = match.getParentRegion();
-				String templateName = "P_" + getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
-				String locationName = templateName +  "." + splittedStateName[splittedStateName.length - 1] /* state name */;
-				if (isSubregion(parentRegion)) {
-					locationName += " && " + templateName + ".isActive"; 
+				String templateName = getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
+				String processName = "P_" + templateName;
+				StringBuilder locationNames = new StringBuilder("(");
+				for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(null,
+						match.getState().getName(),
+						templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
+					String templateLocationName = processName +  "." + locationName;
+					if (locationNames.length() == 1) {
+						// First append
+						locationNames.append(templateLocationName);
+					}
+					else {
+						locationNames.append(" || " + templateLocationName);
+					}
 				}
-				return locationName;
+				locationNames.append(")");
+				if (isSubregion(parentRegion)) {
+					locationNames.append(" && " + processName + ".isActive"); 
+				}
+				return locationNames.toString();
 			}
 		}
 		else {
-			// In case of single statecharts
+			// In the case of single statecharts
 			for (SimpleStatechartStates.Match match : SimpleStatechartStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0], null, splittedStateName[1])) {
 				Region parentRegion = (Region) match.getState().eContainer();
 				return "P_" + getRegionName(parentRegion) + "." + splittedStateName[1];
@@ -277,7 +301,6 @@ public class Controller {
 	
 	/**
      * Returns the template name of a region.
-	 * @throws ViatraQueryException 
      */
     private String getRegionName(Region region) throws ViatraQueryException {
     	String templateName;
@@ -350,6 +373,7 @@ public class Controller {
 		return getLocation(file).substring(0, getLocation(file).lastIndexOf(".")) + ".xml";
 	}
 	
+	@SuppressWarnings("unused")
 	private boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
 	}
@@ -374,16 +398,6 @@ public class Controller {
 			writer.print(string);
 		}
 		return file;
-	}
-
-	private String readFromStream(InputStream ips) throws IOException {
-		String line;
-		StringBuilder text = new StringBuilder();
-		BufferedReader bf = new BufferedReader(new InputStreamReader(ips));
-		while ((line = bf.readLine()) != null) {
-			text.append(line + System.lineSeparator());
-		}
-		return text.toString();
 	}
 	
 	private ResourceSet loadTraceability() {
@@ -417,7 +431,7 @@ public class Controller {
 	 * Verifies the given Uppaal query.
 	 */
 	public void verify(String uppaalQuery) {
-		verifier = new Verifier(uppaalQuery, true);
+		verifier = new Verifier(uppaalQuery, true, false);
 		// Starting the worker
 		verifier.execute();
 	}
@@ -430,40 +444,33 @@ public class Controller {
 		Thread thread = new Thread(generatedTestVerifier);
     	thread.start();
     }
-    
-	private String deleteWarningLines(String trace) {
-		StringBuilder builder = new StringBuilder();
-		try (BufferedReader reader = new BufferedReader(new StringReader(trace))) {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				if (!line.contains("[warning]")) {
-					builder.append(line + System.lineSeparator());
-				}
-			}
-			return builder.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 	
 	private String getParameters() {
-		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getHashtableSize() + " " +
-				getStateSpaceReduction();
+		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getResuseStateSpace() + " " +
+				getMemoryReductionTechniques() + " " + getHashtableSize() + " " + getStateSpaceReduction();
 	}
 	
 	private String getSearchOrder() {
 		final String paremterName = "-o ";
 		switch (view.getSelectedSearchOrder()) {
 		case "Breadth First":
-			// BFS
 			return paremterName + "0";
 		case "Depth First":
-			// DFS
 			return paremterName + "1";
 		case "Random Depth First":
-			// Random DFS
-			return paremterName + "2";			
+			return paremterName + "2";
+		case "Optimal First":
+			if (view.getSelectedTrace().equals("Shortest") || view.getSelectedTrace().equals("Fastest")) {
+				return paremterName + "3";	
+			}
+			// BFS
+			return paremterName + "0"; 
+		case "Random Optimal Depth First":
+			if (view.getSelectedTrace().equals("Shortest") || view.getSelectedTrace().equals("Fastest")) {
+				return paremterName + "4";
+			}
+			// BFS
+			return paremterName + "0"; 
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getSelectedSearchOrder());
 		}
@@ -497,6 +504,20 @@ public class Controller {
 		}
 	}
 	
+	private String getMemoryReductionTechniques() {
+		if (view.isDisableMemoryReduction()) {
+			return "-C";
+		}
+		return "";
+	}
+	
+	private String getResuseStateSpace() {
+		if (view.isReuseStateSpace()) {
+			return "-T";
+		}
+		return "";
+	}
+	
 	private String getDiagnosticTrace() {
 		switch (view.getSelectedTrace()) {
 		case "Some":
@@ -516,17 +537,20 @@ public class Controller {
 	/** Runnable class responsible for the execution of formal verification. */
 	class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		// The query needs to be added to UPPAAL in addition to the model
-		private String uppaalQuery;		
+		private String originalUppaalQueries;
+		// If this is true, the steps of the trace models generated from originalUppaalQueries are put into a single ExecutionTrace model
+		private boolean isSingleTraceModelFromMultipleQueries;
 		// Process running the UPPAAL verification
 		private Process process;
-		// Indicates wether this worker is cancelled: needed as the original isCancelled is updated late
+		// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
 		private volatile boolean isCancelled = false;
 		// Indicates whether it should contribute to the View in any form
 		private boolean contributeToView;
 		
-		public Verifier(String uppaalQuery, boolean contributeToView) {
-			this.uppaalQuery = uppaalQuery;
+		public Verifier(String uppaalQuery, boolean contributeToView, boolean isSingleTraceModelFromMultipleQueries) {
+			this.originalUppaalQueries = uppaalQuery;
 			this.contributeToView = contributeToView;
+			this.isSingleTraceModelFromMultipleQueries = isSingleTraceModelFromMultipleQueries;
 		}
 		
 		@Override
@@ -534,67 +558,115 @@ public class Controller {
 			try {
 				// Disabling the verification buttons
 				view.setVerificationButtons(false);
-				// Writing the query to a temporary file
-				File tempQueryfile = writeToFile(uppaalQuery, getParentFolder(), ".temporary_query.q");
-				// Deleting the file on the exit of the JVM
-				tempQueryfile.deleteOnExit();
-				// verifyta -t1 TestOneComponent.xml asd.q 
-				StringBuilder command = new StringBuilder();
-				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
-				// Executing the command
-				process = Runtime.getRuntime().exec(command.toString());
-				InputStream ips = process.getErrorStream();
-				// Reading the result of the command
-				String rawTrace = readFromStream(ips); // This is where the thread block
-				if (isCancelled) {
-					// If the proces is killed, this is where it can be checked
-					return ThreeStateBoolean.UNDEF;
+				// Common traceability and execution trace
+				ResourceSet traceabilitySet = loadTraceability();
+				ExecutionTrace traceModel = null;
+				// Verification starts
+				if (isSingleTraceModelFromMultipleQueries) {
+					String[] uppaalQueries = originalUppaalQueries.split(System.lineSeparator());
+					for (String uppaalQuery : uppaalQueries) {
+						try {
+							if (traceModel == null) {
+								traceModel = verifyQuery(uppaalQuery, traceabilitySet);
+							}
+							else {
+								ExecutionTrace additionalTrace = verifyQuery(uppaalQuery, traceabilitySet);
+								traceModel.getSteps().addAll(additionalTrace.getSteps());
+							}
+						} catch (NotBackannotatedException e) {
+							logger.log(Level.INFO, "Query " + uppaalQuery + " does not yield a trace.");
+						}
+						catch (Exception e) {
+							logger.log(Level.WARNING, e.getMessage());
+						}
+					}
 				}
-				if (rawTrace.isEmpty()) {
-					// No back annotation of empty lines
-					return handleEmptyLines(uppaalQuery);
+				else {
+					traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
 				}
-				// If the condition is not well formed, an exception is thrown
-				if (rawTrace.contains("[error]")) {
-					throw new IllegalArgumentException(rawTrace);
+				if (traceModel == null) {
+					throw new IllegalArgumentException("None of the specified queries resulted in a trace.");
 				}
-				String trace = deleteWarningLines(rawTrace);
-				if (trace.isEmpty()) {
-					// No back annotation of empty lines
-					return handleEmptyLines(uppaalQuery);
-				}
-				if (!needsBackAnnotation) {
-					// If back-annotation is not needed, we return
-					return handleEmptyLines(uppaalQuery).opposite();
-				}
-				// Warning lines are now deleted if there was any
-				ResourceSet traceabilitySet = loadTraceability(); // For back-annotation
-				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
-				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, trace);
-				ExecutionTrace traceModel = backAnnotator.execute();
-				Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get		
-				fileNameAndId = saveModel(traceModel, fileNameAndId);
-				// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
-				TestGenerator testGenerator = new TestGenerator(traceabilitySet,
-						traceModel, file.getProject().getName(),"ExecutionTraceSimulation" + fileNameAndId.getValue());
-				String testClassCode = testGenerator.execute();
-				String testClassParentFolder = getTestGentFolder() + "/" + 
-						testGenerator.getPackageName().replaceAll("\\.", "\\/");
-				writeToFile(testClassCode, testClassParentFolder,
-						"ExecutionTraceSimulation" + fileNameAndId.getValue() + ".java");
-				logger.log(Level.INFO, "Test generation has been finished.");
+				serializeTestCode(traceModel, traceabilitySet);
 				// There is a generated trace, so the result is the opposite of the empty trace
-				return handleEmptyLines(uppaalQuery).opposite();
+				return handleEmptyLines(originalUppaalQueries).opposite();
+			} catch (EmptyTraceException e) {
+				return handleEmptyLines(originalUppaalQueries);
+			} catch (NotBackannotatedException e) {
+				return e.getThreeStateBoolean();
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 				throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
 			} catch (FileNotFoundException e) {
 				throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
 			} catch (Throwable e) {
-				IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
-				ex.initCause(e);
-				throw ex;
+				final String errorMessage = "Cannot handle deadlock predicate for models with priorities or guarded broadcast receivers.";
+				if (e.getMessage().contains(errorMessage)) {
+					// Not a big problem
+					logger.log(Level.SEVERE, errorMessage);
+					return ThreeStateBoolean.UNDEF;
+				}
+				else {
+					IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
+					ex.initCause(e);
+					throw ex;
+				}
 			}
+		}
+		
+		private ExecutionTrace verifyQuery(String actualUppaalQuery, ResourceSet traceabilitySet)
+				throws IOException, NotBackannotatedException, EmptyTraceException {
+			Scanner traceReader = null;
+			try {
+				// Writing the query to a temporary file
+				File tempQueryfile = writeToFile(actualUppaalQuery, getParentFolder(), ".temporary_query.q");
+				// Deleting the file on the exit of the JVM
+				tempQueryfile.deleteOnExit();
+				// verifyta -t0 -T TestOneComponent.xml asd.q 
+				StringBuilder command = new StringBuilder();
+				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
+				// Executing the command
+				logger.log(Level.INFO, "Executing command: " + command.toString());
+				process = Runtime.getRuntime().exec(command.toString());
+				InputStream ips = process.getErrorStream();
+				// Reading the result of the command
+				traceReader = new Scanner(ips);
+				if (isCancelled) {
+					// If the process is killed, this is where it can be checked
+					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF);
+				}
+				if (!traceReader.hasNext()) {
+					// No back annotation of empty lines
+					throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries));
+				}
+				// Warning lines are now deleted if there was any
+				logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
+				StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
+				ExecutionTrace traceModel = backAnnotator.execute();
+				if (!needsBackAnnotation) {
+					// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
+					throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries).opposite());
+				} 
+				return traceModel;
+			} finally {
+				traceReader.close();
+			}
+		}
+		
+		private void serializeTestCode(ExecutionTrace traceModel, ResourceSet traceabilitySet)
+				throws CoreException, IOException, FileNotFoundException {
+			Entry<String, Integer> fileNameAndId = getFileName("get"); // File extension could be gtr or get
+			fileNameAndId = saveModel(traceModel, fileNameAndId);
+			// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
+			String packageName = file.getProject().getName().toLowerCase();
+			TestGenerator testGenerator = new TestGenerator(traceabilitySet,
+					traceModel, packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
+			String testClassCode = testGenerator.execute();
+			String testClassParentFolder = getTestGentFolder() + "/" + 
+					testGenerator.getPackageName().replaceAll("\\.", "\\/");
+			writeToFile(testClassCode, testClassParentFolder,
+					"ExecutionTraceSimulation" + fileNameAndId.getValue() + ".java");
+			logger.log(Level.INFO, "Test generation has been finished.");
 		}
 
 		private Entry<String, Integer> saveModel(ExecutionTrace traceModel, Entry<String, Integer> fileNameAndId)
@@ -604,7 +676,7 @@ public class Controller {
 				serialize(traceModel, getTraceFolder(), fileNameAndId.getKey());
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, e.getMessage() + System.lineSeparator() +
-						"Possibly you have two more model elements with the same name specified in the previous error message.");
+					"Possibly you have two more model elements with the same name specified in the previous error message.");
 				new File(getTraceFolder() + File.separator + fileNameAndId.getKey()).delete();
 				// Saving like an EMF model
 				fileNameAndId = getFileName("gtr");
@@ -660,11 +732,13 @@ public class Controller {
 			try {
 				if (contributeToView) {
 					ThreeStateBoolean result = get();
-					if (result == ThreeStateBoolean.TRUE) {
-						view.setVerificationLabelToTrue();
-					}
-					if (result == ThreeStateBoolean.FALSE) {
-						view.setVerificationLabelToFalse();
+					if (!isCancelled) {
+						if (result == ThreeStateBoolean.TRUE) {
+							view.setVerificationLabelToTrue();
+						}
+						else if (result == ThreeStateBoolean.FALSE) {
+							view.setVerificationLabelToFalse();
+						}
 					}
 				}
 			} catch (ExecutionException e) {
@@ -696,8 +770,8 @@ public class Controller {
 	     */
     	@Override
 	    public void run() {
-	    	final int TIMEOUT = 40;
 	    	final int SLEEP_INTERVAL = 250;
+	    	final int TIMEOUT = view.getTestGenerationTmeout() * (1000 / SLEEP_INTERVAL);
 	    	Verifier verifier = null;
 	    	StringBuilder buffer = new StringBuilder();
 	    	// Disabling the verification buttons
@@ -705,8 +779,19 @@ public class Controller {
 	    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getGeneratedQueryFile())))) {
 	    		String uppaalQuery;
 	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    			// Reuse state space trick: we copy all the queries into a single string
+	    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
+	    				final String separator = System.lineSeparator();
+	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + separator);
+	    				while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    					queryBuilder.append(uppaalQuery + separator);
+	    				}
+	    				uppaalQuery = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
+	    			}
+	    			//
 	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
-	    			verifier = new Verifier(uppaalQuery, false);
+	    			verifier = new Verifier(uppaalQuery, false, view.isSingleTraceModelNeeded() &&
+	    					!view.isReuseStateSpace());
 	    			verifier.execute();
     				int elapsedTime = 0;
     				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {
@@ -714,47 +799,59 @@ public class Controller {
     					++elapsedTime;
     				}
     				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
-    					String stateName = (uppaalQuery.equals("A[] not deadlock")) ? "" 
-    							: uppaalQuery.substring("E<> ".length(), uppaalQuery.length() - " && isStable".length());
-    					if (stateName.startsWith("P_")) {
-    						stateName = stateName.substring("P_".length());
-    					}
     					String resultSentence = null;
-    					ThreeStateBoolean result = verifier.get();
-    					if (uppaalQuery.equals("A[] not deadlock")) {
-    						// Deadlock query
-    						switch (result) {
-    							case TRUE:
-    								resultSentence = "No deadlock.";
-    							break;
-    							case FALSE:
-    								resultSentence = "There can be deadlock in the system.";
-    							break;
-    							case UNDEF:
-    								// Theoretically unreachable because of !cancelled
-    								resultSentence = "Not determined if there can be deadlock.";
-    							break;
-    						}
+    					if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
+    						resultSentence = "Test generation has been finished.";
     					}
     					else {
-    						// Reachability query
-    						String isReachableString  = null;
-    						switch (result) {
-								case TRUE:
-									isReachableString = "reachable";
-								break;
-								case FALSE:
-									isReachableString = "unreachable";
-								break;
-								case UNDEF:
-    								// Theoretically unreachable because of !cancelled
-									isReachableString = "undefined";
-								break;
-    						}
-    						resultSentence = stateName + " is " + isReachableString + ".";
+	    					String stateName = "";
+							if (!uppaalQuery.equals("A[] not deadlock")) {
+								if (uppaalQuery.startsWith("E<> ")) {
+									stateName =  uppaalQuery.substring("E<> ".length());
+								}
+							}
+							if (stateName.endsWith( " && isStable")) {
+								stateName = stateName.substring(0, stateName.length() - " && isStable".length());
+							}
+	    					if (stateName.startsWith("P_")) {
+	    						stateName = stateName.substring("P_".length());
+	    					}
+	    					ThreeStateBoolean result = verifier.get();
+	    					if (uppaalQuery.equals("A[] not deadlock")) {
+	    						// Deadlock query
+	    						switch (result) {
+	    							case TRUE:
+	    								resultSentence = "No deadlock.";
+	    							break;
+	    							case FALSE:
+	    								resultSentence = "There can be deadlock in the system.";
+	    							break;
+	    							case UNDEF:
+	    								// Theoretically unreachable because of !cancelled
+	    								resultSentence = "Not determined if there can be deadlock.";
+	    							break;
+	    						}
+	    					}
+	    					else {
+	    						// Reachability query
+	    						String isReachableString  = null;
+	    						switch (result) {
+									case TRUE:
+										isReachableString = "reachable";
+									break;
+									case FALSE:
+										isReachableString = "unreachable";
+									break;
+									case UNDEF:
+	    								// Theoretically unreachable because of !cancelled
+										isReachableString = "undefined";
+									break;
+	    						}
+	    						resultSentence = stateName + " is " + isReachableString + ".";
+	    					}
     					}
-						buffer.append(resultSentence + System.lineSeparator());
-						Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
+    					buffer.append(resultSentence + System.lineSeparator());
+    					Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
     				}
     				else if (elapsedTime >= TIMEOUT) {
     					Logger.getLogger("GammaLogger").log(Level.INFO, "Timeout...");
@@ -782,6 +879,13 @@ public class Controller {
 	    	if (buffer.length() > 0) {
 	    		DialogUtil.showInfo(buffer.toString());
 	    	}
+	    	try {
+	    		logger.log(Level.INFO, "Cleaning project...");
+				file.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+				logger.log(Level.INFO, "Cleaning project finished.");
+			} catch (CoreException e) {
+				// Nothing we can do
+			}
 	    }
     	
     	public void cancelProcess() {
@@ -790,6 +894,18 @@ public class Controller {
     	
     }
     
+}
+
+class NotBackannotatedException extends Exception {
+	private ThreeStateBoolean threeStateBoolean;
+	
+	NotBackannotatedException(ThreeStateBoolean threeStateBoolean) {
+		this.threeStateBoolean = threeStateBoolean;
+	}
+	
+	public ThreeStateBoolean getThreeStateBoolean() {
+		return threeStateBoolean;
+	}
 }
 
 enum ThreeStateBoolean {

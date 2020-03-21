@@ -26,12 +26,12 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage;
-import hu.bme.mit.gamma.constraint.model.Declaration;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.Port;
@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.statechart.model.Transition;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.model.composite.CompositePackage;
@@ -105,10 +106,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(getAllEvents(_interface));
 			}
 			if (context instanceof EnumerationLiteralExpression && 
-					reference == ConstraintModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-				EObject root = EcoreUtil2.getRootContainer(context, true);
+					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
+				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
 				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
-				return(Scopes.scopeFor(enumLiterals));
+				for (Package imported : root.getImports()) {
+					enumLiterals.addAll(EcoreUtil2.getAllContentsOfType(imported, EnumerationLiteralDefinition.class));
+				}
+				return Scopes.scopeFor(enumLiterals);
 			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
@@ -174,10 +178,14 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			// Types
 			if (context instanceof SynchronousComponentInstance && reference == CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				return collectComponents((Package) context.eContainer().eContainer(), true);
+				List<Component> components = collectComponents((Package) context.eContainer().eContainer(), true);
+				components.remove(context.eContainer());
+				return Scopes.scopeFor(components);
 			}
 			if (context instanceof AsynchronousComponentInstance && reference == CompositePackage.Literals.ASYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				return collectComponents((Package) context.eContainer().eContainer(), false);
+				List<Component> components = collectComponents((Package) context.eContainer().eContainer(), false);
+				components.remove(context.eContainer());
+				return Scopes.scopeFor(components);
 			}		
 			// Synchronous wrapper specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
@@ -213,7 +221,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					.forEach(it -> events.addAll(getSemanticEvents(Collections.singletonList(it), EventDirection.IN)));
 				return Scopes.scopeFor(events);
 			}
-			if (/*context instanceof EventTrigger && */reference == ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
+			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
+				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
+				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+				return Scopes.scopeFor(typeDeclarations);
+			}
+			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
 				Component component = null;
 				try {
@@ -237,8 +250,17 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		} 
 		return super.getScope(context, reference);
 	}
+	
+	private List<TypeDeclaration> collectTypeDeclarations(Package _package) {
+		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
+		for (Package _import :_package.getImports()) {
+			types.addAll(_import.getTypeDeclarations());
+		}
+		types.addAll(_package.getTypeDeclarations());
+		return types;
+	}
 
-	private IScope collectComponents(Package parentPackage, boolean isSynchronous) {
+	private List<Component> collectComponents(Package parentPackage, boolean isSynchronous) {
 		List<Component> types = new ArrayList<Component>();
 		for (Package importedPackage : parentPackage.getImports()) {
 			for (Component importedComponent : importedPackage.getComponents()) {
@@ -258,7 +280,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				types.add(siblingComponent);
 			}
 		}
-		return Scopes.scopeFor(types);
+		return types;
 	}
 
 	private Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {

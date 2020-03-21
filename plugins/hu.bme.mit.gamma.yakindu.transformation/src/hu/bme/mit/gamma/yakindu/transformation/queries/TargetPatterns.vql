@@ -10,10 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.queries
 
-import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/expression/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-import "http://www.mit.bme.hu/gamma/yakindu/Genmodel/"
+import "http://www.mit.bme.hu/gamma/genmodel/Model"
 
 /* The type cannot be explicitly declared in some cases due to type incompatibility issues
  * between the sText packages, and the new VIATRA version does not support platform imports anymore.

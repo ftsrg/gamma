@@ -13,11 +13,22 @@ package hu.bme.mit.gamma.trace.language.formatting
 import hu.bme.mit.gamma.trace.language.services.TraceLanguageGrammarAccess
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter
 import org.eclipse.xtext.formatting.impl.FormattingConfig
+import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil
+import org.eclipse.xtext.Keyword
 
-class TraceLanguageFormatter extends AbstractDeclarativeFormatter {	
+class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
+	
+	final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil
 	
 	protected override void configureFormatting(FormattingConfig c) {
 		val f = grammarAccess as TraceLanguageGrammarAccess
+		// Using the basic expression language formatting
+		expressionLanguageFormatterUtil.format(c, f)
+		for (Keyword comma: f.findKeywords(",")) {
+			c.setNoLinewrap().before(comma);
+			c.setNoSpace().before(comma);
+			c.setLinewrap().after(comma);
+		}
 		// Setting the maximum size of lines
         c.setAutoLinewrap(130)
         // Line break between import and component keywords
@@ -27,33 +38,10 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
         c.setLinewrap(1).after(f.stepAccess.commaKeyword_7_3_0)
-        // No space around parentheses
-        for (p : f.findKeywordPairs("(", ")")) {
-            c.setNoSpace().around(p.getFirst())
-            c.setNoSpace().before(p.getSecond())
-        }	    
-        // No space before commas
-        for (comma : f.findKeywords(",")) {
-            c.setNoSpace().before(comma)
-        }        
-        // No space before and after dots
-        for (dot : f.findKeywords(".")) {
-            c.setNoSpace().before(dot)
-            c.setNoSpace().after(dot)
-        }		
-        // Setting indentation inside all curly brackets 
-        // Setting line wrap after each left curly bracket
-        // Setting line wrap around each right curly bracket
-        for(p : f.findKeywordPairs("{", "}")) {
-            c.setIndentationIncrement().after(p.getFirst())
-            c.setIndentationDecrement().before(p.getSecond())
-            c.setLinewrap().after(p.getFirst())
-            c.setLinewrap().around(p.getSecond())
-        }
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule()) 
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule()) 
-		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule()) 
+		c.setLinewrap(0, 1, 1).after(f.getML_COMMENTRule())
 	}
 	
 }

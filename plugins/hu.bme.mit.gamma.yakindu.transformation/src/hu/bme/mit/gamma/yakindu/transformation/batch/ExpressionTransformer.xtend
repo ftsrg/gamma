@@ -10,28 +10,27 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
-import hu.bme.mit.gamma.constraint.model.AddExpression
-import hu.bme.mit.gamma.constraint.model.ArithmeticExpression
-import hu.bme.mit.gamma.constraint.model.BinaryExpression
-import hu.bme.mit.gamma.constraint.model.BooleanExpression
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
-import hu.bme.mit.gamma.constraint.model.DecimalLiteralExpression
-import hu.bme.mit.gamma.constraint.model.DivideExpression
-import hu.bme.mit.gamma.constraint.model.FalseExpression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.MultiplyExpression
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.SubtractExpression
-import hu.bme.mit.gamma.constraint.model.TrueExpression
-import hu.bme.mit.gamma.constraint.model.UnaryExpression
-import hu.bme.mit.gamma.constraint.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+import hu.bme.mit.gamma.expression.model.AddExpression
+import hu.bme.mit.gamma.expression.model.ArithmeticExpression
+import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.BooleanExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
+import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.MultiplyExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SubtractExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
-import hu.bme.mit.gamma.yakindu.genmodel.StatechartCompilation
+import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
 import hu.bme.mit.gamma.yakindu.transformation.queries.Traces
@@ -71,6 +70,8 @@ import org.yakindu.sct.model.stext.stext.EventRaisingExpression
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.
@@ -86,7 +87,8 @@ class ExpressionTransformer {
     
     protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
     protected extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
-	protected extension ConstraintModelPackage cmPackage = ConstraintModelPackage.eINSTANCE
+    protected extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
+	protected extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	
 	
 	new(IModelManipulations manipulation, StatechartCompilation statechartCompilation, 
@@ -120,8 +122,8 @@ class ExpressionTransformer {
 		val interfaceMappings = statechartCompilation.interfaceMappings
 				.filter[it.yakinduInterface.events.contains(event)]
 		if (interfaceMappings.size != 1) {
-			throw new IllegalArgumentException("This Yakindu event is contained by more
-				than one Yakindu interface: " + event + " " + interfaceMappings)
+			throw new IllegalArgumentException("This Yakindu event is not contained by a
+				single Yakindu interface: " + event + " " + interfaceMappings)
 		}
 		val gammaInterface = interfaceMappings.head.gammaInterface
 		val gammaEvents = gammaInterface.events.map[it.event].filter[it.name == eventName]
@@ -136,8 +138,7 @@ class ExpressionTransformer {
 		val yInterface = (event.eContainer as InterfaceScope)
     	val gPorts = yInterface.allValuesOfTo.filter(Port)
     	if (gPorts.size != 1) {
-    		throw new IllegalArgumentException("More than one Gamma port connected to Yakindu interface: "
-    			+ gPorts)
+    		throw new IllegalArgumentException("Not one Gamma port connected to Yakindu interface: " + gPorts)
     	}
     	return gPorts.head
 	}
@@ -146,7 +147,14 @@ class ExpressionTransformer {
      * Returns a Set of EObjects that are created of the given "from" object.
      */
     def getAllValuesOfTo(EObject from) {
-    	return traceEngine.getMatcher(Traces.instance).getAllValuesOfto(null, from)    	
+    	return traceEngine.getMatcher(Traces.instance).getAllValuesOfto(null, from)
+    }
+    
+    /**
+     * Returns a Set of EObjects that are created of the given "to" object.
+     */
+    def getAllValuesOfFrom(EObject to) {
+    	return traceEngine.getMatcher(Traces.instance).getAllValuesOffrom(null, to)
     }
 	
 	/**
@@ -321,9 +329,9 @@ class ExpressionTransformer {
 		val gammaVariable = gammaVariables.head as VariableDeclaration
 		val assignmentExpression = switch (expression.operator) {
 			case DECREMENT: {
-				container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.operand)
-					it.createChild(assignmentAction_Rhs, subtractExpression) as SubtractExpression => [
+				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.createChild(assignmentStatement_Rhs, subtractExpression) as SubtractExpression => [
 						it.createChild(binaryExpression_LeftOperand, referenceExpression) as ReferenceExpression => [
 							it.declaration = gammaVariable
 						]
@@ -334,9 +342,9 @@ class ExpressionTransformer {
 				]
 			}
 			case INCREMENT: {
-				container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.operand)
-					it.createChild(assignmentAction_Rhs, addExpression) as AddExpression => [
+				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.operand)
+					it.createChild(assignmentStatement_Rhs, addExpression) as AddExpression => [
 						it.createChild(multiaryExpression_Operands, referenceExpression) as ReferenceExpression => [
 							it.declaration = gammaVariable
 						]
@@ -484,7 +492,7 @@ class ExpressionTransformer {
 	def dispatch EObject transform(EObject container, EReference reference, EventRaisingExpression expression) {		
 		val gammaSignal = container.transform(reference, expression.event)
 		if (expression.value !== null) {
-			gammaSignal.transform(parameterizedElement_Parameters, expression.value)		
+			gammaSignal.transform(argumentedElement_Arguments, expression.value)		
 		}
 		// Creating the trace
 		addToTrace(expression, #{gammaSignal}, expressionTrace)
@@ -503,41 +511,41 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch EObject transform(EObject container, EReference reference, AssignmentExpression expression) {		
-		var AssignmentAction assExp
+		var AssignmentStatement assExp
 		switch (expression.operator.literal) {
 			case "=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.transform(assignmentAction_Rhs, expression.expression)
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.transform(assignmentStatement_Rhs, expression.expression)
 				]
 			case "+=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, addExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, addExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "*=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, multiplyExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, multiplyExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(multiaryExpression_Operands, multiaryExpression_Operands,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "-=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, subtractExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, subtractExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)
 					]
 				]
 			case "/=":
-				assExp = container.createChild(reference, assignmentAction) as AssignmentAction => [
-					it.transform(assignmentAction_Lhs, expression.varRef)
-					it.createChild(assignmentAction_Rhs, divideExpression) as ArithmeticExpression => [
+				assExp = container.createChild(reference, assignmentStatement) as AssignmentStatement => [
+					it.transform(assignmentStatement_Lhs, expression.varRef)
+					it.createChild(assignmentStatement_Rhs, divideExpression) as ArithmeticExpression => [
 						it.transformBinaryExpression(binaryExpression_LeftOperand, binaryExpression_RightOperand,
 							expression.varRef, expression.expression)
 					]

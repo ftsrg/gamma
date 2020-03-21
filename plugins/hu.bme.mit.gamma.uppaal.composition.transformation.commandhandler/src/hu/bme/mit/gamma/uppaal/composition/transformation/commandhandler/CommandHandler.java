@@ -33,13 +33,16 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
-import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
-import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer.Scheduler;
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.model.Component;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -114,11 +117,19 @@ public class CommandHandler extends AbstractHandler {
 		String fileName = fileURISubstring.substring(fileURISubstring.lastIndexOf("/") + 1);
 		String fileNameWithoutExtenstion = fileName.substring(0, fileName.lastIndexOf("."));
 		// Unfolding the given system
-		SimpleEntry<Package, Component> packageWithTopComponent = new ModelUnfolder().unfold(gammaPackage);
-		Component topComponent = packageWithTopComponent.getValue();
+		Trace trace = new ModelUnfolder().unfold(gammaPackage);
+		Component topComponent = trace.getTopComponent();
+		// Transforming unhandled transitions to two transitions connected by a choice
+		UnhandledTransitionTransformer unhandledTransitionTransformer = new UnhandledTransitionTransformer();
+		trace.getPackage().getComponents().stream()
+			.filter(it -> it instanceof StatechartDefinition)
+			.forEach(it -> {
+				unhandledTransitionTransformer.execute((StatechartDefinition) it);
+			}
+		);
 		// Saving the Package of the unfolded model
 		String flattenedModelFileName = "." + fileNameWithoutExtenstion + ".gsm";
-		normalSave(packageWithTopComponent.getKey(), parentFolder, flattenedModelFileName);
+		normalSave(trace.getPackage(), parentFolder, flattenedModelFileName);
 		// Reading the model from disk as this is the only way it works
 		ResourceSet resourceSet = new ResourceSetImpl();
 		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
@@ -129,9 +140,10 @@ public class CommandHandler extends AbstractHandler {
 		// Checking the model whether it contains forbidden elements
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
+		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-				newTopComponent, Scheduler.RANDOM, false); // newTopComponent
+				newTopComponent, Scheduler.RANDOM, simpleInstanceHandler.getSimpleInstances(newTopComponent), Collections.emptyList()); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models

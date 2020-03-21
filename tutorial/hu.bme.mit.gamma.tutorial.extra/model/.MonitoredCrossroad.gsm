@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ASCII"?>
-<hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.constraint="http://www.mit.bme.hu/gamma/constraint/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="monitoredcrossroadView">
+<hu.bme.mit.gamma.statechart:Package xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:hu.bme.mit.gamma.expression="http://www.mit.bme.hu/gamma/expression/Model" xmlns:hu.bme.mit.gamma.statechart="http://www.mit.bme.hu/gamma/statechart/Model" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" name="monitoredcrossroadView">
   <components xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousCompositeComponent" name="MonitoredCrossroad">
     <ports name="police">
       <interfaceRealization realizationMode="REQUIRED">
@@ -118,7 +118,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="SecondaryPrepares">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.1">
               <time unit="SECOND">
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="1"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.0">
@@ -128,7 +128,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Priority">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.2">
               <time unit="SECOND">
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
@@ -141,7 +141,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Secondary">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.3">
               <time unit="SECOND">
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.0">
@@ -154,7 +154,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Init">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.0">
               <time unit="SECOND">
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="2"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="2"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
@@ -164,7 +164,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="PriorityPrepares">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.2/@timeoutDeclarations.4">
               <time unit="SECOND">
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="1"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="1"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.2/@ports.1">
@@ -278,7 +278,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="BlinkingYellow">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.3/@timeoutDeclarations.1">
               <time>
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="500"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
@@ -288,7 +288,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Black">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.3/@timeoutDeclarations.0">
               <time>
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="500"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.3/@ports.0">
@@ -393,7 +393,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="BlinkingYellow">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.4/@timeoutDeclarations.1">
               <time>
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="500"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">
@@ -403,7 +403,7 @@
           <stateNodes xsi:type="hu.bme.mit.gamma.statechart:State" name="Black">
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:SetTimeoutAction" timeoutDeclaration="//@components.4/@timeoutDeclarations.0">
               <time>
-                <value xsi:type="hu.bme.mit.gamma.constraint:IntegerLiteralExpression" value="500"/>
+                <value xsi:type="hu.bme.mit.gamma.expression:IntegerLiteralExpression" value="500"/>
               </time>
             </entryActions>
             <entryActions xsi:type="hu.bme.mit.gamma.statechart:RaiseEventAction" port="//@components.4/@ports.0">

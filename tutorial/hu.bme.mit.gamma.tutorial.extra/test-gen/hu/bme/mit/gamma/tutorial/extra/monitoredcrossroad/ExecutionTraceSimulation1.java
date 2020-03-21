@@ -3,92 +3,103 @@ package hu.bme.mit.gamma.tutorial.extra.monitoredcrossroad;
 import hu.bme.mit.gamma.tutorial.extra.VirtualTimerService;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 public class ExecutionTraceSimulation1 {
 	
-	private static MonitoredCrossroad monitoredCrossroad;
+	private static ReflectiveMonitoredCrossroad reflectiveMonitoredCrossroad;
 	private static VirtualTimerService timer;
 	
 	@Before
 	public void init() {
 		timer = new VirtualTimerService();
-		monitoredCrossroad = new MonitoredCrossroad(timer);  // Virtual timer is automatically set
-		monitoredCrossroad.reset();
+		reflectiveMonitoredCrossroad = new ReflectiveMonitoredCrossroad(timer);  // Virtual timer is automatically set
+		reflectiveMonitoredCrossroad.reset();
+	}
+	
+	@After
+	public void tearDown() {
+		// Only for override by potential subclasses
+		timer = null;
+		reflectiveMonitoredCrossroad = null;
 	}
 	
 	@Test
 	public void step0() {
 		// Act
 		// Checking out events
-		assertTrue(monitoredCrossroad.getPriorityOutput().isRaisedDisplayRed());
-		assertTrue(monitoredCrossroad.getSecondaryOutput().isRaisedDisplayRed());
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("secondaryOutput", "displayRed", new Object[] {}));
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
 		// Checking variables
 		// Checking of states
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating_operating_Init));
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Red));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Red));
-		assertTrue(monitoredCrossroad.getMonitor().isStateActive(hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State.main_region_Other));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("operating", "Init"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("main_region", "Operating"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("normal", "Red"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("normal", "Red"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Other"));
 	}
+	
 	@Test
 	public void step1() {
 		step0();
 		// Act
 		timer.elapse(2000);
-		monitoredCrossroad.runCycle();
+		reflectiveMonitoredCrossroad.schedule(null);
 		// Checking out events
-		assertTrue(monitoredCrossroad.getPriorityOutput().isRaisedDisplayGreen());
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("priorityOutput", "displayGreen", new Object[] {}));
 		// Checking variables
 		// Checking of states
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating));
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating_operating_PriorityPrepares));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Green));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Red));
-		assertTrue(monitoredCrossroad.getMonitor().isStateActive(hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State.main_region_Red));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("main_region", "Operating"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("operating", "PriorityPrepares"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("normal", "Green"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("normal", "Red"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Red"));
 	}
+	
 	@Test
 	public void step2() {
 		step1();
 		// Act
 		timer.elapse(1000);
-		monitoredCrossroad.runCycle();
+		reflectiveMonitoredCrossroad.schedule(null);
 		// Checking out events
-		assertTrue(monitoredCrossroad.getPriorityOutput().isRaisedDisplayYellow());
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("priorityOutput", "displayYellow", new Object[] {}));
 		// Checking variables
 		// Checking of states
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating));
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating_operating_Secondary));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Yellow));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Red));
-		assertTrue(monitoredCrossroad.getMonitor().isStateActive(hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State.main_region_Green));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("main_region", "Operating"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("operating", "Secondary"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("normal", "Yellow"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("normal", "Red"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Green"));
 	}
+	
 	@Test
 	public void step3() {
 		step2();
 		// Act
 		timer.elapse(2000);
-		monitoredCrossroad.runCycle();
+		reflectiveMonitoredCrossroad.schedule(null);
 		// Checking out events
-		assertTrue(monitoredCrossroad.getSecondaryOutput().isRaisedDisplayGreen());
-		assertTrue(monitoredCrossroad.getPriorityOutput().isRaisedDisplayRed());
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("secondaryOutput", "displayGreen", new Object[] {}));
+		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
 		// Checking variables
 		// Checking of states
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating));
-		assertTrue(monitoredCrossroad.getCrossroad().getController().isStateActive(hu.bme.mit.gamma.tutorial.extra.controller.ControllerStatemachine.State.main_region_Operating_operating_SecondaryPrepares));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getCrossroad().getPrior().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Red));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal_normal_Green));
-		assertTrue(monitoredCrossroad.getCrossroad().getSecondary().isStateActive(hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State.main_region_Normal));
-		assertTrue(monitoredCrossroad.getMonitor().isStateActive(hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State.main_region_Other));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("main_region", "Operating"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("controller").isStateActive("operating", "SecondaryPrepares"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("prior").isStateActive("normal", "Red"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("normal", "Green"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("crossroad").getComponent("secondary").isStateActive("main_region", "Normal"));
+		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Other"));
 	}
+	
 }

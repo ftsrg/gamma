@@ -8,26 +8,38 @@
 	import hu.bme.mit.gamma.tutorial.extra.controller.*;
 	import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.*;
 	
-	public class Crossroad implements CrossroadInterface {			
+	public class Crossroad implements CrossroadInterface {
 		// Component instances
-		private ControllerStatechart controller = new ControllerStatechart();
-		private TrafficLightCtrlStatechart prior = new TrafficLightCtrlStatechart();
-		private TrafficLightCtrlStatechart secondary = new TrafficLightCtrlStatechart();
+		private ControllerStatechart controller;
+		private TrafficLightCtrlStatechart prior;
+		private TrafficLightCtrlStatechart secondary;
 		// Port instances
-		private Police police = new Police();
-		private PriorityOutput priorityOutput = new PriorityOutput();
-		private SecondaryOutput secondaryOutput = new SecondaryOutput();
+		private Police police;
+		private PriorityOutput priorityOutput;
+		private SecondaryOutput secondaryOutput;
 		
-		public Crossroad(ITimer timer) {
+		public Crossroad(UnifiedTimerInterface timer) {
+			controller = new ControllerStatechart();
+			prior = new TrafficLightCtrlStatechart();
+			secondary = new TrafficLightCtrlStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
 			setTimer(timer);
 			init();
 		}
 		
 		public Crossroad() {
+			controller = new ControllerStatechart();
+			prior = new TrafficLightCtrlStatechart();
+			secondary = new TrafficLightCtrlStatechart();
+			police = new Police();
+			priorityOutput = new PriorityOutput();
+			secondaryOutput = new SecondaryOutput();
 			init();
 		}
 		
-		/** Resets the contained statemachines recursively. Should be used only be the container (composite system) class. */
+		/** Resets the contained statemachines recursively. Must be called to initialize the component. */
 		@Override
 		public void reset() {
 			controller.reset();
@@ -40,14 +52,14 @@
 		/** Creates the channel mappings and enters the wrapped statemachines. */
 		private void init() {
 			// Registration of simple channels
-			controller.getPriorityPolice().registerListener(prior.getPoliceInterrupt());
-			prior.getPoliceInterrupt().registerListener(controller.getPriorityPolice());
-			controller.getSecondaryPolice().registerListener(secondary.getPoliceInterrupt());
-			secondary.getPoliceInterrupt().registerListener(controller.getSecondaryPolice());
 			controller.getPriorityControl().registerListener(prior.getControl());
 			prior.getControl().registerListener(controller.getPriorityControl());
+			controller.getSecondaryPolice().registerListener(secondary.getPoliceInterrupt());
+			secondary.getPoliceInterrupt().registerListener(controller.getSecondaryPolice());
 			controller.getSecondaryControl().registerListener(secondary.getControl());
 			secondary.getControl().registerListener(controller.getSecondaryControl());
+			controller.getPriorityPolice().registerListener(prior.getPoliceInterrupt());
+			prior.getPoliceInterrupt().registerListener(controller.getPriorityPolice());
 			// Registration of broadcast channels
 		}
 		
@@ -99,21 +111,16 @@
 		public class PriorityOutput implements LightCommandsInterface.Provided {
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayRed;
 			boolean isRaisedDisplayYellow;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
 			
 			public PriorityOutput() {
 				// Registering the listener to the contained component
 				prior.getLightCommands().registerListener(new PriorityOutputUtil());
 			}
 			
-			
-			@Override
-			public boolean isRaisedDisplayNone() {
-				return isRaisedDisplayNone;
-			}
 			
 			@Override
 			public boolean isRaisedDisplayRed() {
@@ -130,13 +137,13 @@
 				return isRaisedDisplayGreen;
 			}
 			
+			@Override
+			public boolean isRaisedDisplayNone() {
+				return isRaisedDisplayNone;
+			}
+			
 			// Class for the setting of the boolean fields (events)
 			private class PriorityOutputUtil implements LightCommandsInterface.Listener.Provided {
-				@Override
-				public void raiseDisplayNone() {
-					isRaisedDisplayNone = true;
-				}
-				
 				@Override
 				public void raiseDisplayRed() {
 					isRaisedDisplayRed = true;
@@ -150,6 +157,11 @@
 				@Override
 				public void raiseDisplayGreen() {
 					isRaisedDisplayGreen = true;
+				}
+				
+				@Override
+				public void raiseDisplayNone() {
+					isRaisedDisplayNone = true;
 				}
 			}
 			
@@ -165,19 +177,14 @@
 			
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
-				isRaisedDisplayNone = false;
 				isRaisedDisplayRed = false;
 				isRaisedDisplayYellow = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
 			}
 			
 			/** Notifying the registered listeners. */
 			public void notifyListeners() {
-				if (isRaisedDisplayNone) {
-					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayNone();
-					}
-				}
 				if (isRaisedDisplayRed) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayRed();
@@ -191,6 +198,11 @@
 				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayGreen();
+					}
+				}
+				if (isRaisedDisplayNone) {
+					for (LightCommandsInterface.Listener.Provided listener : listeners) {
+						listener.raiseDisplayNone();
 					}
 				}
 			}
@@ -205,21 +217,16 @@
 		public class SecondaryOutput implements LightCommandsInterface.Provided {
 			private List<LightCommandsInterface.Listener.Provided> listeners = new LinkedList<LightCommandsInterface.Listener.Provided>();
 
-			boolean isRaisedDisplayNone;
 			boolean isRaisedDisplayRed;
 			boolean isRaisedDisplayYellow;
 			boolean isRaisedDisplayGreen;
+			boolean isRaisedDisplayNone;
 			
 			public SecondaryOutput() {
 				// Registering the listener to the contained component
 				secondary.getLightCommands().registerListener(new SecondaryOutputUtil());
 			}
 			
-			
-			@Override
-			public boolean isRaisedDisplayNone() {
-				return isRaisedDisplayNone;
-			}
 			
 			@Override
 			public boolean isRaisedDisplayRed() {
@@ -236,13 +243,13 @@
 				return isRaisedDisplayGreen;
 			}
 			
+			@Override
+			public boolean isRaisedDisplayNone() {
+				return isRaisedDisplayNone;
+			}
+			
 			// Class for the setting of the boolean fields (events)
 			private class SecondaryOutputUtil implements LightCommandsInterface.Listener.Provided {
-				@Override
-				public void raiseDisplayNone() {
-					isRaisedDisplayNone = true;
-				}
-				
 				@Override
 				public void raiseDisplayRed() {
 					isRaisedDisplayRed = true;
@@ -256,6 +263,11 @@
 				@Override
 				public void raiseDisplayGreen() {
 					isRaisedDisplayGreen = true;
+				}
+				
+				@Override
+				public void raiseDisplayNone() {
+					isRaisedDisplayNone = true;
 				}
 			}
 			
@@ -271,19 +283,14 @@
 			
 			/** Resetting the boolean event flags to false. */
 			public void clear() {
-				isRaisedDisplayNone = false;
 				isRaisedDisplayRed = false;
 				isRaisedDisplayYellow = false;
 				isRaisedDisplayGreen = false;
+				isRaisedDisplayNone = false;
 			}
 			
 			/** Notifying the registered listeners. */
 			public void notifyListeners() {
-				if (isRaisedDisplayNone) {
-					for (LightCommandsInterface.Listener.Provided listener : listeners) {
-						listener.raiseDisplayNone();
-					}
-				}
 				if (isRaisedDisplayRed) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayRed();
@@ -297,6 +304,11 @@
 				if (isRaisedDisplayGreen) {
 					for (LightCommandsInterface.Listener.Provided listener : listeners) {
 						listener.raiseDisplayGreen();
+					}
+				}
+				if (isRaisedDisplayNone) {
+					for (LightCommandsInterface.Listener.Provided listener : listeners) {
+						listener.raiseDisplayNone();
 					}
 				}
 			}
@@ -374,13 +386,13 @@
 		}
 
 		/** Setter for the timer e.g., a virtual timer. */
-		public void setTimer(ITimer timer) {
+		public void setTimer(UnifiedTimerInterface timer) {
 			controller.setTimer(timer);
 			prior.setTimer(timer);
 			secondary.setTimer(timer);
 		}
 		
-		/**  Getter for component instances, e.g. enabling to check their states. */
+		/**  Getter for component instances, e.g., enabling to check their states. */
 		public ControllerStatechart getController() {
 			return controller;
 		}

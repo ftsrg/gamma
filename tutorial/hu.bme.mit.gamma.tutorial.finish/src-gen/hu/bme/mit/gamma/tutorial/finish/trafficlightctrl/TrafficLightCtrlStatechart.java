@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.List;
 import java.util.LinkedList;
 
-import hu.bme.mit.gamma.tutorial.finish.event.*;
 import hu.bme.mit.gamma.tutorial.finish.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.finish.trafficlightctrl.ITrafficLightCtrlStatemachine.*;
@@ -19,7 +18,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	private Control control;
 	private PoliceInterrupt policeInterrupt;
 	private LightCommands lightCommands;
-	// Indicates which queues are active in this cycle
+	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
 	// Event queues for the synchronization of statecharts
@@ -105,7 +104,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 				}
 		}
 		trafficLightCtrlStatemachine.runCycle();
-	}			
+	}
 	
 	// Inner classes representing Ports
 	public class Control implements ControlInterface.Required {
@@ -163,14 +162,6 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 
 
 		@Override
-		public boolean isRaisedDisplayRed() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
-		}
-		@Override
-		public boolean isRaisedDisplayGreen() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
-		}
-		@Override
 		public boolean isRaisedDisplayNone() {
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
 		}
@@ -179,19 +170,17 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayYellow();
 		}
 		@Override
+		public boolean isRaisedDisplayGreen() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
+		}
+		@Override
+		public boolean isRaisedDisplayRed() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
+		}
+		@Override
 		public void registerListener(final LightCommandsInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
 			trafficLightCtrlStatemachine.getSCILightCommands().getListeners().add(new SCILightCommandsListener() {
-				@Override
-				public void onDisplayRedRaised() {
-					listener.raiseDisplayRed();
-				}
-				
-				@Override
-				public void onDisplayGreenRaised() {
-					listener.raiseDisplayGreen();
-				}
-				
 				@Override
 				public void onDisplayNoneRaised() {
 					listener.raiseDisplayNone();
@@ -200,6 +189,16 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 				@Override
 				public void onDisplayYellowRaised() {
 					listener.raiseDisplayYellow();
+				}
+				
+				@Override
+				public void onDisplayGreenRaised() {
+					listener.raiseDisplayGreen();
+				}
+				
+				@Override
+				public void onDisplayRedRaised() {
+					listener.raiseDisplayRed();
 				}
 			});
 		}
@@ -222,6 +221,36 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	public boolean isStateActive(State state) {
 		return trafficLightCtrlStatemachine.isStateActive(state);
 	}
+	
+	public boolean isStateActive(String region, String state) {
+		switch (region) {
+			case "normal":
+				switch (state) {
+					case "Green":
+						return isStateActive(State.main_region_Normal_normal_Green);
+					case "Red":
+						return isStateActive(State.main_region_Normal_normal_Red);
+					case "Yellow":
+						return isStateActive(State.main_region_Normal_normal_Yellow);
+				}
+			case "main_region":
+				switch (state) {
+					case "Normal":
+						return isStateActive(State.main_region_Normal);
+					case "Interrupted":
+						return isStateActive(State.main_region_Interrupted);
+				}
+			case "interrupted":
+				switch (state) {
+					case "BlinkingYellow":
+						return isStateActive(State.main_region_Interrupted_interrupted_BlinkingYellow);
+					case "Black":
+						return isStateActive(State.main_region_Interrupted_interrupted_Black);
+				}
+		}
+		return false;
+	}
+	
 	
 	public void setTimer(ITimer timer) {
 		trafficLightCtrlStatemachine.setTimer(timer);

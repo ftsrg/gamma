@@ -10,57 +10,44 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.constraint.model.AddExpression
-import hu.bme.mit.gamma.constraint.model.AndExpression
-import hu.bme.mit.gamma.constraint.model.DivideExpression
-import hu.bme.mit.gamma.constraint.model.ElseExpression
-import hu.bme.mit.gamma.constraint.model.EnumerationLiteralExpression
-import hu.bme.mit.gamma.constraint.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.constraint.model.EqualityExpression
-import hu.bme.mit.gamma.constraint.model.Expression
-import hu.bme.mit.gamma.constraint.model.FalseExpression
-import hu.bme.mit.gamma.constraint.model.GreaterEqualExpression
-import hu.bme.mit.gamma.constraint.model.GreaterExpression
-import hu.bme.mit.gamma.constraint.model.InequalityExpression
-import hu.bme.mit.gamma.constraint.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.constraint.model.LessEqualExpression
-import hu.bme.mit.gamma.constraint.model.LessExpression
-import hu.bme.mit.gamma.constraint.model.MultiplyExpression
-import hu.bme.mit.gamma.constraint.model.NotExpression
-import hu.bme.mit.gamma.constraint.model.OrExpression
-import hu.bme.mit.gamma.constraint.model.ReferenceExpression
-import hu.bme.mit.gamma.constraint.model.SubtractExpression
-import hu.bme.mit.gamma.constraint.model.TrueExpression
-import hu.bme.mit.gamma.constraint.model.UnaryMinusExpression
-import hu.bme.mit.gamma.constraint.model.UnaryPlusExpression
-import hu.bme.mit.gamma.constraint.model.XorExpression
-import hu.bme.mit.gamma.statechart.model.AssignmentAction
+import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.AddExpression
+import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
+import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.ElseExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.EqualityExpression
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.FalseExpression
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
+import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.InequalityExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.LessEqualExpression
+import hu.bme.mit.gamma.expression.model.LessExpression
+import hu.bme.mit.gamma.expression.model.ModExpression
+import hu.bme.mit.gamma.expression.model.MultiplyExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
+import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SubtractExpression
+import hu.bme.mit.gamma.expression.model.TrueExpression
+import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
+import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
+import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.uppaal.transformation.queries.ExpressionTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.InstanceTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.MessageQueueTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.PortTraces
-import hu.bme.mit.gamma.uppaal.transformation.queries.Traces
-import hu.bme.mit.gamma.uppaal.transformation.traceability.AbstractTrace
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
-import java.util.Set
-import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
-import uppaal.declarations.DataVariablePrefix
-import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.ArithmeticExpression
@@ -78,146 +65,27 @@ import uppaal.expressions.LogicalOperator
 import uppaal.expressions.MinusExpression
 import uppaal.expressions.NegationExpression
 import uppaal.expressions.PlusExpression
-import hu.bme.mit.gamma.constraint.model.DivExpression
-import hu.bme.mit.gamma.constraint.model.ModExpression
+
+import static com.google.common.base.Preconditions.checkState
 
 class ExpressionTransformer {
-	
-	protected ViatraQueryEngine traceEngine
-    protected G2UTrace traceRoot
+    // For model creation
+	final extension IModelManipulations manipulation
+	final extension NtaBuilder ntaBuilder
+    // Packages
+    final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
+    final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
+    final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+    // Trace
+    protected final extension Trace traceModel
     
-	extension IModelManipulations manipulation	
-    
-    extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-    extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
-    extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
-    
-	new(IModelManipulations manipulation, G2UTrace traceRoot, ViatraQueryEngine traceEngine) {
+	new(IModelManipulations manipulation, NtaBuilder ntaBuilder, Trace traceModel) {
 		this.manipulation = manipulation
-		this.traceRoot = traceRoot 
-		this.traceEngine = ViatraQueryEngine.on(new EMFScope(traceRoot))
+		this.ntaBuilder = ntaBuilder
+		this.traceModel = traceModel
 	}
 	
-	/**
-     * Returns a Set of EObjects that are created of the given "from" object.
-     */
-    def getAllValuesOfTo(EObject from) {
-    	return Traces.Matcher.on(traceEngine).getAllValuesOfto(null, from)
-    }
-    
-    /**
-     * Returns a Set of EObjects that the given "to" object is created of.
-     */
-    def getAllValuesOfFrom(EObject to) {
-    	return Traces.Matcher.on(traceEngine).getAllValuesOffrom(null, to)
-    }
-    
-    def isTraced(EObject object) {
-    	return !object.allValuesOfTo.empty || 
-    		!ExpressionTraces.Matcher.on(traceEngine).getAllValuesOfto(null, object).empty
-    }
-    
-    /** 
-     * Returns the ComponentInstance the given object is element of.
-     */
-    def ComponentInstance getOwner(EObject object) {
-    	val traces = InstanceTraces.Matcher.on(traceEngine).getAllValuesOfinstance(null, object)
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + object + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
-		}
-		return traces.head		
-    }
-    
-    def getPort(VariableDeclaration variable) {
-    	val traces = PortTraces.Matcher.on(traceEngine).getAllValuesOfport(null, variable)
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
-		}
-		return traces.head		
-    }
-    
-    /** 
-     * Returns the MessageQueueTrace the given queue is saved in.
-     */
-    def MessageQueueTrace getTrace(MessageQueue queue, ComponentInstance owner) {
-    	var traces = MessageQueueTraces.Matcher.on(traceEngine).getAllValuesOftrace(queue)
-    	if (owner !== null) {
-			traces = traces.filter[it.queue.owner === owner].toSet
-		}
-		if (traces.size != 1) {
-			throw new IllegalArgumentException("The number of owners of this object is not one! " + traces)
-		}
-		return traces.head		
-    }
-    
-     /** 
-     * Creates a message queue trace.
-     */
-    def addQueueTrace(MessageQueue queue, DataVariableDeclaration sizeConst, DataVariableDeclaration capacityVar,
-    	FunctionDeclaration peekFunction, FunctionDeclaration shiftFunction, FunctionDeclaration pushFunction,
-    	FunctionDeclaration isFullFunction, DataVariableDeclaration array) {
-    	traceRoot.createChild(g2UTrace_Traces, messageQueueTrace) as MessageQueueTrace => [
-    		it.queue = queue
-    		it.sizeConst = sizeConst
-    		it.capacityVar = capacityVar
-    		it.peekFunction = peekFunction
-    		it.shiftFunction = shiftFunction
-    		it.pushFunction = pushFunction
-    		it.isFullFunction = isFullFunction
-    		it.array = array
-    	]
-    }
-    
-    /**
-	 * Responsible for putting the "from" -> "to" mapping into a trace. If the "from" object is already in
-	 * another trace object, it is fetched and it will contain the "to" object as well.
-	 */
-	def addToTrace(EObject from, Set<EObject> to, EClass traceClass) {
-		// So from values will not be duplicated if they are already present in the trace model
-		var AbstractTrace aTrace 
-		switch (traceClass) {
-			case instanceTrace: {
-				val instance = from as ComponentInstance
-				aTrace = InstanceTraces.Matcher.on(traceEngine).getAllValuesOftrace(instance, null).head
-			}
-			case portTrace: {
-				val port = from as Port
-				aTrace = PortTraces.Matcher.on(traceEngine).getAllValuesOftrace(port, null).head
-			}
-			case expressionTrace: 
-				aTrace = ExpressionTraces.Matcher.on(traceEngine).getAllValuesOftrace(from, null).head
-			case trace: 
-				aTrace = Traces.Matcher.on(traceEngine).getAllValuesOftrace(from, null).head 
-		}
-		// Otherwise a new trace object is created
-		if (aTrace === null) {
-			aTrace = traceRoot.createChild(g2UTrace_Traces, traceClass) as AbstractTrace
-			switch (traceClass) {
-				case instanceTrace: 			
-					aTrace.set(instanceTrace_Owner, from)
-				case portTrace: 
-					aTrace.set(portTrace_Port, from)
-				case expressionTrace: 			
-					aTrace.addTo(expressionTrace_From, from)
-				case trace: 
-					aTrace.addTo(trace_From, from)
-			}
-		}
-		val AbstractTrace finalTrace = aTrace
-		switch (traceClass) {
-				case instanceTrace: 			
-					to.forEach[finalTrace.addTo(instanceTrace_Element, it)]
-				case portTrace: 
-					to.forEach[finalTrace.addTo(portTrace_Declarations, it)]
-				case expressionTrace: 			
-					to.forEach[finalTrace.addTo(expressionTrace_To, it)]
-				case trace: 
-					to.forEach[finalTrace.addTo(trace_To, it)]
-		}
-		return finalTrace
-	}
-	
-	def void transformAssignmentAction(EObject container, EReference reference, AssignmentAction action, ComponentInstance owner) {
+	def void transformAssignmentAction(EObject container, EReference reference, AssignmentStatement action, ComponentInstance owner) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.operator = AssignmentOperator.EQUAL
 		]
@@ -226,18 +94,27 @@ class ExpressionTransformer {
 	}
 	
 	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action, ComponentInstance owner) {
+		val clockVariable = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
+		val boolVariable = action.timeoutDeclaration.allValuesOfTo.filter(DataVariableDeclaration).head
+		val clockExp = container.createAssignmentExpression(reference, clockVariable, "0")
+		val boolExp = container.createAssignmentExpression(reference, boolVariable, "false")
+		addToTrace(action, #{clockExp}, expressionTrace)
+		addToTrace(action, #{boolExp}, expressionTrace)
+	}
+	
+	private def createAssignmentExpression(EObject container, EReference reference,
+			VariableDeclaration variable, String literal) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.operator = AssignmentOperator.EQUAL
 		]
-		val timeVar = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
 		newExp.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-			it.identifier = timeVar.variable.head
+			it.identifier = variable.variable.head
 		]
 		// Always setting the timer to 0 at entry
 		newExp.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
-			it.text = "0"
+			it.text = literal
 		]
-		addToTrace(action, #{newExp}, expressionTrace)
+		return newExp
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, Expression expression, ComponentInstance owner) {
@@ -281,16 +158,11 @@ class ExpressionTransformer {
 	
 	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression, ComponentInstance owner) {		
 		var Variable declaration
-		val dataDeclaration = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration).head
-		// Checking the constants individually as they do not have an owner
-		if (dataDeclaration.prefix == DataVariablePrefix.CONST) {
-			declaration = dataDeclaration.variable.head
-		}
-		// Normal variables
-		else {
-			// TODO
-			declaration = expression.declaration.allValuesOfTo.filter(VariableDeclaration).filter[it.owner == owner].head.variable.head
-		}
+		val dataDeclarations = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration)
+		checkState(dataDeclarations.size == 1, "Probably you do not use event parameters correctly: " + dataDeclarations.size)
+		val dataDeclaration = dataDeclarations.head
+		declaration = dataDeclaration.variable.head
+		// Normal variables: no owner is needed as now every instance has its own statechart declaration
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
 			newExp.identifier = declaration
 		addToTrace(expression, #{newExp}, expressionTrace)
@@ -413,13 +285,16 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, AddExpression expression, ComponentInstance owner) {
-		if (expression.operands.size > 2) {
-			throw new IllegalArgumentException("The following expression has more than two operands: " + expression)
-		}
-		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.ADD
-		]		
-		newExp.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+		]
+		val transformedExpressions = newArrayList
+		for (subExpression : expression.operands) {
+			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			transformedExpressions += temp.firstExpr
+		}
+		val newExp = createArithmeticExpression(ArithmeticOperator.ADD, transformedExpressions)
+		container.eSet(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
@@ -432,13 +307,16 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, MultiplyExpression expression, ComponentInstance owner) {
-		if (expression.operands.size > 2) {
-			throw new IllegalArgumentException("The following expression has more than two operands: " + expression)
-		}
-		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
+		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.MULTIPLICATE
-		]		
-		newExp.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+		]
+		val transformedExpressions = newArrayList
+		for (subExpression : expression.operands) {
+			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			transformedExpressions += temp.firstExpr
+		}
+		val newExp = createArithmeticExpression(ArithmeticOperator.MULTIPLICATE, transformedExpressions)
+		container.eSet(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
@@ -494,14 +372,14 @@ class ExpressionTransformer {
 	}
 	
 	/**
-	 * Returns the Uppaal valueof variable of a gamma parametered-event.
+	 * Returns the Uppaal valueof variable of a Gamma parametered-event.
 	 */
 	protected def getValueOfVariable(Event event, Port port, ComponentInstance owner) {
 		if (event.parameterDeclarations.size != 1) {
 			throw new IllegalArgumentException("This event has not one parameter: " + event + " - " + event.parameterDeclarations)
 		}
 		val parameter = event.parameterDeclarations.head
-		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.owner == owner]
+		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
 							.filter[it.port == port]
 		if (variables.size != 1) {
 			throw new IllegalArgumentException("This event has more than one UPPAAL valueof variables: " + event)

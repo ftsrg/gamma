@@ -1,0 +1,166 @@
+/********************************************************************************
+ * Copyright (c) 2018 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.genmodel.language.GenModel with hu.bme.mit.gamma.expression.language.ExpressionLanguage
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+import "http://www.mit.bme.hu/gamma/statechart/Model" as model
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as interface
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as composite
+import "http://www.mit.bme.hu/gamma/genmodel/Model"
+import "http://www.mit.bme.hu/gamma/trace/Model" as trace
+
+import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
+import "http://www.yakindu.org/sct/statechart/SText" as stext
+import "http://www.yakindu.org/base/types/2.0.0" as types
+
+GenModel returns GenModel:
+	('import' 
+		(packageImports+=[model::Package | STRING] |
+		'external' statechartImports+=[sgraph::Statechart| STRING] |
+		'trace' traceImports+=[trace::ExecutionTrace | STRING])
+	)*
+	(tasks += Task)*
+;
+
+Task returns Task:
+	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration | EventPriorityTransformation
+;
+
+YakinduCompilation returns YakinduCompilation:
+	StatechartCompilation | InterfaceCompilation
+;
+
+InterfaceCompilation returns InterfaceCompilation:
+	'interface' '{'
+		'statechart' ':' statechart=[sgraph::Statechart]
+		(
+			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'package' ':' packageName+=STRING // Gamma package name
+		)*
+	'}'
+;
+
+StatechartCompilation returns StatechartCompilation:
+	'statechart'  '{'
+		'statechart' ':' statechart=[sgraph::Statechart]
+		(
+			'folder' ':' targetFolder+=STRING | // The location of the folder relative to the project
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'package' ':' packageName+=STRING | // Gamma package name
+			'name' ':' statechartName+=STRING | // Gamma statechart name
+			'mappings' '{'
+				(interfaceMappings+=InterfaceMapping)*
+			'}'
+		)*
+	'}'
+;
+
+CodeGeneration returns CodeGeneration:
+	'code'  '{'
+		'component' ':' component=[composite::Component]
+		(
+			'folder' ':' targetFolder+=STRING |
+			'base-package' ':' packageName+=STRING | // Java base package
+			'language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
+
+TestGeneration returns TestGeneration:
+	'test' '{'
+		'trace' ':' executionTrace=[trace::ExecutionTrace]
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'base-package' ':' packageName+=STRING | // Java base package
+			'language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
+
+EventPriorityTransformation returns EventPriorityTransformation:
+	'event-priority' '{'
+		'statechart' ':' statechart=[model::StatechartDefinition]
+		(
+			'folder' ':' targetFolder+=STRING |
+			'file' ':' fileName+=STRING // The name of the generated file
+		)*
+	'}'
+;
+
+enum ProgrammingLanguage returns ProgrammingLanguage:
+	JAVA = 'java'
+;
+
+AnalysisModelTransformation returns AnalysisModelTransformation:
+	'analysis' '{'
+		'component' ':' component=[composite::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		(
+			'folder' ':' targetFolder+=STRING |			
+			'file' ':' fileName+=STRING |
+			'language' ':' language+=AnalysisLanguage |
+			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
+			'scheduler' ':' scheduler+=Scheduler |
+			'minimum-orchestrating-period' ':' minimumOrchestratingPeriod+=TimeSpecification |
+			'maximum-orchestrating-period' ':' maximumOrchestratingPeriod+=TimeSpecification |
+			coverages+=Coverage
+		)*
+	'}'
+;
+
+TimeSpecification returns model::TimeSpecification:
+	value=AdditiveExpression unit=TimeUnit
+;
+
+enum TimeUnit returns model::TimeUnit:
+	MILLISECOND = 'ms' | SECOND = 's'
+;
+
+enum Scheduler returns Scheduler:
+	RANDOM = "random" //| FAIR = "fair"
+;
+
+enum AnalysisLanguage returns AnalysisLanguage:
+	UPPAAL = "UPPAAL"
+;
+
+Coverage returns Coverage:
+	StateCoverage | TransitionCoverage
+;
+
+StateCoverage returns StateCoverage:
+	{StateCoverage} 'state-coverage' ('{' 
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+	'}')?
+;
+
+TransitionCoverage returns TransitionCoverage:
+	{TransitionCoverage} 'transition-coverage' ('{' 
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+	'}')?
+;
+
+InterfaceMapping  returns InterfaceMapping:
+	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
+		eventMappings+=EventMapping*
+	'}')?
+;
+
+EventMapping returns EventMapping:
+	'map' yakinduEvent=[types::Event] '=' gammaEvent=[interface::Event] 
+;
+
+enum RealizationMode returns model::RealizationMode:
+	PROVIDED = 'provided' | REQUIRED = 'required'
+;

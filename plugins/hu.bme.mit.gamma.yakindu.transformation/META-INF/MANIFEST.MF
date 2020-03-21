@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Yakindu Transformer to Gamma
 Bundle-SymbolicName: hu.bme.mit.gamma.yakindu.transformation;singleton:=true
-Bundle-Version: 2.1.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.yakindu.transformation.batch,
  hu.bme.mit.gamma.yakindu.transformation.queries
 Require-Bundle: hu.bme.mit.gamma.statechart.model,
- hu.bme.mit.gamma.constraint.model,
- hu.bme.mit.gamma.yakindu.genmodel,
+ hu.bme.mit.gamma.expression.model,
+ hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.yakindu.transformation.traceability,
  org.yakindu.base.expressions,
  org.yakindu.base.types,

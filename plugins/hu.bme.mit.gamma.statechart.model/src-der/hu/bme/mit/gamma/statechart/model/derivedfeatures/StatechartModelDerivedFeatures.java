@@ -1,23 +1,31 @@
 package hu.bme.mit.gamma.statechart.model.derivedfeatures;
 
+import java.util.ArrayList;
 import java.util.Collection;
-
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.Component;
+import hu.bme.mit.gamma.statechart.model.CompositeElement;
+import hu.bme.mit.gamma.statechart.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
+import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
+import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
+import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference;
@@ -26,12 +34,31 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 
 public class StatechartModelDerivedFeatures {
+	
+	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
+		if (element instanceof RaiseEventAction) {
+			RaiseEventAction raiseEventAction = (RaiseEventAction) element;
+			Event event = raiseEventAction.getEvent();
+			return event.getParameterDeclarations();
+		}
+		if (element instanceof ComponentInstance) {
+			ComponentInstance instance = (ComponentInstance) element;
+			return getDerivedType(instance).getParameterDeclarations();
+		}
+		throw new IllegalArgumentException("Not supported element: " + element);
+	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
 		return interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED &&
@@ -40,6 +67,58 @@ public class StatechartModelDerivedFeatures {
 	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
+	}
+	
+	public static Collection<StatechartDefinition> getContainedStatecharts(SynchronousComponent component) {
+		List<StatechartDefinition> statecharts = new ArrayList<StatechartDefinition>();
+		if (component instanceof StatechartDefinition) {
+			statecharts.add((StatechartDefinition) component);
+		}
+		else {
+			AbstractSynchronousCompositeComponent composite = (AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : composite.getComponents()) {
+				statecharts.addAll(getContainedStatecharts(instance.getType()));
+			}
+		}
+		return statecharts;
+	}
+	
+	public static Collection<Event> getInputEvents(Port port) {
+		List<Event> events = new ArrayList<Event>();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.IN)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		return events;
+	}
+	
+	public static Collection<Event> getOutputEvents(Port port) {
+		List<Event> events = new ArrayList<Event>();
+		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
+		Interface _interface = interfaceRealization.getInterface();
+		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.IN)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
+			events.addAll(_interface.getEvents().stream()
+					.filter(it -> it.getDirection() != EventDirection.OUT)
+					.map(it -> it.getEvent())
+					.collect(Collectors.toList()));
+		}
+		return events;
 	}
 	
 	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
@@ -53,6 +132,20 @@ public class StatechartModelDerivedFeatures {
 			return getAllPorts((AsynchronousAdapter)component);
 		}		
 		return component.getPorts();
+	}
+	
+	public static Collection<PortBinding> getPortBindings(Port port) {
+		EObject component = port.eContainer();
+		List<PortBinding> portBindings = new ArrayList<PortBinding>();
+		if (component instanceof CompositeComponent) {
+			CompositeComponent compositeComponent = (CompositeComponent) component;
+			for (PortBinding portBinding : compositeComponent.getPortBindings()) {
+				if (portBinding.getCompositeSystemPort() == port) {
+					portBindings.add(portBinding);
+				}
+			}
+		}		
+		return portBindings;
 	}
 	
 	public static EventSource getEventSource(EventReference eventReference) {
@@ -91,18 +184,193 @@ public class StatechartModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
 	
-	public static Collection<Transition> getOutgoingTransitions(StateNode node) {
+    public static boolean isCascade(ComponentInstance instance) {
+    	if (getDerivedType(instance) instanceof StatechartDefinition) {
+    		// Statecharts are cascade if contained by cascade composite components
+    		return instance.eContainer() instanceof CascadeCompositeComponent;
+   		}
+   		return getDerivedType(instance) instanceof CascadeCompositeComponent;
+    }
+	
+	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toSet());
+		return statechart.getTransitions().stream().filter(it -> it.getSourceState() == node).collect(Collectors.toList());
 	}
 	
-	public static Collection<Transition> getIncomingTransitions(StateNode node) {
+	public static List<Transition> getIncomingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);
-		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toSet());
+		return statechart.getTransitions().stream().filter(it -> it.getTargetState() == node).collect(Collectors.toList());
+	}
+	
+	public static Collection<StateNode> getAllStateNodes(CompositeElement compositeElement) {
+		Set<StateNode> stateNodes = new HashSet<StateNode>();
+		for (Region region : compositeElement.getRegions()) {
+			for (StateNode stateNode : region.getStateNodes()) {
+				stateNodes.add(stateNode);
+				if (stateNode instanceof State) {
+					State state = (State) stateNode;
+					stateNodes.addAll(getAllStateNodes(state));
+				}
+			}
+		}
+		return stateNodes;
+	}
+	
+	public static Collection<State> getAllStates(CompositeElement compositeElement) {
+		Set<State> states = new HashSet<State>();
+		for (StateNode stateNode : getAllStateNodes(compositeElement)) {
+			if (stateNode instanceof State) {
+				State state = (State) stateNode;
+				states.add(state);
+			}
+		}
+		return states;
+	}
+	
+	public static Collection<State> getStates(Region region) {
+		List<State> states = new ArrayList<State>();
+		for (StateNode stateNode : region.getStateNodes()) {
+			if (stateNode instanceof State) {
+				State state = (State) stateNode;
+				states.add(state);
+			}
+		}
+		return states;
+	}
+	
+	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
+		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
+		for (State state : getAllStates(compositeElement)) {
+			regions.addAll(getAllRegions(state));
+		}
+		return regions;
 	}
 	
 	public static Region getParentRegion(StateNode node) {
 		return (Region) node.eContainer();
+	}
+	
+	public static boolean isTopRegion(Region region) {
+		return region.eContainer() instanceof StatechartDefinition;
+	}
+	
+	public static boolean isSubregion(Region region) {
+		return !isTopRegion(region);
+	}
+	
+	public static State getParentState(Region region) {
+		if (isTopRegion(region)) {
+			throw new IllegalArgumentException("This region has no parent state: " + region);
+		}
+		return (State) region.eContainer();
+	}
+	
+	public static State getParentState(StateNode node) {
+		Region parentRegion = getParentRegion(node);
+		return getParentState(parentRegion);
+	}
+	
+	public static Region getParentRegion(Region region) {
+		if (isTopRegion(region)) {
+			return null;
+		}
+		return getParentRegion((State) region.eContainer());
+	}
+	
+	public static List<Region> getParentRegions(Region region) {
+		if (isTopRegion(region)) {
+			return new ArrayList<Region>();
+		}
+		Region parentRegion = getParentRegion(region);
+		List<Region> parentRegions = new ArrayList<Region>();
+		parentRegions.add(parentRegion);
+		parentRegions.addAll(getParentRegions(parentRegion));
+		return parentRegions;
+	}
+	
+	public static List<Region> getSubregions(Region region) {
+		List<Region> subregions = new ArrayList<Region>();
+		for (List<Region> stateSubregions : getStates(region).stream().map(it -> it.getRegions())
+				.collect(Collectors.toList())) {
+			for (Region subregion : stateSubregions) {
+				subregions.add(subregion);
+				subregions.addAll(getSubregions(subregion));
+			}
+		}
+		return subregions;
+	}
+	
+	public static List<hu.bme.mit.gamma.statechart.model.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
+		List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(lhs);
+		ancestors.retainAll(getAncestors(rhs));
+		return ancestors;
+	}
+	
+	public static List<hu.bme.mit.gamma.statechart.model.State> getAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
+			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
+			List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(parentState);
+			ancestors.add(parentState);
+			return ancestors;
+		}
+		return new ArrayList<hu.bme.mit.gamma.statechart.model.State>();
+	}
+	
+	public static List<Region> getRegionAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
+			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
+			List<Region> ancestors = getRegionAncestors(parentState);
+			ancestors.add((Region) node.eContainer());
+			return ancestors;
+		}
+		Region parentRegion = (Region) node.eContainer();
+		List<Region> regionList = new ArrayList<Region>();
+		regionList.add(parentRegion);
+		return regionList;
+	}
+	
+	public static List<Region> getCommonRegionAncestors(StateNode lhs, StateNode rhs) {
+		List<Region> ancestors = getRegionAncestors(lhs);
+		ancestors.retainAll(getRegionAncestors(rhs));
+		return ancestors;
+	}
+	
+	/**
+	 * Returns whether the given region has deep history in one of its ancestor regions.
+	 */
+	private static boolean hasDeepHistoryAbove(Region region) {
+		if (isTopRegion(region)) {
+			return false;
+		}
+		Region parentRegion = getParentRegion(region);
+		return parentRegion.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState) ||
+			hasDeepHistoryAbove(parentRegion);
+	}
+	
+	/**
+	 * Returns whether the region has history or not.
+	 */
+	public static boolean hasHistory(Region region) {
+		return hasDeepHistoryAbove(region) || 
+			region.getStateNodes().stream().anyMatch(it -> it instanceof ShallowHistoryState) || 
+			region.getStateNodes().stream().anyMatch(it -> it instanceof DeepHistoryState);
+	}	
+	
+	public static String getFullContainmentHierarchy(State state) {
+		if (state == null) {
+			return "";
+		}
+		Region parentRegion = getParentRegion(state);
+		State parentState = null;
+		if (parentRegion.eContainer() instanceof State) {
+			parentState = getParentState(parentRegion);
+		}
+		String parentRegionName = parentRegion.getName();
+		parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
+		if (parentState == null) {
+			return parentRegionName + "_" + state.getName();
+		}
+		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + state.getName();
 	}
 	
 	public static StatechartDefinition getContainingStatechart(EObject object) {
@@ -120,6 +388,111 @@ public class StatechartModelDerivedFeatures {
 			return (Component) object;
 		}
 		return getContainingComponent(object.eContainer());
+	}
+	
+	public static boolean isSameRegion(Transition transition) {
+		return getParentRegion(transition.getSourceState()) == getParentRegion(transition.getTargetState());
+	}
+	
+	public static boolean isToHigher(Transition transition) {
+		return isToHigher(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToHigher(StateNode source, StateNode target) {
+		Region sourceParentRegion = getParentRegion(source);
+		if (isTopRegion(sourceParentRegion)) {
+			return false;
+		}
+		State sourceParentState = getParentState(source);
+		if (getParentRegion(sourceParentState) == getParentRegion(target)) {
+			return true;
+		}
+		return isToHigher(sourceParentState, target);
+	}
+	
+	public static boolean isToLower(Transition transition) {
+		return isToLower(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToLower(StateNode source, StateNode target) {
+		Region targetParentRegion = getParentRegion(target);
+		if (isTopRegion(targetParentRegion)) {
+			return false;
+		}
+		State targetParentState = getParentState(target);
+		if (getParentRegion(source) == getParentRegion(targetParentState)) {
+			return true;
+		}
+		return isToLower(source, targetParentState);
+	}
+	
+	public static boolean isToHigherAndLower(Transition transition) {
+		return isToHigherAndLower(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static boolean isToHigherAndLower(StateNode source, StateNode target) {
+		List<Region> sourceAncestors = getRegionAncestors(source);
+		List<Region> targetAncestors = getRegionAncestors(target);
+		List<Region> commonAncestors = new ArrayList<Region>(sourceAncestors);
+		commonAncestors.retainAll(targetAncestors);
+		if (commonAncestors.isEmpty()) {
+			// Top region orthogonal invalid transitions
+			return false;
+		}
+		sourceAncestors.removeAll(commonAncestors);
+		if (sourceAncestors.isEmpty()) {
+			// To lower level
+			return false;
+		}
+		targetAncestors.removeAll(commonAncestors);
+		if (targetAncestors.isEmpty()) {
+			// To higher level
+			return false;
+		}
+		return true;
+	}
+	
+	public static StateNode getSourceAncestor(Transition transition) {
+		return getSourceAncestor(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static StateNode getSourceAncestor(StateNode source, StateNode target) {
+		if (isToLower(source, target)) {
+			return source;
+		}
+		Region sourceParentRegion = getParentRegion(source);
+		if (isTopRegion(sourceParentRegion)) {
+			throw new IllegalArgumentException("No source ancestor!");
+		}
+		State sourceParentState = getParentState(source);
+		return getSourceAncestor(sourceParentState, target);
+	}
+	
+	public static StateNode getTargetAncestor(Transition transition) {
+		return getTargetAncestor(transition.getSourceState(), transition.getTargetState());
+	}
+	
+	public static StateNode getTargetAncestor(StateNode source, StateNode target) {
+		if (isToHigher(source, target)) {
+			return source;
+		}
+		Region targetParentRegion = getParentRegion(target);
+		if (isTopRegion(targetParentRegion)) {
+			throw new IllegalArgumentException("No target ancestor!");
+		}
+		State targetParentState = getParentState(target);
+		return getTargetAncestor(source, targetParentState);
+	}
+	
+	public static boolean isComposite(StateNode node) {
+		if (node instanceof State) {
+			return isComposite((State) node);
+		}
+		return false;
+	}
+	
+	public static boolean isComposite(State state) {
+		return !state.getRegions().isEmpty();
 	}
 	
 }

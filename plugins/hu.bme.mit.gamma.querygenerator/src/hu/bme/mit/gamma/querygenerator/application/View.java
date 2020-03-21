@@ -78,6 +78,8 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem breadthFirst;
 	private JRadioButtonMenuItem depthFirst;
 	private JRadioButtonMenuItem randomDepthFirst;
+	private JRadioButtonMenuItem optimalFirst;
+	private JRadioButtonMenuItem randomOptimalDepthFirst;
 	
 	private JMenuItem traceMenu;	
 	private ButtonGroup traceGroup;
@@ -98,6 +100,22 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
 	
+	private JRadioButtonMenuItem disableMemoryReduction;
+	
+	private JMenu testGenerationTimeoutMenu;
+
+	private JRadioButtonMenuItem reuseStateSpaceItem;
+	private JRadioButtonMenuItem singleTraceModelItem;
+	
+	private JMenuItem testGenerationTimeoutMenuItem;
+	private ButtonGroup testGenerationTimeoutGroup;
+	private JRadioButtonMenuItem sec15;
+	private JRadioButtonMenuItem sec30;
+	private JRadioButtonMenuItem sec60;
+	private JRadioButtonMenuItem sec90;
+	private JRadioButtonMenuItem sec180;
+	private JRadioButtonMenuItem sec360;
+	
 	private JTextArea exampleTextArea;
 	private JTextArea helpTextArea;
 	
@@ -105,7 +123,7 @@ public class View extends JFrame {
 
 	private JComboBox<String> stateSelector = new JComboBox<String>();
 	private JComboBox<String> variableSelector = new JComboBox<String>();
-	private JComboBox<String> operatorSelector = new JComboBox<String>(new String[] {"AND", "OR", "IMPLICATION", "NEGATION"});
+	private JComboBox<String> operatorSelector = new JComboBox<String>(new String[] {"AND", "OR", "IMPLICATION", "NEGATION", "EQUALITY"});
 
 	private JTextField resultText;
 	private JTextField optionalText;
@@ -150,14 +168,20 @@ public class View extends JFrame {
 		breadthFirst = new JRadioButtonMenuItem("Breadth First");
 		depthFirst = new JRadioButtonMenuItem("Depth First");
 		randomDepthFirst = new JRadioButtonMenuItem("Random Depth First");
+		optimalFirst = new JRadioButtonMenuItem("Optimal First");
+		randomOptimalDepthFirst = new JRadioButtonMenuItem("Random Optimal Depth First");
 		breadthFirst.setSelected(true);
 		searchOrderGroup = new ButtonGroup();
 		searchOrderGroup.add(breadthFirst);
 		searchOrderGroup.add(depthFirst);
 		searchOrderGroup.add(randomDepthFirst);
+		searchOrderGroup.add(optimalFirst);
+		searchOrderGroup.add(randomOptimalDepthFirst);
 	    traversalMenu.add(breadthFirst);
 	    traversalMenu.add(depthFirst);
 	    traversalMenu.add(randomDepthFirst);
+	    traversalMenu.add(optimalFirst);
+	    traversalMenu.add(randomOptimalDepthFirst);
 		
 	    modelCheckingOptionsMenu.add(traversalMenu);
 	    
@@ -166,7 +190,7 @@ public class View extends JFrame {
 	 	someTrace = new JRadioButtonMenuItem("Some");
 	 	shortestTrace = new JRadioButtonMenuItem("Shortest");
 	 	fastestTrace = new JRadioButtonMenuItem("Fastest");
-	 	shortestTrace.setSelected(true);
+	 	someTrace.setSelected(true);
 	 	traceGroup = new ButtonGroup();
 	 	traceGroup.add(someTrace);
 	 	traceGroup.add(shortestTrace);
@@ -196,6 +220,40 @@ public class View extends JFrame {
 	 		
 	 	modelCheckingOptionsMenu.add(hashtableSizeMenu);
 	 	
+	    // Setting the test generation timeout
+	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
+	 	
+	 	reuseStateSpaceItem = new JRadioButtonMenuItem("Reuse State Space");
+	 	singleTraceModelItem = new JRadioButtonMenuItem("Single Trace Model");
+	 	
+	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
+	 	sec15 = new JRadioButtonMenuItem("15 sec");
+	 	sec30 = new JRadioButtonMenuItem("30 sec");
+	 	sec60 = new JRadioButtonMenuItem("60 sec");
+	 	sec90 = new JRadioButtonMenuItem("90 sec");
+	 	sec180 = new JRadioButtonMenuItem("180 sec");
+	 	sec360 = new JRadioButtonMenuItem("360 sec");
+	 	sec15.setSelected(true);
+	 	testGenerationTimeoutGroup = new ButtonGroup();
+	 	testGenerationTimeoutGroup.add(sec15);
+	 	testGenerationTimeoutGroup.add(sec30);
+	 	testGenerationTimeoutGroup.add(sec60);
+	 	testGenerationTimeoutGroup.add(sec90);
+	 	testGenerationTimeoutGroup.add(sec180);
+	 	testGenerationTimeoutGroup.add(sec360);
+	 	testGenerationTimeoutMenuItem.add(sec15);
+	 	testGenerationTimeoutMenuItem.add(sec30);
+	 	testGenerationTimeoutMenuItem.add(sec60);
+	 	testGenerationTimeoutMenuItem.add(sec90);
+	 	testGenerationTimeoutMenuItem.add(sec180);
+	 	testGenerationTimeoutMenuItem.add(sec360);
+
+//	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
+	 	testGenerationTimeoutMenu.add(singleTraceModelItem);
+	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
+	 		
+	 	optionsMenu.add(testGenerationTimeoutMenu);
+	 	
 	    // Setting the state space reduction
 	 	spaceStateReductionMenu = new JMenu("State Space Reduction");
 	 	noSpaceStateReduction = new JRadioButtonMenuItem("None");
@@ -211,6 +269,10 @@ public class View extends JFrame {
 	 	spaceStateReductionMenu.add(aggressiveSpaceStateReduction);
 	 		
 	 	modelCheckingOptionsMenu.add(spaceStateReductionMenu);
+	 	
+	 	// Disable memory reduction techniques
+	 	disableMemoryReduction = new JRadioButtonMenuItem("Disable Memory Reduction"); 
+	 	modelCheckingOptionsMenu.add(disableMemoryReduction);
 	 	
 		// Setting the temporal logical operators using JComboBox		
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
@@ -313,6 +375,9 @@ public class View extends JFrame {
 				case "NEGATION":
 					activeText.setText(activeText.getText() + "!");
 					break;
+				case "EQUALITY":
+					activeText.setText(activeText.getText() + " == ");
+					break;
 				default:
 					break;
 				}
@@ -394,7 +459,7 @@ public class View extends JFrame {
 			public void actionPerformed(ActionEvent e) {			
 				boolean isCancelled = controller.cancelVerification();
 				if (isCancelled) {
-					verificationResultLabel.setText("Verification cancelled.");
+					setVerificationLabelToCancelled();
 					// We do not want to empty the query labels
 					return;
 				}
@@ -588,6 +653,12 @@ public class View extends JFrame {
 		if (randomDepthFirst.isSelected()) {
 			return "Random Depth First";
 		}
+		if (optimalFirst.isSelected()) {
+			return "Optimal First";
+		}
+		if (randomOptimalDepthFirst.isSelected()) {
+			return "Random Optimal Depth First";
+		}
 		// BFS is default
 		return "Breadth First";
 	}
@@ -606,6 +677,14 @@ public class View extends JFrame {
 		return "Shortest";
 	}
 	
+	protected boolean isReuseStateSpace() {
+		return reuseStateSpaceItem.isSelected();
+	}
+	
+	protected boolean isSingleTraceModelNeeded() {
+		return singleTraceModelItem.isSelected();
+	}
+	
 	protected int getHashTableSize() {
 		if (size16M.isSelected()) {
 			return 16;
@@ -620,6 +699,26 @@ public class View extends JFrame {
 		return 64;
 	}
 	
+	protected int getTestGenerationTmeout() {
+		if (sec30.isSelected()) {
+			return 30;
+		}
+		if (sec60.isSelected()) {
+			return 60;
+		}
+		if (sec90.isSelected()) {
+			return 90;
+		}
+		if (sec180.isSelected()) {
+			return 180;
+		}
+		if (sec360.isSelected()) {
+			return 360;
+		}
+		// 15 sec is deafult
+		return 15;
+	}
+	
 	protected String getStateSpaceReduction() {
 		if (noSpaceStateReduction.isSelected()) {
 			return "None";
@@ -629,6 +728,10 @@ public class View extends JFrame {
 		}
 		// 64 MB is deafult
 		return "Conservative";
+	}
+	
+	protected boolean isDisableMemoryReduction() {
+		return disableMemoryReduction.isSelected();
 	}
 
 	private void setFrameSizeSmaller() {
@@ -731,6 +834,11 @@ public class View extends JFrame {
 				}
 				break;
 		}
+	}
+	
+	protected void setVerificationLabelToCancelled() {
+		verificationResultLabel.setText("Verification cancelled.");
+		verificationResultLabel.setForeground(Color.black);
 	}
 
 	protected void setVerificationLabelToFalse() {

@@ -4,7 +4,6 @@ import java.util.Queue;
 import java.util.List;
 import java.util.LinkedList;
 
-import hu.bme.mit.gamma.tutorial.finish.event.*;
 import hu.bme.mit.gamma.tutorial.finish.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.finish.controller.IControllerStatemachine.*;
@@ -21,7 +20,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	private PriorityControl priorityControl;
 	private SecondaryControl secondaryControl;
 	private SecondaryPolice secondaryPolice;
-	// Indicates which queues are active in this cycle
+	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
 	// Event queues for the synchronization of statecharts
@@ -106,7 +105,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 				}
 		}
 		controllerStatemachine.runCycle();
-	}			
+	}
 	
 	// Inner classes representing Ports
 	public class PoliceInterrupt implements PoliceInterruptInterface.Required {
@@ -264,6 +263,33 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	public boolean isStateActive(State state) {
 		return controllerStatemachine.isStateActive(state);
 	}
+	
+	public boolean isStateActive(String region, String state) {
+		switch (region) {
+			case "operating":
+				switch (state) {
+					case "Priority":
+						return isStateActive(State.main_region_Operating_operating_Priority);
+					case "Secondary":
+						return isStateActive(State.main_region_Operating_operating_Secondary);
+					case "SecondaryPrepares":
+						return isStateActive(State.main_region_Operating_operating_SecondaryPrepares);
+					case "PriorityPrepares":
+						return isStateActive(State.main_region_Operating_operating_PriorityPrepares);
+					case "Init":
+						return isStateActive(State.main_region_Operating_operating_Init);
+				}
+			case "main_region":
+				switch (state) {
+					case "Operating":
+						return isStateActive(State.main_region_Operating);
+					case "Interrupted":
+						return isStateActive(State.main_region_Interrupted);
+				}
+		}
+		return false;
+	}
+	
 	
 	public void setTimer(ITimer timer) {
 		controllerStatemachine.setTimer(timer);

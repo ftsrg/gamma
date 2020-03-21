@@ -2,7 +2,9 @@
   <extension id="hu.bme.mit.gamma.codegenerator.java.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.codegenerator.java.queries.Patterns" id="hu.bme.mit.gamma.codegenerator.java.queries.Patterns">
       <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.traces"/>
-      <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.simpleComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.typeDeclarations"/>
+      <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.simpleGammaComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.simpleYakinduComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.abstractSynchronousCompositeComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.simpleChannels"/>
       <query-specification fqn="hu.bme.mit.gamma.codegenerator.java.queries.broadcastChannels"/>

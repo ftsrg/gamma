@@ -7,8 +7,8 @@ import hu.bme.mit.gamma.tutorial.extra.interfaces.PoliceInterruptInterface;
 public interface MonitoredCrossroadInterface {
 	
 	LightCommandsInterface.Provided getSecondaryOutput();
-	LightCommandsInterface.Provided getPriorityOutput();
 	MonitorInterface.Provided getMonitorOutput();
+	LightCommandsInterface.Provided getPriorityOutput();
 	PoliceInterruptInterface.Required getPolice();
 	
 	void reset();
@@ -16,4 +16,4 @@ public interface MonitoredCrossroadInterface {
 	void runCycle();
 	void runFullCycle();
 	
-} 
+}

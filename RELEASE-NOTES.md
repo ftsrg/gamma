@@ -45,7 +45,7 @@
 * Content assist regarding the message queues of the asynchronous adapters is improved.
 * Validation rules regarding the priority of message queues of asynchronous adapters are extended.
 
-## 2018.02.28. - Version 2.1.0
+## 2019.02.28. - Version 2.1.0
 
 ### What is New
 
@@ -64,8 +64,76 @@
 * Compatibility issues with the new VIATRA version are resolved.
 * Queries generated with the GUI are now appended with an expression specifying activeness (isActive) when referring to states.
 
-## 2018.03.28. - Version 2.1.1
+## 2019.03.28. - Version 2.1.1
 
 ### Improvements
 
 * Validation rules regarding fork and join nodes are added.
+
+## 2019.05.25. - Version 2.1.2
+
+### What is New
+
+* Gamma now depends on VIATRA 2.1.1 and Yakindu 3.5.3.
+* A new action language has been introduced (GAL), wich provides new elements in actions, such as cycles and branches.
+* The GCL metamodel and grammar have been refactored, they now depend on the GAL.
+
+### Improvements
+ 
+* Validation rules regarding the control specifications of asynchronous adapters are added.
+* The Gamma-UPPAAL transformation has been optimized.
+
+## 2019.07.17. - Version 2.1.3
+
+### What is New
+
+* The Component element of the GSL metamodel has been moved to the composite package.
+* The analysis task now has include and exclude component features.
+
+### Improvements
+ 
+* Bugs regarding the generation of imports in the generated code and tests are fixed.
+
+## 2019.11.02. - Version 2.2.0
+
+### What is New
+
+* Gamma Constraint Language has been renamed to Gamma Expression Language.
+* Prioritized transitions in the GSL have been introduced.
+* A reflective API to the generated Java code has been introduced.
+
+### Improvements
+ 
+* Validation rules have been added.
+
+## 2019.11.28. - Version 2.2.1
+
+### What is New
+
+* The reflective API has been extended with a checkVariableValue method.
+* The generated tests now access the class implementations through the reflective API (Java interface).
+
+### Improvements
+ 
+* Optimization regarding timings has been introduced.
+* State references in the query generator have been fixed.
+* Bugs in the reflective class wrapper have been fixed.
+
+## 2020.03.21. - Version 2.3.0
+
+### What is New
+
+* Gamma now depends on VIATRA 2.3.1 and Yakindu 3.5.10.
+* Typedefs can now be used for primitive types.
+* Ports can now be bound to multiple instance ports in a composite component if they contain only input events.
+* Persistent events have been introduced.
+* Multiple test now can be generated in a single JUnit file using the query generator GUI.
+* Oncycle triggers can now be used in statechart.
+
+### Improvements
+ 
+* Optimizations regarding event, timing and variable declarations in the UPPAAL transformation have been introduced.
+* A state reference bug in the query generator has been fixed.
+* New validation rules in the Gamma text editor have been introduced.
+* A timeout trigger bug regarding statechart complex triggers in the UPPAAL transformation has been fixed.
+* Various UPPAAL back-annotation bugs have been fixed.

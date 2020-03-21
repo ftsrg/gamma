@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Execution Trace Language UI
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.1.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.language.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: hu.bme.mit.gamma.constraint.language.ui,
+Require-Bundle: hu.bme.mit.gamma.expression.language.ui,
  hu.bme.mit.gamma.trace.language,
  hu.bme.mit.gamma.trace.language.ide,
  hu.bme.mit.gamma.trace.model,
@@ -17,7 +17,7 @@ Require-Bundle: hu.bme.mit.gamma.constraint.language.ui,
  org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.xtext.builder,
- org.eclipse.xtend.lib;resolution:=optional,
+ org.eclipse.xtend.lib;bundle-version="2.14.0";resolution:=optional,
  org.eclipse.xtext.xbase.lib;bundle-version="2.14.0"
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

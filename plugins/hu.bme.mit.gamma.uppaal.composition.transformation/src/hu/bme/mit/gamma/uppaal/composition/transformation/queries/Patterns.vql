@@ -7,16 +7,26 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
+********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.queries
 
-import "http://www.mit.bme.hu/gamma/constraint/Model" 
+import "http://www.mit.bme.hu/gamma/expression/Model" 
 import "http://www.mit.bme.hu/gamma/statechart/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
 pattern parameterizedInstances(instance : ComponentInstance) {
-	ComponentInstance.parameters(instance, _); 
+	ComponentInstance.arguments(instance, _); 
+}
+
+pattern parameterizedInstancesWithParameters(instance : ComponentInstance, type : Component, parameter  : ParameterDeclaration) {
+	SynchronousComponentInstance.arguments(instance, _);
+	SynchronousComponentInstance.type(instance, type);
+	Component.parameterDeclarations(type, parameter);
+} or {
+	AsynchronousComponentInstance.arguments(instance, _);
+	AsynchronousComponentInstance.type(instance, type);
+	Component.parameterDeclarations(type, parameter);
 }
 
 pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {
@@ -28,19 +38,37 @@ pattern instanceContainer(containerInstace : SynchronousComponentInstance, insta
 	AbstractSynchronousCompositeComponent.components(type, instance);
 }
 
+pattern referencedDeclarations(declaration : NamedElement) {
+	ReferenceExpression.declaration(_, declaration);
+} or {
+	TimeoutEventReference.timeout(_, declaration);
+}
+
 pattern instanceVariables(instance : SynchronousComponentInstance, variable : VariableDeclaration) {
 	find simpleInstances(instance, statechart);
 	StatechartDefinition.variableDeclarations(statechart, variable);
+	find referencedDeclarations(variable);
+}
+
+pattern instanceTimeouts(instance : SynchronousComponentInstance, timeout : TimeoutDeclaration) {
+	find simpleInstances(instance, statechart);
+	StatechartDefinition.timeoutDeclarations(statechart, timeout);
+	find referencedDeclarations(timeout);
 }
 
 // To filter out events that are not used
-private pattern relevantEvents(event : Event) {
-	PortEventReference.event(_, event);
+private pattern relevantEvents(port : Port, event : Event) {
+	PortEventReference.port(portEventReference, port);
+	PortEventReference.event(portEventReference, event);
 } or {
 	Port.interfaceRealization.interface.events.event(port, event);
 	AnyPortEventReference.port(_, port);
 } or {
-	RaiseEventAction.event(_, event);
+	RaiseEventAction.port(raiseEventAction, port);
+	RaiseEventAction.event(raiseEventAction, event);
+} or {
+	EventParameterReferenceExpression.port(reference, port);
+	EventParameterReferenceExpression.event(reference, event);
 }
 
 private pattern eventDirection(eventDeclaration : EventDeclaration, direction : EventDirection) {
@@ -61,11 +89,13 @@ pattern inputInstanceEvents(instance : SynchronousComponentInstance, port : Port
 	find componentDeclarationEvents(statechart, port, RealizationMode::PROVIDED, eventDeclaration, event);
 	// OUT events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::OUT);
+	find relevantEvents(port, event); // Only relevant events
 } or {
 	find simpleInstances(instance, statechart);
 	find componentDeclarationEvents(statechart, port, RealizationMode::REQUIRED, eventDeclaration, event);
 	// IN events are NOT returned
 	neg find eventDirection(eventDeclaration, EventDirection::IN);
+	find relevantEvents(port, event); // Only relevant events
 }
 
 private pattern outputInstanceEvents(instance : SynchronousComponentInstance, port : Port, event : Event) {
@@ -128,13 +158,15 @@ pattern topSyncSystemInEvents(component : SynchronousComponent, systemPort : Por
 	find topSyncComponents(component);
 	find syncCompositeSystemInEvents(component, systemPort, instance, port, event);
 	// Filtering out unused event
-	find relevantEvents(event);
+	find relevantEvents(port, event);
 }  or {
 	// Statechart wrapped by wrapper
 	find topSyncComponents(component);
 	SynchronousComponentInstance.type(instance, component);	
 	find inputInstanceEvents(instance, port, event);
 	systemPort == port;
+	// Filtering out unused event
+	find relevantEvents(port, event);
 }
 
 private pattern syncCompositeSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
@@ -265,21 +297,20 @@ private pattern simpleInstanceChannelEndings(channel : Channel, outInstance : Sy
 	// Both instances are simple
 	find channels(channel, outInstance, outPort, raisedEvent, inInstance, inPort);
 	find simpleInstances(outInstance, _statechart1);
-	find simpleInstances(inInstance, _statechart2);
+	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
 	// Output instance simple, input instance composite	
 	find simpleInstances(outInstance, statechart1);
 	Component.ports(statechart1, outPort);
 	find portToInstancePort(outSytemPort, outInstance, outPort);
 	find channels(channel, _outCompositeInstance, outSytemPort, raisedEvent, inInstance, inPort);
-	find simpleInstances(inInstance, _statechart2);
+	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
 	// Input instance simple, output instance composite
 	find simpleInstances(outInstance, _statechart1);	
 	find channels(channel, outInstance, outPort, raisedEvent, _inCompositeInstance, inSystemPort);
 	find portToInstancePort(inSystemPort, inInstance, inPort);
-	Component.ports(statechart2, inPort);
-	find simpleInstances(inInstance, statechart2);
+	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 } or {
 	// Both instances are composite
 	find simpleInstances(outInstance, statechart1);
@@ -287,8 +318,7 @@ private pattern simpleInstanceChannelEndings(channel : Channel, outInstance : Sy
 	find portToInstancePort(outSystemPort, outInstance, outPort);	
 	find channels(channel, _outCompositeInstance, outSystemPort, raisedEvent, _inCompositeInstance, inSystemPort);
 	find portToInstancePort(inSystemPort, inInstance, inPort);
-	Component.ports(statechart2, inPort);
-	find simpleInstances(inInstance, statechart2);
+	find inputInstanceEvents(inInstance, inPort, raisedEvent);
 }
 
 // The following patterns should all have simple instance ending for both ends
@@ -353,10 +383,10 @@ pattern raiseInstanceEventOfTransitions(transition : Transition, eventRaiseActio
 }
 
 // Same for top level sync components
-pattern raiseTopSystemEventOfTransitions(composite : AbstractSynchronousCompositeComponent, transition : Transition,
+pattern raiseTopSystemEventOfTransitions(component : SynchronousComponent, transition : Transition,
 	instance : SynchronousComponentInstance, outPort : Port, raisedEvent : Event, eventRaiseAction : RaiseEventAction) {
 	find raiseEventTransitionEffects(transition, eventRaiseAction, raisedEvent, outPort);
-	find topSyncSystemOutEvents(composite, _systemPort, instance, outPort, raisedEvent);
+	find topSyncSystemOutEvents(component, _systemPort, instance, outPort, raisedEvent);
 }
 
 // Scheduling of synchronous components
@@ -451,7 +481,7 @@ pattern wrapperInstanceInEvents(instance : AsynchronousComponentInstance, port :
 	find wrapperInEvents(wrapper, port, event);
 }
 
-// In events of asnync composites
+// In events of async composites
 
 private pattern asyncSystemInEvents(composite : AsynchronousCompositeComponent, systemPort : Port,
 	instance : AsynchronousComponentInstance, port : Port, event : Event) {
@@ -611,8 +641,7 @@ pattern runOnceClockControl(wrapper : AsynchronousAdapter, queue : MessageQueue,
 }
 
 // Max timeout
-pattern timeoutValues(valueExp : Expression, unit : TimeUnit) {
+pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit : TimeUnit) {
 	TimeSpecification.value(timeSpec, valueExp);
 	TimeSpecification.unit(timeSpec, unit);
 }
-

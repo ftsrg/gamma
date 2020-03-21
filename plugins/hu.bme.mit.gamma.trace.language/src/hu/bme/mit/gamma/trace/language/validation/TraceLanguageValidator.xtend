@@ -28,7 +28,7 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import org.eclipse.xtext.EcoreUtil2
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.InstanceState
-import hu.bme.mit.gamma.constraint.model.ConstraintModelPackage
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 
 /**
@@ -41,8 +41,8 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	@Check
 	def checkParameters(ExecutionTrace executionTrace) {
 		val type = executionTrace.component
-		if (executionTrace.getParameters().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ConstraintModelPackage.Literals.PARAMETERIZED_ELEMENT__PARAMETERS)
+		if (executionTrace.getArguments().size() != type.getParameterDeclarations().size()) {
+			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 	}
 	
@@ -66,10 +66,10 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 				error("This event is an in-event of the component.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 			}			
 		}
-		if (event.parameterDeclarations.empty && !raiseEventAct.parameters.empty) {
+		if (event.parameterDeclarations.empty && !raiseEventAct.arguments.empty) {
 			error("This event type has no parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 		}
-		if (!event.parameterDeclarations.empty && raiseEventAct.parameters.empty) {
+		if (!event.parameterDeclarations.empty && raiseEventAct.arguments.empty) {
 			error("This event type must have a parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 		}
 	}
@@ -109,14 +109,14 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 			val variable = variableState.declaration
 			val variables = type.variableDeclarations
 			if (!variables.contains(variable)) {
-				error("This is not a valid variable in the specified statechart.", ConstraintModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
+				error("This is not a valid variable in the specified statechart.", ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
 			}
 		}
 	}
 	
 	@Check
 	def checkInstanceSchedule(InstanceSchedule schedule) {
-		val executionTrace = schedule.eContainer.eContainer as ExecutionTrace
+		val executionTrace = EcoreUtil2.getRootContainer(schedule, true) as ExecutionTrace
 		val component = executionTrace.component
 		if (component !== null) {
 			if (!(component instanceof AsynchronousCompositeComponent)) {
@@ -129,7 +129,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	@Check
 	def checkInstanceSchedule(ComponentSchedule schedule) {
 		val step = schedule.eContainer as Step
-		val executionTrace = step.eContainer as ExecutionTrace
+		val executionTrace = EcoreUtil2.getRootContainer(step, true) as ExecutionTrace
 		val component = executionTrace.component
 		if (component !== null) {
 			if (!(component instanceof SynchronousComponent || component instanceof AsynchronousAdapter)) {

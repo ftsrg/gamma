@@ -10,12 +10,19 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.transformation.queries
 
-import "http://www.mit.bme.hu/gamma/constraint/Model"
+import "http://www.mit.bme.hu/gamma/expression/Model"
+import "http://www.mit.bme.hu/gamma/action/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
 
 pattern namedElements(element : NamedElement, name : java String) {
 	NamedElement.name(element, name);
+}
+
+pattern assignedVariables(variableDeclaration : VariableDeclaration) {
+	AssignmentStatement.lhs(_, referenceExpression);
+	ReferenceExpression.declaration(referenceExpression, variableDeclaration);
 }
 
 pattern variableDeclarations(variable : VariableDeclaration, name : java String, type) {
@@ -35,7 +42,7 @@ pattern constantDeclarations(constant : ConstantDeclaration, name : java String,
 	ConstantDeclaration.expression(constant, initValue);
 }
 
-pattern declarationInitializations(declaration : DefinableDeclaration, initValue : Expression) {
+pattern declarationInitializations(declaration : InitializableElement, initValue : Expression) {
 	VariableDeclaration.expression(declaration, initValue);
 } or {
 	ConstantDeclaration.expression(declaration, initValue);
@@ -69,14 +76,6 @@ pattern inEvents(port : Port, event : Event, name : java String) {
 	neg find eventDirection(declaration, EventDirection::IN);
 	EventDeclaration.event(declaration, event);
 	Event.name(event, name);
-}
-
-pattern eventParameters(event : Event, param : ParameterDeclaration) {
-	EventTrigger.parameters(trigger, reference);
-	ReferenceExpression.declaration(reference, param);
-	EventTrigger.eventReference(trigger, portEventReference);
-	PortEventReference.event(portEventReference, event);
-	Event.parameterDeclarations(event, param);
 }
 
 pattern topRegions(gammaPackage : Package, statechart : StatechartDefinition, topRegion : Region, name : java String) {
@@ -118,9 +117,18 @@ pattern states(state : State, region : Region, name : java String) {
 	State.name(state, name);
 }
 
-pattern choices(choice : ChoiceState, region : Region) {
+private pattern choices(choice : ChoiceState, region : Region) {
 	Region.stateNodes(region, choice);
-	ChoiceState(choice);
+}
+
+private pattern merges(merge : MergeState, region : Region) {
+	Region.stateNodes(region, merge);
+}
+
+pattern choicesAndMerges(pseudoState : PseudoState, region : Region) {
+	find choices(pseudoState, region);
+} or {
+	find merges(pseudoState, region);
 }
 
 private pattern dynamicChoices(choice : ChoiceState) {
@@ -137,8 +145,8 @@ private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : Ch
 	Transition.targetState(inTransition, choice);
 	Transition.sourceState(outTransition, choice2);
 	// Assignment action of input transition
-	find updatesOfTransitions(inTransition, assignmentAction);
-	AssignmentAction.lhs(assignmentAction, referenceExpression);
+	Transition.effects(inTransition, assignmentStatement);
+	AssignmentStatement.lhs(assignmentStatement, referenceExpression);
 	ReferenceExpression.declaration(referenceExpression, variable);
 	// Guard of output transition refers to the updated variable
 	Transition.guard(outTransition, guard);
@@ -227,7 +235,6 @@ pattern allSubregionsOfCompositeStates(compositeState : State, region : Region) 
 
 pattern eventTriggersOfTransitions(transition : Transition, trigger : Trigger) {
 	Transition.trigger(transition, trigger);
-	neg find timeTriggers(trigger, _, _);
 }
 
 pattern simpleEventTriggersOfTransitions(transition : Transition, trigger : EventTrigger, port : Port, event : Event) {
@@ -243,75 +250,86 @@ private pattern timeTriggers(trigger : EventTrigger, timeoutEventReference : Tim
 	TimeoutEventReference.timeout(timeoutEventReference, timeoutDeclaration);
 }
 
-pattern timeTriggersOfTransitions(state : State, transition : Transition, timeoutEventReference : TimeoutEventReference,
-	timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification, name : java String) {
-	State.entryActions(state, timeoutAction);
-	SetTimeoutAction.timeoutDeclaration(timeoutAction, clockDeclaration);
-	TimeoutDeclaration.name(clockDeclaration, name);
-	SetTimeoutAction.time(timeoutAction, time);
-	Transition.sourceState(transition, state);
-	Transition.trigger(transition, trigger);
-	find timeTriggers(trigger, timeoutEventReference, timeoutDeclaration);
-}
-
-pattern guardsOfTransitions(transition : Transition, guard : Expression) {
-	Transition.guard(transition, guard);
-}
-
-pattern updatesOfTransitions(transition : Transition, assignmentAction : AssignmentAction) {
-	Transition.effects(transition, assignmentAction);
-	AssignmentAction(assignmentAction);
-}
-
-pattern entryAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {
-	State.entryActions(state, assignmentAction);
-	AssignmentAction(assignmentAction);
-}
-
-pattern entryTimeoutActionsOfStates(state : State, setTimeoutAction : SetTimeoutAction) {
-	State.entryActions(state, setTimeoutAction);
-	SetTimeoutAction(setTimeoutAction);
-}
-
-pattern exitAssignmentsOfStates(state : State, assignmentAction : AssignmentAction) {	
-	State.exitActions(state, assignmentAction);
-	AssignmentAction(assignmentAction);
-}
-
-pattern exitAssignmentsOfStatesWithTransitions(outgoingTransition : Transition, assignmentAction : AssignmentAction) {
-	Transition.sourceState(outgoingTransition, state);
-	find exitAssignmentsOfStates(state, assignmentAction);
-}
-
-pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {
-	Transition.effects(transition, raiseEventAction);
-	RaiseEventAction(raiseEventAction);
-}
-
-private pattern transitionParameterAndGuard(transition : Transition, port : Port, event : Event,
-		parameter : ParameterDeclaration, guard : Expression) {
-	Transition.trigger(transition, trigger);
-	EventTrigger.eventReference(trigger, eventReference);
-	PortEventReference.port(eventReference, port);
-	PortEventReference.event(eventReference, event);
-	Event.parameterDeclarations(event, parameter);
-	Transition.guard(transition, guard);
-} or {
-	Transition.trigger(transition, trigger);
-	find triggerToTrigger+(trigger, containedTrigger);
-	EventTrigger.eventReference(containedTrigger, eventReference);
-	PortEventReference.port(eventReference, port);
-	PortEventReference.event(eventReference, event);
-	Event.parameterDeclarations(event, parameter);
-	Transition.guard(transition, guard);
-}
-
 private pattern triggerToTrigger(trigger : ComplexTrigger, containedTrigger : Trigger) {
 	BinaryTrigger.leftOperand(trigger, containedTrigger);
 } or {
 	BinaryTrigger.rightOperand(trigger, containedTrigger);
 } or {
 	UnaryTrigger.operand(trigger, containedTrigger);
+}
+
+private pattern entrySetTimeoutActions(state : State, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	find setTimeoutActions(timeoutAction, timeoutDeclaration, time);
+	State.entryActions(state, timeoutAction);
+}
+
+pattern timeTriggersOfTransitions(transition : Transition, timeoutDeclaration : TimeoutDeclaration) {
+	Transition.trigger(transition, trigger);
+	find triggerToTrigger+(trigger, timeTrigger);
+	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
+} or {
+	Transition.trigger(transition, timeTrigger);
+	find timeTriggers(timeTrigger, _timeoutEventReference, timeoutDeclaration);
+}
+
+pattern entryTimeTriggersOfTransitions(state : State, transition : Transition, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	find entrySetTimeoutActions(state, timeoutDeclaration, time);
+	Transition.sourceState(transition, state);
+	find timeTriggersOfTransitions(transition, timeoutDeclaration);
+}
+
+pattern setTimeoutActions(timeoutAction : SetTimeoutAction, timeoutDeclaration : TimeoutDeclaration, time : TimeSpecification) {
+	SetTimeoutAction.timeoutDeclaration(timeoutAction, timeoutDeclaration);
+	SetTimeoutAction.time(timeoutAction, time);
+}
+
+pattern guardsOfTransitions(transition : Transition, guard : Expression) {
+	Transition.guard(transition, guard);
+}
+
+pattern updatesOfTransitions(transition : Transition) {
+	Transition.effects(transition, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
+}
+
+pattern entryAssignmentsOfStates(state : State) {
+	State.entryActions(state, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
+}
+
+pattern entryTimeoutActionsOfStates(state : State) {
+	State.entryActions(state, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+pattern timeoutActionsOfTransitions(transition : Transition) {
+	Transition.effects(transition, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+private pattern exitTimeoutActionsOfStates(state : State) { 
+	State.exitActions(state, setTimeoutAction);
+	SetTimeoutAction(setTimeoutAction);
+}
+
+pattern exitTimeoutActionsOfStatesWithTransitions(state : State, outgoingTransition : Transition) {
+	Transition.sourceState(outgoingTransition, state);
+	find exitTimeoutActionsOfStates(state);
+}
+
+private pattern exitAssignmentsOfStates(state : State) { 
+	State.exitActions(state, assignmentStatement);
+	AssignmentStatement(assignmentStatement);
+}
+
+pattern exitAssignmentsOfStatesWithTransitions(state : State, outgoingTransition : Transition) {
+	Transition.sourceState(outgoingTransition, state);
+	find exitAssignmentsOfStates(state);
+}
+
+pattern raisingActionsOfTransitions(transition : Transition, raiseEventAction : RaiseEventAction) {
+	Transition.effects(transition, raiseEventAction);
+	RaiseEventAction(raiseEventAction);
 }
 
 private pattern expressionToExpression(from : Expression, to : Expression) {
@@ -340,12 +358,12 @@ private pattern parameterValue(rootExpression : EqualityExpression, port : Port,
 }
 
 pattern valuesOfEventParameters(port : Port, event : Event, expression : Expression) {
-	find transitionParameterAndGuard(_, port, event, parameter, equalityExpression);
-	find parameterValue(equalityExpression, port, event, parameter, expression);
+	Transition.guard(_, equalityExpression);
+	find parameterValue(equalityExpression, port, event, _parameter, expression);
 } or {
-	find transitionParameterAndGuard(_, port, event, parameter, guard);		
+	Transition.guard(_, guard);		
 	find expressionToExpression+(guard, equalityExpression);
-	find parameterValue(equalityExpression, port, event, parameter, expression);
+	find parameterValue(equalityExpression, port, event, _parameter, expression);
 } 
 
 pattern entryRaisingActionsOfStates(state : State, raiseEventAction : RaiseEventAction) {

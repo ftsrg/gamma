@@ -22,13 +22,13 @@ statechart TrafficLightCtrlStatechart [
 			region normal {
 				shallow history Entry1
 				state Green {
-					entry / raise LightCommands.displayGreen
+					entry / raise LightCommands.displayGreen;
 				}
 				state Yellow {
-					entry / raise LightCommands.displayYellow
+					entry / raise LightCommands.displayYellow;
 				}
 				state Red {
-					entry / raise LightCommands.displayRed
+					entry / raise LightCommands.displayRed;
 				}
 			}
 		}
@@ -36,10 +36,10 @@ statechart TrafficLightCtrlStatechart [
 			region interrupted {
 				initial Entry0
 				state BlinkingYellow {
-					entry / set BlinkingYellowTimeout4 := 500 ms; raise LightCommands.displayYellow
+					entry / set BlinkingYellowTimeout4 := 500 ms; raise LightCommands.displayYellow;
 				}
 				state Black {
-					entry / set BlackTimeout3 := 500 ms; raise LightCommands.displayNone
+					entry / set BlackTimeout3 := 500 ms; raise LightCommands.displayNone;
 				}
 			}
 		}
