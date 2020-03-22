@@ -649,7 +649,7 @@ pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit 
 // Triggerable transition optimization patterns
 
 pattern removableTransitions(transition : Transition) {
-	Transition.trigger(transition, _trigger); // It is important that the transition has a trigger
+	find transitionEventTrigger(transition, _, _); // It is important that the transition has an event trigger
 	neg find triggerableTransition(transition);
 }
 
