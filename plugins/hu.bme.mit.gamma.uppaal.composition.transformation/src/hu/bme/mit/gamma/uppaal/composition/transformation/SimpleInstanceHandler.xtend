@@ -10,8 +10,6 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import java.util.Collection
 import java.util.List
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -69,7 +67,7 @@ class SimpleInstanceHandler {
 	}
 	
 	def boolean contains(SynchronousComponentInstance container, SynchronousComponentInstance instance) {
-		if (container.helperEquals(instance)) {
+		if (container.instanceEquals(instance)) {
 			// Sometimes not working due to the M2M transformation: different references (instances) for component instances
 			// Works for transition tests and not for state tests for some reason
 			return true
@@ -86,9 +84,10 @@ class SimpleInstanceHandler {
 		return false
 	}
 	
-	private def boolean helperEquals(EObject lhs, EObject rhs) {
-		val helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
+	private def instanceEquals(SynchronousComponentInstance original, SynchronousComponentInstance copy) {
+		// TODO better equality check (helper equals does not work as the original statecharts have been optimized)
+		return copy.name == original.name /* Flat composite */ ||
+			copy.name.endsWith("_" + original.name) /* Hierarchical composite */
 	}
 	
 }
