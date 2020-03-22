@@ -645,3 +645,45 @@ pattern timeoutValues(timeSpec : TimeSpecification, valueExp : Expression, unit 
 	TimeSpecification.value(timeSpec, valueExp);
 	TimeSpecification.unit(timeSpec, unit);
 }
+
+// Triggerable transition optimization patterns
+
+pattern removableTransitions(transition : Transition) {
+	Transition.trigger(transition, _trigger); // It is important that the transition has a trigger
+	neg find triggerableTransition(transition);
+}
+
+private pattern triggerableTransition(transition : Transition) {
+	find relevantEvents(outPort, raisedEvent);
+	find simpleInstanceChannelEndings(_, _, outPort, raisedEvent, _, inPort);
+	find transitionEventTrigger(transition, inPort, raisedEvent);
+} or {
+	find topSyncSystemInEvents(_, _, _, inPort, raisedEvent);
+	find transitionEventTrigger(transition, inPort, raisedEvent);
+}
+
+private pattern transitionEventTrigger(transition : Transition, inPort : Port, raisedEvent : Event) {
+	Transition.trigger(transition, parentTrigger);
+	find triggerToTriggerThroughAndTriggers(parentTrigger, trigger);
+	find eventTriggers(trigger, inPort, raisedEvent);
+}
+
+private pattern triggerToTriggerThroughAndTriggers(parentTrigger : Trigger, trigger : Trigger) {
+	parentTrigger == trigger;
+} or {
+	find andTriggerToTrigger+(parentTrigger, trigger);
+}
+
+private pattern andTriggerToTrigger(andTrigger : BinaryTrigger, trigger : Trigger) {
+	BinaryTrigger.type(andTrigger, ::AND);
+	BinaryTrigger.leftOperand(andTrigger, trigger);
+} or {
+	BinaryTrigger.type(andTrigger, ::AND);
+	BinaryTrigger.rightOperand(andTrigger, trigger);
+}
+
+private pattern eventTriggers(trigger : EventTrigger, port : Port, event : Event) {
+	EventTrigger.eventReference(trigger, eventReference);
+	PortEventReference.port(eventReference, port);
+	PortEventReference.event(eventReference, event);
+}

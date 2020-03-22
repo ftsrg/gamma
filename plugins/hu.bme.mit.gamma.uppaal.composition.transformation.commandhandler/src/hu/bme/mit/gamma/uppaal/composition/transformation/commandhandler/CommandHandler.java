@@ -28,7 +28,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -37,11 +36,12 @@ import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.TransitionOptimizer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
@@ -118,25 +118,39 @@ public class CommandHandler extends AbstractHandler {
 		String fileNameWithoutExtenstion = fileName.substring(0, fileName.lastIndexOf("."));
 		// Unfolding the given system
 		Trace trace = new ModelUnfolder().unfold(gammaPackage);
+		Package _package = trace.getPackage();
 		Component topComponent = trace.getTopComponent();
+		int topComponentIndex = _package.getComponents().indexOf(topComponent);
+		// Optimizing - removing unfireable transitions
+		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
+		String flattenedModelFileName = "." + fileNameWithoutExtenstion + ".gsm";
+		normalSave(_package, parentFolder, flattenedModelFileName);
+		// Reading the model from disk as this is the only way it works
+		ResourceSet resourceSetTransitionOptimization = new ResourceSetImpl();
+		logger.log(Level.INFO, "Resource set for transition optimization in Gamma to UPPAAL transformation created: " + 
+				resourceSetTransitionOptimization);
+		Resource resourceTransitionOptimization = resourceSetTransitionOptimization
+				.getResource(URI.createFileURI(parentFolder + File.separator + flattenedModelFileName), true);
+		TransitionOptimizer transitionOptimizer = new TransitionOptimizer(resourceSetTransitionOptimization);
+		transitionOptimizer.execute();
+		_package = (Package) resourceTransitionOptimization.getContents().get(0);
 		// Transforming unhandled transitions to two transitions connected by a choice
 		UnhandledTransitionTransformer unhandledTransitionTransformer = new UnhandledTransitionTransformer();
-		trace.getPackage().getComponents().stream()
+		_package.getComponents().stream()
 			.filter(it -> it instanceof StatechartDefinition)
 			.forEach(it -> {
 				unhandledTransitionTransformer.execute((StatechartDefinition) it);
 			}
 		);
 		// Saving the Package of the unfolded model
-		String flattenedModelFileName = "." + fileNameWithoutExtenstion + ".gsm";
-		normalSave(trace.getPackage(), parentFolder, flattenedModelFileName);
+		normalSave(_package, parentFolder, flattenedModelFileName);
 		// Reading the model from disk as this is the only way it works
 		ResourceSet resourceSet = new ResourceSetImpl();
 		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
 		Resource resource = resourceSet
 				.getResource(URI.createFileURI(parentFolder + File.separator + flattenedModelFileName), true);
 		// Needed because reading from disk means it is another model now
-		Component newTopComponent = getEquivalentComposite(resource, topComponent);
+		Component newTopComponent = getEquivalentComposite(resource, topComponentIndex);
 		// Checking the model whether it contains forbidden elements
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
@@ -159,24 +173,10 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "The composite system transformation has been finished.");
 	}
 
-	/**
-	 * Returns whether the given objects are equal taking into consideration Ecore copies too.
-	 */
-	private boolean helperEquals(EObject lhs, EObject rhs) {
-		EqualityHelper helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
-	}
-
-	/**
-	 * Returns the CompositeDefinition from the resource that equals to the given composite.
-	 */
-	private Component getEquivalentComposite(Resource resource, Component component) {
+	private Component getEquivalentComposite(Resource resource, int index) {
 		Package gammaPackage = (Package) resource.getContents().get(0);
-		Component foundComponent = (Component) gammaPackage.getComponents().get(0);
-		if (helperEquals(component, foundComponent)) {
-			return foundComponent;
-		}
-		throw new IllegalArgumentException("No equivalent component!");
+		Component foundComponent = (Component) gammaPackage.getComponents().get(index);
+		return foundComponent;
 	}
 
 	private void normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {

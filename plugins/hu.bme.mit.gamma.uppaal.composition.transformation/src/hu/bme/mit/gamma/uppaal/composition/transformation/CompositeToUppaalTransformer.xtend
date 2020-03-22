@@ -599,6 +599,12 @@ class CompositeToUppaalTransformer {
 				DataVariablePrefix.NONE } else { DataVariablePrefix.CONST }
 		val variable = it.variable.transformVariable(it.variable.type, prefix,
 			it.variable.name + "Of" + instance.name)
+		if (prefix == DataVariablePrefix.CONST && it.variable.expression === null) {
+			// It is only read, 0 is a good initial value for all types
+			variable.variable.head.initializer = createExpressionInitializer => [
+				it.expression = createLiteralExpression => [it.text = "0"]
+			]
+		}
 		addToTrace(it.instance, #{variable}, instanceTrace)		
 		// Traces are created in the transformVariable method
 	].build
@@ -1743,14 +1749,30 @@ class CompositeToUppaalTransformer {
 				regions += topRegion.subregions
 			}
 			for (statechartRegion : regions) {
-					var array = new ArrayList<String>
+				val templateName = statechartRegion.regionName + "Of" + instance.name
+					var locationArray = new ArrayList<String>
 					for (state : statechartRegion.stateNodes.filter(State)) {
-						array.add(state.locationName)
+						val locationName = state.locationName
+						if (templateName.hasLocationName(locationName)) {
+							locationArray.add(state.locationName)
+						}
 					}
-					templateLocationMap.put(statechartRegion.regionName + "Of" + instance.name, array)
+					if (!locationArray.empty) {
+						templateLocationMap.put(templateName, locationArray)
+					}
 			}
 		}
 		return templateLocationMap
+	}
+	
+	private def hasLocationName(String templateName, String locationName) {
+		val templates = nta.template.filter[it.name == templateName]
+		checkState(templates.size == 1)
+		val template = templates.head
+		if (template !== null) {
+			return template.location.exists[it.name == locationName]
+		}
+		return false
 	}
 	
 	def getTransitionIdVariableIntervalValue() {

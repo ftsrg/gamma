@@ -98,6 +98,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setNoSpace().before(f.getSynchronousComponentInstanceAccess().getGroup_4());
         c.setNoSpace().before(f.getEventAccess().getGroup_4());
         c.setNoSpace().before(f.getRaiseEventActionAccess().getGroup_4());
+        c.setNoSpace().before(f.getNotTriggerAccess().getOperandParenthesesTriggerParserRuleCall_1_0());
         // Space before [
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
         	c.setSpace(" ").before(p.getFirst());
