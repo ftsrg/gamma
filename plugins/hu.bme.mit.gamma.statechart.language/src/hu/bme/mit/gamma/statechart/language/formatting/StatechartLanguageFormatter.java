@@ -77,7 +77,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         // Set line wrap after bindings and components
         
         // Right indentation around ports
-        c.setLinewrap(1).before(f.getPortRule());
+        c.setLinewrap(1, 1, 2).before(f.getPortRule());
         c.setIndentationIncrement().before(f.getPortRule());
         c.setIndentationDecrement().after(f.getPortRule());
 		for (Keyword comma : f.findKeywords(",")) {

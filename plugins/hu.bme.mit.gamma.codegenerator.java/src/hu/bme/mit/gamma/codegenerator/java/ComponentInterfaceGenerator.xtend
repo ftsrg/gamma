@@ -30,7 +30,7 @@ class ComponentInterfaceGenerator {
 		if (component instanceof CompositeComponent) {
 			val composite = component as CompositeComponent
 			// Only bound ports are created
-			ports += composite.portBindings.map[it.compositeSystemPort]
+			ports += composite.ports
 		}
 		else if (component instanceof AsynchronousAdapter) {
 			ports += component.allPorts
