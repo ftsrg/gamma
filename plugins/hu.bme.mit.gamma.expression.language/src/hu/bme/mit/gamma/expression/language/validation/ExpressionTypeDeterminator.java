@@ -172,7 +172,7 @@ public class ExpressionTypeDeterminator {
 		if (expression == null) {
 			return ExpressionType.VOID;
 		}
-		// EventParameterReferences: they are contained in StatechartModelPackage
+		// EventParameterReferences: they are contained in StatechartModelPackage (they cannot be imported)
 		Optional<EObject> parameter = getParameter(expression);
 		if (parameter.isPresent()) {
 			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
@@ -182,7 +182,7 @@ public class ExpressionTypeDeterminator {
 		throw new IllegalArgumentException("Not known expression: " + expression);
 	}
 
-	private Optional<EObject> getParameter(Expression expression) {
+	protected Optional<EObject> getParameter(Expression expression) {
 		return expression.eCrossReferences().stream().filter(it -> it instanceof ParameterDeclaration).findFirst();
 	}
 	
@@ -415,26 +415,37 @@ public class ExpressionTypeDeterminator {
 			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
 	}
 	
-	public EnumerationTypeDefinition getEnumType(Expression expression) {
+
+	protected EnumerationTypeDefinition getEnumerationType(Type type) {
+		EnumerationTypeDefinition enumType = null;
+		if (type instanceof EnumerationTypeDefinition) {
+			enumType = (EnumerationTypeDefinition) type;
+		}
+		else if (type instanceof TypeReference){
+			final TypeReference typeReference = (TypeReference) type;
+			final Type referencedType = typeReference.getReference().getType();
+			if (referencedType instanceof EnumerationTypeDefinition) {
+				enumType = (EnumerationTypeDefinition) referencedType;
+			}
+		}
+		return enumType;
+	}
+	
+	public EnumerationTypeDefinition getEnumerationType(Expression expression) {
 		if (expression instanceof EnumerationLiteralExpression) {
 			EnumerationLiteralExpression literal = (EnumerationLiteralExpression) expression;
 			return (EnumerationTypeDefinition) literal.getReference().eContainer();
 		}
 		if (expression instanceof ReferenceExpression) {
 			ReferenceExpression reference = (ReferenceExpression) expression;
-			return (EnumerationTypeDefinition) reference.getDeclaration().getType();
+			Type type = reference.getDeclaration().getType();
+			return getEnumerationType(type);
 		}
 		Optional<EObject> parameter = getParameter(expression);
 		if (parameter.isPresent()) {
 			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
 			Type type = parameterDeclaration.getType();
-			if (type instanceof TypeReference) {
-				final TypeReference typeReference = (TypeReference) type;
-				return (EnumerationTypeDefinition) typeReference.getReference().getType();
-			}
-			else {
-				return (EnumerationTypeDefinition) type;
-			}
+			return getEnumerationType(type);
 		}
 		throw new IllegalArgumentException("Not known expression: " + expression);
 	}

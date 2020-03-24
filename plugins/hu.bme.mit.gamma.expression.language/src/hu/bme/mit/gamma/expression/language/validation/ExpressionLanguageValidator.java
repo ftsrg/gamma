@@ -138,6 +138,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
+		if (true) {
+			// Blocked as it throws exceptions
+			return;
+		}
 		List<Expression> arguments = functionAccessExpression.getArguments();
 		if (functionAccessExpression.getOperand() instanceof ReferenceExpression) {
 			ReferenceExpression ref = (ReferenceExpression) functionAccessExpression.getOperand();
@@ -235,21 +239,15 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
 				Expression lhs = equivalenceExpression.getLeftOperand();
 				Expression rhs = equivalenceExpression.getRightOperand();
-				if (lhs instanceof ReferenceExpression) {
-					checkTypeAndExpressionConformance(((ReferenceExpression) lhs).getDeclaration().getType(), rhs,
-							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
+				ExpressionType leftHandSideExpressionType = typeDeterminator.getType(lhs);
+				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
+				if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
+					error("The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " +
+						rightHandSideExpressionType, ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 				}
-				else if (rhs instanceof ReferenceExpression) {
-					checkTypeAndExpressionConformance(((ReferenceExpression) rhs).getDeclaration().getType(), lhs,
-							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
-				}
-				else {
-					ExpressionType leftHandSideExpressionType = typeDeterminator.getType(lhs);
-					ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
-					if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
-						error("The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " +
-							rightHandSideExpressionType, ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
-					}
+				// Additional checks for enums
+				else if (leftHandSideExpressionType == ExpressionType.ENUMERATION) {
+					checkEnumerationConformance(lhs, rhs, ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND);
 				}
 			}
 			// Comparison
@@ -275,23 +273,24 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 					rightHandSideExpressionType.toString().toLowerCase() + ".", feature);
 			return;
 		}
-		// Additional checks for enumerations
-		EnumerationTypeDefinition enumType = null;
-		if (type instanceof EnumerationTypeDefinition) {
-			enumType = (EnumerationTypeDefinition) type;
-		}
-		else if (type instanceof TypeReference){
-			final TypeReference typeReference = (TypeReference) type;
-			final Type referencedType = typeReference.getReference().getType();
-			if (referencedType instanceof EnumerationTypeDefinition) {
-				enumType = (EnumerationTypeDefinition) referencedType;
-			}
-		}
+		checkEnumerationConformance(type, rhs, feature);
+	}
+
+	protected void checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
+		EnumerationTypeDefinition enumType = typeDeterminator.getEnumerationType(type);
 		if (enumType != null) {
-			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumType(rhs);
+			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumerationType(rhs);
 			if (enumType != rhsType) {
 				error("The right hand side is not the same type of enumeration as the left hand side.", feature);
 			}
+		}
+	}
+	
+	protected void checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
+		EnumerationTypeDefinition lhsType = typeDeterminator.getEnumerationType(lhs);
+		EnumerationTypeDefinition rhsType = typeDeterminator.getEnumerationType(rhs);
+		if (lhsType != rhsType) {
+			error("The right hand side is not the same type of enumeration as the left hand side.", feature);
 		}
 	}
 	
@@ -366,21 +365,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 							ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 				} 
 				// Additional checks for enumerations
-				EnumerationTypeDefinition enumType = null;
-				if (variableDeclarationType instanceof EnumerationTypeDefinition) {
-					enumType = (EnumerationTypeDefinition) variableDeclarationType;
-				}
-				else if (variableDeclarationType instanceof TypeReference &&
-						((TypeReference) variableDeclarationType).getReference().getType() instanceof EnumerationTypeDefinition) {
-					enumType = (EnumerationTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
-				}
-				if (enumType != null) {
-					final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumType(initialExpression);
-					if (enumType != rhsType) {
-						error("The right hand side is not the same type of enumeration as the left hand side.",
-								ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
-					}
-				}
+				checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
 				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
 				if (variableDeclarationType instanceof ArrayTypeDefinition) {
