@@ -41,7 +41,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTrans
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.TransitionOptimizer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
@@ -131,7 +131,7 @@ public class CommandHandler extends AbstractHandler {
 				resourceSetTransitionOptimization);
 		Resource resourceTransitionOptimization = resourceSetTransitionOptimization
 				.getResource(URI.createFileURI(parentFolder + File.separator + flattenedModelFileName), true);
-		TransitionOptimizer transitionOptimizer = new TransitionOptimizer(resourceSetTransitionOptimization);
+		SystemReducer transitionOptimizer = new SystemReducer(resourceSetTransitionOptimization);
 		transitionOptimizer.execute();
 		_package = (Package) resourceTransitionOptimization.getContents().get(0);
 		// Transforming unhandled transitions to two transitions connected by a choice

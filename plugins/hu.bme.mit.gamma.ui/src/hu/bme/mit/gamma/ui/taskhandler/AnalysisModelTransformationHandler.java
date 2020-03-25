@@ -40,7 +40,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Namings;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.TransitionOptimizer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
@@ -76,7 +76,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				resourceSetTransitionOptimization);
 		Resource resourceTransitionOptimization = resourceSetTransitionOptimization
 				.getResource(URI.createFileURI(targetFolderUri + File.separator + flattenedModelFileName), true);
-		TransitionOptimizer transitionOptimizer = new TransitionOptimizer(resourceSetTransitionOptimization);
+		SystemReducer transitionOptimizer = new SystemReducer(resourceSetTransitionOptimization);
 		transitionOptimizer.execute();
 		_package = (Package) resourceTransitionOptimization.getContents().get(0);
 		// Transforming unhandled transitions to two transitions connected by a choice
