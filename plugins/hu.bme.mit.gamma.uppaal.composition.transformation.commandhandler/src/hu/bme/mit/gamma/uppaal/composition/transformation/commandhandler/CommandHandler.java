@@ -157,7 +157,7 @@ public class CommandHandler extends AbstractHandler {
 		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-				newTopComponent, Scheduler.RANDOM, simpleInstanceHandler.getSimpleInstances(newTopComponent), Collections.emptyList()); // newTopComponent
+				newTopComponent, simpleInstanceHandler.getSimpleInstances(newTopComponent)); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models

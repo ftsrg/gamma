@@ -188,11 +188,6 @@ class CompositeToUppaalTransformer {
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	// isStable variable
 	protected DataVariableDeclaration isStableVar
-	// Async scheduler
-	protected Scheduler asyncScheduler = Scheduler.RANDOM
-	// Orchestrating period for top sync components
-	protected TimeSpecification minimalOrchestratingPeriod
-	protected TimeSpecification maximalOrchestratingPeriod
 	// Minimal element set: no functions
 	protected boolean isMinimalElementSet = false
 	// For the generation of pseudo locations
@@ -229,10 +224,12 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
 	
-	new(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
-			List<SynchronousComponentInstance> testedComponentsForStates,
-			List<SynchronousComponentInstance> testedComponentsForTransitions) {
-		this.initialize(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+	new(ResourceSet resourceSet, Component component, 
+			List<SynchronousComponentInstance> testedComponentsForStates) {
+		this.initialize(resourceSet, component, Scheduler.RANDOM,
+			null, null,
+			testedComponentsForStates, #[]
+		)
 	}
 	
 	new(ResourceSet resourceSet, Component component,
@@ -243,21 +240,23 @@ class CompositeToUppaalTransformer {
 			boolean isMinimalElementSet,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
-		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
-		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
 		this.isMinimalElementSet = isMinimalElementSet
 		this.topComponentArguments.addAll(topComponentArguments)
 		// The above parameters have to be set before calling initialize
-		this.initialize(resourceSet, component, asyncScheduler, testedComponentsForStates, testedComponentsForTransitions)
+		this.initialize(resourceSet, component, asyncScheduler,
+			minimalOrchestratingPeriod, maximalOrchestratingPeriod,
+			testedComponentsForStates, testedComponentsForTransitions
+		)
 	}
 	
 	private def initialize(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
+			TimeSpecification minimalOrchestratingPeriod,
+			TimeSpecification maximalOrchestratingPeriod,
 			List<SynchronousComponentInstance> testedComponentsForStates,
 			List<SynchronousComponentInstance> testedComponentsForTransitions) {
 		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
 		this.component = component
-		this.asyncScheduler = asyncScheduler
 		this.testedComponentsForStates += testedComponentsForStates // Only simple instances
 		this.testedComponentsForTransitions += testedComponentsForTransitions // Only simple instances
 		this.target = UppaalFactory.eINSTANCE.createNTA => [
@@ -302,14 +301,14 @@ class CompositeToUppaalTransformer {
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
+			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
 		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionEvaluator, this.assignmentExpressionCreator,
-			this.minimalOrchestratingPeriod, this.maximalOrchestratingPeriod, this.asyncScheduler)
+			minimalOrchestratingPeriod, maximalOrchestratingPeriod, asyncScheduler)
 		this.asynchronousConnectorTemplateCreator = new AsynchronousConnectorTemplateCreator(this.ntaBuilder, this.manipulation, this.assignmentExpressionCreator,
 			this.asynchronousComponentHelper, this.expressionTransformer, this.traceModel, this.isStableVar, this.messageEvent, this.messageValue)
 	}
