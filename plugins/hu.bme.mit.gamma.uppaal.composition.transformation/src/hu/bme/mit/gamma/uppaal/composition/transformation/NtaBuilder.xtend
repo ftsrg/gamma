@@ -12,16 +12,19 @@ import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.Declarations
 import uppaal.declarations.DeclarationsPackage
+import uppaal.declarations.ExpressionInitializer
 import uppaal.declarations.Function
 import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableContainer
+import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.ExpressionsPackage
 import uppaal.expressions.FunctionCallExpression
 import uppaal.expressions.IdentifierExpression
+import uppaal.expressions.LiteralExpression
 import uppaal.expressions.LogicalExpression
 import uppaal.expressions.LogicalOperator
 import uppaal.statements.ExpressionStatement
@@ -38,7 +41,6 @@ import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
-import uppaal.expressions.ArithmeticOperator
 
 class NtaBuilder {
 	// NTA target model
@@ -142,6 +144,18 @@ class NtaBuilder {
 		]
 		varContainer.createTypeAndVariable(type, name)		
 		return varContainer
+	}
+	
+		
+	/**
+	 * Initializes a variable with the given string value.
+	 */
+	def initVar(DataVariableDeclaration variable, String value) {		
+		variable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
+			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
+				it.text = value
+			]
+		]
 	}
 	
 	/**

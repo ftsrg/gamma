@@ -9,6 +9,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import uppaal.declarations.Variable
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 
 class Namings {
 	
@@ -53,7 +54,7 @@ class Namings {
 		return "Of" + instance.name
 	}
 	
-		def static getOutEventName(Event event, Port port, ComponentInstance owner) {
+	def static getOutEventName(Event event, Port port, ComponentInstance owner) {
 		return port.name + "_" + event.name + "Of" + owner.name
 	}
 	
@@ -86,22 +87,22 @@ class Namings {
 	/**
 	 * Returns the template name of a region.
 	 */
-	def static String getRegionName(Region region) {
-	var String templateName
-	if (region.eContainer instanceof State) {
+	def static String getTemplateName(Region region, SynchronousComponentInstance instance) {
+		var String templateName
+		if (region.eContainer instanceof State) {
 			templateName = (region.name + "Of" + (region.eContainer as State).name)
 		}
 		else {			
 			templateName = (region.name + "OfStatechart")
 		}
-		return templateName.replaceAll(" ","")
+		return templateName.replaceAll(" ","")  + "Of" +  instance.name
 	}
 	
 	/**
 	 * Returns the location name of a state.
 	 */
 	def static String getLocationName(State state) {
- 	return state.name.replaceAll(" ","")
+ 		return state.name.replaceAll(" ","")
 	}
 	
 	/**

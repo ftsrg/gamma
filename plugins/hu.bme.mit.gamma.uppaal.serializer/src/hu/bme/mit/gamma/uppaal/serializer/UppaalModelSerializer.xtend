@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.serializer
 
+import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.util.Map
 import java.util.logging.Level
 import java.util.logging.Logger
 import uppaal.NTA
@@ -20,10 +20,9 @@ import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.FunctionDeclaration
 import uppaal.declarations.TypeDeclaration
 import uppaal.declarations.VariableDeclaration
+import uppaal.types.StructTypeSpecification
 
 import static extension hu.bme.mit.gamma.uppaal.serializer.ExpressionTransformer.*
-import uppaal.types.StructTypeSpecification
-import java.io.File
 
 /**
  * The class is responsible for serializing the UPPAAL model conforming to the metamodel defined by the de.uni_paderborn.uppaal plugin,
@@ -63,47 +62,15 @@ class UppaalModelSerializer {
 		}
 	}
 	
-	/**
-	 * Creates some easy temporal logical queries checking deadlock and the reachability of the states.
-	 * The created q file can be loaded by the UPPAAL.
-	 * @param states The names of the states in the TTMC model.
-	 * @param filepath
-	 *            The path for the output file. It contains the file name also,
-	 *            except for the file extension.
-	 */
-	def static createStateReachabilityQueries(Map<String, String[]> states, String suffix, String parentFolder, String fileName) {
+	def static saveString(String parentFolder, String fileName, String content) {
 		try {
 			var writer = new FileWriter(parentFolder + File.separator + fileName, true)
-			val deadlockQuery = createDeadlockQuery
-			val reachabilityQueries = createStateReachabilityQueries(states, suffix)
-			writer.append(deadlockQuery.toString + reachabilityQueries.toString)
+			writer.append(content)
 			writer.close
-			// information message, about the completion of the transformation.
-			Logger.getLogger("GammaLogger").log(Level.INFO, "Query generations have been finished.")
+			// information message, about the completion of the transformation
+			Logger.getLogger("GammaLogger").log(Level.INFO, "Serialization has been finished.")
 		} catch (IOException ex) {
-			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the q file. " + ex.message)
-		}
-	}
-	
-	/**
-	 * Creates some easy temporal logical queries checking the fireability of the transitions.
-	 * The created q file can be loaded by the UPPAAL.
-	 * @param states The names of the states in the TTMC model.
-	 * @param filepath
-	 *            The path for the output file. It contains the file name also,
-	 *            except for the file extension.
-	 */
-	def static createTransitionFireabilityQueries(String variableName, Pair<Integer, Integer> idInterval,
-			String suffix, String parentFolder, String fileName) {
-		try {
-			var writer = new FileWriter(parentFolder + File.separator + fileName, true)
-			val fireabilityQueries = createTransitionFireabilityQueries(variableName, idInterval, suffix)
-			writer.append(fireabilityQueries.toString)
-			writer.close
-			// information message, about the completion of the transformation.
-			Logger.getLogger("GammaLogger").log(Level.INFO, "Query generations have been finished.")
-		} catch (IOException ex) {
-			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the q file. " + ex.message)
+			Logger.getLogger("GammaLogger").log(Level.SEVERE, "An error occurred, while creating the file. " + ex.message)
 		}
 	}
 	/**
@@ -238,38 +205,9 @@ class UppaalModelSerializer {
 	'''
 	
 	/**
-	 * Returns a query that checks whether there is a possibility of deadlock in the model
-	 */
-	private def static createDeadlockQuery() '''
-		A[] not deadlock
-	'''
-	
-	/**
-	 * Returns a set of queries that checks whether the location equivalent of states are reachable in the model.
-	 * It does not generate queries for LocalReactionStates.
-	 */
-	private def static createStateReachabilityQueries(Map<String, String[]> templateLocationsMap, String suffix) '''
-		«FOR templateLocations : templateLocationsMap.entrySet.sortBy[it.key]»
-			«FOR state : templateLocations.value.filter[!it.startsWith("LocalReactionState")].sort»
-				E<> «templateLocations.key.processNameOfTemplate».«state»«IF suffix !== null»«IF !suffix.nullOrEmpty» && «suffix»«ENDIF»«ENDIF»
-			«ENDFOR»
-		«ENDFOR»
-	'''
-	
-	/**
 	 * Converts the template name to process name.
 	 */
 	private def static getProcessNameOfTemplate(String templateName) '''
 		P_«templateName»'''
 		
-	/**
-	 * Returns a set of queries that checks whether the location equivalent of states are reachable in the model.
-	 * It does not generate queries for LocalReactionStates.
-	 */
-	private def static createTransitionFireabilityQueries(String variableName, Pair<Integer, Integer> idInterval, String suffix) '''
-		«FOR i : idInterval.key ..< idInterval.value»
-			E<> «variableName» == «i»«IF !suffix.nullOrEmpty» && «suffix»«ENDIF»
-		«ENDFOR»
-	'''
-
 }

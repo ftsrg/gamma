@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.Transition
@@ -80,10 +79,8 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
-import java.util.HashMap
 import java.util.HashSet
 import java.util.List
-import java.util.Map
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -192,18 +189,13 @@ class CompositeToUppaalTransformer {
 	protected boolean isMinimalElementSet = false
 	// For the generation of pseudo locations
 	protected int id = 0
-	// Transition ids
-	protected final Set<SynchronousComponentInstance> testedComponentsForStates = newHashSet
-	protected final Set<SynchronousComponentInstance> testedComponentsForTransitions = newHashSet
-	protected DataVariableDeclaration transitionIdVar
-	protected final int INITIAL_TRANSITION_ID = 1
-	protected int transitionId = INITIAL_TRANSITION_ID
 	// Trace
 	protected extension Trace traceModel
 	// Auxiliary objects
 	protected extension VariableTransformer variableTransformer
 	protected extension TriggerTransformer triggerTransformer
 	protected extension NtaBuilder ntaBuilder
+	protected extension TestQueryGenerationHandler testGenerationHandler
 	protected extension ExpressionTransformer expressionTransformer
 	protected extension ExpressionCopier expressionCopier
 	protected extension ExpressionEvaluator expressionEvaluator
@@ -224,11 +216,11 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
 	
-	new(ResourceSet resourceSet, Component component, 
-			List<SynchronousComponentInstance> testedComponentsForStates) {
+	new(ResourceSet resourceSet, Component component,
+			TestQueryGenerationHandler testGenerationHandler) {
 		this.initialize(resourceSet, component, Scheduler.RANDOM,
 			null, null,
-			testedComponentsForStates, #[]
+			testGenerationHandler
 		)
 	}
 	
@@ -238,27 +230,22 @@ class CompositeToUppaalTransformer {
 			TimeSpecification minimalOrchestratingPeriod,
 			TimeSpecification maximalOrchestratingPeriod,
 			boolean isMinimalElementSet,
-			List<SynchronousComponentInstance> testedComponentsForStates,
-			List<SynchronousComponentInstance> testedComponentsForTransitions) { 
+			TestQueryGenerationHandler testGenerationHandler) { 
 		this.isMinimalElementSet = isMinimalElementSet
 		this.topComponentArguments.addAll(topComponentArguments)
 		// The above parameters have to be set before calling initialize
 		this.initialize(resourceSet, component, asyncScheduler,
 			minimalOrchestratingPeriod, maximalOrchestratingPeriod,
-			testedComponentsForStates, testedComponentsForTransitions
-		)
+			testGenerationHandler)
 	}
 	
 	private def initialize(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
 			TimeSpecification minimalOrchestratingPeriod,
 			TimeSpecification maximalOrchestratingPeriod,
-			List<SynchronousComponentInstance> testedComponentsForStates,
-			List<SynchronousComponentInstance> testedComponentsForTransitions) {
+			TestQueryGenerationHandler testGenerationHandler) {
 		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
 		this.component = component
-		this.testedComponentsForStates += testedComponentsForStates // Only simple instances
-		this.testedComponentsForTransitions += testedComponentsForTransitions // Only simple instances
 		this.target = UppaalFactory.eINSTANCE.createNTA => [
 			it.name = component.name
 		]
@@ -278,6 +265,8 @@ class CompositeToUppaalTransformer {
 		// Auxiliary objects
 		this.triggerTransformer = new TriggerTransformer(this.traceModel)
 		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
+		this.testGenerationHandler = this.testGenerationHandler
+		this.testGenerationHandler.ntaBuilder = this.ntaBuilder
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.traceModel)
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
@@ -292,16 +281,13 @@ class CompositeToUppaalTransformer {
 		initNta
 		createMessageStructType
 		createIsStableVar
-		if (!testedComponentsForTransitions.empty) {
-			createTransitionIdVar
-		}
 		// Auxiliary transformation objects
 		this.asynchronousConstantsCreator = new AsynchronousConstantsCreator(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, this.transitionIdVar, this.isStableVar)
+			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, this.testGenerationHandler.getTransitionIdVariable, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
@@ -448,30 +434,7 @@ class CompositeToUppaalTransformer {
 	 */
 	private def createIsStableVar() {		
 		isStableVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, isStableVariableName)
-		isStableVar.initVar(false)
-	}
-	
-	/**
-	 * Creates an integer variable that stores the id of a particular transition.
-	 */
-	private def createTransitionIdVar() {		
-		transitionIdVar = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.int, transitionIdVariableName)
-		transitionIdVar.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
-			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
-				it.text = "-1"
-			]
-		]
-	}
-	
-	/**
-	 * Initializes a bool variable with the given boolean value.
-	 */
-	private def initVar(DataVariableDeclaration variable, boolean isTrue) {		
-		variable.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
-			it.createChild(expressionInitializer_Expression, literalExpression) as LiteralExpression => [
-				it.text = isTrue.toString
-			]
-		]
+		isStableVar.initVar("false")
 	}
 	
 	/**
@@ -600,9 +563,7 @@ class CompositeToUppaalTransformer {
 			it.variable.name + "Of" + instance.name)
 		if (prefix == DataVariablePrefix.CONST && it.variable.expression === null) {
 			// It is only read, 0 is a good initial value for all types
-			variable.variable.head.initializer = createExpressionInitializer => [
-				it.expression = createLiteralExpression => [it.text = "0"]
-			]
+			variable.initVar("0")
 		}
 		addToTrace(it.instance, #{variable}, instanceTrace)		
 		// Traces are created in the transformVariable method
@@ -618,12 +579,8 @@ class CompositeToUppaalTransformer {
 		// Bool variable - it has to be created every time due to the invariants in the timer location
 		val boolVariable = target.globalDeclarations.createVariable(DataVariablePrefix.NONE,
 			target.bool, it.timeout.name + "of" + it.instance.name)
-		boolVariable.variable.head => [
-			it.initializer = createExpressionInitializer => [
 				 // They are true at start (due to location invariants in the timer location)
-				it.expression = createLiteralExpression => [it.text = "true"]
-			]
-		]
+		boolVariable.initVar("true")
 		addToTrace(it.instance, #{clockVariable, boolVariable}, instanceTrace)
 		addToTrace(it.timeout, #{clockVariable, boolVariable}, trace)		
 	].build
@@ -757,9 +714,9 @@ class CompositeToUppaalTransformer {
 	 */
 	val regionsRule = createRule(InstanceRegions.instance).action [
 		val instance = it.instance
-		val name = it.region.regionName
+		val name = it.region.getTemplateName(instance)
 		val template = target.createChild(getNTA_Template, template) as Template => [
-			it.name = name + "Of" + instance.name
+			it.name = name
 		]
 		// Creating the local declaration container of the template
 		val localDeclaration = template.createChild(template_Declarations, localDeclarations) as LocalDeclarations
@@ -886,13 +843,13 @@ class CompositeToUppaalTransformer {
 	}
 	
 	private def generateTransitionId(Edge edge) {
-		val owner = edge.owner as SynchronousComponentInstance
+		val transitions = edge.allValuesOfFrom.filter(Transition)
+		checkState(transitions.size == 1)
+		val transition = transitions.head
 		// testedComponentsForTransitions stores the instances to which tests need to be generated
-		if (testedComponentsForTransitions.exists[it.contains(owner)] &&
-				edge.source.allValuesOfFrom.filter(EntryState).empty /*No initial edges*/) {
-			edge.createAssignmentExpression(edge_Update, transitionIdVar,
-				createLiteralExpression => [it.text = (transitionId++).toString]
-			)
+		if (transition.needsAnnotation) {
+			edge.createAssignmentExpression(edge_Update, testGenerationHandler.getTransitionIdVariable,
+				testGenerationHandler.getNextAnnotationValue(transition).toString)
 		}
 	}
 	
@@ -1732,50 +1689,6 @@ class CompositeToUppaalTransformer {
 	 */
 	private def boolean isPlain(Edge edge) {
 		return (edge.synchronization === null && edge.guard === null && edge.update.empty)
-	}
-	
-	/**
-	 * Responsible for returning a map that contains all templates and their location names in a map.
-	 */
-	def Map<String, String[]> getTemplateLocationsMap() {
-		val templateLocationMap = new HashMap<String, String[]>
-		// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
-		for (instance : testedComponentsForStates) {
-			val statechart = instance.type as StatechartDefinition
-			val Set<Region> regions = newHashSet
-			for (topRegion : statechart.regions) {
-				regions += topRegion
-				regions += topRegion.subregions
-			}
-			for (statechartRegion : regions) {
-				val templateName = statechartRegion.regionName + "Of" + instance.name
-					var locationArray = new ArrayList<String>
-					for (state : statechartRegion.stateNodes.filter(State)) {
-						val locationName = state.locationName
-						if (templateName.hasLocationName(locationName)) {
-							locationArray.add(state.locationName)
-						}
-					}
-					if (!locationArray.empty) {
-						templateLocationMap.put(templateName, locationArray)
-					}
-			}
-		}
-		return templateLocationMap
-	}
-	
-	private def hasLocationName(String templateName, String locationName) {
-		val templates = nta.template.filter[it.name == templateName]
-		checkState(templates.size == 1)
-		val template = templates.head
-		if (template !== null) {
-			return template.location.exists[it.name == locationName]
-		}
-		return false
-	}
-	
-	def getTransitionIdVariableIntervalValue() {
-		return new Pair(INITIAL_TRANSITION_ID, transitionId)
 	}
 	
 	/**

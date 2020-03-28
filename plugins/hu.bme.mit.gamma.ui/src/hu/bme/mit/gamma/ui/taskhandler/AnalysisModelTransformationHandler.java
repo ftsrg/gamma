@@ -29,26 +29,26 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.TimeSpecification;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
-import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
-import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
-import hu.bme.mit.gamma.uppaal.composition.transformation.Namings;
-import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
-import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
-import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
+import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.model.TimeSpecification;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
+import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import uppaal.NTA;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
@@ -114,6 +114,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						.filter(it -> it instanceof TransitionCoverage).findFirst();
 		List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(newTopComponent,
 				transitionCoverage, simpleInstanceHandler);
+		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(testedComponentsForStates, testedComponentsForTransitions);
 		// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
 		// thus, cannot be recognized by the SimpleInstanceHandler.contains method
 		testedComponentsForTransitions.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
@@ -128,7 +129,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			minimumOrchestratingPeriod,
 			maximumOrchestratingPeriod,
 			analysisModelTransformation.isMinimalElementSet(),
-			testedComponentsForStates, testedComponentsForTransitions); // newTopComponent
+			testGenerationHandler); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models
@@ -138,17 +139,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
 		// Creating a new query file
 		new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
-		if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof StateCoverage)) {
-			UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(),
-				Namings.getIsStableVariableName(), targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
-		}
-		if (analysisModelTransformation.getCoverages().stream().anyMatch(it -> it instanceof TransitionCoverage)) {
-			// Suffix present? If not, all transitions can be reached; if yes, some transitions
-			// are covered by transition fired in the same step, but the end is a stable state
-			String querySuffix = Namings.getIsStableVariableName(); 
-			UppaalModelSerializer.createTransitionFireabilityQueries(Namings.getTransitionIdVariableName(), transformer.getTransitionIdVariableIntervalValue(),
-				querySuffix, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q");
-		}
+		UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
 		transformer.dispose();
 	}
 	

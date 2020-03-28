@@ -36,12 +36,12 @@ import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
@@ -155,9 +155,10 @@ public class CommandHandler extends AbstractHandler {
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
 		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
+		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(simpleInstanceHandler.getSimpleInstances(newTopComponent), Collections.emptySet());
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
-				newTopComponent, simpleInstanceHandler.getSimpleInstances(newTopComponent)); // newTopComponent
+				newTopComponent, testGenerationHandler); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 		NTA nta = resultModels.getKey();
 		// Saving the generated models
@@ -167,8 +168,8 @@ public class CommandHandler extends AbstractHandler {
 		UppaalModelSerializer.saveToXML(nta, parentFolder, fileNameWithoutExtenstion + ".xml");
 		// Deleting old q file
 		new File(parentFolder + File.separator + fileNameWithoutExtenstion + ".q").delete();
-		UppaalModelSerializer.createStateReachabilityQueries(transformer.getTemplateLocationsMap(), "isStable", parentFolder,
-				fileNameWithoutExtenstion + ".q");
+		UppaalModelSerializer.saveString(parentFolder, fileNameWithoutExtenstion + ".q",
+			testGenerationHandler.generateStateCoverageExpressions());
 		transformer.dispose();
 		logger.log(Level.INFO, "The composite system transformation has been finished.");
 	}
