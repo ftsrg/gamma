@@ -15,7 +15,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -175,18 +174,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 	}
 	
-	private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component, Optional<Coverage> coverage, SimpleInstanceHandler simpleInstanceHandler) {
+	private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
+			Optional<Coverage> coverage, SimpleInstanceHandler simpleInstanceHandler) {
 		if (coverage.isPresent()) {
 			Coverage presentCoverage = coverage.get();
 			if (presentCoverage.getInclude().isEmpty()) {
-				return simpleInstanceHandler.getSimpleInstances(component);
+				return simpleInstanceHandler.getNewSimpleInstances(component);
 			}
 			else {
-				List<SynchronousComponentInstance> instances = new ArrayList<SynchronousComponentInstance>();
-				// Include - exclude
-				instances.addAll(simpleInstanceHandler.getSimpleInstances(presentCoverage.getInclude()));
-				instances.removeAll(simpleInstanceHandler.getSimpleInstances(presentCoverage.getExclude()));
-				return instances;
+				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(), presentCoverage.getExclude(), component);
 			}
 		}
 		return Collections.emptyList();

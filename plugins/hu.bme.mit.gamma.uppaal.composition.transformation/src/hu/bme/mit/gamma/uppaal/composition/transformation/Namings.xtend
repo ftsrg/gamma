@@ -99,6 +99,13 @@ class Namings {
 	}
 	
 	/**
+	 * Returns the process name of the template.
+	 */
+	def static String getPorcessName(String templateName) {
+		return "P_" +  templateName
+	}
+	
+	/**
 	 * Returns the location name of a state.
 	 */
 	def static String getLocationName(State state) {

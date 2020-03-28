@@ -260,12 +260,16 @@ class CompositeToUppaalTransformer {
 		this.manipulation = new SimpleModelManipulations(engine)
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements
+		// Creating UPPAAL variable and type structures as multiple auxiliary transformers need them
+		initNta
+		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
+		createMessageStructType
+		createIsStableVar
 		// Trace
 		this.traceModel = new Trace(this.manipulation, this.traceRoot)
 		// Auxiliary objects
 		this.triggerTransformer = new TriggerTransformer(this.traceModel)
-		this.ntaBuilder = new NtaBuilder(this.target, this.manipulation, this.isMinimalElementSet)
-		this.testGenerationHandler = this.testGenerationHandler
+		this.testGenerationHandler = testGenerationHandler
 		this.testGenerationHandler.ntaBuilder = this.ntaBuilder
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.traceModel)
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
@@ -277,10 +281,6 @@ class CompositeToUppaalTransformer {
 			this.expressionTransformer, this.traceModel)
 		this.asynchronousComponentHelper = new AsynchronousComponentHelper(this.component, this.engine,
 			this.manipulation, this.expressionTransformer, this.ntaBuilder, this.traceModel)
-		// Creating UPPAAL variable and type structures as multiple auxiliary transformers need them
-		initNta
-		createMessageStructType
-		createIsStableVar
 		// Auxiliary transformation objects
 		this.asynchronousConstantsCreator = new AsynchronousConstantsCreator(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 

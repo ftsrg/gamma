@@ -27,6 +27,7 @@ class TestQueryGenerationHandler {
 	// Transition coverage
 	protected boolean TRANSITION_COVERAGE
 	protected final Set<SynchronousComponentInstance> transitionCoverableComponents = newHashSet
+	protected final Set<Transition> coverableTransitions = newHashSet
 	protected final Map<Transition, Integer> transitionAnnotations = newHashMap
 	protected DataVariableDeclaration transitionIdVariable
 	protected final int INITIAL_TRANSITION_ID = 1
@@ -41,6 +42,9 @@ class TestQueryGenerationHandler {
 		if (!transitionCoverableComponents.empty) {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += transitionCoverableComponents
+			this.coverableTransitions += transitionCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten
 		}
 	}
 	
@@ -71,12 +75,13 @@ class TestQueryGenerationHandler {
 			regions += statechart.allRegions
 			for (region : regions) {
 				val templateName = region.getTemplateName(instance)
-					for (state : region.stateNodes.filter(State)) {
-						val locationName = state.locationName
-						if (templateName.hasLocation(locationName)) {
-							expressions.append('''E<> «templateName».«locationName» && «Namings.isStableVariableName»«System.lineSeparator»''')
-						}
+				val processName = templateName.porcessName
+				for (state : region.stateNodes.filter(State)) {
+					val locationName = state.locationName
+					if (templateName.hasLocation(locationName)) {
+						expressions.append('''E<> «processName».«locationName» && «Namings.isStableVariableName»«System.lineSeparator»''')
 					}
+				}
 			}
 		}
 		return expressions.toString
@@ -101,7 +106,7 @@ class TestQueryGenerationHandler {
 	def needsAnnotation(Transition transition) {
 		return !(transition.sourceState instanceof EntryState) &&
 			(transition.targetState instanceof State) &&
-			transitionCoverableComponents.map[it.type].filter(StatechartDefinition).contains(transition)
+			coverableTransitions.contains(transition)
 	}
 	
 	def getNextAnnotationValue(Transition transition) {
@@ -116,7 +121,9 @@ class TestQueryGenerationHandler {
 		for (entry : transitionAnnotations.entrySet) {
 			val transition = entry.key
 			val id = entry.value
-			expressions.append('''/* «transition.sourceState.name» --> «transition.targetState.name» */«System.lineSeparator»''')
+			val statechart = transition.containingStatechart
+			val instance = transitionCoverableComponents.findFirst[it.type === statechart]
+			expressions.append('''/*«System.lineSeparator»«instance.name»: «transition.sourceState.name» --> «transition.targetState.name»«System.lineSeparator»*/«System.lineSeparator»''')
 			// Suffix present? If not, all transitions can be reached; if yes, some transitions
 			// are covered by transition fired in the same step, but the end is a stable state
 			expressions.append('''E<> «transitionIdVariable.variable.head.name» == «id» && «Namings.isStableVariableName»«System.lineSeparator»''')

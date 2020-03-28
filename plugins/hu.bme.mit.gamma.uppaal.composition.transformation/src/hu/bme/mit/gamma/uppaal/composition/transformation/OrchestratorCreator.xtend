@@ -584,7 +584,7 @@ class OrchestratorCreator {
 				]
 				it.name = "resetClocks" + id++
 				it.createChild(function_Block, stmPackage.block) as Block => [
-					for (clock : component.containedStatecharts
+					for (clock : component.allContainedStatecharts
 							.map[it.timeoutDeclarations].flatten
 							.map[it.allValuesOfTo].flatten.toSet
 							.filter(ClockVariableDeclaration)) {
