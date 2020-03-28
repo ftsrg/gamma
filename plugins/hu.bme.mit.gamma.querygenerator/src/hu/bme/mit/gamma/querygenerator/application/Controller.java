@@ -778,12 +778,12 @@ public class Controller {
 			view.setVerificationButtons(false);
 	    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getGeneratedQueryFile())))) {
 	    		String uppaalQuery;
-	    		while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    		while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
 	    			// Reuse state space trick: we copy all the queries into a single string
 	    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
 	    				final String separator = System.lineSeparator();
 	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + separator);
-	    				while ((uppaalQuery = reader.readLine()) != null && !isCancelled) {
+	    				while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
 	    					queryBuilder.append(uppaalQuery + separator);
 	    				}
 	    				uppaalQuery = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
@@ -892,11 +892,26 @@ public class Controller {
     		isCancelled = true;
     	}
     	
+    	private String readLineSkipComments(BufferedReader reader) throws IOException {
+    		final String COMMENT_START = "/*";
+    		final String COMMENT_END = "*/";
+    		String line = reader.readLine();
+    		if (line == null) {
+    			return null;
+    		}
+    		if (line.contains(COMMENT_START)) {
+    			while (!reader.readLine().contains(COMMENT_END));
+    			return reader.readLine();
+    		}
+    		return line;    		
+    	}
+    	
     }
     
 }
 
 class NotBackannotatedException extends Exception {
+	private static final long serialVersionUID = 1L;
 	private ThreeStateBoolean threeStateBoolean;
 	
 	NotBackannotatedException(ThreeStateBoolean threeStateBoolean) {

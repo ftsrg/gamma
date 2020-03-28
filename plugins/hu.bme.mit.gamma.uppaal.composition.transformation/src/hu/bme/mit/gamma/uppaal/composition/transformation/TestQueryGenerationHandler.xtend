@@ -79,6 +79,7 @@ class TestQueryGenerationHandler {
 				for (state : region.stateNodes.filter(State)) {
 					val locationName = state.locationName
 					if (templateName.hasLocation(locationName)) {
+						expressions.append('''/*«System.lineSeparator»«instance.name»: «region.name».«state.name»«System.lineSeparator»*/«System.lineSeparator»''')
 						expressions.append('''E<> «processName».«locationName» && «Namings.isStableVariableName»«System.lineSeparator»''')
 					}
 				}
