@@ -134,7 +134,7 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | TransitionCoverage
+	StateCoverage | TransitionCoverage | OutEventCoverage | InteractionCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -146,6 +146,20 @@ StateCoverage returns StateCoverage:
 
 TransitionCoverage returns TransitionCoverage:
 	{TransitionCoverage} 'transition-coverage' ('{' 
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+	'}')?
+;
+
+OutEventCoverage returns OutEventCoverage:
+	{OutEventCoverage} 'out-event-coverage' ('{' 
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+	'}')?
+;
+
+InteractionCoverage returns InteractionCoverage:
+	{InteractionCoverage} 'interaction-coverage' ('{' 
 		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
 		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
 	'}')?

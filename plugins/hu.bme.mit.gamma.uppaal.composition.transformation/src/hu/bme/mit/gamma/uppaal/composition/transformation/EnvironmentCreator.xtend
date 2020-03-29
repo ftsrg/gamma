@@ -36,6 +36,7 @@ import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class EnvironmentCreator {
 	// Logger
@@ -59,6 +60,7 @@ class EnvironmentCreator {
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
 	protected final extension Cloner cloner = new Cloner
+	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
@@ -148,34 +150,6 @@ class EnvironmentCreator {
 				}
 			].build
 		}
-	}
-	
-	private def removeDuplicatedExpressions(Collection<Expression> expressions) {
-		val integerValues = newHashSet
-		val booleanValues = newHashSet
-		val evaluatedExpressions = <Expression>newHashSet
-		for (expression : expressions) {
-			try {
-				// Integers and enums
-				val value = expression.evaluate
-				if (!integerValues.contains(value)) {
-					integerValues += value
-					evaluatedExpressions += createIntegerLiteralExpression => [
-						it.value = BigInteger.valueOf(value)
-					]
-				}
-			} catch (Exception e) {}
-			// Excluding branches
-			try {
-				// Boolean
-				val bool = expression.evaluateBoolean
-				if (!booleanValues.contains(bool)) {
-					booleanValues += bool
-					evaluatedExpressions += if (bool) {createTrueExpression} else {createFalseExpression}
-				}
-			} catch (Exception e) {}
-		}
-		return evaluatedExpressions
 	}
 	
 	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {

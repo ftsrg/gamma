@@ -155,7 +155,8 @@ public class CommandHandler extends AbstractHandler {
 		ModelValidator validator = new ModelValidator(resourceSet, newTopComponent);
 		validator.checkModel();
 		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
-		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(simpleInstanceHandler.getNewSimpleInstances(newTopComponent), Collections.emptySet());
+		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
+				simpleInstanceHandler.getNewSimpleInstances(newTopComponent), Collections.emptySet(), Collections.emptySet(), Collections.emptySet());
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 				newTopComponent, testGenerationHandler); // newTopComponent

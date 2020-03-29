@@ -332,6 +332,22 @@ class Trace {
 		return variable
 	}
 	
+	/**
+	 * Returns the Uppaal valueof variable of a Gamma parametered-event.
+	 */
+	protected def getValueOfVariable(Event event, Port port, ComponentInstance owner) {
+		if (event.parameterDeclarations.size != 1) {
+			throw new IllegalArgumentException("This event has not one parameter: " + event + " - " + event.parameterDeclarations)
+		}
+		val parameter = event.parameterDeclarations.head
+		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
+							.filter[it.port == port]
+		if (variables.size != 1) {
+			throw new IllegalArgumentException("This event has more than one UPPAAL valueof variables: " + event)
+		} 
+		return variables.head
+	}
+	
 	// Add to a certain reference
 	
 	def addToTraceTo(EObject oldRef, EObject newRef) {

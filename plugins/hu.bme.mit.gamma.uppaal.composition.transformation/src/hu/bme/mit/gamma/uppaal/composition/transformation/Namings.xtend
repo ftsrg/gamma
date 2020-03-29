@@ -72,6 +72,10 @@ class Namings {
 		return "isRaised_" + port.name + "_" + event.name + "Of" + instance.name
 	}
 	
+	def static getValueOfName(Event event, Port port, ComponentInstance instance) {
+		return port.name + "_" + event.name + "Of" + instance.name + "Value"
+	}
+	
 	def static getValueOfName(Variable variable) {
 		if (variable.name.startsWith("toRaise_")) {
 			return variable.name.substring("toRaise_".length) + "Value"

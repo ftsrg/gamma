@@ -31,6 +31,8 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
+import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
+import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.statechart.model.Package;
@@ -100,23 +102,28 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		hu.bme.mit.gamma.uppaal.transformation.ModelValidator validator = 
 				new hu.bme.mit.gamma.uppaal.transformation.ModelValidator(resourceSet, newTopComponent, false);
 		validator.checkModel();
-		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
-		// If there is no include in the coverage, it means all instances need to be tested
+		// State coverage
 		Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
 						.filter(it -> it instanceof StateCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(newTopComponent,
-				stateCoverage, simpleInstanceHandler);
-		// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
-		// thus, cannot be recognized by the SimpleInstanceHandler.contains method
-		testedComponentsForStates.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
+		List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
+				newTopComponent, stateCoverage);
+		// Transition coverage
 		Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
 						.filter(it -> it instanceof TransitionCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(newTopComponent,
-				transitionCoverage, simpleInstanceHandler);
-		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(testedComponentsForStates, testedComponentsForTransitions);
-		// Replacing of instances is needed, as the old and new (cloned) instances are not equal,
-		// thus, cannot be recognized by the SimpleInstanceHandler.contains method
-		testedComponentsForTransitions.replaceAll(it -> trace.isMapped(it) ? (SynchronousComponentInstance) trace.get(it) : it);
+		List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
+				newTopComponent, transitionCoverage);
+		// Out event coverage
+		Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
+						.filter(it -> it instanceof OutEventCoverage).findFirst();
+		List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
+				newTopComponent, outEventCoverage);
+		// Interaction coverage
+		Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
+						.filter(it -> it instanceof InteractionCoverage).findFirst();
+		List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
+				newTopComponent, interactionCoverage);
+		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
+				testedComponentsForStates, testedComponentsForTransitions, testedComponentsForOutEvents, testedComponentsForInteractions);
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		TimeSpecification minimumOrchestratingPeriod = analysisModelTransformation.getMinimumOrchestratingPeriod().isEmpty() ? 
 				null : analysisModelTransformation.getMinimumOrchestratingPeriod().get(0); 
@@ -175,10 +182,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
-			Optional<Coverage> coverage, SimpleInstanceHandler simpleInstanceHandler) {
+			Optional<Coverage> coverage) {
+		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
 		if (coverage.isPresent()) {
 			Coverage presentCoverage = coverage.get();
 			if (presentCoverage.getInclude().isEmpty()) {
+				// If there is no include in the coverage, it means all instances need to be tested
 				return simpleInstanceHandler.getNewSimpleInstances(component);
 			}
 			else {

@@ -37,10 +37,8 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.emf.ecore.EObject
@@ -77,7 +75,7 @@ class ExpressionTransformer {
     final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
     final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
     // Trace
-    protected final extension Trace traceModel
+    final extension Trace traceModel
     
 	new(IModelManipulations manipulation, NtaBuilder ntaBuilder, Trace traceModel) {
 		this.manipulation = manipulation
@@ -369,22 +367,6 @@ class ExpressionTransformer {
 			it.transform(minusExpression_InvertedExpression, expression.operand, owner)
 		]		
 		addToTrace(expression, #{newExp}, expressionTrace)
-	}
-	
-	/**
-	 * Returns the Uppaal valueof variable of a Gamma parametered-event.
-	 */
-	protected def getValueOfVariable(Event event, Port port, ComponentInstance owner) {
-		if (event.parameterDeclarations.size != 1) {
-			throw new IllegalArgumentException("This event has not one parameter: " + event + " - " + event.parameterDeclarations)
-		}
-		val parameter = event.parameterDeclarations.head
-		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
-							.filter[it.port == port]
-		if (variables.size != 1) {
-			throw new IllegalArgumentException("This event has more than one UPPAAL valueof variables: " + event)
-		} 
-		return variables.head
 	}
 	
 }
