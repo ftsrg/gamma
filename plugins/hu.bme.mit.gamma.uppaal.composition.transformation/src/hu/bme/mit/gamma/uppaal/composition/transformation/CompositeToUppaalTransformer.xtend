@@ -195,7 +195,6 @@ class CompositeToUppaalTransformer {
 	protected extension VariableTransformer variableTransformer
 	protected extension TriggerTransformer triggerTransformer
 	protected extension NtaBuilder ntaBuilder
-	protected extension TestQueryGenerationHandler testGenerationHandler
 	protected extension ExpressionTransformer expressionTransformer
 	protected extension ExpressionCopier expressionCopier
 	protected extension ExpressionEvaluator expressionEvaluator
@@ -215,13 +214,14 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousClockTemplateCreator asynchronousClockTemplateCreator
 	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
+	// Test generator
+	protected ModelModifierForTestGeneration modelModifier
 	
 	new(ResourceSet resourceSet, Component component,
 			TestQueryGenerationHandler testGenerationHandler) {
 		this.initialize(resourceSet, component, Scheduler.RANDOM,
 			null, null,
-			testGenerationHandler
-		)
+			testGenerationHandler)
 	}
 	
 	new(ResourceSet resourceSet, Component component,
@@ -269,10 +269,6 @@ class CompositeToUppaalTransformer {
 		this.traceModel = new Trace(this.manipulation, this.traceRoot)
 		// Auxiliary objects
 		this.triggerTransformer = new TriggerTransformer(this.traceModel)
-		this.testGenerationHandler = testGenerationHandler => [
-			it.ntaBuilder = this.ntaBuilder
-			it.engine = this.engine
-		]
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.traceModel)
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
@@ -283,13 +279,16 @@ class CompositeToUppaalTransformer {
 			this.expressionTransformer, this.traceModel)
 		this.asynchronousComponentHelper = new AsynchronousComponentHelper(this.component, this.engine,
 			this.manipulation, this.expressionTransformer, this.ntaBuilder, this.traceModel)
+		this.modelModifier = new ModelModifierForTestGeneration(this.ntaBuilder,
+			this.assignmentExpressionCreator, this.engine, this.traceModel) 
+		testGenerationHandler.modelModifier = modelModifier
 		// Auxiliary transformation objects
 		this.asynchronousConstantsCreator = new AsynchronousConstantsCreator(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, this.testGenerationHandler.getTransitionIdVariable, this.isStableVar)
+			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, modelModifier.getTransitionIdVariable, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
@@ -381,6 +380,8 @@ class CompositeToUppaalTransformer {
 			createNoInnerEventsFunction
 		}
 		cleanUp
+		// Modify models for test generation
+		modelModifier.modifyModelForTestGeneration
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
 	}
@@ -831,8 +832,6 @@ class CompositeToUppaalTransformer {
 			// Creating the trace
 			addToTrace(it.transition, #{edge}, trace)		
 			addToTrace(owner, #{edge}, instanceTrace)		
-			// For test generation (after adding owner)
-			edge.generateTransitionId
 		}
 	].build
 	
@@ -842,17 +841,6 @@ class CompositeToUppaalTransformer {
 		checkState(isScheduledVars.size == 1)
 		val isScheduledVar = isScheduledVars.head
 		edge.createAssignmentExpression(edge_Update, isScheduledVar, true)
-	}
-	
-	private def generateTransitionId(Edge edge) {
-		val transitions = edge.allValuesOfFrom.filter(Transition)
-		checkState(transitions.size == 1)
-		val transition = transitions.head
-		// testedComponentsForTransitions stores the instances to which tests need to be generated
-		if (transition.needsAnnotation) {
-			edge.createAssignmentExpression(edge_Update, testGenerationHandler.getTransitionIdVariable,
-				testGenerationHandler.getNextAnnotationValue(transition).toString)
-		}
 	}
 	
 	/**
@@ -884,8 +872,6 @@ class CompositeToUppaalTransformer {
 			toLowerEdge.setIsScheduledVar
 			addToTrace(transition, #{toLowerEdge}, trace)
 			addToTrace(owner, #{toLowerEdge}, instanceTrace)
-			// For test generation (after adding owner)
-			toLowerEdge.generateTransitionId
 			// Creating the sync edge
 			val syncEdge = createCommittedSyncTarget(targetLoc, syncVar.variable.head, "AcrossEntry" + id++)
 			toLowerEdge.setTarget(syncEdge.source)
@@ -1023,8 +1009,6 @@ class CompositeToUppaalTransformer {
 			toHigherEdge.setIsScheduledVar
 			addToTrace(transition, #{toHigherEdge}, trace)
 			addToTrace(owner, #{toHigherEdge}, instanceTrace)
-			// For test generation (after adding owner)
-			toHigherEdge.generateTransitionId
 			// Getting the target of the deactivating edge
 			val targetLoc = region.getDeactivatingEdgeTarget(sourceLoc)
 			// This plus sync edge will contain the deactivation (so triggers can be put onto the original one)
