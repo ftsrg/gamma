@@ -10,22 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.scoping
 
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
+import hu.bme.mit.gamma.genmodel.model.Coverage
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import java.util.Collections
-import java.util.HashSet
-import java.util.Set
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 /**
  * This class contains custom scoping description.
@@ -47,17 +45,17 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
-			if (reference == GenmodelPackage.Literals.EVENT_PRIORITY_TRANSFORMATION__STATECHART) {
+		if (reference == GenmodelPackage.Literals.EVENT_PRIORITY_TRANSFORMATION__STATECHART) {
 			val genmodel = context.eContainer as GenModel
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
-		if (reference == GenmodelPackage.Literals.COVERAGE__INCLUDE ||
+		if (context instanceof Coverage &&
+				reference == GenmodelPackage.Literals.COVERAGE__INCLUDE ||
 				reference == GenmodelPackage.Literals.COVERAGE__EXCLUDE) {
-			val genmodel = context.eContainer.eContainer as GenModel
-			val components = genmodel.packageImports.map[it.components].flatten
-								.filter(AbstractSynchronousCompositeComponent).map[it.components].flatten
-			return Scopes.scopeFor(components)
+			val analysisModelTransformation = context.eContainer as AnalysisModelTransformation
+			val component = analysisModelTransformation.component
+			return Scopes.scopeFor(component.allInstances)
 		}
 		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel
@@ -86,26 +84,11 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (context instanceof EventMapping && reference == GenmodelPackage.Literals.EVENT_MAPPING__GAMMA_EVENT) {
 			val gammaInterface = ((context as EventMapping).eContainer as InterfaceMapping).gammaInterface
-			val events = gammaInterface.allEvents
+			val events = gammaInterface.allEventDeclarations.map[it.event]
 			return Scopes.scopeFor(events)
 		}
 		val scope = super.getScope(context, reference)
 		return scope
 	}
 	
-	/** It returns the events of the parent interfaces as well. */
-	private def Set<Event> getAllEvents(Interface anInterface) {
-		if (anInterface === null) {
-			return Collections.EMPTY_SET
-		}
-		val eventSet = new HashSet<Event>
-		for (parentInterface : anInterface.parents) {
-			eventSet.addAll(parentInterface.getAllEvents)
-		}
-		for (event : anInterface.events.map[it.event]) {
-			eventSet.add(event)
-		}
-		return eventSet
-	}
-
 }

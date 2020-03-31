@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
+import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 
@@ -103,27 +104,47 @@ public class StatechartModelDerivedFeatures {
 		if (component instanceof AsynchronousCompositeComponent) {
 			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
 			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
-				AsynchronousComponent type = instance.getType();
-				simpleInstances.addAll(getAllSimpleInstances(type));
+				simpleInstances.addAll(getAllSimpleInstances(instance));
 			}
 		}
 		else if (component instanceof AsynchronousAdapter) {
 			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
-			simpleInstances.addAll(getAllSimpleInstances(asynchronousAdapter.getWrappedComponent().getType()));
+			simpleInstances.addAll(getAllSimpleInstances(asynchronousAdapter.getWrappedComponent()));
 		}
 		else if (component instanceof AbstractSynchronousCompositeComponent) {
 			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
 			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
-				SynchronousComponent type = instance.getType();
-				if (type instanceof StatechartDefinition) {
-					simpleInstances.add(instance);
-				}
-				else {
-					simpleInstances.addAll(getAllSimpleInstances(type));
-				}
+				simpleInstances.addAll(getAllSimpleInstances(instance));
 			}
 		}
 		return simpleInstances;
+	}
+	
+	public static List<ComponentInstance> getAllInstances(Component component) {
+		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
+		if (component instanceof AsynchronousCompositeComponent) {
+			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
+				instances.add(instance);
+				AsynchronousComponent type = instance.getType();
+				instances.addAll(getAllInstances(type));
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
+			SynchronousComponentInstance wrappedComponent = asynchronousAdapter.getWrappedComponent();
+			instances.add(wrappedComponent);
+			instances.addAll(getAllInstances(wrappedComponent.getType()));
+		}
+		else if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
+				instances.add(instance);
+				SynchronousComponent type = instance.getType();
+				instances.addAll(getAllInstances(type));
+			}
+		}
+		return instances;
 	}
 	
 	public static Collection<StatechartDefinition> getAllContainedStatecharts(SynchronousComponent component) {
@@ -134,18 +155,27 @@ public class StatechartModelDerivedFeatures {
 		return statecharts;
 	}
 	
+
+	public static Collection<EventDeclaration> getAllEventDeclarations(Interface _interface) {
+		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>(_interface.getEvents());
+		for (Interface parenInterface : _interface.getParents()) {
+			eventDeclarations.addAll(getAllEventDeclarations(parenInterface));
+		}
+		return eventDeclarations;
+	}
+	
 	public static Collection<Event> getInputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
 		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
-			events.addAll(_interface.getEvents().stream()
+			events.addAll(getAllEventDeclarations(_interface).stream()
 					.filter(it -> it.getDirection() != EventDirection.OUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
 		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
-			events.addAll(_interface.getEvents().stream()
+			events.addAll(getAllEventDeclarations(_interface).stream()
 					.filter(it -> it.getDirection() != EventDirection.IN)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
