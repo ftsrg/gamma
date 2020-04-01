@@ -89,8 +89,8 @@ class OrchestratorCreator {
 	protected final DataVariableDeclaration isStableVar
 	protected final DataVariableDeclaration transitionIdVar
 	// Orchestrating period for top sync components
-	protected final TimeSpecification minimalOrchestratingPeriod
-	protected final TimeSpecification maximalOrchestratingPeriod
+	protected TimeSpecification minimalOrchestratingPeriod
+	protected TimeSpecification maximalOrchestratingPeriod
 	// Auxiliary objects
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	protected final extension EventHandler eventHandler = new EventHandler
@@ -106,14 +106,16 @@ class OrchestratorCreator {
 	protected BatchTransformationRule<SimpleWrapperInstances.Match, SimpleWrapperInstances.Matcher> instanceWrapperSyncOrchestratorRule
 	
 	new(NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
-			AssignmentExpressionCreator assignmentExpressionCreator, CompareExpressionCreator compareExpressionCreator,
-			TimeSpecification minimalOrchestratingPeriod, TimeSpecification maximalOrchestratingPeriod,
+			AssignmentExpressionCreator assignmentExpressionCreator,
+			CompareExpressionCreator compareExpressionCreator, OrchestratingConstraint constraint,
 			Trace modelTrace, DataVariableDeclaration transitionIdVar, DataVariableDeclaration isStableVar) {
 		this.ntaBuilder = ntaBuilder
 		this.manipulation = manipulation
 		this.engine = engine
-		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
-		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
+		if (constraint !== null) {
+			this.minimalOrchestratingPeriod = constraint.minimumPeriod
+			this.maximalOrchestratingPeriod = constraint.maximumPeriod
+		}
 		this.modelTrace = modelTrace
 		this.transitionIdVar = transitionIdVar
 		this.isStableVar = isStableVar

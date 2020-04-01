@@ -11,26 +11,33 @@
 package hu.bme.mit.gamma.genmodel.language.validation
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
 import hu.bme.mit.gamma.genmodel.model.EventMapping
+import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
+import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
 import hu.bme.mit.gamma.genmodel.model.StateCoverage
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
+import hu.bme.mit.gamma.statechart.model.RealizationMode
+import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
@@ -39,11 +46,11 @@ import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
+import org.eclipse.xtext.EcoreUtil2
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint
 
 /**
  * This class contains custom validation rules. 
@@ -92,11 +99,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (analysisModelTransformation.coverages.filter(StateCoverage).size > 1) {
 			error("A single state coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
 		}
-		if (analysisModelTransformation.minimumOrchestratingPeriod.size > 1) {
-			error("A single minimum orchestrating period can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
-		}
-		if (analysisModelTransformation.maximumOrchestratingPeriod.size > 1) {
-			error("A single maximum orchestrating period can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MAXIMUM_ORCHESTRATING_PERIOD)
+		val constraint = analysisModelTransformation.constraint
+		if (constraint !== null) {
+			val component = analysisModelTransformation.component
+			if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
+				error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
+			}
 		}
 	}
 	
@@ -108,11 +116,32 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkMinimumMaximumOrchestrationPeriodValues(AnalysisModelTransformation analysisModelTransformation) {
+	def checkConstraint(AsynchronousInstanceConstraint constraint) {
+		val analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation)
+		val component = analysisModelTransformation.component
+		val scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint)
+		if (component instanceof AsynchronousCompositeComponent) {
+			val instance = constraint.instance
+			if (instance === null) {
+				error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+			}
+			if (scheduling.instanceConstraint.filter[it.instance === instance].size > 1) {
+				error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+			}
+		}
+		if (component instanceof AsynchronousAdapter) {
+			if (scheduling.instanceConstraint.size > 1) {
+				error("Asynchronous adapters can contain at most one constraint.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+			}
+		}
+	}
+	
+	@Check
+	def checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
 		// TODO only integer values are handled now
-		val minimum = analysisModelTransformation.minimumOrchestratingPeriod.head
+		val minimum = orchestratingConstraint.minimumPeriod
 		val minimumValue = minimum?.value
-		val maximum = analysisModelTransformation.maximumOrchestratingPeriod.head
+		val maximum = orchestratingConstraint.maximumPeriod
 		val maximumValue = maximum?.value
 		if (minimumValue instanceof IntegerLiteralExpression) {
 			if (maximumValue instanceof IntegerLiteralExpression) {
@@ -125,13 +154,13 @@ class GenModelValidator extends AbstractGenModelValidator {
 					maximumIntegerValue *= 1000
 				}
 				if (minimumIntegerValue < 0) {
-					error("Time value must be positive.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
+					error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 				}
 				if (maximumIntegerValue < 0) {
-					error("Time value must be positive.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MAXIMUM_ORCHESTRATING_PERIOD)
+					error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
 				}
 				if (maximumIntegerValue < minimumIntegerValue) {
-					error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__MINIMUM_ORCHESTRATING_PERIOD)
+					error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 				}
 			}
 		}

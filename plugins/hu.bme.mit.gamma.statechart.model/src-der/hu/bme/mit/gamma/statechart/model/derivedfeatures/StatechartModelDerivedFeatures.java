@@ -120,6 +120,17 @@ public class StatechartModelDerivedFeatures {
 		return simpleInstances;
 	}
 	
+	public static List<AsynchronousComponentInstance> getAllAsynchronousSimpleInstances(Component component) {
+		List<ComponentInstance> allInstances = getAllInstances(component);
+		List<AsynchronousComponentInstance> asynchronousInstances = new ArrayList<AsynchronousComponentInstance>();
+		for (ComponentInstance allInstance : allInstances) {
+			if (getDerivedType(allInstance) instanceof AsynchronousAdapter) {
+				asynchronousInstances.add((AsynchronousComponentInstance) allInstance);
+			}
+		}
+		return asynchronousInstances;
+	}
+	
 	public static List<ComponentInstance> getAllInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
 		if (component instanceof AsynchronousCompositeComponent) {

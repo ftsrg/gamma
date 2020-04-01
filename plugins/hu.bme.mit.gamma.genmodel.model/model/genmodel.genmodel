@@ -46,8 +46,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/scheduler"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/coverages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/minimalElementSet"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/minimumOrchestratingPeriod"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/maximumOrchestratingPeriod"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/constraint"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>
@@ -79,5 +78,17 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//OutEventCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//InteractionCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//Constraint"/>
+    <genClasses ecoreClass="genmodel.ecore#//SchedulingConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//SchedulingConstraint/instanceConstraint"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//OrchestratingConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//OrchestratingConstraint/minimumPeriod"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//OrchestratingConstraint/maximumPeriod"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AsynchronousInstanceConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/orchestratingConstraint"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/instance"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

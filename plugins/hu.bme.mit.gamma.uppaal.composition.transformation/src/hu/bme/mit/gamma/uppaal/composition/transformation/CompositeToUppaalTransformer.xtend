@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
@@ -220,29 +219,25 @@ class CompositeToUppaalTransformer {
 	new(ResourceSet resourceSet, Component component,
 			TestQueryGenerationHandler testGenerationHandler) {
 		this.initialize(resourceSet, component, Scheduler.RANDOM,
-			null, null,
-			testGenerationHandler)
+			null, testGenerationHandler)
 	}
 	
 	new(ResourceSet resourceSet, Component component,
 			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler,
-			TimeSpecification minimalOrchestratingPeriod,
-			TimeSpecification maximalOrchestratingPeriod,
+			Constraint constraint,
 			boolean isMinimalElementSet,
 			TestQueryGenerationHandler testGenerationHandler) { 
 		this.isMinimalElementSet = isMinimalElementSet
 		this.topComponentArguments.addAll(topComponentArguments)
 		// The above parameters have to be set before calling initialize
 		this.initialize(resourceSet, component, asyncScheduler,
-			minimalOrchestratingPeriod, maximalOrchestratingPeriod,
+			constraint,
 			testGenerationHandler)
 	}
 	
 	private def initialize(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
-			TimeSpecification minimalOrchestratingPeriod,
-			TimeSpecification maximalOrchestratingPeriod,
-			TestQueryGenerationHandler testGenerationHandler) {
+			Constraint constraint, TestQueryGenerationHandler testGenerationHandler) {
 		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
 		this.component = component
@@ -288,14 +283,14 @@ class CompositeToUppaalTransformer {
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, minimalOrchestratingPeriod, maximalOrchestratingPeriod, this.traceModel, modelModifier.getTransitionIdVariable, this.isStableVar)
+			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, modelModifier.getTransitionIdVariable, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
-		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
-			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionEvaluator, this.assignmentExpressionCreator,
-			minimalOrchestratingPeriod, maximalOrchestratingPeriod, asyncScheduler)
+		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation,
+			this.compareExpressionCreator, this.traceModel, this.isStableVar, this.asynchronousComponentHelper,
+			this.expressionEvaluator, this.assignmentExpressionCreator,	if (constraint instanceof SchedulingConstraint) constraint else null, asyncScheduler)
 		this.asynchronousConnectorTemplateCreator = new AsynchronousConnectorTemplateCreator(this.ntaBuilder, this.manipulation, this.assignmentExpressionCreator,
 			this.asynchronousComponentHelper, this.expressionTransformer, this.traceModel, this.isStableVar, this.messageEvent, this.messageValue)
 	}

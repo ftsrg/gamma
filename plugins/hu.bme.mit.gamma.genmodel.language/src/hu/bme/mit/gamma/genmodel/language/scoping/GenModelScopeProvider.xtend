@@ -24,6 +24,8 @@ import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import org.eclipse.xtext.EcoreUtil2
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
 
 /**
  * This class contains custom scoping description.
@@ -56,6 +58,13 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val analysisModelTransformation = context.eContainer as AnalysisModelTransformation
 			val component = analysisModelTransformation.component
 			return Scopes.scopeFor(component.allInstances)
+		}
+		if (reference == GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE) {
+			val genmodel = EcoreUtil2.getContainerOfType(context, AnalysisModelTransformation)
+			val component = genmodel.component
+			if (component instanceof AsynchronousComponent) {
+				return Scopes.scopeFor(component.allAsynchronousSimpleInstances)
+			}
 		}
 		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel

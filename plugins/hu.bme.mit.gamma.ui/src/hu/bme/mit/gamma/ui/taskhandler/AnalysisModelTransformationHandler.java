@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,13 +38,18 @@ import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.TimeSpecification;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
+import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder;
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder.Trace;
+import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstraint;
+import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler;
@@ -125,15 +131,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
 				testedComponentsForStates, testedComponentsForTransitions, testedComponentsForOutEvents, testedComponentsForInteractions);
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
-		TimeSpecification minimumOrchestratingPeriod = analysisModelTransformation.getMinimumOrchestratingPeriod().isEmpty() ? 
-				null : analysisModelTransformation.getMinimumOrchestratingPeriod().get(0); 
-		TimeSpecification maximumOrchestratingPeriod = analysisModelTransformation.getMaximumOrchestratingPeriod().isEmpty() ? 
-				null : analysisModelTransformation.getMaximumOrchestratingPeriod().get(0); 
+		Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
 			newTopComponent, analysisModelTransformation.getArguments(),
 			getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
-			minimumOrchestratingPeriod,
-			maximumOrchestratingPeriod,
+			constraint,
 			analysisModelTransformation.isMinimalElementSet(),
 			testGenerationHandler); // newTopComponent
 		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
@@ -195,6 +197,45 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 		}
 		return Collections.emptyList();
+	}
+	
+	private Constraint transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint, Component newComponent) {
+		if (constraint == null) {
+			return null;
+		}
+		if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
+			hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+			return new OrchestratingConstraint(orchestratingConstraint.getMinimumPeriod(), orchestratingConstraint.getMaximumPeriod());
+		}
+		if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
+			hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint = (hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+			SchedulingConstraint gammaSchedulingConstraint = new SchedulingConstraint();
+			for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint : schedulingConstraint.getInstanceConstraint()) {
+				gammaSchedulingConstraint.getInstanceConstraints().addAll(transformAsynchronousInstanceConstraint(instanceConstraint, newComponent));
+			}
+			return gammaSchedulingConstraint;
+		}
+		throw new IllegalArgumentException("Not known constraint: " + constraint);
+	}
+	
+	private List<AsynchronousInstanceConstraint> transformAsynchronousInstanceConstraint(
+			hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint asynchronousInstanceConstraint, Component newComponent) {
+		if (newComponent instanceof AsynchronousAdapter) {
+			// In the case of asynchronous adapters, the referred instance will be null
+			return Collections.singletonList(new AsynchronousInstanceConstraint(null,
+				(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
+		}
+		// Asynchronous composite components
+		SimpleInstanceHandler instanceHandler = new SimpleInstanceHandler();
+		List<AsynchronousInstanceConstraint> asynchronousInstanceConstraints = new ArrayList<AsynchronousInstanceConstraint>();
+		AsynchronousComponentInstance originalInstance = asynchronousInstanceConstraint.getInstance();
+		List<AsynchronousComponentInstance> newAsynchronousSimpleInstances = instanceHandler
+				.getNewAsynchronousSimpleInstances(originalInstance, newComponent);
+		for (AsynchronousComponentInstance newAsynchronousSimpleInstance : newAsynchronousSimpleInstances) {
+			asynchronousInstanceConstraints.add(new AsynchronousInstanceConstraint(newAsynchronousSimpleInstance,
+				(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
+		}
+		return asynchronousInstanceConstraints;
 	}
 	
 	private Scheduler getGammaScheduler(hu.bme.mit.gamma.genmodel.model.Scheduler scheduler) {

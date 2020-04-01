@@ -1,8 +1,8 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import java.util.Collection
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -34,7 +34,12 @@ class SimpleInstanceHandler {
 		return accpedtedNewInstances
 	}
 	
-	private def instanceEquals(SynchronousComponentInstance original, SynchronousComponentInstance copy) {
+	def getNewAsynchronousSimpleInstances(AsynchronousComponentInstance original, Component newType) {
+		return newType.allAsynchronousSimpleInstances
+			.filter[original.instanceEquals(it)].toList
+	}
+	
+	private def instanceEquals(ComponentInstance original, ComponentInstance copy) {
 		// TODO better equality check (helper equals does not work as the original statecharts have been optimized)
 		return copy.name == original.name /* Flat composite */ ||
 			copy.name.endsWith("_" + original.name) /* Hierarchical composite */

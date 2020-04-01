@@ -110,11 +110,29 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'language' ':' language+=AnalysisLanguage |
 			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
 			'scheduler' ':' scheduler+=Scheduler |
-			'minimum-orchestrating-period' ':' minimumOrchestratingPeriod+=TimeSpecification |
-			'maximum-orchestrating-period' ':' maximumOrchestratingPeriod+=TimeSpecification |
+			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+Constraint returns Constraint:
+	'{' (SchedulingConstraint | OrchestratingConstraint) '}'
+;
+
+SchedulingConstraint returns SchedulingConstraint: 
+	(instanceConstraint+=AsynchronousInstanceConstraint)+
+;
+
+AsynchronousInstanceConstraint returns AsynchronousInstanceConstraint:
+	(instance=[composite::AsynchronousComponentInstance] | 'top') ':' '{'
+		orchestratingConstraint=OrchestratingConstraint
+	'}'
+;
+
+OrchestratingConstraint returns OrchestratingConstraint:
+	'minimum-orchestrating-period' ':' minimumPeriod=TimeSpecification
+	'maximum-orchestrating-period' ':'maximumPeriod=TimeSpecification
 ;
 
 TimeSpecification returns model::TimeSpecification:

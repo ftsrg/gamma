@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncCompositeComponents
@@ -43,8 +42,7 @@ class AsynchronousSchedulerTemplateCreator {
 	// Async scheduler
 	protected Scheduler asyncScheduler = Scheduler.RANDOM
 	// Orchestrating period for top sync components
-	protected final TimeSpecification minimalOrchestratingPeriod
-	protected final TimeSpecification maximalOrchestratingPeriod
+	protected final SchedulingConstraint schedulingConstraint
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
@@ -63,8 +61,7 @@ class AsynchronousSchedulerTemplateCreator {
 			CompareExpressionCreator compareExpressionCreator, Trace modelTrace,
 			DataVariableDeclaration isStableVar, AsynchronousComponentHelper asynchronousComponentHelper,
 			ExpressionEvaluator expressionEvaluator, AssignmentExpressionCreator assignmentExpressionCreator,
-			TimeSpecification minimalOrchestratingPeriod, TimeSpecification maximalOrchestratingPeriod,
-			Scheduler asyncScheduler) {
+			SchedulingConstraint constraint, Scheduler asyncScheduler) {
 		this.ntaBuilder = ntaBuilder
 		this.nta = ntaBuilder.nta
 		this.manipulation = manipulation
@@ -75,8 +72,7 @@ class AsynchronousSchedulerTemplateCreator {
 		this.asynchronousComponentHelper = asynchronousComponentHelper
 		this.expressionEvaluator = expressionEvaluator
 		this.assignmentExpressionCreator = assignmentExpressionCreator
-		this.minimalOrchestratingPeriod = minimalOrchestratingPeriod
-		this.maximalOrchestratingPeriod = maximalOrchestratingPeriod
+		this.schedulingConstraint = constraint
 		this.asyncScheduler = asyncScheduler
 	}
 	
@@ -85,7 +81,8 @@ class AsynchronousSchedulerTemplateCreator {
 			topWrapperSchedulerRule = createRule(TopWrapperComponents.instance).action [
 				val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Scheduler" + id++, "InitLoc")
 				val asyncSchedulerChannelVariable = wrapper.asyncSchedulerChannel.variable.head
-				initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
+				val lastEdge = initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
+				lastEdge.setTimingConstraints(null)
 			].build
 		}
 	}
@@ -103,13 +100,14 @@ class AsynchronousSchedulerTemplateCreator {
 						default: {
 							val asyncSchedulerChannelVariable = instance.asyncSchedulerChannel.variable.head
 							lastEdge = initLoc.createRandomScheduler(asyncSchedulerChannelVariable)
+							lastEdge.setTimingConstraints(instance)
 						}
 					}
 				}
 			].build
 		}
 	}
-	
+		
 	private def createFairScheduler(Edge edge, Location initLoc, AsynchronousComponentInstance instance) {
    		var lastEdge = edge
    		val syncVariable = instance.asyncSchedulerChannel.variable.head
@@ -136,34 +134,49 @@ class AsynchronousSchedulerTemplateCreator {
 		// Adding isStable guard
 		loopEdge.addGuard(isStableVar, LogicalOperator.AND)
 		loopEdge.addInitializedGuards // Only if the instance is initialized
-		// Checking scheduler constraints
-		val minTimeoutValue = if (minimalOrchestratingPeriod === null) {
-			Optional.ofNullable(null)
-		} else {
-			Optional.ofNullable(minimalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		val maxTimeoutValue = if (maximalOrchestratingPeriod === null) {
-			Optional.ofNullable(null)
-		} else {
-			Optional.ofNullable(maximalOrchestratingPeriod.convertToMs.evaluate)
-		}
-		if (minTimeoutValue.present || maxTimeoutValue.present) {
-			val parentTemplate = initLoc.parentTemplate
-			// Creating an Uppaal clock var
-			val clockVar = parentTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
-			clockVar.createTypeAndVariable(nta.clock, clockNamePrefix + asyncSchedulerChannelVariable.name + id++)
-			// Creating the guard
-			if (minTimeoutValue.present) {
-				loopEdge.createMinTimeGuard(clockVar, minTimeoutValue.get)
-			}
-			// Creating the location invariant
-			if (maxTimeoutValue.present) {
-				initLoc.createMaxTimeInvariant(clockVar, maxTimeoutValue.get)
-			}
-			// Creating the clock reset
-			loopEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
-		}
 		return loopEdge
+	}
+	
+	private def getInstanceConstraint(AsynchronousComponentInstance instance) {
+		return schedulingConstraint.instanceConstraints.filter[it.instance == instance].head
+	}
+	
+	private def setTimingConstraints(Edge lastEdge, AsynchronousComponentInstance instance) {
+		if (schedulingConstraint === null) {
+			return
+		}
+		val instanceConstraint = instance.instanceConstraint
+		val initLoc = lastEdge.source
+		if (instanceConstraint !== null) {
+			// Checking scheduler constraints
+			val orchestratingConstraint = instanceConstraint.orchestratingConstraint
+			val minTimeoutValue = if (orchestratingConstraint.minimumPeriod === null) {
+				Optional.ofNullable(null)
+			} else {
+				Optional.ofNullable(orchestratingConstraint.minimumPeriod.convertToMs.evaluate)
+			}
+			val maxTimeoutValue = if (orchestratingConstraint.maximumPeriod === null) {
+				Optional.ofNullable(null)
+			} else {
+				Optional.ofNullable(orchestratingConstraint.maximumPeriod.convertToMs.evaluate)
+			}
+			if (minTimeoutValue.present || maxTimeoutValue.present) {
+				val parentTemplate = initLoc.parentTemplate
+				// Creating an Uppaal clock var
+				val clockVar = parentTemplate.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+				clockVar.createTypeAndVariable(nta.clock, clockNamePrefix + instance?.name + id++)
+				// Creating the guard
+				if (minTimeoutValue.present) {
+					lastEdge.createMinTimeGuard(clockVar, minTimeoutValue.get)
+				}
+				// Creating the location invariant
+				if (maxTimeoutValue.present) {
+					initLoc.createMaxTimeInvariant(clockVar, maxTimeoutValue.get)
+				}
+				// Creating the clock reset
+				lastEdge.createAssignmentExpression(edge_Update, clockVar, "0")
+			}
+		}
 	}
 	
 	enum Scheduler {FAIR, RANDOM}
