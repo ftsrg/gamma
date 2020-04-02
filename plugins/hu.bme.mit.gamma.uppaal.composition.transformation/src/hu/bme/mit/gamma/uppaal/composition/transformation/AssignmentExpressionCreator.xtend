@@ -43,8 +43,8 @@ class AssignmentExpressionCreator {
 	/**
 	 * Puts an assignment expression onto the given container. The left side is the given variable, the right side is either true or false". E.g.: myVariable = true.
 	 */
-	def void createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, boolean isTrue) {
-		container.createChild(reference, assignmentExpression) as AssignmentExpression => [
+	def createAssignmentExpression(EObject container, EReference reference, DataVariableDeclaration variable, boolean isTrue) {
+		return container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = variable.variable.head // Only one variable is expected
 			]

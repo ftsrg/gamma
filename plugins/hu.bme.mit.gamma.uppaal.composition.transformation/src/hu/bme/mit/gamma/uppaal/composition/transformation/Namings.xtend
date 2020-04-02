@@ -174,4 +174,12 @@ class Namings {
 		return "transitionId"
 	}
 	
+	def static getSendingInteractionIdVariableName(ComponentInstance instance) {
+		return "sendingInteractionOf" + instance.name
+	}
+	
+	def static getReceivingInteractionIdVariableName(ComponentInstance instance) {
+		return "receivingInteractionOf" + instance.name
+	}
+	
 }

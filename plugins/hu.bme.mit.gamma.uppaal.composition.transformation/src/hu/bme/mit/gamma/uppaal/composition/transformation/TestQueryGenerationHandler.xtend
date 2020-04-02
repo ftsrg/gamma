@@ -2,6 +2,8 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
@@ -14,10 +16,13 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import hu.bme.mit.gamma.statechart.model.Transition
 
 class TestQueryGenerationHandler {
 	// Has to be set externally
 	ModelModifierForTestGeneration modelModifier
+	// Auxiliary
+	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
 	// State coverage
 	protected boolean STATE_COVERAGE
 	protected final Set<SynchronousComponentInstance> stateCoverableComponents = newHashSet
@@ -98,6 +103,10 @@ class TestQueryGenerationHandler {
 	
 	// Transition coverage
 	
+	private def getName(Transition transition) {
+		return transition.sourceState.name + "-->" + transition.targetState.name
+	}
+	
 	def String generateTransitionCoverageExpressions() {
 		val expressions = new StringBuilder
 		// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
@@ -106,7 +115,7 @@ class TestQueryGenerationHandler {
 			val id = entry.value
 			val statechart = transition.containingStatechart
 			val instance = transitionCoverableComponents.findFirst[it.type === statechart]
-			expressions.append('''/*«System.lineSeparator»«instance.name»: «transition.sourceState.name» --> «transition.targetState.name»«System.lineSeparator»*/«System.lineSeparator»''')
+			expressions.append('''/*«System.lineSeparator»«instance.name»: «transition.name»«System.lineSeparator»*/«System.lineSeparator»''')
 			// Suffix present? If not, all transitions can be reached; if yes, some transitions
 			// are covered by transition fired in the same step, but the end is a stable state
 			expressions.append('''E<> «transitionIdVariableName» == «id» && «Namings.isStableVariableName»«System.lineSeparator»''')
@@ -158,6 +167,47 @@ class TestQueryGenerationHandler {
 		return expressions.toString
 	}
 	
+	// Transition coverage
+	
+	private def getSendingObjectName(RaiseEventAction action) {
+		val transition = action.getContainer(Transition)
+		if (transition === null) {
+			val state = action.getContainer(State)
+			if (state === null) {
+				throw new IllegalArgumentException("Not known raise event: " + action)
+			}
+			return state.name
+		}
+		return transition.name
+	}
+	
+	def String generateInteractionCoverageExpressions() {
+		val expressions = new StringBuilder
+		// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
+		for (entry : modelModifier.getInteractionIds.entrySet) {
+			val outInstance = entry.key
+			val actionMap = entry.value
+			for (actionEntry : actionMap.entrySet) {
+				val action = actionEntry.key
+				val actionContainerName = action.sendingObjectName
+				val interactionIds = actionEntry.value
+				val sendingId = interactionIds.key
+				val receivingIds = interactionIds.value
+				for (receivingIdEntry : receivingIds) {
+					val receivingId = receivingIdEntry.key
+					val receivingTransition = receivingIdEntry.value
+					val inStatechart = receivingTransition.containingStatechart
+					val inInstance = interactionCoverableComponents.findFirst[it.type === inStatechart]
+					expressions.append('''/*«System.lineSeparator»«outInstance.name»: «actionContainerName» -i-> «receivingTransition.name»«System.lineSeparator»*/«System.lineSeparator»''')
+					// Suffix present? If not, all transitions can be reached; if yes, some transitions
+					// are covered by transition fired in the same step, but the end is a stable state
+					expressions.append('''E<> «outInstance.sendingInteractionIdVariableName» == «sendingId» && «inInstance.receivingInteractionIdVariableName» == «receivingId» && «Namings.isStableVariableName»«System.lineSeparator»''')
+				}
+			}
+		}
+		return expressions.toString
+	}
+	
 	def generateExpressions() {
 		val expressions = new StringBuilder
 		if (STATE_COVERAGE) {
@@ -168,6 +218,9 @@ class TestQueryGenerationHandler {
 		}
 		if (OUT_EVENT_COVERAGE) {
 			expressions.append(generateOutEventCoverageExpressions)
+		}
+		if (INTERACTION_COVERAGE) {
+			expressions.append(generateInteractionCoverageExpressions)
 		}
 		return expressions.toString
 	}

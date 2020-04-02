@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.emf.ecore.EObject;
+
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -14,6 +16,18 @@ public class ExpressionUtil {
 	protected ExpressionEvaluator evaluator = new ExpressionEvaluator();
 	
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	
+	@SuppressWarnings("unchecked")
+	public  <T extends EObject> T getContainer(EObject element, Class<T> _class) {
+		EObject container = element.eContainer();
+		if (container == null) {
+			return null;
+		}
+		if (_class.isInstance(container)) {
+			return (T) container;
+		}
+		return getContainer(container, _class);
+	}
 	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();

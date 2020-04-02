@@ -1497,7 +1497,8 @@ class CompositeToUppaalTransformer {
 	 */
 	private def createEventRaising(Edge edge, Port port, Event toRaiseEvent, ComponentInstance inInstance, RaiseEventAction eventAction) {
 		val toRaiseVar = toRaiseEvent.getToRaiseVariable(port, inInstance)
-		edge.createAssignmentExpression(edge_Update, toRaiseVar, true)
+		val raisingExpression = edge.createAssignmentExpression(edge_Update, toRaiseVar, true)
+		addToTrace(eventAction, #{raisingExpression}, expressionTrace) // Important in interaction coverage
 		val exps = eventAction.arguments
 		if (!exps.empty) {
 			for (expression : exps) {

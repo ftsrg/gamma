@@ -292,7 +292,7 @@ private pattern channels(channel : Channel, outInstance : ComponentInstance, out
 }
 
 // This should be user for finding channel endpoints
-private pattern simpleInstanceChannelEndings(channel : Channel, outInstance : SynchronousComponentInstance,
+pattern simpleInstanceChannelEndings(channel : Channel, outInstance : SynchronousComponentInstance,
 	 outPort : Port, raisedEvent : Event, inInstance : SynchronousComponentInstance, inPort : Port) {
 	// Both instances are simple
 	find channels(channel, outInstance, outPort, raisedEvent, inInstance, inPort);
@@ -674,16 +674,53 @@ private pattern triggerToTriggerThroughAndTriggers(parentTrigger : Trigger, trig
 	find andTriggerToTrigger+(parentTrigger, trigger);
 }
 
-private pattern andTriggerToTrigger(andTrigger : BinaryTrigger, trigger : Trigger) {
-	BinaryTrigger.type(andTrigger, ::AND);
-	BinaryTrigger.leftOperand(andTrigger, trigger);
+private pattern binaryTriggerToTrigger(binaryTrigger : BinaryTrigger, trigger : Trigger, binaryType : BinaryType) {
+	BinaryTrigger.type(binaryTrigger, binaryType);
+	BinaryTrigger.leftOperand(binaryTrigger, trigger);
 } or {
-	BinaryTrigger.type(andTrigger, ::AND);
-	BinaryTrigger.rightOperand(andTrigger, trigger);
+	BinaryTrigger.type(binaryTrigger, binaryType);
+	BinaryTrigger.rightOperand(binaryTrigger, trigger);
+}
+
+private pattern andTriggerToTrigger(andTrigger : BinaryTrigger, trigger : Trigger) {
+	find binaryTriggerToTrigger(andTrigger, trigger, BinaryType::AND);
 }
 
 private pattern eventTriggers(trigger : EventTrigger, port : Port, event : Event) {
 	EventTrigger.eventReference(trigger, eventReference);
 	PortEventReference.port(eventReference, port);
 	PortEventReference.event(eventReference, event);
+}
+
+// Interaction coverage
+
+private pattern triggerToTriggerThroughOrTriggers(parentTrigger : Trigger, trigger : Trigger) {
+	parentTrigger == trigger;
+} or {
+	find orTriggerToTrigger+(parentTrigger, trigger);
+}
+
+private pattern orTriggerToTrigger(orTrigger : BinaryTrigger, trigger : Trigger) {
+	find binaryTriggerToTrigger(orTrigger, trigger, BinaryType::OR);
+}
+
+private pattern transitionOrEventTrigger(transition : Transition, inPort : Port, raisedEvent : Event) {
+	Transition.trigger(transition, parentTrigger);
+	find triggerToTriggerThroughOrTriggers(parentTrigger, trigger);
+	find eventTriggers(trigger, inPort, raisedEvent);
+}
+
+pattern raiseInstanceEvents(raiseEventAction : RaiseEventAction, outInstance : SynchronousComponentInstance, raisedEvent : Event,
+		inInstance : SynchronousComponentInstance, inPort : Port, receivingTransition : Transition) {
+	// Entry event
+	find raiseInstanceEventStateEntryActions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
+} or {
+	// Exit event
+	find raiseInstanceEventStateExitActions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
+} or {
+	// Transition event
+	find raiseInstanceEventOfTransitions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 }

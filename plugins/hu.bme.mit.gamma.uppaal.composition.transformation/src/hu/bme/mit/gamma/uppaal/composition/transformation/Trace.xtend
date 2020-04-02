@@ -83,6 +83,10 @@ class Trace {
 		return Traces.Matcher.on(traceEngine).getAllValuesOfto(null, from)
 	}
 	
+	def getAllExpressionValuesOfTo(EObject from) {
+		return ExpressionTraces.Matcher.on(traceEngine).getAllValuesOfto(null, from)
+	}
+	
 	/**
 	 * Returns a Set of EObjects that the given "to" object is created of.
 	 */
