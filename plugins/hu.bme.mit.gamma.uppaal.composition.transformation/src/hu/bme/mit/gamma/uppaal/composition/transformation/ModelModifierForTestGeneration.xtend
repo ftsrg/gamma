@@ -45,6 +45,7 @@ class ModelModifierForTestGeneration {
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Map<SynchronousComponentInstance, DataVariableDeclaration> sendingVariables = newHashMap
 	protected final Map<SynchronousComponentInstance, DataVariableDeclaration> receivingVariables = newHashMap
+	// Map<outInstance, Map<RaiseEventAction, Pair<outEdgeId, Set<Pair<inEdgeId, ReceivingTransition>>>>>
 	protected final Map<SynchronousComponentInstance, Map<RaiseEventAction, Pair<Integer, Set<Pair<Integer, Transition>>>>> interactionIds = newHashMap
 	
 	
@@ -102,6 +103,9 @@ class ModelModifierForTestGeneration {
 	}
 	
 	private def modifyModelForTransitionCoverage() {
+		if (!TRANSITION_COVERAGE) {
+			return
+		}
 		// Creating a global variable in UPPAAL for transition ids
 		this.transitionIdVariable = this.nta.globalDeclarations.createVariable(DataVariablePrefix.NONE,
 			nta.int, transitionIdVariableName)
@@ -140,22 +144,36 @@ class ModelModifierForTestGeneration {
 		}
 	}
 	
+	private def setSendingId(SynchronousComponentInstance outInstance, RaiseEventAction action, int value) {
+		val actionMap = interactionIds.get(outInstance) // This initialization is expected
+		if (actionMap.containsKey(action)) {
+			checkState(actionMap.get(action).key == value)
+			return 
+		}
+		actionMap.put(action, new Pair<Integer, Set<Pair<Integer, Transition>>>(value, newHashSet))
+	}
+	
 	private def getReceivingId(SynchronousComponentInstance outInstance, RaiseEventAction action, 
 			Transition receivingTransition) {
 		val actionMap = interactionIds.get(outInstance) //
 		val idPair = actionMap.get(action)
 		val receivingIds = idPair.value
 		var int nextValue
-		if (receivingIds.empty) {
+		val previousValues = actionMap.values.map[it.value].flatten.map[it.key]
+		if (previousValues.empty) {
 			nextValue = 0
-		} else {
-			nextValue = receivingIds.map[it.key].max + 1
+		}
+		else {
+			nextValue = previousValues.max + 1
 		}
 		receivingIds += new Pair(nextValue, receivingTransition);
 		return nextValue
 	}
 	
 	private def modifyModelForInteractionCoverage() {
+		if (!INTERACTION_COVERAGE) {
+			return
+		}
 		val sendingComponents = newHashSet
 		val receivingComponents = newHashSet
 		sendingComponents += interactionCoverableComponents
@@ -179,6 +197,7 @@ class ModelModifierForTestGeneration {
 			interactionIds.put(sendingComponent, newHashMap)
 		}
 		// Annotating transitions
+		val edgeAnnotations = newHashMap // One edge can handle at most one assignment to the same variable
 		for (match : interactionMatcher.allMatches) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
@@ -186,11 +205,19 @@ class ModelModifierForTestGeneration {
 			val sendingVariable = sendingVariables.get(outInstance)
 			val uppaalAssignments = raiseEventAction.allExpressionValuesOfTo.filter(AssignmentExpression)
 			checkState(!uppaalAssignments.empty)
-			for (uppaalAssignment : uppaalAssignments) {
-				// There can be more than one resulting assignment
-				val edge = uppaalAssignment.eContainer as Edge
-				val sendingId = outInstance.getSendingId(raiseEventAction)
-				edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
+			// There can be more than one resulting assignment, each edge has to be assigned once
+			for (edge : uppaalAssignments.map[it.eContainer].filter(Edge).toSet) {
+				// One edge can handle at most one assignment to the same variable (multiple raise event actions)!
+				var int sendingId
+				if (edgeAnnotations.containsKey(edge)) {
+					sendingId = edgeAnnotations.get(edge)
+					outInstance.setSendingId(raiseEventAction, sendingId)
+				}
+				else {
+					sendingId = outInstance.getSendingId(raiseEventAction)
+					edgeAnnotations.put(edge, sendingId)
+					edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
+				}
 			}
 			// Receiving
 			val receivingTransition = match.receivingTransition

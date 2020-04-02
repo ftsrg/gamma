@@ -198,7 +198,7 @@ class TestQueryGenerationHandler {
 					val receivingTransition = receivingIdEntry.value
 					val inStatechart = receivingTransition.containingStatechart
 					val inInstance = interactionCoverableComponents.findFirst[it.type === inStatechart]
-					expressions.append('''/*«System.lineSeparator»«outInstance.name»: «actionContainerName» -i-> «receivingTransition.name»«System.lineSeparator»*/«System.lineSeparator»''')
+					expressions.append('''/*«System.lineSeparator»«outInstance.name»: «actionContainerName» -i-> «inInstance.name»: «receivingTransition.name»«System.lineSeparator»*/«System.lineSeparator»''')
 					// Suffix present? If not, all transitions can be reached; if yes, some transitions
 					// are covered by transition fired in the same step, but the end is a stable state
 					expressions.append('''E<> «outInstance.sendingInteractionIdVariableName» == «sendingId» && «inInstance.receivingInteractionIdVariableName» == «receivingId» && «Namings.isStableVariableName»«System.lineSeparator»''')
