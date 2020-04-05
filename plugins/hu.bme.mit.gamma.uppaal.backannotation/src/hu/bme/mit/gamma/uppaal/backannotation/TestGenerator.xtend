@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.backannotation.patterns.WrapperInstanceContainer
+import java.util.Collections
+import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -45,6 +47,7 @@ class TestGenerator {
 	protected final String TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
 	
+	protected final String FINAL_TEST_PREFIX = "final"	
 	protected final String TEST_ANNOTATION = "@Test"	
 	protected final String TEST_NAME = "step"	
 	protected final String ASSERT_TRUE = "assertTrue"	
@@ -62,19 +65,20 @@ class TestGenerator {
 	
 	protected final Package gammaPackage
 	protected final Component component
-	protected final ExecutionTrace trace
+	protected final List<ExecutionTrace> traces // Trace in OR logical relation
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
 	/**
-	 * Id is needed as a suffix to match the trace file.
+	 * Note that the lists of traces represents a set of behaviors the component must conform to.
+	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(ResourceSet resourceSet, ExecutionTrace trace, String yakinduPackageName, String className) {
+	new(ResourceSet resourceSet, List<ExecutionTrace> traces, String yakinduPackageName, String className) {
 		this.resourceSet = resourceSet
-		this.component = trace.component // Theoretically, the same thing what loadModels do
+		this.component = traces.head.component // Theoretically, the same thing what loadModels do
 		this.gammaPackage = component.eContainer as Package
 		this.YAKINDU_PACKAGE_NAME_PREFIX = yakinduPackageName // For some reason, package platform URI does not work
-		this.trace = trace
+		this.traces = traces
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 		// Initializing the string variables
 		this.packageName = getPackageName
@@ -82,11 +86,15 @@ class TestGenerator {
 		this.componentClassName = "Reflective" + component.name.toFirstUpper
 	}
 	
+	new(ResourceSet resourceSet, ExecutionTrace trace, String yakinduPackageName, String className) {
+		this(resourceSet, Collections.singletonList(trace), yakinduPackageName, className)
+	}
+	
 	/**
 	 * Generates the test class.
 	 */
 	def String execute() {
-		return trace.generateTestClass(component, className).toString
+		return traces.generateTestClass(component, className).toString
 	}
 	
 	def getPackageName() {
@@ -103,7 +111,7 @@ class TestGenerator {
 	
 	private def createPackageName() '''package «packageName»;'''
 		
-	protected def generateTestClass(ExecutionTrace trace, Component component, String className) '''
+	protected def generateTestClass(List<ExecutionTrace> traces, Component component, String className) '''
 		«createPackageName»
 		
 		«component.generateImports»
@@ -116,12 +124,13 @@ class TestGenerator {
 			
 			@Before
 			public void init() {
+«««				Each trace must reference the same component with the same parameter values (arguments)!
 				«IF component.needTimer»
 «««					Only if there are timing specs in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
+					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
-					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : trace.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 				«ENDIF»
 			}
 			
@@ -138,7 +147,7 @@ class TestGenerator {
 				«componentClassName.toFirstLower» = null;				
 			}
 			
-			«trace.generateTestCases»
+			«traces.generateTestCases»
 		}
 	'''
 	
@@ -152,43 +161,57 @@ class TestGenerator {
 		import org.junit.Test;
 	'''
 	
-	protected def CharSequence generateTestCases(ExecutionTrace trace) {
-		var testId = 0
+	protected def CharSequence generateTestCases(List<ExecutionTrace> traces) {
+		var stepId = 0
+		var traceId = 0
 		val builder = new StringBuilder
+		// The traces are in an OR-relation
+		builder.append('''
+			«TEST_ANNOTATION»
+			public void test() {
+				«FOR trace : traces»
+					«IF traces.last !== trace»try {«ENDIF»
+					«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»();
+					return;
+					«IF traces.last !== trace»} catch(AssertionError e) {}«ENDIF»
+				«ENDFOR»
+			}
+		''')
+		traceId = 0
 		// Parsing the remaining lines
-		val steps = newArrayList
-		steps += trace.steps
-		if (trace.cycle !== null) {
-			// Cycle steps are not handled differently
-			steps += trace.cycle.steps
+		for (trace : traces) {
+			val steps = newArrayList
+			steps += trace.steps
+			if (trace.cycle !== null) {
+				// Cycle steps are not handled differently
+				steps += trace.cycle.steps
+			}
+			for (step : steps) {
+				val testMethod = '''
+					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
+						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
+						// Act
+						«FOR act : step.actions»
+							«act.serialize»
+						«ENDFOR»
+						// Checking out events
+						«FOR outEvent : step.outEvents»
+							«ASSERT_TRUE»(«componentClassName.toFirstLower».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
+						«ENDFOR»
+						// Checking variables
+						«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
+							«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
+						«ENDFOR»
+						// Checking of states
+						«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
+							«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
+						«ENDFOR»
+					}
+					
+				'''
+				builder.append(testMethod)
+			}
 		}
-		for (step : steps) {
-			val testMethod = '''
-«««				Only the list step should be annotated with a @Test as it calls all previous steps recursively
-				«IF steps.indexOf(step) == steps.size - 1»«TEST_ANNOTATION»«ENDIF»
-				public void «TEST_NAME + testId++»() {
-					«IF testId !== 1»«TEST_NAME + (testId - 2)»();«ENDIF»
-					// Act
-					«FOR act : step.actions»
-						«act.serialize»
-					«ENDFOR»
-					// Checking out events
-					«FOR outEvent : step.outEvents»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
-					«ENDFOR»
-					// Checking variables
-					«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
-					«ENDFOR»
-					// Checking of states
-					«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
-					«ENDFOR»
-				}
-				
-			'''
-			builder.append(testMethod)
-		}		
 		return builder.toString
 	}
 	
