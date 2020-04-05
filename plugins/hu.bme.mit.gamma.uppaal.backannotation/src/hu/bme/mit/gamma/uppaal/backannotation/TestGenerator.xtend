@@ -65,7 +65,7 @@ class TestGenerator {
 	
 	protected final Package gammaPackage
 	protected final Component component
-	protected final List<ExecutionTrace> traces // Trace in OR logical relation
+	protected final List<ExecutionTrace> traces // Traces in OR logical relation
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
