@@ -196,7 +196,7 @@ ExistsExpression returns Expression:
 EquivalenceExpression returns Expression:
 	ComparisionExpression (
 		{EqualityExpression.leftOperand=current} '=' rightOperand=ComparisionExpression |
-		{InequalityExpression.leftOperand=current} '/=' rightOperand=ComparisionExpression
+		{InequalityExpression.leftOperand=current} ('/=' | '!=') rightOperand=ComparisionExpression
 	)?
 ;
 
