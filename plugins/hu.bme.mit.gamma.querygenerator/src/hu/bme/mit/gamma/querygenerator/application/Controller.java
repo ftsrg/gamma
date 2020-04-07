@@ -244,11 +244,11 @@ public class Controller {
 	
 	private String getUppaalVariableName(String variableName) throws ViatraQueryException {		
 		if (isCompositeSystem()) {
-			// In case of composite systems
+			// In the case of composite systems
 			String[] splittedStateName = variableName.split("\\.");
 			return splittedStateName[1] + "Of" + splittedStateName[0];
 		}
-		// In case of single statecharts
+		// In the case of single statecharts
 		return variableName;
 	}
 	

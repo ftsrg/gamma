@@ -44,7 +44,7 @@ import uppaal.types.DeclaredType
 import uppaal.types.TypeReference
 import uppaal.types.TypesPackage
 
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class MessageQueueCreator {
 	// NTA target model

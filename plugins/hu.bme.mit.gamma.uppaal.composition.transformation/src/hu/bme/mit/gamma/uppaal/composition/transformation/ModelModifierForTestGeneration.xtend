@@ -21,7 +21,7 @@ import uppaal.templates.TemplatesPackage
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class ModelModifierForTestGeneration {
 	// Has to be set externally

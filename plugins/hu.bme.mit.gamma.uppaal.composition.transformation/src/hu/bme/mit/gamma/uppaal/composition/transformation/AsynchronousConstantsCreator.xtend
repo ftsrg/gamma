@@ -20,7 +20,7 @@ import uppaal.declarations.ExpressionInitializer
 import uppaal.expressions.ExpressionsPackage
 import uppaal.expressions.LiteralExpression
 
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class AsynchronousConstantsCreator {
 	// NTA target model

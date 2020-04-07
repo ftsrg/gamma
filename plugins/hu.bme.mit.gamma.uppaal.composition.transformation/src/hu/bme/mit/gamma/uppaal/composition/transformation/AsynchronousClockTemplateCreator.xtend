@@ -27,7 +27,7 @@ import uppaal.expressions.LogicalOperator
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class AsynchronousClockTemplateCreator {
 	// NTA

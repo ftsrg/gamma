@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.uppaal.composition.transformation
+package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.statechart.model.Clock
 import hu.bme.mit.gamma.statechart.model.Port

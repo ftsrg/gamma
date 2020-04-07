@@ -140,7 +140,7 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class CompositeToUppaalTransformer {
 	// Transformation-related extensions

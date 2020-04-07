@@ -10,7 +10,7 @@ import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.DeclarationsPackage
 import uppaal.types.TypesPackage
 
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class SynchronousChannelCreatorOfAsynchronousInstances {
 	// NTA target model

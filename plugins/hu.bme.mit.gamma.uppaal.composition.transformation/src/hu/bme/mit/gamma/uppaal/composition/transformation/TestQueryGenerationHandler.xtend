@@ -6,8 +6,10 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.uppaal.util.Namings
 import java.util.Collection
 import java.util.Set
 
@@ -15,8 +17,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
-import hu.bme.mit.gamma.statechart.model.Transition
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class TestQueryGenerationHandler {
 	// Has to be set externally

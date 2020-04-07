@@ -55,7 +55,7 @@ import uppaal.templates.Template
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class Trace {
 	// EMF Trace model and engine

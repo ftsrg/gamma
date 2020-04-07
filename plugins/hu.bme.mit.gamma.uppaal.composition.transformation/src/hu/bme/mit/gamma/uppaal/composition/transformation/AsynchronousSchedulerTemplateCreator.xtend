@@ -22,7 +22,7 @@ import uppaal.templates.LocationKind
 import uppaal.templates.SynchronizationKind
 import uppaal.templates.TemplatesPackage
 
-import static hu.bme.mit.gamma.uppaal.composition.transformation.Namings.*
+import static hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class AsynchronousSchedulerTemplateCreator {
 	// NTA
