@@ -123,6 +123,7 @@ public class View extends JFrame {
 
 	private JComboBox<String> stateSelector = new JComboBox<String>();
 	private JComboBox<String> variableSelector = new JComboBox<String>();
+	private JComboBox<String> eventSelector = new JComboBox<String>();
 	private JComboBox<String> operatorSelector = new JComboBox<String>(new String[] {"AND", "OR", "IMPLICATION", "NEGATION", "EQUALITY"});
 
 	private JTextField resultText;
@@ -278,7 +279,7 @@ public class View extends JFrame {
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
 		howToList = new JComboBox<String>(items);
 		helpTextArea = new JTextArea();
-		helpTextArea.setFont(new Font("Serif", Font.PLAIN, 15));
+		helpTextArea.setFont(new Font("Serif", Font.PLAIN, 16));
 		helpTextArea.setText(E_SOME_TEXT);
 		helpTextArea.setEditable(false);
 		helpTextArea.setLineWrap(true);
@@ -328,10 +329,11 @@ public class View extends JFrame {
 		
 		// Example part
 		final JLabel exampleLabel = new JLabel("Example:");
-		exampleLabel.setPreferredSize(new Dimension(250, 20));
+		exampleLabel.setFont(new Font("Serif", Font.PLAIN, 16));
+		exampleLabel.setPreferredSize(new Dimension(250, 35));
 		exampleLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		exampleTextArea = new JTextArea();
-		exampleTextArea.setFont(new Font("Serif", Font.PLAIN, 15));
+		exampleTextArea.setFont(new Font("Serif", Font.PLAIN, 16));
 		exampleTextArea.setText(E_SOME_EXAMPLE);
 		exampleTextArea.setEditable(false);
 		exampleTextArea.setLineWrap(true);
@@ -344,6 +346,7 @@ public class View extends JFrame {
 		examplePanel.setBorder(new EmptyBorder(3, 0, 0, 0));
 		
 		JLabel selectorLabel = new JLabel("Select an element below to insert into the condition.");
+		selectorLabel.setFont(new Font("Serif", Font.PLAIN, 16));
 		selectorLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		stateSelector.addActionListener(new ActionListener() {			
 			@Override
@@ -356,6 +359,13 @@ public class View extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				activeText.setText(activeText.getText() + "(" + variableSelector.getSelectedItem().toString() + ")");				
+			}
+		});
+		
+		eventSelector.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				activeText.setText(activeText.getText() + "(" + eventSelector.getSelectedItem().toString() + ")");				
 			}
 		});
 		
@@ -393,6 +403,10 @@ public class View extends JFrame {
 		JLabel variableLabel = new JLabel("Variable selector:");
 		variableLabel.setPreferredSize(LABEL_PREFERRED_SIZE);
 		variableLabel.setAlignmentX(LEFT_ALIGNMENT);
+		
+		JLabel eventLabel = new JLabel("Event selector:");
+		eventLabel.setPreferredSize(LABEL_PREFERRED_SIZE);
+		eventLabel.setAlignmentX(LEFT_ALIGNMENT);
 		
 		JLabel operatorLabel = new JLabel("Operator selector:");
 		operatorLabel.setPreferredSize(LABEL_PREFERRED_SIZE);
@@ -524,6 +538,13 @@ public class View extends JFrame {
 		variablePanel.add(variableLabel);
 		variablePanel.add(variableSelector);
 		variablePanel.setMinimumSize(UP_RIGHT_PANEL_SIZE);
+		// Event selector
+		JPanel eventPanel = new JPanel();
+		BoxLayout eventPanelLayout = new BoxLayout(eventPanel, BoxLayout.X_AXIS);
+		eventPanel.setLayout(eventPanelLayout);
+		eventPanel.add(eventLabel);
+		eventPanel.add(eventSelector);
+		eventPanel.setMinimumSize(UP_RIGHT_PANEL_SIZE);
 		// Operator selector
 		JPanel operatorPanel = new JPanel();
 		BoxLayout operatorPanelLayour = new BoxLayout(operatorPanel, BoxLayout.X_AXIS);
@@ -545,6 +566,7 @@ public class View extends JFrame {
 		upRightPanel.add(selectorLabelPanel);
 		upRightPanel.add(statePanel);
 		upRightPanel.add(variablePanel);
+		upRightPanel.add(eventPanel);
 		upRightPanel.add(operatorPanel);
 		upRightPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
@@ -552,7 +574,8 @@ public class View extends JFrame {
 		BoxLayout upLeftPanelLayout = new BoxLayout(upLeftPanel, BoxLayout.Y_AXIS);
 		upLeftPanel.setLayout(upLeftPanelLayout);
 		JLabel queryModeLabel = new JLabel("Select the query mode:");
-		queryModeLabel.setPreferredSize(new Dimension(250, 20));
+		queryModeLabel.setFont(new Font("Serif", Font.PLAIN, 16));
+		queryModeLabel.setPreferredSize(new Dimension(250, 35));
 		queryModeLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 		upLeftPanel.add(queryModeLabel);
 		upLeftPanel.add(howToList);
@@ -735,11 +758,11 @@ public class View extends JFrame {
 	}
 
 	private void setFrameSizeSmaller() {
-		setSize(995, 340);
+		setSize(1005, 365);
 	}
 	
 	private void setFrameSizeBigger() {
-		setSize(995, 380);
+		setSize(1005, 405);
 	}
 	
 	private void initStatesComboBox() throws ViatraQueryException {
