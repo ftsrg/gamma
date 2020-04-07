@@ -99,47 +99,11 @@ public class Controller {
 	}
 	
 	public void initSelectorWithStates(JComboBox<String> selector) throws ViatraQueryException {
-		// Needed to ensure the items in the selector are sorted
-		List<String> entryList = new ArrayList<String>();
-		// In the case of composite systems
-		if (isCompositeSystem()) {
-			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
-				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-					entryList.add(entry);				
-				}
-			}
-		}
-		else {
-			// In the case of single statecharts
-			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getRegion().getName() + "." + statesMatch.getStateName();
-				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-					entryList.add(entry);				
-				}
-			}
-		}
-		fillComboBox(selector, entryList);
+		fillComboBox(selector, getStateNames());
 	}
 	
 	public void initSelectorWithVariables(JComboBox<String> selector) throws ViatraQueryException {
-		// Needed to ensure the items in the selector are sorted
-		List<String> entryList = new ArrayList<String>();
-		// In the case of composite systems
-		if (isCompositeSystem()) {
-			for (InstanceVariables.Match statesMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getInstance().getName() + "." + statesMatch.getVariable().getName();
-				entryList.add(entry);
-			}
-		}
-		else {
-			// In the case of single statecharts
-			for (SimpleStatechartVariables.Match statesMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getVariable().getName();
-				entryList.add(entry);
-			}	
-		}
-		fillComboBox(selector, entryList);
+		fillComboBox(selector, getVariableNames());
 	}
 	
 	public List<String> getStateNames() throws ViatraQueryException {
@@ -227,7 +191,7 @@ public class Controller {
 		}
 		result = "(" + result + ")";
 		if (isCompositeSystem() && !operator.equals(View.MIGHT_ALWAYS) && !operator.equals(View.MUST_ALWAYS)) {
-			// It is pointless to add isStable in cases of A[] and E[]
+			// It is pointless to add isStable in the case of A[] and E[]
 			result += " && isStable";
 		}
 		else if (isCompositeSystem()){
