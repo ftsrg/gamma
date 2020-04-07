@@ -53,14 +53,18 @@ import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
+import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
+import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.uppaal.backannotation.EmptyTraceException;
 import hu.bme.mit.gamma.uppaal.backannotation.StringTraceBackAnnotator;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
+import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopSyncSystemOutEvents;
+import hu.bme.mit.gamma.uppaal.util.Namings;
 
 public class Controller {
 
@@ -106,6 +110,10 @@ public class Controller {
 		fillComboBox(selector, getVariableNames());
 	}
 	
+	public void initSelectorWithEvents(JComboBox<String> selector) throws ViatraQueryException {
+		fillComboBox(selector, getSystemOutEventNames());
+	}
+	
 	public List<String> getStateNames() throws ViatraQueryException {
 		List<String> stateNames = new ArrayList<String>();
 		// In the case of composite systems
@@ -148,6 +156,22 @@ public class Controller {
 		return variableNames;
 	}
 	
+	private String getSystemOutEventName(Port systemPort, Event event) {
+		return systemPort.getName() + "." + event.getName();
+	}
+	
+	public List<String> getSystemOutEventNames() throws ViatraQueryException {
+		List<String> eventNames = new ArrayList<String>();
+		if (isCompositeSystem()) {
+			// In the case of composite systems
+			for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+				String entry = getSystemOutEventName(eventsMatch.getSystemPort(), eventsMatch.getEvent());
+				eventNames.add(entry);
+			}
+		}
+		return eventNames;
+	}
+	
 	/** Returns the chain of regions from the given lowest region to the top region. 
 	 */
 	private String getFullRegionPathName(Region lowestRegion) {
@@ -165,6 +189,7 @@ public class Controller {
 		}
 		List<String> stateNames = this.getStateNames();
 		List<String> variableNames = this.getVariableNames();
+		List<String> systemOutEventNames = this.getSystemOutEventNames();
 		for (String stateName : stateNames) {
 			if (result.contains("(" + stateName + ")")) {
 				String uppaalStateName = getUppaalStateName(stateName);
@@ -187,6 +212,17 @@ public class Controller {
 			if (result.contains("(!" + variableName + ")")) {
 				String uppaalVariableName = getUppaalVariableName(variableName);
 				result = result.replaceAll("\\(!" + variableName + "\\)", "\\(!" + uppaalVariableName + "\\)");
+			}
+		}
+		for (String systemOutEventName : systemOutEventNames) {
+			if (result.contains("(" + systemOutEventName + ")")) {
+				String uppaalVariableName = getUppaalOutEventName(systemOutEventName);
+				result = result.replaceAll("\\(" + systemOutEventName + "\\)", "\\(" + uppaalVariableName + "\\)");
+			}
+			// Checking the negations
+			if (result.contains("(!" + systemOutEventName + ")")) {
+				String uppaalVariableName = getUppaalOutEventName(systemOutEventName);
+				result = result.replaceAll("\\(!" + systemOutEventName + "\\)", "\\(!" + uppaalVariableName + "\\)");
 			}
 		}
 		result = "(" + result + ")";
@@ -239,7 +275,7 @@ public class Controller {
 				return "P_" + getRegionName(parentRegion) + "." + splittedStateName[1];
 			}
 		}
-		throw new IllegalArgumentException("No!");
+		throw new IllegalArgumentException("Not known state!");
 	}
 	
 	private String getUppaalVariableName(String variableName) throws ViatraQueryException {		
@@ -250,6 +286,16 @@ public class Controller {
 		}
 		// In the case of single statecharts
 		return variableName;
+	}
+	
+	private String getUppaalOutEventName(String portEventName) throws ViatraQueryException {
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+			String name = getSystemOutEventName(eventsMatch.getSystemPort(), eventsMatch.getEvent());
+			if (name.equals(portEventName)) {
+				return Namings.getOutEventName(eventsMatch.getEvent(), eventsMatch.getPort(), eventsMatch.getInstance());
+			}
+		}
+		throw new IllegalArgumentException("Not known system event: " + portEventName);
 	}
 	
 	/**

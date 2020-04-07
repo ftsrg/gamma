@@ -637,6 +637,7 @@ public class View extends JFrame {
 		setLocation(550, 300);
 		initStatesComboBox();
 		initVariablesComboBox();
+		initEventsComboBox();
 		primeText.setText("");
 		optionalText.setText("");
 		resultText.setText("");
@@ -771,6 +772,10 @@ public class View extends JFrame {
 	
 	private void initVariablesComboBox() throws ViatraQueryException {
 		controller.initSelectorWithVariables(variableSelector);
+	}
+	
+	private void initEventsComboBox() throws ViatraQueryException {
+		controller.initSelectorWithEvents(eventSelector);
 	}
 	
 	private String parseText() throws ViatraQueryException {
