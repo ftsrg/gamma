@@ -394,8 +394,7 @@ public class Controller {
     		}
     	}
     	if (usedIds.isEmpty()) {
-    		return new AbstractMap.SimpleEntry<String, Integer>(
-    				TRACE_FILE_NAME + "0." + fileExtension, 0);
+    		return new AbstractMap.SimpleEntry<String, Integer>(TRACE_FILE_NAME + "0." + fileExtension, 0);
     	}
     	Collections.sort(usedIds);
     	Integer biggestId = usedIds.get(usedIds.size() - 1);
