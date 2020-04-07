@@ -46,6 +46,7 @@ import org.eclipse.viatra.query.runtime.exception.ViatraQueryException;
 import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates;
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
@@ -111,7 +112,9 @@ public class Controller {
 	}
 	
 	public void initSelectorWithEvents(JComboBox<String> selector) throws ViatraQueryException {
-		fillComboBox(selector, getSystemOutEventNames());
+		List<String> systemOutEventNames = getSystemOutEventNames();
+		systemOutEventNames.addAll(getSystemOutEventParameterNames());
+		fillComboBox(selector, systemOutEventNames);
 	}
 	
 	public List<String> getStateNames() throws ViatraQueryException {
@@ -172,6 +175,26 @@ public class Controller {
 		return eventNames;
 	}
 	
+	private String getSystemOutEventParameterName(Port systemPort, Event event, ParameterDeclaration parameter) {
+		return getSystemOutEventName(systemPort, event) + "::" + parameter.getName();
+	}
+	
+	public List<String> getSystemOutEventParameterNames() throws ViatraQueryException {
+		List<String> parameterNames = new ArrayList<String>();
+		if (isCompositeSystem()) {
+			// In the case of composite systems
+			for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+				Event event = eventsMatch.getEvent();
+				for (ParameterDeclaration parameter : event.getParameterDeclarations()) {
+					Port systemPort = eventsMatch.getSystemPort();
+					String entry = getSystemOutEventParameterName(systemPort, event, parameter);
+					parameterNames.add(entry);
+				}
+			}
+		}
+		return parameterNames;
+	}
+	
 	/** Returns the chain of regions from the given lowest region to the top region. 
 	 */
 	private String getFullRegionPathName(Region lowestRegion) {
@@ -190,6 +213,7 @@ public class Controller {
 		List<String> stateNames = this.getStateNames();
 		List<String> variableNames = this.getVariableNames();
 		List<String> systemOutEventNames = this.getSystemOutEventNames();
+		List<String> systemOutEventParameterNames = this.getSystemOutEventParameterNames();
 		for (String stateName : stateNames) {
 			if (result.contains("(" + stateName + ")")) {
 				String uppaalStateName = getUppaalStateName(stateName);
@@ -223,6 +247,17 @@ public class Controller {
 			if (result.contains("(!" + systemOutEventName + ")")) {
 				String uppaalVariableName = getUppaalOutEventName(systemOutEventName);
 				result = result.replaceAll("\\(!" + systemOutEventName + "\\)", "\\(!" + uppaalVariableName + "\\)");
+			}
+		}
+		for (String systemOutEventParameterName : systemOutEventParameterNames) {
+			if (result.contains("(" + systemOutEventParameterName + ")")) {
+				String uppaalVariableName = getUppaalOutEventParameterName(systemOutEventParameterName);
+				result = result.replaceAll("\\(" + systemOutEventParameterName + "\\)", "\\(" + uppaalVariableName + "\\)");
+			}
+			// Checking the negations
+			if (result.contains("(!" + systemOutEventParameterName + ")")) {
+				String uppaalVariableName = getUppaalOutEventParameterName(systemOutEventParameterName);
+				result = result.replaceAll("\\(!" + systemOutEventParameterName + "\\)", "\\(!" + uppaalVariableName + "\\)");
 			}
 		}
 		result = "(" + result + ")";
@@ -296,6 +331,19 @@ public class Controller {
 			}
 		}
 		throw new IllegalArgumentException("Not known system event: " + portEventName);
+	}
+	
+	private String getUppaalOutEventParameterName(String portEventParameterName) throws ViatraQueryException {
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+			Port systemPort = eventsMatch.getSystemPort();
+			Event event = eventsMatch.getEvent();
+			for (ParameterDeclaration parameter : event.getParameterDeclarations()) {
+				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
+					return Namings.getValueOfName(event, eventsMatch.getPort(), eventsMatch.getInstance());
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known system event: " + portEventParameterName);
 	}
 	
 	/**
