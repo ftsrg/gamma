@@ -226,7 +226,10 @@ class ModelModifierForTestGeneration {
 				else {
 					sendingId = outInstance.getSendingId(raiseEventAction)
 					edgeAnnotations.put(edge, sendingId)
-					edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
+					// The variable is either set to a new variable or not
+					val toSetSelection = edge.addBooleanSelection("toSet")
+					edge.createIfThenElseAssignment(edge_Update, sendingVariable, toSetSelection.variable.head,
+						sendingId.toString, sendingVariable.variable.head)
 				}
 			}
 			// Receiving

@@ -102,19 +102,4 @@ class VariableTransformer {
 		throw new IllegalArgumentException("Not transformable variable type: " + type + "!")
 	}
 	
-	private def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
-			Expression upperBound, String name) {		
-		container.createChild(variableContainer_TypeDefinition, rangeTypeSpecification) as RangeTypeSpecification => [
-			it.createChild(rangeTypeSpecification_Bounds, integerBounds) as IntegerBounds => [
-				it.lowerBound = lowerBound
-				it.upperBound = upperBound
-			]
-		]
-		// Creating variables for all statechart instances
-		container.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
-			it.container = container
-			it.name = name
-		]
-	}
-	
 }

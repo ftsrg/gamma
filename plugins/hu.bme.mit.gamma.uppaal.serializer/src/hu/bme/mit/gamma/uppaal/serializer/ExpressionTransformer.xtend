@@ -51,6 +51,7 @@ import uppaal.types.StructTypeSpecification
 import uppaal.types.Type
 import uppaal.types.TypeReference
 import uppaal.templates.Selection
+import uppaal.expressions.ConditionExpression
 
 class ExpressionTransformer {
 	
@@ -150,6 +151,10 @@ class ExpressionTransformer {
 	
 	def static dispatch String transform(MinusExpression expression) {
 		return "-" +  expression.invertedExpression.transform
+	}
+	
+	def static dispatch String transform(ConditionExpression expression) {
+		return expression.ifExpression.transform + " ? " + expression.thenExpression.transform + " : " + expression.elseExpression.transform
 	}
 	
 	def static dispatch String transform(ArithmeticExpression expression) {

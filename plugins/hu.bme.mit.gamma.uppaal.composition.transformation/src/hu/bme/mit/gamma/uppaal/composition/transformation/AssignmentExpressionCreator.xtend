@@ -30,6 +30,7 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 import uppaal.declarations.VariableDeclaration
+import uppaal.core.NamedElement
 
 class AssignmentExpressionCreator {
 	// NTA builder
@@ -116,6 +117,40 @@ class AssignmentExpressionCreator {
 			]
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = rhs
+		]
+		return assignmentExpression
+	}
+	
+	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
+			NamedElement _if, NamedElement _then, NamedElement _else) {
+		return container.createIfThenElseAssignment(reference, variable, 
+			createIdentifierExpression => [it.identifier = _if],
+			createIdentifierExpression => [it.identifier = _then],
+			createIdentifierExpression => [it.identifier = _else]
+		)
+	}
+	
+		def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
+			NamedElement _if, String _then, NamedElement _else) {
+		return container.createIfThenElseAssignment(reference, variable, 
+			createIdentifierExpression => [it.identifier = _if],
+			createLiteralExpression => [it.text = _then],
+			createIdentifierExpression => [it.identifier = _else]
+		)
+	}
+	
+	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
+			uppaal.expressions.Expression _if, uppaal.expressions.Expression _then, uppaal.expressions.Expression _else) {
+		val assignmentExpression = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
+			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+				it.identifier = variable.variable.head // Only one variable is expected
+			]
+			it.operator = AssignmentOperator.EQUAL
+			it.secondExpr = createConditionExpression => [
+				it.ifExpression = _if
+				it.thenExpression = _then
+				it.elseExpression = _else
+			]
 		]
 		return assignmentExpression
 	}

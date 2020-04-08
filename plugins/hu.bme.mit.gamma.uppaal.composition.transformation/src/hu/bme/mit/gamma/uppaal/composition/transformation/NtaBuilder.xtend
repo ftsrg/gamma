@@ -44,13 +44,17 @@ import uppaal.templates.LocationKind
 import uppaal.templates.Synchronization
 import uppaal.templates.SynchronizationKind
 import uppaal.templates.Template
+import uppaal.templates.TemplatesFactory
 import uppaal.templates.TemplatesPackage
+import uppaal.types.IntegerBounds
 import uppaal.types.PredefinedType
+import uppaal.types.RangeTypeSpecification
 import uppaal.types.TypeReference
 import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import uppaal.templates.Selection
 
 class NtaBuilder {
 	// NTA target model
@@ -67,6 +71,7 @@ class NtaBuilder {
 	protected final extension ExpressionsPackage expPackage = ExpressionsPackage.eINSTANCE
 	// UPPAAL factories
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
+	protected final extension TemplatesFactory tempFact = TemplatesFactory.eINSTANCE
 	// Auxiliary objects
 	protected final extension Cloner cloner = new Cloner
 	
@@ -129,6 +134,33 @@ class NtaBuilder {
 				(statements.size == 1)
 		}
 		return false
+	}
+	
+	def Selection addBooleanSelection(Edge edge, String name) {
+		val select = createSelection
+		select.createIntTypeWithRangeAndVariable(
+			createLiteralExpression => [it.text = "0"],
+			createLiteralExpression => [it.text = "1"],
+			name
+		)
+		edge.selection += select
+		return select
+	}
+	
+		
+	def createIntTypeWithRangeAndVariable(VariableContainer container, Expression lowerBound,
+			Expression upperBound, String name) {		
+		container.createChild(variableContainer_TypeDefinition, rangeTypeSpecification) as RangeTypeSpecification => [
+			it.createChild(rangeTypeSpecification_Bounds, integerBounds) as IntegerBounds => [
+				it.lowerBound = lowerBound
+				it.upperBound = upperBound
+			]
+		]
+		// Creating variables for all statechart instances
+		container.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
+			it.container = container
+			it.name = name
+		]
 	}
 	
 	/**
