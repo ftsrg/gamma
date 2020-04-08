@@ -168,17 +168,20 @@ class UppaalModelSerializer {
 		<transition>
 		<source ref="«transition.source.name»"/>
 		<target ref="«transition.target.name»"/>
-		«IF !(transition.guard === null)»
-		<label kind="guard">«transition.guard.transform»</label>
+		«IF !transition.selection.empty»
+			<label kind="select">«FOR select : transition.selection SEPARATOR ", "»«select.serialize»«ENDFOR»</label>
 		«ENDIF»
-		«IF !(transition.synchronization === null)»
-		<label kind="synchronisation">«transition.synchronization.channelExpression.identifier.name»«transition.synchronization.kind.literal»</label>
+		«IF transition.guard !== null»
+			<label kind="guard">«transition.guard.transform»</label>
 		«ENDIF»
-		«IF !(transition.update === null)»
-		<label kind="assignment">«FOR anUpdate : transition.update SEPARATOR ",\n"»«anUpdate.transform»«ENDFOR»</label>
+		«IF transition.synchronization !== null»
+			<label kind="synchronisation">«transition.synchronization.channelExpression.identifier.name»«transition.synchronization.kind.literal»</label>
 		«ENDIF»
-		«IF !(transition.comment === null)»
-		<label kind="comments">«transition.comment»</label>
+		«IF transition.update !== null»
+			<label kind="assignment">«FOR anUpdate : transition.update SEPARATOR ",\n"»«anUpdate.transform»«ENDFOR»</label>
+		«ENDIF»
+		«IF transition.comment !== null»
+			<label kind="comments">«transition.comment»</label>
 		«ENDIF»
 		</transition>
 		«ENDFOR»

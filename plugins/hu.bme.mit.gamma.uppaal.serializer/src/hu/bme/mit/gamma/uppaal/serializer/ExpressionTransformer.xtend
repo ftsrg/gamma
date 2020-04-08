@@ -50,6 +50,7 @@ import uppaal.types.RangeTypeSpecification
 import uppaal.types.StructTypeSpecification
 import uppaal.types.Type
 import uppaal.types.TypeReference
+import uppaal.templates.Selection
 
 class ExpressionTransformer {
 	
@@ -209,6 +210,10 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transform(FunctionCallExpression expression) '''«expression.function.name»(«FOR argument : expression.argument SEPARATOR ", "»«argument.transform»«ENDFOR»)'''
+	
+	// Serializing selections
+	
+	def static serialize(Selection select) '''«FOR variable : select.variable»«variable.name»«ENDFOR» : «select.typeDefinition.serializeTypeDefinition»'''
 	
 	// Serializing statements
 	
