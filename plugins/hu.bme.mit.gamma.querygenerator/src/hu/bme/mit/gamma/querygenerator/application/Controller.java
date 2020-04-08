@@ -834,20 +834,21 @@ public class Controller {
 	    	// Disabling the verification buttons
 			view.setVerificationButtons(false);
 	    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getGeneratedQueryFile())))) {
-	    		String uppaalQuery;
+	    		Entry<String, String> uppaalQuery;
 	    		while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
+	    			String temporalExpression = uppaalQuery.getKey();
 	    			// Reuse state space trick: we copy all the queries into a single string
 	    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
 	    				final String separator = System.lineSeparator();
-	    				StringBuilder queryBuilder = new StringBuilder(uppaalQuery + separator);
+	    				StringBuilder queryBuilder = new StringBuilder(temporalExpression + separator);
 	    				while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
-	    					queryBuilder.append(uppaalQuery + separator);
+	    					queryBuilder.append(uppaalQuery.getKey() + separator);
 	    				}
-	    				uppaalQuery = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
+	    				temporalExpression = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
 	    			}
 	    			//
-	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + uppaalQuery + "...");
-	    			verifier = new Verifier(uppaalQuery, false, view.isSingleTraceModelNeeded() &&
+	    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + temporalExpression + "...");
+	    			verifier = new Verifier(temporalExpression, false, view.isSingleTraceModelNeeded() &&
 	    					!view.isReuseStateSpace());
 	    			verifier.execute();
     				int elapsedTime = 0;
@@ -861,20 +862,9 @@ public class Controller {
     						resultSentence = "Test generation has been finished.";
     					}
     					else {
-	    					String stateName = "";
-							if (!uppaalQuery.equals("A[] not deadlock")) {
-								if (uppaalQuery.startsWith("E<> ")) {
-									stateName =  uppaalQuery.substring("E<> ".length());
-								}
-							}
-							if (stateName.endsWith( " && isStable")) {
-								stateName = stateName.substring(0, stateName.length() - " && isStable".length());
-							}
-	    					if (stateName.startsWith("P_")) {
-	    						stateName = stateName.substring("P_".length());
-	    					}
+	    					String stateName = uppaalQuery.getValue();
 	    					ThreeStateBoolean result = verifier.get();
-	    					if (uppaalQuery.equals("A[] not deadlock")) {
+	    					if (temporalExpression.equals("A[] not deadlock")) {
 	    						// Deadlock query
 	    						switch (result) {
 	    							case TRUE:
@@ -897,7 +887,7 @@ public class Controller {
 										isReachableString = "reachable";
 									break;
 									case FALSE:
-										isReachableString = "unreachable";
+										isReachableString = "not reachable";
 									break;
 									case UNDEF:
 	    								// Theoretically unreachable because of !cancelled
@@ -949,18 +939,21 @@ public class Controller {
     		isCancelled = true;
     	}
     	
-    	private String readLineSkipComments(BufferedReader reader) throws IOException {
+    	private Entry<String, String> readLineSkipComments(BufferedReader reader) throws IOException {
     		final String COMMENT_START = "/*";
     		final String COMMENT_END = "*/";
     		String line = reader.readLine();
+    		String comment = "";
     		if (line == null) {
     			return null;
     		}
     		if (line.contains(COMMENT_START)) {
-    			while (!reader.readLine().contains(COMMENT_END));
-    			return reader.readLine();
+    			while (!(line = reader.readLine()).contains(COMMENT_END)) {
+    				comment += line;
+    			}
+    			line = reader.readLine();
     		}
-    		return line;    		
+    		return new AbstractMap.SimpleEntry<String, String>(line, comment);    		
     	}
     	
     }

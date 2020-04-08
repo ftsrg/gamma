@@ -125,8 +125,10 @@ class ModelModifierForTestGeneration {
 			val edges = transition.allValuesOfTo.filter(Edge)
 			checkState(edges.size == 1)
 			val edge = edges.head
-			edge.createAssignmentExpression(edge_Update, transitionIdVariable,
-				transition.getNextAnnotationValue.toString)
+			// Set new value or keep the current one
+			val toSetSelection = edge.addBooleanSelection("toSet")
+			edge.createIfThenElseAssignment(edge_Update, transitionIdVariable, toSetSelection.variable.head,
+				transition.getNextAnnotationValue.toString, transitionIdVariable.variable.head)
 		}
 	}
 	
@@ -264,8 +266,8 @@ class ModelModifierForTestGeneration {
 				receivingId = /*must be outInstance*/outInstance.getReceivingId(raiseEventAction, receivingTransition)
 				edgeAnnotations.put(receivingEdge, receivingId)
 				val toSetSelection = receivingEdge.addBooleanSelection("toSet")
-				receivingEdge.createIfThenElseAssignment(edge_Update, receivingVariable, toSetSelection.variable.head,
-						receivingId.toString, receivingVariable.variable.head)
+				receivingEdge.createIfThenElseAssignment(edge_Update, receivingVariable,
+					toSetSelection.variable.head, receivingId.toString, receivingVariable.variable.head)
 			}
 		}
 	}

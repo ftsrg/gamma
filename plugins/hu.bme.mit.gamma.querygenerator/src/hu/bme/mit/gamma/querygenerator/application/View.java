@@ -249,7 +249,7 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenuItem.add(sec180);
 	 	testGenerationTimeoutMenuItem.add(sec360);
 
-//	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
+	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
 	 	testGenerationTimeoutMenu.add(singleTraceModelItem);
 	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
 	 		
