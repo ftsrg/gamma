@@ -90,7 +90,8 @@ class SynchronousCompositeComponentCodeGenerator {
 					«FOR instance : component.components.filter[it.type instanceof StatechartDefinition]»
 						«instance.name».change«INSERT_QUEUE.toFirstUpper»();
 					«ENDFOR»
-				«ENDIF»			
+				«ENDIF»
+				clearPorts();
 				// Initializing chain of listeners and events 
 				notifyListeners();
 			}
