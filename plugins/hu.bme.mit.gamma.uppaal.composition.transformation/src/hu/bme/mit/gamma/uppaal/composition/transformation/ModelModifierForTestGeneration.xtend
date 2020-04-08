@@ -168,6 +168,12 @@ class ModelModifierForTestGeneration {
 		val actionMap = interactionIds.get(outInstance) //
 		val idPair = actionMap.get(action)
 		val receivingIds = idPair.value
+		val previousPair = receivingIds.filter[it.value == receivingTransition].head
+		if (previousPair !== null) {
+			// There is already an id stored for this transition
+			return previousPair.key
+		}
+		// This is a new transition
 		var int nextValue
 		val previousValues = actionMap.values.map[it.value].flatten.map[it.key]
 		if (previousValues.empty) {
@@ -178,6 +184,14 @@ class ModelModifierForTestGeneration {
 		}
 		receivingIds += new Pair(nextValue, receivingTransition);
 		return nextValue
+	}
+	
+	private def setReceivingId(SynchronousComponentInstance outInstance, RaiseEventAction action, 
+			Transition receivingTransition, int value) {
+		val actionMap = interactionIds.get(outInstance) //
+		val idPair = actionMap.get(action)
+		val receivingIds = idPair.value
+		receivingIds += new Pair(value, receivingTransition)
 	}
 	
 	private def modifyModelForInteractionCoverage() {
@@ -226,10 +240,11 @@ class ModelModifierForTestGeneration {
 				else {
 					sendingId = outInstance.getSendingId(raiseEventAction)
 					edgeAnnotations.put(edge, sendingId)
-					// The variable is either set to a new variable or not
-					val toSetSelection = edge.addBooleanSelection("toSet")
-					edge.createIfThenElseAssignment(edge_Update, sendingVariable, toSetSelection.variable.head,
-						sendingId.toString, sendingVariable.variable.head)
+					edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
+//					// The variable is either set to a new variable or not
+//					val toSetSelection = edge.addBooleanSelection("toSet")
+//					edge.createIfThenElseAssignment(edge_Update, sendingVariable, toSetSelection.variable.head,
+//						sendingId.toString, sendingVariable.variable.head)
 				}
 			}
 			// Receiving
@@ -240,8 +255,18 @@ class ModelModifierForTestGeneration {
 			checkState(receivingEdges.size == 1)
 			val receivingEdge = receivingEdges.head
 			// There is only one receivingEdge in theory
-			val receivingId = /*must be outInstance*/outInstance.getReceivingId(raiseEventAction, receivingTransition)
-			receivingEdge.createAssignmentExpression(edge_Update, receivingVariable, receivingId.toString)
+			var int receivingId
+			if (edgeAnnotations.containsKey(receivingEdge)) {
+				receivingId = edgeAnnotations.get(receivingEdge)
+				/*must be outInstance*/outInstance.setReceivingId(raiseEventAction, receivingTransition, receivingId)
+			}
+			else {
+				receivingId = /*must be outInstance*/outInstance.getReceivingId(raiseEventAction, receivingTransition)
+				edgeAnnotations.put(receivingEdge, receivingId)
+				val toSetSelection = receivingEdge.addBooleanSelection("toSet")
+				receivingEdge.createIfThenElseAssignment(edge_Update, receivingVariable, toSetSelection.variable.head,
+						receivingId.toString, receivingVariable.variable.head)
+			}
 		}
 	}
 	

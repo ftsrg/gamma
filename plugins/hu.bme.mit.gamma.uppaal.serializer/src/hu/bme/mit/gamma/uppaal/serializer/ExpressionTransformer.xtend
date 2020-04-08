@@ -86,61 +86,6 @@ class ExpressionTransformer {
 		}
 	}
 	
-//	def static dispatch String negate(Expression expression) {
-//		return expression.transform
-//	}
-//	
-//	def static dispatch String negate(LogicalExpression expression) {
-//		var LogicalOperator lOp
-//		switch (expression.operator) {
-//			case AND: {
-//				lOp = LogicalOperator.OR
-//				return expression.firstExpr.negate + " " + lOp.transformLogicalOperator + " " + expression.secondExpr.negate
-//			}
-//			case OR: { 
-//				lOp = LogicalOperator.AND
-//				return expression.firstExpr.negate + " " + lOp.transformLogicalOperator + " " + expression.secondExpr.negate
-//			}
-//			case IMPLY: { 
-//				lOp = LogicalOperator.AND
-//				return expression.firstExpr.transform + " " + lOp.transformLogicalOperator + " " + expression.secondExpr.negate
-//			}
-//			case XOR: { 
-//				return expression.firstExpr.transform + "==" + expression.secondExpr.transform
-//			}
-//			default:
-//				throw new IllegalArgumentException("Not supported for operator: " + expression.operator)
-//		}		
-//	}
-//	
-//	def static dispatch String negate(CompareExpression expression) {
-//		var CompareOperator cOp
-//		switch (expression.operator) {
-//			case EQUAL:
-//				cOp = CompareOperator.UNEQUAL
-//			case UNEQUAL:
-//				cOp = CompareOperator.EQUAL
-//			case GREATER:
-//				cOp = CompareOperator.LESS_OR_EQUAL
-//			case GREATER_OR_EQUAL:
-//				cOp = CompareOperator.LESS
-//			case LESS:
-//				cOp = CompareOperator.GREATER_OR_EQUAL
-//			case LESS_OR_EQUAL:
-//				cOp = CompareOperator.GREATER
-//			default:
-//				throw new IllegalArgumentException("Not supported for operator: " + expression.operator)
-//		}		
-//		return expression.firstExpr.transform + " " + cOp.transformCompareOperator + " " + expression.secondExpr.transform
-//	}
-//	
-//	def static dispatch String negate(IdentifierExpression expression) {
-//		if (expression.identifier instanceof Variable)  {
-//			return "!" + expression.identifier.name
-//		}
-//		throw new IllegalArgumentException("The negation of the following variable is not supported: " + expression.identifier)
-//	}
-	
 	def static dispatch String transform(NegationExpression expression) {
 		return "!(" + expression.negatedExpression.transform + ")"
 	}
@@ -154,7 +99,7 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transform(ConditionExpression expression) {
-		return expression.ifExpression.transform + " ? " + expression.thenExpression.transform + " : " + expression.elseExpression.transform
+		return "(" + expression.ifExpression.transform + " ? " + expression.thenExpression.transform + " : " + expression.elseExpression.transform + ")"
 	}
 	
 	def static dispatch String transform(ArithmeticExpression expression) {
