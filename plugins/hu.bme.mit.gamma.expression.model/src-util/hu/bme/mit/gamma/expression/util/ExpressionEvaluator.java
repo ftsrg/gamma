@@ -33,6 +33,14 @@ import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 
 public class ExpressionEvaluator {
+	
+	public int evaluate(Expression expression) {
+		try {
+			return evaluateInteger(expression);
+		} catch (IllegalArgumentException e) {
+			return evaluateBoolean(expression) ? 1 : 0;
+		}
+	}
 
 	// Integers (and enums)
 	public int evaluateInteger(Expression expression) {
