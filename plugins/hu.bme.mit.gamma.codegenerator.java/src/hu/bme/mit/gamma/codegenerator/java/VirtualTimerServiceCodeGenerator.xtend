@@ -39,7 +39,7 @@ class VirtualTimerServiceCodeGenerator {
 			// Yakindu timer
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
 			// Gamma timer
-			Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
+			private Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
 			
 			/**
 			 * Timer task that reflects a time event. It's internally used by TimerService.
@@ -129,6 +129,11 @@ class VirtualTimerServiceCodeGenerator {
 					default:
 						throw new IllegalArgumentException("Not supported time unit: " + timeUnit);
 				}
+			}
+		
+			public void reset() {
+				timerTaskList.clear();
+				elapsedTime.clear();
 			}
 		
 		}

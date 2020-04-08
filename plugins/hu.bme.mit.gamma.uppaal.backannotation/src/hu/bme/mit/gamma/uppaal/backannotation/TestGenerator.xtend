@@ -216,6 +216,7 @@ class TestGenerator {
 	}
 	
 	protected def dispatch serialize(Reset reset) '''
+		«TIMER_OBJECT_NAME».reset(); // Timer before the system
 		«componentClassName.toFirstLower».reset();
 	'''
 	

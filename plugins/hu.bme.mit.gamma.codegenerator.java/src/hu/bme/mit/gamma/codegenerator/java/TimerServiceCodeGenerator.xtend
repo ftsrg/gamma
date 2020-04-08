@@ -124,6 +124,10 @@ class TimerServiceCodeGenerator {
 				lock.unlock();
 			}
 			
+			public void reset() {
+				timerTaskList.clear();
+			}
+			
 		}
 	'''
 
@@ -155,6 +159,10 @@ class TimerServiceCodeGenerator {
 						default:
 							throw new IllegalArgumentException("Not known time unit: " + timeUnit);
 					}
+				}
+				
+				public void reset() {
+					elapsedTime.clear();
 				}
 			
 		}
