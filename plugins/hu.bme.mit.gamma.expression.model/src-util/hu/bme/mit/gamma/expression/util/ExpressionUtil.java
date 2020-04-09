@@ -89,6 +89,7 @@ public class ExpressionUtil {
 				}
 				if (!(leftOperand instanceof EnumerationLiteralExpression &&
 						rightOperand instanceof EnumerationLiteralExpression)) {
+					// Different enum literals could be evaluated to the same value
 					try {
 						int leftValue = evaluator.evaluate(leftOperand);
 						int rightValue = evaluator.evaluate(rightOperand);
@@ -100,6 +101,10 @@ public class ExpressionUtil {
 					}
 				}
 			}
+		}
+		if (expression instanceof NotExpression) {
+			NotExpression notExpression = (NotExpression) expression;
+			return isDefinitelyFalseExpression(notExpression.getOperand());
 		}
 		if (expression instanceof OrExpression) {
 			OrExpression orExpression = (OrExpression) expression;
