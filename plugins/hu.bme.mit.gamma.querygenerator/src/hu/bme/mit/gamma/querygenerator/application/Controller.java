@@ -673,7 +673,9 @@ public class Controller {
 		
 		private ExecutionTrace verifyQuery(String actualUppaalQuery, ResourceSet traceabilitySet)
 				throws IOException, NotBackannotatedException, EmptyTraceException {
+			Scanner resultReader = null;
 			Scanner traceReader = null;
+			VerificationResultReader verificationResultReader = null;
 			try {
 				// Writing the query to a temporary file
 				File tempQueryfile = writeToFile(actualUppaalQuery, getParentFolder(), ".temporary_query.q");
@@ -684,10 +686,14 @@ public class Controller {
 				command.append("verifyta " + getParameters() + " \"" + getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
 				// Executing the command
 				logger.log(Level.INFO, "Executing command: " + command.toString());
-				process = Runtime.getRuntime().exec(command.toString());
-				InputStream ips = process.getErrorStream();
+				process =  Runtime.getRuntime().exec(command.toString());
+				InputStream outputStream = process.getInputStream();
+				InputStream errorStream = process.getErrorStream();
 				// Reading the result of the command
-				traceReader = new Scanner(ips);
+				resultReader = new Scanner(outputStream);
+				verificationResultReader = new VerificationResultReader(resultReader);
+				verificationResultReader.start();
+				traceReader = new Scanner(errorStream);
 				if (isCancelled) {
 					// If the process is killed, this is where it can be checked
 					throw new NotBackannotatedException(ThreeStateBoolean.UNDEF);
@@ -706,7 +712,9 @@ public class Controller {
 				} 
 				return traceModel;
 			} finally {
+				resultReader.close();
 				traceReader.close();
+				verificationResultReader.cancel();
 			}
 		}
 		
@@ -958,6 +966,31 @@ public class Controller {
     	
     }
     
+}
+
+class VerificationResultReader extends Thread {
+	
+	private final Scanner scanner;
+	private volatile boolean isCancelled = false;
+	private Logger logger = Logger.getLogger("GammaLogger");
+	
+	public VerificationResultReader(Scanner scanner) {
+		this.scanner = scanner;
+	}
+	
+	public void run() {
+		try {
+			while (!isCancelled && scanner.hasNext()) {
+				logger.log(Level.INFO, scanner.nextLine());
+			}
+		} finally {
+			scanner.close();
+		}
+	}
+	
+	public void cancel() {
+		this.isCancelled = true;
+	}
 }
 
 class NotBackannotatedException extends Exception {
