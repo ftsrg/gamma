@@ -35,8 +35,6 @@ public 	/** Runnable class responsible for the execution of formal verification.
 class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	// The query needs to be added to UPPAAL in addition to the model
 	private String originalUppaalQueries;
-	// If this is true, the steps of the trace models generated from originalUppaalQueries are put into a single ExecutionTrace model
-	private boolean oneTraceModelFromMoreQueries;
 	// Process running the UPPAAL verification
 	private Process process;
 	// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
@@ -49,11 +47,10 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public Verifier(String uppaalQuery, boolean contributeToView, boolean oneTraceModelFromMoreQueries,
+	public Verifier(String uppaalQuery, boolean contributeToView,
 			View view, Controller controller) {
 		this.originalUppaalQueries = uppaalQuery;
 		this.contributeToView = contributeToView;
-		this.oneTraceModelFromMoreQueries = oneTraceModelFromMoreQueries;
 		this.view = view;
 		this.controller = controller;
 	}
@@ -67,28 +64,7 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			ResourceSet traceabilitySet = controller.loadTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
-			if (oneTraceModelFromMoreQueries) {
-				String[] uppaalQueries = originalUppaalQueries.split(System.lineSeparator());
-				for (String uppaalQuery : uppaalQueries) {
-					try {
-						if (traceModel == null) {
-							traceModel = verifyQuery(uppaalQuery, traceabilitySet);
-						}
-						else {
-							ExecutionTrace additionalTrace = verifyQuery(uppaalQuery, traceabilitySet);
-							traceModel.getSteps().addAll(additionalTrace.getSteps());
-						}
-					} catch (NotBackannotatedException e) {
-						logger.log(Level.INFO, "Query " + uppaalQuery + " does not yield a trace.");
-					}
-					catch (Exception e) {
-						logger.log(Level.WARNING, e.getMessage());
-					}
-				}
-			}
-			else {
-				traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
-			}
+			traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
 			if (traceModel == null) {
 				throw new IllegalArgumentException("None of the specified queries resulted in a trace.");
 			}
@@ -291,4 +267,3 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	}
 	
 }
-

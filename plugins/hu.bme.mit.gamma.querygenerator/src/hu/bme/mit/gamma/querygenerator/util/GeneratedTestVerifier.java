@@ -43,7 +43,7 @@ public class GeneratedTestVerifier implements Runnable {
     		while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
     			String temporalExpression = uppaalQuery.getKey();
     			// Reuse state space trick: we copy all the queries into a single string
-    			if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
+    			if (view.isReuseStateSpace()) {
     				final String separator = System.lineSeparator();
     				StringBuilder queryBuilder = new StringBuilder(temporalExpression + separator);
     				while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
@@ -53,8 +53,7 @@ public class GeneratedTestVerifier implements Runnable {
     			}
     			//
     			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + temporalExpression + "...");
-    			verifier = new Verifier(temporalExpression, false, view.isSingleTraceModelNeeded() &&
-    					!view.isReuseStateSpace(), view, controller);
+    			verifier = new Verifier(temporalExpression, false, view, controller);
     			verifier.execute();
 				int elapsedTime = 0;
 				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {
@@ -63,7 +62,7 @@ public class GeneratedTestVerifier implements Runnable {
 				}
 				if (verifier.isDone() && !verifier.isProcessCancelled() /*needed as cancellation does not interrupt this method*/) {
 					String resultSentence = null;
-					if (view.isReuseStateSpace() || view.isSingleTraceModelNeeded()) {
+					if (view.isReuseStateSpace()) {
 						resultSentence = "Test generation has been finished.";
 					}
 					else {

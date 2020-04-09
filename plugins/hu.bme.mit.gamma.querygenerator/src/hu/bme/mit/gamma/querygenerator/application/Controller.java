@@ -470,7 +470,7 @@ public class Controller {
 	 * Verifies the given Uppaal query.
 	 */
 	public void verify(String uppaalQuery) {
-		verifier = new Verifier(uppaalQuery, true, false, view, this);
+		verifier = new Verifier(uppaalQuery, true, view, this);
 		// Starting the worker
 		verifier.execute();
 	}

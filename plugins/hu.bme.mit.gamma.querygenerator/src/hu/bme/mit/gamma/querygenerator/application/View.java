@@ -105,7 +105,6 @@ public class View extends JFrame {
 	private JMenu testGenerationTimeoutMenu;
 
 	private JRadioButtonMenuItem reuseStateSpaceItem;
-	private JRadioButtonMenuItem singleTraceModelItem;
 	
 	private JMenuItem testGenerationTimeoutMenuItem;
 	private ButtonGroup testGenerationTimeoutGroup;
@@ -225,7 +224,6 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
 	 	
 	 	reuseStateSpaceItem = new JRadioButtonMenuItem("Reuse State Space");
-	 	singleTraceModelItem = new JRadioButtonMenuItem("Single Trace Model");
 	 	
 	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
 	 	sec15 = new JRadioButtonMenuItem("15 sec");
@@ -250,7 +248,6 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenuItem.add(sec360);
 
 	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
-	 	testGenerationTimeoutMenu.add(singleTraceModelItem);
 	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
 	 		
 	 	optionsMenu.add(testGenerationTimeoutMenu);
@@ -703,10 +700,6 @@ public class View extends JFrame {
 	
 	public boolean isReuseStateSpace() {
 		return reuseStateSpaceItem.isSelected();
-	}
-	
-	public boolean isSingleTraceModelNeeded() {
-		return singleTraceModelItem.isSelected();
 	}
 	
 	protected int getHashTableSize() {
