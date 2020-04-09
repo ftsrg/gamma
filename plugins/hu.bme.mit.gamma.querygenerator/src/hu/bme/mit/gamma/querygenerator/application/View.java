@@ -651,12 +651,12 @@ public class View extends JFrame {
 		setVerificationLabel("Verifying...");
 	}
 	
-	protected void setVerificationLabel(String string) {
+	public void setVerificationLabel(String string) {
 		verificationResultLabel.setText(string);
 		verificationResultLabel.setForeground(Color.black);
 	}
 	
-	protected void setVerificationButtons(boolean isEnabled) {
+	public void setVerificationButtons(boolean isEnabled) {
 		if (isEnabled) {
 			resetButton.setText("Reset");
 		}
@@ -701,11 +701,11 @@ public class View extends JFrame {
 		return "Shortest";
 	}
 	
-	protected boolean isReuseStateSpace() {
+	public boolean isReuseStateSpace() {
 		return reuseStateSpaceItem.isSelected();
 	}
 	
-	protected boolean isSingleTraceModelNeeded() {
+	public boolean isSingleTraceModelNeeded() {
 		return singleTraceModelItem.isSelected();
 	}
 	
@@ -723,7 +723,7 @@ public class View extends JFrame {
 		return 64;
 	}
 	
-	protected int getTestGenerationTmeout() {
+	public int getTestGenerationTmeout() {
 		if (sec30.isSelected()) {
 			return 30;
 		}
@@ -819,7 +819,7 @@ public class View extends JFrame {
 		throw new IllegalArgumentException("Error!");
 	}
 
-	protected void handleVerificationExceptions(Exception ex) {
+	public void handleVerificationExceptions(Exception ex) {
 		// Logging the exception
 		if (ex == null || ex.getMessage() == null) {
 			// This sometimes happened
@@ -869,12 +869,12 @@ public class View extends JFrame {
 		verificationResultLabel.setForeground(Color.black);
 	}
 
-	protected void setVerificationLabelToFalse() {
+	public void setVerificationLabelToFalse() {
 		verificationResultLabel.setText("The condition does not hold!");
 		verificationResultLabel.setForeground(Color.red);
 	}
 
-	protected void setVerificationLabelToTrue() {
+	public void setVerificationLabelToTrue() {
 		verificationResultLabel.setText("The condition holds.");
 		verificationResultLabel.setForeground(Color.green);
 	}
