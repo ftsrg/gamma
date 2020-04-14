@@ -888,9 +888,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
 		}
 	}
-
 	
 	// Composite system
+	
+	@Check
+	public void checkName(Package _package) {
+		if (!_package.getName().toLowerCase().equals(_package.getName())) {
+			info("Package names in the generated code will not contain uppercase letters.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+		}
+	}
 	
 	@Check
 	public void checkCircularDependencies(Package statechart) {

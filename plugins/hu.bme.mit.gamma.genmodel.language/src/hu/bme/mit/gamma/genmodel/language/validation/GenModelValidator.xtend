@@ -13,9 +13,9 @@ package hu.bme.mit.gamma.genmodel.language.validation
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
+import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
+import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint
 import hu.bme.mit.gamma.genmodel.model.StateCoverage
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
@@ -33,24 +34,22 @@ import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
+import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
-import org.eclipse.xtext.EcoreUtil2
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint
 
 /**
  * This class contains custom validation rules. 
@@ -58,6 +57,8 @@ import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 class GenModelValidator extends AbstractGenModelValidator {
+	
+	extension StatechartUtil statechartUtil = new StatechartUtil
 	
 	// Checking tasks, only one parameter is acceptable
 	
@@ -138,21 +139,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 	
 	@Check
 	def checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
-		// TODO only integer values are handled now
 		val minimum = orchestratingConstraint.minimumPeriod
-		val minimumValue = minimum?.value
 		val maximum = orchestratingConstraint.maximumPeriod
-		val maximumValue = maximum?.value
-		if (minimumValue instanceof IntegerLiteralExpression) {
-			if (maximumValue instanceof IntegerLiteralExpression) {
-				var minimumIntegerValue = minimumValue.value.intValue
-				if (minimum.unit == TimeUnit.SECOND) {
-					minimumIntegerValue *= 1000
-				}
-				var maximumIntegerValue = maximumValue.value.intValue
-				if (maximum.unit == TimeUnit.SECOND) {
-					maximumIntegerValue *= 1000
-				}
+		if (minimum !== null) {
+			if (maximum !== null) {
+				var minimumIntegerValue = minimum.evaluateMilliseconds
+				var maximumIntegerValue = maximum.evaluateMilliseconds
 				if (minimumIntegerValue < 0) {
 					error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 				}

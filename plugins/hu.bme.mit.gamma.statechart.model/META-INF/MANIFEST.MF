@@ -21,5 +21,6 @@ Export-Package: hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.statechart.model.interface_,
  hu.bme.mit.gamma.statechart.model.interface_.impl,
  hu.bme.mit.gamma.statechart.model.interface_.util,
- hu.bme.mit.gamma.statechart.model.util
+ hu.bme.mit.gamma.statechart.model.util,
+ hu.bme.mit.gamma.statechart.util
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.model
