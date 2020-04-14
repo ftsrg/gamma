@@ -69,7 +69,6 @@ class EnvironmentCreator {
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
-	protected final extension Cloner cloner = new Cloner
 	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
