@@ -139,22 +139,26 @@ class GenModelValidator extends AbstractGenModelValidator {
 	
 	@Check
 	def checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
-		val minimum = orchestratingConstraint.minimumPeriod
-		val maximum = orchestratingConstraint.maximumPeriod
-		if (minimum !== null) {
-			if (maximum !== null) {
-				var minimumIntegerValue = minimum.evaluateMilliseconds
-				var maximumIntegerValue = maximum.evaluateMilliseconds
-				if (minimumIntegerValue < 0) {
-					error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
-				}
-				if (maximumIntegerValue < 0) {
-					error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
-				}
-				if (maximumIntegerValue < minimumIntegerValue) {
-					error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+		try {
+			val minimum = orchestratingConstraint.minimumPeriod
+			val maximum = orchestratingConstraint.maximumPeriod
+			if (minimum !== null) {
+				if (maximum !== null) {
+					var minimumIntegerValue = minimum.evaluateMilliseconds
+					var maximumIntegerValue = maximum.evaluateMilliseconds
+					if (minimumIntegerValue < 0) {
+						error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+					}
+					if (maximumIntegerValue < 0) {
+						error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
+					}
+					if (maximumIntegerValue < minimumIntegerValue) {
+						error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+					}
 				}
 			}
+		} catch (IllegalArgumentException e) {
+			error('''Both the minimum and maximum values must be of type integer.''', GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 		}
 	}
 	
