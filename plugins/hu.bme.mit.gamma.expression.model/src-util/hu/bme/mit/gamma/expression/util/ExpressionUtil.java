@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
@@ -34,7 +35,7 @@ public class ExpressionUtil {
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	@SuppressWarnings("unchecked")
-	public  <T extends EObject> T getContainer(EObject element, Class<T> _class) {
+	public <T extends EObject> T getContainer(EObject element, Class<T> _class) {
 		EObject container = element.eContainer();
 		if (container == null) {
 			return null;
@@ -217,5 +218,14 @@ public class ExpressionUtil {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends EObject> T clone(T object, boolean a, boolean b) {
+		// A new copier should be user every time, otherwise anomalies happen (references are changed without asking)
+		Copier copier = new Copier(a, b);
+		EObject clone = copier.copy(object);
+		copier.copyReferences();
+		return (T) clone;
+	}	
 	
 }
