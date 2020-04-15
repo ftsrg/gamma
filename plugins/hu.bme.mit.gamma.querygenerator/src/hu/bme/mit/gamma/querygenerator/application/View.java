@@ -95,10 +95,10 @@ public class View extends JFrame {
 	
 	private JMenuItem hashtableSizeMenu;	
 	private ButtonGroup hashtableSizeGroup;
-	private JRadioButtonMenuItem size16M;
 	private JRadioButtonMenuItem size64M;
 	private JRadioButtonMenuItem size256M;
 	private JRadioButtonMenuItem size512M;
+	private JRadioButtonMenuItem size1024M;
 	
 	private JMenuItem spaceStateReductionMenu;	
 	private ButtonGroup spaceStateReductionGroup;
@@ -207,20 +207,20 @@ public class View extends JFrame {
 	 	
 	    // Setting the hashtable size
 	 	hashtableSizeMenu = new JMenu("Hash Table Size");
-	 	size16M = new JRadioButtonMenuItem("16 MB");
 	 	size64M = new JRadioButtonMenuItem("64 MB");
 	 	size256M = new JRadioButtonMenuItem("256 MB");
 	 	size512M = new JRadioButtonMenuItem("512 MB");
+	 	size1024M = new JRadioButtonMenuItem("1024 MB");
 	 	size512M.setSelected(true);
 	 	hashtableSizeGroup = new ButtonGroup();
-	 	hashtableSizeGroup.add(size16M);
 	 	hashtableSizeGroup.add(size64M);
 	 	hashtableSizeGroup.add(size256M);
 	 	hashtableSizeGroup.add(size512M);
-	 	hashtableSizeMenu.add(size16M);
+	 	hashtableSizeGroup.add(size1024M);
 	 	hashtableSizeMenu.add(size64M);
 	 	hashtableSizeMenu.add(size256M);
 	 	hashtableSizeMenu.add(size512M);
+	 	hashtableSizeMenu.add(size1024M);
 	 		
 	 	modelCheckingOptionsMenu.add(hashtableSizeMenu);
 	 	
@@ -730,14 +730,14 @@ public class View extends JFrame {
 	}
 	
 	protected int getHashTableSize() {
-		if (size16M.isSelected()) {
-			return 16;
-		}
 		if (size64M.isSelected()) {
 			return 64;
 		}
 		if (size256M.isSelected()) {
 			return 256;
+		}
+		if (size1024M.isSelected()) {
+			return 1024;
 		}
 		// 512 MB is default
 		return 512;
