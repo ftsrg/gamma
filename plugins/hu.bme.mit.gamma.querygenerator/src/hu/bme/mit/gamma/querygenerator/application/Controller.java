@@ -485,8 +485,8 @@ public class Controller {
     }
 	
 	public String getParameters() {
-		return getSearchOrder() + " " + getDiagnosticTrace() + " " + getResuseStateSpace() + " " +
-				getMemoryReductionTechniques() + " " + getHashtableSize() + " " + getStateSpaceReduction();
+		return getStateSpaceRepresentation() + " " + getSearchOrder() + " " + getDiagnosticTrace() + " " +
+				getResuseStateSpace() + " " +	" " + getHashtableSize() + " " + getStateSpaceReduction();
 	}
 	
 	private String getSearchOrder() {
@@ -512,6 +512,19 @@ public class Controller {
 			return paremterName + "0"; 
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getSelectedSearchOrder());
+		}
+	}
+	
+	private String getStateSpaceRepresentation() {
+		switch (view.getStateSpaceRepresentation()) {
+		case "DBM":
+			return "-C";
+		case "Over Approximation":
+			return "-A";
+		case "Under Approximation":
+			return "-Z";
+		default:
+			throw new IllegalArgumentException("Not known option: " + view.getStateSpaceRepresentation());
 		}
 	}
 	
@@ -541,13 +554,6 @@ public class Controller {
 		default:
 			throw new IllegalArgumentException("Not known option: " + view.getStateSpaceReduction());
 		}
-	}
-	
-	private String getMemoryReductionTechniques() {
-		if (view.isDisableMemoryReduction()) {
-			return "-C";
-		}
-		return "";
 	}
 	
 	private String getResuseStateSpace() {

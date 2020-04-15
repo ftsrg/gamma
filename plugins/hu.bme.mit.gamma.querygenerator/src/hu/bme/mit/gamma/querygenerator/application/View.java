@@ -87,6 +87,12 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem shortestTrace;
 	private JRadioButtonMenuItem fastestTrace;
 	
+	private JMenuItem stateSpaceRepresentationMenu;	
+	private ButtonGroup stateSpaceRepresentationGroup;
+	private JRadioButtonMenuItem dbm;
+	private JRadioButtonMenuItem overApproximation;
+	private JRadioButtonMenuItem underApproximation;
+	
 	private JMenuItem hashtableSizeMenu;	
 	private ButtonGroup hashtableSizeGroup;
 	private JRadioButtonMenuItem size16M;
@@ -99,8 +105,6 @@ public class View extends JFrame {
 	private JRadioButtonMenuItem noSpaceStateReduction;
 	private JRadioButtonMenuItem conservativeSpaceStateReduction;
 	private JRadioButtonMenuItem aggressiveSpaceStateReduction;
-	
-	private JRadioButtonMenuItem disableMemoryReduction;
 	
 	private JMenu testGenerationTimeoutMenu;
 
@@ -207,7 +211,7 @@ public class View extends JFrame {
 	 	size64M = new JRadioButtonMenuItem("64 MB");
 	 	size256M = new JRadioButtonMenuItem("256 MB");
 	 	size512M = new JRadioButtonMenuItem("512 MB");
-	 	size64M.setSelected(true);
+	 	size512M.setSelected(true);
 	 	hashtableSizeGroup = new ButtonGroup();
 	 	hashtableSizeGroup.add(size16M);
 	 	hashtableSizeGroup.add(size64M);
@@ -252,6 +256,22 @@ public class View extends JFrame {
 	 		
 	 	optionsMenu.add(testGenerationTimeoutMenu);
 	 	
+	    // Setting the state space representation
+	 	stateSpaceRepresentationMenu = new JMenu("State Space Representation");
+	 	dbm = new JRadioButtonMenuItem("DBM");
+	 	overApproximation = new JRadioButtonMenuItem("Over Approximation");
+	 	underApproximation = new JRadioButtonMenuItem("Under Approximation");
+	 	dbm.setSelected(true);
+	 	stateSpaceRepresentationGroup = new ButtonGroup();
+	 	stateSpaceRepresentationGroup.add(dbm);
+	 	stateSpaceRepresentationGroup.add(overApproximation);
+	 	stateSpaceRepresentationGroup.add(underApproximation);
+	 	stateSpaceRepresentationMenu.add(dbm);
+	 	stateSpaceRepresentationMenu.add(overApproximation);
+	 	stateSpaceRepresentationMenu.add(underApproximation);
+	 		
+	 	modelCheckingOptionsMenu.add(stateSpaceRepresentationMenu);
+	 	
 	    // Setting the state space reduction
 	 	spaceStateReductionMenu = new JMenu("State Space Reduction");
 	 	noSpaceStateReduction = new JRadioButtonMenuItem("None");
@@ -267,10 +287,6 @@ public class View extends JFrame {
 	 	spaceStateReductionMenu.add(aggressiveSpaceStateReduction);
 	 		
 	 	modelCheckingOptionsMenu.add(spaceStateReductionMenu);
-	 	
-	 	// Disable memory reduction techniques
-	 	disableMemoryReduction = new JRadioButtonMenuItem("Disable Memory Reduction"); 
-	 	modelCheckingOptionsMenu.add(disableMemoryReduction);
 	 	
 		// Setting the temporal logical operators using JComboBox		
 		String[] items = {MIGHT_EVENTUALLY, MUST_EVENTUALLY, MIGHT_ALWAYS, MUST_ALWAYS, LEADS_TO};
@@ -684,6 +700,17 @@ public class View extends JFrame {
 		return "Breadth First";
 	}
 	
+	protected String getStateSpaceRepresentation() {
+		if (overApproximation.isSelected()) {
+			return "Over Approximation";
+		}
+		if (underApproximation.isSelected()) {
+			return "Under Approximation";
+		}
+		// Shortest is default
+		return "DBM";
+	}
+	
 	protected String getSelectedTrace() {
 		if (someTrace.isSelected()) {
 			return "Some";
@@ -706,14 +733,14 @@ public class View extends JFrame {
 		if (size16M.isSelected()) {
 			return 16;
 		}
+		if (size64M.isSelected()) {
+			return 64;
+		}
 		if (size256M.isSelected()) {
 			return 256;
 		}
-		if (size512M.isSelected()) {
-			return 512;
-		}
-		// 64 MB is deafult
-		return 64;
+		// 512 MB is default
+		return 512;
 	}
 	
 	public int getTestGenerationTmeout() {
@@ -745,10 +772,6 @@ public class View extends JFrame {
 		}
 		// 64 MB is deafult
 		return "Conservative";
-	}
-	
-	protected boolean isDisableMemoryReduction() {
-		return disableMemoryReduction.isSelected();
 	}
 
 	private void setFrameSizeSmaller() {
