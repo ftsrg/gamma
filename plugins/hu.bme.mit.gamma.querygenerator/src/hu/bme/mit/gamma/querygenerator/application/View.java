@@ -109,6 +109,7 @@ public class View extends JFrame {
 	private JMenu testGenerationTimeoutMenu;
 
 	private JRadioButtonMenuItem reuseStateSpaceItem;
+	private JRadioButtonMenuItem optimizeTestSetItem;
 	
 	private JMenuItem testGenerationTimeoutMenuItem;
 	private ButtonGroup testGenerationTimeoutGroup;
@@ -228,6 +229,7 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
 	 	
 	 	reuseStateSpaceItem = new JRadioButtonMenuItem("Reuse State Space");
+	 	optimizeTestSetItem = new JRadioButtonMenuItem("Optimize Test Set");
 	 	
 	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
 	 	sec15 = new JRadioButtonMenuItem("15 sec");
@@ -252,6 +254,7 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenuItem.add(sec360);
 
 	 	testGenerationTimeoutMenu.add(reuseStateSpaceItem);
+	 	testGenerationTimeoutMenu.add(optimizeTestSetItem);
 	 	testGenerationTimeoutMenu.add(testGenerationTimeoutMenuItem);
 	 		
 	 	optionsMenu.add(testGenerationTimeoutMenu);
@@ -707,7 +710,7 @@ public class View extends JFrame {
 		if (underApproximation.isSelected()) {
 			return "Under Approximation";
 		}
-		// Shortest is default
+		// DBM is default
 		return "DBM";
 	}
 	
@@ -727,6 +730,10 @@ public class View extends JFrame {
 	
 	public boolean isReuseStateSpace() {
 		return reuseStateSpaceItem.isSelected();
+	}
+	
+	public boolean isOptimizeTestSet() {
+		return optimizeTestSetItem.isSelected();
 	}
 	
 	protected int getHashTableSize() {
@@ -759,7 +766,7 @@ public class View extends JFrame {
 		if (sec360.isSelected()) {
 			return 360;
 		}
-		// 15 sec is deafult
+		// 15 sec is default
 		return 15;
 	}
 	
@@ -770,16 +777,16 @@ public class View extends JFrame {
 		if (aggressiveSpaceStateReduction.isSelected()) {
 			return "Aggressive";
 		}
-		// 64 MB is deafult
+		// Conservative is default
 		return "Conservative";
 	}
 
 	private void setFrameSizeSmaller() {
-		setSize(1005, 365);
+		setSize(1095, 385);
 	}
 	
 	private void setFrameSizeBigger() {
-		setSize(1005, 405);
+		setSize(1095, 425);
 	}
 	
 	private void initStatesComboBox() throws ViatraQueryException {

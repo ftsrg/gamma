@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.uppaal.backannotation.EmptyTraceException;
 import hu.bme.mit.gamma.uppaal.backannotation.StringTraceBackAnnotator;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
@@ -45,10 +46,10 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	private final View view;
 	private final Controller controller;
 	
+	protected TraceUtil traceUtil = new TraceUtil();	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public Verifier(String uppaalQuery, boolean contributeToView,
-			View view, Controller controller) {
+	public Verifier(String uppaalQuery, boolean contributeToView, View view, Controller controller) {
 		this.originalUppaalQueries = uppaalQuery;
 		this.contributeToView = contributeToView;
 		this.view = view;
@@ -67,6 +68,14 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
 			if (traceModel == null) {
 				throw new IllegalArgumentException("None of the specified queries resulted in a trace.");
+			}
+			if (view.isOptimizeTestSet()) {
+				// Removal of covered steps
+				try {
+				traceUtil.removeCoveredSteps(traceModel);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 			serializeTestCode(traceModel, traceabilitySet);
 			// There is a generated trace, so the result is the opposite of the empty trace

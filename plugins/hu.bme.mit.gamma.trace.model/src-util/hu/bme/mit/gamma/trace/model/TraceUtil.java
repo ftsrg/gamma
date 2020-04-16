@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 public class TraceUtil {
@@ -60,33 +61,28 @@ public class TraceUtil {
 				List<Step> rhs = traces.get(j);
 				if (isCovered(rhs, lhs)) {
 					traces.remove(j);
-					removeFromContainment(rhs);
+					EcoreUtil.removeAll(rhs);
 					--j;
 				}
 				else if (isCovered(lhs, rhs)) {
 					// Else is important, as it is possible that both cover the other one
 					isLhsDeleted = true;
 					traces.remove(i);
-					removeFromContainment(lhs);
+					EcoreUtil.removeAll(lhs);
 					--i;
 				}
 			}
 		}
 	}
 	
-	public void removeFromContainment(List<? extends EObject> steps) {
-		for (EObject step : steps) {
-			EObject container = step.eContainer();
-			container.eContents().remove(step);
-		}
-	}
-
-	
 	public boolean isCovered(ExecutionTrace covered, ExecutionTrace covering) {
 		return isCovered(covered.getSteps(), covering.getSteps());
 	}
 	
 	public boolean isCovered(List<Step> covered, List<Step> covering) {
+		if (covering.size() < covered.size()) {
+			return false;
+		}
 		for (int i = 0; i < covered.size(); i++) {
 			if (!isCovered(covered.get(i), covering.get(i))) {
 				return false;
