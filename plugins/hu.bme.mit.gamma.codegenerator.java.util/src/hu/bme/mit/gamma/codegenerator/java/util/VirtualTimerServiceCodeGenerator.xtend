@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
 
 class VirtualTimerServiceCodeGenerator {
 	
@@ -24,8 +24,8 @@ class VirtualTimerServiceCodeGenerator {
 	/**
 	 * Creates the virtual timer class for the timings in the generated test cases.
 	 */
-	protected def createVirtualTimerClassCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createVirtualTimerClassCode() '''
+		package «PACKAGE_NAME»;
 		
 		import java.util.List;
 		import java.util.ArrayList;
@@ -35,7 +35,7 @@ class VirtualTimerServiceCodeGenerator {
 		/**
 		 * Virtual timer service implementation.
 		 */
-		public class Â«CLASS_NAMEÂ» implements Â«UNIFIED_TIMER_INTERFACE_NAMEÂ» {
+		public class «CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
 			// Yakindu timer
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
 			// Gamma timer
@@ -46,7 +46,7 @@ class VirtualTimerServiceCodeGenerator {
 			 */
 			private class TimeEventTask {
 			
-				private Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback;
+				private «ITIMER_CALLBACK_INTERFACE_NAME» callback;
 			
 				int eventID;
 				
@@ -60,7 +60,7 @@ class VirtualTimerServiceCodeGenerator {
 				 * @param callback: Set to true if event should be repeated periodically.
 				 * @param eventID: index position within the state machine's timeEvent array.
 				 */
-				public TimeEventTask(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID, long time, boolean isPeriodic) {
+				public TimeEventTask(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {
 					this.callback = callback;
 					this.eventID = eventID;
 					this.time = time;
@@ -94,13 +94,13 @@ class VirtualTimerServiceCodeGenerator {
 				}
 			}
 			
-			public void setTimer(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID, long time, boolean isPeriodic) {	
+			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {	
 				// Creating a new TimerTask for given event and storing it
 				TimeEventTask timerTask = new TimeEventTask(callback, eventID, time, isPeriodic);
 				timerTaskList.add(timerTask);
 			}
 			
-			public void unsetTimer(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID) {
+			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
 				for (TimeEventTask timer : new ArrayList<TimeEventTask>(timerTaskList)) {
 					if (timer.callback.equals(callback) && timer.eventID == eventID) {
 						timerTaskList.remove(timer);

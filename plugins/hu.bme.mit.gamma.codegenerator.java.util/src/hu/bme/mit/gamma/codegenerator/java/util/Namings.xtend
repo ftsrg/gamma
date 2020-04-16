@@ -8,7 +8,11 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
+
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
 class Namings {
 	
@@ -29,5 +33,17 @@ class Namings {
 	
 	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
 	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
+	
+	static def String getParameterName(ParameterDeclaration parameterDeclaration, Port port) '''«port.name»«parameterDeclaration.name»'''
+	
+	/**
+	 * Returns the name of the Java interface generated from the given Gamma interface, e.g., PortInterface. 
+	 */
+ 	static def String getImplementationName(Interface _interface) '''«_interface.name.toFirstUpper»Interface'''
+	
+	/**
+	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
+	 */
+	static def String getImplementedInterfaceName(Port port) '''«port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
 	
 }

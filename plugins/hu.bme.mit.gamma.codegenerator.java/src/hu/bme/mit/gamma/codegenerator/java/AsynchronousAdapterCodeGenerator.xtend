@@ -25,6 +25,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collections
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+
 class AsynchronousAdapterCodeGenerator {
 	
 	protected final String PACKAGE_NAME
@@ -73,7 +75,7 @@ class AsynchronousAdapterCodeGenerator {
 			«ENDFOR»
 			«IF !component.clocks.empty»
 				// Clocks
-				private «Namings.YAKINDU_TIMER_INTERFACE» timerService;
+				private «YAKINDU_TIMER_INTERFACE» timerService;
 			«ENDIF»
 			«FOR clock : component.clocks»
 				private final int «clock.name» = «clockId++»;
@@ -87,7 +89,7 @@ class AsynchronousAdapterCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«YAKINDU_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
@@ -123,8 +125,8 @@ class AsynchronousAdapterCodeGenerator {
 			}
 			
 			«IF !component.clocks.empty»
-				private «Namings.TIMER_CALLBACK_INTERFACE» createTimerCallback() {
-					return new «Namings.TIMER_CALLBACK_INTERFACE»() {
+				private «TIMER_CALLBACK_INTERFACE» createTimerCallback() {
+					return new «TIMER_CALLBACK_INTERFACE»() {
 						@Override
 						public void timeElapsed(int eventId) {
 							switch (eventId) {
@@ -143,19 +145,19 @@ class AsynchronousAdapterCodeGenerator {
 			
 			// Inner classes representing control ports
 			«FOR port : component.ports SEPARATOR "\n"»
-				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods» 
 					
 					«port.delegateWrapperControlOutMethods»
 					
 					@Override
-					public void registerListener(«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						// No operation as out event are not interpreted in case of control ports
 					}
 					
 					@Override
-					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						// Empty list as out event are not interpreted in case of control ports
 						return Collections.emptyList();
 					}
@@ -170,19 +172,19 @@ class AsynchronousAdapterCodeGenerator {
 			
 			// Inner classes representing wrapped ports
 			«FOR port : component.wrappedComponent.type.ports SEPARATOR "\n"»
-				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					
 					«port.delegateWrapperRaisingMethods»
 					
 					«port.delegateWrapperOutMethods(component.generateWrappedComponentName)»
 					
 					@Override
-					public void registerListener(«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						«component.generateWrappedComponentName».get«port.name.toFirstUpper»().registerListener(listener);
 					}
 					
 					@Override
-					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						return «component.generateWrappedComponentName».get«port.name.toFirstUpper»().getRegisteredListeners();
 					}
 					
@@ -196,7 +198,7 @@ class AsynchronousAdapterCodeGenerator {
 			
 			/** Manual scheduling. */
 			public void schedule() {
-				«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.poll();
+				«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.poll();
 				if («EVENT_INSTANCE_NAME» == null) {
 					// There was no event in the queue
 					return;
@@ -213,7 +215,7 @@ class AsynchronousAdapterCodeGenerator {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
-						«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
+						«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
 						if (!isControlEvent(«EVENT_INSTANCE_NAME»)) {
 							// Event is forwarded to the wrapped component
 							forwardEvent(«EVENT_INSTANCE_NAME»);
@@ -225,7 +227,7 @@ class AsynchronousAdapterCodeGenerator {
 				}
 			}
 			
-			private boolean isControlEvent(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
+			private boolean isControlEvent(«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				«IF component.ports.empty && component.clocks.empty»
 					return false;
 				«ELSE»
@@ -234,7 +236,7 @@ class AsynchronousAdapterCodeGenerator {
 				«ENDIF»
 			}
 			
-			private void forwardEvent(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
+			private void forwardEvent(«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				switch («EVENT_INSTANCE_NAME».getEvent()) {
 					«component.generateWrapperEventHandlers()»
 					default:
@@ -242,7 +244,7 @@ class AsynchronousAdapterCodeGenerator {
 				}
 			}
 			
-			private void performControlActions(«Namings.GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
+			private void performControlActions(«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
 				String[] eventName = «EVENT_INSTANCE_NAME».getEvent().split("\\.");
 				«FOR controlSpecification : component.controlSpecifications»
 					«IF controlSpecification.trigger instanceof AnyTrigger»
@@ -296,7 +298,7 @@ class AsynchronousAdapterCodeGenerator {
 			}
 			
 			«IF component.needTimer»
-				public void setTimer(«Namings.YAKINDU_TIMER_INTERFACE» timer) {
+				public void setTimer(«YAKINDU_TIMER_INTERFACE» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
 					«IF component.wrappedComponent.type.needTimer»«component.generateWrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)

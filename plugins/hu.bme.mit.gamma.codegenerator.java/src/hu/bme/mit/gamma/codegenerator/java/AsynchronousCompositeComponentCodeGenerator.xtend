@@ -12,8 +12,10 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AsynchronousCompositeComponentCodeGenerator {
@@ -102,21 +104,21 @@ class AsynchronousCompositeComponentCodeGenerator {
 			
 			// Inner classes representing Ports
 			«FOR systemPort : component.ports SEPARATOR "\n"»
-				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.generateName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 				
 					«systemPort.delegateRaisingMethods» 
 					
 					«systemPort.delegateOutMethods»
 					
 					@Override
-					public void registerListener(«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						«FOR portDef : systemPort.portBindings»
 							«portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().registerListener(listener);
 						«ENDFOR»
 					}
 					
 					@Override
-					public List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						«FOR portDef : systemPort.portBindings»
 							return «portDef.instancePortReference.instance.name».get«portDef.instancePortReference.port.name.toFirstUpper»().getRegisteredListeners();
 						«ENDFOR»

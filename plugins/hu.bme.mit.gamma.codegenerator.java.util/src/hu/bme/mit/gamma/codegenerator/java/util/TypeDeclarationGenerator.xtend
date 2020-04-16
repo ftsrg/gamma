@@ -8,45 +8,23 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
 
-class EventCodeGenerator {
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
+
+class TypeDeclarationGenerator {
 	
 	protected final String PACKAGE_NAME
-	protected final String CLASS_NAME = Namings.GAMMA_EVENT_CLASS
+	
+	protected final extension TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName
 	}
 	
-	protected def createEventClass() '''
-		package Â«PACKAGE_NAMEÂ»;
-		
-		public class Â«CLASS_NAMEÂ» {
-			private String event;
-			private Object value;
-			
-			public Event(String event) {
-				this.event = event;
-			}
-			
-			public Event(String event, Object value) {
-				this.event = event;
-				this.value = value;
-			}
-			
-			public String getEvent() {
-				return event;
-			}
-			
-			public Object getValue() {
-				return value;
-			}
-		}
+	def String generateTypeDeclarationCode(TypeDeclaration type) '''
+		package «PACKAGE_NAME»;
+		public «type.serialize»
 	'''
-	
-	def getClassName() {
-		return CLASS_NAME
-	}
 	
 }

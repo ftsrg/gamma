@@ -10,8 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 
 class PortInterfaceGenerator {
 	
@@ -32,7 +35,7 @@ class PortInterfaceGenerator {
 		import «PACKAGE_NAME».*;
 		import java.util.List;
 		
-		public interface «anInterface.generateName» {
+		public interface «anInterface.implementationName» {
 			
 			interface Provided extends Listener.Required {
 				
@@ -52,13 +55,13 @@ class PortInterfaceGenerator {
 			
 			interface Listener {
 				
-				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Provided«ENDFOR»«ENDIF» {
+				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
 					«FOR event : anInterface.events.filter[it.direction != EventDirection.IN]»
 						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
 					«ENDFOR»							
 				}
 				
-				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.generateName».Listener.Required«ENDFOR»«ENDIF» {
+				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
 					«FOR event : anInterface.events.filter[it.direction != EventDirection.OUT]»
 						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
 					«ENDFOR»  					

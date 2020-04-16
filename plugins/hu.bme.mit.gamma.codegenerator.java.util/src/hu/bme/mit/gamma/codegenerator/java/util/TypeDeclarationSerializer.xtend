@@ -8,35 +8,24 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 
-class TypeDeclarationGenerator {
-	
-	protected final String PACKAGE_NAME
-	
-	new(String packageName) {
-		this.PACKAGE_NAME = packageName
-	}
+class TypeDeclarationSerializer {
 	
 	def String serialize(TypeDeclaration type) {
 		val declaredType = type.type
 		return declaredType.serialize(type.name)
 	}
 	
-	protected def dispatch String serialize(Type type, String name) {
+	def dispatch String serialize(Type type, String name) {
 		throw new IllegalArgumentException("Not supported type: " + type)
 	}
 	
-	protected def dispatch String serialize(EnumerationTypeDefinition type, String name) '''
-		package Â«PACKAGE_NAMEÂ»;
-		
-		public enum Â«nameÂ» {
-			Â«FOR literal : type.literals SEPARATOR ', 'Â»Â«literal.nameÂ»Â«ENDFORÂ»
-		}
+	def dispatch String serialize(EnumerationTypeDefinition type, String name) '''
+		enum «name» {«FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}
 	'''
-	
 }

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
@@ -19,6 +20,7 @@ import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import java.util.HashSet
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ComponentInterfaceGenerator {
@@ -52,14 +54,14 @@ class ComponentInterfaceGenerator {
 			package «component.generateComponentPackageName»;
 			
 			import «PACKAGE_NAME».*;
-			«FOR interfaceName : ports.map[it.interfaceRealization.interface.generateName].toSet»
+			«FOR interfaceName : ports.map[it.interfaceRealization.interface.implementationName].toSet»
 				import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«interfaceName»;
 			«ENDFOR»
 			
 			public interface «component.generatePortOwnerInterfaceName» {
 				
 				«FOR port : ports»
-					«port.implementedJavaInterfaceName» get«port.name.toFirstUpper»();
+					«port.implementedInterfaceName» get«port.name.toFirstUpper»();
 				«ENDFOR»
 				
 				void reset();

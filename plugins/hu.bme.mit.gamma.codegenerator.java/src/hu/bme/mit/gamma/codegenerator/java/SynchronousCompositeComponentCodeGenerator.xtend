@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
@@ -20,6 +21,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collections
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class SynchronousCompositeComponentCodeGenerator {
@@ -111,8 +113,8 @@ class SynchronousCompositeComponentCodeGenerator {
 			
 			// Inner classes representing Ports
 			«FOR systemPort : component.ports SEPARATOR "\n"»
-				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.generateName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
-					private List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+					private List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 
 «««					Cascade components need their raised events saved (multiple schedule of a component in a single turn)
 					«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
@@ -134,7 +136,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					«systemPort.implementOutMethods»
 					
 					// Class for the setting of the boolean fields (events)
-					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
+					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
 							@Override
 							public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
@@ -147,12 +149,12 @@ class SynchronousCompositeComponentCodeGenerator {
 					}
 					
 					@Override
-					public void registerListener(«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						listeners.add(listener);
 					}
 					
 					@Override
-					public List<«systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						return listeners;
 					}
 					
@@ -167,7 +169,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					public void notifyListeners() {
 						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
 							if (isRaised«event.name.toFirstUpper») {
-								for («systemPort.interfaceRealization.interface.generateName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
+								for («systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
 									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»«event.name.toFirstLower»Value«ENDIF»);
 								}
 							}

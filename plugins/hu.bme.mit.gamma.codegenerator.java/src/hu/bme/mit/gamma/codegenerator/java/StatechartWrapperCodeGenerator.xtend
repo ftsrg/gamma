@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.RealizationMode
@@ -17,16 +18,17 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.model.interface_.Persistency
 import java.util.Collections
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import org.yakindu.sct.model.stext.stext.InternalScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import org.yakindu.sct.model.stext.stext.InternalScope
-import hu.bme.mit.gamma.statechart.model.interface_.Persistency
 
 class StatechartWrapperCodeGenerator {
 	
@@ -166,14 +168,14 @@ class StatechartWrapperCodeGenerator {
 			
 			// Inner classes representing Ports
 			«FOR port : component.ports SEPARATOR "\n"»
-				public class «port.name.toFirstUpper» implements «port.implementedJavaInterfaceName» {
-					private List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
+				public class «port.name.toFirstUpper» implements «port.implementedInterfaceName» {
+					private List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> registeredListeners = new LinkedList<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 
 					«port.generateRaisingMethods» 
 
 					«component.generateOutMethods(port)»
 					@Override
-					public void registerListener(final «port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(final «port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						registeredListeners.add(listener);
 						«IF port.hasOutEvent»
 «««							If the clearing of previous registration is ever needed
@@ -187,7 +189,7 @@ class StatechartWrapperCodeGenerator {
 					}
 					
 					@Override
-					public List<«port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<«port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> getRegisteredListeners() {
 						return registeredListeners;
 					}
 					
@@ -195,7 +197,7 @@ class StatechartWrapperCodeGenerator {
 					public void notifyListeners() {
 						«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)»
 							if (isRaised«event.name.toFirstUpper»()) {
-								for («port.interfaceRealization.interface.generateName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
+								for («port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
 									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»get«event.name.toFirstUpper»Value()«ENDIF»);
 								}
 							}

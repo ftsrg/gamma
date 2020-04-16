@@ -10,5 +10,5 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
- hu.bme.mit.gamma.expression.model
+ hu.bme.mit.gamma.statechart.model
 Export-Package: hu.bme.mit.gamma.codegenerator.java.util

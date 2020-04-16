@@ -29,13 +29,6 @@ class NameGenerator {
 	 */
 	def generateComponentPackageName (Component component) '''«PACKAGE_NAME».«component.containingPackage.name.toLowerCase»'''
  
- 	/**
-	 * Returns the name of the Java interface generated from the given Gamma interface. 
-	 */
- 	def generateName(Interface _interface) {
-		return _interface.name.toFirstUpper + "Interface"
-	}
- 	
 	/**
 	 * Returns the name of the Java channel interface generated from the given Gamma interface. 
 	 */
@@ -99,11 +92,6 @@ class NameGenerator {
 	protected def generatePortOwnerInterfaceName(Component component) {
 		return component.generateComponentClassName + "Interface";
 	}
-	
-	/**
-	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
-	 */
-	protected def getImplementedJavaInterfaceName(Port port) '''«port.interfaceRealization.interface.generateName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
 	
 	/**
 	 * Returns the type name of the interface of the wrapped Yakindu statemachine.

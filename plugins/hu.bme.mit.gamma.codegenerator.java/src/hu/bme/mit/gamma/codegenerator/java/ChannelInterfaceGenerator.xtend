@@ -10,7 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 
 class ChannelInterfaceGenerator {
 	
@@ -29,13 +32,13 @@ class ChannelInterfaceGenerator {
 	protected def createChannelInterfaceCode(Interface _interface) '''
 		package «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX»;
 		
-		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«_interface.generateName»;
+		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«_interface.implementationName»;
 		
 		public interface «_interface.generateChannelInterfaceName» {			
 			
-			void registerPort(«_interface.generateName».Provided providedPort);
+			void registerPort(«_interface.implementationName».Provided providedPort);
 			
-			void registerPort(«_interface.generateName».Required requiredPort);
+			void registerPort(«_interface.implementationName».Required requiredPort);
 		
 		}
 	'''

@@ -8,7 +8,9 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
+
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 
 class TimerServiceCodeGenerator {
 	
@@ -21,8 +23,8 @@ class TimerServiceCodeGenerator {
 		this.PACKAGE_NAME = packageName
 	}
 	
-	protected def createTimerServiceClassCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createTimerServiceClassCode() '''
+		package «PACKAGE_NAME»;
 		
 		import java.util.ArrayList;
 		import java.util.List;
@@ -31,7 +33,7 @@ class TimerServiceCodeGenerator {
 		import java.util.concurrent.locks.Lock;
 		import java.util.concurrent.locks.ReentrantLock;
 		
-		public class Â«YAKINDU_CLASS_NAMEÂ» implements Â«Namings.YAKINDU_TIMER_INTERFACEÂ» {
+		public class «YAKINDU_CLASS_NAME» implements «Namings.YAKINDU_TIMER_INTERFACE» {
 		
 			private final Timer timer = new Timer();
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
@@ -44,7 +46,7 @@ class TimerServiceCodeGenerator {
 			 */
 			private class TimeEventTask extends TimerTask {
 			
-				private Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback;
+				private «Namings.TIMER_CALLBACK_INTERFACE» callback;
 				int eventID;
 			
 				/**
@@ -53,7 +55,7 @@ class TimerServiceCodeGenerator {
 				 * @param callback: Object that implements ITimerCallback, is called when the timer expires.
 				 * @param eventID: Index position within the state machine's timeEvent array.
 				 */
-				public TimeEventTask(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID) {
+				public TimeEventTask(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID) {
 					this.callback = callback;
 					this.eventID = eventID;
 				}
@@ -85,7 +87,7 @@ class TimerServiceCodeGenerator {
 				
 			}
 			
-			public void setTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID,
+			public void setTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID,
 					long time, boolean isPeriodic) {
 			
 				// Create a new TimerTask for given event and store it.
@@ -102,7 +104,7 @@ class TimerServiceCodeGenerator {
 				lock.unlock();
 			}
 			
-			public void unsetTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID) {
+			public void unsetTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID) {
 				lock.lock();
 				int index = timerTaskList.indexOf(new TimeEventTask(callback, eventID));
 				if (index != -1) {
@@ -131,13 +133,13 @@ class TimerServiceCodeGenerator {
 		}
 	'''
 
-	protected def createGammaTimerClassCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createGammaTimerClassCode() '''
+		package «PACKAGE_NAME»;
 		
 		import java.util.Map;
 		import java.util.HashMap;
 		
-		public class Â«GAMMA_CLASS_NAMEÂ» implements Â«Namings.GAMMA_TIMER_INTERFACEÂ» {
+		public class «GAMMA_CLASS_NAME» implements «Namings.GAMMA_TIMER_INTERFACE» {
 			
 				private Map<Object, Long> elapsedTime = new HashMap<Object, Long>();
 				
@@ -168,19 +170,19 @@ class TimerServiceCodeGenerator {
 		}
 	'''
 	
-	protected def createUnifiedTimerClassCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createUnifiedTimerClassCode() '''
+		package «PACKAGE_NAME»;
 		
-		public class Â«UNIFIED_TIMER_CLASS_NAMEÂ» implements Â«Namings.UNIFIED_TIMER_INTERFACEÂ» {
+		public class «UNIFIED_TIMER_CLASS_NAME» implements «Namings.UNIFIED_TIMER_INTERFACE» {
 			
-			private Â«Namings.YAKINDU_TIMER_INTERFACEÂ» yakinduTimer = new Â«Namings.YAKINDU_TIMER_CLASSÂ»();
-			private Â«Namings.GAMMA_TIMER_INTERFACEÂ» gammaTimer = new Â«Namings.GAMMA_TIMER_CLASSÂ»();
+			private «Namings.YAKINDU_TIMER_INTERFACE» yakinduTimer = new «Namings.YAKINDU_TIMER_CLASS»();
+			private «Namings.GAMMA_TIMER_INTERFACE» gammaTimer = new «Namings.GAMMA_TIMER_CLASS»();
 			
-			public void setTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID, long time, boolean isPeriodic) {
+			public void setTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID, long time, boolean isPeriodic) {
 				yakinduTimer.setTimer(callback, eventID, time, isPeriodic);
 			}
 		
-			public void unsetTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID) {
+			public void unsetTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID) {
 				yakinduTimer.unsetTimer(callback, eventID);
 			}
 		

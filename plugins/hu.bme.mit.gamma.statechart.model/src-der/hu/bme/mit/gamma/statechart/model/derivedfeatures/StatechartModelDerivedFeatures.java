@@ -72,6 +72,17 @@ public class StatechartModelDerivedFeatures {
 		return isBroadcast(port.getInterfaceRealization());
 	}
 	
+	public static EventDirection getOpposite(EventDirection eventDirection) {
+		switch (eventDirection) {
+			case IN:
+				return EventDirection.OUT;
+			case OUT:
+				return EventDirection.IN;
+			default:
+				throw new IllegalArgumentException("Not known event direction: " + eventDirection);
+		}
+	}
+	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(Collection<? extends ComponentInstance> instances) {
 		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
 		for (ComponentInstance instance : instances) {

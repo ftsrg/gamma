@@ -8,7 +8,9 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
+
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 
 class TimerInterfaceGenerator {
 	
@@ -18,21 +20,21 @@ class TimerInterfaceGenerator {
 		this.PACKAGE_NAME = packageName
 	}
 	
-	protected def createITimerInterfaceCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createITimerInterfaceCode() '''
+		package «PACKAGE_NAME»;
 		
-		public interface Â«Namings.YAKINDU_TIMER_INTERFACEÂ» {
+		public interface «Namings.YAKINDU_TIMER_INTERFACE» {
 			
-			void setTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID, long time, boolean isPeriodic);
-			void unsetTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID);
+			void setTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID, long time, boolean isPeriodic);
+			void unsetTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID);
 			
 		}
 	'''
 	
-	protected def createGammaTimerInterfaceCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createGammaTimerInterfaceCode() '''
+		package «PACKAGE_NAME»;
 		
-		public interface Â«Namings.GAMMA_TIMER_INTERFACEÂ» {
+		public interface «Namings.GAMMA_TIMER_INTERFACE» {
 			
 			public void saveTime(Object object);
 			public long getElapsedTime(Object object, TimeUnit timeUnit);
@@ -44,10 +46,10 @@ class TimerInterfaceGenerator {
 		}
 	'''
 	
-	protected def createUnifiedTimerInterfaceCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createUnifiedTimerInterfaceCode() '''
+		package «PACKAGE_NAME»;
 		
-		public interface Â«Namings.UNIFIED_TIMER_INTERFACEÂ» extends Â«Namings.YAKINDU_TIMER_INTERFACEÂ», Â«Namings.GAMMA_TIMER_INTERFACEÂ» {
+		public interface «Namings.UNIFIED_TIMER_INTERFACE» extends «Namings.YAKINDU_TIMER_INTERFACE», «Namings.GAMMA_TIMER_INTERFACE» {
 			
 		}
 	'''

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type

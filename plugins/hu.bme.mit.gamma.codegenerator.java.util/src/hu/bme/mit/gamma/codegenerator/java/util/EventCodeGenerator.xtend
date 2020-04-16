@@ -8,29 +8,45 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.codegenerator.java
+package hu.bme.mit.gamma.codegenerator.java.util
 
-class TimerCallbackInterfaceGenerator {
-		
+class EventCodeGenerator {
+	
 	protected final String PACKAGE_NAME
-	protected final String INTERFACE_NAME = Namings.TIMER_CALLBACK_INTERFACE
+	protected final String CLASS_NAME = Namings.GAMMA_EVENT_CLASS
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName
 	}
 	
-	protected def createITimerCallbackInterfaceCode() '''
-		package Â«PACKAGE_NAMEÂ»;
+	def createEventClass() '''
+		package «PACKAGE_NAME»;
 		
-		public interface Â«INTERFACE_NAMEÂ» {
+		public class «CLASS_NAME» {
+			private String event;
+			private Object value;
 			
-			void timeElapsed(int eventID);
+			public Event(String event) {
+				this.event = event;
+			}
 			
+			public Event(String event, Object value) {
+				this.event = event;
+				this.value = value;
+			}
+			
+			public String getEvent() {
+				return event;
+			}
+			
+			public Object getValue() {
+				return value;
+			}
 		}
 	'''
 	
-	def getInterfaceName() {
-		return INTERFACE_NAME
+	def getClassName() {
+		return CLASS_NAME
 	}
 	
 }

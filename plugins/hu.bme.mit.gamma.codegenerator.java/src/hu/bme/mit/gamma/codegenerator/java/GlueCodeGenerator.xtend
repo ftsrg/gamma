@@ -17,6 +17,14 @@ import hu.bme.mit.gamma.codegenerator.java.queries.SimpleGammaComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.TypeDeclarations
+import hu.bme.mit.gamma.codegenerator.java.util.EventCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.Namings
+import hu.bme.mit.gamma.codegenerator.java.util.TimerCallbackInterfaceGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
@@ -33,6 +41,7 @@ import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransforma
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class GlueCodeGenerator {
@@ -101,7 +110,7 @@ class GlueCodeGenerator {
 		this.timerInterfaceGenerator = new TimerInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.timerCallbackInterfaceGenerator = new TimerCallbackInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.timerServiceCodeGenerator = new TimerServiceCodeGenerator(this.BASE_PACKAGE_NAME)
-		this.portInterfaceGenerator  = new PortInterfaceGenerator(this.BASE_PACKAGE_NAME, trace)
+		this.portInterfaceGenerator  = new PortInterfaceGenerator(this.BASE_PACKAGE_NAME, trace) // Needed, as there is back-annotation here from integers to strings
 		this.componentInterfaceGenerator = new ComponentInterfaceGenerator(this.BASE_PACKAGE_NAME)
 		this.reflectiveComponentCodeGenerator = new ReflectiveComponentCodeGenerator(this.BASE_PACKAGE_NAME, trace)
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(this.BASE_PACKAGE_NAME, this.YAKINDU_PACKAGE_NAME, trace)
@@ -232,7 +241,7 @@ class GlueCodeGenerator {
 		if (typeDeclarationRule === null) {
 			 typeDeclarationRule = createRule(TypeDeclarations.instance).action [
 			 	if (!it.typeDeclaration.type.primitive) {
-					val code = it.typeDeclaration.serialize
+					val code = it.typeDeclaration.generateTypeDeclarationCode
 					code.saveCode(BASE_PACKAGE_URI + File.separator + it.typeDeclaration.name + ".java")
 				}
 			].build		
@@ -247,7 +256,7 @@ class GlueCodeGenerator {
 		if (portInterfaceRule === null) {
 			 portInterfaceRule = createRule(Interfaces.instance).action [
 				val code = it.interface.generatePortInterfaces
-				code.saveCode(BASE_PACKAGE_URI + File.separator + Namings.INTERFACE_PACKAGE_POSTFIX + File.separator + it.interface.generateName + ".java")
+				code.saveCode(BASE_PACKAGE_URI + File.separator + Namings.INTERFACE_PACKAGE_POSTFIX + File.separator + it.interface.implementationName + ".java")
 			].build		
 		}
 		return portInterfaceRule
