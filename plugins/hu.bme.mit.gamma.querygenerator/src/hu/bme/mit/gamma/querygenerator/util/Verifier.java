@@ -71,11 +71,7 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			}
 			if (view.isOptimizeTestSet()) {
 				// Removal of covered steps
-				try {
 				traceUtil.removeCoveredSteps(traceModel);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
 			serializeTestCode(traceModel, traceabilitySet);
 			// There is a generated trace, so the result is the opposite of the empty trace
