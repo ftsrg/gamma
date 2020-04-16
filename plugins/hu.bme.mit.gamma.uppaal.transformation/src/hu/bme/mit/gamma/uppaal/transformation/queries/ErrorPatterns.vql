@@ -54,3 +54,23 @@ private pattern regionToParentRegion(region : Region, parentRegion : Region) {
 	Region.stateNodes(parentRegion, state);
 	State.regions(state, region);
 }
+
+private pattern relevantEvents(port : Port, event : Event) {
+	PortEventReference.port(portEventReference, port);
+	PortEventReference.event(portEventReference, event);
+} or {
+	Port.interfaceRealization.interface.events.event(port, event);
+	AnyPortEventReference.port(_, port);
+} or {
+	RaiseEventAction.port(raiseEventAction, port);
+	RaiseEventAction.event(raiseEventAction, event);
+} or {
+	EventParameterReferenceExpression.port(reference, port);
+	EventParameterReferenceExpression.event(reference, event);
+}
+
+pattern inOutEvents(port : Port, event : Event) {
+	find relevantEvents(port, event);
+	EventDeclaration.event(eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, ::INOUT);
+}

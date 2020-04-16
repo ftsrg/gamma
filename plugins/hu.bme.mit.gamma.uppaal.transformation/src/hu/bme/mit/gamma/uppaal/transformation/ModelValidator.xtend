@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
 import hu.bme.mit.gamma.uppaal.transformation.queries.FromChoiceToHigherTransition
+import hu.bme.mit.gamma.uppaal.transformation.queries.InOutEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.InOutTransitions
 import hu.bme.mit.gamma.uppaal.transformation.queries.NamedElements
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
@@ -49,6 +50,7 @@ class ModelValidator {
     		checkTopComponentParameters()
     	}
     	checkConstants
+    	checkInOutEvents
     	checkInOutTransitions
     	checkChoiceTransitions 
     	checkFloatVariables
@@ -77,6 +79,21 @@ class ModelValidator {
 				constansts.append(" " + constanstsMatch.name)
 			}
 			throw new IllegalArgumentException("The constant must have an initial value: " + constansts.toString())
+		}
+    }
+    
+    /**
+	 * This method checks whether there are in-out events. If so, it throws an exception.
+	 */
+    private def checkInOutEvents() {
+    	val inOutEventsMatcher = engine.getMatcher(InOutEvents.instance)
+		val inOutEventsMatches = inOutEventsMatcher.allMatches
+		if (inOutEventsMatches.size != 0) {
+			val events = new StringBuilder()
+			for (inOutEventsMatch : inOutEventsMatches) {
+				events.append(" " + inOutEventsMatch.port.name + "->" + inOutEventsMatch.event.name)
+			}
+			throw new IllegalArgumentException("In-out events are not supported in the UPPAAL mapping:" + events.toString())
 		}
     }
     
