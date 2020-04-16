@@ -404,10 +404,10 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final IfThenElseExpression ifThenElseExpresison) {
 		String _serialize = this.serialize(ifThenElseExpresison.getCondition());
-		String _plus = (_serialize + "? ");
+		String _plus = (_serialize + " ? ");
 		String _serialize_1 = this.serialize(ifThenElseExpresison.getThen());
 		String _plus_1 = (_plus + _serialize_1);
-		String _plus_2 = (_plus_1 + ":");
+		String _plus_2 = (_plus_1 + " : ");
 		String _serialize_2 = this.serialize(ifThenElseExpresison.getElse());
 		return (_plus_2 + _serialize_2);
 	}

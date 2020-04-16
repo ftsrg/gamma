@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InequalityExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
@@ -54,6 +55,7 @@ import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.AssignmentOperator
 import uppaal.expressions.CompareExpression
 import uppaal.expressions.CompareOperator
+import uppaal.expressions.ConditionExpression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.ExpressionsPackage
 import uppaal.expressions.IdentifierExpression
@@ -365,6 +367,15 @@ class ExpressionTransformer {
 	def dispatch void transform(EObject container, EReference reference, UnaryMinusExpression expression, ComponentInstance owner) {
 		val newExp = container.createChild(reference, minusExpression) as MinusExpression => [			
 			it.transform(minusExpression_InvertedExpression, expression.operand, owner)
+		]		
+		addToTrace(expression, #{newExp}, expressionTrace)
+	}
+	
+	def dispatch void transform(EObject container, EReference reference, IfThenElseExpression expression, ComponentInstance owner) {
+		val newExp = container.createChild(reference, conditionExpression) as ConditionExpression => [			
+			it.transform(conditionExpression_IfExpression, expression.condition, owner)
+			it.transform(conditionExpression_ThenExpression, expression.then, owner)
+			it.transform(conditionExpression_ElseExpression, expression.^else, owner)
 		]		
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
