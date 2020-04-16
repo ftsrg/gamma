@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.trace.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
@@ -93,10 +94,14 @@ public class TraceUtil {
 	
 	public boolean isCovered(Step covered, Step covering) {
 		// Only input actions are covered
-		for (Act act : covered.getActions()) {
-			boolean isEqual = covering.getActions().stream().anyMatch(it -> equalsTo(act, it));
-			if (!isEqual) {
-				return false;
+		EList<Act> coveredActions = covered.getActions();
+		EList<Act> coveringActions = covering.getActions();
+		if (coveredActions.size() == coveringActions.size()) {
+			for (Act act : coveredActions) {
+				boolean isEqual = coveringActions.stream().anyMatch(it -> equalsTo(act, it));
+				if (!isEqual) {
+					return false;
+				}
 			}
 		}
 		return true;
