@@ -112,6 +112,10 @@ import org.yakindu.sct.model.stext.stext.TimeEventSpec
 import org.yakindu.sct.model.stext.stext.TimeUnit
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 
+import static com.google.common.base.Preconditions.checkState
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
     extension BatchTransformation transformation
@@ -231,6 +235,8 @@ class YakinduToGammaTransformer {
     	transformValueOfLocalReactions
     	transformGuardsOfRegularLocalReactions
     	transformEffectsOfRegularLocalReactions
+    	// Splitting choices with multiple incoming transitions
+    	splitChoicesRule.fireAllCurrent[it.choice.incomingTransitions.size > 1]
     	// Sorting transitions in accordance with priority
     	sortTransitions
 		// The created EMF models are returned
@@ -384,6 +390,29 @@ class YakinduToGammaTransformer {
     	}
     	// The trace is saved 	
     	addToTrace(choice, #{gammaChoice}, trace)
+    ].build
+    
+    /**
+     * This rule is responsible for splitting Gamma choices that have more than one incoming transitions.
+     * It depends on all rules that create transitions.
+     */
+    val splitChoicesRule = createRule(Choices.instance).action [
+    	val choice = it.choice
+    	val gammaChoices = choice.allValuesOfTo.filter(ChoiceState)
+    	checkState(gammaChoices.size == 1)
+    	val gammaChoice = gammaChoices.head
+    	val gammaRegion =  gammaChoice.parentRegion
+    	val gammaMerge = gammaRegion.createChild(region_StateNodes, mergeState) as MergeState => [
+    		it.name = "Merge" + id++
+    	]
+    	// Retargeting incoming transitions
+    	for (incomingGammaTransition : gammaChoice.incomingTransitions) {
+    		incomingGammaTransition.targetState = gammaMerge
+    	}
+    	// Creating the new transition AFTER the retargeting (would not work otherwise)
+    	gammaMerge.createTransition(gammaChoice)
+    	// The trace is saved
+    	addToTrace(choice, #{gammaMerge}, trace)
     ].build
     
     /**

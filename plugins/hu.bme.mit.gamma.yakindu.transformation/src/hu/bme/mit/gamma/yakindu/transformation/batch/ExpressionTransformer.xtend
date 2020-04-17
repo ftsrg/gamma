@@ -184,10 +184,10 @@ class ExpressionTransformer {
 		}
 		val AbstractTrace finalExpTrace = aTrace
 		switch (traceClass) {
-				case expressionTrace: 			
-					to.forEach[finalExpTrace.addTo(expressionTrace_To, it)]
-				case trace: 
-					to.forEach[finalExpTrace.addTo(trace_To, it)]
+			case expressionTrace: 			
+				to.forEach[finalExpTrace.addTo(expressionTrace_To, it)]
+			case trace: 
+				to.forEach[finalExpTrace.addTo(trace_To, it)]
 		}
 		return finalExpTrace
 	}

@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.codegenerator.java.queries.SimpleYakinduComponents
 import hu.bme.mit.gamma.codegenerator.java.queries.SynchronousComponentWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.TypeDeclarations
 import hu.bme.mit.gamma.codegenerator.java.util.EventCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimerCallbackInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
