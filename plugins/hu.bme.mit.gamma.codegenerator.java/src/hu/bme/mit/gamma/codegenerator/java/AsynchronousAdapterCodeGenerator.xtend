@@ -203,11 +203,7 @@ class AsynchronousAdapterCodeGenerator {
 					// There was no event in the queue
 					return;
 				}
-				if (!isControlEvent(«EVENT_INSTANCE_NAME»)) {
-					// Event is forwarded to the wrapped component
-					forwardEvent(«EVENT_INSTANCE_NAME»);
-				}
-				performControlActions(«EVENT_INSTANCE_NAME»);
+				processEvent(«EVENT_INSTANCE_NAME»);
 			}
 			
 			/** Operation. */
@@ -216,15 +212,19 @@ class AsynchronousAdapterCodeGenerator {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
 						«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME» = __asyncQueue.take();		
-						if (!isControlEvent(«EVENT_INSTANCE_NAME»)) {
-							// Event is forwarded to the wrapped component
-							forwardEvent(«EVENT_INSTANCE_NAME»);
-						}
-						performControlActions(«EVENT_INSTANCE_NAME»);
+						processEvent(«EVENT_INSTANCE_NAME»);
 					} catch (InterruptedException e) {
 						thread.interrupt();
 					}
 				}
+			}
+			
+			private void processEvent(«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
+				if (!isControlEvent(«EVENT_INSTANCE_NAME»)) {
+					// Event is forwarded to the wrapped component
+					forwardEvent(«EVENT_INSTANCE_NAME»);
+				}
+				performControlActions(«EVENT_INSTANCE_NAME»);
 			}
 			
 			private boolean isControlEvent(«GAMMA_EVENT_CLASS» «EVENT_INSTANCE_NAME») {
