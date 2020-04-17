@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin>
-  <extension id="hu.bme.mit.gamma.uppaal.backannotation.patterns.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
-    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.backannotation.patterns.Patterns" id="hu.bme.mit.gamma.uppaal.backannotation.patterns.Patterns">
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.simpleInstances"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.asynchronousSimpleInstances"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.instanceContainer"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.wrapperInstanceContainer"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.inputInstanceEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.outputInstanceEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.parameteredEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topSyncSystemInEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topSyncSystemOutEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.variableToSimpleEvent"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.variableToParameteredEvent"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.valueOfVariableToParameter"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.variableToEvent"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.locationToState"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.functions"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.constantDeclarations"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.edgesWithClock"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.templates"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.locations"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.variableDelcarations"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.isActiveVariables"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topSyncComponents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topAsyncCompositeComponents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.distinctWrapperInEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.wrapperInEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.wrapperOutEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.wrapperInstanceInEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.wrapperInstanceOutEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topAsyncSystemInEvents"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.topAsyncSystemOutEvents"/>
+  <extension id="hu.bme.mit.gamma.uppaal.verification.patterns.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.verification.patterns.Patterns" id="hu.bme.mit.gamma.uppaal.verification.patterns.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.simpleInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.asynchronousSimpleInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.instanceContainer"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperInstanceContainer"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.inputInstanceEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.outputInstanceEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.parameteredEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topSyncSystemInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topSyncSystemOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.variableToSimpleEvent"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.variableToParameteredEvent"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.valueOfVariableToParameter"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.variableToEvent"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.locationToState"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.functions"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.constantDeclarations"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.edgesWithClock"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.templates"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.locations"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.variableDelcarations"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.isActiveVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topSyncComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topAsyncCompositeComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.distinctWrapperInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperInstanceInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperInstanceOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topAsyncSystemInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topAsyncSystemOutEvents"/>
     </group>
   </extension>
-  <extension id="hu.bme.mit.gamma.uppaal.backannotation.patterns.TracePatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
-    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.backannotation.patterns.TracePatterns" id="hu.bme.mit.gamma.uppaal.backannotation.patterns.TracePatterns">
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.traces"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.expressionTraces"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.instanceTraces"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.portTraces"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.backannotation.patterns.eventRepresentations"/>
+  <extension id="hu.bme.mit.gamma.uppaal.verification.patterns.TracePatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.verification.patterns.TracePatterns" id="hu.bme.mit.gamma.uppaal.verification.patterns.TracePatterns">
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.traces"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.expressionTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.instanceTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.portTraces"/>
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.eventRepresentations"/>
     </group>
   </extension>
 </plugin>

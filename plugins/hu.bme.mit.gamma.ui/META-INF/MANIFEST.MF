@@ -22,7 +22,7 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.uppaal.serializer,
  hu.bme.mit.gamma.uppaal.transformation,
- hu.bme.mit.gamma.uppaal.backannotation,
+ hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.eventpriority.transformation,
  hu.bme.mit.gamma.ui
 Export-Package: hu.bme.mit.gamma.ui

@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.uppaal.backannotation
+package hu.bme.mit.gamma.uppaal.verification
 
 import java.util.Scanner
 import java.util.logging.Level

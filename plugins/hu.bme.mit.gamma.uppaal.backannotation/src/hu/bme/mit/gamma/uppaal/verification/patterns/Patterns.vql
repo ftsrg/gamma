@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.backannotation.patterns
+package hu.bme.mit.gamma.uppaal.verification.patterns
 
 import "http://www.mit.bme.hu/gamma/expression/Model"
 import "http://www.mit.bme.hu/gamma/statechart/Model"

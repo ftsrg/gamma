@@ -42,7 +42,7 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopSyncSystemOutEvents;
+import hu.bme.mit.gamma.uppaal.verification.patterns.TopSyncSystemOutEvents;
 import hu.bme.mit.gamma.uppaal.util.Namings;
 
 public class Controller {

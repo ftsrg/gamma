@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.backannotation
+package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.State
@@ -28,8 +28,8 @@ import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceContainer
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.WrapperInstanceContainer
+import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
+import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
 import java.util.Collections
 import java.util.List
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -119,18 +119,18 @@ class TestGenerator {
 		public class «className» {
 			
 			private static «componentClassInterfaceName» «componentClassName.toFirstLower»;
-«««			Only if there are timing specifications in the model
+		«««			Only if there are timing specifications in the model
 			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
 			@Before
 			public void init() {
-«««				Each trace must reference the same component with the same parameter values (arguments)!
+		«««				Each trace must reference the same component with the same parameter values (arguments)!
 				«IF component.needTimer»
-«««					Only if there are timing specs in the model
+		«««					Only if there are timing specs in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
 					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
-					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+			«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 				«ENDIF»
 			}
 			
@@ -192,19 +192,19 @@ class TestGenerator {
 						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
 						// Act
 						«FOR act : step.actions»
-							«act.serialize»
+						«act.serialize»
 						«ENDFOR»
 						// Checking out events
 						«FOR outEvent : step.outEvents»
-							«ASSERT_TRUE»(«componentClassName.toFirstLower».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
+						«ASSERT_TRUE»(«componentClassName.toFirstLower».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
 						«ENDFOR»
 						// Checking variables
 						«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
-							«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
+						«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
 						«ENDFOR»
 						// Checking of states
 						«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
-							«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
+						«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
 						«ENDFOR»
 					}
 					
@@ -233,7 +233,7 @@ class TestGenerator {
 	'''
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
-«««		In theory only asynchronous adapters and synchronous adapters are used
+		«««		In theory only asynchronous adapters and synchronous adapters are used
 		«componentClassName.toFirstLower».schedule(null);
 	'''
 	

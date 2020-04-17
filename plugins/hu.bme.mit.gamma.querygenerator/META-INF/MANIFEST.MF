@@ -17,7 +17,7 @@ Require-Bundle: com.google.inject;bundle-version="3.0.0",
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.uppaal.util,
- hu.bme.mit.gamma.uppaal.backannotation,
+ hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.dialog,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.trace.language.ui

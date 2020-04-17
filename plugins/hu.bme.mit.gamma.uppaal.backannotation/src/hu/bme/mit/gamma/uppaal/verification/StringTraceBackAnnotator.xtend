@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.backannotation
+package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
@@ -35,21 +35,21 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceFactory
 import hu.bme.mit.gamma.trace.model.TraceUtil
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.EventRepresentations
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.ExpressionTraces
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.Functions
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.InstanceTraces
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.IsActiveVariables
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.LocationToState
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.Locations
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.PortTraces
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopAsyncSystemInEvents
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopAsyncSystemOutEvents
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopSyncSystemInEvents
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.TopSyncSystemOutEvents
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.Traces
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableDelcarations
-import hu.bme.mit.gamma.uppaal.backannotation.patterns.VariableToEvent
+import hu.bme.mit.gamma.uppaal.verification.patterns.EventRepresentations
+import hu.bme.mit.gamma.uppaal.verification.patterns.ExpressionTraces
+import hu.bme.mit.gamma.uppaal.verification.patterns.Functions
+import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceTraces
+import hu.bme.mit.gamma.uppaal.verification.patterns.IsActiveVariables
+import hu.bme.mit.gamma.uppaal.verification.patterns.LocationToState
+import hu.bme.mit.gamma.uppaal.verification.patterns.Locations
+import hu.bme.mit.gamma.uppaal.verification.patterns.PortTraces
+import hu.bme.mit.gamma.uppaal.verification.patterns.TopAsyncSystemInEvents
+import hu.bme.mit.gamma.uppaal.verification.patterns.TopAsyncSystemOutEvents
+import hu.bme.mit.gamma.uppaal.verification.patterns.TopSyncSystemInEvents
+import hu.bme.mit.gamma.uppaal.verification.patterns.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.uppaal.verification.patterns.Traces
+import hu.bme.mit.gamma.uppaal.verification.patterns.VariableDelcarations
+import hu.bme.mit.gamma.uppaal.verification.patterns.VariableToEvent
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
