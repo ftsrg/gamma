@@ -28,6 +28,8 @@
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transitionPriority" lowerBound="1"
         eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartAnnotation" eType="#//StatechartAnnotation"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>
@@ -62,6 +64,8 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitActions" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stateAnnotation" eType="#//StateAnnotation"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
@@ -177,6 +181,8 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OnCycleTrigger" eSuperTypes="#//SimpleTrigger"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eSubpackages name="interface" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Interface"
       nsPrefix="hu.bme.mit.gamma.statechart.interface">
     <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
