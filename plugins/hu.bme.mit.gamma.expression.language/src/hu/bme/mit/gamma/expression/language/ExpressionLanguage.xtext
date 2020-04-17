@@ -181,7 +181,7 @@ UnaryLogicExpression returns Expression:
 ;
 
 NotExpression returns Expression:
-	{NotExpression} => 'not' operand=UnaryLogicExpression
+	{NotExpression} => ('not' | '!') operand=UnaryLogicExpression
 ;
 
 ForallExpression returns Expression:
@@ -195,7 +195,7 @@ ExistsExpression returns Expression:
 //binary, non-associative
 EquivalenceExpression returns Expression:
 	ComparisionExpression (
-		{EqualityExpression.leftOperand=current} '=' rightOperand=ComparisionExpression |
+		{EqualityExpression.leftOperand=current} ('=' | '==') rightOperand=ComparisionExpression |
 		{InequalityExpression.leftOperand=current} ('/=' | '!=') rightOperand=ComparisionExpression
 	)?
 ;
