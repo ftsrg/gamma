@@ -18,9 +18,9 @@ import org.eclipse.viatra.query.runtime.exception.ViatraQueryException;
 // This class includes the entry point of the application
 public class AppMain  {
 	
-	public void start(ResourceSet resourceSet, IFile file, boolean needsBackAnnotation) {
+	public void start(ResourceSet resourceSet, IFile file) {
 		try {
-			View frame = new View(resourceSet, file, needsBackAnnotation);
+			View frame = new View(resourceSet, file);
 			frame.setTitle("UPPAAL Query Generator");
 			frame.setVisible(true);
 			frame.setResizable(false);

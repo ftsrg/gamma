@@ -34,13 +34,10 @@ import org.eclipse.viatra.query.runtime.exception.ViatraQueryException;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates;
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables;
-import hu.bme.mit.gamma.querygenerator.patterns.SimpleInstances;
-import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartStates;
-import hu.bme.mit.gamma.querygenerator.patterns.SimpleStatechartVariables;
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations;
 import hu.bme.mit.gamma.querygenerator.patterns.Subregions;
 import hu.bme.mit.gamma.querygenerator.util.GeneratedTestVerifier;
-import hu.bme.mit.gamma.querygenerator.util.Verifier;
+import hu.bme.mit.gamma.querygenerator.util.GuiVerifier;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.State;
@@ -59,11 +56,9 @@ public class Controller {
 	private ResourceSet traceabilitySet;
 	private ViatraQueryEngine traceEngine;
 	// Indicates the actual verification process
-	private volatile Verifier verifier;
+	private volatile GuiVerifier verifier;
 	// Indicates the actual test generation process
 	private volatile GeneratedTestVerifier generatedTestVerifier;
-	// Indicates whether back-annotation during verification is needed
-	private final boolean needsBackAnnotation;
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.gsm
@@ -72,7 +67,7 @@ public class Controller {
 	private final String TEST_GEN_FOLDER_NAME = "test-gen";
 	private final String TRACE_FOLDER_NAME = "trace";
 	
-	public Controller(View view, ResourceSet resourceSet, IFile file, boolean needsBackAnnotation) throws ViatraQueryException {
+	public Controller(View view, ResourceSet resourceSet, IFile file) throws ViatraQueryException {
 		this.file = file;
 		this.view = view;
 		this.resourceSet = resourceSet;
@@ -81,14 +76,13 @@ public class Controller {
 		logger.log(Level.INFO, "Traceability resource set content: " + traceabilitySet);
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet));
 		this.traceEngine = ViatraQueryEngine.on(new EMFScope(this.traceabilitySet));
-		this.needsBackAnnotation = needsBackAnnotation;
 	}
 	
-	public Verifier getVerifier() {
+	public GuiVerifier getVerifier() {
 		return verifier;
 	}
 
-	public void setVerifier(Verifier verifier) {
+	public void setVerifier(GuiVerifier verifier) {
 		this.verifier = verifier;
 	}
 
@@ -98,10 +92,6 @@ public class Controller {
 
 	public void setGeneratedTestVerifier(GeneratedTestVerifier generatedTestVerifier) {
 		this.generatedTestVerifier = generatedTestVerifier;
-	}
-	
-	public boolean isNeedsBackAnnotation() {
-		return needsBackAnnotation;
 	}
 	
 	public void initSelectorWithStates(JComboBox<String> selector) throws ViatraQueryException {
@@ -120,22 +110,10 @@ public class Controller {
 	
 	public List<String> getStateNames() throws ViatraQueryException {
 		List<String> stateNames = new ArrayList<String>();
-		// In the case of composite systems
-		if (isCompositeSystem()) {
-			for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
-				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-					stateNames.add(entry);				
-				}
-			}
-		}
-		else {
-			// In the case of single statecharts
-			for (SimpleStatechartStates.Match statesMatch : SimpleStatechartStates.Matcher.on(engine).getAllMatches()) {
-				String entry = statesMatch.getRegionName() + "." + statesMatch.getStateName();
-				if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
-					stateNames.add(entry);				
-				}
+		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
+			String entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName();
+			if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
+				stateNames.add(entry);				
 			}
 		}
 		return stateNames;
@@ -143,19 +121,9 @@ public class Controller {
 	
 	public List<String> getVariableNames() throws ViatraQueryException {
 		List<String> variableNames = new ArrayList<String>();
-		if (isCompositeSystem()) {
-			// In the case of composite systems
-			for (InstanceVariables.Match variableMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
-				String entry = variableMatch.getInstance().getName() + "." + variableMatch.getVariable().getName();
-				variableNames.add(entry);
-			}
-		}
-		else {
-			// In the case of single statecharts
-			for (SimpleStatechartVariables.Match variableMatch : SimpleStatechartVariables.Matcher.on(engine).getAllMatches()) {
-				String entry = variableMatch.getVariable().getName();
-				variableNames.add(entry);
-			}
+		for (InstanceVariables.Match variableMatch : InstanceVariables.Matcher.on(engine).getAllMatches()) {
+			String entry = variableMatch.getInstance().getName() + "." + variableMatch.getVariable().getName();
+			variableNames.add(entry);
 		}
 		return variableNames;
 	}
@@ -166,12 +134,9 @@ public class Controller {
 	
 	public List<String> getSystemOutEventNames() throws ViatraQueryException {
 		List<String> eventNames = new ArrayList<String>();
-		if (isCompositeSystem()) {
-			// In the case of composite systems
-			for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
-				String entry = getSystemOutEventName(eventsMatch.getSystemPort(), eventsMatch.getEvent());
-				eventNames.add(entry);
-			}
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+			String entry = getSystemOutEventName(eventsMatch.getSystemPort(), eventsMatch.getEvent());
+			eventNames.add(entry);
 		}
 		return eventNames;
 	}
@@ -182,15 +147,12 @@ public class Controller {
 	
 	public List<String> getSystemOutEventParameterNames() throws ViatraQueryException {
 		List<String> parameterNames = new ArrayList<String>();
-		if (isCompositeSystem()) {
-			// In the case of composite systems
-			for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
-				Event event = eventsMatch.getEvent();
-				for (ParameterDeclaration parameter : event.getParameterDeclarations()) {
-					Port systemPort = eventsMatch.getSystemPort();
-					String entry = getSystemOutEventParameterName(systemPort, event, parameter);
-					parameterNames.add(entry);
-				}
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches()) {
+			Event event = eventsMatch.getEvent();
+			for (ParameterDeclaration parameter : event.getParameterDeclarations()) {
+				Port systemPort = eventsMatch.getSystemPort();
+				String entry = getSystemOutEventParameterName(systemPort, event, parameter);
+				parameterNames.add(entry);
 			}
 		}
 		return parameterNames;
@@ -262,11 +224,11 @@ public class Controller {
 			}
 		}
 		result = "(" + result + ")";
-		if (isCompositeSystem() && !operator.equals(View.MIGHT_ALWAYS) && !operator.equals(View.MUST_ALWAYS)) {
+		if (!operator.equals(View.MIGHT_ALWAYS) && !operator.equals(View.MUST_ALWAYS)) {
 			// It is pointless to add isStable in the case of A[] and E[]
 			result += " && isStable";
 		}
-		else if (isCompositeSystem()){
+		else {
 			// Instead this is added
 			result += " || !isStable";
 		}
@@ -276,52 +238,37 @@ public class Controller {
 	private String getUppaalStateName(String stateName) throws ViatraQueryException {
 		logger.log(Level.INFO, stateName);
 		String[] splittedStateName = stateName.split("\\.");
-		if (isCompositeSystem()) {
-			// In the case of composite systems
-			for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0],
-					null, splittedStateName[splittedStateName.length - 2] /* parent region */,
-					null, splittedStateName[splittedStateName.length - 1] /* state */)) {
-				Region parentRegion = match.getParentRegion();
-				String templateName = getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
-				String processName = "P_" + templateName;
-				StringBuilder locationNames = new StringBuilder("(");
-				for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(null,
-						match.getState().getName(),
-						templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
-					String templateLocationName = processName +  "." + locationName;
-					if (locationNames.length() == 1) {
-						// First append
-						locationNames.append(templateLocationName);
-					}
-					else {
-						locationNames.append(" || " + templateLocationName);
-					}
+		for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0],
+				null, splittedStateName[splittedStateName.length - 2] /* parent region */,
+				null, splittedStateName[splittedStateName.length - 1] /* state */)) {
+			Region parentRegion = match.getParentRegion();
+			String templateName = getRegionName(parentRegion) + "Of" + splittedStateName[0] /* instance name */;
+			String processName = "P_" + templateName;
+			StringBuilder locationNames = new StringBuilder("(");
+			for (String locationName : StatesToLocations.Matcher.on(traceEngine).getAllValuesOflocationName(null,
+					match.getState().getName(),
+					templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
+				String templateLocationName = processName +  "." + locationName;
+				if (locationNames.length() == 1) {
+					// First append
+					locationNames.append(templateLocationName);
 				}
-				locationNames.append(")");
-				if (isSubregion(parentRegion)) {
-					locationNames.append(" && " + processName + ".isActive"); 
+				else {
+					locationNames.append(" || " + templateLocationName);
 				}
-				return locationNames.toString();
 			}
-		}
-		else {
-			// In the case of single statecharts
-			for (SimpleStatechartStates.Match match : SimpleStatechartStates.Matcher.on(engine).getAllMatches(null, splittedStateName[0], null, splittedStateName[1])) {
-				Region parentRegion = (Region) match.getState().eContainer();
-				return "P_" + getRegionName(parentRegion) + "." + splittedStateName[1];
+			locationNames.append(")");
+			if (isSubregion(parentRegion)) {
+				locationNames.append(" && " + processName + ".isActive"); 
 			}
+			return locationNames.toString();
 		}
 		throw new IllegalArgumentException("Not known state!");
 	}
 	
 	private String getUppaalVariableName(String variableName) throws ViatraQueryException {		
-		if (isCompositeSystem()) {
-			// In the case of composite systems
-			String[] splittedStateName = variableName.split("\\.");
-			return splittedStateName[1] + "Of" + splittedStateName[0];
-		}
-		// In the case of single statecharts
-		return variableName;
+		String[] splittedStateName = variableName.split("\\.");
+		return splittedStateName[1] + "Of" + splittedStateName[0];
 	}
 	
 	private String getUppaalOutEventName(String portEventName) throws ViatraQueryException {
@@ -345,13 +292,6 @@ public class Controller {
 			}
 		}
 		throw new IllegalArgumentException("Not known system event: " + portEventParameterName);
-	}
-	
-	/**
-	 * Returns whether the model on which the queries are generated is a composite system.
-	 */
-	private boolean isCompositeSystem() throws ViatraQueryException {
-		return (SimpleInstances.Matcher.on(engine).countMatches() > 0);
 	}
 	
 	private boolean isSubregion(Region region) throws ViatraQueryException {
@@ -470,7 +410,7 @@ public class Controller {
 	 * Verifies the given Uppaal query.
 	 */
 	public void verify(String uppaalQuery) {
-		verifier = new Verifier(uppaalQuery, true, view, this);
+		verifier = new GuiVerifier(uppaalQuery, true, view, this);
 		// Starting the worker
 		verifier.execute();
 	}

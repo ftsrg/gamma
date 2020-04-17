@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.querygenerator.application.Controller;
 import hu.bme.mit.gamma.querygenerator.application.View;
+import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
 
 public class GeneratedTestVerifier implements Runnable {
 	// Indicates whether the test generation process is cancelled
@@ -34,7 +35,7 @@ public class GeneratedTestVerifier implements Runnable {
     public void run() {
     	final int SLEEP_INTERVAL = 250;
     	final int TIMEOUT = view.getTestGenerationTmeout() * (1000 / SLEEP_INTERVAL);
-    	Verifier verifier = null;
+    	GuiVerifier verifier = null;
     	StringBuilder buffer = new StringBuilder();
     	// Disabling the verification buttons
 		view.setVerificationButtons(false);
@@ -53,7 +54,7 @@ public class GeneratedTestVerifier implements Runnable {
     			}
     			//
     			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + temporalExpression + "...");
-    			verifier = new Verifier(temporalExpression, false, view, controller);
+    			verifier = new GuiVerifier(temporalExpression, false, view, controller);
     			verifier.execute();
 				int elapsedTime = 0;
 				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {

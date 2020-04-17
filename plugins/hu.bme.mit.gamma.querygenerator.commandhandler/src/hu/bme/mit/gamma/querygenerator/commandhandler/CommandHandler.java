@@ -42,7 +42,6 @@ public class CommandHandler extends AbstractHandler {
 				if (selection.getFirstElement() != null) {
 					if (selection.getFirstElement() instanceof IFile) {
 						IFile file = (IFile) selection.getFirstElement();
-						boolean needsBackAnnotation = true;
 						ResourceSet resSet = new ResourceSetImpl();
 						logger.log(Level.INFO, "Resource set created for displaying model elements on GUI: " + resSet);
 						String fullPath = file.getFullPath().toString();
@@ -59,21 +58,19 @@ public class CommandHandler extends AbstractHandler {
 							String newPath = parentFolder + File.separator + "." + fileName + ".gsm";
 							fileURI = URI.createPlatformResourceURI(newPath, true);
 						}
-						Resource resource;
+						Resource resource = null;
 						try {
 							resource = resSet.getResource(fileURI, true);
 						} catch (Exception e) {
-							// Maybe it is a simple gcd statechart
-							fileURI = URI.createPlatformResourceURI(fullPath, true);
-							resource = resSet.getResource(fileURI, true);
-							needsBackAnnotation = false;
+							// . gsm file is not found
+							logger.log(Level.SEVERE, "The transformed UPPAAL model cannot be found. Transform the Gamma model to UPPAAL first.");
 						}
-						if (resource.getContents() != null) {
+						if (resource != null && resource.getContents() != null) {
 							if (resource.getContents().get(0) instanceof Package) {
 								AppMain app = new AppMain();
 								// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/
 								// hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
-								app.start(resSet, file, needsBackAnnotation);
+								app.start(resSet, file);
 							}
 						}
 						return null;

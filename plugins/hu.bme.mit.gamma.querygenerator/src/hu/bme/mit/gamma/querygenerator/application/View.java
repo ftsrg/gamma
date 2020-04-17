@@ -153,8 +153,8 @@ public class View extends JFrame {
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
-	public View(ResourceSet resourceSet, IFile file, boolean needsBackAnnotation) throws ViatraQueryException {
-		controller = new Controller(this, resourceSet, file, needsBackAnnotation);
+	public View(ResourceSet resourceSet, IFile file) throws ViatraQueryException {
+		controller = new Controller(this, resourceSet, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();
 		

@@ -3,11 +3,9 @@ package hu.bme.mit.gamma.querygenerator.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -28,16 +26,16 @@ import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
-import hu.bme.mit.gamma.uppaal.backannotation.EmptyTraceException;
-import hu.bme.mit.gamma.uppaal.backannotation.StringTraceBackAnnotator;
 import hu.bme.mit.gamma.uppaal.backannotation.TestGenerator;
+import hu.bme.mit.gamma.uppaal.backannotation.Verifier;
+import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
 
-public 	/** Runnable class responsible for the execution of formal verification. */
-class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
+/** Runnable class responsible for the execution of formal verification. */
+public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	// The query needs to be added to UPPAAL in addition to the model
 	private String originalUppaalQueries;
 	// Process running the UPPAAL verification
-	private Process process;
+	private Verifier verifier;
 	// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
 	private volatile boolean isCancelled = false;
 	// Indicates whether it should contribute to the View in any form
@@ -49,7 +47,7 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	protected TraceUtil traceUtil = new TraceUtil();	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public Verifier(String uppaalQuery, boolean contributeToView, View view, Controller controller) {
+	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, Controller controller) {
 		this.originalUppaalQueries = uppaalQuery;
 		this.contributeToView = contributeToView;
 		this.view = view;
@@ -65,21 +63,18 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			ResourceSet traceabilitySet = controller.loadTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
-			traceModel = verifyQuery(originalUppaalQueries, traceabilitySet);
-			if (traceModel == null) {
-				throw new IllegalArgumentException("None of the specified queries resulted in a trace.");
+			verifier = new Verifier();
+			traceModel = verifier.verifyQuery(traceabilitySet, controller.getParameters(),
+					controller.getUppaalXmlFile(), originalUppaalQueries, true, false);
+			if (traceModel != null) {
+				// No trace
+				if (view.isOptimizeTestSet()) {
+					// Removal of covered steps
+					traceUtil.removeCoveredSteps(traceModel);
+				}
+				serializeTestCode(traceModel, traceabilitySet);
 			}
-			if (view.isOptimizeTestSet()) {
-				// Removal of covered steps
-				traceUtil.removeCoveredSteps(traceModel);
-			}
-			serializeTestCode(traceModel, traceabilitySet);
-			// There is a generated trace, so the result is the opposite of the empty trace
-			return handleEmptyLines(originalUppaalQueries).opposite();
-		} catch (EmptyTraceException e) {
-			return handleEmptyLines(originalUppaalQueries);
-		} catch (NotBackannotatedException e) {
-			return e.getThreeStateBoolean();
+			return verifier.getResult();
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 			throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
@@ -93,57 +88,13 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 				return ThreeStateBoolean.UNDEF;
 			}
 			else {
+				e.printStackTrace();
 				IllegalArgumentException ex = new IllegalArgumentException("Error! " + e.getMessage());
 				ex.initCause(e);
 				throw ex;
 			}
-		}
-	}
-	
-	private ExecutionTrace verifyQuery(String actualUppaalQuery, ResourceSet traceabilitySet)
-			throws IOException, NotBackannotatedException, EmptyTraceException {
-		Scanner resultReader = null;
-		Scanner traceReader = null;
-		VerificationResultReader verificationResultReader = null;
-		try {
-			// Writing the query to a temporary file
-			File tempQueryfile = writeToFile(actualUppaalQuery, controller.getParentFolder(), ".temporary_query.q");
-			// Deleting the file on the exit of the JVM
-			tempQueryfile.deleteOnExit();
-			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			StringBuilder command = new StringBuilder();
-			command.append("verifyta " + controller.getParameters() + " \"" + controller.getUppaalXmlFile() + "\" \"" + tempQueryfile.getCanonicalPath() + "\"");
-			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command.toString());
-			process =  Runtime.getRuntime().exec(command.toString());
-			InputStream outputStream = process.getInputStream();
-			InputStream errorStream = process.getErrorStream();
-			// Reading the result of the command
-			resultReader = new Scanner(outputStream);
-			verificationResultReader = new VerificationResultReader(resultReader);
-			verificationResultReader.start();
-			traceReader = new Scanner(errorStream);
-			if (isCancelled) {
-				// If the process is killed, this is where it can be checked
-				throw new NotBackannotatedException(ThreeStateBoolean.UNDEF);
-			}
-			if (!traceReader.hasNext()) {
-				// No back annotation of empty lines
-				throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries));
-			}
-			// Warning lines are now deleted if there was any
-			logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet);
-			StringTraceBackAnnotator backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader);
-			ExecutionTrace traceModel = backAnnotator.execute();
-			if (!controller.isNeedsBackAnnotation()) {
-				// If back-annotation is not needed, we return after checking if it is an empty trace (watching out for warning lines)
-				throw new NotBackannotatedException(handleEmptyLines(originalUppaalQueries).opposite());
-			} 
-			return traceModel;
 		} finally {
-			resultReader.close();
-			traceReader.close();
-			verificationResultReader.cancel();
+			verifier = null;
 		}
 	}
 	
@@ -187,41 +138,17 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
    }
 	
-	/**
-	 * Returns the correct verification answer when there is no generated trace by the UPPAAL.
-	 */
-	private ThreeStateBoolean handleEmptyLines(String uppaalQuery) {
-		if (uppaalQuery.startsWith("A[]") || uppaalQuery.startsWith("A<>")) {
-			// In case of A, empty trace means the requirement is met
-			return ThreeStateBoolean.TRUE;
-		}
-		// In case of E, empty trace means the requirement is not met
-		return ThreeStateBoolean.FALSE;
-	}
-	
 	@Override
 	protected void process(final List<Boolean> chunks) {}
-	
-	/**
-	 * Releases the verifyta process.
-	 */
-	private void destroyProcess() {
-		// Killing the process
-		if (process != null) {
-			process.destroy();
-			try {
-				// Waiting for process to end
-				process.waitFor();
-			} catch (InterruptedException e) {}
-		}
-	}
 	
 	/**
 	 * Cancels this particular Verifier object.
 	 */
 	public boolean cancelProcess(boolean mayInterrupt) {
 		isCancelled = true;
-		destroyProcess();
+		if (verifier != null) {
+			verifier.cancel();
+		}
 		return super.cancel(mayInterrupt);
 	}
 	
@@ -248,7 +175,7 @@ class Verifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			view.handleVerificationExceptions((Exception) e.getCause());
 		} catch (InterruptedException | CancellationException e) {
 			// Killing the process
-			destroyProcess();
+			cancelProcess(true);
 		} finally {
 			// Removing this object from the attributes
 			if (controller.getVerifier() == this) {
