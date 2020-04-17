@@ -229,7 +229,23 @@ public class View extends JFrame {
 	 	testGenerationTimeoutMenu = new JMenu("Test Generation");
 	 	
 	 	reuseStateSpaceItem = new JRadioButtonMenuItem("Reuse State Space");
+	 	reuseStateSpaceItem.addActionListener(new ActionListener() {
+			private boolean wasOptimizeTestSetItemSelected = false;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (reuseStateSpaceItem.isSelected()) {
+					optimizeTestSetItem.setEnabled(true);
+					optimizeTestSetItem.setSelected(wasOptimizeTestSetItemSelected); 
+				}
+				else {
+					optimizeTestSetItem.setEnabled(false);
+					wasOptimizeTestSetItemSelected = optimizeTestSetItem.isSelected();
+					optimizeTestSetItem.setSelected(false); 
+				}
+			}
+		});
 	 	optimizeTestSetItem = new JRadioButtonMenuItem("Optimize Test Set");
+	 	optimizeTestSetItem.setEnabled(false);
 	 	
 	 	testGenerationTimeoutMenuItem = new JMenu("Test Generation Timeout");
 	 	sec15 = new JRadioButtonMenuItem("15 sec");
