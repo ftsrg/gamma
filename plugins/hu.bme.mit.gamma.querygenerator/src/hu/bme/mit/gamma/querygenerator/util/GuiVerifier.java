@@ -26,7 +26,7 @@ import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
-import hu.bme.mit.gamma.uppaal.verification.TestGenerator;
+import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.uppaal.verification.Verifier;
 import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
 

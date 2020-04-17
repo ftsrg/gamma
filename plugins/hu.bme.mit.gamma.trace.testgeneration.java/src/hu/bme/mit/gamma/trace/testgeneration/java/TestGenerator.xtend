@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.verification
+package hu.bme.mit.gamma.trace.testgeneration.java
 
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.State
@@ -119,19 +119,19 @@ class TestGenerator {
 		public class «className» {
 			
 			private static «componentClassInterfaceName» «componentClassName.toFirstLower»;
-		«««			Only if there are timing specifications in the model
+«««			Only if there are timing specifications in the model
 			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
 			@Before
 			public void init() {
-		«««				Each trace must reference the same component with the same parameter values (arguments)!
+«««				Each trace must reference the same component with the same parameter values (arguments)!
 				«IF component.needTimer»
-		«««					Only if there are timing specs in the model
+«««					Only if there are timing specs in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
 					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
 			«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
-				«ENDIF»
+			«ENDIF»
 			}
 			
 			@After
@@ -148,7 +148,7 @@ class TestGenerator {
 			}
 			
 			«traces.generateTestCases»
-		}
+			}
 	'''
 	
 	protected def generateImports(Component component) '''
@@ -233,7 +233,7 @@ class TestGenerator {
 	'''
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
-		«««		In theory only asynchronous adapters and synchronous adapters are used
+			«««		In theory only asynchronous adapters and synchronous adapters are used
 		«componentClassName.toFirstLower».schedule(null);
 	'''
 	

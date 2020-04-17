@@ -31,7 +31,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.uppaal.verification.TestGenerator;
+import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 
 public class CommandHandler extends AbstractHandler {
 

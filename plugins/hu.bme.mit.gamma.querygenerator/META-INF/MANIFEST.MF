@@ -20,7 +20,8 @@ Require-Bundle: com.google.inject;bundle-version="3.0.0",
  hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.dialog,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.trace.language.ui
+ hu.bme.mit.gamma.trace.language.ui,
+ hu.bme.mit.gamma.trace.testgeneration.java
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
 Import-Package: org.apache.log4j
