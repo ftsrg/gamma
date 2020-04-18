@@ -254,7 +254,7 @@ public class View extends JFrame {
 	 	sec90 = new JRadioButtonMenuItem("90 sec");
 	 	sec180 = new JRadioButtonMenuItem("180 sec");
 	 	sec360 = new JRadioButtonMenuItem("360 sec");
-	 	sec15.setSelected(true);
+	 	sec60.setSelected(true);
 	 	testGenerationTimeoutGroup = new ButtonGroup();
 	 	testGenerationTimeoutGroup.add(sec15);
 	 	testGenerationTimeoutGroup.add(sec30);

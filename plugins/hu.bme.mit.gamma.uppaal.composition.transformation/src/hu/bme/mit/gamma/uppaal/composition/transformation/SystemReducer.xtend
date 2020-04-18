@@ -68,10 +68,10 @@ class SystemReducer {
 				outgoingTransition.removeTransition
 			}
 			val region = target.parentRegion
-			log(Level.INFO, "Removing state node" + target.name)
+			log(Level.INFO, "Removing state node " + target.name)
 			region.stateNodes -= target
 		}
-		log(Level.INFO, "Removing transition" + transition.sourceState.name + " -> " + transition.targetState.name)
+		log(Level.INFO, "Removing transition " + transition.sourceState.name + " -> " + transition.targetState.name)
 		statechart.transitions -= transition
 	}
 	

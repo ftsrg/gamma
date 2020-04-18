@@ -20,7 +20,7 @@ class DefaultCompositionToUppaalTransformer {
 		val modelPreprocessor = new ModelPreprocessor
 		val topComponent = modelPreprocessor.preprocess(gammaPackage, containingFile)
 		// Checking the model whether it contains forbidden elements
-		val validator = new ModelValidator(topComponent);
+		val validator = new ModelValidator(topComponent)
 		validator.checkModel
 		val simpleInstanceHandler = new SimpleInstanceHandler
 		val testGenerationHandler = new TestQueryGenerationHandler(simpleInstanceHandler.getNewSimpleInstances(topComponent),
