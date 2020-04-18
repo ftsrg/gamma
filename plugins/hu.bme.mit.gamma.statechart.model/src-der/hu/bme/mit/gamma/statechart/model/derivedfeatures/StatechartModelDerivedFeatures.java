@@ -13,6 +13,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
 import hu.bme.mit.gamma.statechart.model.CompositeElement;
@@ -48,7 +49,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 
-public class StatechartModelDerivedFeatures {
+public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction) {

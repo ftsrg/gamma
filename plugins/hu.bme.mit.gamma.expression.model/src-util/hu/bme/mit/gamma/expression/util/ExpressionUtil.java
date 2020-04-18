@@ -34,6 +34,10 @@ public class ExpressionUtil {
 	protected ExpressionEvaluator evaluator = new ExpressionEvaluator();
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
+	public ExpressionEvaluator getEvaluator() {
+		return evaluator;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <T extends EObject> T getContainer(EObject element, Class<T> _class) {
 		EObject container = element.eContainer();
