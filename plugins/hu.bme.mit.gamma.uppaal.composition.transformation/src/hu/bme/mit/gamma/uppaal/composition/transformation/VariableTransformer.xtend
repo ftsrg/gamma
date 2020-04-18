@@ -23,12 +23,7 @@ import uppaal.NTA
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.DeclarationsPackage
-import uppaal.declarations.Variable
-import uppaal.declarations.VariableContainer
-import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
-import uppaal.types.IntegerBounds
-import uppaal.types.RangeTypeSpecification
 import uppaal.types.TypesPackage
 
 class VariableTransformer {

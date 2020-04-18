@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.querygenerator.util;
+package hu.bme.mit.gamma.querygenerator.gui.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;

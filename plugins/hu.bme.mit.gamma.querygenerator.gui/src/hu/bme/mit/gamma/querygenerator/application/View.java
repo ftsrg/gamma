@@ -38,8 +38,6 @@ import javax.swing.border.EmptyBorder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.viatra.query.runtime.exception.ViatraQueryException;
 
 /**
  * @author Bence Graics
@@ -153,8 +151,8 @@ public class View extends JFrame {
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
-	public View(ResourceSet resourceSet, IFile file) throws ViatraQueryException {
-		controller = new Controller(this, resourceSet, file);
+	public View(IFile file) {
+		controller = new Controller(this, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();
 		
@@ -805,19 +803,19 @@ public class View extends JFrame {
 		setSize(1095, 425);
 	}
 	
-	private void initStatesComboBox() throws ViatraQueryException {
+	private void initStatesComboBox() {
 		controller.initSelectorWithStates(stateSelector);
 	}
 	
-	private void initVariablesComboBox() throws ViatraQueryException {
+	private void initVariablesComboBox() {
 		controller.initSelectorWithVariables(variableSelector);
 	}
 	
-	private void initEventsComboBox() throws ViatraQueryException {
+	private void initEventsComboBox() {
 		controller.initSelectorWithEvents(eventSelector);
 	}
 	
-	private String parseText() throws ViatraQueryException {
+	private String parseText() {
 		String result = null;
 		if (howToList.getSelectedItem().equals(LEADS_TO)) {
 			String result1 = controller.parseRegular(primeText.getText(), howToList.getSelectedItem().toString());
