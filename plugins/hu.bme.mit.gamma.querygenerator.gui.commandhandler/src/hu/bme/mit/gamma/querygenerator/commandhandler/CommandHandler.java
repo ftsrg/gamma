@@ -28,6 +28,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.querygenerator.application.AppMain;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer;
 
 public class CommandHandler extends AbstractHandler {
 
@@ -50,22 +51,30 @@ public class CommandHandler extends AbstractHandler {
 						String parentFolder = fullPath.substring(0, fullPath.lastIndexOf("/"));
 						// No file extension
 						String fileName = fullPath.substring(fullPath.lastIndexOf("/") + 1, fullPath.lastIndexOf("."));
-						URI fileURI = null;
+						URI flattenedFileUri = null;
 						// Placing it on a .gsm if it is placed on a .gcd
 						// (This command can be placed on either of them)
 						if (fullPath.endsWith(".gcd")) {
 							// .gsm are hidden
 							String newPath = parentFolder + File.separator + "." + fileName + ".gsm";
-							fileURI = URI.createPlatformResourceURI(newPath, true);
+							flattenedFileUri = URI.createPlatformResourceURI(newPath, true);
 						}
 						Resource resource = null;
 						try {
-							resource = resourceSet.getResource(fileURI, true);
+							resource = resourceSet.getResource(flattenedFileUri, true);
 						} catch (Exception e) {
-							// . gsm file is not found
-							logger.log(Level.SEVERE, "The transformed UPPAAL model cannot be found. Transform the Gamma model to UPPAAL first.");
+							// .gsm file is not found
+							logger.log(Level.INFO, "The transformed UPPAAL model cannot be found. Starting UPPAAL transformation.");
+							URI originalFileUri = URI.createPlatformResourceURI(fullPath, true);
+							resource = resourceSet.getResource(originalFileUri, true);
+							Package gammaPackage = (Package) resource.getContents().get(0);
+							DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
+							transformer.transformComponent(gammaPackage, new File(file.getLocation().toString()));
+							logger.log(Level.INFO, "UPPAAL transformation has been finished.");
+							resourceSet.getResources().clear(); // Has to be done, otherwise the resource content is null
+							resource = resourceSet.getResource(flattenedFileUri, true);
 						}
-						if (resource != null && resource.getContents() != null) {
+						if (resource != null) {
 							if (resource.getContents().get(0) instanceof Package) {
 								AppMain app = new AppMain();
 								// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/

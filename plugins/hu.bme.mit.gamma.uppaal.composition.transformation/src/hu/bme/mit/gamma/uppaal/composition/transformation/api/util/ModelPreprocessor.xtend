@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ModelPreprocessor {
 	
-	protected val logger = Logger.getLogger("GammaLogger");
+	protected val logger = Logger.getLogger("GammaLogger")
 	protected extension StatechartUtil statechartUtil = new StatechartUtil
 	
 	def preprocess(Package gammaPackage, File containingFile) {

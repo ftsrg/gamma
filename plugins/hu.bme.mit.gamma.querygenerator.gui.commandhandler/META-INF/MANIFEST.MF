@@ -9,7 +9,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.registry,
  org.eclipse.emf.ecore,
  hu.bme.mit.gamma.statechart.model,
- hu.bme.mit.gamma.querygenerator.gui;bundle-version="0.0.1"
+ hu.bme.mit.gamma.uppaal.transformation.traceability,
+ hu.bme.mit.gamma.querygenerator.gui,
+ hu.bme.mit.gamma.uppaal.composition.transformation
 Export-Package: hu.bme.mit.gamma.querygenerator.commandhandler
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator.commandhandler
