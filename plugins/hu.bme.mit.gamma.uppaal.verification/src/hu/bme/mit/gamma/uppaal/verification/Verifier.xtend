@@ -29,20 +29,20 @@ class Verifier {
 	String output
 	Logger logger = Logger.getLogger("GammaLogger")
 	
-	def ExecutionTrace verifyQuery(ResourceSet traceabilitySet, String parameters, String uppaalFileUri,
+	def ExecutionTrace verifyQuery(ResourceSet traceabilitySet, String parameters, File uppaalFile,
 			String actualUppaalQuery, boolean log, boolean storeOutput) throws IOException  {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
 		var VerificationResultReader verificationResultReader = null
 		try {
 			// Writing the query to a temporary file
-			val parentFolder = traceabilitySet.resources.get(0).URI.trimSegments(1).toString.substring(5)
+			val parentFolder = uppaalFile.parent
 			val tempQueryfile = writeToFile(actualUppaalQuery, parentFolder, ".temporary_query.q")
 			// Deleting the file on the exit of the JVM
 			tempQueryfile.deleteOnExit
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
 			val command = new StringBuilder
-			command.append("verifyta " + parameters + " \"" + uppaalFileUri + "\" \"" + tempQueryfile.canonicalPath + "\"")
+			command.append("verifyta " + parameters + " \"" + uppaalFile.toString + "\" \"" + tempQueryfile.canonicalPath + "\"")
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command.toString)
 			process =  Runtime.getRuntime().exec(command.toString)
