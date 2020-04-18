@@ -13,10 +13,12 @@ import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ModelPreprocessor {
 	
 	protected val logger = Logger.getLogger("GammaLogger");
+	protected extension StatechartUtil statechartUtil = new StatechartUtil
 	
 	def preprocess(Package gammaPackage, File containingFile) {
 		val parentFolder = containingFile.parent
@@ -25,6 +27,11 @@ class ModelPreprocessor {
 		// Unfolding the given system
 		val trace = new ModelUnfolder().unfold(gammaPackage)
 		var _package = trace.package
+		// If it is a single statechart, we wrap it
+		val component = trace.topComponent
+		if (component instanceof StatechartDefinition) {
+			_package.components.add(0, component.wrapSynchronousComponent)
+		}
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelFileName = "." + fileNameExtensionless + ".gsm"
 		val flattenedModelUri = URI.createFileURI(parentFolder + File.separator + flattenedModelFileName)

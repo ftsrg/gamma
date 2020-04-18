@@ -35,6 +35,7 @@ public class StatechartUtil {
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
 		CascadeCompositeComponent cascade = compositeFactory.createCascadeCompositeComponent();
+		cascade.setName(component.getName() + "Wrapper");
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
 		String name = component.getName();
 		instance.setName(Character.toLowerCase(name.charAt(0)) + name.substring(1));
