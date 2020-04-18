@@ -216,13 +216,11 @@ class CompositeToUppaalTransformer {
 	// Test generator
 	protected ModelModifierForTestGeneration modelModifier
 	
-	new(ResourceSet resourceSet, Component component,
-			TestQueryGenerationHandler testGenerationHandler) {
-		this.initialize(resourceSet, component, Scheduler.RANDOM,
-			null, testGenerationHandler)
+	new(Component component, TestQueryGenerationHandler testGenerationHandler) {
+		this.initialize(component, Scheduler.RANDOM, null, testGenerationHandler)
 	}
 	
-	new(ResourceSet resourceSet, Component component,
+	new(Component component,
 			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler,
 			Constraint constraint,
@@ -231,15 +229,15 @@ class CompositeToUppaalTransformer {
 		this.isMinimalElementSet = isMinimalElementSet
 		this.topComponentArguments.addAll(topComponentArguments)
 		// The above parameters have to be set before calling initialize
-		this.initialize(resourceSet, component, asyncScheduler,
-			constraint,
-			testGenerationHandler)
+		this.initialize(component, asyncScheduler, constraint, testGenerationHandler)
 	}
 	
-	private def initialize(ResourceSet resourceSet, Component component, Scheduler asyncScheduler,
+	private def initialize(Component component, Scheduler asyncScheduler,
 			Constraint constraint, TestQueryGenerationHandler testGenerationHandler) {
-		this.resources = resourceSet // sourceRoot.eResource.resourceSet does not work
 		this.sourceRoot = component.eContainer as Package
+		val resourceSet = sourceRoot.eResource.resourceSet
+		checkState(resourceSet !== null, "The given component is not contained by a resource set")
+		this.resources = resourceSet
 		this.component = component
 		this.target = UppaalFactory.eINSTANCE.createNTA => [
 			it.name = component.name

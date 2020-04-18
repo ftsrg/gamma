@@ -106,7 +106,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + resourceSet);
 		// Checking the model whether it contains forbidden elements
 		hu.bme.mit.gamma.uppaal.transformation.ModelValidator validator = 
-				new hu.bme.mit.gamma.uppaal.transformation.ModelValidator(resourceSet, newTopComponent, false);
+				new hu.bme.mit.gamma.uppaal.transformation.ModelValidator(newTopComponent, false);
 		validator.checkModel();
 		// State coverage
 		Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
@@ -132,7 +132,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				testedComponentsForStates, testedComponentsForTransitions, testedComponentsForOutEvents, testedComponentsForInteractions);
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + resourceSet);
 		Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
-		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(resourceSet,
+		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
 			newTopComponent, analysisModelTransformation.getArguments(),
 			getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 			constraint,

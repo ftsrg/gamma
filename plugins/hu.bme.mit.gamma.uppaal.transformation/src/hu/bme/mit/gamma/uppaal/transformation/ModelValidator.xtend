@@ -32,8 +32,8 @@ class ModelValidator {
 	
 	boolean checkTopComponentParameters
 	
-	new(ResourceSet resourceSet, Component topComponent, boolean checkTopComponentParameters) {
-        this.resourceSet = resourceSet
+	new(Component topComponent, boolean checkTopComponentParameters) {
+        this.resourceSet = topComponent.eResource.resourceSet
         this.topComponent = topComponent
         this.checkTopComponentParameters = checkTopComponentParameters
         // Create EMF scope and EMF IncQuery engine based on the TTMC resource
@@ -41,8 +41,8 @@ class ModelValidator {
         engine = ViatraQueryEngine.on(scope)
     }
     
-    new(ResourceSet resourceSet, Component topComponent) {
-        this(resourceSet, topComponent, true)
+    new(Component topComponent) {
+        this(topComponent, true)
     }
     
     def checkModel() {

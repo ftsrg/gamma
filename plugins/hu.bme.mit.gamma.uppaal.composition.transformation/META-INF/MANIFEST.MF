@@ -5,12 +5,14 @@ Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.composition.transformation;singleto
 Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation,
+ hu.bme.mit.gamma.uppaal.composition.transformation.api.util,
  hu.bme.mit.gamma.uppaal.composition.transformation.queries
 Require-Bundle: de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.uppaal.util,
  hu.bme.mit.gamma.uppaal.transformation,
+ hu.bme.mit.gamma.uppaal.serializer,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  org.eclipse.viatra.transformation.runtime.emf,
  org.eclipse.viatra.transformation.evm,
