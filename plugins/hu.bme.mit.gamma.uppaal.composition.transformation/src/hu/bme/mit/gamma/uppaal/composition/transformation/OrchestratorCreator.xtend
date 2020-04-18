@@ -226,7 +226,7 @@ class OrchestratorCreator {
 			initLoc.createMaxTimeInvariant(clockVar, maxTime.get)
 		}
 		// Creating the clock reset
-		lastEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
+		firstEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
 	}
 	
 	private def resetTransitionIdVariableIfNeeded(Edge edge) {
