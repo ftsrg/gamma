@@ -103,7 +103,7 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transform(ArithmeticExpression expression) {
-		return expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform
+		return "(" + expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform + ")"
 	}
 	
 	def static dispatch String transform(LogicalExpression expression) {
@@ -124,7 +124,7 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transform(CompareExpression expression) {
-		return expression.firstExpr.transform + " " + expression.operator.transformCompareOperator + " " + expression.secondExpr.transform
+		return "(" + expression.firstExpr.transform + " " + expression.operator.transformCompareOperator + " " + expression.secondExpr.transform + ")"
 	}
 	
 	private def static transformCompareOperator(CompareOperator operator) {
@@ -152,11 +152,11 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transform(BitShiftExpression expression) {
-		return expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform
+		return "(" + expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform + ")"
 	}
 	
 	def static dispatch String transform(BitwiseExpression expression) {
-		return expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform
+		return "(" + expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform + ")"
 	}
 	
 	def static dispatch String transform(FunctionCallExpression expression) '''«expression.function.name»(«FOR argument : expression.argument SEPARATOR ", "»«argument.transform»«ENDFOR»)'''
