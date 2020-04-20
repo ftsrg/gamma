@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,8 +19,10 @@ import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.ClockTickReference;
 import hu.bme.mit.gamma.statechart.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.model.DeepHistoryState;
+import hu.bme.mit.gamma.statechart.model.EntryState;
 import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
+import hu.bme.mit.gamma.statechart.model.InitialState;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
@@ -597,6 +600,39 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static boolean isComposite(State state) {
 		return !state.getRegions().isEmpty();
+	}
+	
+	public static EntryState getEntryState(Region region) {
+		Collection<StateNode> entryStates = region.getStateNodes().stream()
+				.filter(it -> it instanceof EntryState)
+				.collect(Collectors.toList());
+		Optional<StateNode> entryState = entryStates.stream().filter(it -> it instanceof InitialState).findFirst();
+		if (entryState.isPresent()) {
+			return (EntryState) entryState.get();
+		}
+		entryState = entryStates.stream().filter(it -> it instanceof DeepHistoryState).findFirst();
+		if (entryState.isPresent()) {
+			return (EntryState) entryState.get();
+		}
+		entryState = entryStates.stream().filter(it -> it instanceof ShallowHistoryState).findFirst();
+		if (entryState.isPresent()) {
+			return (EntryState) entryState.get();
+		}
+		throw new IllegalArgumentException("Not known initial states in the region. " + region.getName() + ": " + entryStates);
+	}
+	
+	public static Set<State> getReachableStates(StateNode node) {
+		Set<State> reachableStates = new HashSet<State>();
+		for (Transition outgoingTransition : getOutgoingTransitions(node)) {
+			StateNode target = outgoingTransition.getTargetState();
+			if (target instanceof State) {
+				reachableStates.add((State) target);
+			}
+			else {
+				reachableStates.addAll(getReachableStates(target));
+			}
+		}
+		return reachableStates;
 	}
 	
 }
