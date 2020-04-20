@@ -2,18 +2,15 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder
 import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer
 import java.io.File
-import java.io.IOException
-import java.util.Collections
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 
 class ModelPreprocessor {
 	
