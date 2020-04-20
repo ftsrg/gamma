@@ -3,8 +3,6 @@ package hu.bme.mit.gamma.statechart.traverser
 import hu.bme.mit.gamma.statechart.model.Region
 import java.util.Collection
 
-import static com.google.common.base.Preconditions.checkState
-
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class LooplessPathRetriever {

@@ -218,6 +218,23 @@ public class ExpressionUtil {
 				!(it.getRightOperand() instanceof ReferenceExpression)).collect(Collectors.toList());
 	}
 	
+	// Arithmetic: for now, integers only
+	
+	public Expression add(Expression expression, int value) {
+		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
+		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) + value));
+		return integerLiteralExpression;
+	}
+	
+	public Expression subtract(Expression expression, int value) {
+		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
+		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) - value));
+		return integerLiteralExpression;
+	}
+	
+	
+	// Helpers
+	
 	public boolean helperEquals(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);

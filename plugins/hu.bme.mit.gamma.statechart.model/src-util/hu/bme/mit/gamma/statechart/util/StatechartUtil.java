@@ -15,13 +15,12 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 
-public class StatechartUtil {
+public class StatechartUtil extends ExpressionUtil {
 
-	protected ExpressionUtil util = new ExpressionUtil();
 	protected CompositeFactory compositeFactory = CompositeFactory.eINSTANCE;
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
-		int value = util.getEvaluator().evaluateInteger(time.getValue());
+		int value = evaluator.evaluateInteger(time.getValue());
 		TimeUnit unit = time.getUnit();
 		switch (unit) {
 		case MILLISECOND:
@@ -48,7 +47,7 @@ public class StatechartUtil {
 		EList<Port> ports = component.getPorts();
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
-			Port clonedPort = util.clone(port, true, true);
+			Port clonedPort = clone(port, true, true);
 			cascade.getPorts().add(clonedPort);
 			PortBinding portBinding = compositeFactory.createPortBinding();
 			portBinding.setCompositeSystemPort(clonedPort);

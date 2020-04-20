@@ -10,7 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
@@ -29,10 +31,13 @@ import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.Region;
+import hu.bme.mit.gamma.statechart.model.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.model.State;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.model.TimeSpecification;
+import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.model.Transition;
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent;
@@ -633,6 +638,27 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			}
 		}
 		return reachableStates;
+	}
+	
+	public static TimeSpecification getTimeoutValue(TimeoutDeclaration timeout) {
+		StatechartDefinition statechart = getContainingStatechart(timeout);
+		TimeSpecification time = null;
+		TreeIterator<Object> contents = EcoreUtil.getAllContents(statechart, true);
+		while (contents.hasNext()) {
+			Object it = contents.next();
+			if (it instanceof SetTimeoutAction) {
+				SetTimeoutAction action = (SetTimeoutAction) it;
+				if (action.getTimeoutDeclaration() == timeout) {
+					if (time == null) {
+						time = action.getTime();
+					}
+					else {
+						throw new IllegalStateException("This timeout is assigned a value more than once: " + timeout);
+					}
+				}
+			}
+		}
+		return time;
 	}
 	
 }

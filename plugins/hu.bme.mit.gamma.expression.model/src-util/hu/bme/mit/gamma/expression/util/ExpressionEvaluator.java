@@ -10,8 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
+import java.math.BigInteger;
+
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
@@ -20,19 +23,26 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.ImplyExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.XorExpression;
+import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 
 public class ExpressionEvaluator {
+	
+	private static ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public int evaluate(Expression expression) {
 		try {
@@ -153,4 +163,42 @@ public class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
 
+	
+	// Reverse
+	
+	public static Expression of(Type type, int value) {
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		if (typeDefinition instanceof BooleanTypeDefinition) {
+			return of((BooleanTypeDefinition) typeDefinition, value);
+		}
+		if (typeDefinition instanceof IntegerTypeDefinition) {
+			return of((IntegerTypeDefinition) typeDefinition, value);
+		}
+		if (typeDefinition instanceof EnumerationTypeDefinition) {
+			return of((EnumerationTypeDefinition) typeDefinition, value);
+		}
+		throw new IllegalArgumentException("Not known type: " + typeDefinition);
+	}
+	
+	public static Expression of(BooleanTypeDefinition type, int value) {
+		switch (value) {
+			case 1:
+				return factory.createTrueExpression();
+			default:
+				return factory.createFalseExpression();
+		} 
+	}
+	
+	public static Expression of(IntegerTypeDefinition type, int value) {
+		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
+		integerLiteralExpression.setValue(BigInteger.valueOf(value));
+		return integerLiteralExpression;
+	}
+	
+	public static Expression of(EnumerationTypeDefinition type, int value) {
+		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
+		enumerationLiteralExpression.setReference(type.getLiterals().get(value));
+		return enumerationLiteralExpression;
+	}
+	
 }

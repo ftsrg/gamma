@@ -9,10 +9,12 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 public class TraceUtil {
-
+	
 	public boolean isOverWritten(RaiseEventAct lhs, RaiseEventAct rhs) {
 		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
 	}
+	
+	// Trace coverage
 	
 	public void removeCoveredExecutionTraces(List<ExecutionTrace> traces) {
 		for (int i = 0; i < traces.size() - 1; ++i) {
