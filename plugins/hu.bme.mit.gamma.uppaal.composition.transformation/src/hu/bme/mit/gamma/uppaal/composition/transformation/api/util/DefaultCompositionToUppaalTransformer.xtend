@@ -10,8 +10,11 @@ import java.io.File
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collections
 import java.util.logging.Level
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class DefaultCompositionToUppaalTransformer {
+	
+	extension ExpressionUtil expressionUtil = new ExpressionUtil
 	
 	def transformComponent(Package gammaPackage, File containingFile) {
 		val parentFolder = containingFile.parent
@@ -30,8 +33,8 @@ class DefaultCompositionToUppaalTransformer {
 		val nta = resultModels.key
 		val trace = resultModels.value
 		// Saving the generated models
-		modelPreprocessor.normalSave(nta, parentFolder, "." + fileNameExtensionless + ".uppaal")
-		modelPreprocessor.normalSave(trace, parentFolder, "." + fileNameExtensionless + ".g2u")
+		nta.normalSave(parentFolder, "." + fileNameExtensionless + ".uppaal")
+		trace.normalSave(parentFolder, "." + fileNameExtensionless + ".g2u")
 		// Serializing the NTA model to XML
 		val xmlFileName = fileNameExtensionless + ".xml"
 		UppaalModelSerializer.saveToXML(nta, parentFolder, xmlFileName)

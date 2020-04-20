@@ -60,18 +60,6 @@ class ModelPreprocessor {
 			.components.head
 	}
 	
-	def normalSave(EObject rootElem, URI uri) throws IOException {
-		val resourceSet = new ResourceSetImpl
-		val resource = resourceSet.createResource(uri)
-		resource.getContents().add(rootElem)
-		resource.save(Collections.EMPTY_MAP)
-	}
-	
-	def normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
-		normalSave(rootElem, uri)
-	}
-	
 	def getLogger() {
 		return logger
 	}

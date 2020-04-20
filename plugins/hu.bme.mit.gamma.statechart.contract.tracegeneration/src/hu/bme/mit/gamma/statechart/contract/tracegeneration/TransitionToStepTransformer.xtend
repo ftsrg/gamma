@@ -47,6 +47,7 @@ class TransitionToStepTransformer {
 		for (action : transition.effects.filter(RaiseEventAction)) {
 			step.outEvents += action.transformAction
 		}
+		return step
 	}
 	
 	// Triggers

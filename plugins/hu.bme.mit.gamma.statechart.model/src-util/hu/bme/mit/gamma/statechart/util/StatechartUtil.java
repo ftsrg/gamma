@@ -8,6 +8,7 @@ import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.TimeSpecification;
 import hu.bme.mit.gamma.statechart.model.TimeUnit;
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeFactory;
 import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
@@ -36,8 +37,7 @@ public class StatechartUtil extends ExpressionUtil {
 		CascadeCompositeComponent cascade = compositeFactory.createCascadeCompositeComponent();
 		cascade.setName(component.getName() + "Wrapper");
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
-		String name = component.getName();
-		instance.setName(Character.toLowerCase(name.charAt(0)) + name.substring(1));
+		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
 			instance.getArguments().add(
@@ -58,6 +58,11 @@ public class StatechartUtil extends ExpressionUtil {
 			cascade.getPortBindings().add(portBinding);
 		}
 		return cascade;
+	}
+	
+	public String getWrapperInstanceName(Component component) {
+		String name = component.getName();
+		return Character.toLowerCase(name.charAt(0)) + name.substring(1);
 	}
 	
 }

@@ -1,14 +1,21 @@
 package hu.bme.mit.gamma.expression.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
@@ -234,6 +241,19 @@ public class ExpressionUtil {
 	
 	
 	// Helpers
+	
+	
+	public void normalSave(EObject rootElem, URI uri) throws IOException {
+		ResourceSet resourceSet = new ResourceSetImpl();
+		Resource resource = resourceSet.createResource(uri);
+		resource.getContents().add(rootElem);
+		resource.save(Collections.EMPTY_MAP);
+	}
+	
+	public void normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
+		URI uri = URI.createFileURI(parentFolder + File.separator + fileName);
+		normalSave(rootElem, uri);
+	}
 	
 	public boolean helperEquals(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();

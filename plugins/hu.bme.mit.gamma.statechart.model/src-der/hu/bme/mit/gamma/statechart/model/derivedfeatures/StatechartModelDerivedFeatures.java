@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.statechart.model.EventReference;
 import hu.bme.mit.gamma.statechart.model.EventSource;
 import hu.bme.mit.gamma.statechart.model.InitialState;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
@@ -502,6 +503,16 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getContainingComponent(object.eContainer());
 	}
 	
+	public static Package getContainingPackage(EObject object) {
+		if (object.eContainer() == null) {
+			throw new IllegalArgumentException("Not contained by a component: " + object);
+		}
+		if (object instanceof Package) {
+			return (Package) object;
+		}
+		return getContainingPackage(object.eContainer());
+	}
+	
 	public static boolean isSameRegion(Transition transition) {
 		return getParentRegion(transition.getSourceState()) == getParentRegion(transition.getTargetState());
 	}
@@ -659,6 +670,22 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			}
 		}
 		return time;
+	}
+	
+	public static Collection<ComponentInstance> getReferencingComponentInstances(Component component) {
+		Package _package = getContainingPackage(component);
+		Collection<ComponentInstance> componentInstances = new HashSet<ComponentInstance>();
+		for (Component siblingComponent : _package.getComponents()) {
+			if (siblingComponent instanceof CompositeComponent) {
+				CompositeComponent compositeComponent = (CompositeComponent) siblingComponent;
+				for (ComponentInstance componentInstance : getDerivedComponents(compositeComponent)) {
+					if (getDerivedType(componentInstance) == component) {
+						componentInstances.add(componentInstance);
+					}
+				}
+			}
+		}
+		return componentInstances;
 	}
 	
 }

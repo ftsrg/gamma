@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
 import java.util.ArrayList
@@ -33,12 +34,17 @@ class QueryGenerator {
 	def List<String> getStateNames() {
 		val stateNames = new ArrayList<String>()
 		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
-			val entry = statesMatch.getInstanceName() + "." + getFullRegionPathName(statesMatch.getParentRegion()) + "." + statesMatch.getStateName()
-			if (!statesMatch.getState().getName().startsWith("LocalReaction")) {
+			val stateName = statesMatch.getState().getName()
+			val entry = getStateName(statesMatch.instance, statesMatch.parentRegion, statesMatch.state)
+			if (!stateName.startsWith("LocalReaction")) {
 				stateNames.add(entry)				
 			}
 		}
 		return stateNames
+	}
+	
+	def getStateName(SynchronousComponentInstance instance, Region parentRegion, State state) {
+		return instance.name + "." + getFullRegionPathName(parentRegion) + "." + state.name
 	}
 	
 	def List<String> getVariableNames() {
