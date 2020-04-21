@@ -165,20 +165,20 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(CodeGeneration codeGeneration) {
 		if (codeGeneration.packageName.size > 1) {
-			error("At most one package name can be specified.", GenmodelPackage.Literals.CODE_GENERATION__PACKAGE_NAME)
+			error("At most one package name can be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 		if (codeGeneration.language.size != 1) {
-			error("A single programming language must be specified.", GenmodelPackage.Literals.CODE_GENERATION__LANGUAGE)
+			error("A single programming language must be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 	}
 	
 	@Check
 	def checkTasks(TestGeneration testGeneration) {
 		if (testGeneration.packageName.size > 1) {
-			error("At most one package name can be specified.", GenmodelPackage.Literals.TEST_GENERATION__PACKAGE_NAME)
+			error("At most one package name can be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 		if (testGeneration.language.size != 1) {
-			error("A single programming language must be specified.", GenmodelPackage.Literals.TEST_GENERATION__LANGUAGE)
+			error("A single programming language must be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 	}
 	

@@ -93,6 +93,63 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		}
 	}
 	
+	public static Set<Component> getAllComponents(Package parentPackage) {
+		Set<Component> types = new HashSet<Component>();
+		for (Package importedPackage : parentPackage.getImports()) {
+			for (Component importedComponent : importedPackage.getComponents()) {
+				types.add(importedComponent);
+			}
+		}
+		for (Component siblingComponent : parentPackage.getComponents()) {
+			types.add(siblingComponent);
+		}
+		return types;
+	}
+	
+	public static Set<SynchronousComponent> getAllSynchronousComponents(Package parentPackage) {
+		Set<SynchronousComponent> types = new HashSet<SynchronousComponent>();
+		for (Component component : getAllComponents(parentPackage)) {
+			if (component instanceof SynchronousComponent) {
+				types.add((SynchronousComponent) component);
+			}
+		}
+		return types;
+	}
+	
+	public static Set<AsynchronousComponent> getAllAsynchronousComponents(Package parentPackage) {
+		Set<AsynchronousComponent> types = new HashSet<AsynchronousComponent>();
+		for (Component component : getAllComponents(parentPackage)) {
+			if (component instanceof AsynchronousComponent) {
+				types.add((AsynchronousComponent) component);
+			}
+		}
+		return types;
+	}
+	
+	public static Set<StatechartDefinition> getAllStatechartComponents(Package parentPackage) {
+		Set<StatechartDefinition> types = new HashSet<StatechartDefinition>();
+		for (Component component : getAllSynchronousComponents(parentPackage)) {
+			if (component instanceof StatechartDefinition) {
+				types.add((StatechartDefinition) component);
+			}
+		}
+		return types;
+	}
+	
+	public static boolean areInterfacesEqual(Component lhs, Component rhs) {
+		if (lhs.getPorts().size() != rhs.getPorts().size()) {
+			return false;
+		}
+		for (int i = 0; i < lhs.getPorts().size(); i++) {
+			Port lhsPort = lhs.getPorts().get(i);
+			Port rhsPort = rhs.getPorts().get(i);
+			if (!expressionUtil.helperEquals(lhsPort, rhsPort)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static List<SynchronousComponentInstance> getAllSimpleInstances(Collection<? extends ComponentInstance> instances) {
 		List<SynchronousComponentInstance> simpleInstances = new ArrayList<SynchronousComponentInstance>();
 		for (ComponentInstance instance : instances) {
@@ -187,13 +244,16 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return statecharts;
 	}
 	
-
 	public static Collection<EventDeclaration> getAllEventDeclarations(Interface _interface) {
-		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>(_interface.getEvents());
-		for (Interface parenInterface : _interface.getParents()) {
-			eventDeclarations.addAll(getAllEventDeclarations(parenInterface));
+		Set<EventDeclaration> eventDeclarations = new HashSet<EventDeclaration>(_interface.getEvents());
+		for (Interface parentInterface : _interface.getParents()) {
+			eventDeclarations.addAll(getAllEventDeclarations(parentInterface));
 		}
 		return eventDeclarations;
+	}
+	
+	public static Collection<Event> getAllEvents(Interface _interface) {
+		return getAllEventDeclarations(_interface).stream().map(it -> it.getEvent()).collect(Collectors.toSet());
 	}
 	
 	public static Collection<Event> getInputEvents(Port port) {

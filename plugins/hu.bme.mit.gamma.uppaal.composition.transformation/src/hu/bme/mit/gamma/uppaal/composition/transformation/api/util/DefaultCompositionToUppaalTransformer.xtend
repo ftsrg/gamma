@@ -1,5 +1,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler
@@ -9,14 +11,18 @@ import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
 import java.io.File
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collections
+import java.util.List
 import java.util.logging.Level
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class DefaultCompositionToUppaalTransformer {
 	
 	extension ExpressionUtil expressionUtil = new ExpressionUtil
 	
 	def transformComponent(Package gammaPackage, File containingFile) {
+		return transformComponent(gammaPackage, #[], containingFile)
+	}
+	
+	def transformComponent(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
 		val parentFolder = containingFile.parent
 		val fileName = containingFile.name
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
@@ -28,7 +34,7 @@ class DefaultCompositionToUppaalTransformer {
 		val simpleInstanceHandler = new SimpleInstanceHandler
 		val testGenerationHandler = new TestQueryGenerationHandler(simpleInstanceHandler.getNewSimpleInstances(topComponent),
 			Collections.emptySet(), Collections.emptySet(), Collections.emptySet())
-		val transformer = new CompositeToUppaalTransformer(topComponent, testGenerationHandler)
+		val transformer = new CompositeToUppaalTransformer(topComponent, topComponentArguments, testGenerationHandler)
 		val resultModels = transformer.execute
 		val nta = resultModels.key
 		val trace = resultModels.value

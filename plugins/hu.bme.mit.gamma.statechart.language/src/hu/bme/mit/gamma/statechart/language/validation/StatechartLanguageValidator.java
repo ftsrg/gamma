@@ -90,6 +90,9 @@ import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.model.contract.ContractPackage;
+import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
@@ -200,6 +203,27 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				warning("This parameter should be named " + event.getName() + "Value to be consistent with the namings of integrated modeling languages",
 					ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS);
 			}
+		}
+	}
+	
+	// Statechart adaptive contract
+	
+	@Check
+	public void checkStateAnnotation(StateContractAnnotation annotation) {
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
+		if (!(statechart.getAnnotation() instanceof AdaptiveContractAnnotation)) {
+			error("States with state contracts can be defined only in adaptive contract statecharts.",
+					ContractPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS);
+		}
+	}
+	
+	@Check
+	public void checkStatechartAnnotation(AdaptiveContractAnnotation annotation) {
+		Component component = StatechartModelDerivedFeatures.getContainingComponent(annotation);
+		Component monitoredComponent = annotation.getMonitoredComponent();
+		if (!StatechartModelDerivedFeatures.areInterfacesEqual(component, monitoredComponent)) {
+			error("The contained ports of the monitored component are not equal to that of the adaptive statechart.",
+					ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT);
 		}
 	}
 	

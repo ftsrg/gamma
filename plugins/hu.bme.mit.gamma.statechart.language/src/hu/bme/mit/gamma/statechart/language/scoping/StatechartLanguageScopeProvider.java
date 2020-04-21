@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,10 +25,10 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
@@ -37,7 +36,6 @@ import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.model.RealizationMode;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
@@ -54,9 +52,11 @@ import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.model.contract.ContractPackage;
+import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.model.interface_.Event;
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
@@ -75,8 +75,20 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 
 		// Statechart
 
-		// Transitions
+
 		try {
+			// Adaptive
+			if (context instanceof AdaptiveContractAnnotation &&
+					reference == ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
+				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllComponents(parentPackage));
+			}
+			if (context instanceof StateContractAnnotation &&
+					reference == ContractPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS) {
+				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage));
+			}
+			// Transitions
 			if (context instanceof Transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
 					|| reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)) {
 				final Collection<StateNode> candidates = stateNodesForTransition((Transition) context);
@@ -86,14 +98,14 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Port port = ((PortEventReference) context).getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write out events on triggers
-				return Scopes.scopeFor(getAllEvents(_interface));
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
 			}
 			if (reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
 				// If the branch above does not work
 				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Collection<Event> events = new HashSet<Event>();
 				statechart.getPorts()
-					.forEach(it -> events.addAll(getAllEvents(it.getInterfaceRealization().getInterface())));
+					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getAllEvents(it.getInterfaceRealization().getInterface())));
 				// Not only in events are returned as less-aware users tend to write out events on triggers
 				return Scopes.scopeFor(events);
 			}
@@ -103,7 +115,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Port port = raiseEventAction.getPort();
 				Interface _interface = port.getInterfaceRealization().getInterface();
 				// Not only in events are returned as less-aware users tend to write in events on actions
-				return Scopes.scopeFor(getAllEvents(_interface));
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
 			}
 			if (context instanceof EnumerationLiteralExpression && 
 					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
@@ -128,7 +140,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
 				checkState(expression.getPort() != null);
 				Port port = expression.getPort();
-				return Scopes.scopeFor(getSemanticEvents(Collections.singleton(port), EventDirection.IN));
+				return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port));
 			}
 			if (context instanceof EventParameterReferenceExpression
 					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
@@ -178,12 +190,14 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			// Types
 			if (context instanceof SynchronousComponentInstance && reference == CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				List<Component> components = collectComponents((Package) context.eContainer().eContainer(), true);
+				Package _package = StatechartModelDerivedFeatures.getContainingPackage(context);
+				Set<SynchronousComponent> components = StatechartModelDerivedFeatures.getAllSynchronousComponents(_package);
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}
 			if (context instanceof AsynchronousComponentInstance && reference == CompositePackage.Literals.ASYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
-				List<Component> components = collectComponents((Package) context.eContainer().eContainer(), false);
+				Package _package = StatechartModelDerivedFeatures.getContainingPackage(context);
+				Set<AsynchronousComponent> components = StatechartModelDerivedFeatures.getAllAsynchronousComponents(_package);
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}		
@@ -218,7 +232,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				AsynchronousAdapter wrapper = (AsynchronousAdapter) context.eContainer();
 				Collection<Event> events = new HashSet<Event>();
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
-					.forEach(it -> events.addAll(getSemanticEvents(Collections.singletonList(it), EventDirection.IN)));
+					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
 				return Scopes.scopeFor(events);
 			}
 			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
@@ -260,95 +274,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return types;
 	}
 
-	private List<Component> collectComponents(Package parentPackage, boolean isSynchronous) {
-		List<Component> types = new ArrayList<Component>();
-		for (Package importedPackage : parentPackage.getImports()) {
-			for (Component importedComponent : importedPackage.getComponents()) {
-				if (importedComponent instanceof SynchronousComponent && isSynchronous) {
-					types.add(importedComponent);
-				}
-				else if (importedComponent instanceof AsynchronousComponent && !isSynchronous) {
-					types.add(importedComponent);
-				}
-			}
-		}
-		for (Component siblingComponent : parentPackage.getComponents()) {
-			if (siblingComponent instanceof SynchronousComponent && isSynchronous) {
-				types.add(siblingComponent);
-			}
-			else if (siblingComponent instanceof AsynchronousComponent && !isSynchronous) {
-				types.add(siblingComponent);
-			}
-		}
-		return types;
-	}
-
-	private Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
-		Collection<Event> events =  new HashSet<Event>();
-   		for (Interface anInterface : ports.stream().filter(it -> it.getInterfaceRealization()
-   				.getRealizationMode() == RealizationMode.PROVIDED).
-   				map(it -> it.getInterfaceRealization().getInterface()).collect(Collectors.toSet())) {
-			events.addAll(getAllEvents(anInterface, getOppositeDirection(direction)));
-   		}
-   		for (Interface anInterface : ports.stream().filter(it -> it.getInterfaceRealization()
-   				.getRealizationMode() == RealizationMode.REQUIRED)
-   				.map(it -> it.getInterfaceRealization().getInterface()).collect(Collectors.toSet())) {
-			events.addAll(getAllEvents(anInterface, direction));
-   		}
-   		return events;
-   	}
-	
-	/** The parent interfaces are taken into considerations as well. */ 
-	private Collection<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
-  		if (anInterface == null) {
-  			return Collections.emptySet();
-  		}
-  		Set<Event> eventSet = new HashSet<Event>();
-  		for (Interface parentInterface : anInterface.getParents()) {
-  			eventSet.addAll(getAllEvents(parentInterface, oppositeDirection));
-  		}
-  		for (Event event : anInterface.getEvents().stream().filter(it -> it.getDirection() != oppositeDirection).map(it -> it.getEvent()).collect(Collectors.toSet())) {
-  			eventSet.add(event);
-  		}
-  		return eventSet;
-  	}
-	
-	/** The parent interfaces are taken into considerations as well. */ 
-	private Collection<Event> getAllEvents(Interface anInterface) {
-  		if (anInterface == null) {
-  			return Collections.emptySet();
-  		}
-  		Set<Event> eventSet = new HashSet<Event>();
-  		for (Interface parentInterface : anInterface.getParents()) {
-  			eventSet.addAll(getAllEvents(parentInterface));
-  		}
-  		for (Event event : anInterface.getEvents().stream().map(it -> it.getEvent()).collect(Collectors.toSet())) {
-  			eventSet.add(event);
-  		}
-  		return eventSet;
-  	}
-	
-	private EventDirection getOppositeDirection(EventDirection direction) {
-   		switch (direction) {
-   			case IN:
-   				return EventDirection.OUT;
-   			case OUT:
-   				return EventDirection.IN;
-   			default:
-   				throw new IllegalArgumentException("Not known direction: " + direction);
-   		} 
-   	}
-	
 	private Collection<Declaration> getAllParameterDeclarations(Component component) {
 		Set<Declaration> declarations = new HashSet<Declaration>(component.getParameterDeclarations());
 		for (Interface gammaInterface : component.getPorts().stream()
 				.map(it -> it.getInterfaceRealization().getInterface()).collect(Collectors.toSet())) {
-			for (Event event : getAllEvents(gammaInterface, EventDirection.IN)) {
-				for (Declaration declaration : event.getParameterDeclarations()) {
-					declarations.add(declaration);
-				}
-			}
-			for (Event event : getAllEvents(gammaInterface, EventDirection.OUT)) {
+			for (Event event : StatechartModelDerivedFeatures.getAllEvents(gammaInterface)) {
 				for (Declaration declaration : event.getParameterDeclarations()) {
 					declarations.add(declaration);
 				}

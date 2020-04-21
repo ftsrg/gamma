@@ -53,6 +53,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -61,7 +62,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
  */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
 	
-	protected ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator();
+	protected ExpressionUtil expressionUtil = new ExpressionUtil();
+	protected ExpressionEvaluator expressionEvaluator = expressionUtil.getEvaluator();
 	protected ExpressionTypeDeterminator typeDeterminator = new ExpressionTypeDeterminator();
 	
 	@Check

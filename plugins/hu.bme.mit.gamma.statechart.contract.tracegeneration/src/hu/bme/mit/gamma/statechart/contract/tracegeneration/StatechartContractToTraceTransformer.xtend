@@ -2,9 +2,12 @@ package hu.bme.mit.gamma.statechart.contract.tracegeneration
 
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.traverser.LooplessPathRetriever
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceFactory
+import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.trace.model.Schedule
 
 class StatechartContractToTraceTransformer {
 	
@@ -34,6 +37,8 @@ class StatechartContractToTraceTransformer {
 			for (transition : path.transitions) {
 				steps += transition.execute
 			}
+			// Putting out-events after the scheduling step
+			steps.mergeSteps
 			// Adding reset in the first step if necessary
 			if (addReset) {
 				if (!steps.empty) {
@@ -43,6 +48,19 @@ class StatechartContractToTraceTransformer {
 			}
 		}
 		return traces
+	}
+	
+	private def mergeSteps(List<Step> steps) {
+		for (var i = 0; i < steps.size; i++) {
+			val lhs = steps.get(i)
+			if (lhs.actions.filter(Schedule).empty) {
+				val rhs = steps.get(i + 1)
+				rhs.actions += lhs.actions
+				rhs.outEvents += lhs.outEvents // Putting out-events after schedule is essential
+				steps.remove(i)
+				i--
+			}
+		}
 	}
 	
 }

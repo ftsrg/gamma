@@ -36,8 +36,6 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//StatechartCompilation/statechartName"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//CodeGeneration">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/language"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//CodeGeneration/packageName"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//CodeGeneration/component"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AnalysisModelTransformation">
@@ -64,8 +62,6 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TestGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TestGeneration/executionTrace"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TestGeneration/packageName"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//TestGeneration/language"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
@@ -89,6 +85,13 @@
     <genClasses ecoreClass="genmodel.ecore#//AsynchronousInstanceConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/orchestratingConstraint"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/instance"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AbstractCodeGeneration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/packageName"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/language"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AdaptiveContractTestGeneration">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveContractTestGeneration/statechartContract"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

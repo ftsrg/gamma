@@ -24,11 +24,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="statechartName" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//Task">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
-        lowerBound="1" upperBound="-1" eType="#//ProgrammingLanguage"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
-        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//AbstractCodeGeneration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
   </eClassifiers>
@@ -75,13 +71,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
         eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TestGeneration" eSuperTypes="#//Task">
+  <eClassifiers xsi:type="ecore:EClass" name="TestGeneration" eSuperTypes="#//AbstractCodeGeneration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" unique="false"
-        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
-        lowerBound="1" upperBound="-1" eType="#//ProgrammingLanguage"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Scheduler">
     <eLiterals name="RANDOM"/>
@@ -116,5 +108,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="orchestratingConstraint"
         lowerBound="1" eType="#//OrchestratingConstraint" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/AsynchronousComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractCodeGeneration" abstract="true"
+      eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
+        upperBound="-1" eType="#//ProgrammingLanguage"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractCodeGeneration ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartContract" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -31,7 +31,8 @@ GenModel returns GenModel:
 ;
 
 Task returns Task:
-	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration | EventPriorityTransformation
+	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
+		EventPriorityTransformation | AdaptiveContractTestGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -196,3 +197,16 @@ EventMapping returns EventMapping:
 enum RealizationMode returns model::RealizationMode:
 	PROVIDED = 'provided' | REQUIRED = 'required'
 ;
+
+AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
+	{AdaptiveContractTestGeneration} 'adaptive-test' '{'
+		'statechart' ':' statechartContract=[model::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		(
+		'folder' ':' targetFolder+=STRING |
+		'file' ':' fileName+=STRING | // The name of the generated file
+		'base-package' ':' packageName+=STRING | // Java base package
+		'language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
+

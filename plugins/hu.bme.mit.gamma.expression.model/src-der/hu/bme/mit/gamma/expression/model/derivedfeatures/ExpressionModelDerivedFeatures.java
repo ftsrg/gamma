@@ -17,9 +17,11 @@ import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
 public class ExpressionModelDerivedFeatures {
 	
+	protected static ExpressionUtil expressionUtil = new ExpressionUtil();
 	protected static ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	public static boolean isPrimitive(Type type) {

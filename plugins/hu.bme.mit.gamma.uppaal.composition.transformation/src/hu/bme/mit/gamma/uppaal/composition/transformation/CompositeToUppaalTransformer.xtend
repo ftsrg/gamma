@@ -220,6 +220,12 @@ class CompositeToUppaalTransformer {
 		this.initialize(component, Scheduler.RANDOM, null, testGenerationHandler)
 	}
 	
+	new(Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
+			TestQueryGenerationHandler testGenerationHandler) {
+		this.topComponentArguments.addAll(topComponentArguments)
+		this.initialize(component, Scheduler.RANDOM, null, testGenerationHandler)
+	}
+	
 	new(Component component,
 			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler,

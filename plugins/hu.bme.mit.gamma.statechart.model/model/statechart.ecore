@@ -5,9 +5,6 @@
   <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
     <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
   </eAnnotations>
-  <eClassifiers xsi:type="ecore:EClass" name="AnnotatedElement" abstract="true">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="annotation" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ExpressionPackage">
     <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Package"/>
@@ -28,7 +25,7 @@
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transitionPriority" lowerBound="1"
         eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartAnnotation" eType="#//StatechartAnnotation"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" eType="#//StatechartAnnotation"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
@@ -55,7 +52,7 @@
         eType="#//StateNode" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="State" eSuperTypes="#//AnnotatedElement #//StateNode #//CompositeElement">
+  <eClassifiers xsi:type="ecore:EClass" name="State" eSuperTypes="#//StateNode #//CompositeElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="invariants" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
@@ -65,7 +62,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="exitActions" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="stateAnnotation" eType="#//StateAnnotation"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" eType="#//StateAnnotation"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
@@ -78,7 +75,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ForkState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="JoinState" eSuperTypes="#//PseudoState"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//EntryState"/>
-  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//AnnotatedElement #//composite/PrioritizedElement">
+  <eClassifiers xsi:type="ecore:EClass" name="Transition" eSuperTypes="#//composite/PrioritizedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetState" eType="#//StateNode"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" eType="#//Trigger"
@@ -318,5 +315,16 @@
           upperBound="-1" eType="#//composite/SynchronousComponentInstance"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//composite/AbstractSynchronousCompositeComponent"/>
+  </eSubpackages>
+  <eSubpackages name="contract" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Contract"
+      nsPrefix="hu.bme.mit.gamma.statechart.contract">
+    <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractAnnotation" eSuperTypes="#//StatechartAnnotation">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="monitoredComponent" lowerBound="1"
+          eType="#//composite/Component"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="StateContractAnnotation" eSuperTypes="#//StateAnnotation">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatecharts"
+          upperBound="-1" eType="#//StatechartDefinition"/>
+    </eClassifiers>
   </eSubpackages>
 </ecore:EPackage>
