@@ -2,6 +2,9 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
+import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder
 import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer
@@ -11,6 +14,9 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import org.eclipse.emf.ecore.util.EcoreUtil
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelPreprocessor {
 	
@@ -55,6 +61,15 @@ class ModelPreprocessor {
 		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + finalResourceSet);
 		return resource.contents.filter(Package).head
 			.components.head
+	}
+	
+	def removeAnnotations(Component component) {
+		// Removing annotations only from the models; they are saved on disk
+		val newPackage = component.containingPackage
+		EcoreUtil.getAllContents(newPackage, true)
+			.filter(AdaptiveContractAnnotation).forEach[EcoreUtil.remove(it)]
+		EcoreUtil.getAllContents(newPackage, true)
+			.filter(StateContractAnnotation).forEach[EcoreUtil.remove(it)]
 	}
 	
 	def getLogger() {

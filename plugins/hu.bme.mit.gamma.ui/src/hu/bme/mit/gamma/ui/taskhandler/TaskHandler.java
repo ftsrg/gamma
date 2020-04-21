@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.dialog.DialogUtil;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -49,7 +50,7 @@ public abstract class TaskHandler {
 			if (task instanceof CodeGeneration) {
 				targetFolder = "src-gen";
 			}
-			else if (task instanceof TestGeneration) {
+			else if (task instanceof TestGeneration || task instanceof AdaptiveContractTestGeneration) {
 				targetFolder = "test-gen";
 			}
 			else {

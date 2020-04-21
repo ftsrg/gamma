@@ -255,6 +255,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				usedComponents.add(((AsynchronousAdapter) component).getWrappedComponent().getType());
 			}
 		}
+		EcoreUtil2.getAllContentsOfType(_package, AdaptiveContractAnnotation.class).stream()
+			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
+		EcoreUtil2.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
+			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
 		// Checking the imports
 		for (Package importedPackage : _package.getImports()) {
 			Collection<Interface> interfaces = new HashSet<Interface>(importedPackage.getInterfaces());
@@ -701,7 +705,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			((EventTrigger) it.getTrigger()).getEventReference() instanceof ClockTickReference &&
 			it.getGuard() == null).count() > 1;
 		if (multipleTimedTransitions) {
-			error("This state has multiple transitions with occluding timing specifications.", StatechartModelPackage.Literals.TRANSITION__GUARD);
+			error("This state has multiple transitions with occluding timing specifications.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	

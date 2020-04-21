@@ -130,7 +130,7 @@ public class GammaApi {
 							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler();
 							handler.setTargetFolder(testGeneration, file, parentFolderUri);
-							handler.execute(testGeneration, file.getFullPath().toString(), projectName);
+							handler.execute(testGeneration, file.getLocation().toString(), projectName);
 							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {
@@ -183,7 +183,8 @@ public class GammaApi {
 						.collect(Collectors.toList());
 			case 4: 
 				return genmodel.getTasks().stream()
-						.filter(it -> it instanceof TestGeneration)
+						.filter(it -> it instanceof TestGeneration || 
+								it instanceof AdaptiveContractTestGeneration)
 						.collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);

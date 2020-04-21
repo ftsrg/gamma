@@ -175,7 +175,7 @@ StatechartDefinition returns StatechartDefinition:
 	(
 		('@Schedule' '=' schedulingOrder=SchedulingOrder)? &
 		('@PrioritizedTransitions' '=' transitionPriority=TransitionPriority)? &
-		annotation=StatechartContractAnnotation
+		(annotation=StatechartContractAnnotation)?
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?

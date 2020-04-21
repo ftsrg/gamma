@@ -50,6 +50,7 @@ import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 
 /**
  * This class contains custom validation rules. 
@@ -209,6 +210,10 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		for (eventPriorityTransformationTask : genmodel.tasks.filter(EventPriorityTransformation)) {
 			val parentPackage = eventPriorityTransformationTask.statechart.eContainer
+			packageImports.remove(parentPackage)
+		}
+		for (adaptiveContractTestGenerationTask : genmodel.tasks.filter(AdaptiveContractTestGeneration)) {
+			val parentPackage = adaptiveContractTestGenerationTask.statechartContract.eContainer
 			packageImports.remove(parentPackage)
 		}
 		for (packageImport : packageImports) {

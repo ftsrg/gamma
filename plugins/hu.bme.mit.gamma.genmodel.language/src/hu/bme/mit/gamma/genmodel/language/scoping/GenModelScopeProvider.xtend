@@ -70,6 +70,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
 		}
+		if (reference == GenmodelPackage.Literals.ADAPTIVE_CONTRACT_TEST_GENERATION__STATECHART_CONTRACT) {
+			val genModel = EcoreUtil2.getRootContainer(context) as GenModel
+			return Scopes.scopeFor(genModel.packageImports.map[it.components.filter(StatechartDefinition)].flatten)
+		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {
 			val statechart = ((context as InterfaceMapping).eContainer as YakinduCompilation).statechart

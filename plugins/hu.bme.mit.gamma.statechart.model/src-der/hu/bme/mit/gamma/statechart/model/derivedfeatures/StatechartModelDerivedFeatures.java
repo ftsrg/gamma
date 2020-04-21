@@ -564,11 +564,11 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static Package getContainingPackage(EObject object) {
-		if (object.eContainer() == null) {
-			throw new IllegalArgumentException("Not contained by a component: " + object);
-		}
 		if (object instanceof Package) {
 			return (Package) object;
+		}
+		if (object.eContainer() == null) {
+			throw new IllegalArgumentException("Not contained by a component: " + object);
 		}
 		return getContainingPackage(object.eContainer());
 	}

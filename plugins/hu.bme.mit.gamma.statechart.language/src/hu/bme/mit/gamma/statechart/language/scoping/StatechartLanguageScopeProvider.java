@@ -75,18 +75,23 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 
 		// Statechart
 
-
 		try {
 			// Adaptive
 			if (context instanceof AdaptiveContractAnnotation &&
 					reference == ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllComponents(parentPackage));
+				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				Set<Component> allComponents = StatechartModelDerivedFeatures.getAllComponents(parentPackage);
+				allComponents.remove(parentStatechart);
+				return Scopes.scopeFor(allComponents);
 			}
 			if (context instanceof StateContractAnnotation &&
 					reference == ContractPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
-				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage));
+				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				Set<StatechartDefinition> allComponents = StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage);
+				allComponents.remove(parentStatechart);
+				return Scopes.scopeFor(allComponents);
 			}
 			// Transitions
 			if (context instanceof Transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE

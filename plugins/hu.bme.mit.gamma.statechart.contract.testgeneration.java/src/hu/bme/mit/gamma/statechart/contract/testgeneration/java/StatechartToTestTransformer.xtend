@@ -37,7 +37,7 @@ class StatechartToTestTransformer {
 		var id = 0
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
-		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments, containingFile)
+		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments, containingFile, true)
 		val uppaalTraceability = uppaalResult.key
 		val traceabilityResourceSet = uppaalTraceability.eResource.resourceSet
 		val newPackage = uppaalTraceability.gammaPackage
@@ -47,12 +47,13 @@ class StatechartToTestTransformer {
 		// Getting traces from the simple states
 		val instances = newStatechart.referencingComponentInstances.filter(SynchronousComponentInstance)
 		checkState(instances.size == 1)
-		val instance = instances.head		
+		val instance = instances.head
 		for (simpleState : statechart.allStates.filter[!it.isComposite]) {
 			// Getting traces to the simple states
 			val queryGenerator = new QueryGenerator(traceabilityResourceSet)
 			val stateName = queryGenerator.getStateName(instance, simpleState.parentRegion, simpleState)
-			val uppaalQuery =  queryGenerator.parseRegular('''E<> («stateName») && isStable''', TemporalOperator.MIGHT_EVENTUALLY)
+			val parsedUppaalQuery = queryGenerator.parseRegular('''(«stateName»)''', TemporalOperator.MIGHT_EVENTUALLY)
+			val uppaalQuery = "E<> " + parsedUppaalQuery
 			val verifier = new Verifier
 			val simpleStateExecutionTrace = verifier.verifyQuery(traceabilityResourceSet, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
