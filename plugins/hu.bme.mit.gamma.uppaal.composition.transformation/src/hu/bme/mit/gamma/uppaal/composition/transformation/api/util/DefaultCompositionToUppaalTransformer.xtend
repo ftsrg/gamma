@@ -13,6 +13,8 @@ import java.util.AbstractMap.SimpleEntry
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
+import org.eclipse.emf.common.util.URI
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 
 class DefaultCompositionToUppaalTransformer {
 	
@@ -46,10 +48,12 @@ class DefaultCompositionToUppaalTransformer {
 		val transformer = new CompositeToUppaalTransformer(topComponent, topComponentArguments, testGenerationHandler)
 		val resultModels = transformer.execute
 		val nta = resultModels.key
-		val trace = resultModels.value
+		var trace = resultModels.value
 		// Saving the generated models
 		nta.normalSave(parentFolder, "." + fileNameExtensionless + ".uppaal")
-		trace.normalSave(parentFolder, "." + fileNameExtensionless + ".g2u")
+		val traceUri = URI.createFileURI(parentFolder + "." + fileNameExtensionless + ".g2u")
+		trace.normalSave(traceUri)
+		trace = normalLoad(traceUri) as G2UTrace // Reloading trace from disk as this is the way it works with VIATRA
 		// Serializing the NTA model to XML
 		val xmlFileName = fileNameExtensionless + ".xml"
 		UppaalModelSerializer.saveToXML(nta, parentFolder, xmlFileName)

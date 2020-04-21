@@ -242,6 +242,15 @@ public class ExpressionUtil {
 	
 	// Helpers
 	
+	public EObject normalLoad(URI uri) throws IOException {
+		ResourceSet resourceSet = new ResourceSetImpl();
+		Resource resource = resourceSet.getResource(uri, true);
+		return resource.getContents().get(0);
+	}
+	
+	public EObject normalLoad(String parentFolder, String fileName) throws IOException {
+		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName));
+	}
 	
 	public void normalSave(EObject rootElem, URI uri) throws IOException {
 		ResourceSet resourceSet = new ResourceSetImpl();

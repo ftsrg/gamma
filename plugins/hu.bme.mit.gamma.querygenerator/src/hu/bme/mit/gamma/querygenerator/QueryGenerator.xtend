@@ -30,7 +30,6 @@ class QueryGenerator {
 		this.engine = ViatraQueryEngine.on(new EMFScope(traceabilitySet))
 	}
 	
-	
 	def List<String> getStateNames() {
 		val stateNames = new ArrayList<String>()
 		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).getAllMatches()) {
