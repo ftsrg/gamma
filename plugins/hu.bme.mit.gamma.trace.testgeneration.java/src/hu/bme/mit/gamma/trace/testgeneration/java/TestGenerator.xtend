@@ -148,7 +148,7 @@ class TestGenerator {
 			}
 			
 			«traces.generateTestCases»
-			}
+		}
 	'''
 	
 	protected def generateImports(Component component) '''
@@ -216,7 +216,7 @@ class TestGenerator {
 	}
 	
 	protected def dispatch serialize(Reset reset) '''
-		«TIMER_OBJECT_NAME».reset(); // Timer before the system
+		«IF component.needTimer»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
 		«componentClassName.toFirstLower».reset();
 	'''
 	

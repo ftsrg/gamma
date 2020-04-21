@@ -30,8 +30,7 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		StatechartToTestTransformer transformer = new StatechartToTestTransformer();
 		String fileName = testGeneration.getFileName().isEmpty() ? null : testGeneration.getFileName().get(0);
 		transformer.execute(testGeneration.getStatechartContract(), testGeneration.getArguments(),
-				new File(containingFile), new File(testGeneration.getTargetFolder().get(0)),
-				testGeneration.getPackageName().get(0), fileName);
+			new File(containingFile), new File(targetFolderUri), testGeneration.getPackageName().get(0), fileName);
 	}
 	
 	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration, String packageName) {

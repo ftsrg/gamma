@@ -39,7 +39,10 @@ class TransitionToStepTransformer {
 		val step = createStep
 		// Acts
 		step.actions += transition.trigger.transformTrigger
-		step.actions += transition.guard.transformExpression
+		val guard = transition.guard
+		if (guard !== null) {
+			step.actions += transition.guard.transformExpression
+		}
 		if (transition.targetState instanceof State) {
 			step.actions += createComponentSchedule
 		}

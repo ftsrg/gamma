@@ -81,9 +81,9 @@ class StatechartToTestTransformer {
 					finalTraces += finalTrace
 				}
 				// Generating tests
-				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«contractStatechart.name.toFirstUpper»ExecutionTrace«id++»«ELSE»«fileName»«ENDIF»'''
+				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«contractStatechart.name.toFirstUpper»«id++»«ELSE»«fileName»«ENDIF»'''
 				val testGenerator = new TestGenerator(traceabilityResourceSet, finalTraces,
-					className, basePackageName)
+					basePackageName, className)
 				val testClass = testGenerator.execute
 				val testClassFile = getFile(testFolder, testGenerator.packageName, className)
 				testClassFile.saveString(testClass)

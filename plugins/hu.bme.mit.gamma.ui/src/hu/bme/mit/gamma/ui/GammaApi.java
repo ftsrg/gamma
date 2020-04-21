@@ -131,7 +131,7 @@ public class GammaApi {
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler();
 							handler.setTargetFolder(testGeneration, file, parentFolderUri);
 							handler.execute(testGeneration, file.getLocation().toString(), projectName);
-							logger.log(Level.INFO, "The event priority transformation has been finished.");
+							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {
 							needsCleaning = true;

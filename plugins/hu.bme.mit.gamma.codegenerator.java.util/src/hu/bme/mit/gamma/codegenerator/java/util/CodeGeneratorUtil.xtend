@@ -14,7 +14,7 @@ class CodeGeneratorUtil {
 	}
 	
 	def toPath(String packageName) {
-		return packageName.replaceAll("\\.", File.separator)
+		return packageName.replaceAll("\\.", "\\"+ File.separator)
 	}
 	
 	def getFile(File sourceFolder, String packageName, String className) {
