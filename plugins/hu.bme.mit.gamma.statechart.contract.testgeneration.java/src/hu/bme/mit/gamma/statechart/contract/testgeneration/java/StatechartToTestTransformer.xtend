@@ -34,7 +34,6 @@ class StatechartToTestTransformer {
 	def execute(StatechartDefinition statechart, List<Expression> arguments, File containingFile,
 			File testFolder, String basePackageName, String fileName) {
 		val adaptiveContractAnnotation = statechart.annotation as AdaptiveContractAnnotation
-		var id = 0
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments, containingFile, true)
@@ -82,7 +81,7 @@ class StatechartToTestTransformer {
 					finalTraces += finalTrace
 				}
 				// Generating tests
-				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«contractStatechart.name.toFirstUpper»«id++»«ELSE»«fileName»«ENDIF»'''
+				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
 				val testGenerator = new TestGenerator(traceabilityResourceSet, finalTraces,
 					basePackageName, className)
 				val testClass = testGenerator.execute

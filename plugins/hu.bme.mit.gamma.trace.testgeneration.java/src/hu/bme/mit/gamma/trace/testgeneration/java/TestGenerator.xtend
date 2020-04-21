@@ -235,7 +235,7 @@ class TestGenerator {
 	'''
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
-			«««		In theory only asynchronous adapters and synchronous adapters are used
+«««		In theory only asynchronous adapters and synchronous adapters are used
 		«componentClassName.toFirstLower».schedule(null);
 	'''
 	
