@@ -62,6 +62,7 @@ class StatechartToTestTransformer {
 				it.import = adaptiveContractAnnotation.monitoredComponent.containingPackage
 				it.component = adaptiveContractAnnotation.monitoredComponent
 				// No arguments supported yet
+				it.steps.forEach[it.instanceStates.clear] // Clearing instance state checks
 			]
 			
 			// Transforming traces from the referenced statecharts
@@ -74,7 +75,7 @@ class StatechartToTestTransformer {
 			val finalTraces = newArrayList
 			val contractToTraceTransformer = new StatechartContractToTraceTransformer
 			for (contractStatechart : contractStatecharts) {
-				val contractTraces = contractToTraceTransformer.execute(newStatechart)
+				val contractTraces = contractToTraceTransformer.execute(contractStatechart)
 				for (contractTrace : contractTraces) {
 					val finalTrace = simpleStateExecutionTrace.clone(true, true)
 					finalTrace.steps += contractTrace.steps

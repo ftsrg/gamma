@@ -171,8 +171,8 @@ class TestGenerator {
 			public void test() {
 				«FOR trace : traces»
 					«IF traces.last !== trace»try {«ENDIF»
-					«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»();
-					return;
+					«traces.addTabIfNeeded(trace)»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»();
+					«traces.addTabIfNeeded(trace)»return;
 					«IF traces.last !== trace»} catch(AssertionError e) {}«ENDIF»
 				«ENDFOR»
 			}
@@ -214,6 +214,8 @@ class TestGenerator {
 		}
 		return builder.toString
 	}
+	
+	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.last !== trace»	«ENDIF»'''
 	
 	protected def dispatch serialize(Reset reset) '''
 		«IF component.needTimer»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
