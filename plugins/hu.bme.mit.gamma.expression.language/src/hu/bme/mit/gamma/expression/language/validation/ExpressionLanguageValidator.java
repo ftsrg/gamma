@@ -69,10 +69,6 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
-		if (name.endsWith("_") || name.endsWith("_")) {
-			error("A Gamma identifier cannot start or end with a '_' underscore character.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-			return;
-		}
 		EObject root = EcoreUtil.getRootContainer(element);
 		Collection<? extends NamedElement> namedElements = EcoreUtil2.getAllContentsOfType(root, element.getClass());
 		namedElements.remove(element);

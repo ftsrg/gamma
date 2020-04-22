@@ -1012,6 +1012,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkUnusedInstancePort(ComponentInstance instance) {
 		Component type = (Component) instance.eContainer();
+		String name = instance.getName();
+		if (name.startsWith("_") || name.endsWith("_")) {
+			error("A Gamma instance identifier cannot start or end with an '_' underscore character.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			return;
+		}
 		if (type instanceof AsynchronousAdapter) {
 			// Not checking AsynchronousAdapters
 			return;
