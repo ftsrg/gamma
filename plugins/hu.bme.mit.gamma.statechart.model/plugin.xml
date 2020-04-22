@@ -38,4 +38,12 @@
             genModel="model/statechart.genmodel"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/Phase"
+            class="hu.bme.mit.gamma.statechart.model.phase.PhasePackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
 </plugin>

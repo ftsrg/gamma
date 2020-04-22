@@ -327,4 +327,32 @@
           upperBound="-1" eType="#//StatechartDefinition"/>
     </eClassifiers>
   </eSubpackages>
+  <eSubpackages name="phase" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Phase"
+      nsPrefix="hu.bme.mit.gamma.statechart.phase">
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseAnnotation" eSuperTypes="#//StatechartAnnotation"/>
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateAnnotation" eSuperTypes="#//StateAnnotation">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="stateDefinitions" upperBound="-1"
+          eType="#//phase/MissionPhaseStateDefinition" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateDefinition">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+          eType="#//composite/SynchronousComponentInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
+          eType="#//composite/PortBinding" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variableBindings" upperBound="-1"
+          eType="#//phase/VariableBinding" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="VariableBinding">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="instanceVariableReference"
+          lowerBound="1" eType="#//phase/InstanceVariableReference" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statechartVariable" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableReference">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+          eType="#//composite/SynchronousComponentInstance"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    </eClassifiers>
+  </eSubpackages>
 </ecore:EPackage>
