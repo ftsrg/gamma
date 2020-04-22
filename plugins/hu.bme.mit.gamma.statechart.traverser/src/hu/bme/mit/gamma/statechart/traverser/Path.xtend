@@ -31,4 +31,8 @@ class Path {
 		return transitions
 	}
 	
+	override toString() '''
+		«IF !transitions.empty»«transitions.head.sourceState.name»«ENDIF»«FOR transition : transitions» -> «transition.targetState.name»«ENDFOR»
+	'''
+	
 }
