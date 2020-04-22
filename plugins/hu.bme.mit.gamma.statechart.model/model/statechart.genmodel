@@ -269,6 +269,11 @@
     </nestedGenPackages>
     <nestedGenPackages prefix="Phase" basePackage="hu.bme.mit.gamma.statechart.model"
         disposableProviderFactory="true" ecorePackage="statechart.ecore#//phase">
+      <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//phase/History">
+        <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//phase/History/NO_HISTORY"/>
+        <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//phase/History/SHALLOW_HISTORY"/>
+        <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//phase/History/DEEP_HISTORY"/>
+      </genEnums>
       <genClasses ecoreClass="statechart.ecore#//phase/MissionPhaseAnnotation"/>
       <genClasses ecoreClass="statechart.ecore#//phase/MissionPhaseStateAnnotation">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//phase/MissionPhaseStateAnnotation/stateDefinitions"/>
@@ -277,6 +282,7 @@
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//phase/MissionPhaseStateDefinition/component"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//phase/MissionPhaseStateDefinition/portBindings"/>
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//phase/MissionPhaseStateDefinition/variableBindings"/>
+        <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//phase/MissionPhaseStateDefinition/history"/>
       </genClasses>
       <genClasses ecoreClass="statechart.ecore#//phase/VariableBinding">
         <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//phase/VariableBinding/instanceVariableReference"/>
