@@ -364,6 +364,16 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
    		}
    		return getDerivedType(instance) instanceof CascadeCompositeComponent;
     }
+    
+	
+	public static int getLevel(StateNode stateNode) {
+		if (isTopRegion(getParentRegion(stateNode))) {
+			return 1;
+		}
+		else {
+			return getLevel(getParentState(stateNode)) + 1;
+		}
+	}
 	
 	public static List<Transition> getOutgoingTransitions(StateNode node) {
 		StatechartDefinition statechart = getContainingStatechart(node);

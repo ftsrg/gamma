@@ -846,7 +846,7 @@ class CompositeToUppaalTransformer {
 	 */
 	val toLowerRegionTransitionsRule = createRule(ToLowerInstanceTransitions.instance).action [		
 		val syncVar = target.globalDeclarations.createSynchronization(true, false, acrossRegionSyncNamePrefix + id++)
-		it.transition.toLowerTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.target.levelOfStateNode, it.instance)		
+		it.transition.toLowerTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.target.level, it.instance)		
 	].build
 	
 	/**
@@ -884,7 +884,7 @@ class CompositeToUppaalTransformer {
 			val region = ttarget.eContainer as Region
 			var Location targetLoc 
 			// If it is an intermediate region, the normal location is the target
-			if (lastLevel != ttarget.levelOfStateNode) {
+			if (lastLevel != ttarget.level) {
 				targetLoc = ttarget.getLocation(owner)
 				// The orthogonal regions of the composite states have to be activated
 				if (ttarget.composite) {			
@@ -903,7 +903,7 @@ class CompositeToUppaalTransformer {
 				// Creating an update so it activates the template
 				activationEdge.setTemplateActivation(region, true)
 				// If this is not the last level, all the entry events have to be created
-				if (lastLevel != ttarget.levelOfStateNode) {
+				if (lastLevel != ttarget.level) {
 					activationEdge.setEntryEvents(ttarget as State, owner)
 				}
 			}
@@ -970,24 +970,12 @@ class CompositeToUppaalTransformer {
 	}
 	
 	/**
-	 * Returns the number of parent regions of a stateNode.
-	 */
-	private def int getLevelOfStateNode(StateNode stateNode) {
-		if ((stateNode.eContainer as Region).isTopRegion) {
-			return 1
-		}
-		else {
-			getLevelOfStateNode(stateNode.eContainer.eContainer as State) + 1
-		}
-	}
-	
-	/**
 	 * This rule is responsible for transforming transitions whose targets are in a higher abstraction level (higher region)
 	 * than its source.
 	 */
 	val toHigherRegionTransitionsRule = createRule(ToHigherInstanceTransitions.instance).action [		
 		val syncVar = target.globalDeclarations.createSynchronization(true, false, acrossRegionSyncNamePrefix + id++)
-		it.transition.toHigherTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.source.levelOfStateNode, it.instance)
+		it.transition.toHigherTransitionRule(it.source, it.target, new HashSet<Region>(), syncVar, it.source.level, it.instance)
 	].build
 	
 	/**
@@ -996,7 +984,7 @@ class CompositeToUppaalTransformer {
 	 */
 	private def void toHigherTransitionRule(Transition transition, StateNode tsource, StateNode ttarget, Set<Region> visitedRegions, ChannelVariableDeclaration syncVar, int lastLevel, SynchronousComponentInstance owner) {
 		// Lowest level
-		if (tsource.levelOfStateNode == lastLevel) {
+		if (tsource.level == lastLevel) {
 			val region = tsource.eContainer as Region
 			visitedRegions.add(region)
 			val sourceLoc = tsource.getLocation(owner)
@@ -1016,7 +1004,7 @@ class CompositeToUppaalTransformer {
 			transition.toHigherTransitionRule(tsource.eContainer.eContainer as State, ttarget, visitedRegions, syncVar, lastLevel, owner)			
 		}
 		// Highest level
-		else if (tsource.levelOfStateNode == ttarget.levelOfStateNode) {
+		else if (tsource.level == ttarget.level) {
 			visitedRegions.add(tsource.eContainer as Region)
 			val sourceLoc = tsource.getLocation(owner)
 			val targetLoc = getEdgeTarget(ttarget).filter[it.owner == owner].head

@@ -10,27 +10,44 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 
 public class TraceUtil {
 	
-	public static InstanceStateConfigurationSorter instanceStateConfigurationSorter = new InstanceStateConfigurationSorter();
 	public static InstanceStateSorter instanceStateSorter = new InstanceStateSorter();
-	
-	public boolean isOverWritten(RaiseEventAct lhs, RaiseEventAct rhs) {
-		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
-	}
 	
 	// Step sorter
 	
-	public static class InstanceStateSorter implements Comparator<InstanceStateSorter> {
+	public static class InstanceStateSorter implements Comparator<InstanceState> {
 
 		@Override
-		public int compare(InstanceStateSorter lhs, InstanceStateSorter rhs) {
+		public int compare(InstanceState lhs, InstanceState rhs) {
 			if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceStateConfiguration) {
-				return instanceStateConfigurationSorter.compare(
-						(InstanceStateConfiguration) lhs, (InstanceStateConfiguration) rhs);
+				// Two instance states: first - instance name, second - state level
+				InstanceStateConfiguration lhsInstanceStateConfiguration = (InstanceStateConfiguration) lhs;
+				InstanceStateConfiguration rhsInstanceStateConfiguration = (InstanceStateConfiguration) rhs;
+				ComponentInstance lhsInstance = lhsInstanceStateConfiguration.getInstance();
+				ComponentInstance rhsInstance = rhsInstanceStateConfiguration.getInstance();
+				int nameCompare = lhsInstance.getName().compareTo(rhsInstance.getName());
+				if (nameCompare != 0) {
+					return nameCompare;
+				}
+				Integer lhsLevel = StatechartModelDerivedFeatures.getLevel(lhsInstanceStateConfiguration.getState());
+				Integer rhsLevel = StatechartModelDerivedFeatures.getLevel(rhsInstanceStateConfiguration.getState());
+				return lhsLevel.compareTo(rhsLevel);
+			}
+			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceVariableState) {
+				// Two instance variable: name
+				InstanceVariableState lhsInstanceVariableState = (InstanceVariableState) lhs;
+				InstanceVariableState rhsInstanceVariableState = (InstanceVariableState) rhs;
+				String lhsName = lhsInstanceVariableState.getInstance().getName() +
+						lhsInstanceVariableState.getDeclaration().getName();
+				String rhsName = rhsInstanceVariableState.getInstance().getName() +
+						rhsInstanceVariableState.getDeclaration().getName();
+				return lhsName.compareTo(rhsName);
 			}
 			else if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceVariableState) {
+				// First - instance state, second - instance variable
 				return -1;
 			}
 			return 0;
@@ -38,14 +55,22 @@ public class TraceUtil {
 		
 	}
 	
-	public static class InstanceStateConfigurationSorter implements Comparator<InstanceStateConfiguration> {
-
-		@Override
-		public int compare(InstanceStateConfiguration lhs, InstanceStateConfiguration rhs) {
-			ComponentInstance instance = lhs.getInstance();
-			return 0;
-		}
-		
+	public static void sortInstanceStates(ExecutionTrace executionTrace) {
+		sortInstanceStates(executionTrace.getSteps());
+	}
+	
+	public static void sortInstanceStates(List<Step> steps) {
+		steps.forEach(it -> sortInstanceStates(it));
+	}
+	
+	public static void sortInstanceStates(Step step) {
+		step.getInstanceStates().sort(instanceStateSorter);
+	}
+	
+	// Overwriting
+	
+	public boolean isOverWritten(RaiseEventAct lhs, RaiseEventAct rhs) {
+		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
 	}
 	
 	// Trace coverage
