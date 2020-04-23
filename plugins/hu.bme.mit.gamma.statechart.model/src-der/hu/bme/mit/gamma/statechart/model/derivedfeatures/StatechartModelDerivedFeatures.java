@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.statechart.model.Region;
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.model.State;
+import hu.bme.mit.gamma.statechart.model.StateAnnotation;
 import hu.bme.mit.gamma.statechart.model.StateNode;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.TimeSpecification;
@@ -427,6 +428,11 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			regions.addAll(getAllRegions(state));
 		}
 		return regions;
+	}
+	
+	
+	public static State getParentState(StateAnnotation annotation) {
+		return (State) annotation.eContainer();
 	}
 	
 	public static Region getParentRegion(StateNode node) {

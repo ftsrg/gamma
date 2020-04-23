@@ -13,11 +13,14 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature.Setting;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
+import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
@@ -241,6 +244,14 @@ public class ExpressionUtil {
 	
 	
 	// Helpers
+	
+	public void change(EObject newObject, EObject oldObject, EObject container) {
+		Collection<Setting> oldReferences = UsageCrossReferencer.find(oldObject, container);
+		for (Setting oldReference : oldReferences) {
+			oldReference.set(newObject);
+		}
+		EcoreUtil.remove(oldObject);
+	}
 	
 	public EObject normalLoad(URI uri) throws IOException {
 		ResourceSet resourceSet = new ResourceSetImpl();
