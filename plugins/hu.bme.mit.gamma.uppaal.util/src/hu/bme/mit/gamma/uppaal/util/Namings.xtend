@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import uppaal.declarations.Variable
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class Namings {
 	
@@ -98,6 +99,14 @@ class Namings {
 		}
 	}
 	
+	def static getVariableName(VariableDeclaration variable, ComponentInstance instance) {
+		return getVariableName(variable.name, instance.name)
+	}
+	
+	def static getVariableName(String variableName, String instanceName) {
+		return variableName + "Of" + instanceName
+	}
+	
 	/**
 	 * Returns the template name of a region.
 	 */
@@ -143,7 +152,6 @@ class Namings {
 		return ("exitOf" + state.name + exitLocationId++).replaceAll(" ", "")
 	}
 	
-		
 	/**
 	 * Returns the name of the committed entry location of the given composite state.
 	 */

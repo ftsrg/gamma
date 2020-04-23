@@ -170,7 +170,7 @@ class QueryGenerator {
 				null, splittedStateName.get(splittedStateName.length - 1) /* state */)) {
 			val parentRegion = match.getParentRegion()
 			val templateName = parentRegion.getTemplateName(match.instance)
-			val processName = "P_" + templateName
+			val processName = templateName.porcessName
 			val locationNames = new StringBuilder("(")
 			for (String locationName : StatesToLocations.Matcher.on(engine).getAllValuesOflocationName(null,
 					match.getState().getName(),
@@ -195,7 +195,7 @@ class QueryGenerator {
 	
 	def String getUppaalVariableName(String variableName) {		
 		val splittedStateName = variableName.split("\\.")
-		return splittedStateName.get(1) + "Of" + splittedStateName.get(0)
+		return getVariableName(splittedStateName.get(1), splittedStateName.get(0))
 	}
 	
 	def String getUppaalOutEventName(String portEventName) {

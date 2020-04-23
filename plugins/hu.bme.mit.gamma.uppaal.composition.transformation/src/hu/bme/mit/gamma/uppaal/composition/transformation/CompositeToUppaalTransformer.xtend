@@ -561,8 +561,7 @@ class CompositeToUppaalTransformer {
 	val variablesRule = createRule(InstanceVariables.instance).action [
 		val prefix = if (AssignedVariables.Matcher.on(engine).hasMatch(it.variable)) {
 				DataVariablePrefix.NONE } else { DataVariablePrefix.CONST }
-		val variable = it.variable.transformVariable(it.variable.type, prefix,
-			it.variable.name + "Of" + instance.name)
+		val variable = it.variable.transformVariable(it.variable.type, prefix, it.variable.getVariableName(instance))
 		if (prefix == DataVariablePrefix.CONST && it.variable.expression === null) {
 			// It is only read, 0 is a good initial value for all types
 			variable.initVar("0")
