@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.trace.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -8,10 +9,43 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
+import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
+
 public class TraceUtil {
+	
+	public static InstanceStateConfigurationSorter instanceStateConfigurationSorter = new InstanceStateConfigurationSorter();
+	public static InstanceStateSorter instanceStateSorter = new InstanceStateSorter();
 	
 	public boolean isOverWritten(RaiseEventAct lhs, RaiseEventAct rhs) {
 		return lhs.getPort() == rhs.getPort() && lhs.getEvent() == rhs.getEvent();
+	}
+	
+	// Step sorter
+	
+	public static class InstanceStateSorter implements Comparator<InstanceStateSorter> {
+
+		@Override
+		public int compare(InstanceStateSorter lhs, InstanceStateSorter rhs) {
+			if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceStateConfiguration) {
+				return instanceStateConfigurationSorter.compare(
+						(InstanceStateConfiguration) lhs, (InstanceStateConfiguration) rhs);
+			}
+			else if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceVariableState) {
+				return -1;
+			}
+			return 0;
+		}
+		
+	}
+	
+	public static class InstanceStateConfigurationSorter implements Comparator<InstanceStateConfiguration> {
+
+		@Override
+		public int compare(InstanceStateConfiguration lhs, InstanceStateConfiguration rhs) {
+			ComponentInstance instance = lhs.getInstance();
+			return 0;
+		}
+		
 	}
 	
 	// Trace coverage

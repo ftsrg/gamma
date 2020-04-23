@@ -23,5 +23,4 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.Expr
 		return "(long) " + expression.value.toString
 	}
 	
-	
 }

@@ -10,17 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.util
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Clock
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.StateNode
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import uppaal.declarations.Variable
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class Namings {
 	
@@ -32,7 +33,6 @@ class Namings {
 	public static var exitSyncNamePrefix = "exitChanOf"
 	public static var acrossRegionSyncNamePrefix = "AcrReg"
 	public static var clockNamePrefix = "timer"
-	
 	
 	def static getAsyncSchedulerChannelName(AsynchronousAdapter wrapper) {
 		return "async" + wrapper.name
@@ -131,8 +131,12 @@ class Namings {
 	/**
 	 * Returns the location name of a state.
 	 */
-	def static String getLocationName(State state) {
- 		return state.name.replaceAll(" ","")
+	def static String getLocationName(StateNode state) {
+		val name = state.name
+		if (name.nullOrEmpty) {
+			return state.class.name + exitLocationId++
+		}
+ 		return state.name.replaceAll(" ","").toFirstUpper
 	}
 	
 	/**

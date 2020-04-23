@@ -750,7 +750,6 @@ class CompositeToUppaalTransformer {
 			val initLocation = template.createChild(template_Location, location) as Location => [
 				it.name = "EntryLocation" + id++
 				it.locationTimeKind = LocationKind.COMMITED			
-				it.comment = "Entry Location"
 			]
 			// If it is a subregion, a new location is generated and set initial
 			if (it.region.subregion) {
@@ -806,7 +805,7 @@ class CompositeToUppaalTransformer {
 			val owner = template.owner
 			val pseudoState = it.pseudoState
 			val choiceLocation = template.createChild(template_Location, location) as Location => [
-				it.name = if (pseudoState.name !== null) pseudoState.name else "Choice" + id++
+				it.name = if (pseudoState.name !== null) pseudoState.locationName else "Choice" + id++
 				it.locationTimeKind = LocationKind.COMMITED	
 			]
 			// Creating the trace
@@ -1104,7 +1103,8 @@ class CompositeToUppaalTransformer {
 	/**
 	 * Responsible for creating a synchronization edge that sets the template to the proper state (location and isActive variable).
 	 */
-	private def createSynchronizationEdge(Region subregion, Location source, SynchronousComponentInstance owner, ChannelVariableDeclaration syncVar, boolean enter) {
+	private def createSynchronizationEdge(Region subregion, Location source, SynchronousComponentInstance owner,
+			ChannelVariableDeclaration syncVar, boolean enter) {
 		// If the subregion has a history, the target must be different
 		var Location target
 		// Target depends on entry/exit and if and entry, has history or not
@@ -1117,7 +1117,8 @@ class CompositeToUppaalTransformer {
 			// Target is the committed location of the template
 			else {
 				target = Entries.Matcher.on(engine).getAllValuesOfentry(subregion).filter(EntryState).head.allValuesOfTo
-							.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED].filter[it.parentTemplate == source.parentTemplate].head
+							.filter(Location).filter[it.locationTimeKind == LocationKind.COMMITED]
+							.filter[it.parentTemplate == source.parentTemplate].head
 			}
 		}
 		// In case of exit

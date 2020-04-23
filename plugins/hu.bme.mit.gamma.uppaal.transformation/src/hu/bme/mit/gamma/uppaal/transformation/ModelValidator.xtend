@@ -55,7 +55,7 @@ class ModelValidator {
     	checkChoiceTransitions 
     	checkFloatVariables
     	checkNames
-    	checkUppaalKeywords
+//    	checkUppaalKeywords
     }
     
 	/**
