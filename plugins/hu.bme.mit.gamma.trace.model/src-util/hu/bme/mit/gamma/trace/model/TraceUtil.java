@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.trace.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -55,16 +56,20 @@ public class TraceUtil {
 		
 	}
 	
-	public static void sortInstanceStates(ExecutionTrace executionTrace) {
+	public void sortInstanceStates(ExecutionTrace executionTrace) {
 		sortInstanceStates(executionTrace.getSteps());
 	}
 	
-	public static void sortInstanceStates(List<Step> steps) {
+	public void sortInstanceStates(List<Step> steps) {
 		steps.forEach(it -> sortInstanceStates(it));
 	}
 	
-	public static void sortInstanceStates(Step step) {
-		step.getInstanceStates().sort(instanceStateSorter);
+	public void sortInstanceStates(Step step) {
+		EList<InstanceState> instanceStates = step.getInstanceStates();
+		List<InstanceState> list = new ArrayList<InstanceState>(instanceStates); // Needed to avoid the 'no duplicates' constraint
+		list.sort(instanceStateSorter);
+		instanceStates.clear();
+		instanceStates.addAll(list);
 	}
 	
 	// Overwriting

@@ -91,6 +91,7 @@ class StringTraceBackAnnotator {
 	
 	protected final ResourceSet resourceSet
 	protected final ViatraQueryEngine engine
+	protected final boolean sortTrace
 	
 	protected Package gammaPackage
 	protected Component component
@@ -101,6 +102,10 @@ class StringTraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = new TraceUtil
 	
 	new(ResourceSet resourceSet, Scanner traceScanner) {
+		this(resourceSet, traceScanner, true)
+	}
+	
+	new(ResourceSet resourceSet, Scanner traceScanner, boolean sortTrace) {
 //		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
 //		while (traceScanner.hasNext) {
 //			fileWriter.write(traceScanner.nextLine + System.lineSeparator)
@@ -109,6 +114,7 @@ class StringTraceBackAnnotator {
 //		fileWriter.close
 		this.traceScanner = traceScanner
 		this.resourceSet = resourceSet
+		this.sortTrace = sortTrace
 		this.resourceSet.loadModels
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 	}
@@ -237,6 +243,9 @@ class StringTraceBackAnnotator {
 			firstStep.actions += createReset
 			firstStep.parseOutActions(lastActiveLocations, variableCollection)
 			trace.steps += firstStep
+		}
+		if (sortTrace) {
+			trace.sortInstanceStates
 		}
 		return trace
 	}
