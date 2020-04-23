@@ -51,7 +51,7 @@ class DefaultCompositionToUppaalTransformer {
 		var trace = resultModels.value
 		// Saving the generated models
 		nta.normalSave(parentFolder, "." + fileNameExtensionless + ".uppaal")
-		val traceUri = URI.createFileURI(parentFolder + "." + fileNameExtensionless + ".g2u")
+		val traceUri = URI.createFileURI(parentFolder + File.separator + "." + fileNameExtensionless + ".g2u")
 		trace.normalSave(traceUri)
 		trace = normalLoad(traceUri) as G2UTrace // Reloading trace from disk as this is the way it works with VIATRA
 		// Serializing the NTA model to XML
