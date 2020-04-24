@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.codegenerator.java.util
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.util.Scanner
 
 class CodeGeneratorUtil {
 		
@@ -11,6 +12,16 @@ class CodeGeneratorUtil {
 		try (val fileWriter = new FileWriter(file)) {
 			fileWriter.write(string)
 		}
+	}
+	
+	def loadString(File file) throws IOException {
+		val builder = new StringBuilder
+		try (val scanner = new Scanner(file)) {
+			while (scanner.hasNext) {
+				builder.append(scanner.nextLine)
+			}
+		}
+		return builder.toString
 	}
 	
 	def toPath(String packageName) {

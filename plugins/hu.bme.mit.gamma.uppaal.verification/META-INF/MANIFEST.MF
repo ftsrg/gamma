@@ -15,7 +15,8 @@ Require-Bundle: com.google.guava,
  de.uni_paderborn.uppaal,
  org.eclipse.viatra.query.runtime,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.uppaal.transformation.traceability
+ hu.bme.mit.gamma.uppaal.transformation.traceability,
+ hu.bme.mit.gamma.codegenerator.java.util
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: hu.bme.mit.gamma.uppaal.backannotation
 Import-Package: org.apache.log4j

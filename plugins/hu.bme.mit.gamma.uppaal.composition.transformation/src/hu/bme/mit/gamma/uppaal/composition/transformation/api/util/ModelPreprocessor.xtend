@@ -39,7 +39,7 @@ class ModelPreprocessor {
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelFileName = "." + fileNameExtensionless + ".gsm"
 		val flattenedModelUri = URI.createFileURI(parentFolder + File.separator + flattenedModelFileName)
-		val packageResource = normalSave(_package, flattenedModelUri)
+		normalSave(_package, flattenedModelUri)
 		// Reading the model from disk as this is the easy way of reloading the necessary ResourceSet
 		_package = flattenedModelUri.normalLoad as Package
 		val resource = _package.eResource
@@ -53,7 +53,7 @@ class ModelPreprocessor {
 			.filter(StatechartDefinition)
 			.forEach[unhandledTransitionTransformer.execute(it)]
 		// Saving the Package of the unfolded model
-		packageResource.save(Collections.EMPTY_MAP)
+		resource.save(Collections.EMPTY_MAP)
 		return _package.components.head
 	}
 	

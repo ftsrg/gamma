@@ -19,6 +19,7 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
 
 class StatechartToTestTransformer {
 	
@@ -36,7 +37,8 @@ class StatechartToTestTransformer {
 		val adaptiveContractAnnotation = statechart.annotation as AdaptiveContractAnnotation
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
-		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments, containingFile, true)
+		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
+			containingFile, true, #[ElementCoverage.STATE_COVERAGE])
 		val uppaalTraceability = uppaalResult.key
 		val traceabilityResourceSet = uppaalTraceability.eResource.resourceSet
 		val newPackage = uppaalTraceability.gammaPackage
