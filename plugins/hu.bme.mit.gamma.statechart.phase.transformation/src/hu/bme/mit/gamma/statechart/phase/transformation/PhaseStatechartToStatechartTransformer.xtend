@@ -1,11 +1,13 @@
 package hu.bme.mit.gamma.statechart.phase.transformation
 
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding
-import hu.bme.mit.gamma.statechart.model.phase.History
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation
+import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.model.phase.VariableBinding
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import java.util.List
@@ -15,8 +17,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 
 class PhaseStatechartToStatechartTransformer {
 	
@@ -24,7 +24,7 @@ class PhaseStatechartToStatechartTransformer {
 	extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	
 	def execute(StatechartDefinition phaseStatechart) {
-		val statechart = phaseStatechart.clone(true, true)
+		val statechart = phaseStatechart
 		val checkedAnnotations = newHashSet
 		var annotations = statechart.getAllMissionPhaseStateAnnotations
 		while (!checkedAnnotations.containsAll(annotations)) {
@@ -40,7 +40,7 @@ class PhaseStatechartToStatechartTransformer {
 						variableBinding.inlineVariables(inlineableStatechart)
 					}
 					component.inlineParameters(inlineableStatechart)
-					statechart.inlineRemainingStatechart(inlineableStatechart, stateDefinition.history)
+					statechart.inlineRemainingStatechart(inlineableStatechart, stateDefinition)
 				}
 				checkedAnnotations += annotation
 			}
@@ -78,7 +78,7 @@ class PhaseStatechartToStatechartTransformer {
 		checkState(portCopies.size == 1, portCopies)
 		val portCopy = portCopies.head
 		portBinding.instancePortReference.port = portCopy
-		statechart.ports += inlineableStatechart.ports
+		statechart.ports += portCopy
 	}
 	
 	private def void inlineVariables(VariableBinding variableBinding, StatechartDefinition inlineableStatechart) {
@@ -90,7 +90,7 @@ class PhaseStatechartToStatechartTransformer {
 		val variableCopy = variableCopies.head
 		variableCopy.name = variableCopy.getName(instance)
 		variableBinding.instanceVariableReference.variable = variableCopy
-		statechart.variableDeclarations += inlineableStatechart.variableDeclarations
+		statechart.variableDeclarations += variableCopy
 	}
 	
 	private def void inlineParameters(SynchronousComponentInstance instance, StatechartDefinition inlineableStatechart) {
@@ -103,29 +103,53 @@ class PhaseStatechartToStatechartTransformer {
 				reference.replace(argument)
 			}
 		}
-		
 	}
 	
-	private def void inlineRemainingStatechart(StatechartDefinition statechart, StatechartDefinition inlineableStatechart, History history) {
+	private def void inlineRemainingStatechart(StatechartDefinition statechart,
+			StatechartDefinition inlineableStatechart, MissionPhaseStateDefinition stateDefinition) {
+		val state = stateDefinition.eContainer.eContainer as State
+		val instance = stateDefinition.component
+		val history = stateDefinition.history
 		val inlineableRegions = inlineableStatechart.regions
 		for (inlineableRegion : inlineableRegions) {
 			val newEntryState = switch (history) {
 				case NO_HISTORY: {
-					createInitialState
+					createInitialState => [it.name = "__Init__"]
 				}
 				case SHALLOW_HISTORY : {
-					createShallowHistoryState
+					createShallowHistoryState => [it.name = "__Init__"]
 				}
 				case DEEP_HISTORY : {
-					createDeepHistoryState
+					createDeepHistoryState => [it.name = "__Init__"]
 				}
 			}
 			inlineableRegion.stateNodes += newEntryState
 			val oldEntryState = inlineableRegion.entryState
 			newEntryState.change(oldEntryState, inlineableStatechart)
 		}
+		// Renames
+		for (inlineableRegion : inlineableRegions) {
+			for (stateNode : inlineableRegion.allStateNodes) {
+				stateNode.name = stateNode.getName(instance) // TODO name recursively
+			}
+		}
+		state.regions += inlineableRegions
 		statechart.transitions += inlineableStatechart.transitions
-		statechart.timeoutDeclarations += inlineableStatechart.timeoutDeclarations
+		val ports = inlineableStatechart.ports
+		for (port : ports) {
+			port.name = port.getName(instance)
+		}
+		statechart.ports += ports
+		val timeoutDeclarations = inlineableStatechart.timeoutDeclarations
+		for (timeoutDeclaration : timeoutDeclarations) {
+			timeoutDeclaration.name = timeoutDeclaration.getName(instance)
+		}
+		statechart.timeoutDeclarations += timeoutDeclarations
+		val variableDeclarations = inlineableStatechart.variableDeclarations
+		for (variableDeclaration : variableDeclarations) {
+			variableDeclaration.name = variableDeclaration.getName(instance)
+		}
+		statechart.variableDeclarations += inlineableStatechart.variableDeclarations
 	}
 	
 }

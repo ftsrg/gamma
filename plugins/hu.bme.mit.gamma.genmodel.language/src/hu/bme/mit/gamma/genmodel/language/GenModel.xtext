@@ -32,7 +32,7 @@ GenModel returns GenModel:
 
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
-		EventPriorityTransformation | AdaptiveContractTestGeneration
+		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -206,6 +206,16 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 		'file' ':' fileName+=STRING | // The name of the generated file
 		'base-package' ':' packageName+=STRING | // Java base package
 		'language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
+
+PhaseStatechartGeneration returns PhaseStatechartGeneration:
+	{PhaseStatechartGeneration} 'phase-statechart' '{'
+		'statechart' ':' statechart=[model::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		(
+		'folder' ':' targetFolder+=STRING |
+		'file' ':' fileName+=STRING // The name of the generated file
 		)*
 	'}'
 ;

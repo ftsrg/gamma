@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
+import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -45,6 +46,7 @@ import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
 
@@ -141,6 +143,14 @@ public class GammaApi {
 							handler.execute(eventPriorityTransformation);
 							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
+						else if (task instanceof PhaseStatechartGeneration) {
+							needsCleaning = true;
+							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
+							PhaseGenerationHandler handler = new PhaseGenerationHandler();
+							handler.setTargetFolder(phaseStatechartGeneration, file, parentFolderUri);
+							handler.execute(phaseStatechartGeneration);
+							logger.log(Level.INFO, "The phase statechart transformation has been finished.");
+						}
 					}
 				}
 			}
@@ -174,7 +184,8 @@ public class GammaApi {
 						.collect(Collectors.toList());
 			case 2: 
 				return genmodel.getTasks().stream()
-						.filter(it -> it instanceof EventPriorityTransformation)
+						.filter(it -> it instanceof EventPriorityTransformation ||
+								it instanceof PhaseStatechartGeneration)
 						.collect(Collectors.toList());
 			case 3: 
 				return genmodel.getTasks().stream()

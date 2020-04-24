@@ -60,6 +60,9 @@ import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
+import hu.bme.mit.gamma.statechart.model.phase.InstanceVariableReference;
+import hu.bme.mit.gamma.statechart.model.phase.PhasePackage;
+import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
 
 /**
  * This class contains custom scoping description.
@@ -92,6 +95,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Set<StatechartDefinition> allComponents = StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage);
 				allComponents.remove(parentStatechart);
 				return Scopes.scopeFor(allComponents);
+			}
+			// Phase
+			if (context instanceof InstanceVariableReference &&
+					reference == PhasePackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+				EObject container = context.eContainer().eContainer();
+				for (EObject eObject : container.eContents()) {
+					if (eObject instanceof SynchronousComponentInstance) {
+						SynchronousComponentInstance instance = (SynchronousComponentInstance) eObject;
+						StatechartDefinition statechart = (StatechartDefinition) instance.getType();
+						return Scopes.scopeFor(statechart.getVariableDeclarations());
+					}
+				}
 			}
 			// Transitions
 			if (context instanceof Transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE

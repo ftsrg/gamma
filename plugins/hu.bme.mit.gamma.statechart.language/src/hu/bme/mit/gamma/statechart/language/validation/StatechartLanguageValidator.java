@@ -1011,7 +1011,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkUnusedInstancePort(ComponentInstance instance) {
-		Component type = (Component) instance.eContainer();
+		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
 		String name = instance.getName();
 		if (name.startsWith("_") || name.endsWith("_")) {
 			error("A Gamma instance identifier cannot start or end with an '_' underscore character.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
@@ -1037,13 +1037,15 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Port systemPort = portBinding.getCompositeSystemPort();
 		Port instancePort = portBinding.getInstancePortReference().getPort();
 		ComponentInstance instance = portBinding.getInstancePortReference().getInstance();
-		CompositeComponent composite = (CompositeComponent) portBinding.eContainer();
+		EObject container = portBinding.eContainer();
+		Set<PortBinding> portBindings = new HashSet<PortBinding>();
+		container.eContents().stream().filter(it -> it instanceof PortBinding).forEach(it -> portBindings.add((PortBinding) it));
 		if (!StatechartModelDerivedFeatures.getOutputEvents(systemPort).isEmpty() &&
-				composite.getPortBindings().stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
+				portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
 			error("This system port is connected to multiple ports of instances!",
 					CompositePackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT);
 		}
-		if (composite.getPortBindings().stream().filter(it -> it.getInstancePortReference().getPort() == instancePort &&
+		if (portBindings.stream().filter(it -> it.getInstancePortReference().getPort() == instancePort &&
 				it.getInstancePortReference().getInstance() == instance).count() > 1) {
 			error("Multiple system ports are connected to the port of this instance!",
 					CompositePackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);

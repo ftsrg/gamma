@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RaiseInstanceEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.Transitions
+import hu.bme.mit.gamma.uppaal.util.Namings
 import java.util.Collection
 import java.util.Map
 import java.util.Set
@@ -130,6 +131,10 @@ class ModelModifierForTestGeneration {
 			edge.createIfThenElseAssignment(edge_Update, transitionIdVariable, toSetSelection.variable.head,
 				transition.getNextAnnotationValue.toString, transitionIdVariable.variable.head)
 		}
+	}
+	
+	def getTransitionIdVariableName() {
+		return Namings.transitionIdVariableName
 	}
 	
 	def getTransitionAnnotations() {

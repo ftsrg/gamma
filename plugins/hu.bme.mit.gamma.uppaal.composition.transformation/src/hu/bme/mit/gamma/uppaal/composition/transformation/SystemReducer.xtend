@@ -19,9 +19,10 @@ import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RemovableTransitions
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
+import hu.bme.mit.gamma.uppaal.transformation.queries.Regions
+import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -41,20 +42,33 @@ class SystemReducer {
 	}
 	
 	def execute() {
-		// Transition optimizing
 		val transitionMatcher = RemovableTransitions.Matcher.on(engine)
+		val topRegionsMatcher = TopRegions.Matcher.on(engine)
+		val simpleInstancesMatcher = SimpleInstances.Matcher.on(engine)
+		val statecharts = newHashSet
+		statecharts += topRegionsMatcher.allValuesOfstatechart
+		// Transition optimizing
 		while (transitionMatcher.hasMatch) {
 			for (transition : transitionMatcher.allValuesOftransition.reject[it.eContainer === null]) {
 				transition.removeTransition
 			}
 		}
 		// Region optimizing
-		val regionMatcher = InstanceRegions.Matcher.on(engine)
+		val regionMatcher = Regions.Matcher.on(engine)
 		for (region : regionMatcher.allValuesOfregion) {
 			region.removeUnnecessaryRegion
 		}
+		// Statechart optimizing
+		for (statechart : statecharts) {
+			if (statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) {
+				statechart.regions.clear
+				statechart.variableDeclarations.clear
+				statechart.timeoutDeclarations.clear
+				statechart.transitions.clear
+				log(Level.INFO, "Removing statechart content: " + statechart.name)
+			}
+		}
 		// Instance optimizing
-		val simpleInstancesMatcher = SimpleInstances.Matcher.on(engine)
 		for (instance : simpleInstancesMatcher.allValuesOfinstance) {
 			instance.removeUnnecessaryStatechartInstance
 		}
@@ -86,7 +100,7 @@ class SystemReducer {
 			// Removing region
 			val compositeElement = region.eContainer as CompositeElement
 			compositeElement.regions -= region
-			log(Level.INFO, "Removing region " + region.name)
+			log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)
 		}
 	}
 	

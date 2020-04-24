@@ -78,6 +78,10 @@ class TestQueryGenerationHandler {
 			interactionCoverableComponents)
 	}
 	
+	def getModelModifier() {
+		return this.modelModifier
+	}
+	
 	// State coverage
 	
 	def String generateStateCoverageExpressions() {

@@ -52,6 +52,11 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
+		if (reference == GenmodelPackage.Literals.PHASE_STATECHART_GENERATION__STATECHART) {
+			val genmodel = context.eContainer as GenModel
+			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
+			return Scopes.scopeFor(components)
+		}
 		if (context instanceof Coverage &&
 				reference == GenmodelPackage.Literals.COVERAGE__INCLUDE ||
 				reference == GenmodelPackage.Literals.COVERAGE__EXCLUDE) {

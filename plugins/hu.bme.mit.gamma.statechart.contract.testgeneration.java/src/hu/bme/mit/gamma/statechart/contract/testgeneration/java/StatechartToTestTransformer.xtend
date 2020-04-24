@@ -2,24 +2,20 @@ package hu.bme.mit.gamma.statechart.contract.testgeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.CodeGeneratorUtil
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.querygenerator.QueryGenerator
-import hu.bme.mit.gamma.querygenerator.TemporalOperator
 import hu.bme.mit.gamma.statechart.contract.tracegeneration.StatechartContractToTraceTransformer
+import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
+import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
 import hu.bme.mit.gamma.uppaal.verification.Verifier
 import java.io.File
 import java.util.List
 
-import static com.google.common.base.Preconditions.checkState
-
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
 
 class StatechartToTestTransformer {
 	
@@ -38,23 +34,23 @@ class StatechartToTestTransformer {
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
-			containingFile, true, #[ElementCoverage.STATE_COVERAGE])
+			containingFile, #[ElementCoverage.TRANSITION_COVERAGE])
 		val uppaalTraceability = uppaalResult.key
 		val traceabilityResourceSet = uppaalTraceability.eResource.resourceSet
-		val newPackage = uppaalTraceability.gammaPackage
-		val newStatechart = newPackage.components.filter(StatechartDefinition).head
 		val uppaalFile = uppaalResult.value.key
 		
 		// Getting traces from the simple states
-		val instances = newStatechart.referencingComponentInstances.filter(SynchronousComponentInstance)
-		checkState(instances.size == 1)
-		val instance = instances.head
-		for (simpleState : statechart.allStates.filter[!it.isComposite]) {
+		val modelModifier = uppaalTransformer.testQueryGenerationHandler.modelModifier
+		val transitionAnnotations = modelModifier.transitionAnnotations
+		for (transition : transitionAnnotations.keySet
+				.filter[it.targetState instanceof State]
+				.filter[!(it.targetState as State).isComposite]) {
+			var simpleState = transition.targetState as State
+			// Back-annotating s the model transformer deleted the contract statecharts from the resource set
+			simpleState = statechart.findState(simpleState) 
 			// Getting traces to the simple states
-			val queryGenerator = new QueryGenerator(traceabilityResourceSet)
-			val stateName = queryGenerator.getStateName(instance, simpleState.parentRegion, simpleState)
-			val parsedUppaalQuery = queryGenerator.parseRegular('''(«stateName»)''', TemporalOperator.MIGHT_EVENTUALLY)
-			val uppaalQuery = "E<> " + parsedUppaalQuery
+			val tranistionId = transitionAnnotations.get(transition)
+			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
 			val verifier = new Verifier
 			val simpleStateExecutionTrace = verifier.verifyQuery(traceabilityResourceSet, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
@@ -83,7 +79,7 @@ class StatechartToTestTransformer {
 					finalTraces += finalTrace
 				}
 				// Generating tests
-				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
+				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«tranistionId»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
 				val testGenerator = new TestGenerator(traceabilityResourceSet, finalTraces,
 					basePackageName, className)
 				val testClass = testGenerator.execute
@@ -91,6 +87,21 @@ class StatechartToTestTransformer {
 				testClassFile.saveString(testClass)
 			}
 		}
+	}
+	
+	private def findState(StatechartDefinition statechart, State newState) {
+		val brokenAnnotation = newState.annotation
+		newState.annotation = null
+		for (state : statechart.allStates.filter[!it.composite]) {
+			val clonedState = state.clone(true, true) => [
+				it.annotation = null
+			]
+			if (clonedState.helperEquals(newState)) {
+				newState.annotation = brokenAnnotation
+				return state
+			}
+		}
+		throw new IllegalArgumentException("Not found same state: " + newState)
 	}
 	
 }

@@ -18,6 +18,7 @@ import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
 import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//contract" as ContractModel 
+import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//phase" as PhaseModel 
 
 Package returns Package:
 	'package' name=ID
@@ -205,11 +206,15 @@ enum TransitionPriority returns TransitionPriority:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	AdaptiveContractAnnotation
+	AdaptiveContractAnnotation | MissionPhaseAnnotation
 ;
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContract' '=' monitoredComponent=[CompositeModel::Component]
+;
+
+MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
+	{PhaseModel::MissionPhaseAnnotation} '@Phase'
 ;
 
 StatechartReference returns StatechartReference:
@@ -255,14 +260,38 @@ State returns State:
 	)?
 ;
 
-StateAnnotation returns ContractModel::StateContractAnnotation:
-	StateContractAnnotation
+StateAnnotation returns StateAnnotation:
+	StateContractAnnotation | MissionPhaseStateAnnotation
 ;
 
 StateContractAnnotation returns ContractModel::StateContractAnnotation:
 	'@StatechartContract' '=' contractStatecharts+=[StatechartDefinition] (',' contractStatecharts+=[StatechartDefinition])*
 ;
 
+MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
+	{PhaseModel::MissionPhaseStateAnnotation} '@PhaseContract' '=' '['
+		stateDefinitions += StateDefinition*
+	']'
+;
+
+StateDefinition returns PhaseModel::MissionPhaseStateDefinition:
+	history=History component=SynchronousComponentInstance '{'
+		portBindings+=PortBinding*
+		variableBindings+=VariableBinding*
+	'}'
+;
+
+VariableBinding returns PhaseModel::VariableBinding:
+	'tie' statechartVariable=[ConstraintModel::VariableDeclaration] '->' instanceVariableReference=InstanceVariableReference
+;
+
+InstanceVariableReference returns PhaseModel::InstanceVariableReference:
+	instance=[CompositeModel::SynchronousComponentInstance] '.' variable=[ConstraintModel::VariableDeclaration]
+;
+
+enum History returns PhaseModel::History:
+	NO_HISTORY = 'no history' | SHALLOW_HISTORY = 'shallow' | DEEP_HISTORY = 'deep'
+;
 
 PseudoState returns PseudoState:
 	EntryState |

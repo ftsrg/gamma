@@ -422,6 +422,18 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return states;
 	}
 	
+	public static Collection<StateNode> getAllStateNodes(Region region) {
+		List<StateNode> states = new ArrayList<StateNode>();
+		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
+		while (allContents.hasNext()) {
+			Object next = allContents.next();
+			if (next instanceof StateNode) {
+				states.add((StateNode) next);
+			}
+		}
+		return states;
+	}
+	
 	public static Collection<Region> getAllRegions(CompositeElement compositeElement) {
 		Set<Region> regions = new HashSet<Region>(compositeElement.getRegions());
 		for (State state : getAllStates(compositeElement)) {

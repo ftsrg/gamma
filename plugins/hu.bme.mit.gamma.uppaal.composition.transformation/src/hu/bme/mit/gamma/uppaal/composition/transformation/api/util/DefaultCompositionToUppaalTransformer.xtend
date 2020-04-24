@@ -19,32 +19,29 @@ import java.util.logging.Level
 class DefaultCompositionToUppaalTransformer {
 	
 	extension ExpressionUtil expressionUtil = new ExpressionUtil
+	TestQueryGenerationHandler testQueryGenerationHandler
 	
 	def transformComponent(Package gammaPackage, File containingFile) {
-		return transformComponent(gammaPackage, #[], containingFile, false,
+		return transformComponent(gammaPackage, #[], containingFile,
 			Collections.singleton(ElementCoverage.STATE_COVERAGE))
 	}
 	
 	def transformComponent(Package gammaPackage, File containingFile,
-			boolean removeAnnotations, Collection<ElementCoverage> coverage) {
-		return transformComponent(gammaPackage, #[], containingFile, removeAnnotations, coverage)
+			Collection<ElementCoverage> coverage) {
+		return transformComponent(gammaPackage, #[], containingFile, coverage)
 	}
 	
 	def transformComponent(Package gammaPackage, List<Expression> topComponentArguments,
-			File containingFile, boolean removeAnnotations, Collection<ElementCoverage> coverage) {
+			File containingFile, Collection<ElementCoverage> coverage) {
 		val parentFolder = containingFile.parent
 		val fileName = containingFile.name
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
 		val modelPreprocessor = new ModelPreprocessor
 		val topComponent = modelPreprocessor.preprocess(gammaPackage, containingFile)
-		// Removing annotations (e.g., from adaptive contracts) only AFTER saving on disk
-		if (removeAnnotations) {
-			modelPreprocessor.removeAnnotations(topComponent)
-		}
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(topComponent)
 		validator.checkModel
-		val testQueryGenerationHandler = new TestQueryGenerationHandler(
+		testQueryGenerationHandler = new TestQueryGenerationHandler(
 			topComponent.getCoverableInstances(ElementCoverage.STATE_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.TRANSITION_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.OUT_EVENT_COVERAGE, coverage),
@@ -73,6 +70,10 @@ class DefaultCompositionToUppaalTransformer {
 				new File(parentFolder + File.separator + queryFileName)
 			)
 		)
+	}
+	
+	def getTestQueryGenerationHandler() {
+		return testQueryGenerationHandler
 	}
 	
 	private def getCoverableInstances(Component component, ElementCoverage expected, Collection<ElementCoverage> received) {
