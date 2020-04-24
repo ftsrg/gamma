@@ -263,16 +263,24 @@ public class ExpressionUtil {
 		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName));
 	}
 	
-	public void normalSave(EObject rootElem, URI uri) throws IOException {
-		ResourceSet resourceSet = new ResourceSetImpl();
+	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) throws IOException {
 		Resource resource = resourceSet.createResource(uri);
 		resource.getContents().add(rootElem);
 		resource.save(Collections.EMPTY_MAP);
+		return resource;
 	}
 	
-	public void normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
+	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) throws IOException {
 		URI uri = URI.createFileURI(parentFolder + File.separator + fileName);
-		normalSave(rootElem, uri);
+		return normalSave(resourceSet, rootElem, uri);
+	}
+	
+	public Resource normalSave(EObject rootElem, URI uri) throws IOException {
+		return normalSave(new ResourceSetImpl(), rootElem, uri);
+	}
+	
+	public Resource normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
+		return normalSave(new ResourceSetImpl(), rootElem, parentFolder, fileName);
 	}
 	
 	public boolean helperEquals(EObject lhs, EObject rhs) {
