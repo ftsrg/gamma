@@ -13,8 +13,6 @@ import java.util.AbstractMap.SimpleEntry
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
-import org.eclipse.emf.common.util.URI
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 
 class DefaultCompositionToUppaalTransformer {
 	
@@ -50,10 +48,9 @@ class DefaultCompositionToUppaalTransformer {
 		val nta = resultModels.key
 		var trace = resultModels.value
 		// Saving the generated models
-		nta.normalSave(parentFolder, "." + fileNameExtensionless + ".uppaal")
-		val traceUri = URI.createFileURI(parentFolder + File.separator + "." + fileNameExtensionless + ".g2u")
-		trace.normalSave(traceUri)
-		trace = normalLoad(traceUri) as G2UTrace // Reloading trace from disk as this is the way it works with VIATRA
+		val resourceSet = topComponent.eResource.resourceSet
+		resourceSet.normalSave(nta, parentFolder, "." + fileNameExtensionless + ".uppaal")
+		resourceSet.normalSave(trace, parentFolder, "." + fileNameExtensionless + ".g2u")
 		// Serializing the NTA model to XML
 		val xmlFileName = fileNameExtensionless + ".xml"
 		UppaalModelSerializer.saveToXML(nta, parentFolder, xmlFileName)
@@ -64,8 +61,6 @@ class DefaultCompositionToUppaalTransformer {
 				testGenerationHandler.generateStateCoverageExpressions)
 		transformer.dispose
 		modelPreprocessor.logger.log(Level.INFO, "The composite system transformation has been finished.")
-		
-		// Maybe the trace should be reloaded again before returning it?
 		return new SimpleEntry(trace,
 			new SimpleEntry(
 				new File(parentFolder + File.separator + xmlFileName),

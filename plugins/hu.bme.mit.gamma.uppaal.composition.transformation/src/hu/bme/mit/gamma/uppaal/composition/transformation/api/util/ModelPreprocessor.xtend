@@ -10,13 +10,13 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.ModelUnfolder
 import hu.bme.mit.gamma.uppaal.composition.transformation.SystemReducer
 import hu.bme.mit.gamma.uppaal.composition.transformation.UnhandledTransitionTransformer
 import java.io.File
-import java.util.logging.Level
+import java.util.Collections
 import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import java.util.logging.Level
 
 class ModelPreprocessor {
 	
@@ -33,34 +33,28 @@ class ModelPreprocessor {
 		// If it is a single statechart, we wrap it
 		val component = trace.topComponent
 		if (component instanceof StatechartDefinition) {
+			logger.log(Level.INFO, "Wrapping statechart " + component)
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
 		val flattenedModelFileName = "." + fileNameExtensionless + ".gsm"
 		val flattenedModelUri = URI.createFileURI(parentFolder + File.separator + flattenedModelFileName)
-		normalSave(_package, flattenedModelUri)
-		// Reading the model from disk as this is the only way it works
-		val optimizationResourceSet = new ResourceSetImpl
-		val resourceTransitionOptimization = optimizationResourceSet.getResource(flattenedModelUri, true)
-		logger.log(Level.INFO, "Resource set for transition optimization in Gamma to UPPAAL transformation created: " + 
-				optimizationResourceSet)
+		val packageResource = normalSave(_package, flattenedModelUri)
+		// Reading the model from disk as this is the easy way of reloading the necessary ResourceSet
+		_package = flattenedModelUri.normalLoad as Package
+		val resource = _package.eResource
+		val resourceSet = resource.resourceSet
 		// Optimizing - removing unfireable transitions
-		val transitionOptimizer = new SystemReducer(optimizationResourceSet)
+		val transitionOptimizer = new SystemReducer(resourceSet)
 		transitionOptimizer.execute
-		_package = resourceTransitionOptimization.contents.head as Package
 		// Transforming unhandled transitions to two transitions connected by a choice
 		val unhandledTransitionTransformer = new UnhandledTransitionTransformer
 		_package.components
 			.filter(StatechartDefinition)
-			.forEach[unhandledTransitionTransformer.execute(it as StatechartDefinition)]
+			.forEach[unhandledTransitionTransformer.execute(it)]
 		// Saving the Package of the unfolded model
-		normalSave(_package, flattenedModelUri)
-		// Reading the model from disk as this is the only way it works
-		val finalResourceSet = new ResourceSetImpl
-		val resource = finalResourceSet.getResource(flattenedModelUri, true)
-		logger.log(Level.INFO, "Resource set for flattened Gamma to UPPAAL transformation created: " + finalResourceSet);
-		return resource.contents.filter(Package).head
-			.components.head
+		packageResource.save(Collections.EMPTY_MAP)
+		return _package.components.head
 	}
 	
 	def removeAnnotations(Component component) {
