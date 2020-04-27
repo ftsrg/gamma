@@ -46,7 +46,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getTypeDeclarationRule());
         c.setLinewrap(1).after(f.getSchedulingOrderRule());
         // Line breaks after/before these rules
-        c.setLinewrap(1).after(f.getAdaptiveContractAnnotationRule());
+        c.setLinewrap(1).after(f.getStatechartContractAnnotationRule());
         c.setLinewrap(1).after(f.getStateAnnotationRule());
         c.setLinewrap(1).after(f.getVariableDeclarationRule());
         c.setLinewrap(1).after(f.getTimeoutDeclarationRule());
@@ -76,7 +76,12 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getSynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getAsynchronousComponentInstanceRule());
         c.setLinewrap(1, 1, 2).after(f.getCascadeCompositeComponentAccess().getExecutionListAssignment_5_3_2_1());
-        // Set line wrap after bindings and components
+        // Set line wrap after variable bindings
+        c.setLinewrap(1, 1, 2).before(f.getStateDefinitionRule());
+        c.setIndentationIncrement().before(f.getStateDefinitionRule());
+        c.setIndentationDecrement().after(f.getStateDefinitionRule());
+        c.setSpace(" ").before(f.getStateDefinitionAccess().getLeftCurlyBracketKeyword_2());
+        c.setLinewrap(1, 1, 2).after(f.getVariableBindingRule());
         
         // Right indentation around ports
         c.setLinewrap(1, 1, 2).before(f.getPortRule());
