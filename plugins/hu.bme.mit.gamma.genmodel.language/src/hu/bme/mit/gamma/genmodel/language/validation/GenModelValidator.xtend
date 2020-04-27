@@ -51,6 +51,9 @@ import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
+import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 /**
  * This class contains custom validation rules. 
@@ -189,31 +192,35 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkGammaImports(GenModel genmodel) {
 		val packageImports = genmodel.packageImports.toSet
 		for (codeGenerationTask : genmodel.tasks.filter(CodeGeneration)) {
-			val parentPackage = codeGenerationTask.component.eContainer
+			val parentPackage = codeGenerationTask.component.containingPackage
 			packageImports.remove(parentPackage)
 		}
 		for (analysisModelTransformationTask : genmodel.tasks.filter(AnalysisModelTransformation)) {
-			val parentPackage = analysisModelTransformationTask.component.eContainer
+			val parentPackage = analysisModelTransformationTask.component.containingPackage
 			packageImports.remove(parentPackage)
 			for (coverage : analysisModelTransformationTask.coverages) {
 				for (instance : coverage.include + coverage.exclude) {
-					val instanceParentPackage = instance.eContainer.eContainer
+					val instanceParentPackage = instance.containingPackage
 					packageImports.remove(instanceParentPackage)
 				}
 			}
 		}
 		for (statechartCompilationTask : genmodel.tasks.filter(StatechartCompilation)) {
 			for (interfaceMapping : statechartCompilationTask.interfaceMappings) {
-				val parentPackage = interfaceMapping.gammaInterface.eContainer
+				val parentPackage = interfaceMapping.gammaInterface.containingPackage
 				packageImports.remove(parentPackage)
 			}
 		}
 		for (eventPriorityTransformationTask : genmodel.tasks.filter(EventPriorityTransformation)) {
-			val parentPackage = eventPriorityTransformationTask.statechart.eContainer
+			val parentPackage = eventPriorityTransformationTask.statechart.containingPackage
 			packageImports.remove(parentPackage)
 		}
 		for (adaptiveContractTestGenerationTask : genmodel.tasks.filter(AdaptiveContractTestGeneration)) {
-			val parentPackage = adaptiveContractTestGenerationTask.statechartContract.eContainer
+			val parentPackage = adaptiveContractTestGenerationTask.statechartContract.containingPackage
+			packageImports.remove(parentPackage)
+		}
+		for (phaseStatechartGenerationTask : genmodel.tasks.filter(PhaseStatechartGeneration)) {
+			val parentPackage = phaseStatechartGenerationTask.statechart.containingPackage
 			packageImports.remove(parentPackage)
 		}
 		for (packageImport : packageImports) {

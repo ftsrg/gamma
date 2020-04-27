@@ -61,8 +61,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpre
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
 import hu.bme.mit.gamma.statechart.model.phase.InstanceVariableReference;
+import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.model.phase.PhasePackage;
-import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
 
 /**
  * This class contains custom scoping description.
@@ -99,13 +99,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Phase
 			if (context instanceof InstanceVariableReference &&
 					reference == PhasePackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-				EObject container = context.eContainer().eContainer();
-				for (EObject eObject : container.eContents()) {
-					if (eObject instanceof SynchronousComponentInstance) {
-						SynchronousComponentInstance instance = (SynchronousComponentInstance) eObject;
-						StatechartDefinition statechart = (StatechartDefinition) instance.getType();
-						return Scopes.scopeFor(statechart.getVariableDeclarations());
-					}
+				MissionPhaseStateDefinition container = EcoreUtil2.getContainerOfType(context, MissionPhaseStateDefinition.class);
+				SynchronousComponentInstance instance = container.getComponent();
+				SynchronousComponent type = instance.getType();
+				if (type instanceof StatechartDefinition) {
+					StatechartDefinition statechart = (StatechartDefinition) instance.getType();
+					return Scopes.scopeFor(statechart.getVariableDeclarations());
 				}
 			}
 			// Transitions

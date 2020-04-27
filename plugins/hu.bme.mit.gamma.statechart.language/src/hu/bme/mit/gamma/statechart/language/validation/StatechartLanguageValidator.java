@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.model.AnyTrigger;
 import hu.bme.mit.gamma.statechart.model.ChoiceState;
@@ -89,6 +90,7 @@ import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel;
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.model.contract.ContractPackage;
@@ -102,6 +104,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.model.phase.PhasePackage;
 import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
 
 /**
@@ -228,6 +231,39 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("The contained ports of the monitored component are not equal to that of the adaptive statechart.",
 					ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT);
 		}
+	}
+	
+	// Statechart mission phase
+	
+	@Check
+	public void checkStateDefinition(MissionPhaseStateDefinition stateDefinition) {
+		SynchronousComponentInstance component = stateDefinition.getComponent();
+		SynchronousComponent type = component.getType();
+		if (!(type instanceof StatechartDefinition)) {
+			error("Mission phase state definitions can refer to only statechart definitions as type.",
+					component, CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE);
+		}
+		EList<VariableBinding> variableBindings = stateDefinition.getVariableBindings();
+		for (int i = 0; i < variableBindings.size() - 1; i++) {
+			VariableBinding lhs = variableBindings.get(i);
+			VariableDeclaration lhsInstanceVariable = lhs.getInstanceVariableReference().getVariable();
+			for (int j = i + 1; j < variableBindings.size(); j++) {
+				VariableBinding rhs = variableBindings.get(j);
+				VariableDeclaration rhsInstanceVariable = rhs.getInstanceVariableReference().getVariable();
+				if (lhsInstanceVariable == rhsInstanceVariable) {
+					error("More than one statechart variable is bound to this instance variable.",
+							lhs, PhasePackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
+				}
+			}
+		}
+	}
+	
+	@Check
+	public void checkVaraibleBindings(VariableBinding variableBinding) {
+		VariableDeclaration statechartVariable = variableBinding.getStatechartVariable();
+		VariableDeclaration variable = variableBinding.getInstanceVariableReference().getVariable();
+		checkTypeAndTypeConformance(statechartVariable.getType(), variable.getType(),
+				PhasePackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
 	}
 	
 	// Statechart

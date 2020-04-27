@@ -268,31 +268,55 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		}	
 	}
 	
-	protected void checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
-		ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
-		if (!typeDeterminator.equals(type, rightHandSideExpressionType)) {
-			error("The types of the variable declaration and the right hand side expression are not the same: " +
-					typeDeterminator.transform(type).toString().toLowerCase() + " and " +
+	protected void checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
+		ExpressionType leftHandSideExpressionType = typeDeterminator.transform(lhs);
+		ExpressionType rightHandSideExpressionType = typeDeterminator.transform(rhs);
+		if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
+			error("The types of the left hand side and the right hand side are not the same: " +
+					leftHandSideExpressionType.toString().toLowerCase() + " and " +
 					rightHandSideExpressionType.toString().toLowerCase() + ".", feature);
 			return;
 		}
+		checkEnumerationConformance(lhs, rhs, feature);
+	}
+	
+	protected void checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
+		ExpressionType lhsExpressionType = typeDeterminator.transform(type);
+		ExpressionType rhsExpressionType = typeDeterminator.getType(rhs);
+		if (!lhsExpressionType.equals(rhsExpressionType)) {
+			error("The types of the variable declaration and the right hand side expression are not the same: " +
+					lhsExpressionType.toString().toLowerCase() + " and " +
+					rhsExpressionType.toString().toLowerCase() + ".", feature);
+			return;
+		}
 		checkEnumerationConformance(type, rhs, feature);
+	}
+	
+	protected void checkEnumerationConformance(Type lhs, Type rhs, EStructuralFeature feature) {
+		EnumerationTypeDefinition enumType = typeDeterminator.getEnumerationType(lhs);
+		if (enumType != null) {
+			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumerationType(rhs);
+			checkEnumerationConformance(enumType, rhsType, feature);
+		}
 	}
 
 	protected void checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
 		EnumerationTypeDefinition enumType = typeDeterminator.getEnumerationType(type);
 		if (enumType != null) {
 			final EnumerationTypeDefinition rhsType = typeDeterminator.getEnumerationType(rhs);
-			if (enumType != rhsType) {
-				error("The right hand side is not the same type of enumeration as the left hand side.", feature);
-			}
+			checkEnumerationConformance(enumType, rhsType, feature);
 		}
 	}
 	
 	protected void checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
 		EnumerationTypeDefinition lhsType = typeDeterminator.getEnumerationType(lhs);
 		EnumerationTypeDefinition rhsType = typeDeterminator.getEnumerationType(rhs);
-		if (lhsType != rhsType) {
+		checkEnumerationConformance(lhsType, rhsType, feature);
+	}
+	
+	protected void checkEnumerationConformance(EnumerationTypeDefinition lhs, EnumerationTypeDefinition rhs,
+			EStructuralFeature feature) {
+		if (lhs != rhs) {
 			error("The right hand side is not the same type of enumeration as the left hand side.", feature);
 		}
 	}
