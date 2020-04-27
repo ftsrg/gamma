@@ -100,6 +100,9 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
 import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency;
+import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation;
+import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
 
 /**
  * This class contains custom validation rules. 
@@ -259,6 +262,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
 		EcoreUtil2.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
+		for (MissionPhaseStateAnnotation annotation : EcoreUtil2.getAllContentsOfType(_package, MissionPhaseStateAnnotation.class)) {
+			for (MissionPhaseStateDefinition state : annotation.getStateDefinitions()) {
+				usedComponents.add(state.getComponent().getType());
+			}
+		}
 		// Checking the imports
 		for (Package importedPackage : _package.getImports()) {
 			Collection<Interface> interfaces = new HashSet<Interface>(importedPackage.getInterfaces());
@@ -304,6 +312,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		else {
 			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
 					.stream().anyMatch(it -> it.getDeclaration() == declaration);
+			if (!isReferred) {
+				isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), VariableBinding.class)
+						.stream().anyMatch(it -> it.getStatechartVariable() == declaration);
+			}
 		}
 		if (!isReferred) {
 			if (declaration instanceof TypeDeclaration) {
