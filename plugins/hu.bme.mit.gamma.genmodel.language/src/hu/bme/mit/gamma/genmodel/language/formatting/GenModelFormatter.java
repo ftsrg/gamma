@@ -81,6 +81,16 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getTestGenerationAccess().getFileNameAssignment_5_1_2());
         c.setLinewrap(1).after(f.getTestGenerationAccess().getPackageNameAssignment_5_2_2());
         c.setLinewrap(1).after(f.getTestGenerationAccess().getLanguageAssignment_5_3_2());
+        // Adaptive test generation
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getStatechartContractAssignment_5());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getTargetFolderAssignment_7_0_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getFileNameAssignment_7_1_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getPackageNameAssignment_7_2_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getLanguageAssignment_7_3_2());
+        // Mission phase generation
+        c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getStatechartAssignment_5());
+        c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getTargetFolderAssignment_7_0_2());
+        c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getFileNameAssignment_7_1_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Keyword comma: f.findKeywords(",")) {

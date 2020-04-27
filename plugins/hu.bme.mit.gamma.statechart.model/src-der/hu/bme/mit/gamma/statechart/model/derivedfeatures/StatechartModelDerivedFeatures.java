@@ -365,7 +365,6 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
    		}
    		return getDerivedType(instance) instanceof CascadeCompositeComponent;
     }
-    
 	
 	public static int getLevel(StateNode stateNode) {
 		if (isTopRegion(getParentRegion(stateNode))) {
@@ -442,6 +441,18 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return regions;
 	}
 	
+	public static Collection<Region> getAllRegions(Region region) {
+		Set<Region> regions = new HashSet<Region>();
+		regions.add(region);
+		TreeIterator<Object> allContents = EcoreUtil.getAllContents(region, true);
+		while (allContents.hasNext()) {
+			Object next = allContents.next();
+			if (next instanceof Region) {
+				regions.add((Region) next);
+			}
+		}
+		return regions;
+	}
 	
 	public static State getParentState(StateAnnotation annotation) {
 		return (State) annotation.eContainer();

@@ -133,6 +133,11 @@ class PhaseStatechartToStatechartTransformer {
 				stateNode.name = stateNode.getName(instance) // TODO name recursively
 			}
 		}
+		for (inlineableRegion : inlineableRegions) {
+			for (region : inlineableRegion.allRegions) {
+				region.name = region.getName(instance)
+			}
+		}
 		state.regions += inlineableRegions
 		statechart.transitions += inlineableStatechart.transitions
 		val ports = inlineableStatechart.ports
