@@ -91,7 +91,7 @@ public class Controller {
     private void fillComboBox(JComboBox<String> selector, List<String> entryList) {
     	Collections.sort(entryList);
     	for (String item : entryList) {
-    		selector.addItem(item);
+    		selector.addItem(queryGenerator.unwrap(item));
     	}
     }
     
