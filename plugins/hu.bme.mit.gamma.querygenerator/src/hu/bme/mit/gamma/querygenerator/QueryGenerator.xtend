@@ -168,7 +168,7 @@ class QueryGenerator {
 				null, splittedStateName.get(splittedStateName.length - 1) /* state */)) {
 			val parentRegion = match.parentRegion
 			val templateName = parentRegion.getTemplateName(match.instance)
-			val processName = templateName.porcessName
+			val processName = templateName.processName
 			val locationNames = new StringBuilder("(")
 			for (String locationName : StatesToLocations.Matcher.on(engine).getAllValuesOflocationName(null,
 					match.state.name,

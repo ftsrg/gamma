@@ -93,7 +93,7 @@ class TestQueryGenerationHandler {
 			regions += statechart.allRegions
 			for (region : regions) {
 				val templateName = region.getTemplateName(instance)
-				val processName = templateName.porcessName
+				val processName = templateName.processName
 				for (state : region.stateNodes.filter(State)) {
 					val locationName = state.locationName
 					if (templateName.hasLocation(locationName)) {

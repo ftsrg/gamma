@@ -124,7 +124,7 @@ class Namings {
 	/**
 	 * Returns the process name of the template.
 	 */
-	def static String getPorcessName(String templateName) {
+	def static String getProcessName(String templateName) {
 		return "P_" +  templateName
 	}
 	
