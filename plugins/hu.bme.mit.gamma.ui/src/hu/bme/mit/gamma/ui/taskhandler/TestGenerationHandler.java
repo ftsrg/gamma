@@ -17,9 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -34,10 +31,8 @@ public class TestGenerationHandler extends TaskHandler {
 				"Currently only Java is supported.");
 		setTestGeneration(testGeneration, packageName);
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();
-		ResourceSet testGenerationResourceSet = new ResourceSetImpl();
-		testGenerationResourceSet.getResource(testGeneration.eResource().getURI(), true);
-		logger.log(Level.INFO, "Resource set content for test generation: " + testGenerationResourceSet);
-		TestGenerator testGenerator = new TestGenerator(testGenerationResourceSet, executionTrace,
+		logger.log(Level.INFO, "Resource set content for test generation: " + executionTrace.eResource().getResourceSet());
+		TestGenerator testGenerator = new TestGenerator(executionTrace,
 				testGeneration.getPackageName().get(0), testGeneration.getFileName().get(0));
 		String testClass = testGenerator.execute();
 		saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),

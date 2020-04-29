@@ -65,7 +65,7 @@ public class CommandHandler extends AbstractHandler {
 						}
 						if (resource.getContents() != null) {
 							if (resource.getContents().get(0) instanceof ExecutionTrace) {
-								ExecutionTrace executionTrace = (ExecutionTrace) (resource.getContents().get(0));
+								ExecutionTrace executionTrace = (ExecutionTrace) resource.getContents().get(0);
 								// From import "statechartView" we need the statechart part
 								Package importedPackage = executionTrace.getImport();
 								String importedPackageName = importedPackage.getName();
@@ -77,8 +77,7 @@ public class CommandHandler extends AbstractHandler {
 								}
 								String className = splittedPath[splittedPath.length - 1].split(".get")[0];
 								String packageName = file.getProject().getName().toLowerCase();
-								TestGenerator testGenerator = new TestGenerator(resSet, executionTrace,
-										packageName, className);
+								TestGenerator testGenerator = new TestGenerator(executionTrace,	packageName, className);
 								String testClass = testGenerator.execute();
 								// Generate in the test-gen folder the right package
 								String basePackage = packageName.replaceAll("\\.", "/") + "/" + importedPackageName;

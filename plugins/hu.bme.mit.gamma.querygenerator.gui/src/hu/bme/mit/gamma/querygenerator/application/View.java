@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.IOException;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -151,7 +152,7 @@ public class View extends JFrame {
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
-	public View(IFile file) {
+	public View(IFile file) throws IOException {
 		controller = new Controller(this, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();

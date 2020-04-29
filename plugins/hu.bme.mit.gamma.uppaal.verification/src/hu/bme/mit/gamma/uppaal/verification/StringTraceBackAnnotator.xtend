@@ -101,11 +101,11 @@ class StringTraceBackAnnotator {
 
 	protected final extension TraceUtil traceUtil = new TraceUtil
 	
-	new(ResourceSet resourceSet, Scanner traceScanner) {
-		this(resourceSet, traceScanner, true)
+	new(G2UTrace trace, Scanner traceScanner) {
+		this(trace, traceScanner, true)
 	}
 	
-	new(ResourceSet resourceSet, Scanner traceScanner, boolean sortTrace) {
+	new(G2UTrace trace, Scanner traceScanner, boolean sortTrace) {
 //		val fileWriter = new FileWriter("C:\\Users\\B\\eclipse_ws\\gamma_2.2_os_ws\\runtime-EclipseXtext\\hu.bme.mit.gamma.prolan.orion\\trace1.txt")
 //		while (traceScanner.hasNext) {
 //			fileWriter.write(traceScanner.nextLine + System.lineSeparator)
@@ -113,7 +113,8 @@ class StringTraceBackAnnotator {
 //		}
 //		fileWriter.close
 		this.traceScanner = traceScanner
-		this.resourceSet = resourceSet
+		this.resourceSet = trace.eResource.resourceSet
+		checkState(this.resourceSet !== null)
 		this.sortTrace = sortTrace
 		this.resourceSet.loadModels
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))

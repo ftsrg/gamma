@@ -36,7 +36,6 @@ class StatechartToTestTransformer {
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
 			containingFile, #[ElementCoverage.TRANSITION_COVERAGE])
 		val uppaalTraceability = uppaalResult.key
-		val traceabilityResourceSet = uppaalTraceability.eResource.resourceSet
 		val uppaalFile = uppaalResult.value.key
 		
 		// Getting traces from the simple states
@@ -52,7 +51,7 @@ class StatechartToTestTransformer {
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
 			val verifier = new Verifier
-			val simpleStateExecutionTrace = verifier.verifyQuery(traceabilityResourceSet, queryParameters,
+			val simpleStateExecutionTrace = verifier.verifyQuery(uppaalTraceability, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
 			
 			simpleStateExecutionTrace => [
@@ -80,8 +79,7 @@ class StatechartToTestTransformer {
 				}
 				// Generating tests
 				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«tranistionId»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
-				val testGenerator = new TestGenerator(traceabilityResourceSet, finalTraces,
-					basePackageName, className)
+				val testGenerator = new TestGenerator(finalTraces, basePackageName, className)
 				val testClass = testGenerator.execute
 				val testClassFile = getFile(testFolder, testGenerator.packageName, className)
 				testClassFile.saveString(testClass)

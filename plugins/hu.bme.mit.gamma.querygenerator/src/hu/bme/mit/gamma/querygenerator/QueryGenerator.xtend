@@ -12,12 +12,14 @@ import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
+
+import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
@@ -27,7 +29,9 @@ class QueryGenerator {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected final ViatraQueryEngine engine
 	
-	new (ResourceSet traceabilitySet) {
+	new(G2UTrace trace) {
+		val traceabilitySet = trace.eResource.resourceSet
+		checkArgument(traceabilitySet !== null)
 		this.engine = ViatraQueryEngine.on(new EMFScope(traceabilitySet))
 	}
 	

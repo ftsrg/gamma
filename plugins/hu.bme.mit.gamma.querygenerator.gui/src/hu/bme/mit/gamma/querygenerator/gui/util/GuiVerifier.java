@@ -16,7 +16,6 @@ import javax.swing.SwingWorker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import com.google.inject.Injector;
 
@@ -27,6 +26,7 @@ import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.uppaal.verification.Verifier;
 import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
 
@@ -60,11 +60,11 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			// Disabling the verification buttons
 			view.setVerificationButtons(false);
 			// Common traceability and execution trace
-			ResourceSet traceabilitySet = controller.loadTraceability();
+			G2UTrace traceability = controller.loadTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
 			verifier = new Verifier();
-			traceModel = verifier.verifyQuery(traceabilitySet, controller.getParameters(),
+			traceModel = verifier.verifyQuery(traceability, controller.getParameters(),
 					new File(controller.getUppaalXmlFile()), originalUppaalQueries, true, false);
 			if (traceModel != null) {
 				// No trace
@@ -72,7 +72,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 					// Removal of covered steps
 					traceUtil.removeCoveredSteps(traceModel);
 				}
-				serializeTestCode(traceModel, traceabilitySet);
+				serializeTestCode(traceModel);
 			}
 			return verifier.getResult();
 		} catch (NullPointerException e) {
@@ -98,14 +98,14 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		}
 	}
 	
-	private void serializeTestCode(ExecutionTrace traceModel, ResourceSet traceabilitySet)
+	private void serializeTestCode(ExecutionTrace traceModel)
 			throws CoreException, IOException, FileNotFoundException {
 		Entry<String, Integer> fileNameAndId = controller.getFileName("get"); // File extension could be gtr or get
 		fileNameAndId = saveModel(traceModel, fileNameAndId);
 		// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
 		String packageName = controller.getProject().getName().toLowerCase();
-		TestGenerator testGenerator = new TestGenerator(traceabilitySet,
-				traceModel, packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
+		TestGenerator testGenerator = new TestGenerator(traceModel,
+				packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
 		String testClassCode = testGenerator.execute();
 		String testClassParentFolder = controller.getTestGenFolder() + "/" + 
 				testGenerator.getPackageName().replaceAll("\\.", "\\/");

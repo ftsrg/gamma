@@ -73,9 +73,10 @@ class TestGenerator {
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(ResourceSet resourceSet, List<ExecutionTrace> traces, String yakinduPackageName, String className) {
-		this.resourceSet = resourceSet
+	new(List<ExecutionTrace> traces, String yakinduPackageName, String className) {
 		this.component = traces.head.component // Theoretically, the same thing what loadModels do
+		this.resourceSet = component.eResource.resourceSet
+		checkArgument(this.resourceSet !== null)
 		this.gammaPackage = component.eContainer as Package
 		this.YAKINDU_PACKAGE_NAME_PREFIX = yakinduPackageName // For some reason, package platform URI does not work
 		this.traces = traces
@@ -86,8 +87,8 @@ class TestGenerator {
 		this.componentClassName = "Reflective" + component.name.toFirstUpper
 	}
 	
-	new(ResourceSet resourceSet, ExecutionTrace trace, String yakinduPackageName, String className) {
-		this(resourceSet, Collections.singletonList(trace), yakinduPackageName, className)
+	new(ExecutionTrace trace, String yakinduPackageName, String className) {
+		this(Collections.singletonList(trace), yakinduPackageName, className)
 	}
 	
 	/**

@@ -11,12 +11,12 @@
 package hu.bme.mit.gamma.querygenerator.application;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
@@ -25,13 +25,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.querygenerator.QueryGenerator;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator;
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 
 public class Controller {
 
@@ -48,11 +48,14 @@ public class Controller {
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.gsm
 	private IFile file;
+	
+	// Util
+	private ExpressionUtil expressionUtil = new ExpressionUtil();
 
 	private final String TEST_GEN_FOLDER_NAME = "test-gen";
 	private final String TRACE_FOLDER_NAME = "trace";
 	
-	public Controller(View view, IFile file) {
+	public Controller(View view, IFile file) throws IOException {
 		this.file = file;
 		this.view = view;
 		this.queryGenerator = new QueryGenerator(loadTraceability()); // For state-location
@@ -165,18 +168,11 @@ public class Controller {
 		return URI.decode(file.getLocation().toString());
 	}
 	
-	public ResourceSet loadTraceability() {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		logger.log(Level.INFO, "Resource set created for traceability: " + resourceSet);
+	public G2UTrace loadTraceability() throws IOException {
 		URI fileURI = URI.createFileURI(getTraceabilityFile());
-		try {
-			resourceSet.getResource(fileURI, true);
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return resourceSet;
+		return (G2UTrace) expressionUtil.normalLoad(fileURI);
 	}
+	
 	/**
 	 * Cancels the actual verification process. Returns true if a process has been cancelled.
 	 */

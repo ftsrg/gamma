@@ -12,13 +12,13 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.codegenerator.java.util.CodeGeneratorUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean
 import java.io.File
 import java.io.IOException
 import java.util.Scanner
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.resource.ResourceSet
 
 class Verifier {
 	
@@ -30,7 +30,7 @@ class Verifier {
 	
 	extension CodeGeneratorUtil codeGeneratorUtil = new CodeGeneratorUtil
 	
-	def ExecutionTrace verifyQuery(ResourceSet traceabilitySet, String parameters, File uppaalFile,
+	def ExecutionTrace verifyQuery(G2UTrace traceability, String parameters, File uppaalFile,
 			String actualUppaalQuery, boolean log, boolean storeOutput) throws IOException  {
 		// Writing the query to a temporary file
 		val parentFolder = uppaalFile.parent
@@ -38,10 +38,10 @@ class Verifier {
 		tempQueryFile.saveString(actualUppaalQuery)
 		// Deleting the file on the exit of the JVM
 		tempQueryFile.deleteOnExit
-		return verifyQuery(traceabilitySet, parameters, uppaalFile,	tempQueryFile, log, storeOutput)
+		return verifyQuery(traceability, parameters, uppaalFile,	tempQueryFile, log, storeOutput)
 	}
 	
-	def ExecutionTrace verifyQuery(ResourceSet traceabilitySet, String parameters, File uppaalFile,
+	def ExecutionTrace verifyQuery(G2UTrace traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) throws IOException  {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
@@ -69,8 +69,7 @@ class Verifier {
 				// No back annotation of empty lines
 				throw new NotBackannotatedException(handleEmptyLines(actualUppaalQuery))
 			}
-			logger.log(Level.INFO, "Resource set content for string trace back-annotation: " + traceabilitySet)
-			val backAnnotator = new StringTraceBackAnnotator(traceabilitySet, traceReader)
+			val backAnnotator = new StringTraceBackAnnotator(traceability, traceReader)
 			val traceModel = backAnnotator.execute
 			if (storeOutput) {
 				output = verificationResultReader.output
