@@ -143,6 +143,7 @@ class QueryGenerator {
 	}
 	
 	def String parseRegularQuery(String text, TemporalOperator operator) {
+		checkArgument(!operator.equals(TemporalOperator.LEADS_TO))
 		var result = text.parseIdentifiers
 		if (!operator.equals(TemporalOperator.MIGHT_ALWAYS) && !operator.equals(TemporalOperator.MUST_ALWAYS)) {
 			// It is pointless to add isStable in the case of A[] and E[]
