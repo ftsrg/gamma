@@ -117,8 +117,8 @@ class Verifier {
 	 * Returns the correct verification answer when there is no generated trace by the UPPAAL.
 	 */
 	private def ThreeStateBoolean handleEmptyLines(String uppaalQuery) {
-		if (uppaalQuery.startsWith("A[]") || uppaalQuery.startsWith("A<>")) {
-			// In  thecase of A, empty trace means the requirement is met
+		if (uppaalQuery.startsWith("A[]") || uppaalQuery.startsWith("A<>") || uppaalQuery.contains("-->")) {
+			// In the case of A, empty trace means the requirement is met
 			return ThreeStateBoolean.TRUE
 		}
 		// In the case of E, empty trace means the requirement is not met

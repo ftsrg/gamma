@@ -5,6 +5,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.querygenerator;singleton:=true
 Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.querygenerator,
+ hu.bme.mit.gamma.querygenerator.operators,
  hu.bme.mit.gamma.querygenerator.patterns
 Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.viatra.query.runtime,

@@ -29,9 +29,9 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.querygenerator.QueryGenerator;
-import hu.bme.mit.gamma.querygenerator.TemporalOperator;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
+import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator;
 
 public class Controller {
 
@@ -95,9 +95,14 @@ public class Controller {
     	}
     }
     
-	public String parseRegular(String text, String string) {
-		return queryGenerator.parseRegular(text, TemporalOperator.valueOf(
-				string.replaceAll(" ", "_").replace("\"", "").toUpperCase()));
+	public String parseRegularQuery(String text, String temporalOperator) {
+		TemporalOperator operator = TemporalOperator.valueOf(
+				temporalOperator.replaceAll(" ", "_").replace("\"", "").toUpperCase());
+		return queryGenerator.parseRegularQuery(text, operator);
+	}
+	
+	public String parseLeadsToQuery(String first, String second) {
+		return queryGenerator.parseLeadsToQuery(first, second);
 	}
 
     /**

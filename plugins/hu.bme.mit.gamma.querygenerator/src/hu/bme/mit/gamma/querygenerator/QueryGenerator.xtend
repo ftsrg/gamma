@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
@@ -99,7 +100,7 @@ class QueryGenerator {
 		return fullParentRegionPathName + "." + lowestRegion.name // Only regions are in path - states could be added too
 	}
 	
-	def String parseRegular(String text, TemporalOperator operator) {
+	private def String parseIdentifiers(String text) {
 		var result = text
 		if (text.contains("deadlock")) {
 			return text
@@ -134,6 +135,11 @@ class QueryGenerator {
 			}
 		}
 		result = "(" + result + ")"
+		return result
+	}
+	
+	def String parseRegularQuery(String text, TemporalOperator operator) {
+		var result = text.parseIdentifiers
 		if (!operator.equals(TemporalOperator.MIGHT_ALWAYS) && !operator.equals(TemporalOperator.MUST_ALWAYS)) {
 			// It is pointless to add isStable in the case of A[] and E[]
 			result += " && isStable"
@@ -142,6 +148,11 @@ class QueryGenerator {
 			// Instead this is added
 			result += " || !isStable"
 		}
+		return operator.operator + " " + result
+	}
+	
+	def String parseLeadsToQuery(String first, String second) {
+		var result = first.parseIdentifiers + " && isStable --> " + second.parseIdentifiers + " && isStable"
 		return result
 	}
 	

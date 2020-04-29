@@ -818,16 +818,13 @@ public class View extends JFrame {
 	private String parseText() {
 		String result = null;
 		if (howToList.getSelectedItem().equals(LEADS_TO)) {
-			String result1 = controller.parseRegular(primeText.getText(), howToList.getSelectedItem().toString());
-			String result2 = controller.parseRegular(optionalText.getText(), howToList.getSelectedItem().toString());
-			result = result1 + " --> " + result2;
-			resultText.setText(result);
+			result = controller.parseLeadsToQuery(primeText.getText(), optionalText.getText());
 		}
 		else {
-			String result1 = controller.parseRegular(primeText.getText(), howToList.getSelectedItem().toString());
-			result = transformToOperator(howToList.getSelectedItem().toString()) + " " + result1;
-			resultText.setText(result);
+			String operator = howToList.getSelectedItem().toString();
+			result = controller.parseRegularQuery(primeText.getText(), operator);
 		}
+		resultText.setText(result);
 		return result;
 	}
 
@@ -840,22 +837,6 @@ public class View extends JFrame {
 		optionalLabel.setText("Condition B:");		
 	}
 	
-	private String transformToOperator(String string) {
-		switch (string) {
-			case MIGHT_EVENTUALLY:
-				return "E<>";
-			case MIGHT_ALWAYS:
-				return "E[]";
-			case MUST_ALWAYS:
-				return "A[]";
-			case MUST_EVENTUALLY:
-				return "A<>";
-			case LEADS_TO:
-				return "-->";
-		}
-		throw new IllegalArgumentException("Error!");
-	}
-
 	public void handleVerificationExceptions(Exception ex) {
 		// Logging the exception
 		if (ex == null || ex.getMessage() == null) {
