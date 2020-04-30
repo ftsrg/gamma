@@ -53,6 +53,7 @@ class ModelModifierForTestGeneration {
 	protected int transitionId = INITIAL_TRANSITION_ID
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
+	protected InteractionRepresentation interactionRepresentation = InteractionRepresentation.UNDER_APPROXIMATION
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Map<SynchronousComponentInstance, DataVariableDeclaration> sendingVariables = newHashMap
 	protected final Map<SynchronousComponentInstance, DataVariableDeclaration> receivingVariables = newHashMap
@@ -86,6 +87,13 @@ class ModelModifierForTestGeneration {
 			this.INTERACTION_COVERAGE = true
 			this.interactionCoverableComponents += interactionCoverableComponents
 		}
+	}
+	
+	/**
+	 * Has to be called explicitly.
+	 */
+	def setInteractionRepresentation(InteractionRepresentation interactionRepresentation) {
+		this.interactionRepresentation = interactionRepresentation
 	}
 	
 	def getEngine() {
@@ -230,7 +238,9 @@ class ModelModifierForTestGeneration {
 		}
 		// Annotating transitions
 		val edgeAnnotations = newHashMap // One edge can handle at most one assignment to the same variable
-		for (match : interactionMatcher.allMatches) {
+		for (match : interactionMatcher.allMatches
+				.filter[interactionCoverableComponents.contains(it.outInstance) &&
+					interactionCoverableComponents.contains(it.inInstance)]) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
 			val outInstance = match.outInstance
@@ -248,11 +258,19 @@ class ModelModifierForTestGeneration {
 				else {
 					sendingId = outInstance.getSendingId(raiseEventAction)
 					edgeAnnotations.put(edge, sendingId)
-					edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
-//					// The variable is either set to a new variable or not
-//					val toSetSelection = edge.addBooleanSelection("toSet")
-//					edge.createIfThenElseAssignment(edge_Update, sendingVariable, toSetSelection.variable.head,
-//						sendingId.toString, sendingVariable.variable.head)
+					switch (interactionRepresentation) {
+						case UNDER_APPROXIMATION: {
+							edge.createAssignmentExpression(edge_Update, sendingVariable, sendingId.toString)
+						}
+						case OVER_APPROXIMATION: {
+							// The variable is either set to a new variable or not
+							val toSetSelection = edge.addBooleanSelection("toSet")
+							edge.createIfThenElseAssignment(edge_Update, sendingVariable, toSetSelection.variable.head,
+								sendingId.toString, sendingVariable.variable.head)
+						}
+						default:
+							throw new IllegalArgumentException("Not known value: " + interactionRepresentation)
+					}
 				}
 			}
 			// Receiving
@@ -298,5 +316,7 @@ class ModelModifierForTestGeneration {
 	def getResetableVariables() {
 		return resetableVariables
 	}
+	
+	enum InteractionRepresentation {UNDER_APPROXIMATION, OVER_APPROXIMATION}
 	
 }

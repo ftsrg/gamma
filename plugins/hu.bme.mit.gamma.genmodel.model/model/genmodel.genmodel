@@ -20,6 +20,10 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/FAIR"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//InteractionRepresentation">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionRepresentation/UNDER_APPROXIMATION"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionRepresentation/OVER_APPROXIMATION"/>
+    </genEnums>
     <genClasses ecoreClass="genmodel.ecore#//GenModel">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechartImports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/packageImports"/>
@@ -73,7 +77,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventPriorityTransformation/statechart"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//OutEventCoverage"/>
-    <genClasses ecoreClass="genmodel.ecore#//InteractionCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//InteractionCoverage">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InteractionCoverage/interactionRepresentation"/>
+    </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//Constraint"/>
     <genClasses ecoreClass="genmodel.ecore#//SchedulingConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//SchedulingConstraint/instanceConstraint"/>

@@ -28,10 +28,12 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation
 
 class TestQueryGenerationHandler {
 	// Has to be set externally
 	ModelModifierForTestGeneration modelModifier
+	InteractionRepresentation interactionRepresentation = InteractionRepresentation.UNDER_APPROXIMATION
 	// Auxiliary
 	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
 	// State coverage
@@ -69,6 +71,10 @@ class TestQueryGenerationHandler {
 		}
 	}
 	
+	def setInteractionRepresentation(InteractionRepresentation interactionRepresentation) {
+		this.interactionRepresentation = interactionRepresentation
+	}
+	
 	/**
 	 * Has to be called externally.
 	 */
@@ -76,11 +82,13 @@ class TestQueryGenerationHandler {
 		this.modelModifier = modelModifierForTestGeneration
 		this.modelModifier.setComponentInstances(transitionCoverableComponents,
 			interactionCoverableComponents)
+		this.modelModifier.interactionRepresentation = interactionRepresentation
 	}
 	
 	def getModelModifier() {
 		return this.modelModifier
 	}
+
 	
 	// State coverage
 	

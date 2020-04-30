@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstraint;
@@ -87,6 +88,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
 				testedComponentsForStates, testedComponentsForTransitions,
 				testedComponentsForOutEvents, testedComponentsForInteractions);
+		if (interactionCoverage.isPresent()) {
+			InteractionCoverage coverage = (InteractionCoverage) interactionCoverage.get();
+			testGenerationHandler.setInteractionRepresentation(
+					getInteractionRepresentation(coverage.getInteractionRepresentation()));
+		}
 		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + newTopComponent.eResource().getResourceSet());
 		Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
@@ -181,6 +187,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return Scheduler.FAIR;
 		default:
 			return Scheduler.RANDOM;
+		}
+	}
+	
+	private InteractionRepresentation getInteractionRepresentation(
+			hu.bme.mit.gamma.genmodel.model.InteractionRepresentation interactionRepresentation) {
+		switch (interactionRepresentation) {
+		case OVER_APPROXIMATION:
+			return InteractionRepresentation.OVER_APPROXIMATION;
+		default:
+			return InteractionRepresentation.UNDER_APPROXIMATION;
 		}
 	}
 	

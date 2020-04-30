@@ -158,31 +158,37 @@ Coverage returns Coverage:
 
 StateCoverage returns StateCoverage:
 	{StateCoverage} 'state-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
 		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
 	'}')?
 ;
 
 TransitionCoverage returns TransitionCoverage:
 	{TransitionCoverage} 'transition-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
 		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
 	'}')?
 ;
 
 OutEventCoverage returns OutEventCoverage:
 	{OutEventCoverage} 'out-event-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
 		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
 	'}')?
 ;
 
 InteractionCoverage returns InteractionCoverage:
-	{InteractionCoverage} 'interaction-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')
+	{InteractionCoverage} 'interaction-coverage' ('{'
+		('interaction-representation' ':' interactionRepresentation=InteractionRepresentation)?
+		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
 		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
 	'}')?
 ;
+
+enum InteractionRepresentation returns InteractionRepresentation:
+	UNDER_APPROXIMATION = "under-approximation" |  OVER_APPROXIMATION = "over-approximation"
+;
+
 
 InterfaceMapping  returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
