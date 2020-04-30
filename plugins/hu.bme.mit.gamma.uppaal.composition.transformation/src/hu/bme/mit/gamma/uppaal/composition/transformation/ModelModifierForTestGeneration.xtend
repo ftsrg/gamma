@@ -58,7 +58,8 @@ class ModelModifierForTestGeneration {
 	protected final Map<SynchronousComponentInstance, DataVariableDeclaration> receivingVariables = newHashMap
 	// Map<outInstance, Map<RaiseEventAction, Pair<outEdgeId, Set<Pair<inEdgeId, ReceivingTransition>>>>>
 	protected final Map<SynchronousComponentInstance, Map<RaiseEventAction, Pair<Integer, Set<Pair<Integer, Transition>>>>> interactionIds = newHashMap
-	
+	// Resetable variables
+	protected final Set<DataVariableDeclaration> resetableVariables = newHashSet // It is important that this is a set (the getter method reloads it every time)
 	
 	new(NtaBuilder ntaBuilder, AssignmentExpressionCreator assignmentExpressionCreator,
 			ViatraQueryEngine engine, Trace trace) {
@@ -284,6 +285,18 @@ class ModelModifierForTestGeneration {
 	def modifyModelForTestGeneration() {
 		modifyModelForTransitionCoverage
 		modifyModelForInteractionCoverage
+		// Filling the resetable variable set
+		if (transitionIdVariable !== null) {
+			resetableVariables += transitionIdVariable
+		}
+		resetableVariables += receivingVariables.values
+	}
+	
+	/**
+	 * Resetable variables for the first edge in the orchestrator template.
+	 */
+	def getResetableVariables() {
+		return resetableVariables
 	}
 	
 }

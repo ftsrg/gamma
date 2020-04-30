@@ -287,7 +287,7 @@ class CompositeToUppaalTransformer {
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, modelModifier.getTransitionIdVariable, this.isStableVar)
+			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, modelModifier.resetableVariables, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
@@ -350,6 +350,8 @@ class CompositeToUppaalTransformer {
 //		instantiateUninstantiatedTemplates
 		// New entries to traces, previous adding would cause trouble
 		extendTrace
+		// Modify models for test generation
+		modelModifier.modifyModelForTestGeneration // Before orchestratorCreator
 		// Firing the rules for async components 
 		{asynchronousConstantsCreator.getEventConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]
 		asynchronousConstantsCreator.getClockConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]}
@@ -379,8 +381,6 @@ class CompositeToUppaalTransformer {
 			createNoInnerEventsFunction
 		}
 		cleanUp
-		// Modify models for test generation
-		modelModifier.modifyModelForTestGeneration
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
 	}

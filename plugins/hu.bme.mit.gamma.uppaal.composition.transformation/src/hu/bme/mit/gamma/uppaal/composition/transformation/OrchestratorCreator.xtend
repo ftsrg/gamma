@@ -97,7 +97,7 @@ class OrchestratorCreator {
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
-	protected final DataVariableDeclaration transitionIdVar
+	protected final Collection<DataVariableDeclaration> resetableVariables
 	// Orchestrating period for top sync components
 	protected TimeSpecification minimalOrchestratingPeriod
 	protected TimeSpecification maximalOrchestratingPeriod
@@ -118,7 +118,7 @@ class OrchestratorCreator {
 	new(NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
 			AssignmentExpressionCreator assignmentExpressionCreator,
 			CompareExpressionCreator compareExpressionCreator, OrchestratingConstraint constraint,
-			Trace modelTrace, DataVariableDeclaration transitionIdVar, DataVariableDeclaration isStableVar) {
+			Trace modelTrace, Collection<DataVariableDeclaration> resetableVariables, DataVariableDeclaration isStableVar) {
 		this.ntaBuilder = ntaBuilder
 		this.manipulation = manipulation
 		this.engine = engine
@@ -127,7 +127,8 @@ class OrchestratorCreator {
 			this.maximalOrchestratingPeriod = constraint.maximumPeriod
 		}
 		this.modelTrace = modelTrace
-		this.transitionIdVar = transitionIdVar
+		// It is important that resetableVariables is not cloned, it is the same collection! (Variables are added later in the collection)
+		this.resetableVariables = resetableVariables
 		this.isStableVar = isStableVar
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.modelTrace)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
@@ -166,7 +167,7 @@ class OrchestratorCreator {
 					initLoc.locationTimeKind = LocationKind.URGENT
 				}
 				// Reset transition id variable to reduce state space
-				firstEdge.resetTransitionIdVariableIfNeeded
+				firstEdge.resetResetableVariables
 				// Reset clocks to reduce state space
 				firstEdge.resetClocks(it.syncComposite)
 			].build
@@ -229,11 +230,9 @@ class OrchestratorCreator {
 		firstEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
 	}
 	
-	private def resetTransitionIdVariableIfNeeded(Edge edge) {
-		if (transitionIdVar !== null) {
-			edge.createAssignmentExpression(edge_Update, transitionIdVar,
-				createLiteralExpression => [it.text = "0"]
-			)
+	private def resetResetableVariables(Edge edge) {
+		for (variable : resetableVariables) {
+			edge.createAssignmentExpression(edge_Update, variable, createLiteralExpression => [it.text = "0"])
 		}
 	}
 	
