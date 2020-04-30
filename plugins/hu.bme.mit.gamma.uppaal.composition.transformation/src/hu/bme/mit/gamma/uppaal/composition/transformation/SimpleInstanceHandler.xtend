@@ -27,9 +27,9 @@ class SimpleInstanceHandler {
 			Collection<? extends ComponentInstance> excludedOriginalInstances, Component newType) {
 		// Include - exclude
 		val oldInstances = newArrayList
-		oldInstances += includedOriginalInstances.allSimpleInstances
-		oldInstances -= excludedOriginalInstances.allSimpleInstances
-		return oldInstances.getNewSimpleInstances(newType)
+		oldInstances += includedOriginalInstances.allSimpleInstances.getNewSimpleInstances(newType)
+		oldInstances -= excludedOriginalInstances.allSimpleInstances.getNewSimpleInstances(newType)
+		return oldInstances
 	}
 	
 	def getNewSimpleInstances(Collection<? extends ComponentInstance> originalInstances, Component newType) {

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import org.eclipse.emf.common.util.EList;
+
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
@@ -32,6 +34,7 @@ import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
@@ -131,13 +134,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
 		if (coverage.isPresent()) {
 			Coverage presentCoverage = coverage.get();
-			if (presentCoverage.getInclude().isEmpty()) {
+			List<? extends ComponentInstance> includedComponents = presentCoverage.getInclude();
+			if (includedComponents.isEmpty()) {
 				// If there is no include in the coverage, it means all instances need to be tested
-				return simpleInstanceHandler.getNewSimpleInstances(component);
+				includedComponents = simpleInstanceHandler.getNewSimpleInstances(component);
 			}
-			else {
-				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(), presentCoverage.getExclude(), component);
-			}
+			return simpleInstanceHandler.getNewSimpleInstances(includedComponents, presentCoverage.getExclude(), component);
 		}
 		return Collections.emptyList();
 	}
