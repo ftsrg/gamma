@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature.Setting;
@@ -32,22 +34,27 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
+import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
+import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 public class ExpressionUtil {
 
 	protected ExpressionEvaluator evaluator = new ExpressionEvaluator();
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-	
+
 	public ExpressionEvaluator getEvaluator() {
 		return evaluator;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T extends EObject> T getContainer(EObject element, Class<T> _class) {
 		EObject container = element.eContainer();
@@ -59,7 +66,7 @@ public class ExpressionUtil {
 		}
 		return getContainer(container, _class);
 	}
-	
+
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
 		Set<Boolean> booleanValues = new HashSet<Boolean>();
@@ -72,9 +79,10 @@ public class ExpressionUtil {
 					integerValues.add(value);
 					IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
 					integerLiteralExpression.setValue(BigInteger.valueOf(value));
-					evaluatedExpressions.add(integerLiteralExpression); 
+					evaluatedExpressions.add(integerLiteralExpression);
 				}
-			} catch (Exception e) {}
+			} catch (Exception e) {
+			}
 			// Excluding branches
 			try {
 				// Boolean
@@ -83,18 +91,18 @@ public class ExpressionUtil {
 					booleanValues.add(bool);
 					evaluatedExpressions.add(bool ? factory.createTrueExpression() : factory.createFalseExpression());
 				}
-			} catch (Exception e) {}
+			} catch (Exception e) {
+			}
 		}
 		return evaluatedExpressions;
 	}
-	
+
 	public boolean isDefinitelyTrueExpression(Expression expression) {
 		if (expression instanceof TrueExpression) {
 			return true;
 		}
 		if (expression instanceof BinaryExpression) {
-			if (expression instanceof EqualityExpression
-					|| expression instanceof GreaterEqualExpression
+			if (expression instanceof EqualityExpression || expression instanceof GreaterEqualExpression
 					|| expression instanceof LessEqualExpression) {
 				BinaryExpression binaryExpression = (BinaryExpression) expression;
 				Expression leftOperand = binaryExpression.getLeftOperand();
@@ -102,8 +110,8 @@ public class ExpressionUtil {
 				if (helperEquals(leftOperand, rightOperand)) {
 					return true;
 				}
-				if (!(leftOperand instanceof EnumerationLiteralExpression &&
-						rightOperand instanceof EnumerationLiteralExpression)) {
+				if (!(leftOperand instanceof EnumerationLiteralExpression
+						&& rightOperand instanceof EnumerationLiteralExpression)) {
 					// Different enum literals could be evaluated to the same value
 					try {
 						int leftValue = evaluator.evaluate(leftOperand);
@@ -131,7 +139,7 @@ public class ExpressionUtil {
 		}
 		return false;
 	}
-	
+
 	public boolean isDefinitelyFalseExpression(Expression expression) {
 		if (expression instanceof FalseExpression) {
 			return true;
@@ -141,10 +149,12 @@ public class ExpressionUtil {
 			EqualityExpression equilityExpression = (EqualityExpression) expression;
 			Expression leftOperand = equilityExpression.getLeftOperand();
 			Expression rightOperand = equilityExpression.getRightOperand();
-			if (leftOperand instanceof EnumerationLiteralExpression && 
-					rightOperand instanceof EnumerationLiteralExpression) {
-				EnumerationLiteralDefinition leftReference = ((EnumerationLiteralExpression) leftOperand).getReference();
-				EnumerationLiteralDefinition rightReference = ((EnumerationLiteralExpression) rightOperand).getReference();
+			if (leftOperand instanceof EnumerationLiteralExpression
+					&& rightOperand instanceof EnumerationLiteralExpression) {
+				EnumerationLiteralDefinition leftReference = ((EnumerationLiteralExpression) leftOperand)
+						.getReference();
+				EnumerationLiteralDefinition rightReference = ((EnumerationLiteralExpression) rightOperand)
+						.getReference();
 				if (!helperEquals(leftReference, rightReference)) {
 					return true;
 				}
@@ -171,25 +181,28 @@ public class ExpressionUtil {
 				}
 			}
 			Collection<EqualityExpression> allEqualityExpressions = collectAllEqualityExpressions(andExpression);
-			List<EqualityExpression> referenceEqualityExpressions = filterReferenceEqualityExpressions(allEqualityExpressions);
+			List<EqualityExpression> referenceEqualityExpressions = filterReferenceEqualityExpressions(
+					allEqualityExpressions);
 			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	private boolean hasEqualityToDifferentLiterals(List<EqualityExpression> expressions) {
 		for (int i = 0; i < expressions.size() - 1; ++i) {
 			try {
 				EqualityExpression leftEqualityExpression = expressions.get(i);
-				ReferenceExpression leftReferenceExpression = (ReferenceExpression) leftEqualityExpression.getLeftOperand();
+				ReferenceExpression leftReferenceExpression = (ReferenceExpression) leftEqualityExpression
+						.getLeftOperand();
 				Declaration leftDeclaration = leftReferenceExpression.getDeclaration();
 				int leftValue = evaluator.evaluate(leftEqualityExpression.getRightOperand());
 				for (int j = i + 1; j < expressions.size(); ++j) {
 					try {
 						EqualityExpression rightEqualityExpression = expressions.get(j);
-						ReferenceExpression rightReferenceExpression = (ReferenceExpression) rightEqualityExpression.getLeftOperand();
+						ReferenceExpression rightReferenceExpression = (ReferenceExpression) rightEqualityExpression
+								.getLeftOperand();
 						Declaration rightDeclaration = rightReferenceExpression.getDeclaration();
 						int rightValue = evaluator.evaluate(rightEqualityExpression.getRightOperand());
 						if (leftDeclaration == rightDeclaration && leftValue != rightValue) {
@@ -209,42 +222,101 @@ public class ExpressionUtil {
 		}
 		return false;
 	}
-	
+
 	public Collection<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
 			if (subexpression instanceof EqualityExpression) {
 				equalityExpressions.add((EqualityExpression) subexpression);
-			}
-			else if (subexpression instanceof AndExpression) {
+			} else if (subexpression instanceof AndExpression) {
 				equalityExpressions.addAll(collectAllEqualityExpressions((AndExpression) subexpression));
 			}
 		}
 		return equalityExpressions;
 	}
-	
+
 	public List<EqualityExpression> filterReferenceEqualityExpressions(Collection<EqualityExpression> expressions) {
-		return expressions.stream().filter(it -> it.getLeftOperand() instanceof ReferenceExpression &&
-				!(it.getRightOperand() instanceof ReferenceExpression)).collect(Collectors.toList());
+		return expressions.stream().filter(it -> it.getLeftOperand() instanceof ReferenceExpression
+				&& !(it.getRightOperand() instanceof ReferenceExpression)).collect(Collectors.toList());
 	}
-	
+
 	// Arithmetic: for now, integers only
-	
+
 	public Expression add(Expression expression, int value) {
 		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
 		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) + value));
 		return integerLiteralExpression;
 	}
-	
+
 	public Expression subtract(Expression expression, int value) {
 		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
 		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) - value));
 		return integerLiteralExpression;
 	}
-	
-	
+
+	// Declaration references
+
+	protected Set<VariableDeclaration> _getReferredVariables(final NullaryExpression expression) {
+		return Collections.emptySet();
+	}
+
+	protected Set<VariableDeclaration> _getReferredVariables(final UnaryExpression expression) {
+		return getReferredVariables(expression.getOperand());
+	}
+
+	protected Set<VariableDeclaration> _getReferredVariables(final IfThenElseExpression expression) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		variables.addAll(getReferredVariables(expression.getCondition()));
+		variables.addAll(getReferredVariables(expression.getThen()));
+		variables.addAll(getReferredVariables(expression.getElse()));
+		return variables;
+	}
+
+	protected Set<VariableDeclaration> _getReferredVariables(final ReferenceExpression expression) {
+		Declaration declaration = expression.getDeclaration();
+		if ((declaration instanceof VariableDeclaration)) {
+			return Collections.singleton(((VariableDeclaration) declaration));
+		}
+		return Collections.emptySet();
+	}
+
+	protected Set<VariableDeclaration> _getReferredVariables(final BinaryExpression expression) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		variables.addAll(getReferredVariables(expression.getLeftOperand()));
+		variables.addAll(getReferredVariables(expression.getRightOperand()));
+		return variables;
+	}
+
+	protected Set<VariableDeclaration> _getReferredVariables(final MultiaryExpression expression) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		EList<Expression> _operands = expression.getOperands();
+		for (Expression operand : _operands) {
+			variables.addAll(getReferredVariables(operand));
+		}
+		return variables;
+	}
+
+	public Set<VariableDeclaration> getReferredVariables(final Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			return _getReferredVariables((ReferenceExpression) expression);
+		} else if (expression instanceof BinaryExpression) {
+			return _getReferredVariables((BinaryExpression) expression);
+		} else if (expression instanceof IfThenElseExpression) {
+			return _getReferredVariables((IfThenElseExpression) expression);
+		} else if (expression instanceof MultiaryExpression) {
+			return _getReferredVariables((MultiaryExpression) expression);
+		} else if (expression instanceof NullaryExpression) {
+			return _getReferredVariables((NullaryExpression) expression);
+		} else if (expression instanceof UnaryExpression) {
+			return _getReferredVariables((UnaryExpression) expression);
+		} else {
+			throw new IllegalArgumentException(
+					"Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+		}
+	}
+
 	// Helpers
-	
+
 	public void change(EObject newObject, EObject oldObject, EObject container) {
 		Collection<Setting> oldReferences = UsageCrossReferencer.find(oldObject, container);
 		for (Setting oldReference : oldReferences) {
@@ -252,49 +324,51 @@ public class ExpressionUtil {
 		}
 		EcoreUtil.remove(oldObject);
 	}
-	
+
 	public EObject normalLoad(URI uri) throws IOException {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		Resource resource = resourceSet.getResource(uri, true);
 		return resource.getContents().get(0);
 	}
-	
+
 	public EObject normalLoad(String parentFolder, String fileName) throws IOException {
 		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName));
 	}
-	
+
 	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) throws IOException {
 		Resource resource = resourceSet.createResource(uri);
 		resource.getContents().add(rootElem);
 		resource.save(Collections.EMPTY_MAP);
 		return resource;
 	}
-	
-	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) throws IOException {
+
+	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName)
+			throws IOException {
 		URI uri = URI.createFileURI(parentFolder + File.separator + fileName);
 		return normalSave(resourceSet, rootElem, uri);
 	}
-	
+
 	public Resource normalSave(EObject rootElem, URI uri) throws IOException {
 		return normalSave(new ResourceSetImpl(), rootElem, uri);
 	}
-	
+
 	public Resource normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
 		return normalSave(new ResourceSetImpl(), rootElem, parentFolder, fileName);
 	}
-	
+
 	public boolean helperEquals(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T extends EObject> T clone(T object, boolean a, boolean b) {
-		// A new copier should be user every time, otherwise anomalies happen (references are changed without asking)
+		// A new copier should be user every time, otherwise anomalies happen
+		// (references are changed without asking)
 		Copier copier = new Copier(a, b);
 		EObject clone = copier.copy(object);
 		copier.copyReferences();
 		return (T) clone;
-	}	
-	
+	}
+
 }
