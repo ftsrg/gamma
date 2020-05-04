@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  hu.bme.mit.gamma.yakindu.transformation.traceability,
  hu.bme.mit.gamma.yakindu.transformation,
  hu.bme.mit.gamma.dialog,
- hu.bme.mit.gamma.statechart.language.ui
+ hu.bme.mit.gamma.statechart.language.ui,
+ hu.bme.mit.gamma.language.util
 Export-Package: hu.bme.mit.gamma.yakinduif.transformation.commandhandler
 Bundle-Vendor: BME-FTSRG
 Import-Package: com.google.inject

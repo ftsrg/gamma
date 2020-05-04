@@ -27,14 +27,14 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import com.google.inject.Injector;
 
-import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
-import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
-import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
+import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
+import hu.bme.mit.gamma.statechart.model.Package;
 
 public abstract class TaskHandler {
 	
@@ -107,7 +107,7 @@ public abstract class TaskHandler {
 		// This is how an injected object can be retrieved
 		Injector injector = LanguageActivator.getInstance()
 				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_STATECHART_LANGUAGE_STATECHARTLANGUAGE);
-		StatechartLanguageSerializer serializer = injector.getInstance(StatechartLanguageSerializer.class);
+		GammaLanguageSerializer serializer = injector.getInstance(GammaLanguageSerializer.class);
 		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
 	}
 	
