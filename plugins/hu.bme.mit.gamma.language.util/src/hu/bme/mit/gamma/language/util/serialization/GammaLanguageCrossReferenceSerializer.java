@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.language.util.serialization;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -26,9 +27,16 @@ public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferen
 			if (getTarget().isInstance(target)) {
 				Resource resource = target.eResource();
 				URI uri = resource.getURI();
-				String string = uri.toPlatformString(true);
-				if (string == null) {
-					string = uri.toString();
+				String string = null;
+				// We prefer relative URIs as they are platform independent
+				if (uri.isRelative()) {
+					string = uri.toPlatformString(true);
+				}
+				else {
+					// Absolute URI - trimming the workspace from the beginning
+					String workspaceLocation = "file:/" + 
+							ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
+					string = uri.toString().replaceFirst(workspaceLocation, "");
 				}
 				return "\"" + string + "\"";
 			}
