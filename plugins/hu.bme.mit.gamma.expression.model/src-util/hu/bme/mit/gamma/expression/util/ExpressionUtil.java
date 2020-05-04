@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +24,19 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
+import org.eclipse.xtext.xbase.lib.ObjectExtensions;
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
@@ -36,13 +44,18 @@ import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
@@ -315,7 +328,69 @@ public class ExpressionUtil {
 		}
 	}
 
-	// Helpers
+	// Initial values of types
+
+	public Expression getInitialValue(final VariableDeclaration variableDeclaration) {
+		final Expression initialValue = variableDeclaration.getExpression();
+		if (initialValue != null) {
+			return clone(initialValue, true, true);
+		}
+		final Type type = variableDeclaration.getType();
+		return getInitialValueOfType(type);
+	}
+	
+	protected Expression _getInitialValueOfType(final TypeReference type) {
+		return getInitialValueOfType(type.getReference().getType());
+	}
+
+	protected Expression _getInitialValueOfType(final BooleanTypeDefinition type) {
+		return factory.createFalseExpression();
+	}
+
+	protected Expression _getInitialValueOfType(final IntegerTypeDefinition type) {
+		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
+		integerLiteralExpression.setValue(BigInteger.ZERO);
+		return integerLiteralExpression;
+	}
+
+	protected Expression _getInitialValueOfType(final DecimalTypeDefinition type) {
+		DecimalLiteralExpression decimalLiteralExpression = factory.createDecimalLiteralExpression();
+		decimalLiteralExpression.setValue(BigDecimal.ZERO);
+		return decimalLiteralExpression;
+	}
+
+	protected Expression _getInitialValueOfType(final RationalTypeDefinition type) {
+		RationalLiteralExpression rationalLiteralExpression = factory.createRationalLiteralExpression();
+		rationalLiteralExpression.setNumerator(BigInteger.ZERO);
+		rationalLiteralExpression.setDenominator(BigInteger.ONE);
+		return rationalLiteralExpression;
+	}
+
+	protected Expression _getInitialValueOfType(final EnumerationTypeDefinition type) {
+		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
+		enumerationLiteralExpression.setReference(type.getLiterals().get(0));
+		return enumerationLiteralExpression;
+	}
+
+	public Expression getInitialValueOfType(final Type type) {
+		if (type instanceof EnumerationTypeDefinition) {
+			return _getInitialValueOfType((EnumerationTypeDefinition) type);
+		} else if (type instanceof DecimalTypeDefinition) {
+			return _getInitialValueOfType((DecimalTypeDefinition) type);
+		} else if (type instanceof IntegerTypeDefinition) {
+			return _getInitialValueOfType((IntegerTypeDefinition) type);
+		} else if (type instanceof RationalTypeDefinition) {
+			return _getInitialValueOfType((RationalTypeDefinition) type);
+		} else if (type instanceof BooleanTypeDefinition) {
+			return _getInitialValueOfType((BooleanTypeDefinition) type);
+		} else if (type instanceof TypeReference) {
+			return _getInitialValueOfType((TypeReference) type);
+		} else {
+			throw new IllegalArgumentException("Unhandled parameter types: " + type);
+		}
+	}
+
+	// Ecore Helpers
 
 	public void change(EObject newObject, EObject oldObject, EObject container) {
 		Collection<Setting> oldReferences = UsageCrossReferencer.find(oldObject, container);
