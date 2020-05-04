@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.language.util.serialization;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic.Acceptor;
@@ -22,10 +24,14 @@ public class GammaLanguageCrossReferenceSerializer extends CrossReferenceSeriali
 
 	public String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref,
 			EObject target, final IScope scope, Acceptor errors) {
-		if (semanticObject instanceof Package) {
-			if (target instanceof Package) {
-				return "\"" + target.eResource().getURI().toPlatformString(true) + "\"";
+		if (target instanceof Package) {
+			Resource resource = target.eResource();
+			URI uri = resource.getURI();
+			String string = uri.toPlatformString(true);
+			if (string == null) {
+				string = uri.toString();
 			}
+			return "\"" + string + "\"";
 		}
 		return super.getCrossReferenceNameFromScope(semanticObject, crossref, target, scope, errors);
 	}

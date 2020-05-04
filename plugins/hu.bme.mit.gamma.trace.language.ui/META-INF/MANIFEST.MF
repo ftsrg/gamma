@@ -23,7 +23,6 @@ Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: hu.bme.mit.gamma.trace.language.ui.contentassist,
  hu.bme.mit.gamma.trace.language.ui.internal,
- hu.bme.mit.gamma.trace.language.ui.quickfix,
- hu.bme.mit.gamma.trace.language.ui.serializer
+ hu.bme.mit.gamma.trace.language.ui.quickfix
 Bundle-Activator: hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator
 Automatic-Module-Name: hu.bme.mit.gamma.trace.language.ui

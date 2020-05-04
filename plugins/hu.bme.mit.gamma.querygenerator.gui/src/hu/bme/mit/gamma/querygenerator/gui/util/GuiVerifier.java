@@ -19,10 +19,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Injector;
 
+import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
 import hu.bme.mit.gamma.querygenerator.application.Controller;
 import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
-import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
@@ -120,6 +120,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			// Trying to serialize the model
 			serialize(traceModel, controller.getTraceFolder(), fileNameAndId.getKey());
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.log(Level.SEVERE, e.getMessage() + System.lineSeparator() +
 				"Possibly you have two more model elements with the same name specified in the previous error message.");
 			new File(controller.getTraceFolder() + File.separator + fileNameAndId.getKey()).delete();
@@ -134,7 +135,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		// This is how an injected object can be retrieved
 		Injector injector = LanguageActivator.getInstance()
 				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_TRACE_LANGUAGE_TRACELANGUAGE);
-		TraceLanguageSerializer serializer = injector.getInstance(TraceLanguageSerializer.class);
+		GammaLanguageSerializer serializer = injector.getInstance(GammaLanguageSerializer.class);
 		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
    }
 	
