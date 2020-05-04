@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Utility Functions for the Gamma Languages
+Bundle-SymbolicName: hu.bme.mit.gamma.language.util
+Bundle-Version: 2.3.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.language.util
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.xtext,
+ hu.bme.mit.gamma.statechart.model
+Export-Package: hu.bme.mit.gamma.language.util.linking,
+ hu.bme.mit.gamma.language.util.serialization

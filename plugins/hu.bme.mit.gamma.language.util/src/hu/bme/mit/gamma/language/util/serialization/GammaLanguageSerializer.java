@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.statechart.language.ui.serializer;
+package hu.bme.mit.gamma.language.util.serialization;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -23,18 +23,12 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.inject.Inject;
 
-import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetup;
-
-public class StatechartLanguageSerializer {
+public class GammaLanguageSerializer {
 
 	private XtextResourceSet resourceSet;
-	
-//	static {
-//		StatechartLanguageStandaloneSetup.doSetup(); // Should be removed but does not work without this
-//	}
 
 	@Inject
-	public StatechartLanguageSerializer(XtextResourceSet resourceSet) {
+	public GammaLanguageSerializer(XtextResourceSet resourceSet) {
 		this.resourceSet = resourceSet;
 		this.resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 	}

@@ -12,9 +12,11 @@ package hu.bme.mit.gamma.statechart.language;
 
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 
 import com.google.inject.Binder;
 
+import hu.bme.mit.gamma.language.util.serialization.GammaLanguageCrossReferenceSerializer;
 import hu.bme.mit.gamma.statechart.language.linking.StatechartLanguageLinker;
 import hu.bme.mit.gamma.statechart.language.scoping.StatechartLanguageScopeProvider;
 
@@ -39,9 +41,10 @@ public class StatechartLanguageRuntimeModule extends AbstractStatechartLanguageR
 		return StatechartLanguageLinker.class;
 	}
 	
-	// Xtext cannot creat Guice injector if this is in
-//	public Class<StatechartLanguageFormatter> bindIFormatter() {
-//		return StatechartLanguageFormatter.class;
-//	}
+	// Needed for correct serialization of imports
+	public Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
+		return GammaLanguageCrossReferenceSerializer.class;
+	}	
+	//
 	
 }
