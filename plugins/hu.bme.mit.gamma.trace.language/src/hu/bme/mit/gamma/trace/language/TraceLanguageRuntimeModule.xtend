@@ -10,12 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language
 
-import hu.bme.mit.gamma.trace.language.scoping.TraceLanguageScopeProvider
 import com.google.inject.Binder
 import hu.bme.mit.gamma.trace.language.formatting.TraceLanguageFormatter
 import hu.bme.mit.gamma.trace.language.linking.TraceLanguageLinker
+import hu.bme.mit.gamma.trace.language.scoping.TraceLanguageScopeProvider
+import hu.bme.mit.gamma.trace.language.serializing.TraceLanguageCrossReferenceSerializer
+import org.eclipse.xtext.scoping.IScopeProvider
 import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer
-import hu.bme.mit.gamma.language.util.serialization.GammaLanguageCrossReferenceSerializer
+import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -33,7 +35,7 @@ class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
 	}
 
 	override configureSerializerIScopeProvider(Binder binder) {
-		binder.bind(org.eclipse.xtext.scoping.IScopeProvider).annotatedWith(org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding).to(TraceLanguageScopeProvider);
+		binder.bind(IScopeProvider).annotatedWith(SerializerScopeProviderBinding).to(TraceLanguageScopeProvider);
 	}
 	//
 	
@@ -41,9 +43,9 @@ class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
 		return TraceLanguageFormatter
 	}
 	
-	// Needed for import serialization: return value type is needed!!
+	// Needed for import serialization: return value type is needed!
 	def Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
-		return GammaLanguageCrossReferenceSerializer;
+		return TraceLanguageCrossReferenceSerializer;
 	}	
 	
 }

@@ -16,9 +16,9 @@ import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 
 import com.google.inject.Binder;
 
-import hu.bme.mit.gamma.language.util.serialization.GammaLanguageCrossReferenceSerializer;
 import hu.bme.mit.gamma.statechart.language.linking.StatechartLanguageLinker;
 import hu.bme.mit.gamma.statechart.language.scoping.StatechartLanguageScopeProvider;
+import hu.bme.mit.gamma.statechart.language.serializing.StatechartLanguageCrossReferenceSerializer;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -43,7 +43,7 @@ public class StatechartLanguageRuntimeModule extends AbstractStatechartLanguageR
 	
 	// Needed for correct serialization of imports
 	public Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
-		return GammaLanguageCrossReferenceSerializer.class;
+		return StatechartLanguageCrossReferenceSerializer.class;
 	}	
 	//
 	

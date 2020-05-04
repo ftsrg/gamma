@@ -21,7 +21,7 @@ class TraceLanguageLinker extends GammaLanguageLinker {
 	}
 	
 	override getRef() {
-		return TracePackage.eINSTANCE.executionTrace_Import
+		return #[TracePackage.eINSTANCE.executionTrace_Import]
 	}
 		
     

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.language.util.linking;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
     
     public List<EObject> getLinkedObjects(EObject context, EReference ref, INode node) {
     	if (getContext().isInstance(context)) {
-    		if (ref == getRef()) {
+    		if (getRef().contains(ref)) {
     			try {
 		    		String path = valueConverterService.toValue(node.getText(),
 		    				getLinkingHelper().getRuleNameFrom(node.getGrammarElement()), node).toString().replaceAll("\\s","");
@@ -70,9 +71,8 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
     	return super.getLinkedObjects(context, ref, node);
     }
     
-    
     public abstract Class<? extends EObject> getContext();
-    public abstract EReference getRef();
+    public abstract Collection<EReference> getRef();
     
     private boolean isCorrectPath(String path) {
     	ResourceSet resourceSet = new ResourceSetImpl();

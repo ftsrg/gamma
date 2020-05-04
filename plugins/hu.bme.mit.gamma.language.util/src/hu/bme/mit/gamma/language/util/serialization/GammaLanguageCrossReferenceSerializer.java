@@ -18,22 +18,25 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic.Acceptor;
 import org.eclipse.xtext.serializer.tokens.CrossReferenceSerializer;
 
-import hu.bme.mit.gamma.statechart.model.Package;
-
-public class GammaLanguageCrossReferenceSerializer extends CrossReferenceSerializer {
+public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferenceSerializer {
 
 	public String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref,
 			EObject target, final IScope scope, Acceptor errors) {
-		if (target instanceof Package) {
-			Resource resource = target.eResource();
-			URI uri = resource.getURI();
-			String string = uri.toPlatformString(true);
-			if (string == null) {
-				string = uri.toString();
+		if (getContext().isInstance(semanticObject)) {
+			if (getTarget().isInstance(target)) {
+				Resource resource = target.eResource();
+				URI uri = resource.getURI();
+				String string = uri.toPlatformString(true);
+				if (string == null) {
+					string = uri.toString();
+				}
+				return "\"" + string + "\"";
 			}
-			return "\"" + string + "\"";
 		}
 		return super.getCrossReferenceNameFromScope(semanticObject, crossref, target, scope, errors);
 	}
+	
+    public abstract Class<? extends EObject> getContext();
+    public abstract Class<? extends EObject> getTarget();
 	
 }

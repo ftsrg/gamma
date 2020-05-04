@@ -10,6 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.linking;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 
@@ -25,8 +28,8 @@ public class StatechartLanguageLinker extends GammaLanguageLinker {
 	}
 
 	@Override
-	public EReference getRef() {
-		return StatechartModelPackage.eINSTANCE.getPackage_Imports();
+	public Collection<EReference> getRef() {
+		return Collections.singletonList(StatechartModelPackage.eINSTANCE.getPackage_Imports());
 	}
 
 	

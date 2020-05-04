@@ -6,6 +6,7 @@ Bundle-Version: 2.3.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.genmodel.language;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.genmodel.model,
+ hu.bme.mit.gamma.language.util,
  hu.bme.mit.gamma.expression.language,
  org.eclipse.xtext,
  org.eclipse.xtext.xbase,
