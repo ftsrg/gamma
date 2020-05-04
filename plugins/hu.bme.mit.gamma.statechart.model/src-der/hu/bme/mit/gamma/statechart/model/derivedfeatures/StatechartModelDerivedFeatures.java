@@ -138,13 +138,13 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static boolean areInterfacesEqual(Component lhs, Component rhs) {
-		if (lhs.getPorts().size() != rhs.getPorts().size()) {
+		EList<Port> lhsPorts = lhs.getPorts();
+		EList<Port> rhsPorts = rhs.getPorts();
+		if (lhsPorts.size() != rhsPorts.size()) {
 			return false;
 		}
-		for (int i = 0; i < lhs.getPorts().size(); i++) {
-			Port lhsPort = lhs.getPorts().get(i);
-			Port rhsPort = rhs.getPorts().get(i);
-			if (!expressionUtil.helperEquals(lhsPort, rhsPort)) {
+		for (Port lhsPort : lhsPorts) {
+			if (!rhsPorts.stream().anyMatch(it -> expressionUtil.helperEquals(lhsPort, it))) {
 				return false;
 			}
 		}
