@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
@@ -23,7 +24,6 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InputInstanceEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceRegions
@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopUnwrappedSy
 import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import java.util.Collection
-import java.util.Collections
 import java.util.List
 import java.util.NoSuchElementException
 import java.util.Optional
@@ -59,6 +58,7 @@ import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
 import uppaal.statements.Block
 import uppaal.statements.ExpressionStatement
+import uppaal.statements.StatementsFactory
 import uppaal.statements.StatementsPackage
 import uppaal.templates.Edge
 import uppaal.templates.LocationKind
@@ -72,8 +72,6 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import uppaal.statements.StatementsFactory
 
 class OrchestratorCreator {
 	// Transformation rule-related extensions
@@ -103,7 +101,6 @@ class OrchestratorCreator {
 	protected TimeSpecification maximalOrchestratingPeriod
 	// Auxiliary objects
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
-	protected final extension EventHandler eventHandler = new EventHandler
 	protected final extension Cloner cloner = new Cloner
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension NtaBuilder ntaBuilder
@@ -342,7 +339,7 @@ class OrchestratorCreator {
 					}
 					else if (component instanceof StatechartDefinition) {
 						for (port : component.ports) {
-							for (event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)) {
+							for (event : port.outputEvents) {
 								val instances = SimpleInstances.Matcher.on(engine).getAllValuesOfinstance(component)
 								checkState(instances.size == 1, instances)
 								val instance = instances.head

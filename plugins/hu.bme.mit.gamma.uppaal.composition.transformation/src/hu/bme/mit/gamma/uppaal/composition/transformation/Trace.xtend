@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.uppaal.transformation.queries.ClockRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.EventRepresentations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ExpressionTraces
@@ -34,7 +33,6 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.InstanceTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
-import java.util.Collections
 import java.util.HashSet
 import java.util.List
 import java.util.Map
@@ -75,8 +73,6 @@ class Trace {
 	final extension IModelManipulations manipulation	
 	// Factories
 	final extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
-	// Auxiliary objects 
-	final extension EventHandler eventHandler = new EventHandler
 	// Clock creation helper map
 	final Map<Template, ClockVariableDeclaration> clockMap = newHashMap
 	
@@ -300,7 +296,7 @@ class Trace {
 	 */
 	def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
 		var DataVariableDeclaration variable 
-		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
+		if (port.outputEvents.contains(event)) {
 			// This is an out event
 			variable = event.getOutVariable(port, instance)
 		}		
@@ -356,7 +352,7 @@ class Trace {
 		val parameter = event.parameterDeclarations.head
 		checkState(parameter !== null)
 		var DataVariableDeclaration variable 
-		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
+		if (port.outputEvents.contains(event)) {
 			// This is an out event
 			variable = event.getOutValueOfVariable(port, instance)
 		}		

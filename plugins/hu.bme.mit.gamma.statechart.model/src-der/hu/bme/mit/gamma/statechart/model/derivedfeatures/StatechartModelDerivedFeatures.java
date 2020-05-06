@@ -261,14 +261,15 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
+		final Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
 		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
-			events.addAll(getAllEventDeclarations(_interface).stream()
+			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() != EventDirection.OUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
 		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
-			events.addAll(getAllEventDeclarations(_interface).stream()
+			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() != EventDirection.IN)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
@@ -280,14 +281,15 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
+		final Collection<EventDeclaration> allEventDeclarations = getAllEventDeclarations(_interface);
 		if (interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED) {
-			events.addAll(_interface.getEvents().stream()
+			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() != EventDirection.IN)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));
 		}
 		if (interfaceRealization.getRealizationMode() == RealizationMode.REQUIRED) {
-			events.addAll(_interface.getEvents().stream()
+			events.addAll(allEventDeclarations.stream()
 					.filter(it -> it.getDirection() != EventDirection.OUT)
 					.map(it -> it.getEvent())
 					.collect(Collectors.toList()));

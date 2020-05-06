@@ -39,7 +39,6 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.emf.ecore.EObject

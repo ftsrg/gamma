@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.Collection
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DeclarationsFactory
@@ -37,8 +36,6 @@ class TriggerTransformer {
 	protected final extension DeclarationsFactory declFact = DeclarationsFactory.eINSTANCE
 	protected final extension ExpressionsFactory expFact = ExpressionsFactory.eINSTANCE
 	protected final extension TypesFactory typesFact = TypesFactory.eINSTANCE
-	// Auxiliary objects
-	protected final extension EventHandler eventHandler = new EventHandler
 	//
 	extension Trace trace
 	
@@ -56,7 +53,7 @@ class TriggerTransformer {
 	
 	private def Expression createLogicalExpressionOfPortInEvents(Collection<Port> ports,
 			LogicalOperator operator, ComponentInstance owner) {
-		val events = ports.map[#[it].getSemanticEvents(EventDirection.IN)].flatten
+		val events = ports.map[it.inputEvents].flatten
 		val eventCount = events.size
 		if (eventCount == 0) {
 			return createLiteralExpression => [
@@ -75,7 +72,7 @@ class TriggerTransformer {
 			it.operator = operator
 		]
 		for (port : ports) {
-			for (event : #[port].getSemanticEvents(EventDirection.IN)) {
+			for (event : port.inputEvents) {
 				if (i == 0) {
 					orExpression.firstExpr = createIdentifierExpression => [
 						it.identifier = event.getIsRaisedVariable(port, owner).variable.head

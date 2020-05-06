@@ -201,7 +201,6 @@ class CompositeToUppaalTransformer {
 	protected extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
-	protected final extension EventHandler eventHandler = new EventHandler
     protected final extension Cloner cloner = new Cloner
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	// Auxiliary transformer objects
