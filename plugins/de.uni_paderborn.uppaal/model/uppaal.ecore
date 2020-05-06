@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="uppaal" nsURI="http://www.uni-paderborn.de/uppaal/0.4.0" nsPrefix="uppaal">
-  <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-    <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-  </eAnnotations>
   <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
     <details key="documentation" value="Contains Uppaal-specific sub-packages."/>
   </eAnnotations>
@@ -91,11 +86,6 @@
   </eClassifiers>
   <eSubpackages name="core" nsURI="http://www.uni-paderborn.de/uppaal/core/0.4.0"
       nsPrefix="core">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Contains abstract general purpose classes."/>
     </eAnnotations>
@@ -130,11 +120,6 @@
   </eSubpackages>
   <eSubpackages name="types" nsURI="http://www.uni-paderborn.de/uppaal/types/0.4.0"
       nsPrefix="types">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Provides support for built-in and user-defined types."/>
     </eAnnotations>
@@ -291,11 +276,6 @@
   </eSubpackages>
   <eSubpackages name="declarations" nsURI="http://www.uni-paderborn.de/uppaal/declarations/0.4.0"
       nsPrefix="declarations">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Support for all kinds of declarations, e.g. types, functions, or variables."/>
     </eAnnotations>
@@ -679,11 +659,6 @@
     </eClassifiers>
     <eSubpackages name="global" nsURI="http://www.uni-paderborn.de/uppaal/declarations/global"
         nsPrefix="global">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-        <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-        <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-        <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      </eAnnotations>
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
         <details key="documentation" value="Contains special classes that are relevant for the global declarations."/>
       </eAnnotations>
@@ -735,11 +710,6 @@
     </eSubpackages>
     <eSubpackages name="system" nsURI="http://www.uni-paderborn.de/uppaal/declarations/system"
         nsPrefix="system">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-        <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-        <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-        <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      </eAnnotations>
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
         <details key="documentation" value="Contains special classes that are relevant for the system declarations."/>
       </eAnnotations>
@@ -820,11 +790,6 @@
   </eSubpackages>
   <eSubpackages name="templates" nsURI="http://www.uni-paderborn.de/uppaal/templates/0.4.0"
       nsPrefix="templates">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Support for Timed Automata templates consisting of locations and edges."/>
     </eAnnotations>
@@ -1063,11 +1028,6 @@
   </eSubpackages>
   <eSubpackages name="statements" nsURI="http://www.uni-paderborn.de/uppaal/statements/0.4.0"
       nsPrefix="statements">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Support for statements inside functions."/>
     </eAnnotations>
@@ -1232,11 +1192,6 @@
   </eSubpackages>
   <eSubpackages name="expressions" nsURI="http://www.uni-paderborn.de/uppaal/expressions/0.4.0"
       nsPrefix="expressions">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Introduces all kinds of expressions."/>
     </eAnnotations>
@@ -1595,11 +1550,6 @@
   </eSubpackages>
   <eSubpackages name="visuals" nsURI="http://www.uni-paderborn.de/uppaal/visuals/0.4.0"
       nsPrefix="visuals">
-    <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
-      <details key="invocationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="settingDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-      <details key="validationDelegates" value="http://www.eclipse.org/emf/2002/Ecore/OCL"/>
-    </eAnnotations>
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
       <details key="documentation" value="Provides support for the visual representation of model elements."/>
     </eAnnotations>
