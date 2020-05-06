@@ -69,34 +69,28 @@ class Namings {
 		return port.name + "_" + event.name + "Of" + owner.name
 	}
 	
-	/**
-	 * Returns the name of the toRaise boolean flag of the given event of the given port.
-	 */
-	def static toRaiseName(Event event, Port port, ComponentInstance instance) {
+	def static getToRaiseName(Event event, Port port, ComponentInstance instance) {
 		return "toRaise_" + port.name + "_" + event.name + "Of" + instance.name
 	}
 	
-	/**
-	 * Returns the name of the isRaised boolean flag of the given event of the given port.
-	 */
-	def static isRaisedName(Event event, Port port, ComponentInstance instance) {
+	def static getIsRaisedName(Event event, Port port, ComponentInstance instance) {
 		return "isRaised_" + port.name + "_" + event.name + "Of" + instance.name
 	}
 	
-	def static getValueOfName(Event event, Port port, ComponentInstance instance) {
-		return port.name + "_" + event.name + "Of" + instance.name + "Value"
+	def static getOutValueOfName(Event event, Port port, ComponentInstance instance) {
+		return getOutEventName(event, port, instance) + "Value"
+	}
+	
+	def static getToRaiseValueOfName(Event event, Port port, ComponentInstance instance) {
+		return getToRaiseName(event, port, instance) + "Value"
+	}
+	
+	def static getIsRaisedValueOfName(Event event, Port port, ComponentInstance instance) {
+		return getIsRaisedName(event, port, instance) +  "Value"
 	}
 	
 	def static getValueOfName(Variable variable) {
-		if (variable.name.startsWith("toRaise_")) {
-			return variable.name.substring("toRaise_".length) + "Value"
-		}
-		else if (variable.name.startsWith("isRaised_")) {
-			return variable.name.substring("isRaised_".length) + "Value"
-		}
-		else {
-			return variable.name + "Value"
-		}
+		return variable.name + "Value"
 	}
 	
 	def static getVariableName(VariableDeclaration variable, ComponentInstance instance) {

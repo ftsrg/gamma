@@ -300,11 +300,9 @@ class Trace {
 	 */
 	def getToRaiseVariable(Event event, Port port, ComponentInstance instance) {
 		var DataVariableDeclaration variable 
-		val variables = event.allValuesOfTo.filter(DataVariableDeclaration)
-				.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
 		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
 			// This is an out event
-			variable = variables.filter[it.variable.head.name.equals(event.getOutEventName(port, instance))].head
+			variable = event.getOutVariable(port, instance)
 		}		
 		else {		
 			// Else, this is an in event
@@ -313,11 +311,14 @@ class Trace {
 				variable = event.getIsRaisedVariable(port, instance)
 			}
 			else {
-				variable = variables.filter[it.variable.head.name.equals(event.toRaiseName(port, instance))].head
+				val variables = event.allValuesOfTo.filter(DataVariableDeclaration)
+						.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
+				variable = variables.filter[it.variable.head.name.equals(event.getToRaiseName(port, instance))].head
 			}	
 		}
 		if (variable === null) {
-			throw new IllegalArgumentException("This event has no toRaiseEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+			throw new IllegalArgumentException("This event has no toRaiseEvent: " + 
+				event.name + " Port: " + port.name + " Instance: " + instance.name)
 		}
 		return variable
 	}	
@@ -327,9 +328,10 @@ class Trace {
 	 */
 	def getIsRaisedVariable(Event event, Port port, ComponentInstance instance) {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
-			&& it.owner == instance && it.variable.head.name.equals(event.isRaisedName(port, instance))].head
+			&& it.owner == instance && it.variable.head.name.equals(event.getIsRaisedName(port, instance))].head
 		if (variable === null) {
-			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+			throw new IllegalArgumentException("This event has no isRaisedEvent: " +
+				event.name + " Port: " + port.name + " Instance: " + instance.name)
 		}
 		return variable
 	}
@@ -341,25 +343,69 @@ class Trace {
 		val variable = event.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
 			&& it.owner == instance && it.variable.head.name.equals(event.getOutEventName(port, instance))].head
 		if (variable === null) {
-			throw new IllegalArgumentException("This event has no isRaisedEvent: " + event.name + " Port: " + port.name + " Instance: " + instance.name)
+			throw new IllegalArgumentException("This event has no isRaisedEvent: " + 
+				event.name + " Port: " + port.name + " Instance: " + instance.name)
 		}
 		return variable
 	}
 	
 	/**
-	 * Returns the Uppaal valueof variable of a Gamma parametered-event.
+	 * Returns the Uppaal toRaise valueOf variable of a Gamma typed-signal.
 	 */
-	protected def getValueOfVariable(Event event, Port port, ComponentInstance owner) {
-		if (event.parameterDeclarations.size != 1) {
-			throw new IllegalArgumentException("This event has not one parameter: " + event + " - " + event.parameterDeclarations)
-		}
+	def getToRaiseValueOfVariable(Event event, Port port, ComponentInstance instance) {
 		val parameter = event.parameterDeclarations.head
-		val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
-							.filter[it.port == port]
-		if (variables.size != 1) {
-			throw new IllegalArgumentException("This event has more than one UPPAAL valueof variables: " + event)
-		} 
-		return variables.head
+		checkState(parameter !== null)
+		var DataVariableDeclaration variable 
+		if (Collections.singletonList(port).getSemanticEvents(EventDirection.OUT).contains(event)) {
+			// This is an out event
+			variable = event.getOutValueOfVariable(port, instance)
+		}		
+		else {		
+			// Else, this is an in event
+			if (instance.isCascade) {
+				// Cascade components have no toRaise variables, therefore the isRaised is returned
+				variable = event.getIsRaisedValueOfVariable(port, instance)
+			}
+			else {
+				val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
+						.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
+				variable = variables.filter[it.variable.head.name == event.getToRaiseValueOfName(port, instance)].head
+			}	
+		}
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no toRaiseValueOf variable: " +
+				event.name + " Port: " + port.name + " Instance: " + instance.name)
+		}
+		return variable
+	}	
+	
+	/**
+	 * Returns the Uppaal isRaised valueOf variable of a Gamma typed-signal.
+	 */
+	def getIsRaisedValueOfVariable(Event event, Port port, ComponentInstance instance) {
+		val parameter = event.parameterDeclarations.head
+		checkState(parameter !== null)
+		val variable = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
+			&& it.owner == instance && it.variable.head.name == event.getIsRaisedValueOfName(port, instance)].head
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no isRaisedValueOf variable: " +
+				event.name + " Port: " + port.name + " Instance: " + instance.name)}
+		return variable
+	}
+	
+	/**
+	 * Returns the Uppaal out-event valueOf variable of a Gamma typed-signal.
+	 */
+	def getOutValueOfVariable(Event event, Port port, ComponentInstance instance) {
+		val parameter = event.parameterDeclarations.head
+		checkState(parameter !== null)
+		val variable = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
+			&& it.owner == instance && it.variable.head.name == event.getOutValueOfName(port, instance)].head
+		if (variable === null) {
+			throw new IllegalArgumentException("This event has no outValueOf variable: " +
+				event.name + " Port: " + port.name + " Instance: " + instance.name)
+		}
+		return variable
 	}
 	
 	// Add to a certain reference

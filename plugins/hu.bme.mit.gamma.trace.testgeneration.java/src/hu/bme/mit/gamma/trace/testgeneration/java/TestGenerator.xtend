@@ -43,7 +43,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class TestGenerator {
 	// Constant strings
 	protected String YAKINDU_PACKAGE_NAME_PREFIX
-    protected final String TEST_FOLDER = "test-gen"
+	protected final String TEST_FOLDER = "test-gen"
 	protected final String TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
 	
@@ -54,7 +54,7 @@ class TestGenerator {
 	
 	protected final String[] notHandledStateNamePatterns = #['LocalReactionState[0-9]*','FinalState[0-9]*']
 	// Value is assigned by the execute methods
-    protected final String packageName
+	protected final String packageName
 	protected final String className
 	protected final String componentClassInterfaceName = "ReflectiveComponentInterface"
 	protected final String componentClassName
@@ -120,18 +120,18 @@ class TestGenerator {
 		public class «className» {
 			
 			private static «componentClassInterfaceName» «componentClassName.toFirstLower»;
-«««			Only if there are timing specifications in the model
+«««			Only if there are timing specis in the model
 			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
 			@Before
 			public void init() {
-«««				Each trace must reference the same component with the same parameter values (arguments)!
 				«IF component.needTimer»
-«««					Only if there are timing specs in the model
+«««					Only if there are timing specis in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
 					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
-			«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+«««				Each trace must reference the same component with the same parameter values (arguments)!
+				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			}
 			

@@ -283,7 +283,7 @@ class AsynchronousConnectorTemplateCreator {
 			for (queueMatch : EventsIntoMessageQueues.Matcher.on(engine).getAllMatches(null, outEventMatch.systemPort, outEventMatch.event, null, null, null)) {
 				var DataVariableDeclaration valueOfVar = null
 				if (!outEventMatch.event.parameterDeclarations.empty) {
-					valueOfVar = outEventMatch.event.getValueOfVariable(outEventMatch.port/* Not sure if correct port*/, outEventMatch.instance)
+					valueOfVar = outEventMatch.event.getOutValueOfVariable(outEventMatch.port/* Not sure if correct port*/, outEventMatch.instance)
 				}
 				relayEdge.createQueueInsertion(queueMatch.inPort, queueMatch.raisedEvent, queueMatch.inInstance, valueOfVar)
 			}

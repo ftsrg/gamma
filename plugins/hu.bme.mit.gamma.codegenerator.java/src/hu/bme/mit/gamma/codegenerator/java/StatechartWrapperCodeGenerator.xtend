@@ -212,6 +212,11 @@ class StatechartWrapperCodeGenerator {
 				}
 			«ENDFOR»
 			
+			/** Interface method, needed for composite component initialization chain. */
+			public void notifyAllListeners() {
+				notifyListeners();
+			}
+			
 			/** Notifies all registered listeners in each contained port. */
 			public void notifyListeners() {
 				«FOR port : component.ports»

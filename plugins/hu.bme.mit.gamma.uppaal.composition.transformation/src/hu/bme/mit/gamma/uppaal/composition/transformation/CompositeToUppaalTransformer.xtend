@@ -502,12 +502,12 @@ class CompositeToUppaalTransformer {
 	val inputEventsRule = createRule(InputInstanceEvents.instance).action [
 		if (!it.instance.isCascade) {
 			// Cascade components do not have a double event queue
-			val toRaise = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.toRaiseName(it.port, it.instance))
+			val toRaise = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.getToRaiseName(it.port, it.instance))
 			addToTrace(it.event, #{toRaise}, trace)
 			addToTrace(it.instance, #{toRaise}, instanceTrace)
 			addToTrace(it.port, #{toRaise}, portTrace)
 		}
-		val isRaised = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.isRaisedName(it.port, it.instance))
+		val isRaised = target.globalDeclarations.createVariable(DataVariablePrefix.NONE, target.bool, it.event.getIsRaisedName(it.port, it.instance))
 		addToTrace(it.event, #{isRaised}, trace)
 		// Saving the owner
 		addToTrace(it.instance, #{isRaised}, instanceTrace)
@@ -540,12 +540,13 @@ class CompositeToUppaalTransformer {
 		}
 		// We deal with already transformed instance events
 		val uppaalEvents = it.event.allValuesOfTo.filter(DataVariableDeclaration)
-							.filter[!it.variable.head.name.startsWith("toRaise")] // So we give one parameter to in events and out events too
+		// So we give one or two parameters (in the case of sync) to in events and one to out events
 		for (uppaalEvent : uppaalEvents) {
 			val owner = uppaalEvent.owner
 			val port = uppaalEvent.port
 			val eventValue = it.param.transformVariable(it.param.type, DataVariablePrefix.NONE,
 				uppaalEvent.variable.head.valueOfName)
+			log(Level.INFO, "Information: Event parameter: " + eventValue.variable.head.name)
 			// Parameter is now not connected to the Event
 			addToTrace(it.param, #{eventValue}, trace) // Connected to the port through name (getValueOfName - bad convention)
 			addToTrace(owner, #{eventValue}, instanceTrace)
@@ -1494,7 +1495,8 @@ class CompositeToUppaalTransformer {
 		val exps = eventAction.arguments
 		if (!exps.empty) {
 			for (expression : exps) {
-				val assignment = edge.createAssignmentExpression(edge_Update, toRaiseEvent.getValueOfVariable(port, inInstance), expression, inInstance)
+				val assignment = edge.createAssignmentExpression(edge_Update,
+					toRaiseEvent.getToRaiseValueOfVariable(port, inInstance), expression, inInstance)
 				addToTrace(eventAction, #{assignment}, expressionTrace)
 			}			
 		}

@@ -68,6 +68,8 @@ import uppaal.expressions.PlusExpression
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class ExpressionTransformer {
     // For model creation
 	final extension IModelManipulations manipulation
@@ -164,14 +166,16 @@ class ExpressionTransformer {
 		declaration = dataDeclaration.variable.head
 		// Normal variables: no owner is needed as now every instance has its own statechart declaration
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
-			newExp.identifier = declaration
+		newExp.identifier = declaration
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, EventParameterReferenceExpression expression, ComponentInstance owner) {		
 		val gammaPort = expression.port
 		val gammaEvent = expression.event
-		val uppaalParameterVariable = gammaEvent.getValueOfVariable(gammaPort, owner)
+		val parameterOwners = gammaPort.containingStatechart.referencingComponentInstances
+		checkState(parameterOwners.size == 1)
+		val uppaalParameterVariable = gammaEvent.getIsRaisedValueOfVariable(gammaPort, parameterOwners.head) // Event parameter reference -> isRaised
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression => [
 			it.identifier = uppaalParameterVariable.variable.head
 		]

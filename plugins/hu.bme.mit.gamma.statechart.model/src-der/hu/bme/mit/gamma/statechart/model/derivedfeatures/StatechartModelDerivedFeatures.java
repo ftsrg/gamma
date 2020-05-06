@@ -578,7 +578,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			parentState = getParentState(parentRegion);
 		}
 		String parentRegionName = parentRegion.getName();
-		parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
+//		parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
 		if (parentState == null) {
 			return parentRegionName + "_" + state.getName();
 		}

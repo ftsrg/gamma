@@ -241,23 +241,15 @@ class OrchestratorCreator {
 			ParameteredEvents.Matcher.on(engine).hasMatch(event, null)
 	}
 	
-	private def resetParameterVariable(EObject container, EReference reference, Event event, Port port,
+	private def resetOutParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
-		container.createAssignmentExpression(reference, event.getValueOfVariable(port, instance), "0")
+		container.createAssignmentExpression(reference, event.getOutValueOfVariable(port, instance), "0")
 	}
 	
 	private def resetInParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
-		if (instance.cascade) {
-			// Easy reset
-			container.resetParameterVariable(reference, event, port, instance)
-		}
-		else {
-			// Synchronous composite
-			val valueOfVariable = event.getValueOfVariable(port, instance)
-			val toRaiseVariable = event.getToRaiseVariable(port, instance)
-			container.createIfThenElseAssignment(reference, valueOfVariable,
-				toRaiseVariable.variable.head, valueOfVariable.variable.head, "0")
+		if (!event.parameterDeclarations.empty) {
+			container.createAssignmentExpression(reference, event.getIsRaisedValueOfVariable(port, instance), "0")
 		}
 	}
 	
@@ -343,7 +335,7 @@ class OrchestratorCreator {
 							if (match.event.doesParameterVariableNeedReset) {
 								it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
 									// out-signalValue = 0
-									it.resetParameterVariable(expressionStatement_Expression, match.event, match.port, match.instance)									
+									it.resetOutParameterVariable(expressionStatement_Expression, match.event, match.port, match.instance)									
 								]
 							}
 						} 
@@ -361,7 +353,7 @@ class OrchestratorCreator {
 								if (event.doesParameterVariableNeedReset) {
 									it.createChild(block_Statement, stmPackage.expressionStatement) as ExpressionStatement => [	
 										// out-signalValue = 0
-										it.resetParameterVariable(expressionStatement_Expression, event, port, instance)									
+										it.resetOutParameterVariable(expressionStatement_Expression, event, port, instance)									
 									]
 								}
 							}
@@ -457,7 +449,16 @@ class OrchestratorCreator {
 			edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance),
 				 match.event.getToRaiseVariable(match.port, match.instance))			
 			// toRaise = false
-			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)										
+			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)
+			if (!match.event.parameterDeclarations.empty) {
+				// isRaisedValueOf = toRaiseValueOf 
+				edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedValueOfVariable(match.port, match.instance),
+					match.event.getToRaiseValueOfVariable(match.port, match.instance))			
+				// toRaiseValueOf  = 0 (only if event is not persistent)
+				if (match.event.doesParameterVariableNeedReset) {
+					edge.createAssignmentExpression(edge_Update, match.event.getToRaiseValueOfVariable(match.port, match.instance), "0")
+				}
+			}
 		}
 	}
 	
@@ -518,10 +519,8 @@ class OrchestratorCreator {
 		// Same thing is done for synchronous instances for optimization purposes
 		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
 			lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
-			// Also, parameter value variables are also reset for optimization purposes (if possible)
-			if (match.event.doesParameterVariableNeedReset) {
-				lastEdge.resetInParameterVariable(edge_Update, match.event, match.port, match.instance)
-			}
+			// Also, isRaised parameter value variables are also always reset for optimization purposes
+			lastEdge.resetInParameterVariable(edge_Update, match.event, match.port, match.instance)
 		}
 		return lastEdge
 	}

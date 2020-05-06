@@ -54,7 +54,7 @@ class SynchronousCompositeComponentCodeGenerator {
 	*/
 	protected def createSynchronousCompositeComponentClass(AbstractSynchronousCompositeComponent component) '''
 		package «component.generateComponentPackageName»;
-
+		
 		«component.generateCompositeSystemImports»
 		
 		public class «component.generateComponentClassName» implements «component.generatePortOwnerInterfaceName» {
@@ -95,7 +95,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				«ENDIF»
 				clearPorts();
 				// Initializing chain of listeners and events 
-				notifyListeners();
+				notifyAllListeners();
 			}
 			
 			/** Creates the channel mappings and enters the wrapped statemachines. */
@@ -115,7 +115,6 @@ class SynchronousCompositeComponentCodeGenerator {
 			«FOR systemPort : component.ports SEPARATOR "\n"»
 				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					private List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
-
 «««					Cascade components need their raised events saved (multiple schedule of a component in a single turn)
 					«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
 						boolean isRaised«event.name.toFirstUpper»;
@@ -192,11 +191,15 @@ class SynchronousCompositeComponentCodeGenerator {
 			}
 			
 			/** Notifies all registered listeners in each contained port. */
-			public void notifyListeners() {
+			public void notifyAllListeners() {
 «««				This subcomponent notification is necessery in hierarchical composite components
 				«FOR subcomponent : component.components»
-					«subcomponent.name».notifyListeners();
+					«subcomponent.name».notifyAllListeners();
 				«ENDFOR»
+				notifyListeners();
+			}
+			
+			public void notifyListeners() {
 				«FOR portBinding : component.portBindings»
 					get«portBinding.compositeSystemPort.name.toFirstUpper»().notifyListeners();
 				«ENDFOR»
@@ -254,7 +257,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				// Notifying registered listeners
 				notifyListeners();
 			}
-	
+		
 			«IF component.needTimer»
 				/** Setter for the timer e.g., a virtual timer. */
 				public void setTimer(«Namings.UNIFIED_TIMER_INTERFACE» timer) {

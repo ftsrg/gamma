@@ -180,7 +180,7 @@ class TestQueryGenerationHandler {
 				expressions.append('''E<> «outEventVariableName» == true && «Namings.isStableVariableName»«System.lineSeparator»''')
 			}
 			else {
-				val parameterVariableName = Namings.getValueOfName(event, port, instance)
+				val parameterVariableName = Namings.getOutValueOfName(event, port, instance)
 				for (parameterValue : parameterValues) {
 					expressions.append('''/*«System.lineSeparator»«systemPort.name».«event.name»«System.lineSeparator»*/«System.lineSeparator»''')
 					expressions.append('''E<> «outEventVariableName» == true && «parameterVariableName» == «parameterValue» && «Namings.isStableVariableName»«System.lineSeparator»''')
