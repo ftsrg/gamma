@@ -141,6 +141,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class CompositeToUppaalTransformer {
 	// Transformation-related extensions
@@ -201,7 +202,7 @@ class CompositeToUppaalTransformer {
 	protected extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
-    protected final extension Cloner cloner = new Cloner
+    protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	// Auxiliary transformer objects
 	protected AsynchronousConstantsCreator asynchronousConstantsCreator
@@ -560,7 +561,10 @@ class CompositeToUppaalTransformer {
 	 */
 	val variablesRule = createRule(InstanceVariables.instance).action [
 		val prefix = if (AssignedVariables.Matcher.on(engine).hasMatch(it.variable)) {
-				DataVariablePrefix.NONE } else { DataVariablePrefix.CONST }
+			DataVariablePrefix.NONE
+		} else {
+			DataVariablePrefix.CONST
+		}
 		val variable = it.variable.transformVariable(it.variable.type, prefix, it.variable.getVariableName(instance))
 		if (prefix == DataVariablePrefix.CONST && it.variable.expression === null) {
 			// It is only read, 0 is a good initial value for all types
@@ -645,7 +649,16 @@ class CompositeToUppaalTransformer {
 		for (uDeclaration : it.declaration.allValuesOfTo.filter(DataVariableDeclaration)) {
 			uDeclaration.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
 				it.transform(expressionInitializer_Expression, initExpression)
-			]		
+			]
+			// Reorder the declarations
+			val referencedVariables = initExpression.referredVariables
+			if (!referencedVariables.empty) {
+				val declarations = target.globalDeclarations.declaration
+				val maxIndex = referencedVariables.map[it.allValuesOfTo.filter(DataVariableDeclaration)
+					.map[declarations.indexOf(it)]].flatten.max
+				val newPosition = if (maxIndex < declarations.size - 1) {maxIndex + 1} else {maxIndex}
+				declarations.move(newPosition, uDeclaration)
+			}
 		}
 		// Traces are created in the transformVariable method
 	].build

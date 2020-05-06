@@ -1,5 +1,4 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -14,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -52,6 +52,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -377,12 +378,22 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 				return;
 			}
 			// The declaration has an initial value
+			EObject container = elem.eContainer();
 			if (elem instanceof Declaration) {
 				Declaration declaration = (Declaration) elem;
-				if (isDeclarationReferredInExpression(declaration, initialExpression)) {
-					error("The initial value must not be the declaration itself.", ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
-					return;
+				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
+					if (container == variableDeclaration.eContainer()) {
+						final EList<EObject> eContents = container.eContents();
+						int elemIndex = eContents.indexOf(elem);
+						int variableIndex = eContents.indexOf(variableDeclaration);
+						if (variableIndex >= elemIndex) {
+							error("The declarations referenced in the initial value must be declared before the variable declaration.",
+									ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+							return;
+						}
+					}
 				}
+				// Initial value is correct
 				Type variableDeclarationType = declaration.getType();
 				ExpressionType initialExpressionType = typeDeterminator.getType(elem.getExpression());
 				if (!typeDeterminator.equals(variableDeclarationType, initialExpressionType)) {
@@ -421,21 +432,4 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		}
 	}
 	
-	protected boolean isDeclarationReferredInExpression(Declaration declaration, Expression expression) {
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression referenceExpression = (ReferenceExpression) expression;
-			if (referenceExpression.getDeclaration() == declaration) {
-				return true;
-			}
-		}
-		for (EObject content : expression.eContents()) {
-			Expression containedExpression = (Expression) content;
-			boolean isReferred = isDeclarationReferredInExpression(declaration, containedExpression);
-			if (isReferred) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 }
