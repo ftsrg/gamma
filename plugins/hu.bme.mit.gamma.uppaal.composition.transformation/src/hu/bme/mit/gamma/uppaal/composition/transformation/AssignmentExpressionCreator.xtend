@@ -130,12 +130,21 @@ class AssignmentExpressionCreator {
 		)
 	}
 	
-		def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
+	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
 			NamedElement _if, String _then, NamedElement _else) {
 		return container.createIfThenElseAssignment(reference, variable, 
 			createIdentifierExpression => [it.identifier = _if],
 			createLiteralExpression => [it.text = _then],
 			createIdentifierExpression => [it.identifier = _else]
+		)
+	}
+	
+	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference, VariableContainer variable,
+			NamedElement _if, NamedElement _then, String _else) {
+		return container.createIfThenElseAssignment(reference, variable, 
+			createIdentifierExpression => [it.identifier = _if],
+			createIdentifierExpression => [it.identifier = _then],
+			createLiteralExpression => [it.text = _else]
 		)
 	}
 	
