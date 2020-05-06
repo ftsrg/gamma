@@ -137,3 +137,23 @@
 * New validation rules in the Gamma text editor have been introduced.
 * A timeout trigger bug regarding statechart complex triggers in the UPPAAL transformation has been fixed.
 * Various UPPAAL back-annotation bugs have been fixed.
+
+
+## 2020.05.06. - Version 2.3.1
+
+### What is New
+
+* Atomic statechart components can now be inputs for the UPPAAL transformation.
+* Out event references are new insertable from the GUI when formulating the verification query.
+* Out event and interaction coverage test suite generation have been introduced.
+* State space can now be reused when generating test suites.
+* Optimizations regarding the size of the generated test suites have been introduced.
+* Mission phase statechart generation has been introduced.
+
+### Improvements
+
+* Import serialization in the generated Gamma models has been improved.
+* Optimizations regarding unfireable transitions and unreachable state nodes in the UPPAAL transformation have been introduced.
+* Parameter handling bug in the UPPAAL transformation has been fixed.
+* Listener notification bug in the generated Java code has been fixed.
+* New validation rules in the Gamma text editors have been introduced.
