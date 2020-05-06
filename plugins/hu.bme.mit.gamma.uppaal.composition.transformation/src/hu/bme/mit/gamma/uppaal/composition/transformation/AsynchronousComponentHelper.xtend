@@ -113,7 +113,7 @@ class AsynchronousComponentHelper {
 			   	it.createChild(functionCallExpression_Argument, identifierExpression) as IdentifierExpression => [
 			   		it.identifier = representation.variable.head
 			   	]
-			it.transform(functionCallExpression_Argument, expression, instance)
+			it.transform(functionCallExpression_Argument, expression)
 		]
 	}
 	

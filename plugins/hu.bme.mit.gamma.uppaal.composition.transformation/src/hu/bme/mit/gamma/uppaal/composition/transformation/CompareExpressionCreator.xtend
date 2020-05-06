@@ -98,7 +98,7 @@ class CompareExpressionCreator {
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 				it.identifier = clockVar.variable.head // Always one variable in the container
 			]
-			it.transform(binaryExpression_SecondExpr, timeExpression, null)		
+			it.transform(binaryExpression_SecondExpr, timeExpression)		
 		]
 	}
 	

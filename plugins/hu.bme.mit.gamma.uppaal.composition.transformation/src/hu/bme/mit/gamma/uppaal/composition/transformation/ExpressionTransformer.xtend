@@ -87,16 +87,18 @@ class ExpressionTransformer {
 		this.traceModel = traceModel
 	}
 	
-	def void transformAssignmentAction(EObject container, EReference reference, AssignmentStatement action, ComponentInstance owner) {
+	def void transformAssignmentAction(EObject container, EReference reference, AssignmentStatement action) {
 		val newExp = container.createChild(reference, assignmentExpression) as AssignmentExpression => [
 			it.operator = AssignmentOperator.EQUAL
 		]
-		newExp.transformBinaryExpressions(action.lhs, action.rhs, owner)
+		newExp.transformBinaryExpressions(action.lhs, action.rhs)
 		addToTrace(action, #{newExp}, expressionTrace)
 	}
 	
-	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action, ComponentInstance owner) {
-		val clockVariable = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration).filter[it.owner == owner].head
+	def void transformTimeoutAction(EObject container, EReference reference, SetTimeoutAction action) {
+		val clockVariables = action.timeoutDeclaration.allValuesOfTo.filter(ClockVariableDeclaration)
+		checkState(clockVariables.size == 1)
+		val clockVariable = clockVariables.head
 		val boolVariable = action.timeoutDeclaration.allValuesOfTo.filter(DataVariableDeclaration).head
 		val clockExp = container.createAssignmentExpression(reference, clockVariable, "0")
 		val boolExp = container.createAssignmentExpression(reference, boolVariable, "false")
@@ -119,36 +121,36 @@ class ExpressionTransformer {
 		return newExp
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, Expression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, Expression expression) {
 		throw new IllegalArgumentException("Not supported expression: " + expression)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, ElseExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, ElseExpression expression) {
 		// No op, as these expressions are transformed separately in another rule
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, IntegerLiteralExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, IntegerLiteralExpression expression) {
 		val newExp = container.createChild(reference, literalExpression) as LiteralExpression => [
 			it.text = expression.value.toString
 		]
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, TrueExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, TrueExpression expression) {
 		val newExp = container.createChild(reference, literalExpression) as LiteralExpression => [
 			it.text = "true"
 		]
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, FalseExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, FalseExpression expression) {
 		val newExp = container.createChild(reference, literalExpression) as LiteralExpression => [
 			it.text = "false" 
 		]
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, EnumerationLiteralExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, EnumerationLiteralExpression expression) {
 		val enumLiteral = expression.reference
 		val enumType = enumLiteral.eContainer as EnumerationTypeDefinition
 		val index = enumType.literals.indexOf(enumLiteral)
@@ -158,7 +160,7 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression, ComponentInstance owner) {		
+	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression) {		
 		var Variable declaration
 		val dataDeclarations = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration)
 		checkState(dataDeclarations.size == 1, "Probably you do not use event parameters correctly: " + dataDeclarations.size)
@@ -170,7 +172,7 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, EventParameterReferenceExpression expression, ComponentInstance owner) {		
+	def dispatch void transform(EObject container, EReference reference, EventParameterReferenceExpression expression) {		
 		val gammaPort = expression.port
 		val gammaEvent = expression.event
 		val parameterOwners = gammaPort.containingStatechart.referencingComponentInstances
@@ -182,119 +184,119 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, NotExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, NotExpression expression) {
 		val newExp = container.createChild(reference, negationExpression) as NegationExpression => [
-			it.transform(negationExpression_NegatedExpression, expression.operand, owner)
+			it.transform(negationExpression_NegatedExpression, expression.operand)
 		]
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, OrExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, OrExpression expression) {
 		if (expression.operands.size < 2) {
 			throw new IllegalArgumentException("The following expression has less than two operands: " + expression)
 		}
 		var newExp = createLogicalExpression => [
 			it.operator = LogicalOperator.OR
-			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1))
 		]	
 		val remainingExpressions = newLinkedList
 		remainingExpressions += expression.operands.subList(2, expression.operands.size)
 		for (remainingExpression : remainingExpressions) {
-			newExp = newExp.extendLogicalExpression(LogicalOperator.OR, remainingExpression, owner)
+			newExp = newExp.extendLogicalExpression(LogicalOperator.OR, remainingExpression)
 		}
 		container.set(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)		
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, XorExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, XorExpression expression) {
 		if (expression.operands.size < 2) {
 			throw new IllegalArgumentException("The following expression has less than two operands: " + expression)
 		}
 		var newExp = createLogicalExpression => [
 			it.operator = LogicalOperator.XOR
-			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1))
 		]	
 		val remainingExpressions = newLinkedList
 		remainingExpressions += expression.operands.subList(2, expression.operands.size)
 		for (remainingExpression : remainingExpressions) {
-			newExp = newExp.extendLogicalExpression(LogicalOperator.XOR, remainingExpression, owner)
+			newExp = newExp.extendLogicalExpression(LogicalOperator.XOR, remainingExpression)
 		}
 		container.set(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)		
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, AndExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, AndExpression expression) {
 		if (expression.operands.size < 2) {
 			throw new IllegalArgumentException("The following expression has less than two operands: " + expression)
 		}
 		var newExp = createLogicalExpression => [
 			it.operator = LogicalOperator.AND
-			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1), owner)
+			it.transformBinaryExpressions(expression.operands.get(0), expression.operands.get(1))
 		]
 		val remainingExpressions = newLinkedList
 		remainingExpressions += expression.operands.subList(2, expression.operands.size)
 		for (remainingExpression : remainingExpressions) {
-			newExp = newExp.extendLogicalExpression(LogicalOperator.AND, remainingExpression, owner)
+			newExp = newExp.extendLogicalExpression(LogicalOperator.AND, remainingExpression)
 		}
 		container.set(reference, newExp)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, EqualityExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, EqualityExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.EQUAL
 		]
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, InequalityExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, InequalityExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.UNEQUAL
 		]
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, GreaterExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, GreaterExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.GREATER
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, GreaterEqualExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, GreaterEqualExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.GREATER_OR_EQUAL
 		]
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, LessExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, LessExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.LESS
 		]
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, LessEqualExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, LessEqualExpression expression) {
 		val newExp = container.createChild(reference, compareExpression) as CompareExpression => [
 			it.operator = CompareOperator.LESS_OR_EQUAL
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, AddExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, AddExpression expression) {
 		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.ADD
 		]
 		val transformedExpressions = newArrayList
 		for (subExpression : expression.operands) {
-			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			temp.transform(binaryExpression_FirstExpr, subExpression)
 			transformedExpressions += temp.firstExpr
 		}
 		val newExp = createArithmeticExpression(ArithmeticOperator.ADD, transformedExpressions)
@@ -302,21 +304,21 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, SubtractExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, SubtractExpression expression) {
 		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.SUBTRACT
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, MultiplyExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, MultiplyExpression expression) {
 		val temp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.MULTIPLICATE
 		]
 		val transformedExpressions = newArrayList
 		for (subExpression : expression.operands) {
-			temp.transform(binaryExpression_FirstExpr, subExpression, owner)
+			temp.transform(binaryExpression_FirstExpr, subExpression)
 			transformedExpressions += temp.firstExpr
 		}
 		val newExp = createArithmeticExpression(ArithmeticOperator.MULTIPLICATE, transformedExpressions)
@@ -324,62 +326,62 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, DivideExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, DivideExpression expression) {
 		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.DIVIDE			
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, DivExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, DivExpression expression) {
 		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.DIVIDE			
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, ModExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, ModExpression expression) {
 		val newExp = container.createChild(reference, arithmeticExpression) as ArithmeticExpression => [
 			it.operator = ArithmeticOperator.MODULO			
 		]		
-		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand, owner)
+		newExp.transformBinaryExpressions(expression.leftOperand, expression.rightOperand)
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	private def void transformBinaryExpressions(EObject container, Expression lhs, Expression rhs, ComponentInstance owner) {
-		container.transform(binaryExpression_FirstExpr, lhs, owner)
-		container.transform(binaryExpression_SecondExpr, rhs, owner)
+	private def void transformBinaryExpressions(EObject container, Expression lhs, Expression rhs) {
+		container.transform(binaryExpression_FirstExpr, lhs)
+		container.transform(binaryExpression_SecondExpr, rhs)
 	}
 	
-	private def extendLogicalExpression(LogicalExpression container, LogicalOperator operator, Expression expression, ComponentInstance owner) {
+	private def extendLogicalExpression(LogicalExpression container, LogicalOperator operator, Expression expression) {
 		return createLogicalExpression => [
 			it.firstExpr = container
 			it.operator = operator
-			it.transform(binaryExpression_SecondExpr, expression, owner)
+			it.transform(binaryExpression_SecondExpr, expression)
 		]
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, UnaryPlusExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, UnaryPlusExpression expression) {
 		val newExp = container.createChild(reference, plusExpression) as PlusExpression => [			
-			it.transform(plusExpression_ConfirmedExpression, expression.operand, owner)
+			it.transform(plusExpression_ConfirmedExpression, expression.operand)
 		]		
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, UnaryMinusExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, UnaryMinusExpression expression) {
 		val newExp = container.createChild(reference, minusExpression) as MinusExpression => [			
-			it.transform(minusExpression_InvertedExpression, expression.operand, owner)
+			it.transform(minusExpression_InvertedExpression, expression.operand)
 		]		
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, IfThenElseExpression expression, ComponentInstance owner) {
+	def dispatch void transform(EObject container, EReference reference, IfThenElseExpression expression) {
 		val newExp = container.createChild(reference, conditionExpression) as ConditionExpression => [			
-			it.transform(conditionExpression_IfExpression, expression.condition, owner)
-			it.transform(conditionExpression_ThenExpression, expression.then, owner)
-			it.transform(conditionExpression_ElseExpression, expression.^else, owner)
+			it.transform(conditionExpression_IfExpression, expression.condition)
+			it.transform(conditionExpression_ThenExpression, expression.then)
+			it.transform(conditionExpression_ElseExpression, expression.^else)
 		]		
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}

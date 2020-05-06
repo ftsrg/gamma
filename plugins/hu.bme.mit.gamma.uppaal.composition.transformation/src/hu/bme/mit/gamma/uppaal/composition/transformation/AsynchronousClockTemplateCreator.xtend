@@ -163,7 +163,7 @@ class AsynchronousClockTemplateCreator {
 					it.identifier = clockVar.variable.head // Always one variable in the container
 				]
 				it.operator = CompareOperator.GREATER_OR_EQUAL	
-				it.transform(binaryExpression_SecondExpr, timeValue, null)		
+				it.transform(binaryExpression_SecondExpr, timeValue)		
 			], LogicalOperator.AND)
 		}
 	}

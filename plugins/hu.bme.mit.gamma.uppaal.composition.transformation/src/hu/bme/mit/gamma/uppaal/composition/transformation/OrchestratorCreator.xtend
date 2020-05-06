@@ -369,8 +369,7 @@ class OrchestratorCreator {
 	 */
 	private def scheduleTopComposite(SynchronousComponent component, Edge previousLastEdge) {
 		checkState(component instanceof AbstractSynchronousCompositeComponent ||
-			component instanceof StatechartDefinition
-		)
+			component instanceof StatechartDefinition)
 		var Edge lastEdge = previousLastEdge
 		if (component instanceof SynchronousCompositeComponent) {
 			// Creating a new location is needed so the queue swap can be done after finalization of previous template

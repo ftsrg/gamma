@@ -644,13 +644,8 @@ class CompositeToUppaalTransformer {
 	val declarationInitRule = createRule(DeclarationInitializations.instance).action [
 		val initExpression = it.initValue
 		for (uDeclaration : it.declaration.allValuesOfTo.filter(DataVariableDeclaration)) {
-			var ComponentInstance owner = null
-			if (uDeclaration.prefix != DataVariablePrefix.CONST) {
-				owner = uDeclaration.owner
-			}
-			val finalOwner = owner 
 			uDeclaration.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
-				it.transform(expressionInitializer_Expression, initExpression, finalOwner)
+				it.transform(expressionInitializer_Expression, initExpression)
 			]		
 		}
 		// Traces are created in the transformVariable method
@@ -661,7 +656,7 @@ class CompositeToUppaalTransformer {
 			val parameter = component.parameterDeclarations.get(i)
 			val argument = topComponentArguments.get(i)
 			val initializer = createExpressionInitializer => [
-				it.transform(expressionInitializer_Expression, argument, null /*No instance associated*/)
+				it.transform(expressionInitializer_Expression, argument)
 			]
 			// The initialization is created, variable has to be created
 			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
@@ -687,7 +682,7 @@ class CompositeToUppaalTransformer {
 				/* Trying to create the initialization based on the argument
 					(succeeds if all referred parameters are already mapped) */
 				val initializer = createExpressionInitializer => [
-					it.transform(expressionInitializer_Expression, argument, instance)
+					it.transform(expressionInitializer_Expression, argument)
 				]
 				// The initialization is created, variable has to be created
 				val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
@@ -946,11 +941,11 @@ class CompositeToUppaalTransformer {
 	private def setEntryEvents(Edge edge, State state, SynchronousComponentInstance owner) {
 		// Entry event updates
 		for (assignmentAction : state.entryActions.filter(AssignmentStatement)) {
-			edge.transformAssignmentAction(edge_Update, assignmentAction, owner)
+			edge.transformAssignmentAction(edge_Update, assignmentAction)
 		}
 		// Set timeout actions
 		for (timeoutAction : state.entryActions.filter(SetTimeoutAction)) {
-			edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+			edge.transformTimeoutAction(edge_Update, timeoutAction)
 		}
 		// Entry event event raising
 		for (match : RaiseInstanceEventStateEntryActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
@@ -1014,7 +1009,7 @@ class CompositeToUppaalTransformer {
 			syncEdge.setExitEvents(tsource as State, owner)
 			// Setting the regular assignments of the transition, so it takes place after the exit events
 			for (assignment : transition.effects.filter(AssignmentStatement)) {
-				syncEdge.transformAssignmentAction(edge_Update, assignment, owner)				
+				syncEdge.transformAssignmentAction(edge_Update, assignment)				
 			}	
 			// The event raising of the transition is done here, though the order of event raising does not really matter in this transformer
 			for (raiseEventAction : transition.effects.filter(RaiseEventAction)) {
@@ -1152,11 +1147,11 @@ class CompositeToUppaalTransformer {
 		if (state !== null) {
 			// Assignment actions
 			for (action : state.exitActions.filter(AssignmentStatement)) {
-				edge.transformAssignmentAction(edge_Update, action, owner)			
+				edge.transformAssignmentAction(edge_Update, action)			
 			}
 			// Set timeout actions
 			for (timeoutAction : state.exitActions.filter(SetTimeoutAction)) {
-				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+				edge.transformTimeoutAction(edge_Update, timeoutAction)
 			}
 			// Signal raising actions
 			for (match : RaiseInstanceEventStateExitActions.Matcher.on(engine).getAllMatches(state, null, owner, null, null, null, null)) {
@@ -1325,11 +1320,11 @@ class CompositeToUppaalTransformer {
 				it.secondExpr = oldGuard
 			]		
 			// This is the transformation of the regular Gamma guard
-			andExpression.transform(binaryExpression_FirstExpr, guard, edge.owner)
+			andExpression.transform(binaryExpression_FirstExpr, guard)
 		}
 		// If there is no "isActive" reference, it is transformed regularly
 		else {
-			edge.transform(edge_Guard, guard, edge.owner)
+			edge.transform(edge_Guard, guard)
 		}
 	}
 	
@@ -1341,7 +1336,7 @@ class CompositeToUppaalTransformer {
 		// No update on ToHigher transitions, it is done in ToHigherTransitionRule
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			for (assignmentStatement : transition.effects.filter(AssignmentStatement)) {
-				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+				edge.transformAssignmentAction(edge_Update, assignmentStatement)
 			}		
 		}
 		// The trace is created by the ExpressionTransformer
@@ -1354,7 +1349,7 @@ class CompositeToUppaalTransformer {
 	val entryAssignmentActionsOfStatesRule = createRule(EntryAssignmentsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			for (assignmentStatement : state.entryActions.filter(AssignmentStatement)) {
-				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+				edge.transformAssignmentAction(edge_Update, assignmentStatement)
 			}
 			// The trace is created by the ExpressionTransformer
 		}
@@ -1368,7 +1363,7 @@ class CompositeToUppaalTransformer {
 	val entryTimeoutActionsOfStatesRule = createRule(EntryTimeoutActionsOfStates.instance).action [
 		for (edge : it.state.allValuesOfTo.filter(Edge)) {
 			for (timeoutAction : state.entryActions.filter(SetTimeoutAction)) {
-				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+				edge.transformTimeoutAction(edge_Update, timeoutAction)
 			}
 			// The trace is created by the ExpressionTransformer
 		}
@@ -1377,7 +1372,7 @@ class CompositeToUppaalTransformer {
 	val exitTimeoutActionsOfStatesRule = createRule(ExitTimeoutActionsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			for (timeoutAction : state.exitActions.filter(SetTimeoutAction)) {
-				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+				edge.transformTimeoutAction(edge_Update, timeoutAction)
 			}
 			// The trace is created by the ExpressionTransformer
 		}
@@ -1386,7 +1381,7 @@ class CompositeToUppaalTransformer {
 	val timeoutActionsOfTransitionsRule = createRule(TimeoutActionsOfTransitions.instance).action [
 		for (edge : it.transition.allValuesOfTo.filter(Edge)) {
 			for (timeoutAction : it.transition.effects.filter(SetTimeoutAction)) {
-				edge.transformTimeoutAction(edge_Update, timeoutAction, edge.owner)
+				edge.transformTimeoutAction(edge_Update, timeoutAction)
 			}
 			// The trace is created by the ExpressionTransformer
 		}
@@ -1399,7 +1394,7 @@ class CompositeToUppaalTransformer {
 	val exitAssignmentActionsOfStatesRule = createRule(ExitAssignmentsOfStatesWithTransitions.instance).action [
 		for (edge : it.outgoingTransition.allValuesOfTo.filter(Edge)) {
 			for (assignmentStatement : it.state.exitActions.filter(AssignmentStatement)) {
-				edge.transformAssignmentAction(edge_Update, assignmentStatement, edge.owner)
+				edge.transformAssignmentAction(edge_Update, assignmentStatement)
 			}
 		}
 		// The trace is created by the ExpressionTransformer

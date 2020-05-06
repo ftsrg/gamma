@@ -159,7 +159,7 @@ class MessageQueueCreator {
 		if (hasEventsFromOtherComponents) {
 			// Normal size
 			sizeConst.variable.head.createChild(variable_Initializer, expressionInitializer) as ExpressionInitializer => [
-				it.transform(expressionInitializer_Expression, queue.capacity, null)
+				it.transform(expressionInitializer_Expression, queue.capacity)
 			]
 		}
 		else {

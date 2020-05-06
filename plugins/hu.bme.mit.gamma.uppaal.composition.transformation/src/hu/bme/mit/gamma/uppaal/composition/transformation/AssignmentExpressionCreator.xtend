@@ -105,7 +105,7 @@ class AssignmentExpressionCreator {
 				it.identifier = variable.variable.head // Only one variable is expected
 			]
 			it.operator = AssignmentOperator.EQUAL
-			it.transform(binaryExpression_SecondExpr, rhs, owner)
+			it.transform(binaryExpression_SecondExpr, rhs)
 		]
 		return assignmentExpression
 	}
