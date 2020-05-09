@@ -580,8 +580,9 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			parentState = getParentState(parentRegion);
 		}
 		String parentRegionName = parentRegion.getName();
-//		parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
 		if (parentState == null) {
+			// Yakindu bug? First character is set to lowercase in the case of top regions
+			parentRegionName = parentRegionName.substring(0, 1).toLowerCase() + parentRegionName.substring(1); // toFirstLowerCase
 			return parentRegionName + "_" + state.getName();
 		}
 		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + state.getName();

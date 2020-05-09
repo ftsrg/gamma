@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
@@ -164,6 +163,7 @@ class StatechartWrapperCodeGenerator {
 						}
 				}
 				«component.generateStatemachineInstanceName».runCycle();
+				notifyListeners();
 			}
 			
 			// Inner classes representing Ports
@@ -177,15 +177,6 @@ class StatechartWrapperCodeGenerator {
 					@Override
 					public void registerListener(final «port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener) {
 						registeredListeners.add(listener);
-						«IF port.hasOutEvent»
-«««							If the clearing of previous registration is ever needed
-«««							«IF !port.interfaceRealization.isBroadcast»«component.statemachineInstanceName».get«port.yakinduRealizationModeName»().getListeners().clear();«ENDIF»
-							«IF port.interfaceRealization.realizationMode == RealizationMode.REQUIRED»
-								«component.registerListener(port, EventDirection.OUT)»
-							«ELSE»
-								«component.registerListener(port, EventDirection.IN)»
-							«ENDIF»
-						«ENDIF»
 					}
 					
 					@Override
@@ -298,7 +289,6 @@ class StatechartWrapperCodeGenerator {
 		// Yakindu listeners
 		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
 		import «PACKAGE_NAME».*;
-		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName»;
 		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
 	'''
 	
@@ -330,22 +320,6 @@ class StatechartWrapperCodeGenerator {
 		«IF event.type !== null»
 			(«event.type.eventParameterType.toFirstUpper») «EVENT_INSTANCE_NAME».getValue()«ENDIF»'''
 	
-	
-	/**
-	 * Generates code responsible for overriding the "onRaised" method of the listener interface.
-	 * E.g., generates code that raises event "b" of component "comp" if an "a"  out-event is raised inside the implemented component.
-	 */
-	protected def CharSequence registerListener(Component component, Port port, EventDirection oppositeDirection) '''
-		«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().getListeners().add(new «port.yakinduInterfaceName»Listener() {
-			«FOR event : port.interfaceRealization.interface.getAllEvents(oppositeDirection).map[it.eContainer as EventDeclaration] SEPARATOR "\n"»
-				@Override
-				public void on«event.event.toYakinduEvent(port).name.toFirstUpper»Raised(«event.generateParameter») {
-					listener.raise«event.event.name.toFirstUpper»(«event.generateParameterValue»);
-				}
-			«ENDFOR»
-		});
-	'''	
-		
 	/**
 	 * Generates methods that for in-event raisings in case of simple components.
 	 */
@@ -380,7 +354,7 @@ class StatechartWrapperCodeGenerator {
 						try {
 							// Using reflection to retrieve the value of the persistent private field
 							Class<? extends «port.yakinduInterfaceName»> interfaceClass = «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().getClass();
-							Field field = interfaceClass.getDeclaredField("«event.name»Value");
+							Field field = interfaceClass.getDeclaredField("«event.toYakinduEvent(port).name.toFirstLower»Value");
 							field.setAccessible(true);
 							«event.toYakinduEvent(port).type.eventParameterType» value = field.get«event.toYakinduEvent(port).type.eventParameterType.toFirstUpper»(«component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»());
 							field.setAccessible(false);
