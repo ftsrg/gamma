@@ -152,11 +152,11 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(UnaryPlusExpression expression) {
-		return "+" + expression.operand
+		return "+" + expression.operand.serialize
 	}
 	
 	def dispatch String serialize(UnaryMinusExpression expression) {
-		return "-" + expression.operand
+		return "-" + expression.operand.serialize
 	}
 	
 }

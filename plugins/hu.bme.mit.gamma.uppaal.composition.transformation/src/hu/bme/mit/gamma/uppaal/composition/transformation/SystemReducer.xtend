@@ -91,8 +91,8 @@ class SystemReducer {
 	
 	private def void removeUnnecessaryRegion(Region region) {
 		val states = region.states
-		if (states.forall[!it.composite && it.outgoingTransitions.empty ||
-				it.incomingTransitions.empty]) {
+		if (states.forall[!it.composite && it.outgoingTransitions.empty &&
+				it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
 			// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 			val statechart = region.containingStatechart
 			statechart.transitions -= (states.map[it.incomingTransitions].flatten + 

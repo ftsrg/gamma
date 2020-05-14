@@ -1257,7 +1257,10 @@ class CompositeToUppaalTransformer {
 //			else {
 //				edge.guard = channelVar.createLogicalExpression(LogicalOperator.OR, edge.guard)
 //			}
-			edge.setRunCycle
+			// This condition will be necessary when we want to enable triggers on all kinds of transitions?
+//			if (it.transition.sourceState instanceof State) {
+				edge.setRunCycle
+//			}
 			// Creating the trace
 			addToTrace(it.trigger, #{triggerGuard}, trace)		
 		}

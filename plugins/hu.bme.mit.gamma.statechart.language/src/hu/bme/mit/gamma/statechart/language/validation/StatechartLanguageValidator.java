@@ -729,11 +729,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				error("Transitions from join nodes must not have guards.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
-		if (target instanceof MergeState) {
-			if (!(source instanceof PseudoState) && !transition.getEffects().isEmpty()) {
-				error("Transitions targeted to merge nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
-			}
-		}
 		if (target instanceof JoinState) {
 			if (!(source instanceof PseudoState) &&	!transition.getEffects().isEmpty()) {
 				error("Transitions targeted to join nodes must not have actions.", StatechartModelPackage.Literals.TRANSITION__EFFECTS);
