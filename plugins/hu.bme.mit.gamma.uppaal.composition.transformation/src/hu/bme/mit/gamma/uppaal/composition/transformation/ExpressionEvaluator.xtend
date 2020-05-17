@@ -44,6 +44,14 @@ class ExpressionEvaluator {
 		this.engine = engine
 	}
 	
+	def evaluateToInt(Expression exp) {
+		try {
+			return exp.evaluate
+		} catch (IllegalArgumentException e) {
+			return exp.evaluateBoolean
+		}
+	}
+	
 	def dispatch int evaluate(Expression exp) {
 		throw new IllegalArgumentException("Not transformable expression: " + exp)
 	}

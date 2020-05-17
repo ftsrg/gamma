@@ -170,18 +170,22 @@ class AsynchronousConnectorTemplateCreator {
 						loopEdge.createAssignmentExpression(edge_Update, toRaiseVar, true)
 					}
 					// Creating the ...Value = ...Messages().value
-					val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
-					if (!expressions.empty) {
-						val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo
-								.filter(DataVariableDeclaration).filter[it.owner == match.instance]
-						if (valueOfVars.size != 1) {
-							throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-						}	
-						val valueOfVar = valueOfVars.head
-						// Creating the ...Messages().value expression
-						val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
-						// Creating the ...Value = ...Messages().value
-						loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
+					val parameters = match.event.parameterDeclarations
+					checkState(parameters.size <= 1, "In the case of asynchronous systems, only one parameter is supported.")
+					for (parameter : parameters) {
+						val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter)
+						if (!expressions.empty) {
+							val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo
+									.filter(DataVariableDeclaration).filter[it.owner == match.instance]
+							if (valueOfVars.size != 1) {
+								throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
+							}	
+							val valueOfVar = valueOfVars.head
+							// Creating the ...Messages().value expression
+							val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
+							// Creating the ...Value = ...Messages().value
+							loopEdge.createAssignmentExpression(edge_Update, valueOfVar, scopedIdentifierExp)
+						}
 					}
 				}
 				// If an event is not forwarded to a message queue, the loopEdge remains null
@@ -281,11 +285,18 @@ class AsynchronousConnectorTemplateCreator {
 			// Resetting the out-event variable
 			relayEdge.createAssignmentExpression(edge_Update, outVariable, false)
 			for (queueMatch : EventsIntoMessageQueues.Matcher.on(engine).getAllMatches(null, outEventMatch.systemPort, outEventMatch.event, null, null, null)) {
-				var DataVariableDeclaration valueOfVar = null
-				if (!outEventMatch.event.parameterDeclarations.empty) {
-					valueOfVar = outEventMatch.event.getOutValueOfVariable(outEventMatch.port/* Not sure if correct port*/, outEventMatch.instance)
+				val parameters = outEventMatch.event.parameterDeclarations
+				if (!parameters.empty) {
+					checkState(parameters.size == 1, "In the asynchronous case only one parameter is supported.")
+					for (parameter : parameters) {
+						val valueOfVar = outEventMatch.event.getOutValueOfVariable(outEventMatch.port/* Not sure if correct port*/,
+							parameter, outEventMatch.instance)
+						relayEdge.createQueueInsertion(queueMatch.inPort, queueMatch.raisedEvent, queueMatch.inInstance, valueOfVar)
+					}
 				}
-				relayEdge.createQueueInsertion(queueMatch.inPort, queueMatch.raisedEvent, queueMatch.inInstance, valueOfVar)
+				else {
+					relayEdge.createQueueInsertion(queueMatch.inPort, queueMatch.raisedEvent, queueMatch.inInstance, null /*0*/)
+				}
 			}
 		}
 		// Putting "default" guard on the finish relay edge

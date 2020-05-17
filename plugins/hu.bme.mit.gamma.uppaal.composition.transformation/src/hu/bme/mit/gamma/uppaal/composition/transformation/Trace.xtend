@@ -64,6 +64,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 class Trace {
 	// EMF Trace model and engine
@@ -348,24 +349,23 @@ class Trace {
 	/**
 	 * Returns the Uppaal toRaise valueOf variable of a Gamma typed-signal.
 	 */
-	def getToRaiseValueOfVariable(Event event, Port port, ComponentInstance instance) {
-		val parameter = event.parameterDeclarations.head
+	def getToRaiseValueOfVariable(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
 		checkState(parameter !== null)
 		var DataVariableDeclaration variable 
 		if (port.outputEvents.contains(event)) {
 			// This is an out event
-			variable = event.getOutValueOfVariable(port, instance)
+			variable = event.getOutValueOfVariable(port, parameter, instance)
 		}		
 		else {		
 			// Else, this is an in event
 			if (instance.isCascade) {
 				// Cascade components have no toRaise variables, therefore the isRaised is returned
-				variable = event.getIsRaisedValueOfVariable(port, instance)
+				variable = event.getIsRaisedValueOfVariable(port, parameter, instance)
 			}
 			else {
 				val variables = parameter.allValuesOfTo.filter(DataVariableDeclaration)
 						.filter[it.prefix == DataVariablePrefix.NONE && it.owner == instance]
-				variable = variables.filter[it.variable.head.name == event.getToRaiseValueOfName(port, instance)].head
+				variable = variables.filter[it.variable.head.name == event.getToRaiseValueOfName(port, parameter, instance)].head
 			}	
 		}
 		if (variable === null) {
@@ -378,11 +378,10 @@ class Trace {
 	/**
 	 * Returns the Uppaal isRaised valueOf variable of a Gamma typed-signal.
 	 */
-	def getIsRaisedValueOfVariable(Event event, Port port, ComponentInstance instance) {
-		val parameter = event.parameterDeclarations.head
+	def getIsRaisedValueOfVariable(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
 		checkState(parameter !== null)
 		val variable = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
-			&& it.owner == instance && it.variable.head.name == event.getIsRaisedValueOfName(port, instance)].head
+			&& it.owner == instance && it.variable.head.name == event.getIsRaisedValueOfName(port, parameter, instance)].head
 		if (variable === null) {
 			throw new IllegalArgumentException("This event has no isRaisedValueOf variable: " +
 				event.name + " Port: " + port.name + " Instance: " + instance.name)}
@@ -392,11 +391,10 @@ class Trace {
 	/**
 	 * Returns the Uppaal out-event valueOf variable of a Gamma typed-signal.
 	 */
-	def getOutValueOfVariable(Event event, Port port, ComponentInstance instance) {
-		val parameter = event.parameterDeclarations.head
+	def getOutValueOfVariable(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
 		checkState(parameter !== null)
 		val variable = parameter.allValuesOfTo.filter(DataVariableDeclaration).filter[it.prefix == DataVariablePrefix.NONE
-			&& it.owner == instance && it.variable.head.name == event.getOutValueOfName(port, instance)].head
+			&& it.owner == instance && it.variable.head.name == event.getOutValueOfName(port, parameter, instance)].head
 		if (variable === null) {
 			throw new IllegalArgumentException("This event has no outValueOf variable: " +
 				event.name + " Port: " + port.name + " Instance: " + instance.name)

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.EntryState
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.Port
@@ -141,7 +142,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class CompositeToUppaalTransformer {
 	// Transformation-related extensions
@@ -535,17 +535,15 @@ class CompositeToUppaalTransformer {
 	 * It depends on initNTA.
 	 */
 	val eventParametersRule = createRule(ParameteredEvents.instance).action [
-		if (it.event.parameterDeclarations.size != 1) {
-			throw new IllegalArgumentException("The event has more than one parameters." + it.event)
-		}
+		val parameter = it.param
 		// We deal with already transformed instance events
 		val uppaalEvents = it.event.allValuesOfTo.filter(DataVariableDeclaration)
 		// So we give one or two parameters (in the case of sync) to in events and one to out events
 		for (uppaalEvent : uppaalEvents) {
 			val owner = uppaalEvent.owner
 			val port = uppaalEvent.port
-			val eventValue = it.param.transformVariable(it.param.type, DataVariablePrefix.NONE,
-				uppaalEvent.variable.head.valueOfName)
+			val eventValue = parameter.transformVariable(parameter.type, DataVariablePrefix.NONE,
+				uppaalEvent.variable.head.getValueOfName(parameter))
 			log(Level.INFO, "Information: Event parameter: " + eventValue.variable.head.name)
 			// Parameter is now not connected to the Event
 			addToTrace(it.param, #{eventValue}, trace) // Connected to the port through name (getValueOfName - bad convention)
@@ -1502,14 +1500,14 @@ class CompositeToUppaalTransformer {
 		val toRaiseVar = toRaiseEvent.getToRaiseVariable(port, inInstance)
 		val raisingExpression = edge.createAssignmentExpression(edge_Update, toRaiseVar, true)
 		addToTrace(eventAction, #{raisingExpression}, expressionTrace) // Important in interaction coverage
-		val exps = eventAction.arguments
-		if (!exps.empty) {
-			for (expression : exps) {
-				val assignment = edge.createAssignmentExpression(edge_Update,
-					toRaiseEvent.getToRaiseValueOfVariable(port, inInstance), expression, inInstance)
-				addToTrace(eventAction, #{assignment}, expressionTrace)
-			}			
-		}
+		val expressions = eventAction.arguments
+		for (var i = 0; i < expressions.size; i++) {
+			val expression = expressions.get(i)
+			val parameter = toRaiseEvent.parameterDeclarations.get(i)
+			val assignment = edge.createAssignmentExpression(edge_Update,
+				toRaiseEvent.getToRaiseValueOfVariable(port, parameter, inInstance), expression, inInstance)
+			addToTrace(eventAction, #{assignment}, expressionTrace)
+		}			
 	}
 	
 	/**

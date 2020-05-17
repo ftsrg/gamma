@@ -275,42 +275,69 @@ class StringTraceBackAnnotator {
 		}
 	}
 	
-	protected def addInEvent(Step step, Port port, Event event, Integer parameter) {
-		val eventRaise = createRaiseEventAct(port, event, parameter)
-		// Not storing the same event raising twice
-		step.actions.removeIf[it instanceof RaiseEventAct && (it as RaiseEventAct).isOverWritten(eventRaise)]
-		step.actions += eventRaise
+	protected def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String string) {
+		switch (string) {
+			case "false":
+				return addInEvent(step, port, event, parameter, 0)
+			case "true":
+				return addInEvent(step, port, event, parameter, 1)
+			default:
+				return addInEvent(step, port, event, parameter, Integer.parseInt(string))
+		}
 	}
 	
-	protected def createRaiseEventAct(Port port, Event event, Integer parameter) {
+	protected def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+		val originalRaise = step.actions.filter(RaiseEventAct).findFirst[it.isOverWritten(eventRaise)]
+		if (originalRaise === null) {
+			// This is the first raise
+			step.actions += eventRaise
+		}
+		else if (parameter !== null) {
+			// Already a raise has been done, setting this parameter too
+			val parameters = event.parameterDeclarations
+			val index = parameters.indexOf(parameter)
+			originalRaise.arguments.set(index, parameter.createParameter(value))
+		}
+	}
+	
+	protected def createRaiseEventAct(Port port, Event event,
+			ParameterDeclaration parameter,	Integer value) {
 		val RaiseEventAct eventRaise = createRaiseEventAct => [
 			it.port = port
 			it.event = event
 		]
+		val parameters = event.parameterDeclarations
+		for (dummyParameter : parameters) {
+			eventRaise.arguments += createFalseExpression
+		}
 		if (parameter !== null) {
-			eventRaise.arguments += event.createParameter(parameter)
+			val index = parameters.indexOf(parameter)
+			eventRaise.arguments.set(index, parameter.createParameter(value))
 		}		
 		return eventRaise
 	}
 	
-	protected def createParameter(Event event, Integer parameter) {
-		if (event.parameterDeclarations.empty) {
+	protected def createParameter(ParameterDeclaration parameter, Integer value) {
+		if (parameter === null) {
 			return null
 		}
-		val paramType = event.parameterDeclarations.head.type
-		return paramType.createLiteral(parameter)
+		val paramType = parameter.type
+		return paramType.createLiteral(value)
 	}
 	
-	protected def createVariableLiteral(hu.bme.mit.gamma.expression.model.VariableDeclaration variable, Integer parameter) {
+	protected def createVariableLiteral(hu.bme.mit.gamma.expression.model.VariableDeclaration variable,
+			Integer value) {
 		val type = variable.type
-		return type.createLiteral(parameter)
+		return type.createLiteral(value)
 	}
 	
-	private def Expression createLiteral(Type paramType, Integer parameter) {
+	private def Expression createLiteral(Type paramType, Integer value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(parameter)]
+			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(value)]
 			BooleanTypeDefinition: {
-				if (parameter == 0) {
+				if (value == 0) {
 					createFalseExpression
 				}
 				else {
@@ -321,11 +348,11 @@ class StringTraceBackAnnotator {
 				val typeDeclaration = paramType.reference
 				val type = typeDeclaration.type
 				if (type.isPrimitive) {
-					return type.createLiteral(parameter)
+					return type.createLiteral(value)
 				}
 				switch (type) {
 					EnumerationTypeDefinition:
-						return createEnumerationLiteralExpression => [ it.reference = type.literals.get(parameter) ]				
+						return createEnumerationLiteralExpression => [ it.reference = type.literals.get(value) ]				
 					default: 
 						throw new IllegalArgumentException("Not known type definition: " + type)
 				}
@@ -362,9 +389,20 @@ class StringTraceBackAnnotator {
 		step.actions += createComponentSchedule
 	}
 	
-	protected def addOutEvent(Step step, Port port, Event event, Integer parameter) {
-		val eventRaise = createRaiseEventAct(port, event, parameter)
-		step.outEvents += eventRaise
+	protected def addOutEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+		val originalRaise = step.outEvents.findFirst[it.isOverWritten(eventRaise)]
+		if (originalRaise === null) {
+			// This is the first raise
+			step.outEvents += eventRaise
+		}
+		else if (parameter !== null) {
+			// Already a raise has been done, setting this parameter too
+			val parameters = event.parameterDeclarations
+			val index = parameters.indexOf(parameter)
+			originalRaise.arguments.set(index, parameter.createParameter(value))
+		}
 	}
 	
 	protected def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -461,6 +499,7 @@ class StringTraceBackAnnotator {
 				val params = uppaalVariable.allValuesOfFrom.filter(ParameterDeclaration) // These variables are traced to ParameterDeclarations only (and not events)
 				// Checking whether the variable is a parameter variable: valueOf variable					
 				if (params.size == 1) {
+					val param = params.head
 					val paramedEvent = params.head.eContainer as Event // Getting the container Event of the ParameterDeclaration
 					// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
 					val matches = TopSyncSystemOutEvents.Matcher.on(engine).getAllMatches(null, null, uppaalVariable.owner, uppaalVariable.port, paramedEvent)
@@ -487,11 +526,11 @@ class StringTraceBackAnnotator {
 							if (asyncMatches.size == 1) {
 								// Event is led out to an async system port
 								val asyncPort = asyncMatches.head.systemPort
-								step.addOutEvent(asyncPort, raisedEvent, rightValue)
+								step.addOutEvent(asyncPort, raisedEvent, param, rightValue)
 							}
 							else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent)  {
 								// Event is not led out to an async system port (sync or wrapper component)
-								step.addOutEvent(syncPort, match.event, rightValue)
+								step.addOutEvent(syncPort, match.event, param, rightValue)
 							}
 						}
 					}
@@ -525,11 +564,11 @@ class StringTraceBackAnnotator {
 						if (asyncMatches.size == 1) {
 							// Event is led out to an async system port
 							val asyncPort = asyncMatches.head.systemPort
-							step.addOutEvent(asyncPort, raisedEvent, null)
+							step.addOutEvent(asyncPort, raisedEvent, null, null)
 						}
 						else if (component instanceof AsynchronousAdapter || component instanceof SynchronousComponent) {
 							// Event is not led out to an async system port (sync or wrapper component)
-							step.addOutEvent(syncPort, raisedEvent, null)
+							step.addOutEvent(syncPort, raisedEvent, null, null)
 						}						
 					}
 				}
@@ -589,75 +628,85 @@ class StringTraceBackAnnotator {
 		// Checking in events and parameters
 		val eventRaiseActions = actions.filter[it.startsWith("toRaise_") /* Synchronous components */ 
 			|| it.startsWith("isRaised_") /* Cascade components (only a single event queue) */
-			|| it.split(" := ").head.endsWith("Value") /* Value of */
+			/* Value of variables start with toRaise_ or isRaised_ */
 			|| (line.isWrapperEnvironment && it.matches(".*push(.)*\\((?<event>\\w+), (?<value>\\d+)\\).*")) /* Async in events*/
 		].toList
 		// Getting the variable declaration objects
 		for (eventRaiseAction : eventRaiseActions) {
-			// isActive := 0
+			// isActive := 0 or toRaise_Execute_executeOfpriorexecuteParameterName != 3
 			val splittedAction = eventRaiseAction.parseEventRaise // [toRaise..., 0]
-			val variableName = splittedAction.get("name")
-			val variableValue = splittedAction.get("value")
-			val variableDeclaration = variableName.variableDeclaration
-			if (component instanceof SynchronousComponent) {
-				val event = variableDeclaration.event
-				if (event !== null) {
-					// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
-					val matches = TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, variableDeclaration.owner, variableDeclaration.port, event)
-					if (matches.size > 0) {
-						val match = matches.head							
-						if (event.parameterDeclarations.empty) {
-							// Putting in the trace only if it is not a typed event (with valueof variable)
-							// If it is a typed event, the else branch will take care of it in the next turn
-							// [toRaise_Test_testInOfcontroller := 1, Test_testInOfcontrollerValue := 5]
-							step.addInEvent(match.systemPort,  match.event, null)						
-						}
-					}				
-				}
-				else {
-					val params = variableDeclaration.allValuesOfFrom.filter(ParameterDeclaration) // These variables are traced to ParameterDeclarations only (and not events)
-					// Checking whether the variable is a parameter variable: valueOf variable					
-					if (params.size == 1) {
-						val paramedEvent = params.head.eContainer as Event // Getting the container Event of the ParameterDeclaration
+			// It is null in the case of toRaise_Execute_executeOfpriorexecuteParameterName != 3
+			if (splittedAction !== null) {
+				val variableName = splittedAction.get("name")
+				val variableValue = splittedAction.get("value")
+				val variableDeclaration = variableName.variableDeclaration
+				if (component instanceof SynchronousComponent) {
+					val event = variableDeclaration.event
+					if (event !== null) {
 						// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
-						val matches = TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, variableDeclaration.owner, variableDeclaration.port, paramedEvent)
+						val matches = TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, variableDeclaration.owner, variableDeclaration.port, event)
 						if (matches.size > 0) {
-							val match = matches.head
-							step.addInEvent(match.systemPort, match.event, Integer.parseInt(variableValue))
-						}
+							val match = matches.head							
+							if (event.parameterDeclarations.empty) {
+								// Putting in the trace only if it is not a typed event (with valueof variable)
+								// If it is a typed event, the else branch will take care of it in the next turn
+								// [toRaise_Test_testInOfcontroller := 1, Test_testInOfcontrollerValue := 5]
+								step.addInEvent(match.systemPort, match.event, null, null)						
+							}
+						}				
 					}
-					// Else it is a regular variable assignment, we do not care about it
-				}			
-			}
-			else if (component instanceof AsynchronousAdapter) {
-				val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(null)
-				if (match !== null) {
-					if (match.event.parameterDeclarations.empty) {
-						step.addInEvent(match.port, match.event, null)
-					} 
 					else {
-						step.addInEvent(match.port, match.event, Integer.parseInt(variableValue))
-					}
-				}
-			}
-			else if (component instanceof AsynchronousCompositeComponent) {
-				val functionName = splittedAction.get("function") // Push function
-				val owner = functionName.peekFunction.asyncOwner
-				val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(owner.type as AsynchronousAdapter)
-				if (match !== null) {
-					// Instance ports must be traced back to system level ports
-					val systemMatches = TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, owner, match.port, match.event)
-					if (systemMatches.size > 0) {
-						// It is not an error if there is no match, as not all events are connected to a system level port
-						if (systemMatches.size != 1) {
-							throw new IllegalArgumentException("Not one system match: " + systemMatches)
+						val params = variableDeclaration.allValuesOfFrom.filter(ParameterDeclaration) // These variables are traced to ParameterDeclarations only (and not events)
+						// Checking whether the variable is a parameter variable: valueOf variable					
+						if (params.size == 1) {
+							val param = params.head
+							val paramedEvent = param.eContainer as Event // Getting the container Event of the ParameterDeclaration
+							// Getting the composite system Port bound to the instance port (Uppaal variables contain the port name on which the event is raised)
+							val matches = TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, variableDeclaration.owner, variableDeclaration.port, paramedEvent)
+							if (matches.size > 0) {
+								val match = matches.head
+								step.addInEventWithParameter(match.systemPort, match.event, param, variableValue)
+							}
 						}
-						val systemMatch = systemMatches.head
-						if (systemMatch.event.parameterDeclarations.empty) {
-							step.addInEvent(systemMatch.systemPort, systemMatch.event, null)
+						// Else it is a regular variable assignment, we do not care about it
+					}			
+				}
+				else if (component instanceof AsynchronousAdapter) {
+					val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(null)
+					if (match !== null) {
+						val parameters = match.event.parameterDeclarations
+						checkState(parameters.size <= 1)
+						if (parameters.empty) {
+							step.addInEvent(match.port, match.event, null, null)
 						} 
 						else {
-							step.addInEvent(systemMatch.systemPort, systemMatch.event, Integer.parseInt(variableValue))
+							val parameter = parameters.head
+							step.addInEventWithParameter(match.port, match.event, parameter, variableValue)
+						}
+					}
+				}
+				else if (component instanceof AsynchronousCompositeComponent) {
+					val functionName = splittedAction.get("function") // Push function
+					val owner = functionName.peekFunction.asyncOwner
+					val match = (variableDeclaration as DataVariableDeclaration).getWrapperEvent(owner.type as AsynchronousAdapter)
+					if (match !== null) {
+						// Instance ports must be traced back to system level ports
+						val systemMatches = TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(null, null, owner, match.port, match.event)
+						if (systemMatches.size > 0) {
+							// It is not an error if there is no match, as not all events are connected to a system level port
+							if (systemMatches.size != 1) {
+								throw new IllegalArgumentException("Not one system match: " + systemMatches)
+							}
+							val systemMatch = systemMatches.head
+							val parameters = systemMatch.event.parameterDeclarations
+							checkState(parameters.size <= 1)
+							if (parameters.empty) {
+								step.addInEvent(systemMatch.systemPort, systemMatch.event, null, null)
+							} 
+							else {
+								val parameter = parameters.head
+								step.addInEventWithParameter(systemMatch.systemPort, systemMatch.event, parameter, variableValue)
+							}
 						}
 					}
 				}

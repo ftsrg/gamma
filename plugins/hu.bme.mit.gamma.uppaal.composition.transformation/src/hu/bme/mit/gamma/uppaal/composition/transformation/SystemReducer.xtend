@@ -30,6 +30,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 class SystemReducer {
 	
@@ -58,6 +59,9 @@ class SystemReducer {
 		for (region : regionMatcher.allValuesOfregion) {
 			region.removeUnnecessaryRegion
 		}
+		for (transition : statecharts) {
+			
+		}
 		// Statechart optimizing
 		for (statechart : statecharts) {
 			if (statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) {
@@ -66,6 +70,17 @@ class SystemReducer {
 				statechart.timeoutDeclarations.clear
 				statechart.transitions.clear
 				log(Level.INFO, "Removing statechart content: " + statechart.name)
+			}
+			// Removing transitions who went out of a state from a removed region
+			for (transition : statechart.transitions.toSet /*To avoid concurrent modification*/) {
+				val source = transition.sourceState
+				val target = transition.targetState
+				try {
+					source.containingStatechart
+					target.containingStatechart
+				} catch (NullPointerException exception) {
+					EcoreUtil.delete(transition)
+				}
 			}
 		}
 		// Instance optimizing

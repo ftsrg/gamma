@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import uppaal.declarations.Variable
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 class Namings {
 	
@@ -77,20 +78,20 @@ class Namings {
 		return "isRaised_" + port.name + "_" + event.name + "Of" + instance.name
 	}
 	
-	def static getOutValueOfName(Event event, Port port, ComponentInstance instance) {
-		return getOutEventName(event, port, instance) + "Value"
+	def static getOutValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
+		return getOutEventName(event, port, instance) + parameter.name
 	}
 	
-	def static getToRaiseValueOfName(Event event, Port port, ComponentInstance instance) {
-		return getToRaiseName(event, port, instance) + "Value"
+	def static getToRaiseValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
+		return getToRaiseName(event, port, instance) + parameter.name
 	}
 	
-	def static getIsRaisedValueOfName(Event event, Port port, ComponentInstance instance) {
-		return getIsRaisedName(event, port, instance) +  "Value"
+	def static getIsRaisedValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
+		return getIsRaisedName(event, port, instance) +  parameter.name
 	}
 	
-	def static getValueOfName(Variable variable) {
-		return variable.name + "Value"
+	def static getValueOfName(Variable variable, ParameterDeclaration parameter) {
+		return variable.name + parameter.name
 	}
 	
 	def static getVariableName(VariableDeclaration variable, ComponentInstance instance) {

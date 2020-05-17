@@ -54,7 +54,7 @@ Reset returns Reset:
 ;
 
 RaiseEventAct returns RaiseEventAct:
-	'raise' port=[StatechartModel::Port] '.' event=[InterfaceModel::Event] (':' arguments+=Expression)?
+	'raise' port=[StatechartModel::Port] '.' event=[InterfaceModel::Event] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;
 
 TimeElapse returns TimeElapse:

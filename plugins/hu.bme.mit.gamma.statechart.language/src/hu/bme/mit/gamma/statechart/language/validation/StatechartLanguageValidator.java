@@ -195,13 +195,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkParameterCount(Event event) {
-		if (event.getParameterDeclarations().size() > 1) {
-			error("An event can have at most one parameter.", ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS);
-		}
-	}
-	
-	@Check
 	public void checkParameterName(Event event) {
 		if (event.getParameterDeclarations().size() == 1) {
 			final ParameterDeclaration parameterDeclaration = event.getParameterDeclarations().get(0);

@@ -357,13 +357,13 @@ private pattern parameterValue(rootExpression : EqualityExpression, port : Port,
 	EqualityExpression.leftOperand(rootExpression, valueExpression);
 }
 
-pattern valuesOfEventParameters(port : Port, event : Event, expression : Expression) {
+pattern valuesOfEventParameters(port : Port, event : Event, parameter : ParameterDeclaration, expression : Expression) {
 	Transition.guard(_, equalityExpression);
-	find parameterValue(equalityExpression, port, event, _parameter, expression);
+	find parameterValue(equalityExpression, port, event, parameter, expression);
 } or {
 	Transition.guard(_, guard);		
 	find expressionToExpression+(guard, equalityExpression);
-	find parameterValue(equalityExpression, port, event, _parameter, expression);
+	find parameterValue(equalityExpression, port, event, parameter, expression);
 } 
 
 pattern entryRaisingActionsOfStates(state : State, raiseEventAction : RaiseEventAction) {

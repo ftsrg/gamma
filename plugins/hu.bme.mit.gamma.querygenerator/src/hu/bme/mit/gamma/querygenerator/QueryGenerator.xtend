@@ -213,7 +213,7 @@ class QueryGenerator {
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
 				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
-					return getOutValueOfName(event, eventsMatch.port, eventsMatch.instance)
+					return getOutValueOfName(event, eventsMatch.port, parameter, eventsMatch.instance)
 				}
 			}
 		}

@@ -55,6 +55,8 @@ import uppaal.types.TypesPackage
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 import uppaal.templates.Selection
+import uppaal.expressions.CompareExpression
+import uppaal.expressions.CompareOperator
 
 class NtaBuilder {
 	// NTA target model
@@ -243,6 +245,31 @@ class NtaBuilder {
 			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
 				it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 					it.identifier = guard.variable.head
+				]
+				it.operator = operator
+				it.secondExpr = oldGuard
+			]
+		}
+		// If there is no guard yet
+		else {
+			edge.createChild(edge_Guard, identifierExpression) as IdentifierExpression => [
+				it.identifier = guard.variable.head
+			]
+		}
+	}
+	
+	def addGuard(Edge edge, DataVariableDeclaration guard, Expression notEqual, LogicalOperator operator) {
+		if (edge.guard !== null) {
+			// Getting the old reference
+			val oldGuard = edge.guard as Expression
+			// Creating the new andExpression that will contain the same reference and the regular guard expression
+			edge.createChild(edge_Guard, logicalExpression) as LogicalExpression => [
+				it.createChild(binaryExpression_FirstExpr, compareExpression) as CompareExpression => [
+					it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+						it.identifier = guard.variable.head
+					]
+					it.operator = CompareOperator.UNEQUAL
+					it.secondExpr = notEqual.clone(true, true)
 				]
 				it.operator = operator
 				it.secondExpr = oldGuard

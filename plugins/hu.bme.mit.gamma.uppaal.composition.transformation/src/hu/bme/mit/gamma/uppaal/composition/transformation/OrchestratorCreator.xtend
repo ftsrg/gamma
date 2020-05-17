@@ -240,13 +240,15 @@ class OrchestratorCreator {
 	
 	private def resetOutParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
-		container.createAssignmentExpression(reference, event.getOutValueOfVariable(port, instance), "0")
+		for (parameter : event.parameterDeclarations) {
+			container.createAssignmentExpression(reference, event.getOutValueOfVariable(port, parameter, instance), "0")
+		}
 	}
 	
 	private def resetInParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
-		if (!event.parameterDeclarations.empty) {
-			container.createAssignmentExpression(reference, event.getIsRaisedValueOfVariable(port, instance), "0")
+		for (parameter : event.parameterDeclarations) {
+			container.createAssignmentExpression(reference, event.getIsRaisedValueOfVariable(port, parameter, instance), "0")
 		}
 	}
 	
@@ -441,18 +443,23 @@ class OrchestratorCreator {
 	 */
 	private def createQueueSwap(Edge edge, SynchronousComponentInstance instance) {
 		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
+			val event = match.event
+			val port = match.port
 			// isRaised = toRaise
-			edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance),
-				 match.event.getToRaiseVariable(match.port, match.instance))			
+			edge.createAssignmentExpression(edge_Update, event.getIsRaisedVariable(port, instance),
+				 event.getToRaiseVariable(port, instance))			
 			// toRaise = false
-			edge.createAssignmentExpression(edge_Update, match.event.getToRaiseVariable(match.port, match.instance), false)
-			if (!match.event.parameterDeclarations.empty) {
-				// isRaisedValueOf = toRaiseValueOf 
-				edge.createAssignmentExpression(edge_Update, match.event.getIsRaisedValueOfVariable(match.port, match.instance),
-					match.event.getToRaiseValueOfVariable(match.port, match.instance))			
-				// toRaiseValueOf  = 0 (only if event is not persistent)
-				if (match.event.doesParameterVariableNeedReset) {
-					edge.createAssignmentExpression(edge_Update, match.event.getToRaiseValueOfVariable(match.port, match.instance), "0")
+			edge.createAssignmentExpression(edge_Update, event.getToRaiseVariable(port, instance), false)
+			val parameters = event.parameterDeclarations
+			if (!parameters.empty) {
+					// isRaisedValueOf = toRaiseValueOf
+					for (parameter : parameters) {
+					edge.createAssignmentExpression(edge_Update, event.getIsRaisedValueOfVariable(port, parameter, instance),
+						event.getToRaiseValueOfVariable(port, parameter, instance))			
+					// toRaiseValueOf  = 0 (only if event is not persistent)
+					if (event.doesParameterVariableNeedReset) {
+						edge.createAssignmentExpression(edge_Update, event.getToRaiseValueOfVariable(port, parameter, instance), "0")
+					}
 				}
 			}
 		}

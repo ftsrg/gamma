@@ -158,18 +158,18 @@ class TestQueryGenerationHandler {
 			val port = outEventMatch.port
 			val event = outEventMatch.event
 			val parameters = event.parameterDeclarations
-			val parameterValues = newHashSet
+			val parameterValues = newHashMap
 			if (!parameters.empty) {
-				checkState(parameters.size == 1)
-				val parameter = parameters.head
-				val typeDefinition = parameter.type.typeDefinition
-				switch (typeDefinition) {
-					// Checking only booleans and enumerations now
-					BooleanTypeDefinition: {
-						parameterValues += #{"true", "false"}
-					}
-					EnumerationTypeDefinition : {
-						parameterValues += typeDefinition.literals.map[typeDefinition.literals.indexOf(it).toString]
+				for (parameter : parameters) {
+					val typeDefinition = parameter.type.typeDefinition
+					switch (typeDefinition) {
+						// Checking only booleans and enumerations now
+						BooleanTypeDefinition: {
+							parameterValues.put(parameter, #{"true", "false"})
+						}
+						EnumerationTypeDefinition : {
+							parameterValues.put(parameter, typeDefinition.literals.map[typeDefinition.literals.indexOf(it).toString])
+						}
 					}
 				}
 			}
@@ -180,10 +180,12 @@ class TestQueryGenerationHandler {
 				expressions.append('''E<> «outEventVariableName» == true && «Namings.isStableVariableName»«System.lineSeparator»''')
 			}
 			else {
-				val parameterVariableName = Namings.getOutValueOfName(event, port, instance)
-				for (parameterValue : parameterValues) {
-					expressions.append('''/*«System.lineSeparator»«systemPort.name».«event.name»«System.lineSeparator»*/«System.lineSeparator»''')
-					expressions.append('''E<> «outEventVariableName» == true && «parameterVariableName» == «parameterValue» && «Namings.isStableVariableName»«System.lineSeparator»''')
+				for (parameter : parameters) {
+					val parameterVariableName = Namings.getOutValueOfName(event, port, parameter, instance)
+					for (parameterValue : parameterValues.get(parameter)) {
+						expressions.append('''/*«System.lineSeparator»«systemPort.name».«event.name»«System.lineSeparator»*/«System.lineSeparator»''')
+						expressions.append('''E<> «outEventVariableName» == true && «parameterVariableName» == «parameterValue» && «Namings.isStableVariableName»«System.lineSeparator»''')
+					}
 				}
 			}
 		}

@@ -14,6 +14,8 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
@@ -28,8 +30,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComp
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import java.math.BigInteger
-import java.util.Collection
-import java.util.HashSet
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -45,8 +45,9 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.TemplatesPackage
 
+import static com.google.common.base.Preconditions.checkState
+
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class EnvironmentCreator {
 	// Logger
@@ -106,15 +107,14 @@ class EnvironmentCreator {
 					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = null // Needed as now a port with only in events can be bound to multiple instance ports
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-							val toRaiseVar = match.event.getToRaiseVariable(match.port, match.instance)
 							log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)
 							if (loopEdge === null) {
-								loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+								loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignmentIfNeeded(match.port, match.event, match.instance)
 								loopEdge.addGuard(isStableVar, LogicalOperator.AND)
 								loopEdges.put(new Pair(systemPort, inEvent), loopEdge)
 							}
 							else {
-								loopEdge.extendLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+								loopEdge.extendLoopEdgeWithGuardedBoolAssignmentIfNeeded(match.port, match.event, match.instance)
 							}
 						}
 					}
@@ -123,33 +123,36 @@ class EnvironmentCreator {
 				for (systemPort : it.syncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
 						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
-						var Collection<Expression> expressionSet = new HashSet
+						var expressionSet = newHashMap
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-							// Collecting parameter values for each instant event
-							expressionSet += ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+							// Collecting parameter values for each instant parameter
+							for (parameter : match.event.parameterDeclarations) {
+								expressionSet.put(parameter, ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter))
+							}
 						}
 						// Removing the expression duplications (that are evaluated to the same expression)
-						val expressions = expressionSet.removeDuplicatedExpressions
-						if (!expressions.empty) {
+						for (expressionEntry : expressionSet.entrySet) {
+							val parameter = expressionEntry.key
+							val originalExpressions = expressionEntry.value
+							val expressions = originalExpressions.removeDuplicatedExpressions
 							// Removing original edge from the model - only if there is a valid expression
 							template.edge -= loopEdge
 							for (expression : expressions) {
 								// Putting variables raising for ALL instance parameters
 		   						val clonedLoopEdge = loopEdge.clone(true, true)
 		   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, expression)
+									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
 								}
 								template.edge += clonedLoopEdge
 								expression.removeGammaElementFromTrace
 							}
 							// Adding a different value if the type is an integer
-							if (expressionSet.filter(EnumerationLiteralExpression).empty &&
-									!expressions.empty) {
+							if (originalExpressions.filter(EnumerationLiteralExpression).empty && expressions.exists[it instanceof IntegerLiteralExpression]) {
 			   					val clonedLoopEdge = loopEdge.clone(true, true)
 								val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
 								val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
 								for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, innerMatch.instance, biggerThanMax)
+									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, biggerThanMax)
 								}
 								template.edge += clonedLoopEdge
 								biggerThanMax.removeGammaElementFromTrace
@@ -161,14 +164,35 @@ class EnvironmentCreator {
 		}
 	}
 	
-	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ComponentInstance owner, Expression expression) {
-		val valueOfVars = event.parameterDeclarations.head.allValuesOfTo.filter(DataVariableDeclaration)
-							.filter[it.owner == owner && it.port == port]
-		if (valueOfVars.size != 1) {
-			throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
+	private def createLoopEdgeWithGuardedBoolAssignmentIfNeeded(Location initLoc, Port port, Event event,
+			ComponentInstance instance) {
+		val toRaiseVar = event.getToRaiseVariable(port, instance)
+		if (event.parameterDeclarations.size <= 1) {
+			return initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
 		}
-		val valueOfVar = valueOfVars.head
+		else {
+			// Parameter values are set one by one, therefore the guard cannot be on the edge
+			return initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
+		}
+	}
+	
+	private def void extendLoopEdgeWithGuardedBoolAssignmentIfNeeded(Edge loopEdge, Port port, Event event,
+			ComponentInstance instance) {
+		val toRaiseVar = event.getToRaiseVariable(port, instance)
+		if (event.parameterDeclarations.size <= 1) {
+			loopEdge.extendLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
+		}
+		else {
+			// Parameter values are set one by one, therefore the guard cannot be on the edge
+			loopEdge.createAssignmentExpression(edge_Update, toRaiseVar, true)
+		}
+	}
+	
+	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ParameterDeclaration parameter,
+			ComponentInstance owner, Expression expression) {
+		val valueOfVar = modelTrace.getToRaiseValueOfVariable(event, port, parameter, owner)
 		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
+		loopEdge.addGuard(valueOfVar, createLiteralExpression => [it.text = expression.evaluateToInt.toString], LogicalOperator.AND)
 	}
 	
 	def getTopWrapperEnvironmentRule() {
@@ -196,15 +220,21 @@ class EnvironmentCreator {
 	private def void createEnvironmentLoopEdges(Location initLoc, MessageQueueTrace messageQueueTrace,
 			Port port, Event event, SynchronousComponentInstance owner) {
 		// Checking the parameters
-		val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(port, event)
-		for (expression : expressions) {
-			// New edge is needed in every iteration!
-			val loopEdge = initLoc.createEdge(initLoc)
-			loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), expression, owner)
-			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
-			loopEdge.addInitializedGuards
+		val parameters = event.parameterDeclarations
+		if (!parameters.empty) {
+			checkState(parameters.size == 1)
+			for (parameter : parameters) {
+				val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(port, event, parameter)
+				for (expression : expressions.removeDuplicatedExpressions) {
+					// New edge is needed in every iteration!
+					val loopEdge = initLoc.createEdge(initLoc)
+					loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), expression, owner)
+					loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
+					loopEdge.addInitializedGuards
+				}
+			}
 		}
-		if (expressions.empty) {
+		else {
 			val loopEdge = initLoc.createEdge(initLoc)
 			loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), createLiteralExpression => [it.text = "0"])
 			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
@@ -222,7 +252,10 @@ class EnvironmentCreator {
 				for (systemPort : it.asyncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
 						for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
-							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event)
+							val parameters = inEvent.parameterDeclarations
+							checkState(parameters.size <= 1)
+							val parameter = parameters.head
+							val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter)
 							var Set<Expression> expressionList
 							if (!parameterMap.containsKey(new Pair(systemPort, inEvent))) {
 								expressionList = newHashSet
