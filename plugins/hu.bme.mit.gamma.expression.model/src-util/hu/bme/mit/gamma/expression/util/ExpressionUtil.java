@@ -200,6 +200,25 @@ public class ExpressionUtil {
 		return false;
 	}
 
+	/**
+	 * Returns whether the disjunction of the given expressions is a certain event.
+	 */
+	public boolean isCertainEvent(Expression lhs, Expression rhs) {
+		if (lhs instanceof NotExpression) {
+			final Expression operand = ((NotExpression) lhs).getOperand();
+			if (helperEquals(operand, rhs)) {
+				return true;
+			}
+		}
+		if (rhs instanceof NotExpression) {
+			final Expression operand = ((NotExpression) rhs).getOperand();
+			if (helperEquals(operand, lhs)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private boolean hasEqualityToDifferentLiterals(List<EqualityExpression> expressions) {
 		for (int i = 0; i < expressions.size() - 1; ++i) {
 			try {
