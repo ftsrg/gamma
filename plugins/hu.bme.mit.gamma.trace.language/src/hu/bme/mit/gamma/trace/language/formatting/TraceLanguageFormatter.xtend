@@ -25,10 +25,9 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 		// Using the basic expression language formatting
 		expressionLanguageFormatterUtil.format(c, f)
 		for (Keyword comma: f.findKeywords(",")) {
-			c.setNoLinewrap().before(comma);
 			c.setNoSpace().before(comma);
-			c.setSpace(" ").after(comma);
 		}
+f.instanceStateConfigurationAccess
 		// Setting the maximum size of lines
         c.setAutoLinewrap(130)
         // Line break between import and component keywords
@@ -37,6 +36,7 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
   		c.setLinewrap(1).after(f.executionTraceAccess.group_5)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
+        c.setLinewrap(1).before(f.instanceStateRule)
         c.setNoSpace.before(f.getRaiseEventActAccess.group_4)
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule()) 

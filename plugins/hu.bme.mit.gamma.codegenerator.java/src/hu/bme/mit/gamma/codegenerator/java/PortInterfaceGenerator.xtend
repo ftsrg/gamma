@@ -70,7 +70,7 @@ class PortInterfaceGenerator {
 			}
 		}
 	'''
-		
+	
 	private def generateIsRaisedInterfaceMethods(Interface anInterface, EventDirection oppositeDirection) '''
 	«««		Simple flag checks
 		«FOR event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]»

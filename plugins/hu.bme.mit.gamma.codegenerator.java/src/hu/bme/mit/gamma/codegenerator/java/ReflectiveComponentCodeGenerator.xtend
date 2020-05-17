@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -103,7 +102,7 @@ class ReflectiveComponentCodeGenerator {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
 					«FOR port : component.ports»
-						«FOR inEvent : port.getSemanticEvents(EventDirection.IN)»
+						«FOR inEvent : port.inputEvents»
 							case "«port.name».«inEvent.name»":
 								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«inEvent.parameterDeclarations.get(i).type.generateParameterCast('''parameters[«i»]''')»«ENDFOR»);
 								break;
@@ -118,7 +117,7 @@ class ReflectiveComponentCodeGenerator {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
 					«FOR port : component.ports»
-						«FOR outEvent : port.getSemanticEvents(EventDirection.OUT)»
+						«FOR outEvent : port.outputEvents»
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
@@ -132,7 +131,7 @@ class ReflectiveComponentCodeGenerator {
 					default:
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
-				«IF !component.ports.map[it.getSemanticEvents(EventDirection.OUT)].flatten.empty»return false;«ENDIF»
+				«IF !component.ports.map[it.outputEvents].flatten.empty»return false;«ENDIF»
 			}
 			
 			«component.generateIsActiveState»

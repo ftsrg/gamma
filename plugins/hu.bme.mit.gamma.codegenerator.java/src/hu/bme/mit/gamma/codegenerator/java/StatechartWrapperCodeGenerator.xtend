@@ -16,9 +16,7 @@ import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency
-import java.util.Collections
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
@@ -186,7 +184,7 @@ class StatechartWrapperCodeGenerator {
 					
 					/** Notifying the registered listeners. */
 					public void notifyListeners() {
-						«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)»
+						«FOR event : port.outputEvents»
 							if (isRaised«event.name.toFirstUpper»()) {
 								for («port.interfaceRealization.interface.implementationName».Listener.«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : registeredListeners) {
 									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»get«event.name.toFirstUpper»Value()«ENDIF»);
@@ -281,7 +279,7 @@ class StatechartWrapperCodeGenerator {
 		import java.util.Queue;
 		import java.util.List;
 		import java.util.LinkedList;
-		«IF component.ports.getSemanticEvents(EventDirection.OUT).exists[it.persistency == Persistency.PERSISTENT]»
+		«IF component.ports.map[it.outputEvents].flatten.exists[it.persistency == Persistency.PERSISTENT]»
 			import java.lang.reflect.Field;
 		«ENDIF»
 		
@@ -297,8 +295,8 @@ class StatechartWrapperCodeGenerator {
 	*/
 	protected def generateEventHandlers(Component component) '''
 ««« It is done this way, so all Yakindu interfaces mapped to the same Gamma interface can process the same event
-	«FOR port : component.ports»
-			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
+		«FOR port : component.ports»
+			«FOR event : port.inputEvents»
 				case "«port.name.toFirstUpper».«event.name.toFirstUpper»": 
 					«event.toYakinduEvent(port).delegateCall(component, port)»
 				break;
@@ -318,13 +316,13 @@ class StatechartWrapperCodeGenerator {
 	*/
 	protected def castArgument(Event event) '''
 		«IF event.type !== null»
-			(«event.type.eventParameterType.toFirstUpper») «EVENT_INSTANCE_NAME».getValue()«ENDIF»'''
+			(«event.type.eventParameterType.toFirstUpper») «EVENT_INSTANCE_NAME».getValue()[0]«ENDIF»'''
 	
 	/**
 	 * Generates methods that for in-event raisings in case of simple components.
 	 */
 	protected def CharSequence generateRaisingMethods(Port port) '''
-		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN) SEPARATOR "\n"»
+		«FOR event : port.inputEvents SEPARATOR "\n"»
 			@Override
 			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
 				getInsertQueue().add(new «Namings.GAMMA_EVENT_CLASS»("«port.name.toFirstUpper».«event.name.toFirstUpper»", «event.toYakinduEvent(port).valueOrNull»));
@@ -337,7 +335,7 @@ class StatechartWrapperCodeGenerator {
 	 */
 	protected def CharSequence generateOutMethods(Component component, Port port) '''
 «««		Simple flag checks
-		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT)»
+		«FOR event : port.outputEvents»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				«IF port.name === null»

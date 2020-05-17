@@ -108,13 +108,13 @@ class CompositeComponentCodeGenerator {
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return isRaised«event.name.toFirstUpper»;
 			}
-«««		ValueOf checks
-			«IF !event.parameterDeclarations.empty»
+«««			ValueOf checks
+			«FOR parameter : event.parameterDeclarations»
 				@Override
-				public «event.parameterDeclarations.head.type.transformType» get«event.name.toFirstUpper»Value() {
-					return «event.name.toFirstLower»Value;
+				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
+					return «event.name.toFirstLower»;
 				}
-			«ENDIF»
+			«ENDFOR»
 		«ENDFOR»
 	'''
 	

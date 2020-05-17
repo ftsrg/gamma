@@ -18,8 +18,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import java.util.Collections
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -116,11 +114,11 @@ class SynchronousCompositeComponentCodeGenerator {
 				public class «systemPort.name.toFirstUpper» implements «systemPort.interfaceRealization.interface.implementationName».«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 					private List<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»> listeners = new LinkedList<«systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»>();
 «««					Cascade components need their raised events saved (multiple schedule of a component in a single turn)
-					«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
+					«FOR event : systemPort.outputEvents»
 						boolean isRaised«event.name.toFirstUpper»;
-						«IF !event.parameterDeclarations.empty»
-							«event.parameterDeclarations.head.type.transformType» «event.name.toFirstLower»Value;
-						«ENDIF»
+						«FOR parameter : event.parameterDeclarations»
+							«parameter.type.transformType» «parameter.name.toFirstLower»;
+						«ENDFOR»
 					«ENDFOR»
 					
 					public «systemPort.name.toFirstUpper»() {
@@ -136,7 +134,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					
 					// Class for the setting of the boolean fields (events)
 					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
-						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
+						«FOR event : systemPort.outputEvents SEPARATOR "\n"»
 							@Override
 							public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
 								isRaised«event.name.toFirstUpper» = true;
@@ -159,14 +157,14 @@ class SynchronousCompositeComponentCodeGenerator {
 					
 					/** Resetting the boolean event flags to false. */
 					public void clear() {
-						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
+						«FOR event : systemPort.outputEvents»
 							isRaised«event.name.toFirstUpper» = false;
 						«ENDFOR»
 					}
 					
 					/** Notifying the registered listeners. */
 					public void notifyListeners() {
-						«FOR event : Collections.singletonList(systemPort).getSemanticEvents(EventDirection.OUT)»
+						«FOR event : systemPort.outputEvents»
 							if (isRaised«event.name.toFirstUpper») {
 								for («systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
 									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»«event.name.toFirstLower»Value«ENDIF»);

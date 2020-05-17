@@ -24,13 +24,13 @@ class EventCodeGenerator {
 		
 		public class «CLASS_NAME» {
 			private String event;
-			private Object value;
+			private Object[] value;
 			
 			public Event(String event) {
 				this.event = event;
 			}
 			
-			public Event(String event, Object value) {
+			public Event(String event, Object... value) {
 				this.event = event;
 				this.value = value;
 			}
@@ -39,7 +39,7 @@ class EventCodeGenerator {
 				return event;
 			}
 			
-			public Object getValue() {
+			public Object[] getValue() {
 				return value;
 			}
 		}

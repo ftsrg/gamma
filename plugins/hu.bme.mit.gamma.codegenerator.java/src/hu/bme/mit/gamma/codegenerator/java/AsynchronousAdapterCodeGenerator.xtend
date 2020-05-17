@@ -22,10 +22,9 @@ import hu.bme.mit.gamma.statechart.model.TimeUnit
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import java.util.Collections
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AsynchronousAdapterCodeGenerator {
 	
@@ -345,7 +344,7 @@ class AsynchronousAdapterCodeGenerator {
 	 * Generates methods that for in-event raisings in case of composite components.
 	 */
 	protected def CharSequence delegateWrapperRaisingMethods(Port port) '''
-		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
+		«FOR event : port.inputEvents»
 			@Override
 			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
 				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR "\n"»
@@ -360,7 +359,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperControlOutMethods(Port port) '''
 «««		Simple flag checks
-		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR "\n"»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				// No real operation as out event are not interpreted in case of control ports
@@ -382,7 +381,7 @@ class AsynchronousAdapterCodeGenerator {
 	 */
 	protected def CharSequence delegateWrapperOutMethods(Port port, String instanceName) '''
 «««		Simple flag checks
-		«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.OUT) SEPARATOR "\n"»
+		«FOR event : port.outputEvents SEPARATOR "\n"»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return «instanceName».get«port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
@@ -401,8 +400,8 @@ class AsynchronousAdapterCodeGenerator {
 	* Generates event handlers for wrapped in ports of the given wrapper component .
 	*/
 	protected def generateWrapperEventHandlers(AsynchronousAdapter component) '''
-	«FOR port : component.wrappedComponent.type.ports»
-			«FOR event : Collections.singletonList(port).getSemanticEvents(EventDirection.IN)»
+		«FOR port : component.wrappedComponent.type.ports»
+			«FOR event : port.inputEvents»
 				case "«port.name».«event.name»":
 					«component.generateWrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
 				break;
