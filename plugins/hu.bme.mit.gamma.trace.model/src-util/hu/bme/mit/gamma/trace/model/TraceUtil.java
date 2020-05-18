@@ -163,13 +163,14 @@ public class TraceUtil {
 		EList<Act> coveringActions = covering.getActions();
 		if (coveredActions.size() == coveringActions.size()) {
 			for (Act act : coveredActions) {
-				boolean isEqual = coveringActions.stream().anyMatch(it -> equalsTo(act, it));
-				if (!isEqual) {
+				boolean hasEqual = coveringActions.stream().anyMatch(it -> equalsTo(act, it));
+				if (!hasEqual) {
 					return false;
 				}
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	public boolean equalsTo(EObject lhs, EObject rhs) {
