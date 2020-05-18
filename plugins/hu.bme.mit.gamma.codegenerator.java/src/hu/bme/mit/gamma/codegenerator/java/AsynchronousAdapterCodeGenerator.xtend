@@ -21,7 +21,6 @@ import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeUnit
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -131,7 +130,7 @@ class AsynchronousAdapterCodeGenerator {
 							switch (eventId) {
 								«FOR match : QueuesOfClocks.Matcher.on(engine).getAllMatches(component, null, null)»
 									case «match.clock.name»:
-										«match.queue.name».offer(new Event("«match.clock.name»", null));
+										«match.queue.name».offer(new Event("«match.clock.name»"));
 									break;
 								«ENDFOR»
 								default:
@@ -346,9 +345,9 @@ class AsynchronousAdapterCodeGenerator {
 	protected def CharSequence delegateWrapperRaisingMethods(Port port) '''
 		«FOR event : port.inputEvents»
 			@Override
-			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
+			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR "\n"»
-					«queue.name».offer(new Event("«port.name».«event.name»", «event.valueOrNull»));
+					«queue.name».offer(new Event("«port.name».«event.name»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
 				«ENDFOR»
 			}
 		«ENDFOR»
@@ -362,17 +361,17 @@ class AsynchronousAdapterCodeGenerator {
 		«FOR event : port.outputEvents SEPARATOR "\n"»
 			@Override
 			public boolean isRaised«event.name.toFirstUpper»() {
-				// No real operation as out event are not interpreted in case of control ports
+				// No real operation as out event are not interpreted in the case of control ports
 				return false;
 			}
-«««		ValueOf checks
-			«IF !event.parameterDeclarations.empty»
+«««			ValueOf checks
+			«FOR parameter : event.parameterDeclarations»
 				@Override
-				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					// No real operation as out event are not interpreted in case of control ports
+				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
+					// No real operation as out event are not interpreted in the case of control ports
 					throw new IllegalAccessException("No value can be accessed!");
 				}
-			«ENDIF»
+			«ENDFOR»
 		«ENDFOR»
 	'''
 	
@@ -386,13 +385,13 @@ class AsynchronousAdapterCodeGenerator {
 			public boolean isRaised«event.name.toFirstUpper»() {
 				return «instanceName».get«port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
 			}
-«««		ValueOf checks
-			«IF !event.parameterDeclarations.empty»
+«««			ValueOf checks
+			«FOR parameter : event.parameterDeclarations»
 				@Override
-				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
-					return «instanceName».get«port.name.toFirstUpper»().get«event.name.toFirstUpper»Value();
+				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
+					return «instanceName».get«port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
 				}
-			«ENDIF»
+			«ENDFOR»
 		«ENDFOR»
 	'''
 	
@@ -403,7 +402,7 @@ class AsynchronousAdapterCodeGenerator {
 		«FOR port : component.wrappedComponent.type.ports»
 			«FOR event : port.inputEvents»
 				case "«port.name».«event.name»":
-					«component.generateWrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»(«event.parameterDeclarations.head.type.transformType.toFirstUpper») event.getValue()«ENDIF»);
+					«component.generateWrappedComponentName».get«port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "» («parameter.type.transformType») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]«ENDFOR»);
 				break;
 			«ENDFOR»
 		«ENDFOR»

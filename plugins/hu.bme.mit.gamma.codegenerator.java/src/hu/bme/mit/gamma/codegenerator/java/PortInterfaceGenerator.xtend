@@ -20,11 +20,13 @@ class PortInterfaceGenerator {
 	
 	protected final String PACKAGE_NAME
 	//
+	protected final extension TypeTransformer typeTransformer
 	protected final extension EventDeclarationHandler gammaEventDeclarationHandler
 	protected final extension NameGenerator nameGenerator
 	
 	new(String packageName, Trace trace) {
 		this.PACKAGE_NAME = packageName
+		this.typeTransformer = new TypeTransformer(trace)
 		this.gammaEventDeclarationHandler = new EventDeclarationHandler(trace)
 		this.nameGenerator = new NameGenerator(this.PACKAGE_NAME)
 	}
@@ -56,14 +58,14 @@ class PortInterfaceGenerator {
 			interface Listener {
 				
 				interface Provided «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-					«FOR event : anInterface.events.filter[it.direction != EventDirection.IN]»
-						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
+					«FOR event : anInterface.getAllEvents(EventDirection.IN)»
+						void raise«event.name.toFirstUpper»(«event.generateParameters»);
 					«ENDFOR»							
 				}
 				
 				interface Required «IF !anInterface.parents.empty»extends «FOR parent : anInterface.parents»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-					«FOR event : anInterface.events.filter[it.direction != EventDirection.OUT]»
-						void raise«event.event.name.toFirstUpper»(«event.generateParameter»);
+					«FOR event : anInterface.getAllEvents(EventDirection.OUT)»
+						void raise«event.name.toFirstUpper»(«event.generateParameters»);
 					«ENDFOR»  					
 				}
 				
@@ -72,13 +74,13 @@ class PortInterfaceGenerator {
 	'''
 	
 	private def generateIsRaisedInterfaceMethods(Interface anInterface, EventDirection oppositeDirection) '''
-	«««		Simple flag checks
-		«FOR event : anInterface.events.filter[it.direction != oppositeDirection].map[it.event]»
+«««		Simple flag checks
+		«FOR event : anInterface.getAllEvents(oppositeDirection)»
 			public boolean isRaised«event.name.toFirstUpper»();
-	«««		ValueOf checks	
-			«IF event.parameterDeclarations.size > 0»
-				public «event.parameterDeclarations.eventParameterType» get«event.name.toFirstUpper»Value();
-			«ENDIF»
+«««			ValueOf checks	
+			«FOR parameter : event.parameterDeclarations»
+				public «parameter.type.transformType» get«parameter.name.toFirstUpper»();
+			«ENDFOR»
 		«ENDFOR»
 	'''
 }

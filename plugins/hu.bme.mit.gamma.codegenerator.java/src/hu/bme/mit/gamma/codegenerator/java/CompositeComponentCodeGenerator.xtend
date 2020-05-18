@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -66,9 +65,9 @@ class CompositeComponentCodeGenerator {
 	def CharSequence delegateRaisingMethods(Port systemPort) '''
 		«FOR event : systemPort.inputEvents SEPARATOR "\n"»
 			@Override
-			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
+			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				«FOR connector : systemPort.portBindings»
-					«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«event.parameterDeclarations.head.eventParameterValue»);
+					«connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().raise«event.name.toFirstUpper»(«event.generateArguments»);
 				«ENDFOR»	
 			}
 		«ENDFOR»
@@ -86,15 +85,15 @@ class CompositeComponentCodeGenerator {
 					return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().isRaised«event.name.toFirstUpper»();
 				«ENDFOR»
 			}
-«««		ValueOf checks
-			«IF !event.parameterDeclarations.empty»
+«««			ValueOf checks
+			«FOR parameter : event.parameterDeclarations»
 				@Override
-				public «event.toYakinduEvent(systemPort).type.eventParameterType» get«event.name.toFirstUpper»Value() {
+				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
 					«FOR connector : systemPort.portBindings»
-						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«event.name.toFirstUpper»Value();
+						return «connector.instancePortReference.instance.name».get«connector.instancePortReference.port.name.toFirstUpper»().get«parameter.name.toFirstUpper»();
 					«ENDFOR»
 				}
-			«ENDIF»
+			«ENDFOR»
 		«ENDFOR»
 	'''
 	
@@ -112,7 +111,7 @@ class CompositeComponentCodeGenerator {
 			«FOR parameter : event.parameterDeclarations»
 				@Override
 				public «parameter.type.transformType» get«parameter.name.toFirstUpper»() {
-					return «event.name.toFirstLower»;
+					return «parameter.generateName»;
 				}
 			«ENDFOR»
 		«ENDFOR»

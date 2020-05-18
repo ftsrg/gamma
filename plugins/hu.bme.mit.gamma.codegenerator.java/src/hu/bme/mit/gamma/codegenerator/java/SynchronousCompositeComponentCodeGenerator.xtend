@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -117,7 +116,7 @@ class SynchronousCompositeComponentCodeGenerator {
 					«FOR event : systemPort.outputEvents»
 						boolean isRaised«event.name.toFirstUpper»;
 						«FOR parameter : event.parameterDeclarations»
-							«parameter.type.transformType» «parameter.name.toFirstLower»;
+							«parameter.type.transformType» «parameter.generateName»;
 						«ENDFOR»
 					«ENDFOR»
 					
@@ -136,11 +135,11 @@ class SynchronousCompositeComponentCodeGenerator {
 					private class «systemPort.name.toFirstUpper»Util implements «systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» {
 						«FOR event : systemPort.outputEvents SEPARATOR "\n"»
 							@Override
-							public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
+							public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 								isRaised«event.name.toFirstUpper» = true;
-								«IF !event.parameterDeclarations.empty»
-										«event.name.toFirstLower»Value = «event.parameterDeclarations.head.eventParameterValue»;
-								«ENDIF»
+								«FOR parameter : event.parameterDeclarations»
+									this.«parameter.generateName» = «parameter.generateName»;
+								«ENDFOR»
 							}
 						«ENDFOR»
 					}
@@ -167,7 +166,7 @@ class SynchronousCompositeComponentCodeGenerator {
 						«FOR event : systemPort.outputEvents»
 							if (isRaised«event.name.toFirstUpper») {
 								for («systemPort.interfaceRealization.interface.implementationName».Listener.«systemPort.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper» listener : listeners) {
-									listener.raise«event.name.toFirstUpper»(«IF !event.parameterDeclarations.empty»«event.name.toFirstLower»Value«ENDIF»);
+									listener.raise«event.name.toFirstUpper»(«event.generateArguments»);
 								}
 							}
 						«ENDFOR»

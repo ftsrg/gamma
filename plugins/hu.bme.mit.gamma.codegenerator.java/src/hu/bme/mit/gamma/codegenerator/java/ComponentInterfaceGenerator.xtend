@@ -41,7 +41,6 @@ class ComponentInterfaceGenerator {
 		var ports = new HashSet<Port>
 		if (component instanceof CompositeComponent) {
 			val composite = component as CompositeComponent
-			// Only bound ports are created
 			ports += composite.ports
 		}
 		else if (component instanceof AsynchronousAdapter) {

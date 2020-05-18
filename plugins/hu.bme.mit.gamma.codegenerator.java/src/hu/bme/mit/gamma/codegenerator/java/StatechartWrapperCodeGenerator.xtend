@@ -324,8 +324,8 @@ class StatechartWrapperCodeGenerator {
 	protected def CharSequence generateRaisingMethods(Port port) '''
 		«FOR event : port.inputEvents SEPARATOR "\n"»
 			@Override
-			public void raise«event.name.toFirstUpper»(«(event.eContainer as EventDeclaration).generateParameter») {
-				getInsertQueue().add(new «Namings.GAMMA_EVENT_CLASS»("«port.name.toFirstUpper».«event.name.toFirstUpper»", «event.toYakinduEvent(port).valueOrNull»));
+			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
+				getInsertQueue().add(new «Namings.GAMMA_EVENT_CLASS»("«port.name.toFirstUpper».«event.name.toFirstUpper»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
 			}
 		«ENDFOR»
 	'''
@@ -344,7 +344,7 @@ class StatechartWrapperCodeGenerator {
 					return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().isRaised«event.toYakinduEvent(port).name.toFirstUpper»();
 				«ENDIF»
 			}
-«««		ValueOf checks
+«««			ValueOf checks
 			«IF event.toYakinduEvent(port).type !== null»
 				@Override
 				public «event.toYakinduEvent(port).type.eventParameterType» get«event.name.toFirstUpper»Value() {
