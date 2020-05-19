@@ -138,7 +138,7 @@ class SynchronousCompositeComponentCodeGenerator {
 							public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 								isRaised«event.name.toFirstUpper» = true;
 								«FOR parameter : event.parameterDeclarations»
-									this.«parameter.generateName» = «parameter.generateName»;
+									«systemPort.name.toFirstUpper».this.«parameter.generateName» = «parameter.generateName»;
 								«ENDFOR»
 							}
 						«ENDFOR»

@@ -521,9 +521,13 @@ class OrchestratorCreator {
 		// If the instance is cascade, the in events MUST be cleared;
 		// Same thing is done for synchronous instances for optimization purposes
 		for (match : InputInstanceEvents.Matcher.on(engine).getAllMatches(instance, null, null)) {
-			lastEdge.createAssignmentExpression(edge_Update, match.event.getIsRaisedVariable(match.port, match.instance), false)
-			// Also, isRaised parameter value variables are also always reset for optimization purposes
-			lastEdge.resetInParameterVariable(edge_Update, match.event, match.port, match.instance)
+			val port = match.port
+			val event = match.event
+			lastEdge.createAssignmentExpression(edge_Update, event.getIsRaisedVariable(port, instance), false)
+			// Also, isRaised parameter value variables are reset if possible for optimization purposes
+			if (instance.isCascade && event.doesParameterVariableNeedReset || !instance.isCascade) {
+				lastEdge.resetInParameterVariable(edge_Update, event, port, instance)
+			}
 		}
 		return lastEdge
 	}

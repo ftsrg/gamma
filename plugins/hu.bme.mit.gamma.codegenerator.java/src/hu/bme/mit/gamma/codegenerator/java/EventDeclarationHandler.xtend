@@ -29,13 +29,9 @@ class EventDeclarationHandler {
 	/**
 	 * Returns the parameter type and name of the given event declaration, e.g., long value.
 	 */
-	def generateParameters(Event event) '''
-		«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.generateName»«ENDFOR»
-	'''
+	def generateParameters(Event event) '''«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.generateName»«ENDFOR»'''
 	
-	def generateArguments(Event event) '''
-		«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.generateName»«ENDFOR»
-	'''
+	def generateArguments(Event event) '''«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«parameter.generateName»«ENDFOR»'''
 	
 	def generateName(ParameterDeclaration parameter) '''«parameter.name.toFirstLower»'''
 	

@@ -12,6 +12,8 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -71,6 +73,11 @@ public class ExpressionModelDerivedFeatures {
 			return literal;
 		}
 		throw new IllegalArgumentException("Not known type: " + type);
+	}
+	
+	public static int getIndex(ParameterDeclaration parameter) {
+		ParametricElement container = (ParametricElement) parameter.eContainer();
+		return container.getParameterDeclarations().indexOf(parameter);
 	}
 	
 }
