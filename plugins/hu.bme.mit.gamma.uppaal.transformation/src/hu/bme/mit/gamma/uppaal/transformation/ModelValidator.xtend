@@ -14,9 +14,11 @@ import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
+import hu.bme.mit.gamma.uppaal.transformation.queries.EntryStatesWithIncorrectIncomingTransition
 import hu.bme.mit.gamma.uppaal.transformation.queries.FromChoiceToHigherTransition
 import hu.bme.mit.gamma.uppaal.transformation.queries.InOutEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.InOutTransitions
+import hu.bme.mit.gamma.uppaal.transformation.queries.MultipleEntryStatesWithoutIncomingTransition
 import hu.bme.mit.gamma.uppaal.transformation.queries.NamedElements
 import hu.bme.mit.gamma.uppaal.transformation.queries.States
 import hu.bme.mit.gamma.uppaal.transformation.queries.VariableDeclarations
@@ -52,7 +54,9 @@ class ModelValidator {
     	checkConstants
     	checkInOutEvents
     	checkInOutTransitions
-    	checkChoiceTransitions 
+    	checkChoiceTransitions
+    	checkEntryStatesWithIncorrectIncomingTransition
+    	checkMultipleEntryStatesWithoutIncomingTransition
     	checkFloatVariables
     	checkNames
 //    	checkUppaalKeywords
@@ -124,6 +128,30 @@ class ModelValidator {
 				transitions.append(" " + choiceTransitionsMatch.transition)
 			}
 			throw new IllegalArgumentException("A transition must not go to a higher level hierarchy node if its source is a choice and the region has history:" + transitions.toString())
+		}
+	}
+	
+	private def checkEntryStatesWithIncorrectIncomingTransition() {
+		val matcher = engine.getMatcher(EntryStatesWithIncorrectIncomingTransition.instance)
+		val matches = matcher.allMatches
+		if (matches.size != 0) {
+			val entry = new StringBuilder()
+			for (match : matches) {
+				entry.append(" " + match.entry.name)
+			}
+			throw new IllegalArgumentException("An entry node must not have incoming transitions from non-entry nodes in the same region:" + entry.toString())
+		}
+	}
+	
+	private def checkMultipleEntryStatesWithoutIncomingTransition() {
+		val matcher = engine.getMatcher(MultipleEntryStatesWithoutIncomingTransition.instance)
+		val matches = matcher.allMatches
+		if (matches.size != 0) {
+			val regions = new StringBuilder()
+			for (match : matches) {
+				regions.append(" " + match.region.name)
+			}
+			throw new IllegalArgumentException("A region cannot have multiple entry nodes without an incoming transition:" + regions.toString())
 		}
 	}
 	

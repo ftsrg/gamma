@@ -55,6 +55,28 @@ private pattern regionToParentRegion(region : Region, parentRegion : Region) {
 	State.regions(state, region);
 }
 
+private pattern entryStatesWithIncomingTransition(source : StateNode, entry : EntryState) {
+	Transition.sourceState(transition, source);
+	Transition.targetState(transition, entry);
+}
+
+private pattern entryStatesWithoutIncomingTransition(entry : EntryState) {
+	neg find entryStatesWithIncomingTransition(_, entry);
+}
+
+pattern entryStatesWithIncorrectIncomingTransition(entry : EntryState) {
+	neg EntryState(source);
+	find entryStatesWithIncomingTransition(source, entry);
+}
+
+pattern multipleEntryStatesWithoutIncomingTransition(region : Region) {
+	Region.stateNodes(region, entry1);
+	Region.stateNodes(region, entry2);
+	find entryStatesWithoutIncomingTransition(entry1);
+	find entryStatesWithoutIncomingTransition(entry2);
+	entry1 != entry2;
+}
+
 private pattern relevantEvents(port : Port, event : Event) {
 	PortEventReference.port(portEventReference, port);
 	PortEventReference.event(portEventReference, event);

@@ -73,8 +73,8 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		EObject root = EcoreUtil.getRootContainer(element);
 		Collection<? extends NamedElement> namedElements = EcoreUtil2.getAllContentsOfType(root, element.getClass());
 		namedElements.remove(element);
-		for (NamedElement elem : namedElements) {
-			if (name.equals(elem.getName())) {
+		for (NamedElement otherElement : namedElements) {
+			if (name.equals(otherElement.getName())) {
 				error("In a Gamma model every identifier must be unique.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}

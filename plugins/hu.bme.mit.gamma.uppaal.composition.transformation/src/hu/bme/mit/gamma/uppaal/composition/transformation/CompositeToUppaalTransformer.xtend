@@ -753,20 +753,25 @@ class CompositeToUppaalTransformer {
 	val entriesRule = createRule(Entries.instance).action [
 		for (template : it.region.getAllValuesOfTo.filter(Template)) {
 			val owner = template.owner
+			val entry = it.entry
+			val entryName = entry.name
 			val initLocation = template.createChild(template_Location, location) as Location => [
-				it.name = "EntryLocation" + id++
+				it.name = entryName
 				it.locationTimeKind = LocationKind.COMMITED			
 			]
 			// If it is a subregion, a new location is generated and set initial
 			if (it.region.subregion) {
-				val generatedInitLocation = template.createChild(template_Location, location) as Location => [
-					it.name = "GenInitLocation" + id++
-					it.comment = "Generated for the synchronization of subregions."
-				]	
-				template.init = generatedInitLocation			
-				// Putting the generated init next to the committed
-				addToTrace(it.entry, #{generatedInitLocation}, trace)				
-				addToTrace(owner, #{generatedInitLocation}, instanceTrace)
+				// We set it init only if there are no incoming transitions from the same region (e.g., history -> initial -> InitialState)
+				if (entry.incomingTransitions.empty) {
+					val generatedInitLocation = template.createChild(template_Location, location) as Location => [
+						it.name = "GenInitLocation" + id++
+//						it.comment = "Generated for the synchronization of subregions."
+					]
+					template.init = generatedInitLocation
+					// Putting the generated init next to the committed
+					addToTrace(it.entry, #{generatedInitLocation}, trace)
+					addToTrace(owner, #{generatedInitLocation}, instanceTrace)
+				}
 			}
 			else {
 				template.init = initLocation
@@ -792,10 +797,10 @@ class CompositeToUppaalTransformer {
 			val entryLocation = template.createChild(template_Location, location) as Location => [
 				it.name = gammaState.entryLocationNameOfState 
 				it.locationTimeKind = LocationKind.COMMITED	
-				it.comment = "Pseudo state for subregion synchronization"
+//				it.comment = "Pseudo state for subregion synchronization"
 			]
 			val entryEdge = entryLocation.createEdge(stateLocation)
-			entryEdge.comment = "Edge for subregion synchronization"
+//			entryEdge.comment = "Edge for subregion synchronization"
 			// Creating the trace
 			addToTrace(gammaState, #{entryLocation, entryEdge, stateLocation}, trace)
 			addToTrace(owner, #{entryLocation, entryEdge, stateLocation}, instanceTrace)

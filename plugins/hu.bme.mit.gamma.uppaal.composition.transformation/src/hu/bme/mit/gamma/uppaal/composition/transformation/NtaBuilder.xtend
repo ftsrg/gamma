@@ -308,7 +308,7 @@ class NtaBuilder {
 		val syncLocation = template.createChild(template_Location, location) as Location => [
 			it.name = name
 			it.locationTimeKind = LocationKind.COMMITED
-			it.comment = "Synchronization location."
+//			it.comment = "Synchronization location."
 		]
 		val syncEdge = syncLocation.createEdge(target)
 		return syncEdge		
@@ -320,7 +320,7 @@ class NtaBuilder {
 	 */
 	def Edge createCommittedSyncTarget(Location target, Variable syncVar, String name) {
 		val syncEdge = target.createEdgeCommittedTarget(name) => [
-			it.comment = "Synchronization edge."
+//			it.comment = "Synchronization edge."
 			it.setSynchronization(syncVar, SynchronizationKind.SEND)
 		]
 		return syncEdge		

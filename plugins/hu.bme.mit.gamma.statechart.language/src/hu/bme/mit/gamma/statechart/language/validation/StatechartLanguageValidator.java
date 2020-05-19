@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -38,6 +39,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -112,6 +114,17 @@ import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
+	
+	// Some elements can have the same name
+	
+	@Check
+	@Override
+	public void checkNameUniqueness(NamedElement element) {
+		if (element instanceof Event) {
+			return;
+		}
+		super.checkNameUniqueness(element);
+	}
 	
 	// Not supported elements
 	
@@ -318,12 +331,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkRegionEntries(Region region) {
 		List<StateNode> entries = region.getStateNodes().stream().filter(it -> it instanceof EntryState).collect(Collectors.toList());
 		if (entries.isEmpty()) {
-			error("A region must have a single entry node.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-		}
-		else if (entries.size() > 1) {
-			for (StateNode entry : entries) {
-				error("A region must have a single entry node.", entry, ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-			}
+			error("A region must have at least one entry node.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -542,17 +550,26 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkEntryNodes(EntryState entry) {
-		if (hasIncomingTransition(entry)) {
-			error("Entry nodes must not have incoming transitions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+		final Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(entry);
+		final List<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(entry);
+		final List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(entry);
+		final Stream<StateNode> sourceStates = incomingTransitions.stream().map(it -> it.getSourceState());
+		if (sourceStates.anyMatch(it -> !(it instanceof EntryState) &&
+				StatechartModelDerivedFeatures.getParentRegion(it) == parentRegion)) {
+			error("Entry nodes must not have incoming transitions from non-entry nodes in the same region.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
-		if (StatechartModelDerivedFeatures.getOutgoingTransitions(entry).size() != 1) {
+		if (sourceStates.anyMatch(it -> it instanceof EntryState &&
+				StatechartModelDerivedFeatures.getParentRegion(it) != parentRegion)) {
+			error("Entry nodes must not have incoming transitions from entry nodes in other regions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+		}
+		if (outgoingTransitions.size() != 1) {
 			error("Entry nodes must have a single outgoing transition.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 		else {
 			// A single transition
-			for (Transition transition : StatechartModelDerivedFeatures.getOutgoingTransitions(entry)) {
+			for (Transition transition : outgoingTransitions) {
 				StateNode target = transition.getTargetState();
-				if (StatechartModelDerivedFeatures.getParentRegion(target) != StatechartModelDerivedFeatures.getParentRegion(entry)) {
+				if (StatechartModelDerivedFeatures.getParentRegion(target) != parentRegion) {
 					error("Transitions going out from entry nodes must be targeted to a node in the region of the entry node.", transition, StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 				}
 			}
