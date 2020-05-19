@@ -285,7 +285,7 @@ class OrchestratorCreator {
 		val finalLoc = schedulerTemplate.createLocation => [
 			it.name = "final"
 			it.locationTimeKind = LocationKind.URGENT
-			it.comment = "To ensure all synchronizations to take place before an isStable state."
+//			it.comment = "To ensure all synchronizations to take place before an isStable state."
 		]
 		lastEdge.target = finalLoc
 		val beforeIsStableEdge = finalLoc.createEdge(initLoc)
