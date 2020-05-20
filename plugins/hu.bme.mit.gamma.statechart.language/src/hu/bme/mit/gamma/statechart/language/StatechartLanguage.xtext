@@ -269,7 +269,7 @@ StateContractAnnotation returns ContractModel::StateContractAnnotation:
 ;
 
 MissionPhaseStateAnnotation returns PhaseModel::MissionPhaseStateAnnotation:
-	{PhaseModel::MissionPhaseStateAnnotation} '@PhaseContract' '=' '['
+	{PhaseModel::MissionPhaseStateAnnotation} '@Phase' '=' '['
 		stateDefinitions += StateDefinition*
 	']'
 ;
