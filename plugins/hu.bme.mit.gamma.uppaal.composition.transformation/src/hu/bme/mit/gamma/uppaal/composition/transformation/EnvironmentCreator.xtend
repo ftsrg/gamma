@@ -109,12 +109,12 @@ class EnvironmentCreator {
 						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 							log(Level.INFO, "Information: System in event: " + match.instance.name + "." + match.port.name + "_" + match.event.name)
 							if (loopEdge === null) {
-								loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignmentIfNeeded(match.port, match.event, match.instance)
+								loopEdge = initLoc.createLoopEdgeWithGuardedBoolAssignment(match.port, match.event, match.instance)
 								loopEdge.addGuard(isStableVar, LogicalOperator.AND)
 								loopEdges.put(new Pair(systemPort, inEvent), loopEdge)
 							}
 							else {
-								loopEdge.extendLoopEdgeWithGuardedBoolAssignmentIfNeeded(match.port, match.event, match.instance)
+								loopEdge.extendLoopEdgeWithGuardedBoolAssignment(match.port, match.event, match.instance)
 							}
 						}
 					}
@@ -130,33 +130,42 @@ class EnvironmentCreator {
 								expressionSet.put(parameter, ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter))
 							}
 						}
-						// Removing the expression duplications (that are evaluated to the same expression)
-						for (expressionEntry : expressionSet.entrySet) {
-							val parameter = expressionEntry.key
-							val originalExpressions = expressionEntry.value
-							val expressions = originalExpressions.removeDuplicatedExpressions
+						if (!expressionSet.empty) {
 							// Removing original edge from the model - only if there is a valid expression
 							template.edge -= loopEdge
-							for (expression : expressions) {
-								// Putting variables raising for ALL instance parameters
-		   						val clonedLoopEdge = loopEdge.clone(true, true)
-		   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
+							val processableEdges = newArrayList(loopEdge)
+							val processedEdges = newArrayList
+							for (parameter : expressionSet.keySet) {
+								val originalExpressions = expressionSet.get(parameter)
+								val expressions = originalExpressions.removeDuplicatedExpressions // Removing the expression duplications (that are evaluated to the same expression)
+								for (processableEdge : processableEdges) {
+									for (expression : expressions) {
+										// Putting variables raising for ALL instance parameters
+				   						val clonedLoopEdge = processableEdge.clone(true, true)
+				   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
+										}
+										expression.removeGammaElementFromTrace
+										processedEdges += clonedLoopEdge
+									}
+									// Adding a different value if the type is an integer
+									if (originalExpressions.filter(EnumerationLiteralExpression).empty &&
+											expressions.exists[it instanceof IntegerLiteralExpression]) {
+					   					val clonedLoopEdge = processableEdge.clone(true, true)
+										val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
+										val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
+										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, biggerThanMax)
+										}
+										biggerThanMax.removeGammaElementFromTrace
+										processedEdges += clonedLoopEdge
+									}
 								}
-								template.edge += clonedLoopEdge
-								expression.removeGammaElementFromTrace
+								processableEdges.clear
+								processableEdges += processedEdges
+								processedEdges.clear
 							}
-							// Adding a different value if the type is an integer
-							if (originalExpressions.filter(EnumerationLiteralExpression).empty && expressions.exists[it instanceof IntegerLiteralExpression]) {
-			   					val clonedLoopEdge = loopEdge.clone(true, true)
-								val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
-								val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-								for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-									clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, biggerThanMax)
-								}
-								template.edge += clonedLoopEdge
-								biggerThanMax.removeGammaElementFromTrace
-							}
+							template.edge += processableEdges
 						}
 					}
 				}
@@ -164,35 +173,22 @@ class EnvironmentCreator {
 		}
 	}
 	
-	private def createLoopEdgeWithGuardedBoolAssignmentIfNeeded(Location initLoc, Port port, Event event,
+	private def createLoopEdgeWithGuardedBoolAssignment(Location initLoc, Port port, Event event,
 			ComponentInstance instance) {
 		val toRaiseVar = event.getToRaiseVariable(port, instance)
-		if (event.parameterDeclarations.size <= 1) {
-			return initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-		}
-		else {
-			// Parameter values are set one by one, therefore the guard cannot be on the edge
-			return initLoc.createLoopEdgeWithBoolAssignment(toRaiseVar, true)
-		}
+		return initLoc.createLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
 	}
 	
-	private def void extendLoopEdgeWithGuardedBoolAssignmentIfNeeded(Edge loopEdge, Port port, Event event,
+	private def void extendLoopEdgeWithGuardedBoolAssignment(Edge loopEdge, Port port, Event event,
 			ComponentInstance instance) {
 		val toRaiseVar = event.getToRaiseVariable(port, instance)
-		if (event.parameterDeclarations.size <= 1) {
-			loopEdge.extendLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
-		}
-		else {
-			// Parameter values are set one by one, therefore the guard cannot be on the edge
-			loopEdge.createAssignmentExpression(edge_Update, toRaiseVar, true)
-		}
+		loopEdge.extendLoopEdgeWithGuardedBoolAssignment(toRaiseVar)
 	}
 	
 	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ParameterDeclaration parameter,
 			ComponentInstance owner, Expression expression) {
 		val valueOfVar = modelTrace.getToRaiseValueOfVariable(event, port, parameter, owner)
 		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
-		loopEdge.addGuard(valueOfVar, createLiteralExpression => [it.text = expression.evaluateToInt.toString], LogicalOperator.AND)
 	}
 	
 	def getTopWrapperEnvironmentRule() {
@@ -273,15 +269,15 @@ class EnvironmentCreator {
 					for (inEvent : systemPort.inputEvents) {
 						val expressionList = parameterMap.get(new Pair(systemPort, inEvent))
 						if (expressionList.empty) {
-								val loopEdge = initLoc.createEdge(initLoc)
-								loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
-								loopEdge.addInitializedGuards
-								for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
-									val wrapper = match.instance.type as AsynchronousAdapter
-									val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
-									val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
-									loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), createLiteralExpression => [it.text = "0"])
-								}
+							val loopEdge = initLoc.createEdge(initLoc)
+							loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
+							loopEdge.addInitializedGuards
+							for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
+								val wrapper = match.instance.type as AsynchronousAdapter
+								val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
+								val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
+								loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), createLiteralExpression => [it.text = "0"])
+							}
 						}
 						else {
 							val expressionSet = expressionList.removeDuplicatedExpressions

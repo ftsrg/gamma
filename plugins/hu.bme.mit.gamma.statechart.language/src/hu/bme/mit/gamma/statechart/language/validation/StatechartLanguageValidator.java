@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -553,12 +552,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		final Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(entry);
 		final List<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(entry);
 		final List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(entry);
-		final Stream<StateNode> sourceStates = incomingTransitions.stream().map(it -> it.getSourceState());
-		if (sourceStates.anyMatch(it -> !(it instanceof EntryState) &&
+		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> !(it instanceof EntryState) &&
 				StatechartModelDerivedFeatures.getParentRegion(it) == parentRegion)) {
 			error("Entry nodes must not have incoming transitions from non-entry nodes in the same region.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
-		if (sourceStates.anyMatch(it -> it instanceof EntryState &&
+		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> it instanceof EntryState &&
 				StatechartModelDerivedFeatures.getParentRegion(it) != parentRegion)) {
 			error("Entry nodes must not have incoming transitions from entry nodes in other regions.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
