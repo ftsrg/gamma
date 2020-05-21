@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import org.eclipse.xtext.xbase.scoping.batch.SuperConstructorDescription
 
 class ReflectiveComponentCodeGenerator {
 	
@@ -249,6 +250,11 @@ class ReflectiveComponentCodeGenerator {
 							«component.generateWrappedComponentName» = new «component.generateReflectiveComponentClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.generateWrappedComponentName.toFirstUpper»());
 						}
 						return «component.generateWrappedComponentName»;
+				«ENDIF»
+				«IF component instanceof StatechartDefinition»
+					// If the class name is given, then it will return itself
+					case "«component.generateComponentClassName»":
+						return this;
 				«ENDIF»
 			}
 			throw new IllegalArgumentException("Not known component: " + component);

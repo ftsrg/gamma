@@ -53,6 +53,11 @@ class Namings {
 	static def String getComponentClassName(Component component) '''«component.name.toFirstUpper»'''
 	
 	/**
+	 * Returns the name of the Java class of the reflective component.
+	 */
+	static def String getReflectiveClassName(Component component) '''Reflective«component.componentClassName»'''
+	
+	/**
 	 * Returns the name of the Java class of the wrapped statemachine component.
 	 */
 	static def String getWrappedStatemachineClassName(Component component) '''«component.componentClassName»Statemachine'''

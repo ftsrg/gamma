@@ -35,7 +35,7 @@ public class StatechartUtil extends ExpressionUtil {
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
 		CascadeCompositeComponent cascade = compositeFactory.createCascadeCompositeComponent();
-		cascade.setName(component.getName() + "Wrapper");
+		cascade.setName(component.getName()); // Trick: same name, so reflective api will work
 		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
 		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
@@ -62,7 +62,8 @@ public class StatechartUtil extends ExpressionUtil {
 	
 	public String getWrapperInstanceName(Component component) {
 		String name = component.getName();
-		return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+		// The same as in Namings.getComponentClassName
+		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
 	}
 	
 }

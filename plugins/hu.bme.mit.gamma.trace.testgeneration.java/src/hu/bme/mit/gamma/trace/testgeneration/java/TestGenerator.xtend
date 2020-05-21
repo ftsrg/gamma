@@ -38,11 +38,12 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TestGenerator {
 	// Constant strings
-	protected String YAKINDU_PACKAGE_NAME_PREFIX
+	protected final String YAKINDU_PACKAGE_NAME_PREFIX
 	protected final String TEST_FOLDER = "test-gen"
 	protected final String TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
@@ -52,13 +53,15 @@ class TestGenerator {
 	protected final String TEST_NAME = "step"	
 	protected final String ASSERT_TRUE = "assertTrue"	
 	
-	protected final String[] notHandledStateNamePatterns = #['LocalReactionState[0-9]*','FinalState[0-9]*']
-	// Value is assigned by the execute methods
-	protected final String packageName
-	protected final String className
-	protected final String componentClassInterfaceName = "ReflectiveComponentInterface"
-	protected final String componentClassName
+	protected final String[] NOT_HANDLED_STATE_NAME_PATTERNS = #['LocalReactionState[0-9]*','FinalState[0-9]*']
 	
+	// Value is assigned by the execute methods
+	protected final String PACKAGE_NAME
+	protected final String CLASS_NAME
+	protected final String TEST_CLASS_NAME
+	protected final String TEST_INSTANCE_NAME
+	
+	// Resources
 	protected final ViatraQueryEngine engine
 	
 	protected final ResourceSet resourceSet
@@ -66,6 +69,7 @@ class TestGenerator {
 	protected final Package gammaPackage
 	protected final Component component
 	protected final List<ExecutionTrace> traces // Traces in OR logical relation
+	
 	// Auxiliary objects
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
@@ -82,9 +86,10 @@ class TestGenerator {
 		this.traces = traces
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 		// Initializing the string variables
-		this.packageName = getPackageName
-    	this.className = className
-		this.componentClassName = "Reflective" + component.name.toFirstUpper
+		this.PACKAGE_NAME = getPackageName
+    	this.CLASS_NAME = className
+    	this.TEST_CLASS_NAME = component.reflectiveClassName
+    	this.TEST_INSTANCE_NAME = TEST_CLASS_NAME.toFirstLower
 	}
 	
 	new(ExecutionTrace trace, String yakinduPackageName, String className) {
@@ -95,7 +100,7 @@ class TestGenerator {
 	 * Generates the test class.
 	 */
 	def String execute() {
-		return traces.generateTestClass(component, className).toString
+		return traces.generateTestClass(component, CLASS_NAME).toString
 	}
 	
 	def getPackageName() {
@@ -110,7 +115,7 @@ class TestGenerator {
 		return YAKINDU_PACKAGE_NAME_PREFIX + "." + finalName
 	}
 	
-	private def createPackageName() '''package «packageName»;'''
+	private def createPackageName() '''package «PACKAGE_NAME»;'''
 		
 	protected def generateTestClass(List<ExecutionTrace> traces, Component component, String className) '''
 		«createPackageName»
@@ -119,7 +124,7 @@ class TestGenerator {
 		
 		public class «className» {
 			
-			private static «componentClassInterfaceName» «componentClassName.toFirstLower»;
+			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
 «««			Only if there are timing specis in the model
 			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
 			
@@ -128,10 +133,10 @@ class TestGenerator {
 				«IF component.needTimer»
 «««					Only if there are timing specis in the model
 					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-					«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
+					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
 «««				Each trace must reference the same component with the same parameter values (arguments)!
-				«componentClassName.toFirstLower» = new «componentClassName»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			}
 			
@@ -145,7 +150,7 @@ class TestGenerator {
 				«IF component.needTimer»
 					«TIMER_OBJECT_NAME» = null;
 				«ENDIF»
-				«componentClassName.toFirstLower» = null;				
+				«TEST_INSTANCE_NAME» = null;				
 			}
 			
 			«traces.generateTestCases»
@@ -197,15 +202,15 @@ class TestGenerator {
 						«ENDFOR»
 						// Checking out events
 						«FOR outEvent : step.outEvents»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
+						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
 						«ENDFOR»
 						// Checking variables
 						«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
+						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
 						«ENDFOR»
 						// Checking of states
 						«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
-						«ASSERT_TRUE»(«componentClassName.toFirstLower».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
+						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
 						«ENDFOR»
 					}
 					
@@ -220,11 +225,11 @@ class TestGenerator {
 	
 	protected def dispatch serialize(Reset reset) '''
 		«IF component.needTimer»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
-		«componentClassName.toFirstLower».reset();
+		«TEST_INSTANCE_NAME».reset();
 	'''
 	
 	protected def dispatch serialize(RaiseEventAct raiseEvent) '''
-		«componentClassName.toFirstLower».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»", new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»});
+		«TEST_INSTANCE_NAME».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»", new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»});
 	'''
 	
 	protected def dispatch serialize(TimeElapse elapse) '''
@@ -232,12 +237,12 @@ class TestGenerator {
 	'''
 	
 	protected def dispatch serialize(InstanceSchedule schedule) '''
-		«componentClassName.toFirstLower».«schedule.scheduledInstance.getFullContainmentHierarchy(null)».schedule(null);
+		«TEST_INSTANCE_NAME».«schedule.scheduledInstance.getFullContainmentHierarchy(null)».schedule(null);
 	'''
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
 «««		In theory only asynchronous adapters and synchronous adapters are used
-		«componentClassName.toFirstLower».schedule(null);
+		«TEST_INSTANCE_NAME».schedule(null);
 	'''
 	
 	protected def getParent(ComponentInstance instance) {
@@ -330,35 +335,12 @@ class TestGenerator {
 	 */
 	protected def boolean isHandled(State state) {
 		val stateName = state.name
-		for (notHandledStateNamePattern: notHandledStateNamePatterns) {
+		for (notHandledStateNamePattern: NOT_HANDLED_STATE_NAME_PATTERNS) {
 			if (stateName.matches(notHandledStateNamePattern)) {
 				return false
 			}
 		}
 		return true
-	}
-	
-	protected def String getYakinduStatePackageName(SynchronousComponentInstance instance) {
-		if (!(instance.type instanceof StatechartDefinition)) {
-			throw new IllegalArgumentException("Not a statechart instance: " + instance)
-		}
-		val statechartName = instance.type.name
-		return '''«YAKINDU_PACKAGE_NAME_PREFIX».«statechartName.toLowerCase.deleteStatechartSuffix(true)».«statechartName.toFirstUpper.deleteStatechartSuffix(false)»Statemachine.State'''
-	}
-	
-	/**
-	 * Gamma uses the suffix Statechart that needs to be deleted when generating test cases.
-	 */
-	protected def deleteStatechartSuffix(String statechartName, boolean toLower) {
-		if (toLower) {
-			if (statechartName.endsWith("statechart")) {
-				return statechartName.substring(0, statechartName.length - "statechart".length)			
-			}
-		}
-		if (statechartName.endsWith("Statechart")) {
-			return statechartName.substring(0, statechartName.length - "Statechart".length)
-		}
-		return statechartName
 	}
 	
 	/**
