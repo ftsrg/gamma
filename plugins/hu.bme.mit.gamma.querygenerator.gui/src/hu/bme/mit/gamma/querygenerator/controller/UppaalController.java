@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.querygenerator.application;
+package hu.bme.mit.gamma.querygenerator.controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.swing.JComboBox;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,19 +24,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.querygenerator.QueryGenerator;
+import hu.bme.mit.gamma.querygenerator.UppaalQueryGenerator;
+import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
-import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 
-public class Controller {
-
-	protected Logger logger = Logger.getLogger("GammaLogger");
-	
+public class UppaalController extends AbstractController {
 	private View view;
 	
-	private final QueryGenerator queryGenerator;
 	// Indicates the actual verification process
 	private volatile GuiVerifier verifier;
 	// Indicates the actual test generation process
@@ -55,10 +48,10 @@ public class Controller {
 	private final String TEST_GEN_FOLDER_NAME = "test-gen";
 	private final String TRACE_FOLDER_NAME = "trace";
 	
-	public Controller(View view, IFile file) throws IOException {
+	public UppaalController(View view, IFile file) throws IOException {
 		this.file = file;
 		this.view = view;
-		this.queryGenerator = new QueryGenerator(loadTraceability()); // For state-location
+		this.queryGenerator = new UppaalQueryGenerator(loadTraceability()); // For state-location
 	}
 	
 	public GuiVerifier getVerifier() {
@@ -77,37 +70,6 @@ public class Controller {
 		this.generatedTestVerifier = generatedTestVerifier;
 	}
 	
-	public void initSelectorWithStates(JComboBox<String> selector) {
-		fillComboBox(selector, queryGenerator.getStateNames());
-	}
-	
-	public void initSelectorWithVariables(JComboBox<String> selector) {
-		fillComboBox(selector, queryGenerator.getVariableNames());
-	}
-	
-	public void initSelectorWithEvents(JComboBox<String> selector) {
-		List<String> systemOutEventNames = queryGenerator.getSystemOutEventNames();
-		systemOutEventNames.addAll(queryGenerator.getSystemOutEventParameterNames());
-		fillComboBox(selector, systemOutEventNames);
-	}
-	
-    private void fillComboBox(JComboBox<String> selector, List<String> entryList) {
-    	Collections.sort(entryList);
-    	for (String item : entryList) {
-    		selector.addItem(queryGenerator.unwrap(item));
-    	}
-    }
-    
-	public String parseRegularQuery(String text, String temporalOperator) {
-		TemporalOperator operator = TemporalOperator.valueOf(
-				temporalOperator.replaceAll(" ", "_").replace("\"", "").toUpperCase());
-		return queryGenerator.parseRegularQuery(text, operator);
-	}
-	
-	public String parseLeadsToQuery(String first, String second) {
-		return queryGenerator.parseLeadsToQuery(first, second);
-	}
-
     /**
      * Returns the next valid name for the file containing the back-annotation.
      */
@@ -173,9 +135,6 @@ public class Controller {
 		return (G2UTrace) expressionUtil.normalLoad(fileURI);
 	}
 	
-	/**
-	 * Cancels the actual verification process. Returns true if a process has been cancelled.
-	 */
 	public boolean cancelVerification() {
 		if (verifier != null) {
 			verifier.cancelProcess(true);
@@ -188,18 +147,12 @@ public class Controller {
 		return false;
 	}
 	
-	/**
-	 * Verifies the given Uppaal query.
-	 */
 	public void verify(String uppaalQuery) {
 		verifier = new GuiVerifier(uppaalQuery, true, view, this);
 		// Starting the worker
 		verifier.execute();
 	}
     
-    /**
-     * Verifies the generated Uppaal queries.
-     */
     public void executeGeneratedQueries() {
     	generatedTestVerifier = new GeneratedTestVerifier(this.view, this);
 		Thread thread = new Thread(generatedTestVerifier);

@@ -20,8 +20,8 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
-import hu.bme.mit.gamma.querygenerator.application.Controller;
 import hu.bme.mit.gamma.querygenerator.application.View;
+import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
@@ -42,12 +42,12 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	private boolean contributeToView;
 	
 	private final View view;
-	private final Controller controller;
+	private final UppaalController controller;
 	
 	protected TraceUtil traceUtil = new TraceUtil();	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, Controller controller) {
+	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, UppaalController controller) {
 		this.originalUppaalQueries = uppaalQuery;
 		this.contributeToView = contributeToView;
 		this.view = view;

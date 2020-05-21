@@ -588,6 +588,14 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getFullContainmentHierarchy(parentState) + "_" + parentRegionName + "_" + state.getName();
 	}
 	
+	public static String getFullRegionPathName(Region lowestRegion) {
+		if (!(lowestRegion.eContainer() instanceof State)) {
+			return lowestRegion.getName();
+		}
+		String fullParentRegionPathName = getFullRegionPathName(getParentRegion(lowestRegion));
+		return fullParentRegionPathName + "." + lowestRegion.getName(); // Only regions are in path - states could be added too
+	}
+	
 	public static StatechartDefinition getContainingStatechart(EObject object) {
 		if (object.eContainer() instanceof StatechartDefinition) {
 			return (StatechartDefinition) object.eContainer();

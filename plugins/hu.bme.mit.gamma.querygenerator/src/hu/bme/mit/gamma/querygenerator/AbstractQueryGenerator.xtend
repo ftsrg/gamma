@@ -5,34 +5,30 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
-import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import java.util.List
-import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
+import static hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
-
-class QueryGenerator {
-	
+abstract class AbstractQueryGenerator {
+		
 	protected final Logger logger = Logger.getLogger("GammaLogger")
-	protected final ViatraQueryEngine engine
+	protected ViatraQueryEngine engine
+		
+	def wrap(String id) {
+		return "(" + id + ")"
+	}
 	
-	new(G2UTrace trace) {
-		val traceabilitySet = trace.eResource.resourceSet
-		checkArgument(traceabilitySet !== null)
-		this.engine = ViatraQueryEngine.on(new EMFScope(traceabilitySet))
+	def unwrap(String id) {
+		return id.replaceAll("\\(", "").replaceAll("\\)", "")
 	}
 	
 	def List<String> getStateNames() {
@@ -94,16 +90,6 @@ class QueryGenerator {
 		return (getSystemOutEventName(systemPort, event).unwrap + "::" + parameter.name).wrap
 	}
 	
-	/** Returns the chain of regions from the given lowest region to the top region. 
-	 */
-	def String getFullRegionPathName(Region lowestRegion) {
-		if (!(lowestRegion.eContainer instanceof State)) {
-			return lowestRegion.name
-		}
-		val fullParentRegionPathName = getFullRegionPathName(lowestRegion.eContainer.eContainer as Region)
-		return fullParentRegionPathName + "." + lowestRegion.name // Only regions are in path - states could be added too
-	}
-	
 	private def String parseIdentifiers(String text) {
 		var result = text
 		if (text.contains("deadlock")) {
@@ -115,31 +101,30 @@ class QueryGenerator {
 		val systemOutEventParameterNames = this.getSystemOutEventParameterNames
 		for (String stateName : stateNames) {
 			if (result.contains(stateName)) {
-				val uppaalStateName = getUppaalStateName(stateName)
+				val uppaalStateName = getTargetStateName(stateName)
 				// The parentheses need to be \-d
 				result = result.replaceAll(stateName, uppaalStateName)
 			}
 		}
 		for (String variableName : variableNames) {
 			if (result.contains(variableName)) {
-				val uppaalVariableName = getUppaalVariableName(variableName)
+				val uppaalVariableName = getTargetVariableName(variableName)
 				result = result.replaceAll(variableName, uppaalVariableName)
 			}
 		}
 		for (String systemOutEventName : systemOutEventNames) {
 			if (result.contains(systemOutEventName)) {
-				val uppaalVariableName = getUppaalOutEventName(systemOutEventName)
+				val uppaalVariableName = getTargetOutEventName(systemOutEventName)
 				result = result.replaceAll(systemOutEventName, uppaalVariableName)
 			}
 		}
 		for (String systemOutEventParameterName : systemOutEventParameterNames) {
 			if (result.contains(systemOutEventParameterName)) {
-				val uppaalVariableName = getUppaalOutEventParameterName(systemOutEventParameterName)
+				val uppaalVariableName = getTargetOutEventParameterName(systemOutEventParameterName)
 				result = result.replaceAll(systemOutEventParameterName, uppaalVariableName)
 			}
 		}
-		result = "(" + result + ")"
-		return result
+		return result.wrap
 	}
 	
 	def String parseRegularQuery(String text, TemporalOperator operator) {
@@ -161,71 +146,12 @@ class QueryGenerator {
 		return result
 	}
 	
-	def String getUppaalStateName(String stateName) {
-		logger.log(Level.INFO, stateName)
-		val splittedStateName = stateName.unwrap.split("\\.")
-		for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName.get(0),
-				null, splittedStateName.get(splittedStateName.length - 2) /* parent region */,
-				null, splittedStateName.get(splittedStateName.length - 1) /* state */)) {
-			val parentRegion = match.parentRegion
-			val templateName = parentRegion.getTemplateName(match.instance)
-			val processName = templateName.processName
-			val locationNames = new StringBuilder("(")
-			for (String locationName : StatesToLocations.Matcher.on(engine).getAllValuesOflocationName(null,
-					match.state.name,
-					templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
-				val templateLocationName = processName +  "." + locationName
-				if (locationNames.length == 1) {
-					// First append
-					locationNames.append(templateLocationName)
-				}
-				else {
-					locationNames.append(" || " + templateLocationName)
-				}
-			}
-			locationNames.append(")")
-			if (parentRegion.subregion) {
-				locationNames.append(" && " + processName + ".isActive") 
-			}
-			return locationNames.toString
-		}
-		throw new IllegalArgumentException("Not known state!")
-	}
+	protected abstract def String getTargetStateName(String stateName);
 	
-	def String getUppaalVariableName(String variableName) {		
-		val splittedStateName = variableName.unwrap.split("\\.")
-		return getVariableName(splittedStateName.get(1), splittedStateName.get(0))
-	}
+	protected abstract def String getTargetVariableName(String variableName);
 	
-	def String getUppaalOutEventName(String portEventName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
-			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
-			if (name.equals(portEventName)) {
-				return getOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
-			}
-		}
-		throw new IllegalArgumentException("Not known system event: " + portEventName)
-	}
+	protected abstract def String getTargetOutEventName(String portEventName);
 	
-	def String getUppaalOutEventParameterName(String portEventParameterName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
-			val systemPort = eventsMatch.systemPort
-			val event = eventsMatch.event
-			for (ParameterDeclaration parameter : event.parameterDeclarations) {
-				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
-					return getOutValueOfName(event, eventsMatch.port, parameter, eventsMatch.instance)
-				}
-			}
-		}
-		throw new IllegalArgumentException("Not known system event: " + portEventParameterName)
-	}
-	
-	def wrap(String id) {
-		return "(" + id + ")"
-	}
-	
-	def unwrap(String id) {
-		return id.replaceAll("\\(", "").replaceAll("\\)", "")
-	}
+	protected abstract def String getTargetOutEventParameterName(String portEventParameterName);
 	
 }

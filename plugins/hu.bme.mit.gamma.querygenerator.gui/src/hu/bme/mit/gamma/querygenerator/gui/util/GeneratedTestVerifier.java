@@ -10,8 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.querygenerator.application.Controller;
 import hu.bme.mit.gamma.querygenerator.application.View;
+import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
 import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
 
 public class GeneratedTestVerifier implements Runnable {
@@ -19,11 +19,11 @@ public class GeneratedTestVerifier implements Runnable {
 	private volatile boolean isCancelled = false;
 	
 	private final View view;
-	private final Controller controller;
+	private final UppaalController controller;
 	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public GeneratedTestVerifier(View view, Controller controller) {
+	public GeneratedTestVerifier(View view, UppaalController controller) {
 		this.view = view;
 		this.controller = controller;
 	}

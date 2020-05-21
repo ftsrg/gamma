@@ -40,6 +40,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 
+import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
+import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
+
 /**
  * @author Bence Graics
  */
@@ -148,12 +151,12 @@ public class View extends JFrame {
 	
 	private JTextArea logTextArea;
 	
-	private Controller controller;
+	private AbstractController controller;
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
 	public View(IFile file) throws IOException {
-		controller = new Controller(this, file);
+		controller = new UppaalController(this, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();
 		
@@ -698,7 +701,7 @@ public class View extends JFrame {
 		generateTestSetButton.setEnabled(isEnabled);
 	}
 	
-	protected String getSelectedSearchOrder() {
+	public String getSelectedSearchOrder() {
 		if (breadthFirst.isSelected()) {
 			return "Breadth First";
 		}
@@ -718,7 +721,7 @@ public class View extends JFrame {
 		return "Breadth First";
 	}
 	
-	protected String getStateSpaceRepresentation() {
+	public String getStateSpaceRepresentation() {
 		if (overApproximation.isSelected()) {
 			return "Over Approximation";
 		}
@@ -729,7 +732,7 @@ public class View extends JFrame {
 		return "DBM";
 	}
 	
-	protected String getSelectedTrace() {
+	public String getSelectedTrace() {
 		if (someTrace.isSelected()) {
 			return "Some";
 		}
@@ -751,7 +754,7 @@ public class View extends JFrame {
 		return optimizeTestSetItem.isSelected();
 	}
 	
-	protected int getHashTableSize() {
+	public int getHashTableSize() {
 		if (size64M.isSelected()) {
 			return 64;
 		}
@@ -785,7 +788,7 @@ public class View extends JFrame {
 		return 15;
 	}
 	
-	protected String getStateSpaceReduction() {
+	public String getStateSpaceReduction() {
 		if (noSpaceStateReduction.isSelected()) {
 			return "None";
 		}
