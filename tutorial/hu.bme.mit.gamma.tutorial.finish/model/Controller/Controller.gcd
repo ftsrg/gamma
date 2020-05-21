@@ -1,6 +1,6 @@
 package Controller
 import "Interfaces"
-statechart ControllerStatechart [
+statechart Controller [
 	port PoliceInterrupt : requires PoliceInterrupt
 	port PriorityPolice : provides PoliceInterrupt
 	port PriorityControl : provides Control

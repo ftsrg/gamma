@@ -1,6 +1,6 @@
 package TrafficLightCtrl
 import "Interfaces"
-statechart TrafficLightCtrlStatechart [
+statechart TrafficLightCtrl [
 	port Control : requires Control
 	port PoliceInterrupt : requires PoliceInterrupt
 	port LightCommands : provides LightCommands

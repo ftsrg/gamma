@@ -24,7 +24,7 @@ public abstract class YakinduCompilationHandler extends TaskHandler {
 			yakinduCompilation.getFileName().add(fileName);
 		}
 		if (yakinduCompilation.getPackageName().isEmpty()) {
-			yakinduCompilation.getPackageName().add(fileName);
+			yakinduCompilation.getPackageName().add(yakinduCompilation.getStatechart().getName().toLowerCase());
 		}
 	}
 	

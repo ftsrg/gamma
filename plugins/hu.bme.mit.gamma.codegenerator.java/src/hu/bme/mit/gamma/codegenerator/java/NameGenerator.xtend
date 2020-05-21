@@ -16,6 +16,8 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+
 class NameGenerator {
 
 	protected final String PACKAGE_NAME
@@ -47,7 +49,7 @@ class NameGenerator {
 	 * Returns the name of the Java class of the component.
 	 */
 	def generateComponentClassName(Component component) {
-		return component.name.toFirstUpper
+		return component.componentClassName
 	}
 	
 	/**
@@ -62,7 +64,7 @@ class NameGenerator {
 	 * They use it for package namings. It does not contain the "Statemachine" suffix."
 	 */
 	def getYakinduStatemachineName(Component component) {
-		return component.containingPackage.name
+		return component.name
 	}
 	
 	/**

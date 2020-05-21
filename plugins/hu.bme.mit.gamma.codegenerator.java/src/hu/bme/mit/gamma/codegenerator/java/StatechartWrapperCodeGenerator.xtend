@@ -284,9 +284,9 @@ class StatechartWrapperCodeGenerator {
 		
 		import «PACKAGE_NAME».interfaces.*;
 		// Yakindu listeners
-		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».I«(component).statemachineClassName».*;
+		import «YAKINDU_PACKAGE_NAME».«component.yakinduStatemachineName.toLowerCase».I«component.statemachineClassName».*;
 		import «PACKAGE_NAME».*;
-		import «YAKINDU_PACKAGE_NAME».«(component).yakinduStatemachineName.toLowerCase».«(component).statemachineClassName».State;
+		import «YAKINDU_PACKAGE_NAME».«component.yakinduStatemachineName.toLowerCase».«component.statemachineClassName».State;
 	'''
 	
 		/**

@@ -162,10 +162,10 @@ class YakinduToGammaTransformer {
     	val genmodel = statechartCompilation.eContainer as GenModel
     	this.statechartCompilation = statechartCompilation
         this.yakinduStatechart = statechartCompilation.statechart
-        val statechartName = if (statechartCompilation.statechartName.empty) yakinduStatechart.name + "Statechart"
+        val statechartName = if (statechartCompilation.statechartName.empty) yakinduStatechart.name
         	else statechartCompilation.statechartName.head
-    	val packageName = if (statechartCompilation.packageName.empty) yakinduStatechart.name
-    		else statechartCompilation.packageName.head
+    	val packageName = if (statechartCompilation.packageName.empty) yakinduStatechart.name.toLowerCase
+    		else statechartCompilation.packageName.head.toLowerCase
     	gammaStatechart = StatechartModelFactory.eINSTANCE.createStatechartDefinition => [
     		it.name = statechartName
     		// Yakindu models are always prioritized

@@ -12,7 +12,7 @@ sync MonitoredCrossroad [
 		port monitorOutput : provides Monitor
 ] {		
 	component crossroad : Crossroad
-	component monitor : MonitorStatechart
+	component monitor : Monitor
 			
 	bind police -> crossroad.police
 	bind priorityOutput -> crossroad.priorityOutput

@@ -11,9 +11,9 @@ sync Crossroad [
 	port secondaryOutput : provides LightCommands
 ] {
 	// Components of the composite model
-	component controller : ControllerStatechart
-	component prior : TrafficLightCtrlStatechart
-	component secondary : TrafficLightCtrlStatechart
+	component controller : Controller
+	component prior : TrafficLightCtrl
+	component secondary : TrafficLightCtrl
 	
 	// Binding system ports to the ports of the components	
 	bind police -> controller.PoliceInterrupt

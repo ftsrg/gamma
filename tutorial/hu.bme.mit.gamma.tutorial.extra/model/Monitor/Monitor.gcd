@@ -1,6 +1,6 @@
 package Monitor
 import "Interfaces"
-statechart MonitorStatechart [
+statechart Monitor [
 	port Monitor : provides Monitor,
 	port LightInputs : requires LightCommands
 ] {

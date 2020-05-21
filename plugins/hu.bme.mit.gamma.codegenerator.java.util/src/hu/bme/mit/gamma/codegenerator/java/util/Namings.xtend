@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
 
 class Namings {
@@ -45,5 +46,15 @@ class Namings {
 	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
 	 */
 	static def String getImplementedInterfaceName(Port port) '''«port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
+	
+	/**
+	 * Returns the name of the Java class of the component.
+	 */
+	static def String getComponentClassName(Component component) '''«component.name.toFirstUpper»'''
+	
+	/**
+	 * Returns the name of the Java class of the wrapped statemachine component.
+	 */
+	static def String getWrappedStatemachineClassName(Component component) '''«component.componentClassName»Statemachine'''
 	
 }

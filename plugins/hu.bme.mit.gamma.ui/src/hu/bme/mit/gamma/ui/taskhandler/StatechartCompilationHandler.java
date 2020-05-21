@@ -25,7 +25,7 @@ public class StatechartCompilationHandler extends YakinduCompilationHandler {
 
 	public void execute(StatechartCompilation statechartCompilation) throws IOException {
 		setYakinduCompilation(statechartCompilation);
-		setStatechartCompilation(statechartCompilation, statechartCompilation.getPackageName().get(0) + "Statechart");
+		setStatechartCompilation(statechartCompilation, statechartCompilation.getStatechart().getName());
 		ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());
 		validator.checkModel();
 		YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
