@@ -18,7 +18,7 @@ import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.util.Namings
 import java.util.Collection
 import java.util.Set

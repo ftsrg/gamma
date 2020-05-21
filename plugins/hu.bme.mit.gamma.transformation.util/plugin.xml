@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.transformation.util.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.transformation.util.queries.Patterns" id="hu.bme.mit.gamma.transformation.util.queries.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.subregions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.regions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.parameterizedInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.parameterizedInstancesWithParameters"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.simpleInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceContainer"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.referencedDeclarations"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceVariables"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceTimeouts"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.inputInstanceEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.parameteredEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topSyncSystemInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topSyncSystemOutEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.toLowerInstanceTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.toHigherInstanceTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.statechartRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topRegions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.regionToSubregion"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.simpleInstanceChannelEndings"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseInstanceEventStateEntryActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseTopSystemEventStateEntryActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseInstanceEventStateExitActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseTopSystemEventStateExitActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseInstanceEventOfTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseTopSystemEventOfTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queueSwapInstancesOfComposite"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.asynchronousSimpleInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topUnwrappedSyncComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topWrapperComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topAsyncCompositeComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.simpleWrapperInstances"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.distinctWrapperInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.wrapperInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.wrapperInstanceInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topAsyncSystemInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.eventsIntoMessageQueues"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topMessageQueues"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceMessageQueues"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfClocks"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuesOfEventsOfWrappedComponents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.queuePriorities"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.runOnceEventControl"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.unusedWrapperEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.runOnceClockControl"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.timeoutValues"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.removableTransitions"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseInstanceEvents"/>
+    </group>
+  </extension>
+</plugin>

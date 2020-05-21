@@ -11,7 +11,7 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import java.util.List
 import java.util.logging.Level

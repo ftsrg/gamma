@@ -12,9 +12,9 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EventsIntoMessageQueues
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.InstanceMessageQueues
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopMessageQueues
+import hu.bme.mit.gamma.transformation.util.queries.EventsIntoMessageQueues
+import hu.bme.mit.gamma.transformation.util.queries.InstanceMessageQueues
+import hu.bme.mit.gamma.transformation.util.queries.TopMessageQueues
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

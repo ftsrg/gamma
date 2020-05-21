@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Transformation Utility Classes
+Bundle-SymbolicName: hu.bme.mit.gamma.transformation.util;singleton:=true
+Bundle-Version: 2.3.1.qualifier
+Bundle-Vendor: BME-FTSRG
+Export-Package: hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.transformation.util.queries
+Require-Bundle: org.eclipse.emf.ecore,
+ org.eclipse.viatra.query.runtime.rete,
+ org.eclipse.viatra.query.runtime.localsearch,
+ com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ org.eclipse.viatra.query.runtime,
+ hu.bme.mit.gamma.statechart.model
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: hu.bme.mit.gamma.transformation.util
+Import-Package: org.apache.log4j

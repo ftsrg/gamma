@@ -11,9 +11,9 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopAsyncCompositeComponents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.TopWrapperComponents
+import hu.bme.mit.gamma.transformation.util.queries.SimpleWrapperInstances
+import hu.bme.mit.gamma.transformation.util.queries.TopAsyncCompositeComponents
+import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import java.util.Optional
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

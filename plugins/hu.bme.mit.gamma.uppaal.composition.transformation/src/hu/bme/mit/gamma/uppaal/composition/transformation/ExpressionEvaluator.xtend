@@ -30,7 +30,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.ParameterizedInstancesWithParameters
+import hu.bme.mit.gamma.transformation.util.queries.ParameterizedInstancesWithParameters
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState

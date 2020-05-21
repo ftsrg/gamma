@@ -18,8 +18,8 @@ import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.QueuesOfEvents
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleWrapperInstances
+import hu.bme.mit.gamma.transformation.util.queries.QueuesOfEvents
+import hu.bme.mit.gamma.transformation.util.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import java.util.logging.Level
 import java.util.logging.Logger

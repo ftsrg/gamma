@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.composition.transformation
+package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.statechart.model.CompositeElement
 import hu.bme.mit.gamma.statechart.model.Package
@@ -19,18 +19,18 @@ import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.RemovableTransitions
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.SimpleInstances
-import hu.bme.mit.gamma.uppaal.transformation.queries.Regions
-import hu.bme.mit.gamma.uppaal.transformation.queries.TopRegions
+import hu.bme.mit.gamma.transformation.util.queries.Regions
+import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
+import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
+import hu.bme.mit.gamma.transformation.util.queries.TopRegions
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 class SystemReducer {
 	
@@ -72,7 +72,7 @@ class SystemReducer {
 				log(Level.INFO, "Removing statechart content: " + statechart.name)
 			}
 			// Removing transitions who went out of a state from a removed region
-			for (transition : statechart.transitions.toSet /*To avoid concurrent modification*/) {
+			for (transition : statechart.transitions.toSet /*To avoid concurrent modification*/ ) {
 				val source = transition.sourceState
 				val target = transition.targetState
 				try {

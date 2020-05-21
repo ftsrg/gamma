@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.xtext.xbase.lib,
  hu.bme.mit.gamma.uppaal.composition.transformation,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
- hu.bme.mit.gamma.uppaal.util
+ hu.bme.mit.gamma.uppaal.util,
+ hu.bme.mit.gamma.transformation.util
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator
 Import-Package: org.apache.log4j
