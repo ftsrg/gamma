@@ -53,12 +53,12 @@ class PhaseStatechartToStatechartTransformer {
 				for (portBinding : stateDefinition.portBindings) {
 					val port = portBinding.compositeSystemPort
 					val removeablePort = portBinding.instancePortReference.port
-					port.change(removeablePort, statechart)
+					port.changeAndDelete(removeablePort, statechart)
 				}
 				for (variableBinding : stateDefinition.variableBindings) {
 					val variable = variableBinding.statechartVariable
 					val removeableVariable = variableBinding.instanceVariableReference.variable
-					variable.change(removeableVariable, statechart)
+					variable.changeAndDelete(removeableVariable, statechart)
 				}
 			}
 			annotation.remove
@@ -125,7 +125,7 @@ class PhaseStatechartToStatechartTransformer {
 			}
 			inlineableRegion.stateNodes += newEntryState
 			val oldEntryState = inlineableRegion.entryState
-			newEntryState.change(oldEntryState, inlineableStatechart)
+			newEntryState.changeAndDelete(oldEntryState, inlineableStatechart)
 		}
 		// Renames
 		for (inlineableRegion : inlineableRegions) {

@@ -33,22 +33,23 @@ class EventConnector {
 			val providedInstance = providedStatechart.referencingComponentInstance
 			for (requiredPort : requiredPorts) {
 				for (requiredSimplePort : requiredPort.allConnectedSimplePorts) {
-					val requiredStatechart = providedSimplePort.containingStatechart
+					val requiredStatechart = requiredSimplePort.containingStatechart
 					val requiredInstance = requiredStatechart.referencingComponentInstance
 					// In events on required port
 					for (event : requiredSimplePort.inputEvents) {
 						val requiredInEventName = event.customizeInputName(requiredSimplePort, requiredInstance)
+						println(requiredInEventName)
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredInEventName]
 						val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
-						xStsInEventVariable.change(xStsOutEventVariable, xSts)
+						xStsInEventVariable.changeAndDelete(xStsOutEventVariable, xSts)
 						// In-parameters
 						for (parameter : event.parameterDeclarations) {
 							val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
 							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredInParamaterName]
 							val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
 							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
-							xStsInParameterVariable.change(xStsOutParameterVariable, xSts)
+							xStsInParameterVariable.changeAndDelete(xStsOutParameterVariable, xSts)
 						}
 					}
 					// Out events on required port
@@ -57,14 +58,14 @@ class EventConnector {
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutEventName]
 						val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
-						xStsOutEventVariable.change(xStsInEventVariable, xSts)
+						xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
 						// Out-parameters
 						for (parameter : event.parameterDeclarations) {
 							val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
 							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
 							val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
 							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
-							xStsOutParameterVariable.change(xStsInParameterVariable, xSts)
+							xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
 						}
 					}
 				}
