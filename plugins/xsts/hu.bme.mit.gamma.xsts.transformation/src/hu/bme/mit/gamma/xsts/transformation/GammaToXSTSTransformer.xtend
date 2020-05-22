@@ -1,15 +1,16 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 
@@ -22,10 +23,12 @@ class GammaToXSTSTransformer {
 	// Transformers
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	LowlevelToXSTSTransformer lowlevelToXSTSTransformer
-	ActionSerializer actionSerializer = new ActionSerializer
 	// Auxiliary objects
-	protected extension ExpressionUtil expressionUtil = new ExpressionUtil
-	protected extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected final extension ActionSerializer actionSerializer = new ActionSerializer
+	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
+	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
+	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	new(hu.bme.mit.gamma.statechart.model.Package _package) {
 		this._package = _package
@@ -35,24 +38,63 @@ class GammaToXSTSTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
 		val gammaComponent = _package.components.head // Transforming first Gamma component
-		return gammaComponent.transform(lowlevelPackage)
+		val xSts = gammaComponent.transform(lowlevelPackage)
+		// Optimizing
+		xSts.initializingAction = xSts.initializingAction.optimize
+		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
+		xSts.environmentalAction = xSts.environmentalAction.optimize
+		return xSts
+	}
+	
+		
+	def executeAndSerialize() {
+		return execute.serializeXSTS
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	def dispatch XSTS transform(SynchronousCompositeComponent component, Package lowlevelPackage) {
-	}
-	
-	def dispatch XSTS transform(CascadeCompositeComponent component, Package lowlevelPackage) {
+	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		var XSTS xSts = null
 		for (subcomponent : component.components) {
+			val type = subcomponent.type
+			val newXSts = type.transform(lowlevelPackage)
+			newXSts.customizeDeclarationNames(subcomponent)
 			if (xSts === null) {
-				val type = subcomponent.type
-				xSts = type.transform(lowlevelPackage)
+				xSts = newXSts
+			}
+			else {
+				// Adding new elements
+				xSts.typeDeclarations += newXSts.typeDeclarations // TODO, filter out unnecessary ones: expressionUtil.change
+				xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations // TODO
+				xSts.variableGroups += newXSts.variableGroups
+				xSts.variableDeclarations += newXSts.variableDeclarations
+				xSts.transientVariables += newXSts.transientVariables
+				xSts.controlVariables += newXSts.controlVariables
+				xSts.transitions += newXSts.transitions
+				xSts.constraints += newXSts.constraints
+				// Merged action
+				val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
+				mergedAction.actions += xSts.mergedTransition.action
+				mergedAction.actions += newXSts.mergedTransition.action
+				xSts.mergedTransition.action = mergedAction
+				// TODO Set event raisings across channels
+				// Init action
+				val initAction = createSequentialAction
+				initAction.actions += xSts.initializingAction
+				initAction.actions += newXSts.initializingAction
+				xSts.initializingAction = initAction
+				// Environment action
+				val environmentAction = createSequentialAction
+				environmentAction.actions += xSts.environmentalAction
+				environmentAction.actions += newXSts.environmentalAction
+				environmentAction.filter(component) // Filtering events not led out to the port
+				xSts.environmentalAction = environmentAction
+				
 			}
 		}
+		xSts.name = component.name
 		return xSts
 	}
 	
@@ -69,13 +111,26 @@ class GammaToXSTSTransformer {
 		val type = instance.derivedType
 		if (type instanceof StatechartDefinition) {
 			for (variable : xSts.variableDeclarations) {
-				variable.name = variable.getName(instance)
+				variable.name = variable.customizeName(instance)
 			}
 			for (typeDeclaration : xSts.typeDeclarations) {
-				typeDeclaration.name = typeDeclaration.getName(type)
+				typeDeclaration.name = typeDeclaration.customizeName(type)
 			}
 		}
 	}
 	
+	protected def removeDuplicatedTypes(XSTS xSts) {
+		val types = xSts.typeDeclarations
+		for (var i = 0; i < types.size - 1; i++) {
+			val lhs = types.get(i)
+			for (var j = i + 1; j < types.size; j++) {
+				val rhs = types.get(j)
+				if (lhs.helperEquals(rhs)) {
+					lhs.changeAll(rhs, xSts)
+					j--
+				}
+			}
+		}
+	}
 	
 }
