@@ -35,8 +35,6 @@ class Namings {
 	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
 	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
 	
-	static def String getParameterName(ParameterDeclaration parameterDeclaration, Port port) '''«port.name»«parameterDeclaration.name»'''
-	
 	/**
 	 * Returns the name of the Java interface generated from the given Gamma interface, e.g., PortInterface. 
 	 */
