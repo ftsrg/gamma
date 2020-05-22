@@ -1,0 +1,43 @@
+package hu.bme.mit.gamma.xsts.codegeneration.java
+
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+
+class StatechartInterfaceCodeGenerator {
+	
+	final String INTERFACE_PACKAGE_NAME
+	final String STATECHART_PACKAGE_NAME
+	final String INTERFACE_NAME
+	
+	final StatechartDefinition gammaStatechart
+	
+	new(String interfacePackageName, String statechartPackageName, StatechartDefinition gammaStatechart) {
+		this.INTERFACE_PACKAGE_NAME = interfacePackageName
+		this.STATECHART_PACKAGE_NAME = statechartPackageName
+		this.INTERFACE_NAME = gammaStatechart.name.toFirstUpper + "Interface"
+		this.gammaStatechart = gammaStatechart
+	}
+	
+	protected def createStatechartWrapperInterface() '''
+		package «STATECHART_PACKAGE_NAME»;
+		
+		import «INTERFACE_PACKAGE_NAME».*;
+		
+		public interface «INTERFACE_NAME» {
+		
+			«FOR port : gammaStatechart.ports»
+				public «port.implementedInterfaceName» get«port.name.toFirstUpper»();
+			«ENDFOR»
+			
+			void runCycle();
+			void reset();
+		
+		}
+	'''
+	
+	def getInterfaceName() {
+		return INTERFACE_NAME
+	}
+	
+}

@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Low-level to xSTS Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.lowlevel.xsts.transformation;singleton:=true
+Bundle-Version: 2.1.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Export-Package: hu.bme.mit.gamma.lowlevel.xsts.transformation,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer
+Require-Bundle: hu.bme.mit.gamma.xsts.model,
+ hu.bme.mit.gamma.expression.model,
+ hu.bme.mit.gamma.action.model,
+ hu.bme.mit.gamma.statechart.lowlevel.model,
+ org.eclipse.viatra.query.runtime,
+ org.eclipse.viatra.transformation.runtime.emf,
+ org.eclipse.viatra.transformation.evm,
+ com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: hu.bme.mit.gamma.lowlevel.xsts.transformation
+Import-Package: org.apache.log4j

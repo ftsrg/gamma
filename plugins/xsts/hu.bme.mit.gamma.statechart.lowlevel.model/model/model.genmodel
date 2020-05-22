@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.statechart.lowlevel.model/src"
+    modelPluginID="hu.bme.mit.gamma.statechart.lowlevel.model" modelName="Statechart"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>model.ecore</foreignModel>
+  <genPackages prefix="StatechartModel" basePackage="hu.bme.mit.gamma.statechart.lowlevel"
+      disposableProviderFactory="true" fileExtensions="glsm" ecorePackage="model.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//EventDirection">
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//EventDirection/IN"/>
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//EventDirection/OUT"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//SchedulingOrder">
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//SchedulingOrder/TOP_DOWN"/>
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//SchedulingOrder/BOTTOM_UP"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="model.ecore#//Persistency">
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/TRANSIENT"/>
+      <genEnumLiterals ecoreEnumLiteral="model.ecore#//Persistency/PERSISTENT"/>
+    </genEnums>
+    <genClasses ecoreClass="model.ecore#//Package">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Package/imports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Package/typeDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Package/components"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Component">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Component/parentPackage"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Component/parameterDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Component/eventDeclarations"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//SynchronousComponent"/>
+    <genClasses ecoreClass="model.ecore#//AsynchronousComponent"/>
+    <genClasses ecoreClass="model.ecore#//CompositeComponent"/>
+    <genClasses ecoreClass="model.ecore#//StatechartDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/variableDeclarations"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//StatechartDefinition/schedulingOrder"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StatechartDefinition/timeoutDeclarations"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//CompositeElement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeElement/regions"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Region">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Region/stateNodes"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Region/parentElement"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//StateNode">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateNode/parentRegion"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateNode/outgoingTransitions"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateNode/incomingTransitions"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//EntryState"/>
+    <genClasses ecoreClass="model.ecore#//InitialState"/>
+    <genClasses ecoreClass="model.ecore#//HistoryState"/>
+    <genClasses ecoreClass="model.ecore#//ShallowHistoryState"/>
+    <genClasses ecoreClass="model.ecore#//DeepHistoryState"/>
+    <genClasses ecoreClass="model.ecore#//State">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/entryAction"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//State/exitAction"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//EventDeclaration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/direction"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/isRaised"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/parameters"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//EventDeclaration/component"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute model.ecore#//EventDeclaration/persistency"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//Transition">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/source"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//Transition/target"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Transition/guard"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//Transition/action"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//PseudoState"/>
+    <genClasses ecoreClass="model.ecore#//PrecursoryState"/>
+    <genClasses ecoreClass="model.ecore#//TerminalState"/>
+    <genClasses ecoreClass="model.ecore#//MergeState"/>
+    <genClasses ecoreClass="model.ecore#//JoinState"/>
+    <genClasses ecoreClass="model.ecore#//ChoiceState"/>
+    <genClasses ecoreClass="model.ecore#//ForkState"/>
+  </genPackages>
+</genmodel:GenModel>
