@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.ui,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.querygenerator.gui,
- hu.bme.mit.gamma.uppaal.composition.transformation
+ hu.bme.mit.gamma.uppaal.composition.transformation,
+ hu.bme.mit.gamma.xsts.transformation
 Export-Package: hu.bme.mit.gamma.querygenerator.commandhandler
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.querygenerator.commandhandler

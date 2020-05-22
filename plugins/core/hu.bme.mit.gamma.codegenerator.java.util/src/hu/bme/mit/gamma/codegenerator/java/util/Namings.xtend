@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
