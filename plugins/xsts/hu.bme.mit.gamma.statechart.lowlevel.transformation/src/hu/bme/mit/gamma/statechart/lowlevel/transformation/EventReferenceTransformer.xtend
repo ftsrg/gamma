@@ -16,6 +16,8 @@ import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class EventReferenceTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
@@ -90,8 +92,9 @@ class EventReferenceTransformer {
 	}
 	
 	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
-		val gammaTransitions = trace.allGammaTransitions
-		val gammaStates = trace.allGammaStates
+		val gammaStatechart = timeoutDeclaration.containingStatechart
+		val gammaTransitions = gammaStatechart.transitions
+		val gammaStates = gammaStatechart.allStates
 		val actions = (gammaTransitions.map[it.effects] + gammaStates.map[it.entryActions] + gammaStates.map[it.exitActions]).flatten
 		val timeoutSettings = actions.filter(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]

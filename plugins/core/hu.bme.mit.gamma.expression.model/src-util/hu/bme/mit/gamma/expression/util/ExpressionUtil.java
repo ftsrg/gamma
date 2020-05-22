@@ -409,11 +409,24 @@ public class ExpressionUtil {
 
 	// Ecore Helpers
 
+	@SuppressWarnings("unchecked")
 	public void change(EObject newObject, EObject oldObject, EObject container) {
 		Collection<Setting> oldReferences = UsageCrossReferencer.find(oldObject, container);
 		for (Setting oldReference : oldReferences) {
-			oldReference.set(newObject);
+			Object referenceHolder = oldReference.get(true);
+			if (referenceHolder instanceof List) {
+				List<EObject> list = (List<EObject>) referenceHolder;
+				int index = list.indexOf(oldObject);
+				list.set(index, newObject);
+			}
+			else {
+				oldReference.set(newObject);
+			}
 		}
+	}
+	
+	public void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container);
 		EcoreUtil.delete(oldObject); // Remove does not deletes other references
 	}
 	
@@ -427,6 +440,11 @@ public class ExpressionUtil {
 			change(lhs, rhs, container);
 		}
 		assert !rhsContents.hasNext();
+	}
+	
+	public void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
+		changeAll(newObject, oldObject, container);
+		EcoreUtil.delete(oldObject);
 	}
 
 	public EObject normalLoad(URI uri) throws IOException {

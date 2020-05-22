@@ -93,7 +93,6 @@ class GammaToXSTSTransformer {
 				mergedAction.actions += xSts.mergedTransition.action
 				mergedAction.actions += newXSts.mergedTransition.action
 				xSts.mergedTransition.action = mergedAction
-				xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 				// Initializing action
 				val initAction = createSequentialAction
 				initAction.actions += xSts.initializingAction
@@ -107,6 +106,7 @@ class GammaToXSTSTransformer {
 				xSts.environmentalAction = environmentAction
 			}
 		}
+		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		xSts.name = component.name
 		return xSts
 	}
@@ -139,7 +139,7 @@ class GammaToXSTSTransformer {
 			for (var j = i + 1; j < types.size; j++) {
 				val rhs = types.get(j)
 				if (lhs.helperEquals(rhs)) {
-					lhs.changeAll(rhs, xSts)
+					lhs.changeAllAndDelete(rhs, xSts)
 					j--
 				}
 			}

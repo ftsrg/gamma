@@ -9,13 +9,11 @@ import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.PseudoState
 import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import java.util.Collection
 import java.util.HashMap
 import java.util.Map
 
@@ -40,9 +38,6 @@ package class Trace {
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = new HashMap<State, hu.bme.mit.gamma.statechart.lowlevel.model.State>
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = new HashMap<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState>
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = new HashMap<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition>
-	
-	// Cache of all Gamma states
-	Collection<State> gammaStates
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -369,34 +364,6 @@ package class Trace {
 		stateMappings.get(gammaState)
 	}
 	
-	def Collection<State> getAllGammaStates() {
-		if (gammaStates === null) {
-			gammaStates = newLinkedList
-			for (region : componentMappings.keySet.filter(StatechartDefinition).map[it.regions].flatten) {
-				for (state : region.stateNodes.filter(State)) {
-					gammaStates += state
-					gammaStates += state.substates
-				}
-			}
-		}
-		// Caching the retrieved Gamma states
-		return gammaStates
-	}
-	
-	private def Collection<State> getSubstates(State state) {
-		val states = newLinkedList
-		if (state.regions.empty) {
-			return #[]
-		}
-		for (region : state.regions) {
-			for (substate : region.stateNodes.filter(State)) {
-				states += substate
-				states += substate.substates
-			}
-		}
-		return states
-	}
-	
 	// Pseudo states
 	def put(PseudoState gammaPseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState lowlevelPseudoState) {
 		checkNotNull(gammaPseudoState)
@@ -429,11 +396,6 @@ package class Trace {
 	def get(Transition gammaTransition) {
 		checkNotNull(gammaTransition)
 		transitionMappings.get(gammaTransition)
-	}
-	
-		
-	def Collection<Transition> getAllGammaTransitions() {
-		return componentMappings.keySet.filter(StatechartDefinition).map[it.transitions].flatten.toSet
 	}
 	
 	private static class Triple<K, V, T> {
