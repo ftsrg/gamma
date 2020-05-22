@@ -80,7 +80,7 @@ public class CommandHandler extends AbstractHandler {
 //						xSts.getMergedTransition().setAction(actionPrimer.transform(xSts.getMergedTransition().getAction()));
 //						xSts.setEnvironmentalAction(actionPrimer.transform(xSts.getEnvironmentalAction()));
 						// Saving the xSTS model
-						normalSave(xSts, parentFolder, fileNameWithoutExtenstion + ".xsts");
+						normalSave(xSts, parentFolder, fileNameWithoutExtenstion + ".gsts");
 						normalSave(resultModels.getValue(), parentFolder, "." + fileNameWithoutExtenstion + ".l2s");
 						logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
 						logger.log(Level.INFO, "Starting xSTS serialization.");

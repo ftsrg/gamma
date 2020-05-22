@@ -9,7 +9,7 @@
        <menu id="gammaProjectMenu" label="Gamma Commands" icon="icons/gamma-icon-16.png">
 	  <!-- Generate statechart.lowlevel Model -->
        <command commandId="hu.bme.mit.gamma.statechart.lowlevel.transformation"
-              label="Generate Low-level Statechart Model"
+              label="Generate Statechart Java Code"
               style="push">
            <visibleWhen checkEnabled="false">
               <iterate ifEmpty="false" operator="or">
@@ -24,7 +24,7 @@
       <menu id="gammaPackageMenu" icon="icons/gamma-icon-16.png" label="Gamma Commands">    
 	   		<!-- Generate statechart.lowlevel Model -->	
 		    <command commandId="hu.bme.mit.gamma.statechart.lowlevel.transformation"
-		    	label="Generate Low-level Statechart Model"
+		    	label="Generate Statechart Java Code"
 		    	style="push">
 		    	<visibleWhen checkEnabled="false">
 	            	<iterate ifEmpty="false" operator="or">

@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import org.eclipse.emf.common.util.EList;
-
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
@@ -38,9 +36,9 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
+import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation;
 import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;

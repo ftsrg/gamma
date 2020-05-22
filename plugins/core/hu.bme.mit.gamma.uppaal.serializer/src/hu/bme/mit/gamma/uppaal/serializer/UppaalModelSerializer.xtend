@@ -196,15 +196,15 @@ class UppaalModelSerializer {
 	 * 
 	 * @return The footer of the XML file in a char sequence.
 	 */
-	private def static createFooter(NTA nta) '''		
-		<system>
-			«FOR template : nta.template SEPARATOR "\n"»
-				«template.name.processNameOfTemplate» = «template.name»();
-			«ENDFOR»
-«««			The instantiation list needs reversing as they are declared in a decreasing priority			
-			system «FOR instantiationList : nta.systemDeclarations.system.instantiationList.reverseView SEPARATOR " &lt; "»«FOR instantiation : instantiationList.template SEPARATOR ", "»«instantiation.name.processNameOfTemplate»«ENDFOR»«ENDFOR»;
-		</system>
-	</nta>
+	private def static createFooter(NTA nta) '''
+			<system>
+				«FOR template : nta.template SEPARATOR "\n"»
+					«template.name.processNameOfTemplate» = «template.name»();
+				«ENDFOR»
+«««				The instantiation list needs reversing as they are declared in a decreasing priority			
+				system «FOR instantiationList : nta.systemDeclarations.system.instantiationList.reverseView SEPARATOR " &lt; "»«FOR instantiation : instantiationList.template SEPARATOR ", "»«instantiation.name.processNameOfTemplate»«ENDFOR»«ENDFOR»;
+			</system>
+		</nta>
 	'''
 	
 	/**
