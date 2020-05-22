@@ -112,6 +112,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
+		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
 		lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage)
