@@ -43,6 +43,11 @@ class RegionInitialStateLocator {
 			]
 		}
 		
+		protected def dispatch createRecursiveXStsForwardNodeConnection(EntryState lowlevelEntryState,
+				Transition lowlevelTransition, State lowlevelTarget) {
+			return lowlevelEntryState.createSingleXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
+		}
+		
 		protected override dispatch createRecursiveXStsForwardNodeConnection(ChoiceState lowlevelChoice,
 				Transition lowlevelTransition, State lowlevelTarget) {
 			return lowlevelChoice.createSingleXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
@@ -69,6 +74,11 @@ class RegionInitialStateLocator {
 				it.actions += lowlevelTransition.action.transformAction
 				it.actions += lowlevelTarget.createRecursiveXStsStateAndSubstateActivatingAction
 			]
+		}
+		
+		protected def dispatch createRecursiveXStsForwardNodeConnection(EntryState lowlevelEntryState,
+				Transition lowlevelTransition, State lowlevelTarget) {
+			return lowlevelEntryState.createSimpleRecursiveXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
 		}
 		
 		protected override dispatch createRecursiveXStsForwardNodeConnection(ChoiceState lowlevelChoiceState,
