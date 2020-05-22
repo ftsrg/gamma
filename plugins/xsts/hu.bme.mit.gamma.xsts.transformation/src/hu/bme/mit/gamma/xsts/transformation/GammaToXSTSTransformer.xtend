@@ -11,15 +11,16 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.transformation.util.ModelPreprocessor
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
+import java.io.File
+import java.io.FileWriter
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
-	// Source Gamma package
-	hu.bme.mit.gamma.statechart.model.Package _package
 	// Transformers
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	LowlevelToXSTSTransformer lowlevelToXSTSTransformer
@@ -31,11 +32,26 @@ class GammaToXSTSTransformer {
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
-	new(hu.bme.mit.gamma.statechart.model.Package _package) {
-		this._package = _package
+	def preprocessAndExecute(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
+		val modelPreprocessor = new ModelPreprocessor
+		val component = modelPreprocessor.preprocess(_package, containingFile)
+		val newPackage = component.containingPackage
+		return newPackage.executeAndSerialize
 	}
 	
-	def execute() {
+	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File file) {
+		val string = _package.execute.serializeXSTS.toString
+		file.parentFile.mkdirs
+		try (val fileWriter = new FileWriter(file)) {
+			fileWriter.write(string)
+		}
+	}
+	
+	def String executeAndSerialize(hu.bme.mit.gamma.statechart.model.Package _package) {
+		return _package.execute.serializeXSTS.toString
+	}
+	
+	def execute(hu.bme.mit.gamma.statechart.model.Package _package) {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
 		val gammaComponent = _package.components.head // Transforming first Gamma component
@@ -47,10 +63,6 @@ class GammaToXSTSTransformer {
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
 		xSts.environmentalAction = xSts.environmentalAction.optimize
 		return xSts
-	}
-	
-	def executeAndSerialize() {
-		return execute.serializeXSTS
 	}
 	
 	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
