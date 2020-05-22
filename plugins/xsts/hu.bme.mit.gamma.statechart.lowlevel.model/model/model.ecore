@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
+    nsPrefix="hu.bme.mit.gamma.statechart.lowlevel">
+  <eClassifiers xsi:type="ecore:EEnum" name="EventDirection">
+    <eLiterals name="IN"/>
+    <eLiterals name="OUT" value="1" literal="OUT"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
+    <eLiterals name="TOP_DOWN"/>
+    <eLiterals name="BOTTOM_UP" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
+        eType="#//Package" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
+        eType="#//Component" containment="true" eOpposite="#//Component/parentPackage"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Component" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parentPackage" lowerBound="1"
+        eType="#//Package" eOpposite="#//Package/components"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameterDeclarations"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventDeclarations" upperBound="-1"
+        eType="#//EventDeclaration" containment="true" eOpposite="#//EventDeclaration/component"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
+      eSuperTypes="#//Component"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousComponent" abstract="true"
+      eSuperTypes="#//Component"/>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeComponent" abstract="true"
+      eSuperTypes="#//Component"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StatechartDefinition" eSuperTypes="#//SynchronousComponent #//CompositeElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
+        eType="#//Transition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
+        eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="timeoutDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeElement" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="regions" upperBound="-1"
+        eType="#//Region" containment="true" eOpposite="#//Region/parentElement"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Region" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="stateNodes" lowerBound="1"
+        upperBound="-1" eType="#//StateNode" containment="true" eOpposite="#//StateNode/parentRegion"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parentElement" lowerBound="1"
+        eType="#//CompositeElement" eOpposite="#//CompositeElement/regions"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parentRegion" lowerBound="1"
+        eType="#//Region" eOpposite="#//Region/stateNodes"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outgoingTransitions" upperBound="-1"
+        eType="#//Transition" eOpposite="#//Transition/source"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="incomingTransitions" upperBound="-1"
+        eType="#//Transition" eOpposite="#//Transition/target"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EntryState" abstract="true" eSuperTypes="#//PseudoState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialState" eSuperTypes="#//EntryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="HistoryState" abstract="true" eSuperTypes="#//EntryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryState" eSuperTypes="#//HistoryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryState" eSuperTypes="#//HistoryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="State" eSuperTypes="#//StateNode #//CompositeElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entryAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="exitAction" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="direction" lowerBound="1"
+        eType="#//EventDirection"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="isRaised" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameters" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="#//Component" eOpposite="#//Component/eventDeclarations"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="persistency" lowerBound="1"
+        eType="#//Persistency"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Transition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//StateNode" eOpposite="#//StateNode/outgoingTransitions"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//StateNode" eOpposite="#//StateNode/incomingTransitions"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PseudoState" abstract="true" eSuperTypes="#//StateNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PrecursoryState" abstract="true" eSuperTypes="#//PseudoState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TerminalState" abstract="true" eSuperTypes="#//PseudoState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MergeState" eSuperTypes="#//PrecursoryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinState" eSuperTypes="#//PrecursoryState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ChoiceState" eSuperTypes="#//TerminalState"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ForkState" eSuperTypes="#//TerminalState"/>
+  <eClassifiers xsi:type="ecore:EEnum" name="Persistency">
+    <eLiterals name="TRANSIENT"/>
+    <eLiterals name="PERSISTENT" value="1"/>
+  </eClassifiers>
+</ecore:EPackage>

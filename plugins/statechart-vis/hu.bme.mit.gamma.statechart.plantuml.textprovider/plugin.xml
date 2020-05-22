@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="net.sourceforge.plantuml.eclipse.diagramTextProvider">
+
+      <diagramTextProvider
+	    id="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
+	    providerClass="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
+      	label="Gamma statechart model visualizer"
+	    >
+      </diagramTextProvider>
+   </extension>
+</plugin>

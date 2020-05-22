@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="traceability" nsURI="http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/traceability"
+    nsPrefix="hu.bme.mit.gamma.lowlevel.xsts.transformation">
+  <eClassifiers xsi:type="ecore:EClass" name="L2STrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="traces" upperBound="-1"
+        eType="#//AbstractTrace" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelPackage" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xSts" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//XSTS"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractTrace" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="RegionTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelRegion" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Region"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsRegionVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EventTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelEvent" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//EventDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//State"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsEnumLiteral" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//EnumerationLiteralDefinition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionTrace" abstract="true" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsTransition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//XTransition"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsPrecondition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SimpleTransitionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelTransition" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//Transition"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ChoiceTransitionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelChoiceState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ChoiceState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsChoiceAction" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MergeTransitionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelMergeState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//MergeState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsMergeAction" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//NonDeterministicAction"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ForkTransitionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelForkState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//ForkState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsParallelAction" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//ParallelAction"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinTransitionTrace" eSuperTypes="#//TransitionTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelJoinState" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//JoinState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsParallelAction" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.xsts.model/model/model.ecore#//ParallelAction"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeDeclarationTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelTypeDeclaration"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsTypeDeclaration" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
+  </eClassifiers>
+</ecore:EPackage>

@@ -1,0 +1,7 @@
+*/bin/
+
+*.edit/
+*.editor/
+*.tests/
+
+hu.bme.mit.gamma.framework

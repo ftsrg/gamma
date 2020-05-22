@@ -1,0 +1,23 @@
+package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
+
+import epackage "http://www.mit.bme.hu/gamma/expression/Model"
+import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
+
+// Should be a single match
+pattern eventVariableGroups(eventVariableGroup : VariableGroup) {
+	VariableGroup.annotation(eventVariableGroup, eventAnnotation);
+	EventGroup(eventAnnotation);
+}
+
+// Should be a single match
+pattern plainVariableGroups(plainVariableGroup : VariableGroup) {
+	VariableGroup.annotation(plainVariableGroup, plainVariableAnnotation);
+	PlainVariableGroup(plainVariableAnnotation);
+}
+
+pattern regionVariableGroups(regionVariableGroup : VariableGroup, xStsVariable : VariableDeclaration) {
+	VariableGroup.annotation(regionVariableGroup, regionVariableAnnotation);
+	RegionGroup(regionVariableAnnotation);
+	VariableGroup.variables(regionVariableGroup, xStsVariable);
+}
+

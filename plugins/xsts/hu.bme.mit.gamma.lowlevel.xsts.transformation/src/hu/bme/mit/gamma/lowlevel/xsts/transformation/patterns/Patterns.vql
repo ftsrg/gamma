@@ -1,0 +1,154 @@
+package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
+
+import epackage "http://www.mit.bme.hu/gamma/expression/Model"
+import epackage "http://www.mit.bme.hu/gamma/action/Model"
+import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
+
+pattern statecharts(statechart : StatechartDefinition) {
+	StatechartDefinition(statechart);
+}
+
+pattern typeDeclarations(typeDeclaration : TypeDeclaration) {
+	TypeDeclaration(typeDeclaration);
+}
+
+pattern events(event : EventDeclaration) {
+	EventDeclaration(event);
+}
+
+pattern inEvents(event : EventDeclaration) {
+	EventDeclaration.direction(event, ::IN);
+}
+
+pattern outEvents(event : EventDeclaration) {
+	EventDeclaration.direction(event, ::OUT);
+}
+
+pattern eventParameterComparisons(parameter : VariableDeclaration, value : Expression) {
+	EventDeclaration.parameters(_, parameter);
+	PredicateExpression(predicate);
+	BinaryExpression.leftOperand(predicate, reference);
+	ReferenceExpression.declaration(reference, parameter);
+	BinaryExpression.rightOperand(predicate, value);
+} or {
+	EventDeclaration.parameters(_, parameter);
+	PredicateExpression(predicate);
+	BinaryExpression.rightOperand(predicate, reference);
+	ReferenceExpression.declaration(reference, parameter);
+	BinaryExpression.leftOperand(predicate, value);
+}
+
+private pattern eventVariables(variable : VariableDeclaration) {
+	EventDeclaration.isRaised(_, variable);
+}
+
+private pattern eventParameters(variable : VariableDeclaration) {
+	EventDeclaration.parameters(_, variable);
+}
+
+private pattern componentParameters(variable : VariableDeclaration) {
+	Component.parameterDeclarations(_, variable);
+}
+
+pattern topRegions(region : Region) {
+	StatechartDefinition.regions(_, region);
+}
+
+pattern subregions(region : Region, parentRegion : Region) {
+	Region.parentElement(region, parentState);
+	State.parentRegion(parentState, parentRegion);
+}
+
+pattern regions(region : Region) {
+	find topRegions(region);
+} or {
+	find subregions(region, _);
+}
+
+pattern timeouts(timeout : VariableDeclaration) {
+	StatechartDefinition.timeoutDeclarations(_, timeout);
+}
+
+pattern timeoutInitializations(timeout : VariableDeclaration, state : State) {
+	StatechartDefinition.timeoutDeclarations(_, timeout);
+	AssignmentStatement.lhs(assignmentStatement, reference);
+	ReferenceExpression.declaration(reference, timeout);
+	AssignmentStatement.rhs(assignmentStatement, _null);
+	State.entryAction(state, assignmentStatement);
+}
+
+pattern plainVariables(variable : VariableDeclaration) {
+	neg find eventVariables(variable);
+	neg find eventParameters(variable);
+	neg find componentParameters(variable);
+	neg find timeouts(variable);
+}
+
+pattern variables(variable : VariableDeclaration) {
+	VariableDeclaration(variable);
+}
+
+private pattern sameRegionStateNodes(region : Region, stateNodeLeft : StateNode, stateNodeRight : StateNode) {
+	Region.stateNodes(region, stateNodeLeft);
+	Region.stateNodes(region, stateNodeRight);
+}
+
+private pattern substatesOfCompositeState(compositeState : State, substate : StateNode) {
+	State.regions(compositeState, region);
+	Region.stateNodes(region, substate);
+}
+
+// Transition structures
+
+private pattern transitions(source : StateNode, transition : Transition, target : StateNode) {
+	Transition.source(transition, source);
+	Transition.target(transition, target);
+}
+
+pattern transitionsBetweenSameRegionNodes(source : StateNode, transition : Transition,
+		target : StateNode) {
+	find transitions(source, transition, target);
+	find sameRegionStateNodes(_, source, target);
+}
+
+pattern transitionsToHigherNodes(source : StateNode, sourceAncestor : State,
+		transition : Transition, target : StateNode) {
+	find transitions(source, transition, target);
+	find substatesOfCompositeState+(sourceAncestor, source);
+	find sameRegionStateNodes(_, sourceAncestor, target);
+}
+
+pattern transitionsToLowerNodes(source : StateNode,
+		transition : Transition, targetAncestor : State, target : StateNode) {
+	find transitions(source, transition, target);
+	find substatesOfCompositeState+(targetAncestor, target);
+	find sameRegionStateNodes(_, source, targetAncestor);
+}
+
+pattern transitionsToHigherAndLowerNodes(source : StateNode, sourceAncestor : State,
+		transition : Transition, targetAncestor : State, target : StateNode) {
+	find transitions(source, transition, target);
+	find substatesOfCompositeState+(targetAncestor, target);
+	find substatesOfCompositeState+(sourceAncestor, source);
+	find sameRegionStateNodes(_, sourceAncestor, targetAncestor);
+	// Not between same region states
+	neg find transitionsBetweenSameRegionNodes(source, transition, target);
+	// Note that this pattern returns transitions through orthogonal regions, which
+	// is essential when transforming complex transitions with junctions
+}
+
+// Simple transition patterns
+// Same-region, to lower, ... are differentiated in the imperative code with the general transition patterns
+
+pattern simpleTransitionsBetweenStates(source : State, transition : Transition, target : State) {
+	find transitions(source, transition, target);
+}
+
+// History states and initial states
+pattern simpleTransitionsToEntryStates(source : State,
+		transition : Transition, targetAncestor : State, target : EntryState) {
+	// Only valid if the history is a lower level element
+	find transitionsToLowerNodes(source, transition, targetAncestor, target);
+} or {
+	find transitionsToHigherAndLowerNodes(source, _sourceAncestor, transition, targetAncestor, target);
+}

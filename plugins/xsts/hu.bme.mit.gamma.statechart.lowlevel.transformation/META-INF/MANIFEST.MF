@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Statechart to Low-level Statechart Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.statechart.lowlevel.transformation
+Bundle-Version: 2.1.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.statechart.lowlevel.model,
+ hu.bme.mit.gamma.action.model
+Export-Package: hu.bme.mit.gamma.statechart.lowlevel.transformation
+Automatic-Module-Name: hu.bme.mit.gamma.statechart.lowlevel.transformation
+

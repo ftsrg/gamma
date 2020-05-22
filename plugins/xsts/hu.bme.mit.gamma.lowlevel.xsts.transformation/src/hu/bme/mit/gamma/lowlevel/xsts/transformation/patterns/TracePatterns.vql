@@ -1,0 +1,70 @@
+package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
+
+import epackage "http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/traceability"
+import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
+import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
+import epackage "http://www.mit.bme.hu/gamma/expression/Model"
+
+pattern typeDeclarationTrace(lowlevelTypeDeclaration : TypeDeclaration, xStsTypeDeclaration : TypeDeclaration) {
+	TypeDeclarationTrace.lowlevelTypeDeclaration(trace, lowlevelTypeDeclaration);
+	TypeDeclarationTrace.xStsTypeDeclaration(trace, xStsTypeDeclaration);
+}
+
+pattern eventTrace(lowlevelEvent : EventDeclaration, xStsVariable : VariableDeclaration) {
+	EventTrace.lowlevelEvent(trace, lowlevelEvent);
+	EventTrace.xStsVariable(trace, xStsVariable);
+}
+
+pattern variableTrace(lowlevelVariable : VariableDeclaration, xStsVariable : VariableDeclaration) {
+	VariableTrace.lowlevelVariable(trace, lowlevelVariable);
+	VariableTrace.xStsVariable(trace, xStsVariable);
+}
+
+pattern regionTrace(lowlevelRegion : Region, xStsVariable : VariableDeclaration) {
+	RegionTrace.lowlevelRegion(trace, lowlevelRegion);
+	RegionTrace.xStsRegionVariable(trace, xStsVariable);
+}
+
+pattern stateTrace(lowlevelState : State, xStsEnumLiteral : EnumerationLiteralDefinition) {
+	StateTrace.lowlevelState(trace, lowlevelState);
+	StateTrace.xStsEnumLiteral(trace, xStsEnumLiteral);
+}
+
+pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 
+		xStsPrecondition : Expression) {
+	SimpleTransitionTrace.lowlevelTransition(trace, lowlevelSimpleTransition);
+	SimpleTransitionTrace.xStsTransition(trace, xStsTransition);
+	SimpleTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
+}
+
+pattern choiceTransitionTrace(lowlevelChoiceState : ChoiceState, xStsTransition : XTransition, 
+		xStsPrecondition : Expression, xStsChoiceAction : NonDeterministicAction) {
+	ChoiceTransitionTrace.lowlevelChoiceState(trace, lowlevelChoiceState);
+	ChoiceTransitionTrace.xStsTransition(trace, xStsTransition);
+	ChoiceTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
+	ChoiceTransitionTrace.xStsChoiceAction(trace, xStsChoiceAction);
+}
+
+pattern mergeTransitionTrace(lowlevelMergeState : MergeState, xStsTransition : XTransition, 
+		xStsPrecondition : Expression, xStsMergeAction : NonDeterministicAction) {
+	MergeTransitionTrace.lowlevelMergeState(trace, lowlevelMergeState);
+	MergeTransitionTrace.xStsTransition(trace, xStsTransition);
+	MergeTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
+	MergeTransitionTrace.xStsMergeAction(trace, xStsMergeAction);
+}
+
+pattern forkTransitionTrace(lowlevelForkState : ForkState, xStsTransition : XTransition, 
+		xStsPrecondition : Expression, xStsForkAction : ParallelAction) {
+	ForkTransitionTrace.lowlevelForkState(trace, lowlevelForkState);
+	ForkTransitionTrace.xStsTransition(trace, xStsTransition);
+	ForkTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
+	ForkTransitionTrace.xStsParallelAction(trace, xStsForkAction);
+}
+
+pattern joinTransitionTrace(lowlevelJoinState : JoinState, xStsTransition : XTransition, 
+		xStsPrecondition : Expression, xStsForkAction : ParallelAction) {
+	JoinTransitionTrace.lowlevelJoinState(trace, lowlevelJoinState);
+	JoinTransitionTrace.xStsTransition(trace, xStsTransition);
+	JoinTransitionTrace.xStsPrecondition(trace, xStsPrecondition);
+	JoinTransitionTrace.xStsParallelAction(trace, xStsForkAction);
+}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.xsts.model/src" modelPluginID="hu.bme.mit.gamma.xsts.model"
+    modelName="XSTS" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    language="" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>model.ecore</foreignModel>
+  <genPackages prefix="XSTSModel" basePackage="hu.bme.mit.gamma.xsts.model" disposableProviderFactory="true"
+      fileExtensions="xsts" ecorePackage="model.ecore#/">
+    <genClasses ecoreClass="model.ecore#//XSTS">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/typeDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableDeclarations"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transitions"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/mergedTransition"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/constraints"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/transientVariables"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/controlVariables"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/variableGroups"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/initializingAction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/environmentalAction"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/publicTypeDeclarations"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//XTransition">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XTransition/reads"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//XTransition/writes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XTransition/action"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//PrimedVariable">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//PrimedVariable/primedVariable"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//VariableGroup">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//VariableGroup/parentGroup"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//VariableGroup/containedGroups"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//VariableGroup/annotation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//VariableGroup/variables"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//GroupAnnotation"/>
+    <genClasses ecoreClass="model.ecore#//RegionGroup"/>
+    <genClasses ecoreClass="model.ecore#//EventGroup"/>
+    <genClasses ecoreClass="model.ecore#//ComponentGroup"/>
+    <genClasses ecoreClass="model.ecore#//PlainVariableGroup"/>
+    <genClasses ecoreClass="model.ecore#//Action"/>
+    <genClasses ecoreClass="model.ecore#//AtomicAction"/>
+    <genClasses ecoreClass="model.ecore#//NonDeterministicAction"/>
+    <genClasses ecoreClass="model.ecore#//SequentialAction"/>
+    <genClasses ecoreClass="model.ecore#//ParallelAction"/>
+    <genClasses ecoreClass="model.ecore#//AssumeAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssumeAction/assumption"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//EmptyAction"/>
+    <genClasses ecoreClass="model.ecore#//AssignmentAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/lhs"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//CompositeAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeAction/actions"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//TimeoutGroup"/>
+    <genClasses ecoreClass="model.ecore#//ComponentParameterGroup"/>
+    <genClasses ecoreClass="model.ecore#//InEventGroup"/>
+    <genClasses ecoreClass="model.ecore#//OutEventGroup"/>
+    <genClasses ecoreClass="model.ecore#//EventParameterGroup"/>
+    <genClasses ecoreClass="model.ecore#//OutEventParameterGroup"/>
+    <genClasses ecoreClass="model.ecore#//InEventParameterGroup"/>
+    <genClasses ecoreClass="model.ecore#//OrthogonalAction"/>
+  </genPackages>
+</genmodel:GenModel>

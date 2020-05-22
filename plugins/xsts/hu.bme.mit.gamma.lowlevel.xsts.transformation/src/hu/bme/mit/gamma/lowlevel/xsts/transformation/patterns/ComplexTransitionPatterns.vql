@@ -1,0 +1,54 @@
+package hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
+
+import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
+
+private pattern pseudoNodeToPseudoNode(firstNode : PseudoState, secondNode : PseudoState) {
+	PseudoState(firstNode);
+	Transition.source(transition, firstNode);
+	Transition.target(transition, secondNode);
+	PseudoState(secondNode);
+}
+
+// Last Precursory transitions
+
+private pattern precursoryStateToPrecursoryState(firstState : PrecursoryState, secondState : PrecursoryState) {
+	find pseudoNodeToPseudoNode(firstState, secondState);
+}
+
+pattern lastJoinStates(joinState : JoinState) {
+	neg find precursoryStateToPrecursoryState(joinState, _);
+}
+
+pattern lastMergeStates(mergeState : MergeState) {
+	neg find precursoryStateToPrecursoryState(mergeState, _);
+}
+
+//
+
+private pattern entryStateToTerminalState(firstState : EntryState, secondState : TerminalState) {
+	find pseudoNodeToPseudoNode(firstState, secondState);
+}
+
+private pattern precursoryStateToTerminalState(firstState : PrecursoryState, secondState : TerminalState) {
+	find pseudoNodeToPseudoNode(firstState, secondState);
+}
+
+// First Terminal transitions not connected to Last Precursory transitions
+
+private pattern terminalStateToTerminalState(firstState : TerminalState, secondState : TerminalState) {
+	find pseudoNodeToPseudoNode(firstState, secondState);
+}
+
+pattern firstForkStates(forkState : ForkState) {
+	neg find entryStateToTerminalState(_, forkState); // No complex transitions from entries
+	neg find precursoryStateToTerminalState(_, forkState); // No complex transitions from precursory states
+	neg find terminalStateToTerminalState(_, forkState);
+}
+
+pattern firstChoiceStates(choiceState : ChoiceState) {
+	neg find entryStateToTerminalState(_, choiceState); // No complex transitions from entries
+	neg find precursoryStateToTerminalState(_, choiceState); // No complex transitions from precursory states
+	neg find terminalStateToTerminalState(_, choiceState);
+}
+
+//

@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma xSTS Java Code Generation
+Bundle-SymbolicName: hu.bme.mit.gamma.xsts.codegeneration.java
+Bundle-Version: 2.1.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.xsts.codegeneration.java
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.xsts.model,
+ hu.bme.mit.gamma.codegenerator.java.util
+Export-Package: hu.bme.mit.gamma.xsts.codegeneration.java
+

@@ -1,0 +1,6 @@
+*/bin
+
+# Ignore generated edit, editor and test projects
+*.edit/
+*.editor/
+*.tests/
