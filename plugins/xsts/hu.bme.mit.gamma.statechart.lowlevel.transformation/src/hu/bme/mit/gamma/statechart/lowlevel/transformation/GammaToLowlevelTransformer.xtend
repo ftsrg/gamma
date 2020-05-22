@@ -1,9 +1,9 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.statechart.model.Package
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 
 class GammaToLowlevelTransformer {
 	

@@ -16,7 +16,8 @@ class Namings {
 	
 	static def String getInputName(Event event, Port port) '''«port.name»_«event.name»_In'''
 	static def String getOutputName(Event event, Port port) '''«port.name»_«event.name»_Out'''
-	static def String getName(ParameterDeclaration parameterDeclaration, Port port) '''«port.name»_«parameterDeclaration.containingEvent.name»_«parameterDeclaration.name»'''
+	static def String getInName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getInputName(port)»_«parameterDeclaration.name»'''
+	static def String getOutName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getOutputName(port)»_«parameterDeclaration.name»'''
 	
 	// XSTS
 	
@@ -27,5 +28,9 @@ class Namings {
 	
 	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable)»_«instance.name»'''
 	static def String customizeName(TypeDeclaration type, Component component) '''«getName(type)»_«component.name»'''
+	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getInName(port)»_«instance.name»'''
+	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getOutName(port)»_«instance.name»'''
+	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«event.getInputName(port)»_«instance.name»'''
+	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«event.getOutputName(port)»_«instance.name»'''
 	
 }

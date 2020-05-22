@@ -325,6 +325,30 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return portBindings;
 	}
 	
+	public static Collection<Port> getAllConnectedSimplePorts(Component component) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		for (Port port : getAllPorts(component)) {
+			simplePorts.addAll(getAllConnectedSimplePorts(port));
+		}
+		return simplePorts;
+	}
+	
+	public static Collection<Port> getAllConnectedSimplePorts(Port port) {
+		List<Port> simplePorts = new ArrayList<Port>();
+		Component component = getContainingComponent(port);
+		if (component instanceof StatechartDefinition) {
+			simplePorts.add(port);
+		}
+		if (component instanceof CompositeComponent) {
+			CompositeComponent composite = (CompositeComponent) component;
+			for (PortBinding portBinding : composite.getPortBindings()) {
+				// Makes sense only if the containment hierarchy is a tree structure
+				simplePorts.addAll(getAllConnectedSimplePorts(portBinding.getInstancePortReference().getPort()));
+			}
+		}
+		return simplePorts;
+	}
+	
 	public static EventSource getEventSource(EventReference eventReference) {
 		if (eventReference instanceof PortEventReference) {
 			return ((PortEventReference) eventReference).getPort();
@@ -805,6 +829,12 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			}
 		}
 		return componentInstances;
+	}
+	
+	public static ComponentInstance getReferencingComponentInstance(Component component) {
+		Collection<ComponentInstance> instances = getReferencingComponentInstances(component);
+		assert instances.size() == 1;
+		return instances.stream().findFirst().get();
 	}
 	
 }
