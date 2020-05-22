@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature.Setting;
@@ -413,7 +414,19 @@ public class ExpressionUtil {
 		for (Setting oldReference : oldReferences) {
 			oldReference.set(newObject);
 		}
-		EcoreUtil.remove(oldObject);
+		EcoreUtil.delete(oldObject); // Remove does not deletes other references
+	}
+	
+	public void changeAll(EObject newObject, EObject oldObject, EObject container) {
+		change(newObject, oldObject, container);
+		TreeIterator<EObject> lhsContents = newObject.eAllContents();
+		TreeIterator<EObject> rhsContents = oldObject.eAllContents();
+		while (lhsContents.hasNext()) {
+			EObject lhs = lhsContents.next();
+			EObject rhs = rhsContents.next();
+			change(lhs, rhs, container);
+		}
+		assert !rhsContents.hasNext();
 	}
 
 	public EObject normalLoad(URI uri) throws IOException {

@@ -25,7 +25,7 @@ class Namings {
 
 	// XSTS customization
 	
-	static def String getName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable)»_«instance.name»'''
-	static def String getName(TypeDeclaration type, Component component) '''«getName(type)»_«component.name»'''
+	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable)»_«instance.name»'''
+	static def String customizeName(TypeDeclaration type, Component component) '''«getName(type)»_«component.name»'''
 	
 }
