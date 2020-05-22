@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
+import sun.security.util.ECUtil;
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -621,6 +622,14 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 //			throw new IllegalArgumentException("Not contained by a package: " + object);
 //		}
 		return getContainingPackage(object.eContainer());
+	}
+	
+	public static Event getContainingEvent(ParameterDeclaration parameter) {
+		return (Event) parameter.eContainer();
+	}
+	
+	public static EventDeclaration getContainingEventDeclaration(Event event) {
+		return (EventDeclaration) event.eContainer();
 	}
 	
 	public static boolean isSameRegion(Transition transition) {

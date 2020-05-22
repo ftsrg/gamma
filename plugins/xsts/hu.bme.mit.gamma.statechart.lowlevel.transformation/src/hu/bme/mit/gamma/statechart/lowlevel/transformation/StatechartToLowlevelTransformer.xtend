@@ -29,6 +29,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartToLowlevelTransformer {
@@ -57,6 +58,10 @@ class StatechartToLowlevelTransformer {
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		return _package.transform
 	}
+	
+	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(StatechartDefinition statechart) {
+		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+	}
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
 		if (trace.isMapped(_package)) {
@@ -73,10 +78,6 @@ class StatechartToLowlevelTransformer {
 		}
 		for (_import : _package.imports) {
 			lowlevelPackage.imports += _import.transform
-		}
-		// Interfaces are not transformed, the events are transformed (thus, "instantiated") when referred
-		for (component : _package.components) {
-			lowlevelPackage.components += component.transformComponent
 		}
 		return lowlevelPackage
 	}
@@ -137,18 +138,17 @@ class StatechartToLowlevelTransformer {
 			// In-out events
 			checkState(gammaDirection == EventDirection.INOUT)
 			val lowlevelEventIn = declaration.event.transform(gammaPort, EventDirection.IN)
-			lowlevelEventIn.name = lowlevelEventIn.name + "__In__"
 			trace.put(gammaPort, declaration, lowlevelEventIn) // Tracing the EventDeclaration
 			val lowlevelEventOut = declaration.event.transform(gammaPort, EventDirection.OUT)
-			lowlevelEventOut.name = lowlevelEventOut.name + "__Out__"
 			trace.put(gammaPort, declaration, lowlevelEventOut) // Tracing the EventDeclaration
 			return #[lowlevelEventIn, lowlevelEventOut]
 		}
 	}
 
 	protected def EventDeclaration transform(Event gammaEvent, Port gammaPort, EventDirection direction) {
+		checkState(direction == EventDirection.IN || direction == EventDirection.OUT)
 		val lowlevelEvent = createEventDeclaration => [
-			it.name = gammaPort.name + "_" + gammaEvent.name
+			it.name = if (direction == EventDirection.IN) gammaEvent.getInputName(gammaPort) else gammaEvent.getOutputName(gammaPort)
 			it.persistency = gammaEvent.persistency.transform
 			it.direction = direction.transform
 			it.isRaised = createVariableDeclaration => [
@@ -160,7 +160,7 @@ class StatechartToLowlevelTransformer {
 		// Transforming the parameters
 		for (gammaParam : gammaEvent.parameterDeclarations) {
 			val lowlevelParam = createVariableDeclaration => [
-				it.name = gammaPort.name + gammaParam.name
+				it.name = gammaParam.getName(gammaPort)
 				it.type = gammaParam.type.transformType
 			]
 			lowlevelEvent.parameters += lowlevelParam

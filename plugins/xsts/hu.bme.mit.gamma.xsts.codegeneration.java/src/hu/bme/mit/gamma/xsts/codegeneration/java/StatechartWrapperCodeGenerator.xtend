@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -115,12 +116,12 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						@Override
 						public boolean isRaised«event.name.toFirstUpper»() {
-							return «CLASS_NAME.toFirstLower».get«port.name.toFirstUpper»_«event.name»();
+							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port)»();
 						}
 						«FOR parameter : event.parameterDeclarations SEPARATOR ', '»
 							@Override
 							public «parameter.type.serialize» get«parameter.name.toFirstUpper»() {
-								return «CLASS_NAME.toFirstLower».get«parameter.getParameterName(port).toFirstUpper»();
+								return «CLASS_NAME.toFirstLower».get«parameter.getName(port).toFirstUpper»();
 							}
 						«ENDFOR»
 					«ENDFOR»
@@ -152,9 +153,9 @@ class StatechartWrapperCodeGenerator {
 						«FOR port : gammaStatechart.ports»
 							«FOR event : port.getEvents(EventDirection.IN)»
 								case "«port.name».«event.name»": 
-									«CLASS_NAME.toFirstLower».set«port.name.toFirstUpper»_«event.name»(true);
+									«CLASS_NAME.toFirstLower».set«event.getInputName(port)»(true);
 									«FOR parameter : event.parameterDeclarations»
-										«CLASS_NAME.toFirstLower».set«parameter.getParameterName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
+										«CLASS_NAME.toFirstLower».set«parameter.getName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
 									«ENDFOR»
 								break;
 							«ENDFOR»
@@ -186,7 +187,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
 							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
-								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations»«CLASS_NAME.toFirstLower».get«parameter.getParameterName(port).toFirstUpper»()«ENDFOR»);
+								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations»«CLASS_NAME.toFirstLower».get«parameter.getName(port).toFirstUpper»()«ENDFOR»);
 							}
 						}
 					«ENDFOR»
