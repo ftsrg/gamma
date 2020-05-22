@@ -8,6 +8,7 @@ import hu.bme.mit.gamma.xsts.model.model.CompositeAction
 import java.util.Set
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class EnvironmentalActionFilter {
 	// Names that need to be kept
@@ -17,13 +18,16 @@ class EnvironmentalActionFilter {
 	
 	def void filter(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
-		for (port : component.ports) {
+		for (port : component.allConnectedSimplePorts) {
+			val statechart = port.containingStatechart
+			val instance = statechart.referencingComponentInstance
 			for (eventDeclaration : port.interfaceRealization.interface.events) {
 				val event = eventDeclaration.event
-				necessaryNames += getInputName(event, port)
-				necessaryNames += getOutputName(event, port)
+				necessaryNames += customizeInputName(event, port, instance)
+				necessaryNames += customizeOutputName(event, port, instance)
 				for (parameter : event.parameterDeclarations) {
-					necessaryNames += getName(parameter, port)
+					necessaryNames += customizeInName(parameter, port, instance)
+					necessaryNames += customizeOutName(parameter, port, instance)
 				}
 			}
 		}

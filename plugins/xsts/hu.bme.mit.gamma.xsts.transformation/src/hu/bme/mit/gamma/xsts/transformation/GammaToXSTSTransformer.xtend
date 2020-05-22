@@ -18,7 +18,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
-	// Source Gamma pacakge
+	// Source Gamma package
 	hu.bme.mit.gamma.statechart.model.Package _package
 	// Transformers
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
@@ -27,6 +27,7 @@ class GammaToXSTSTransformer {
 	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
 	protected final extension ActionSerializer actionSerializer = new ActionSerializer
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
+	protected final extension EventConnector eventConnector = new EventConnector
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
@@ -39,6 +40,8 @@ class GammaToXSTSTransformer {
 		// Serializing the xSTS
 		val gammaComponent = _package.components.head // Transforming first Gamma component
 		val xSts = gammaComponent.transform(lowlevelPackage)
+		// Removing duplicated types
+		xSts.removeDuplicatedTypes
 		// Optimizing
 		xSts.initializingAction = xSts.initializingAction.optimize
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
@@ -46,7 +49,6 @@ class GammaToXSTSTransformer {
 		return xSts
 	}
 	
-		
 	def executeAndSerialize() {
 		return execute.serializeXSTS
 	}
@@ -66,8 +68,8 @@ class GammaToXSTSTransformer {
 			}
 			else {
 				// Adding new elements
-				xSts.typeDeclarations += newXSts.typeDeclarations // TODO, filter out unnecessary ones: expressionUtil.change
-				xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations // TODO
+				xSts.typeDeclarations += newXSts.typeDeclarations
+				xSts.publicTypeDeclarations += newXSts.publicTypeDeclarations
 				xSts.variableGroups += newXSts.variableGroups
 				xSts.variableDeclarations += newXSts.variableDeclarations
 				xSts.transientVariables += newXSts.transientVariables
@@ -79,19 +81,18 @@ class GammaToXSTSTransformer {
 				mergedAction.actions += xSts.mergedTransition.action
 				mergedAction.actions += newXSts.mergedTransition.action
 				xSts.mergedTransition.action = mergedAction
-				// TODO Set event raisings across channels
-				// Init action
+				xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+				// Initializing action
 				val initAction = createSequentialAction
 				initAction.actions += xSts.initializingAction
 				initAction.actions += newXSts.initializingAction
 				xSts.initializingAction = initAction
-				// Environment action
+				// Environmental action
 				val environmentAction = createSequentialAction
 				environmentAction.actions += xSts.environmentalAction
 				environmentAction.actions += newXSts.environmentalAction
 				environmentAction.filter(component) // Filtering events not led out to the port
 				xSts.environmentalAction = environmentAction
-				
 			}
 		}
 		xSts.name = component.name
@@ -107,7 +108,7 @@ class GammaToXSTSTransformer {
 		return xStsEntry.key
 	}
 	
-	protected def customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
+	protected def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
 		val type = instance.derivedType
 		if (type instanceof StatechartDefinition) {
 			for (variable : xSts.variableDeclarations) {

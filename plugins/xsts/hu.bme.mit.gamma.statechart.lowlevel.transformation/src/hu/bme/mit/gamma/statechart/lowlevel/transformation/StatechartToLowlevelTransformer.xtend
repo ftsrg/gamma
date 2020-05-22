@@ -160,7 +160,7 @@ class StatechartToLowlevelTransformer {
 		// Transforming the parameters
 		for (gammaParam : gammaEvent.parameterDeclarations) {
 			val lowlevelParam = createVariableDeclaration => [
-				it.name = gammaParam.getName(gammaPort)
+				it.name = if (direction == EventDirection.IN) gammaParam.getInName(gammaPort) else gammaParam.getOutName(gammaPort)
 				it.type = gammaParam.type.transformType
 			]
 			lowlevelEvent.parameters += lowlevelParam

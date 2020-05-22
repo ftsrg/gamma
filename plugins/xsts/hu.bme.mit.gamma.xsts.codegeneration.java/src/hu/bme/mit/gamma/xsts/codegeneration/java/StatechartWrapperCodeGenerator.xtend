@@ -121,7 +121,7 @@ class StatechartWrapperCodeGenerator {
 						«FOR parameter : event.parameterDeclarations SEPARATOR ', '»
 							@Override
 							public «parameter.type.serialize» get«parameter.name.toFirstUpper»() {
-								return «CLASS_NAME.toFirstLower».get«parameter.getName(port).toFirstUpper»();
+								return «CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»();
 							}
 						«ENDFOR»
 					«ENDFOR»
@@ -153,9 +153,9 @@ class StatechartWrapperCodeGenerator {
 						«FOR port : gammaStatechart.ports»
 							«FOR event : port.getEvents(EventDirection.IN)»
 								case "«port.name».«event.name»": 
-									«CLASS_NAME.toFirstLower».set«event.getInputName(port)»(true);
+									«CLASS_NAME.toFirstLower».set«event.getInputName(port).toFirstUpper»(true);
 									«FOR parameter : event.parameterDeclarations»
-										«CLASS_NAME.toFirstLower».set«parameter.getName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
+										«CLASS_NAME.toFirstLower».set«parameter.getInName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
 									«ENDFOR»
 								break;
 							«ENDFOR»
@@ -187,7 +187,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
 							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
-								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations»«CLASS_NAME.toFirstLower».get«parameter.getName(port).toFirstUpper»()«ENDFOR»);
+								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations»«CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»()«ENDFOR»);
 							}
 						}
 					«ENDFOR»
