@@ -116,9 +116,9 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						@Override
 						public boolean isRaised«event.name.toFirstUpper»() {
-							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port)»();
+							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port).toFirstUpper»();
 						}
-						«FOR parameter : event.parameterDeclarations SEPARATOR ', '»
+						«FOR parameter : event.parameterDeclarations»
 							@Override
 							public «parameter.type.serialize» get«parameter.name.toFirstUpper»() {
 								return «CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»();
@@ -187,7 +187,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
 							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
-								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations»«CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»()«ENDFOR»);
+								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»()«ENDFOR»);
 							}
 						}
 					«ENDFOR»
