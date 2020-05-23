@@ -1,13 +1,15 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
-import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
-import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
-import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.Region
+import hu.bme.mit.gamma.statechart.model.State
+import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import java.util.logging.Level
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -43,68 +45,43 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return result
 	}
 	
-	protected override String getTargetStateName(String stateName) {
-		logger.log(Level.INFO, stateName)
-		val splittedStateName = stateName.unwrap.split("\\.")
-		for (InstanceStates.Match match : InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName.get(0),
-				null, splittedStateName.get(splittedStateName.length - 2) /* parent region */,
-				null, splittedStateName.get(splittedStateName.length - 1) /* state */)) {
-			val parentRegion = match.parentRegion
-			val templateName = parentRegion.getTemplateName(match.instance)
-			val processName = templateName.processName
-			val locationNames = new StringBuilder("(")
-			for (String locationName : StatesToLocations.Matcher.on(engine).getAllValuesOflocationName(null,
-					match.state.name,
-					templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
-				val templateLocationName = processName +  "." + locationName
-				if (locationNames.length == 1) {
-					// First append
-					locationNames.append(templateLocationName)
-				}
-				else {
-					locationNames.append(" || " + templateLocationName)
-				}
+	protected override String getTargetStateName(SynchronousComponentInstance instance,
+			Region parentRegion, State state) {
+		val templateName = parentRegion.getTemplateName(instance)
+		val processName = templateName.processName
+		val locationNames = new StringBuilder("(")
+		for (String locationName : StatesToLocations.Matcher.on(engine).getAllValuesOflocationName(null,
+				state.name,
+				templateName /*Must define templateName too as there are states with the same (same statechart types)*/)) {
+			val templateLocationName = processName +  "." + locationName
+			if (locationNames.length == 1) {
+				// First append
+				locationNames.append(templateLocationName)
 			}
-			locationNames.append(")")
-			if (parentRegion.subregion) {
-				locationNames.append(" && " + processName + ".isActive") 
+			else {
+				locationNames.append(" || " + templateLocationName)
 			}
-			return locationNames.toString
 		}
-		throw new IllegalArgumentException("Not known state!")
+		locationNames.append(")")
+		if (parentRegion.subregion) {
+			locationNames.append(" && " + processName + ".isActive") 
+		}
+		return locationNames.toString
 	}
 	
-	protected override String getTargetVariableName(String variableName) {
-		for (InstanceVariables.Match instancesMatch : InstanceVariables.Matcher.on(engine).allMatches) {
-			val name = super.getVariableName(instancesMatch.instance, instancesMatch.variable)
-			if (variableName.equals(name)) {
-				return getVariableName(instancesMatch.variable, instancesMatch.instance)
-			}
-		}
-		throw new IllegalArgumentException("Not known variable: " + variableName)
+	override protected getTargetVariableName(VariableDeclaration variable,
+			SynchronousComponentInstance instance) {
+		return getVariableName(variable, instance)
 	}
 	
-	protected override String getTargetOutEventName(String portEventName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
-			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
-			if (name.equals(portEventName)) {
-				return getOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
-			}
-		}
-		throw new IllegalArgumentException("Not known system event: " + portEventName)
+	override protected getTargetOutEventName(Event event, Port port,
+			SynchronousComponentInstance instance) {
+		return getOutEventName(event, port, instance)
 	}
 	
-	protected override String getTargetOutEventParameterName(String portEventParameterName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
-			val systemPort = eventsMatch.systemPort
-			val event = eventsMatch.event
-			for (ParameterDeclaration parameter : event.parameterDeclarations) {
-				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
-					return getOutValueOfName(event, eventsMatch.port, parameter, eventsMatch.instance)
-				}
-			}
-		}
-		throw new IllegalArgumentException("Not known system parameter event: " + portEventParameterName)
+	override protected getTargetOutEventParameterName(Event event, Port port,
+			ParameterDeclaration parameter, SynchronousComponentInstance instance) {
+		return getOutValueOfName(event, port, parameter, instance)
 	}
 	
 }

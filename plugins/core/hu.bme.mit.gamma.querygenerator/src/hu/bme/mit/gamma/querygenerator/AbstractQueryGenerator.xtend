@@ -12,14 +12,13 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import java.util.List
-import java.util.logging.Logger
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
+import static com.google.common.base.Preconditions.checkArgument
 import static hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class AbstractQueryGenerator {
 		
-	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected ViatraQueryEngine engine
 		
 	def wrap(String id) {
@@ -29,6 +28,8 @@ abstract class AbstractQueryGenerator {
 	def unwrap(String id) {
 		return id.replaceAll("\\(", "").replaceAll("\\)", "")
 	}
+	
+	// Gamma identifiers
 	
 	def List<String> getStateNames() {
 		val stateNames = newArrayList
@@ -89,6 +90,8 @@ abstract class AbstractQueryGenerator {
 		return (getSystemOutEventName(systemPort, event).unwrap + "::" + parameter.name).wrap
 	}
 	
+	// Parsing identifiers
+	
 	protected def String parseIdentifiers(String text) {
 		var result = text
 		if (text.contains("deadlock")) {
@@ -130,12 +133,61 @@ abstract class AbstractQueryGenerator {
 	
 	def abstract String parseLeadsToQuery(String first, String second)
 	
-	protected abstract def String getTargetStateName(String stateName)
+	// Getting target identifiers
 	
-	protected abstract def String getTargetVariableName(String variableName)
+	protected def String getTargetStateName(String stateName) {
+		val splittedStateName = stateName.unwrap.split("\\.")
+		val matches = InstanceStates.Matcher.on(engine).getAllMatches(null, splittedStateName.get(0),
+				null, splittedStateName.get(splittedStateName.length - 2) /* parent region */,
+				null, splittedStateName.get(splittedStateName.length - 1) /* state */)
+		checkArgument(matches.size == 1, "Not known state: " + stateName)
+		val match = matches.head
+		return getTargetStateName(match.instance, match.parentRegion, match.state)
+	}
 	
-	protected abstract def String getTargetOutEventName(String portEventName)
+	protected def String getTargetVariableName(String variableName) {
+		for (InstanceVariables.Match instancesMatch : InstanceVariables.Matcher.on(engine).allMatches) {
+			val name = getVariableName(instancesMatch.instance, instancesMatch.variable)
+			if (variableName.equals(name)) {
+				return getTargetVariableName(instancesMatch.variable, instancesMatch.instance)
+			}
+		}
+		throw new IllegalArgumentException("Not known variable: " + variableName)
+	}
 	
-	protected abstract def String getTargetOutEventParameterName(String portEventParameterName)
+	protected def String getTargetOutEventName(String portEventName) {
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
+			if (name.equals(portEventName)) {
+				return getTargetOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
+			}
+		}
+		throw new IllegalArgumentException("Not known system event: " + portEventName)
+	}
+	
+	protected def String getTargetOutEventParameterName(String portEventParameterName) {
+		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+			val systemPort = eventsMatch.systemPort
+			val event = eventsMatch.event
+			for (ParameterDeclaration parameter : event.parameterDeclarations) {
+				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
+					return getTargetOutEventParameterName(event, eventsMatch.port, parameter, eventsMatch.instance)
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known system parameter event: " + portEventParameterName)
+	}
+	
+	protected abstract def String getTargetStateName(SynchronousComponentInstance instance,
+			Region parentRegion, State state)
+	
+	protected abstract def String getTargetVariableName(VariableDeclaration variable,
+		SynchronousComponentInstance instance)
+	
+	protected abstract def String getTargetOutEventName(Event event, Port port,
+		SynchronousComponentInstance instance)
+	
+	protected abstract def String getTargetOutEventParameterName(Event event, Port port,
+		ParameterDeclaration parameter,SynchronousComponentInstance instance)
 	
 }
