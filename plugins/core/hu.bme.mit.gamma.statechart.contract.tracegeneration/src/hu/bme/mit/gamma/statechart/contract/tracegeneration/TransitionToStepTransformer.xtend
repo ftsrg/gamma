@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpre
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.Act
 import hu.bme.mit.gamma.trace.model.TraceFactory
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Collection
 import java.util.List
@@ -31,9 +32,10 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 
 class TransitionToStepTransformer {
 
-	extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
-	extension TraceFactory traceFactory = TraceFactory.eINSTANCE
-	extension StatechartUtil statechartUtil = new StatechartUtil
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
+	protected final extension StatechartUtil statechartUtil = new StatechartUtil
+	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	
 	def execute(Transition transition) {
 		val step = createStep

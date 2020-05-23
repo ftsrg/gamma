@@ -13,6 +13,7 @@ Export-Package: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.expression.model.util,
  hu.bme.mit.gamma.expression.util
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.emf.ecore;visibility:=reexport
+ org.eclipse.emf.ecore;visibility:=reexport,
+ hu.bme.mit.gamma.util;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.expression.model

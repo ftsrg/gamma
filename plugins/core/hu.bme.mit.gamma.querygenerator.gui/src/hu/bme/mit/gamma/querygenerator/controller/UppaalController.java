@@ -23,12 +23,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.querygenerator.UppaalQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class UppaalController extends AbstractController {
 	private View view;
@@ -43,7 +43,7 @@ public class UppaalController extends AbstractController {
 	private IFile file;
 	
 	// Util
-	private ExpressionUtil expressionUtil = new ExpressionUtil();
+	private GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
 
 	private final String TEST_GEN_FOLDER_NAME = "test-gen";
 	private final String TRACE_FOLDER_NAME = "trace";
@@ -132,7 +132,7 @@ public class UppaalController extends AbstractController {
 	
 	public G2UTrace loadTraceability() throws IOException {
 		URI fileURI = URI.createFileURI(getTraceabilityFile());
-		return (G2UTrace) expressionUtil.normalLoad(fileURI);
+		return (G2UTrace) ecoreUtil.normalLoad(fileURI);
 	}
 	
 	public boolean cancelVerification() {

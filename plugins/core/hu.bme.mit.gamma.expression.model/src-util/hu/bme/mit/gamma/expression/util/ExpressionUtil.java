@@ -1,7 +1,5 @@
 package hu.bme.mit.gamma.expression.util;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -14,17 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.TreeIterator;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature.Setting;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
-import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
@@ -56,9 +44,11 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionUtil {
-
+	
+	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
 	protected ExpressionEvaluator evaluator = new ExpressionEvaluator();
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
@@ -118,7 +108,7 @@ public class ExpressionUtil {
 				BinaryExpression binaryExpression = (BinaryExpression) expression;
 				Expression leftOperand = binaryExpression.getLeftOperand();
 				Expression rightOperand = binaryExpression.getRightOperand();
-				if (helperEquals(leftOperand, rightOperand)) {
+				if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 					return true;
 				}
 				if (!(leftOperand instanceof EnumerationLiteralExpression
@@ -166,7 +156,7 @@ public class ExpressionUtil {
 						.getReference();
 				EnumerationLiteralDefinition rightReference = ((EnumerationLiteralExpression) rightOperand)
 						.getReference();
-				if (!helperEquals(leftReference, rightReference)) {
+				if (!ecoreUtil.helperEquals(leftReference, rightReference)) {
 					return true;
 				}
 			}
@@ -207,13 +197,13 @@ public class ExpressionUtil {
 	public boolean isCertainEvent(Expression lhs, Expression rhs) {
 		if (lhs instanceof NotExpression) {
 			final Expression operand = ((NotExpression) lhs).getOperand();
-			if (helperEquals(operand, rhs)) {
+			if (ecoreUtil.helperEquals(operand, rhs)) {
 				return true;
 			}
 		}
 		if (rhs instanceof NotExpression) {
 			final Expression operand = ((NotExpression) rhs).getOperand();
-			if (helperEquals(operand, lhs)) {
+			if (ecoreUtil.helperEquals(operand, lhs)) {
 				return true;
 			}
 		}
@@ -350,7 +340,7 @@ public class ExpressionUtil {
 	public Expression getInitialValue(final VariableDeclaration variableDeclaration) {
 		final Expression initialValue = variableDeclaration.getExpression();
 		if (initialValue != null) {
-			return clone(initialValue, true, true);
+			return ecoreUtil.clone(initialValue, true, true);
 		}
 		final Type type = variableDeclaration.getType();
 		return getInitialValueOfType(type);
@@ -406,91 +396,5 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}
 	}
-
-	// Ecore Helpers
-
-	@SuppressWarnings("unchecked")
-	public void change(EObject newObject, EObject oldObject, EObject container) {
-		Collection<Setting> oldReferences = UsageCrossReferencer.find(oldObject, container);
-		for (Setting oldReference : oldReferences) {
-			Object referenceHolder = oldReference.get(true);
-			if (referenceHolder instanceof List) {
-				List<EObject> list = (List<EObject>) referenceHolder;
-				int index = list.indexOf(oldObject);
-				list.set(index, newObject);
-			}
-			else {
-				oldReference.set(newObject);
-			}
-		}
-	}
 	
-	public void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
-		change(newObject, oldObject, container);
-		EcoreUtil.delete(oldObject); // Remove does not deletes other references
-	}
-	
-	public void changeAll(EObject newObject, EObject oldObject, EObject container) {
-		change(newObject, oldObject, container);
-		TreeIterator<EObject> lhsContents = newObject.eAllContents();
-		TreeIterator<EObject> rhsContents = oldObject.eAllContents();
-		while (lhsContents.hasNext()) {
-			EObject lhs = lhsContents.next();
-			EObject rhs = rhsContents.next();
-			change(lhs, rhs, container);
-		}
-		assert !rhsContents.hasNext();
-	}
-	
-	public void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
-		changeAll(newObject, oldObject, container);
-		EcoreUtil.delete(oldObject);
-	}
-
-	public EObject normalLoad(URI uri) throws IOException {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		Resource resource = resourceSet.getResource(uri, true);
-		return resource.getContents().get(0);
-	}
-
-	public EObject normalLoad(String parentFolder, String fileName) throws IOException {
-		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName));
-	}
-
-	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, URI uri) throws IOException {
-		Resource resource = resourceSet.createResource(uri);
-		resource.getContents().add(rootElem);
-		resource.save(Collections.EMPTY_MAP);
-		return resource;
-	}
-
-	public Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName)
-			throws IOException {
-		URI uri = URI.createFileURI(parentFolder + File.separator + fileName);
-		return normalSave(resourceSet, rootElem, uri);
-	}
-
-	public Resource normalSave(EObject rootElem, URI uri) throws IOException {
-		return normalSave(new ResourceSetImpl(), rootElem, uri);
-	}
-
-	public Resource normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		return normalSave(new ResourceSetImpl(), rootElem, parentFolder, fileName);
-	}
-
-	public boolean helperEquals(EObject lhs, EObject rhs) {
-		EqualityHelper helper = new EqualityHelper();
-		return helper.equals(lhs, rhs);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends EObject> T clone(T object, boolean a, boolean b) {
-		// A new copier should be user every time, otherwise anomalies happen
-		// (references are changed without asking)
-		Copier copier = new Copier(a, b);
-		EObject clone = copier.copy(object);
-		copier.copyReferences();
-		return (T) clone;
-	}
-
 }

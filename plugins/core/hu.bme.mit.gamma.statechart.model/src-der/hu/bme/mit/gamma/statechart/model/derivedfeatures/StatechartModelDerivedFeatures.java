@@ -58,7 +58,6 @@ import hu.bme.mit.gamma.statechart.model.interface_.Event;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.model.interface_.Interface;
-import sun.security.util.ECUtil;
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -145,7 +144,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			return false;
 		}
 		for (Port lhsPort : lhsPorts) {
-			if (!rhsPorts.stream().anyMatch(it -> expressionUtil.helperEquals(lhsPort, it))) {
+			if (!rhsPorts.stream().anyMatch(it -> ecoreUtil.helperEquals(lhsPort, it))) {
 				return false;
 			}
 		}

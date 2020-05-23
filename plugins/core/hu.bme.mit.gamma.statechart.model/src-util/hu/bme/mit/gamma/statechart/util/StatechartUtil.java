@@ -47,7 +47,7 @@ public class StatechartUtil extends ExpressionUtil {
 		EList<Port> ports = component.getPorts();
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
-			Port clonedPort = clone(port, true, true);
+			Port clonedPort = ecoreUtil.clone(port, true, true);
 			cascade.getPorts().add(clonedPort);
 			PortBinding portBinding = compositeFactory.createPortBinding();
 			portBinding.setCompositeSystemPort(clonedPort);

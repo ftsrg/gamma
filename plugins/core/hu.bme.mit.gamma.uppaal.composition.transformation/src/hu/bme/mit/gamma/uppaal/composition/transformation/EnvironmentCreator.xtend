@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Set
 import java.util.logging.Level
@@ -71,6 +72,7 @@ class EnvironmentCreator {
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
 	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+    protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
