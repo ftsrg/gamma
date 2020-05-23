@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import org.eclipse.xtext.xbase.scoping.batch.SuperConstructorDescription
 
 class ReflectiveComponentCodeGenerator {
 	

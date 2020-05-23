@@ -17,5 +17,5 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.uppaal.verification,
  hu.bme.mit.gamma.statechart.contract.tracegeneration,
  hu.bme.mit.gamma.trace.testgeneration.java,
- hu.bme.mit.gamma.codegenerator.java.util
+ hu.bme.mit.gamma.util
 Export-Package: hu.bme.mit.gamma.statechart.contract.testgeneration.java

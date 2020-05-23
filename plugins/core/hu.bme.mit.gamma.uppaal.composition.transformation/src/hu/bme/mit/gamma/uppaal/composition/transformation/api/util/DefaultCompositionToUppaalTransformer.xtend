@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
@@ -9,6 +8,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
@@ -18,7 +18,7 @@ import java.util.logging.Level
 
 class DefaultCompositionToUppaalTransformer {
 	
-	extension ExpressionUtil expressionUtil = new ExpressionUtil
+    protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	TestQueryGenerationHandler testQueryGenerationHandler
 	
 	def transformComponent(Package gammaPackage, File containingFile) {

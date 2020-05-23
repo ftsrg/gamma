@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation
 import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.model.phase.VariableBinding
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
@@ -19,9 +19,9 @@ import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 class PhaseStatechartToStatechartTransformer {
-	
-	extension StatechartUtil statechartUtil = new StatechartUtil
-	extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
+
+	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	
 	def execute(StatechartDefinition phaseStatechart) {
 		val statechart = phaseStatechart

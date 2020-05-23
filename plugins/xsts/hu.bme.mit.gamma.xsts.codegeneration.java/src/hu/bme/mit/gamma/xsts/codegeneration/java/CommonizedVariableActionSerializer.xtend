@@ -1,9 +1,7 @@
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction
@@ -19,9 +17,6 @@ import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedF
  * (They can be only first subactions in sequential actions.)
  */
 class CommonizedVariableActionSerializer extends ActionSerializer {
-	
-	extension ExpressionUtil expressionUtil = new ExpressionUtil
-	extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	override serializeInitializingAction(XSTS xSts) '''
 		«xSts.initializingAction.serialize»

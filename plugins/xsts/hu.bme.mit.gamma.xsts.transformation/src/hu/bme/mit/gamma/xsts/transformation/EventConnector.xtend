@@ -1,9 +1,9 @@
 package hu.bme.mit.gamma.xsts.transformation
 
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 
 import static com.google.common.base.Preconditions.checkState
@@ -13,7 +13,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class EventConnector {
 	// Auxiliary objects
-	protected extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected extension GammaEcoreUtil expressionUtil = new GammaEcoreUtil
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
 		for (channel : component.channels) {

@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.model.Action;
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction;
@@ -25,9 +25,7 @@ import hu.bme.mit.gamma.xsts.model.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.model.XSTS;
 
-public class XSTSDerivedFeatures {
-
-	private static ExpressionUtil expressionUtil = new ExpressionUtil();
+public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static Declaration getOriginalVariable(Declaration variable) {
 		if (variable instanceof PrimedVariable) {
@@ -80,14 +78,14 @@ public class XSTSDerivedFeatures {
 		// region_name == state_name
 		if (xStsLeftOperand instanceof ReferenceExpression) {
 			if (((ReferenceExpression) xStsLeftOperand).getDeclaration() == xStsDeclaration
-					&& expressionUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
+					&& ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
 				return true;
 			}
 		}
 		// state_name == region_name
 		if (xStsRightOperand instanceof ReferenceExpression) {
 			if (((ReferenceExpression) xStsRightOperand).getDeclaration() == xStsDeclaration
-					&& expressionUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
+					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}
 		}

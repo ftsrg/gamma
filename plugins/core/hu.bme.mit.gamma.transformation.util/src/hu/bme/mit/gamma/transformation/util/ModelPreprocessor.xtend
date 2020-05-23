@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collections
 import java.util.logging.Level
@@ -28,7 +29,8 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class ModelPreprocessor {
 	
 	protected val logger = Logger.getLogger("GammaLogger")
-	protected extension StatechartUtil statechartUtil = new StatechartUtil
+	protected final extension StatechartUtil statechartUtil = new StatechartUtil
+	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	
 	def preprocess(Package gammaPackage, File containingFile) {
 		val parentFolder = containingFile.parent

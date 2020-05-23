@@ -28,8 +28,6 @@ import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
-import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.transformation.util.queries.InputInstanceEvents
 import hu.bme.mit.gamma.transformation.util.queries.InstanceRegions
 import hu.bme.mit.gamma.transformation.util.queries.InstanceTimeouts
@@ -45,6 +43,8 @@ import hu.bme.mit.gamma.transformation.util.queries.RaiseTopSystemEventStateExit
 import hu.bme.mit.gamma.transformation.util.queries.ToHigherInstanceTransitions
 import hu.bme.mit.gamma.transformation.util.queries.ToLowerInstanceTransitions
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
+import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
+import hu.bme.mit.gamma.uppaal.composition.transformation.queries.EdgesWithClock
 import hu.bme.mit.gamma.uppaal.transformation.queries.AllSubregionsOfCompositeStates
 import hu.bme.mit.gamma.uppaal.transformation.queries.AssignedVariables
 import hu.bme.mit.gamma.uppaal.transformation.queries.ChoicesAndMerges
@@ -76,6 +76,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
@@ -203,6 +204,7 @@ class CompositeToUppaalTransformer {
 	protected extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
     protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+    protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	// Auxiliary transformer objects
 	protected AsynchronousConstantsCreator asynchronousConstantsCreator

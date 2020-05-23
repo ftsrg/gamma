@@ -1,17 +1,17 @@
 package hu.bme.mit.gamma.statechart.contract.testgeneration.java
 
-import hu.bme.mit.gamma.codegenerator.java.util.CodeGeneratorUtil
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.contract.tracegeneration.StatechartContractToTraceTransformer
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
 import hu.bme.mit.gamma.uppaal.verification.Verifier
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.List
 
@@ -21,8 +21,8 @@ class StatechartToTestTransformer {
 	
 	val queryParameters = "-C -t1"
 	
-	extension CodeGeneratorUtil codeGeneratorUtil = new CodeGeneratorUtil
-	extension StatechartUtil statechartUtil = new StatechartUtil
+	protected final extension FileUtil fileUtil = new FileUtil
+	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	
 	def execute(StatechartDefinition statechart, File containingFile, File testFolder, String basePackageName) {
 		execute(statechart, #[], containingFile, testFolder, basePackageName, null)

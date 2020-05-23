@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.xsts.transformation
 
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
@@ -12,10 +11,11 @@ import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.ModelPreprocessor
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
-import java.io.FileWriter
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -25,7 +25,8 @@ class GammaToXSTSTransformer {
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	LowlevelToXSTSTransformer lowlevelToXSTSTransformer
 	// Auxiliary objects
-	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected final extension GammaEcoreUtil expressionUtil = new GammaEcoreUtil
+	protected final extension FileUtil fileUtil = new FileUtil
 	protected final extension ActionSerializer actionSerializer = new ActionSerializer
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
 	protected final extension EventConnector eventConnector = new EventConnector
@@ -41,10 +42,7 @@ class GammaToXSTSTransformer {
 	
 	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File file) {
 		val string = _package.execute.serializeXSTS.toString
-		file.parentFile.mkdirs
-		try (val fileWriter = new FileWriter(file)) {
-			fileWriter.write(string)
-		}
+		file.saveString(string)
 	}
 	
 	def String executeAndSerialize(hu.bme.mit.gamma.statechart.model.Package _package) {

@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
-import hu.bme.mit.gamma.codegenerator.java.util.CodeGeneratorUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean
@@ -19,6 +18,7 @@ import java.io.IOException
 import java.util.Scanner
 import java.util.logging.Level
 import java.util.logging.Logger
+import hu.bme.mit.gamma.util.FileUtil
 
 class Verifier {
 	
@@ -28,7 +28,7 @@ class Verifier {
 	String output
 	Logger logger = Logger.getLogger("GammaLogger")
 	
-	extension CodeGeneratorUtil codeGeneratorUtil = new CodeGeneratorUtil
+	extension FileUtil codeGeneratorUtil = new FileUtil
 	
 	def ExecutionTrace verifyQuery(G2UTrace traceability, String parameters, File uppaalFile,
 			String actualUppaalQuery, boolean log, boolean storeOutput) throws IOException  {

@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction
@@ -24,6 +25,7 @@ class ActionOptimizer {
 	// Auxiliary objects
 	protected final extension ReadWrittenVariableLocator locator = new ReadWrittenVariableLocator
 	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
