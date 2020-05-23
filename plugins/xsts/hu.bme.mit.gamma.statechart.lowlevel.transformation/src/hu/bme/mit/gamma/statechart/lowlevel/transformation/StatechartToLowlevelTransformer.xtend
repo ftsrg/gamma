@@ -247,7 +247,7 @@ class StatechartToLowlevelTransformer {
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Region transform(Region region) {
 		val lowlevelRegion = createRegion => [
-			it.name = region.name
+			it.name = region.regionName
 		]
 		trace.put(region, lowlevelRegion)
 		// Transforming normal nodes
@@ -263,7 +263,7 @@ class StatechartToLowlevelTransformer {
 	
 	protected def StateNode transformNode(State state) {
 		val lowlevelState = createState => [
-			it.name = state.name
+			it.name = state.stateName
 		]
 		trace.put(state, lowlevelState)
 		// Transforming regions
