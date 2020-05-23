@@ -45,8 +45,8 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return result
 	}
 	
-	protected override String getTargetStateName(SynchronousComponentInstance instance,
-			Region parentRegion, State state) {
+	protected override String getTargetStateName(State state, Region parentRegion,
+			SynchronousComponentInstance instance) {
 		val templateName = parentRegion.getTemplateName(instance)
 		val processName = templateName.processName
 		val locationNames = new StringBuilder("(")

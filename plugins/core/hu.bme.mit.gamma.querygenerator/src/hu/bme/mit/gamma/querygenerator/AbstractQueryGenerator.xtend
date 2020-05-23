@@ -142,7 +142,7 @@ abstract class AbstractQueryGenerator {
 				null, splittedStateName.get(splittedStateName.length - 1) /* state */)
 		checkArgument(matches.size == 1, "Not known state: " + stateName)
 		val match = matches.head
-		return getTargetStateName(match.instance, match.parentRegion, match.state)
+		return getTargetStateName(match.state, match.parentRegion, match.instance)
 	}
 	
 	protected def String getTargetVariableName(String variableName) {
@@ -178,8 +178,8 @@ abstract class AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known system parameter event: " + portEventParameterName)
 	}
 	
-	protected abstract def String getTargetStateName(SynchronousComponentInstance instance,
-			Region parentRegion, State state)
+	protected abstract def String getTargetStateName(State state, Region parentRegion,
+		SynchronousComponentInstance instance)
 	
 	protected abstract def String getTargetVariableName(VariableDeclaration variable,
 		SynchronousComponentInstance instance)
