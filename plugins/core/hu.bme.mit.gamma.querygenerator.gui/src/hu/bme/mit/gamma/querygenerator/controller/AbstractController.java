@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.controller;
 
 import java.io.File;
@@ -20,16 +30,17 @@ import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public abstract class AbstractController {
-	// View
-	protected View view;
 	// Has to be set by subclass
 	protected AbstractQueryGenerator queryGenerator;
+	// View
+	protected View view;
 	// Indicates the actual verification process
-	protected volatile GuiVerifier verifier;
+	private volatile GuiVerifier verifier;
 	// Indicates the actual test generation process
-	protected volatile GeneratedTestVerifier generatedTestVerifier;
+	private volatile GeneratedTestVerifier generatedTestVerifier;
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.gsm
@@ -45,17 +56,35 @@ public abstract class AbstractController {
 	/**
 	 * Starts the verification process with the given query.
 	 */
-	public abstract void verify(String query);
-	
-	/**
-	 * Cancels the actual verification process. Returns true if a process has been cancelled.
-	 */
-	public abstract boolean cancelVerification();
+	public void verify(String query) {
+		verifier = new GuiVerifier(query, true, view);
+		// Starting the worker
+		verifier.execute();
+	}
 	
 	/**
 	 * Executes the generated queries.
 	 */
-	public abstract void executeGeneratedQueries();
+    public void executeGeneratedQueries() {
+    	generatedTestVerifier = new GeneratedTestVerifier(this.view, this);
+		Thread thread = new Thread(generatedTestVerifier);
+    	thread.start();
+    }
+	
+	/**
+	 * Cancels the actual verification process. Returns true if a process has been cancelled.
+	 */
+	public boolean cancelVerification() {
+		if (verifier != null) {
+			verifier.cancelProcess(true);
+			return true;
+		}
+		if (generatedTestVerifier != null) {
+			generatedTestVerifier.cancelProcess();
+			return true;
+		}
+		return false;
+	}
 	
 	// View setting
 	
@@ -151,6 +180,8 @@ public abstract class AbstractController {
     public String getTraceFolder() {
 		return getLocation(file.getProject()) + File.separator + TRACE_FOLDER_NAME;
 	}
+    
+	public abstract AbstractVerifier createVerifier();
 	
 	public abstract String getParameters();
 	public abstract String getModelFile();

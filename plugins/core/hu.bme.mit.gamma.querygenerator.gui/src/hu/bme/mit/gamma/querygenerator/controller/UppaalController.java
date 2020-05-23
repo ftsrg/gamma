@@ -18,9 +18,9 @@ import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.UppaalQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
-import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
-import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class UppaalController extends AbstractController {
 	
@@ -38,43 +38,28 @@ public class UppaalController extends AbstractController {
 		return getParentFolder() + File.separator + "." + getCompositeSystemName() + ".g2u"; 
 	}
 	
+	@Override
 	public String getGeneratedQueryFile() {
 		return getParentFolder() + File.separator + getCompositeSystemName() + ".q"; 
 	}
 	
+	@Override
 	public String getModelFile() {
 		return getLocation(file).substring(0, getLocation(file).lastIndexOf(".")) + ".xml";
 	}
 	
+	@Override
 	public Object getTraceability() {
 		URI fileURI = URI.createFileURI(getTraceabilityFile());
 		return ecoreUtil.normalLoad(fileURI);
 	}
 	
-	public boolean cancelVerification() {
-		if (verifier != null) {
-			verifier.cancelProcess(true);
-			return true;
-		}
-		if (generatedTestVerifier != null) {
-			generatedTestVerifier.cancelProcess();
-			return true;
-		}
-		return false;
+	@Override
+	public AbstractVerifier createVerifier() {
+		return new UppaalVerifier();
 	}
 	
-	public void verify(String uppaalQuery) {
-		verifier = new GuiVerifier(uppaalQuery, true, view, this);
-		// Starting the worker
-		verifier.execute();
-	}
-    
-    public void executeGeneratedQueries() {
-    	generatedTestVerifier = new GeneratedTestVerifier(this.view, this);
-		Thread thread = new Thread(generatedTestVerifier);
-    	thread.start();
-    }
-	
+    @Override
 	public String getParameters() {
 		return getStateSpaceRepresentation() + " " + getSearchOrder() + " " + getDiagnosticTrace() + " " +
 				getResuseStateSpace() + " " +	" " + getHashtableSize() + " " + getStateSpaceReduction();
