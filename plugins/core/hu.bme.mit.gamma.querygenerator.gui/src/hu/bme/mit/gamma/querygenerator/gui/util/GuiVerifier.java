@@ -21,12 +21,11 @@ import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
 import hu.bme.mit.gamma.querygenerator.application.View;
-import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
+import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
 import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
-import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
@@ -42,12 +41,12 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	private boolean contributeToView;
 	
 	private final View view;
-	private final UppaalController controller;
+	private final AbstractController controller;
 	
 	protected TraceUtil traceUtil = new TraceUtil();	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, UppaalController controller) {
+	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, AbstractController controller) {
 		this.originalUppaalQueries = uppaalQuery;
 		this.contributeToView = contributeToView;
 		this.view = view;
@@ -60,12 +59,12 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			// Disabling the verification buttons
 			view.setVerificationButtons(false);
 			// Common traceability and execution trace
-			G2UTrace traceability = controller.loadTraceability();
+			Object traceability = controller.getTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
 			verifier = new UppaalVerifier();
 			traceModel = verifier.verifyQuery(traceability, controller.getParameters(),
-					new File(controller.getUppaalXmlFile()), originalUppaalQueries, true, false);
+					new File(controller.getModelFile()), originalUppaalQueries, true, false);
 			if (traceModel != null) {
 				// No trace
 				if (view.isOptimizeTestSet()) {
@@ -103,7 +102,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 		Entry<String, Integer> fileNameAndId = controller.getFileName("get"); // File extension could be gtr or get
 		fileNameAndId = saveModel(traceModel, fileNameAndId);
 		// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
-		String packageName = controller.getProject().getName().toLowerCase();
+		String packageName = controller.getBasePackage();
 		TestGenerator testGenerator = new TestGenerator(traceModel,
 				packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
 		String testClassCode = testGenerator.execute();

@@ -15,4 +15,28 @@ public class ThetaController extends AbstractController {
 	public void executeGeneratedQueries() {
 	}
 
+	@Override
+	public String getParameters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getModelFile() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getGeneratedQueryFile() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getTraceability() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
