@@ -38,7 +38,6 @@ class EventConnector {
 					// In events on required port
 					for (event : requiredSimplePort.inputEvents) {
 						val requiredInEventName = event.customizeInputName(requiredSimplePort, requiredInstance)
-						println(requiredInEventName)
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredInEventName]
 						val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
