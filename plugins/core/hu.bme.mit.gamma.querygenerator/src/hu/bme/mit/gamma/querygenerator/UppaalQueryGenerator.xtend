@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.querygenerator
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
+import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
@@ -74,8 +75,13 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	protected override String getTargetVariableName(String variableName) {
-		val splittedStateName = variableName.unwrap.split("\\.")
-		return getVariableName(splittedStateName.get(1), splittedStateName.get(0))
+		for (InstanceVariables.Match instancesMatch : InstanceVariables.Matcher.on(engine).allMatches) {
+			val name = super.getVariableName(instancesMatch.instance, instancesMatch.variable)
+			if (variableName.equals(name)) {
+				return getVariableName(instancesMatch.variable, instancesMatch.instance)
+			}
+		}
+		throw new IllegalArgumentException("Not known variable: " + variableName)
 	}
 	
 	protected override String getTargetOutEventName(String portEventName) {
