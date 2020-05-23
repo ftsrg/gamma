@@ -15,7 +15,6 @@ import java.util.List
 import java.util.logging.Logger
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
-import static com.google.common.base.Preconditions.checkArgument
 import static hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class AbstractQueryGenerator {
@@ -90,7 +89,7 @@ abstract class AbstractQueryGenerator {
 		return (getSystemOutEventName(systemPort, event).unwrap + "::" + parameter.name).wrap
 	}
 	
-	private def String parseIdentifiers(String text) {
+	protected def String parseIdentifiers(String text) {
 		var result = text
 		if (text.contains("deadlock")) {
 			return text
@@ -101,57 +100,42 @@ abstract class AbstractQueryGenerator {
 		val systemOutEventParameterNames = this.getSystemOutEventParameterNames
 		for (String stateName : stateNames) {
 			if (result.contains(stateName)) {
-				val uppaalStateName = getTargetStateName(stateName)
+				val targetStateName = getTargetStateName(stateName)
 				// The parentheses need to be \-d
-				result = result.replaceAll(stateName, uppaalStateName)
+				result = result.replaceAll(stateName, targetStateName)
 			}
 		}
 		for (String variableName : variableNames) {
 			if (result.contains(variableName)) {
-				val uppaalVariableName = getTargetVariableName(variableName)
-				result = result.replaceAll(variableName, uppaalVariableName)
+				val targetVariableName = getTargetVariableName(variableName)
+				result = result.replaceAll(variableName, targetVariableName)
 			}
 		}
 		for (String systemOutEventName : systemOutEventNames) {
 			if (result.contains(systemOutEventName)) {
-				val uppaalVariableName = getTargetOutEventName(systemOutEventName)
-				result = result.replaceAll(systemOutEventName, uppaalVariableName)
+				val targetVariableName = getTargetOutEventName(systemOutEventName)
+				result = result.replaceAll(systemOutEventName, targetVariableName)
 			}
 		}
 		for (String systemOutEventParameterName : systemOutEventParameterNames) {
 			if (result.contains(systemOutEventParameterName)) {
-				val uppaalVariableName = getTargetOutEventParameterName(systemOutEventParameterName)
-				result = result.replaceAll(systemOutEventParameterName, uppaalVariableName)
+				val targetVariableName = getTargetOutEventParameterName(systemOutEventParameterName)
+				result = result.replaceAll(systemOutEventParameterName, targetVariableName)
 			}
 		}
 		return result.wrap
 	}
 	
-	def String parseRegularQuery(String text, TemporalOperator operator) {
-		checkArgument(!operator.equals(TemporalOperator.LEADS_TO))
-		var result = text.parseIdentifiers
-		if (!operator.equals(TemporalOperator.MIGHT_ALWAYS) && !operator.equals(TemporalOperator.MUST_ALWAYS)) {
-			// It is pointless to add isStable in the case of A[] and E[]
-			result += " && isStable"
-		}
-		else {
-			// Instead this is added
-			result += " || !isStable"
-		}
-		return operator.operator + " " + result
-	}
+	def abstract String parseRegularQuery(String text, TemporalOperator operator)
 	
-	def String parseLeadsToQuery(String first, String second) {
-		var result = first.parseIdentifiers + " && isStable --> " + second.parseIdentifiers + " && isStable"
-		return result
-	}
+	def abstract String parseLeadsToQuery(String first, String second)
 	
-	protected abstract def String getTargetStateName(String stateName);
+	protected abstract def String getTargetStateName(String stateName)
 	
-	protected abstract def String getTargetVariableName(String variableName);
+	protected abstract def String getTargetVariableName(String variableName)
 	
-	protected abstract def String getTargetOutEventName(String portEventName);
+	protected abstract def String getTargetOutEventName(String portEventName)
 	
-	protected abstract def String getTargetOutEventParameterName(String portEventParameterName);
+	protected abstract def String getTargetOutEventParameterName(String portEventParameterName)
 	
 }
