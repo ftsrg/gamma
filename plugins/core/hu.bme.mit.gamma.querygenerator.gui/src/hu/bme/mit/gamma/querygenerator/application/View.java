@@ -680,6 +680,10 @@ public class View extends JFrame {
 		setLocationRelativeTo(null);
 	}
 	
+	public AbstractController getController() {
+		return controller;
+	}
+	
 	private void setVerificationLabel() {
 		logTextArea.setText(""); 
 		setVerificationLabel("Verifying...");

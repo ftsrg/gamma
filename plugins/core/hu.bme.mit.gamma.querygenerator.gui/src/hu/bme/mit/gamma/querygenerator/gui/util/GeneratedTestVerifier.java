@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.gui.util;
 
 import java.io.BufferedReader;
@@ -19,17 +29,19 @@ public class GeneratedTestVerifier implements Runnable {
 	private volatile boolean isCancelled = false;
 	
 	private final View view;
-	private final AbstractController controller;
 	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
 	public GeneratedTestVerifier(View view, AbstractController controller) {
 		this.view = view;
-		this.controller = controller;
+	}
+	
+	private AbstractController getController() {
+		return view.getController();
 	}
 	
     /**
-     * Verifies all generated Uppaal queries (deadlock and reachability).
+     * Verifies all generated queries (deadlock and reachability).
      */
 	@Override
     public void run() {
@@ -39,22 +51,22 @@ public class GeneratedTestVerifier implements Runnable {
     	StringBuilder buffer = new StringBuilder();
     	// Disabling the verification buttons
 		view.setVerificationButtons(false);
-    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(controller.getGeneratedQueryFile())))) {
-    		Entry<String, String> uppaalQuery;
-    		while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
-    			String temporalExpression = uppaalQuery.getKey();
+    	try (BufferedReader reader = new BufferedReader(new FileReader(new File(getController().getGeneratedQueryFile())))) {
+    		Entry<String, String> query;
+    		while ((query = readLineSkipComments(reader)) != null && !isCancelled) {
+    			String temporalExpression = query.getKey();
     			// Reuse state space trick: we copy all the queries into a single string
     			if (view.isReuseStateSpace()) {
     				final String separator = System.lineSeparator();
     				StringBuilder queryBuilder = new StringBuilder(temporalExpression + separator);
-    				while ((uppaalQuery = readLineSkipComments(reader)) != null && !isCancelled) {
-    					queryBuilder.append(uppaalQuery.getKey() + separator);
+    				while ((query = readLineSkipComments(reader)) != null && !isCancelled) {
+    					queryBuilder.append(query.getKey() + separator);
     				}
     				temporalExpression = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
     			}
     			//
     			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + temporalExpression + "...");
-    			verifier = new GuiVerifier(temporalExpression, false, view, controller);
+    			verifier = new GuiVerifier(temporalExpression, false, view);
     			verifier.execute();
 				int elapsedTime = 0;
 				while (!verifier.isDone() && elapsedTime < TIMEOUT && !isCancelled) {
@@ -67,7 +79,7 @@ public class GeneratedTestVerifier implements Runnable {
 						resultSentence = "Test generation has been finished.";
 					}
 					else {
-    					String stateName = uppaalQuery.getValue();
+    					String stateName = query.getValue();
     					ThreeStateBoolean result = verifier.get();
     					if (temporalExpression.equals("A[] not deadlock")) {
     						// Deadlock query
@@ -114,9 +126,9 @@ public class GeneratedTestVerifier implements Runnable {
 		} catch (Exception e) {
 			view.handleVerificationExceptions(e);
 		} finally {
-			if (controller.getGeneratedTestVerifier() == this) {
+			if (getController().getGeneratedTestVerifier() == this) {
 				// Removing this object from the attributes
-				controller.setGeneratedTestVerifier(null);
+				getController().setGeneratedTestVerifier(null);
 			}
 			if (verifier != null && !verifier.isProcessCancelled()) {
 				verifier.cancelProcess(true);

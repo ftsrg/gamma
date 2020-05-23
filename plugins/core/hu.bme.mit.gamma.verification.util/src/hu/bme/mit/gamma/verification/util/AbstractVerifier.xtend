@@ -5,7 +5,6 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.EObject
 
 abstract class AbstractVerifier {
 	

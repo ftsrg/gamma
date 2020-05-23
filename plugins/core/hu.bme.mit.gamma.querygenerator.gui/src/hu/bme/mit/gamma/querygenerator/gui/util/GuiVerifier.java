@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.gui.util;
 
 import java.io.File;
@@ -26,31 +36,33 @@ import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
-import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 /** Runnable class responsible for the execution of formal verification. */
 public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
-	// The query needs to be added to UPPAAL in addition to the model
-	private String originalUppaalQueries;
-	// Process running the UPPAAL verification
-	private UppaalVerifier verifier;
+	// The query needs to be added in addition to the model
+	private String originalQueries;
+	// Process running the verification
+	private AbstractVerifier verifier;
 	// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
 	private volatile boolean isCancelled = false;
 	// Indicates whether it should contribute to the View in any form
 	private boolean contributeToView;
 	
 	private final View view;
-	private final AbstractController controller;
 	
 	protected TraceUtil traceUtil = new TraceUtil();	
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	public GuiVerifier(String uppaalQuery, boolean contributeToView, View view, AbstractController controller) {
-		this.originalUppaalQueries = uppaalQuery;
+	public GuiVerifier(String query, boolean contributeToView, View view) {
+		this.originalQueries = query;
 		this.contributeToView = contributeToView;
 		this.view = view;
-		this.controller = controller;
+	}
+	
+	private AbstractController getController() {
+		return view.getController();
 	}
 	
 	@Override
@@ -59,12 +71,12 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			// Disabling the verification buttons
 			view.setVerificationButtons(false);
 			// Common traceability and execution trace
-			Object traceability = controller.getTraceability();
+			Object traceability = getController().getTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
-			verifier = new UppaalVerifier();
-			traceModel = verifier.verifyQuery(traceability, controller.getParameters(),
-					new File(controller.getModelFile()), originalUppaalQueries, true, false);
+			verifier = getController().createVerifier();
+			traceModel = verifier.verifyQuery(traceability, getController().getParameters(),
+					new File(getController().getModelFile()), originalQueries, true, false);
 			if (traceModel != null) {
 				// No trace
 				if (view.isOptimizeTestSet()) {
@@ -76,9 +88,9 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			return verifier.getResult();
 		} catch (NullPointerException e) {
 			e.printStackTrace();
-			throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
+			throw new IllegalArgumentException("Error! The generated model file cannot be found.");
 		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Error! The generated UPPAAL file cannot be found.");
+			throw new IllegalArgumentException("Error! The generated model file cannot be found.");
 		} catch (Throwable e) {
 			final String errorMessage = "Cannot handle deadlock predicate for models with priorities or guarded broadcast receivers.";
 			if (e.getMessage().contains(errorMessage)) {
@@ -99,14 +111,14 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	
 	private void serializeTestCode(ExecutionTrace traceModel)
 			throws CoreException, IOException, FileNotFoundException {
-		Entry<String, Integer> fileNameAndId = controller.getFileName("get"); // File extension could be gtr or get
+		Entry<String, Integer> fileNameAndId = getController().getFileName("get"); // File extension could be gtr or get
 		fileNameAndId = saveModel(traceModel, fileNameAndId);
 		// Have to be the SAME resource set as before (traceabilitySet) otherwise the trace model contains references to dead objects
-		String packageName = controller.getBasePackage();
+		String packageName = getController().getBasePackage();
 		TestGenerator testGenerator = new TestGenerator(traceModel,
 				packageName, "ExecutionTraceSimulation" + fileNameAndId.getValue());
 		String testClassCode = testGenerator.execute();
-		String testClassParentFolder = controller.getTestGenFolder() + "/" + 
+		String testClassParentFolder = getController().getTestGenFolder() + "/" + 
 				testGenerator.getPackageName().replaceAll("\\.", "\\/");
 		writeToFile(testClassCode, testClassParentFolder,
 				"ExecutionTraceSimulation" + fileNameAndId.getValue() + ".java");
@@ -117,15 +129,15 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			throws CoreException, IOException {
 		try {
 			// Trying to serialize the model
-			serialize(traceModel, controller.getTraceFolder(), fileNameAndId.getKey());
+			serialize(traceModel, getController().getTraceFolder(), fileNameAndId.getKey());
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.log(Level.SEVERE, e.getMessage() + System.lineSeparator() +
 				"Possibly you have two more model elements with the same name specified in the previous error message.");
-			new File(controller.getTraceFolder() + File.separator + fileNameAndId.getKey()).delete();
+			new File(getController().getTraceFolder() + File.separator + fileNameAndId.getKey()).delete();
 			// Saving like an EMF model
-			fileNameAndId = controller.getFileName("gtr");
-			serialize(traceModel, controller.getTraceFolder(), fileNameAndId.getKey());
+			fileNameAndId = getController().getFileName("gtr");
+			serialize(traceModel, getController().getTraceFolder(), fileNameAndId.getKey());
 		}
 		return fileNameAndId;
 	}
@@ -178,10 +190,10 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			cancelProcess(true);
 		} finally {
 			// Removing this object from the attributes
-			if (controller.getVerifier() == this) {
-				controller.setVerifier(null);
+			if (getController().getVerifier() == this) {
+				getController().setVerifier(null);
 			}
-			if (controller.getGeneratedTestVerifier() == null) {
+			if (getController().getGeneratedTestVerifier() == null) {
 				// Enabling the verification buttons only if it is a simple query
 				view.setVerificationButtons(true);
 			}
