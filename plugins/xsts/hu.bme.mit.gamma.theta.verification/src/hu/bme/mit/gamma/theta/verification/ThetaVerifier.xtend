@@ -3,13 +3,12 @@ package hu.bme.mit.gamma.theta.verification
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
-import java.util.logging.Level
-import org.eclipse.emf.ecore.EObject
 import java.util.Scanner
+import java.util.logging.Level
 
 class ThetaVerifier extends AbstractVerifier {
 	
-	override ExecutionTrace verifyQuery(EObject traceability, String parameters, File modelFile,
+	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		try {

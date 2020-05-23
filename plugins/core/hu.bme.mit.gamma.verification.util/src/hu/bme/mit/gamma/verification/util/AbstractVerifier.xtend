@@ -19,7 +19,7 @@ abstract class AbstractVerifier {
 	
 	protected extension FileUtil codeGeneratorUtil = new FileUtil
 	
-	def ExecutionTrace verifyQuery(EObject traceability, String parameters, File modelFile,
+	def ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {
 		// Writing the query to a temporary file
 		val parentFolder = modelFile.parent
@@ -30,7 +30,7 @@ abstract class AbstractVerifier {
 		return verifyQuery(traceability, parameters, modelFile, tempQueryFile, log, storeOutput)
 	}
 	
-	def abstract ExecutionTrace verifyQuery(EObject traceability, String parameters, File modelFile,
+	def abstract ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput)
 	
 	def cancel() {

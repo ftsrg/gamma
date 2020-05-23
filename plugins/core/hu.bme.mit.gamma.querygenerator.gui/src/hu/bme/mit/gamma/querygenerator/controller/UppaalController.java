@@ -12,15 +12,8 @@ package hu.bme.mit.gamma.querygenerator.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.UppaalQueryGenerator;
@@ -28,88 +21,15 @@ import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class UppaalController extends AbstractController {
-	private View view;
-	
-	// Indicates the actual verification process
-	private volatile GuiVerifier verifier;
-	// Indicates the actual test generation process
-	private volatile GeneratedTestVerifier generatedTestVerifier;
-	
-	// The location of the model on which this query generator is opened
-	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.gsm
-	private IFile file;
-	
-	// Util
-	private GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
-
-	private final String TEST_GEN_FOLDER_NAME = "test-gen";
-	private final String TRACE_FOLDER_NAME = "trace";
 	
 	public UppaalController(View view, IFile file) throws IOException {
 		this.file = file;
 		this.view = view;
-		this.queryGenerator = new UppaalQueryGenerator(loadTraceability()); // For state-location
-	}
-	
-	public GuiVerifier getVerifier() {
-		return verifier;
+		this.queryGenerator = new UppaalQueryGenerator((G2UTrace) getTraceability()); // For state-location
 	}
 
-	public void setVerifier(GuiVerifier verifier) {
-		this.verifier = verifier;
-	}
-
-	public GeneratedTestVerifier getGeneratedTestVerifier() {
-		return generatedTestVerifier;
-	}
-
-	public void setGeneratedTestVerifier(GeneratedTestVerifier generatedTestVerifier) {
-		this.generatedTestVerifier = generatedTestVerifier;
-	}
-	
-    /**
-     * Returns the next valid name for the file containing the back-annotation.
-     */
-    public Map.Entry<String, Integer> getFileName(String fileExtension) throws CoreException {
-    	final String TRACE_FILE_NAME = "ExecutionTrace";
-    	List<Integer> usedIds = new ArrayList<Integer>();
-    	File traceFile = new File(getTraceFolder());
-    	traceFile.mkdirs();
-    	// Searching the trace folder for highest id
-    	for (File file: new File(getTraceFolder()).listFiles()) {
-    		if (file.getName().matches(TRACE_FILE_NAME + "[0-9]+\\..*")) {
-    			String id = file.getName().substring(TRACE_FILE_NAME.length(), file.getName().length() - ("." + fileExtension).length());
-    			usedIds.add(Integer.parseInt(id));
-    		}
-    	}
-    	if (usedIds.isEmpty()) {
-    		return new AbstractMap.SimpleEntry<String, Integer>(TRACE_FILE_NAME + "0." + fileExtension, 0);
-    	}
-    	Collections.sort(usedIds);
-    	Integer biggestId = usedIds.get(usedIds.size() - 1);
-    	return new AbstractMap.SimpleEntry<String, Integer>(
-    			TRACE_FILE_NAME + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
-    }
-    
-    public IProject getProject() {
-		return file.getProject();
-	}
-    
-    public String getTestGenFolder() {
-		return file.getProject().getLocation() + File.separator + TEST_GEN_FOLDER_NAME;
-	}
-    
-    public String getTraceFolder() {
-		return URI.decode(file.getProject().getLocation() + File.separator + TRACE_FOLDER_NAME);
-	}
-    
-	public String getParentFolder() {
-		return getLocation(file).substring(0, getLocation(file).lastIndexOf("/"));
-	}
-	
 	private String getCompositeSystemName() {
 		return getLocation(file).substring(getLocation(file).lastIndexOf("/") + 1, getLocation(file).lastIndexOf("."));
 	}
@@ -122,17 +42,13 @@ public class UppaalController extends AbstractController {
 		return getParentFolder() + File.separator + getCompositeSystemName() + ".q"; 
 	}
 	
-	public String getUppaalXmlFile() {
+	public String getModelFile() {
 		return getLocation(file).substring(0, getLocation(file).lastIndexOf(".")) + ".xml";
 	}
 	
-	private String getLocation(IFile file) {
-		return URI.decode(file.getLocation().toString());
-	}
-	
-	public G2UTrace loadTraceability() throws IOException {
+	public Object getTraceability() {
 		URI fileURI = URI.createFileURI(getTraceabilityFile());
-		return (G2UTrace) ecoreUtil.normalLoad(fileURI);
+		return ecoreUtil.normalLoad(fileURI);
 	}
 	
 	public boolean cancelVerification() {

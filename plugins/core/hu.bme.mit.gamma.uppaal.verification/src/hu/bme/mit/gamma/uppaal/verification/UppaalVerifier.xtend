@@ -17,11 +17,10 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 import java.util.Scanner
 import java.util.logging.Level
-import org.eclipse.emf.ecore.EObject
 
 class UppaalVerifier extends AbstractVerifier {
 	
-	override ExecutionTrace verifyQuery(EObject traceability, String parameters, File uppaalFile,
+	override ExecutionTrace verifyQuery(Object traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
