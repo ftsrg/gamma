@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
-import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 
 class NotBackannotatedException extends Exception {
 	

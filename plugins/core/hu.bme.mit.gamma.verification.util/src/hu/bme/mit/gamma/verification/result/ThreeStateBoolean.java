@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.uppaal.verification.result;
+package hu.bme.mit.gamma.verification.result;
 
 public enum ThreeStateBoolean {
 	FALSE, TRUE, UNDEF;

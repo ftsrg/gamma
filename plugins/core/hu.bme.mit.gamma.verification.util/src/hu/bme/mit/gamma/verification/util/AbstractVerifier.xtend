@@ -1,0 +1,59 @@
+package hu.bme.mit.gamma.verification.util
+
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
+import java.io.File
+import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
+
+abstract class AbstractVerifier {
+	
+	protected final String TEMPORARY_QUERY_FILENAME = ".temporary_query.q"
+	
+	protected volatile boolean isCancelled
+	protected Process process
+	protected ThreeStateBoolean result
+	protected String output
+	protected Logger logger = Logger.getLogger("GammaLogger")
+	
+	protected extension FileUtil codeGeneratorUtil = new FileUtil
+	
+	def ExecutionTrace verifyQuery(EObject traceability, String parameters, File modelFile,
+			String query, boolean log, boolean storeOutput) {
+		// Writing the query to a temporary file
+		val parentFolder = modelFile.parent
+		val tempQueryFile = new File(parentFolder + File.separator + TEMPORARY_QUERY_FILENAME)
+		tempQueryFile.saveString(query)
+		// Deleting the file on the exit of the JVM
+		tempQueryFile.deleteOnExit
+		return verifyQuery(traceability, parameters, modelFile, tempQueryFile, log, storeOutput)
+	}
+	
+	def abstract ExecutionTrace verifyQuery(EObject traceability, String parameters, File modelFile,
+			File queryFile, boolean log, boolean storeOutput)
+	
+	def cancel() {
+		isCancelled = true
+		if (process !== null) {
+			process.destroy();
+			try {
+				// Waiting for process to end
+				process.waitFor();
+			} catch (InterruptedException e) {}
+		}
+	}
+	
+	def getProcess() {
+		return process
+	}
+	
+	def getResult() {
+		return result
+	}
+	
+	def getOutput() {
+		return output
+	}
+	
+}

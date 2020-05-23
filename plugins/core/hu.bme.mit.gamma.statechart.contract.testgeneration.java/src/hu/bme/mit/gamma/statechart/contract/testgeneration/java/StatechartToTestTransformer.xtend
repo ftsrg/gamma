@@ -9,13 +9,13 @@ import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
-import hu.bme.mit.gamma.uppaal.verification.Verifier
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier
 
 class StatechartToTestTransformer {
 	
@@ -50,7 +50,7 @@ class StatechartToTestTransformer {
 			// Getting traces to the simple states
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
-			val verifier = new Verifier
+			val verifier = new UppaalVerifier
 			val simpleStateExecutionTrace = verifier.verifyQuery(uppaalTraceability, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
 			
