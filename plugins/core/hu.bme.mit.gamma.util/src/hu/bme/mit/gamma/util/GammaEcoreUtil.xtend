@@ -40,23 +40,23 @@ class GammaEcoreUtil {
 	
 	def void changeAll(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		val lhsContents = newObject.eAllContents()
-		val rhsContents = oldObject.eAllContents()
+		val lhsContents = newObject.eAllContents
+		val rhsContents = oldObject.eAllContents
 		while (lhsContents.hasNext()) {
-			val lhs = lhsContents.next()
-			val rhs = rhsContents.next()
+			val lhs = lhsContents.next
+			val rhs = rhsContents.next
 			change(lhs, rhs, container)
 		}
 		checkState(!rhsContents.hasNext)
 	}
 	
 	def void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
-		changeAll(newObject, oldObject, container);
-		EcoreUtil.delete(oldObject);
+		changeAll(newObject, oldObject, container)
+		EcoreUtil.delete(oldObject)
 	}
 
 	def EObject normalLoad(URI uri) {
-		val resourceSet = new ResourceSetImpl()
+		val resourceSet = new ResourceSetImpl
 		val resource = resourceSet.getResource(uri, true)
 		return resource.getContents().get(0)
 	}
@@ -73,8 +73,8 @@ class GammaEcoreUtil {
 	}
 
 	def Resource normalSave(ResourceSet resourceSet, EObject rootElem, String parentFolder, String fileName) {
-		val uri = URI.createFileURI(parentFolder + File.separator + fileName);
-		return normalSave(resourceSet, rootElem, uri);
+		val uri = URI.createFileURI(parentFolder + File.separator + fileName)
+		return normalSave(resourceSet, rootElem, uri)
 	}
 
 	def Resource normalSave(EObject rootElem, URI uri) {

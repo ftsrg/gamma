@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.StatesToLocations
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
@@ -20,6 +21,25 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		val traceabilitySet = trace.eResource.resourceSet
 		checkArgument(traceabilitySet !== null)
 		this.engine = ViatraQueryEngine.on(new EMFScope(traceabilitySet))
+	}
+	
+	override String parseRegularQuery(String text, TemporalOperator operator) {
+		checkArgument(!operator.equals(TemporalOperator.LEADS_TO))
+		var result = text.parseIdentifiers
+		if (!operator.equals(TemporalOperator.MIGHT_ALWAYS) && !operator.equals(TemporalOperator.MUST_ALWAYS)) {
+			// It is pointless to add isStable in the case of A[] and E[]
+			result += " && isStable"
+		}
+		else {
+			// Instead this is added
+			result += " || !isStable"
+		}
+		return operator.operator + " " + result
+	}
+	
+	override String parseLeadsToQuery(String first, String second) {
+		var result = first.parseIdentifiers + " && isStable --> " + second.parseIdentifiers + " && isStable"
+		return result
 	}
 	
 	protected override String getTargetStateName(String stateName) {
@@ -53,7 +73,7 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known state!")
 	}
 	
-	protected override String getTargetVariableName(String variableName) {		
+	protected override String getTargetVariableName(String variableName) {
 		val splittedStateName = variableName.unwrap.split("\\.")
 		return getVariableName(splittedStateName.get(1), splittedStateName.get(0))
 	}
@@ -78,7 +98,7 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Not known system event: " + portEventParameterName)
+		throw new IllegalArgumentException("Not known system parameter event: " + portEventParameterName)
 	}
 	
 }

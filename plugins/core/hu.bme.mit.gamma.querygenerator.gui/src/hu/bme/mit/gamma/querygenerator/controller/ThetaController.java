@@ -13,9 +13,11 @@ package hu.bme.mit.gamma.querygenerator.controller;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
+import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
@@ -24,15 +26,9 @@ public class ThetaController extends AbstractController {
 	public ThetaController(View view, IFile file) throws IOException {
 		this.file = file;
 		this.view = view;
-		this.queryGenerator = new ThetaQueryGenerator(); // For state-location
-	}
-	
-	@Override
-	public void verify(String query) {
-	}
-
-	@Override
-	public void executeGeneratedQueries() {
+		URI uri = URI.createFileURI(getFile());
+		Package gammaPackage = (Package) ecoreUtil.normalLoad(uri);
+		this.queryGenerator = new ThetaQueryGenerator(gammaPackage); // For state-location
 	}
 
 	@Override

@@ -173,6 +173,10 @@ public abstract class AbstractController {
 		return file.getProject().getName().toLowerCase();
 	}
     
+    public String getFile() {
+		return getLocation(file);
+	}
+    
     public String getTestGenFolder() {
 		return getLocation(file.getProject()) + File.separator + TEST_GEN_FOLDER_NAME;
 	}
