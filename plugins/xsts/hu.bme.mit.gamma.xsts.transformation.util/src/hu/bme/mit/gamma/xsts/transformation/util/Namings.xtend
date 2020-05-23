@@ -4,6 +4,8 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.Region
+import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.model.interface_.Event
@@ -14,6 +16,8 @@ class Namings {
 	
 	// Low-level
 	
+	static def String getStateName(State state) '''«state.name»'''
+	static def String getStateName(Region region) '''«region.name»'''
 	static def String getInputName(Event event, Port port) '''«port.name»_«event.name»_In'''
 	static def String getOutputName(Event event, Port port) '''«port.name»_«event.name»_Out'''
 	static def String getInName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getInputName(port)»_«parameterDeclaration.name»'''
@@ -32,5 +36,8 @@ class Namings {
 	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getOutName(port)»_«instance.name»'''
 	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«event.getInputName(port)»_«instance.name»'''
 	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«event.getOutputName(port)»_«instance.name»'''
+	// Regions
+	static def String customizeName(State state) '''«state.stateName»''' // They are enum literals
+	static def String customizeName(Region region, ComponentInstance instance) '''«region.name»_«instance.name»''' // For regions
 	
 }

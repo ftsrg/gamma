@@ -12,6 +12,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+
 class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	new(Package gammaPackage) {
@@ -27,21 +29,20 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	
-	override protected getTargetStateName(SynchronousComponentInstance instance, Region parentRegion, State state) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
+		return parentRegion.customizeName(instance) + " == " + state.customizeName
 	}
 	
 	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		return variable.customizeName(instance)
 	}
 	
 	override protected getTargetOutEventName(Event event, Port port, SynchronousComponentInstance instance) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		return event.customizeOutputName(port, instance)
 	}
 	
 	override protected getTargetOutEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		return parameter.customizeOutName(port, instance)
 	}
-	
 	
 }
