@@ -27,15 +27,15 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
-import hu.bme.mit.gamma.uppaal.verification.Verifier;
-import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
 /** Runnable class responsible for the execution of formal verification. */
 public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	// The query needs to be added to UPPAAL in addition to the model
 	private String originalUppaalQueries;
 	// Process running the UPPAAL verification
-	private Verifier verifier;
+	private UppaalVerifier verifier;
 	// Indicates whether this worker is cancelled: needed as the original isCancelled is updated late
 	private volatile boolean isCancelled = false;
 	// Indicates whether it should contribute to the View in any form
@@ -63,7 +63,7 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			G2UTrace traceability = controller.loadTraceability();
 			ExecutionTrace traceModel = null;
 			// Verification starts
-			verifier = new Verifier();
+			verifier = new UppaalVerifier();
 			traceModel = verifier.verifyQuery(traceability, controller.getParameters(),
 					new File(controller.getUppaalXmlFile()), originalUppaalQueries, true, false);
 			if (traceModel != null) {

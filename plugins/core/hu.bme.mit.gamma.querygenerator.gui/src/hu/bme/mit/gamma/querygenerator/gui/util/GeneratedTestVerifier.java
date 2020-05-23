@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
-import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean;
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
 public class GeneratedTestVerifier implements Runnable {
 	// Indicates whether the test generation process is cancelled

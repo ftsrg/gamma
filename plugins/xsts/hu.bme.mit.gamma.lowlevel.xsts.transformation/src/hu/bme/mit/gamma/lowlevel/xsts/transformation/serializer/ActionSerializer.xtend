@@ -64,7 +64,7 @@ class ActionSerializer {
 	'''
 	
 	def dispatch String serialize(OrthogonalAction action) '''
-		orth «FOR subaction : action.actions SEPARATOR " "»{
+		ort «FOR subaction : action.actions SEPARATOR " "»{
 			«subaction.serialize»
 		}«ENDFOR»
 	'''

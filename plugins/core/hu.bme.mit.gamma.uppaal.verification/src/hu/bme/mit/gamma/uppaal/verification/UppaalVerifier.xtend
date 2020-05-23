@@ -12,48 +12,27 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import hu.bme.mit.gamma.uppaal.verification.result.ThreeStateBoolean
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
+import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
-import java.io.IOException
 import java.util.Scanner
 import java.util.logging.Level
-import java.util.logging.Logger
-import hu.bme.mit.gamma.util.FileUtil
+import org.eclipse.emf.ecore.EObject
 
-class Verifier {
+class UppaalVerifier extends AbstractVerifier {
 	
-	volatile boolean isCancelled
-	Process process
-	ThreeStateBoolean result
-	String output
-	Logger logger = Logger.getLogger("GammaLogger")
-	
-	extension FileUtil codeGeneratorUtil = new FileUtil
-	
-	def ExecutionTrace verifyQuery(G2UTrace traceability, String parameters, File uppaalFile,
-			String actualUppaalQuery, boolean log, boolean storeOutput) throws IOException  {
-		// Writing the query to a temporary file
-		val parentFolder = uppaalFile.parent
-		val tempQueryFile = new File(parentFolder + File.separator + ".temporary_query.q")
-		tempQueryFile.saveString(actualUppaalQuery)
-		// Deleting the file on the exit of the JVM
-		tempQueryFile.deleteOnExit
-		return verifyQuery(traceability, parameters, uppaalFile,	tempQueryFile, log, storeOutput)
-	}
-	
-	def ExecutionTrace verifyQuery(G2UTrace traceability, String parameters, File uppaalFile,
-			File uppaalQueryFile, boolean log, boolean storeOutput) throws IOException  {
+	override ExecutionTrace verifyQuery(EObject traceability, String parameters, File uppaalFile,
+			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
 		var VerificationResultReader verificationResultReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = new StringBuilder
-			command.append("verifyta " + parameters + " \"" + uppaalFile.toString + "\" \"" + uppaalQueryFile.canonicalPath + "\"")
+			val command = "verifyta " + parameters + " \"" + uppaalFile.toString + "\" \"" + uppaalQueryFile.canonicalPath + "\""
 			// Executing the command
-			logger.log(Level.INFO, "Executing command: " + command.toString)
-			process =  Runtime.getRuntime().exec(command.toString)
+			logger.log(Level.INFO, "Executing command: " + command)
+			process =  Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			val errorStream = process.errorStream
 			// Reading the result of the command
@@ -69,7 +48,8 @@ class Verifier {
 				// No back annotation of empty lines
 				throw new NotBackannotatedException(handleEmptyLines(actualUppaalQuery))
 			}
-			val backAnnotator = new StringTraceBackAnnotator(traceability, traceReader)
+			val g2UTrace = traceability as G2UTrace
+			val backAnnotator = new StringTraceBackAnnotator(g2UTrace, traceReader)
 			val traceModel = backAnnotator.execute
 			if (storeOutput) {
 				output = verificationResultReader.output
@@ -87,29 +67,6 @@ class Verifier {
 			traceReader.close();
 			verificationResultReader.cancel();
 		}
-	}
-	
-	def cancel() {
-		isCancelled = true
-		if (process !== null) {
-			process.destroy();
-			try {
-				// Waiting for process to end
-				process.waitFor();
-			} catch (InterruptedException e) {}
-		}
-	}
-	
-	def getProcess() {
-		return process
-	}
-	
-	def getResult() {
-		return result
-	}
-	
-	def getOutput() {
-		return output
 	}
 	
 	/**
