@@ -26,7 +26,7 @@ public class ThetaController extends AbstractController {
 	public ThetaController(View view, IFile file) throws IOException {
 		this.file = file;
 		this.view = view;
-		URI uri = URI.createFileURI(getFile());
+		URI uri = URI.createFileURI(getUnwrappedFile());
 		Package gammaPackage = (Package) ecoreUtil.normalLoad(uri);
 		this.queryGenerator = new ThetaQueryGenerator(gammaPackage); // For state-location
 	}

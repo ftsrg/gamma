@@ -29,10 +29,6 @@ public class UppaalController extends AbstractController {
 		this.view = view;
 		this.queryGenerator = new UppaalQueryGenerator((G2UTrace) getTraceability()); // For state-location
 	}
-
-	private String getCompositeSystemName() {
-		return getLocation(file).substring(getLocation(file).lastIndexOf("/") + 1, getLocation(file).lastIndexOf("."));
-	}
 	
 	private String getTraceabilityFile() {
 		return getParentFolder() + File.separator + "." + getCompositeSystemName() + ".g2u"; 

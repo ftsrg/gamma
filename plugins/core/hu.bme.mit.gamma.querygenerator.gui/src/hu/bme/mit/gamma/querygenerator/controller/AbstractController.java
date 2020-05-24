@@ -161,6 +161,10 @@ public abstract class AbstractController {
     			TRACE_FILE_NAME + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
     }
     
+	protected String getCompositeSystemName() {
+		return getLocation(file).substring(getLocation(file).lastIndexOf("/") + 1, getLocation(file).lastIndexOf("."));
+	}
+    
     protected String getLocation(IResource file) {
     	return URI.decode(file.getLocation().toString());
     }
@@ -173,8 +177,8 @@ public abstract class AbstractController {
 		return file.getProject().getName().toLowerCase();
 	}
     
-    public String getFile() {
-		return getLocation(file);
+    protected String getUnwrappedFile() {
+		return getParentFolder() + File.separator + "." + getCompositeSystemName() + ".gsm";
 	}
     
     public String getTestGenFolder() {
