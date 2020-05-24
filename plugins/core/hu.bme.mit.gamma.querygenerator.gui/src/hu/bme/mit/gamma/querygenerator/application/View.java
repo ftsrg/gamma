@@ -645,7 +645,7 @@ public class View extends JFrame {
 		optionalPanel.setPreferredSize(MAX_PANEL_SIZE);
 		optionalPanel.setMaximumSize(MAX_PANEL_SIZE);
 		// The third textfield (after the buttons)
-		resultLabel = new JLabel("UPPAAL query:");
+		resultLabel = new JLabel("Query:");
 		resultLabel.setPreferredSize(LABEL_SIZE);
 		JPanel resultPanel = new JPanel();
 		BoxLayout resultPanelLayout = new BoxLayout(resultPanel, BoxLayout.X_AXIS);

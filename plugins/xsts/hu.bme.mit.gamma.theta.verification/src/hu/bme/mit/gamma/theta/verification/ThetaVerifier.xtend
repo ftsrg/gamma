@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
 import java.util.Scanner
@@ -18,26 +19,57 @@ import java.util.logging.Level
 
 class ThetaVerifier extends AbstractVerifier {
 	
+	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta-xsts-cli.jar"
+	
+	final String SAFE = "SafetyResult Safe"
+	final String UNSAFE = "SafetyResult Unsafe"
+	
+	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+			String query, boolean log, boolean storeOutput) {
+		val wrappedQuery = '''
+			prop {
+				«query»
+			}
+		'''
+		return super.verifyQuery(traceability, parameters, modelFile, wrappedQuery, log, storeOutput)
+	}
+	
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		try {
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
+			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop --loglevel RESULT
-			val command = "java -jar %theta-xsts-cli.jar% " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\" --loglevel RESULT"
+			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\" --loglevel RESULT"
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
-			process =  Runtime.getRuntime().exec(command)
+			process = Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
 			resultReader = new Scanner(outputStream)
+			var line = ""
 			while (resultReader.hasNext) {
 				// (SafetyResult Safe) or (SafetyResult Unsafe)
-				logger.log(Level.INFO, resultReader.nextLine)
+				line = resultReader.nextLine
+				if (log) {
+					logger.log(Level.INFO, line)
+				}
+			}
+			// Variable 'line' contains the last line of the output - the result
+			if (line.contains(SAFE)) {
+				super.result = ThreeStateBoolean.TRUE
+			}
+			else if (line.contains(UNSAFE)) {
+				super.result = ThreeStateBoolean.FALSE
 			}
 			return null
 		} finally {
 			resultReader.close
 		}
+	}
+	
+	override getTemporaryQueryFilename() {
+		return ".temporary_query.prop"
 	}
 	
 }

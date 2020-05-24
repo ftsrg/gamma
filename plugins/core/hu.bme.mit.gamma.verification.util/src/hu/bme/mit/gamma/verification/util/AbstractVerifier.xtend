@@ -18,8 +18,6 @@ import java.util.logging.Logger
 
 abstract class AbstractVerifier {
 	
-	protected final String TEMPORARY_QUERY_FILENAME = ".temporary_query.q"
-	
 	protected volatile boolean isCancelled
 	protected Process process
 	protected ThreeStateBoolean result
@@ -32,7 +30,7 @@ abstract class AbstractVerifier {
 			String query, boolean log, boolean storeOutput) {
 		// Writing the query to a temporary file
 		val parentFolder = modelFile.parent
-		val tempQueryFile = new File(parentFolder + File.separator + TEMPORARY_QUERY_FILENAME)
+		val tempQueryFile = new File(parentFolder + File.separator + temporaryQueryFilename)
 		tempQueryFile.saveString(query)
 		// Deleting the file on the exit of the JVM
 		tempQueryFile.deleteOnExit
@@ -63,6 +61,10 @@ abstract class AbstractVerifier {
 	
 	def getOutput() {
 		return output
+	}
+	
+	protected def getTemporaryQueryFilename() {
+		return ".temporary_query.q"
 	}
 	
 }
