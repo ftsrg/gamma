@@ -15,6 +15,6 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.xtend.lib.macro,
  org.eclipse.viatra.query.runtime,
  hu.bme.mit.gamma.statechart.model
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.transformation.util
 Import-Package: org.apache.log4j

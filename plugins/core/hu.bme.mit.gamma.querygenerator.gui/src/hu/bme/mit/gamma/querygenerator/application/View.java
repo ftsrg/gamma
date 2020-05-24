@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
-import hu.bme.mit.gamma.querygenerator.controller.ThetaController;
+import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
 
 /**
  * @author Bence Graics
@@ -156,7 +156,7 @@ public class View extends JFrame {
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
 	public View(IFile file) throws IOException {
-		controller = new ThetaController(this, file);
+		controller = new UppaalController(this, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();
 		

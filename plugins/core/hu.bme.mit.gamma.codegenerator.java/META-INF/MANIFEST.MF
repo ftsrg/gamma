@@ -20,6 +20,6 @@ Require-Bundle: hu.bme.mit.gamma.expression.model,
  org.yakindu.sct.model.stext,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.codegenerator.java.util
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.codegenerator.java
 Import-Package: org.apache.log4j

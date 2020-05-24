@@ -7,7 +7,7 @@ Bundle-Version: 2.3.1.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.statechart.lowlevel.model,
  hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures,
  hu.bme.mit.gamma.statechart.lowlevel.model.impl,

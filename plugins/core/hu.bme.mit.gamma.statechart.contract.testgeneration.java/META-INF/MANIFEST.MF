@@ -5,7 +5,7 @@ Bundle-SymbolicName: hu.bme.mit.gamma.statechart.contract.testgeneration.java
 Bundle-Version: 2.3.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.contract.testgeneration.java
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,

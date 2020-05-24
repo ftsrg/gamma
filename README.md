@@ -43,7 +43,7 @@ To cite Gamma, please cite the following paper.
 
 ### Installation
 
-* Have an Eclipse instance (Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 1.8.
+* Have an Eclipse instance (Eclipse IDE for Java and DSL Developers) with EMF, Xtext and Java 11.
 * Install VIATRA 2.3.1 and the Yakindu Statechart Tools 3.5.10.
 * Exit Eclipse and extract the Gamma zip file containing the `dropins/plugins` folder (with the Gamma JAR files) into the root folder of Eclipse. This will create the plugins directory in the dropins folder of your root Eclipse folder, which should contain all JAR files of Gamma. (If not, make sure you copy all the JAR files contained in the Gamma zip file in the plugins directory of the dropins folder of the root folder of Eclipse.)
 * When starting Eclipse for the first time, you might need to start it with the -clean flag.

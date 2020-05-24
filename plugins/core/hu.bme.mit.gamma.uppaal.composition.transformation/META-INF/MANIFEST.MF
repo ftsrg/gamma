@@ -21,6 +21,6 @@ Require-Bundle: de.uni_paderborn.uppaal,
  org.eclipse.viatra.query.runtime,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.uppaal.composition.transformation
 Import-Package: org.apache.log4j

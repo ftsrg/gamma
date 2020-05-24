@@ -20,6 +20,6 @@ Require-Bundle: hu.bme.mit.gamma.xsts.model,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.lowlevel.xsts.transformation
 Import-Package: org.apache.log4j
