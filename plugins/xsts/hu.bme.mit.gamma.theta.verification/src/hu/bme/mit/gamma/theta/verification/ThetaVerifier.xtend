@@ -22,8 +22,9 @@ class ThetaVerifier extends AbstractVerifier {
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		try {
-			// java -jar theta-xsts-cli.jar --model trafficlight.xsts --property red_green.prop --loglevel RESULT
-			val command = "java -jar theta-xsts-cli.jar " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\" --loglevel RESULT"
+			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
+			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop --loglevel RESULT
+			val command = "java -jar %theta-xsts-cli.jar% " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\" --loglevel RESULT"
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process =  Runtime.getRuntime().exec(command)
