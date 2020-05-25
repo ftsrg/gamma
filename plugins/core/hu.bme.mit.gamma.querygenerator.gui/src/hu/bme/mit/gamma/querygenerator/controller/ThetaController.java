@@ -23,7 +23,7 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class ThetaController extends AbstractController {
 
-	public ThetaController(View view, IFile file) throws IOException {
+	public ThetaController(View view, IFile file) {
 		this.file = file;
 		this.view = view;
 		URI uri = URI.createFileURI(getUnwrappedFile());
