@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.controller;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 
