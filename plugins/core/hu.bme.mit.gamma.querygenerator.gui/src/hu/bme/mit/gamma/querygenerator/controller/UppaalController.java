@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.querygenerator.controller;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -24,7 +23,7 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class UppaalController extends AbstractController {
 	
-	public UppaalController(View view, IFile file) throws IOException {
+	public UppaalController(View view, IFile file) {
 		this.file = file;
 		this.view = view;
 		this.queryGenerator = new UppaalQueryGenerator((G2UTrace) getTraceability()); // For state-location

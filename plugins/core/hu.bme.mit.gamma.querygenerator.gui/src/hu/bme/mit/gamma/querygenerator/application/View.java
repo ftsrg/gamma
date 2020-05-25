@@ -42,6 +42,7 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
 import hu.bme.mit.gamma.querygenerator.controller.ThetaController;
+import hu.bme.mit.gamma.querygenerator.controller.UppaalController;
 
 /**
  * @author Bence Graics
@@ -73,9 +74,14 @@ public class View extends JFrame {
 	private JMenuBar menuBar;
 	private JMenu optionsMenu;
 	
+	private JMenu modelCheckerMenu;
+	private ButtonGroup modelCheckerGroup;
+	private JRadioButtonMenuItem uppaal;
+	private JRadioButtonMenuItem theta;
+	
 	private JMenu modelCheckingOptionsMenu;
 	
-	private JMenuItem traversalMenu;	
+	private JMenuItem traversalMenu;
 	private ButtonGroup searchOrderGroup;
 	private JRadioButtonMenuItem breadthFirst;
 	private JRadioButtonMenuItem depthFirst;
@@ -152,11 +158,12 @@ public class View extends JFrame {
 	private JTextArea logTextArea;
 	
 	private AbstractController controller;
+	private UppaalController uppaalController;
+	private ThetaController thetaController;
 	
 	// The location of the model on which this query generator is opened
 	// E.g.: F:/eclipse_ws/sc_analysis_comp_oxy/runtime-New_configuration/hu.bme.mit.inf.gamma.tests/model/TestOneComponent.statechartmodel
 	public View(IFile file) throws IOException {
-		controller = new ThetaController(this, file);
 		setDefaultCloseOperation(2);
 		setFrameSizeSmaller();
 		
@@ -165,6 +172,35 @@ public class View extends JFrame {
 		optionsMenu = new JMenu("Options");
 		menuBar.add(optionsMenu);
 		setJMenuBar(menuBar);
+		
+		// Model checker options
+		modelCheckerMenu = new JMenu("Model Checker");
+		optionsMenu.add(modelCheckerMenu);
+		
+		uppaal = new JRadioButtonMenuItem("UPPAAL");
+		uppaal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (uppaalController == null) {
+					uppaalController = new UppaalController(View.this, file);
+				}
+				controller = uppaalController;
+			}
+		});
+		theta = new JRadioButtonMenuItem("Theta");
+		theta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (thetaController == null) {
+					thetaController = new ThetaController(View.this, file);
+				}
+				controller = thetaController;
+			}
+		});
+		uppaal.doClick(); // To trigger the action listener
+		modelCheckerGroup = new ButtonGroup();
+		modelCheckerGroup.add(uppaal);
+		modelCheckerGroup.add(theta);
+		modelCheckerMenu.add(uppaal);
+		modelCheckerMenu.add(theta);
 		
 		// Model checking options
 		modelCheckingOptionsMenu = new JMenu("Model Checking");
