@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
@@ -20,15 +22,17 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
+import java.util.List
 
+import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 
 class GammaToXSTSTransformer {
 	// Transformers
@@ -41,7 +45,18 @@ class GammaToXSTSTransformer {
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
 	protected final extension EventConnector eventConnector = new EventConnector
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
+	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
+	// Top component arguments
+	protected final List<Expression> topComponentArguments
+	
+	new() {
+		this(#[])
+	}
+	
+	new(List<Expression> topComponentArguments) {
+		this.topComponentArguments = topComponentArguments
+	}
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
 		val modelPreprocessor = new AnalysisModelPreprocessor
@@ -60,10 +75,11 @@ class GammaToXSTSTransformer {
 	}
 	
 	def execute(hu.bme.mit.gamma.statechart.model.Package _package) {
+		val gammaComponent = _package.components.head // Getting the first component
+		gammaComponent.transformParameters(topComponentArguments) // Setting the parameter references
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
-		val gammaComponent = _package.components.head // Transforming first Gamma component
-		val xSts = gammaComponent.transform(lowlevelPackage)
+		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Optimizing
@@ -73,14 +89,29 @@ class GammaToXSTSTransformer {
 		return xSts
 	}
 	
-	def dispatch XSTS transform(Component component, Package lowlevelPackage) {
+	protected def void transformParameters(Component component, List<Expression> arguments) {
+		val _package = component.containingPackage
+		for (parameter : component.parameterDeclarations) {
+			val argumentConstant = createConstantDeclaration => [
+				it.name = parameter.name + "Argument"
+				it.type = parameter.type.clone(true, true)
+				it.expression = arguments.get(parameter.index).clone(true, true)
+			]
+			_package.constantDeclarations += argumentConstant
+			// Changing the references to the constant
+			argumentConstant.change(parameter, component)
+		}
+	}
+	
+	protected def dispatch XSTS transform(Component component, Package lowlevelPackage) {
 		throw new IllegalArgumentException("Not supported component type: " + component)
 	}
 	
-	def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
+	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		var XSTS xSts = null
 		for (subcomponent : component.components) {
 			val type = subcomponent.type
+			type.transformParameters(subcomponent.arguments) // Change the reference from parameters to constants
 			val newXSts = type.transform(lowlevelPackage)
 			newXSts.customizeDeclarationNames(subcomponent)
 			if (xSts === null) {
@@ -119,7 +150,7 @@ class GammaToXSTSTransformer {
 		return xSts
 	}
 	
-	def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
+	protected def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
