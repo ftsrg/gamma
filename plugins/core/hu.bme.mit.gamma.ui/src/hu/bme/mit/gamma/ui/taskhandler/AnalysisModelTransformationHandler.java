@@ -237,7 +237,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
 					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
 			Package newPackage = (Package) newTopComponent.eContainer();
-			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(analysisModelTransformation.getArguments());
 			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
 			gammaToXSTSTransformer.executeAndSerializeAndSave(newPackage, xStsFile);
 			logger.log(Level.INFO, "XSTS transformation has been finished.");

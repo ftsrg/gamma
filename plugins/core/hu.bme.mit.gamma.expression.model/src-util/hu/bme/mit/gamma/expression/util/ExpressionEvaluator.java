@@ -12,8 +12,13 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.math.BigInteger;
 
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -32,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
@@ -60,7 +66,12 @@ public class ExpressionEvaluator {
 			if (declaration instanceof ConstantDeclaration) {
 				final ConstantDeclaration constantDeclaration = (ConstantDeclaration) declaration;
 				return evaluateInteger(constantDeclaration.getExpression());
-			} else {
+			}
+			if (declaration instanceof ParameterDeclaration) {
+				final ParameterDeclaration parameterDeclaration = (ParameterDeclaration) declaration;
+				return evaluateInteger(parameterDeclaration);
+			}
+			else {
 				throw new IllegalArgumentException("Not transformable expression: " + expression.toString());
 			}
 		}
@@ -95,6 +106,28 @@ public class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
 
+	public int evaluateInteger(ParameterDeclaration parameter) {
+		EObject component = parameter.eContainer(); // Component
+		EObject root = EcoreUtil.getRootContainer(parameter); // Package
+		TreeIterator<Object> contents = EcoreUtil.getAllContents(root, true);
+		while (contents.hasNext()) {
+			Object content = contents.next();
+			if (content instanceof ArgumentedElement) {
+				ArgumentedElement element = (ArgumentedElement) content;
+				if (element.eCrossReferences().contains(component)) { // If the component is referenced
+					int index = ExpressionModelDerivedFeatures.getIndex(parameter);
+					Expression expression = element.getArguments().get(index);
+					return evaluateInteger(expression);
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not found expression for parameter: " + parameter);
+	}
+	
+	public boolean evaluateBoolean(ParameterDeclaration parameter) {
+		return evaluateInteger(parameter) == 0 ? false : true;
+	}
+	
 	// Booleans
 	public boolean evaluateBoolean(Expression expression) {
 		if (expression instanceof TrueExpression) {
@@ -156,17 +189,21 @@ public class ExpressionEvaluator {
 			if (declaration instanceof ConstantDeclaration) {
 				final ConstantDeclaration constantDeclaration = (ConstantDeclaration) declaration;
 				return evaluateBoolean(constantDeclaration.getExpression());
-			} else {
+			}
+			if (declaration instanceof ParameterDeclaration) {
+				final ParameterDeclaration parameterDeclaration = (ParameterDeclaration) declaration;
+				return evaluateBoolean(parameterDeclaration);
+			}
+			else {
 				throw new IllegalArgumentException("Not transformable expression: " + expression);
 			}
 		}
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
-
 	
 	// Reverse
 	
-	public static Expression of(Type type, int value) {
+	public Expression of(Type type, int value) {
 		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 		if (typeDefinition instanceof BooleanTypeDefinition) {
 			return of((BooleanTypeDefinition) typeDefinition, value);
@@ -180,22 +217,22 @@ public class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not known type: " + typeDefinition);
 	}
 	
-	public static Expression of(BooleanTypeDefinition type, int value) {
+	public Expression of(BooleanTypeDefinition type, int value) {
 		switch (value) {
-			case 1:
-				return factory.createTrueExpression();
-			default:
+			case 0:
 				return factory.createFalseExpression();
+			default:
+				return factory.createTrueExpression();
 		} 
 	}
 	
-	public static Expression of(IntegerTypeDefinition type, int value) {
+	public Expression of(IntegerTypeDefinition type, int value) {
 		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
 		integerLiteralExpression.setValue(BigInteger.valueOf(value));
 		return integerLiteralExpression;
 	}
 	
-	public static Expression of(EnumerationTypeDefinition type, int value) {
+	public Expression of(EnumerationTypeDefinition type, int value) {
 		EnumerationLiteralExpression enumerationLiteralExpression = factory.createEnumerationLiteralExpression();
 		enumerationLiteralExpression.setReference(type.getLiterals().get(value));
 		return enumerationLiteralExpression;

@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.statechart.util;
 import org.eclipse.emf.common.util.EList;
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.TimeSpecification;
@@ -14,7 +15,6 @@ import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 
 public class StatechartUtil extends ExpressionUtil {
 
@@ -40,8 +40,11 @@ public class StatechartUtil extends ExpressionUtil {
 		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
-			instance.getArguments().add(
-					StatechartModelDerivedFeatures.getDefaultExpression(parameterDeclaration.getType()));
+			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration, true, true);
+			cascade.getParameterDeclarations().add(newParameter);
+			ReferenceExpression reference = factory.createReferenceExpression();
+			reference.setDeclaration(newParameter);
+			instance.getArguments().add(reference);
 		}
 		cascade.getComponents().add(instance);
 		EList<Port> ports = component.getPorts();
