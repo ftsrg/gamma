@@ -13,14 +13,15 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import java.io.File
 import java.util.Collections
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class ModelPreprocessor {
+class UppaalModelPreprocessor {
 	
-	protected val preprocessor = new hu.bme.mit.gamma.transformation.util.ModelPreprocessor
+	protected val preprocessor = new AnalysisModelPreprocessor
 	protected extension StatechartUtil statechartUtil = new StatechartUtil
 	
 	def preprocess(Package gammaPackage, File containingFile) {

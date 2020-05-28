@@ -15,6 +15,7 @@
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//AnalysisLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/UPPAAL"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//AnalysisLanguage/THETA"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//Scheduler">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//Scheduler/RANDOM"/>

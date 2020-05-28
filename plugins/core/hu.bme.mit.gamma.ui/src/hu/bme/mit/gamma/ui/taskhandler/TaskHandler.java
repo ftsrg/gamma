@@ -14,16 +14,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import com.google.inject.Injector;
 
@@ -35,9 +31,11 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
 import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public abstract class TaskHandler {
 	
+	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	protected String targetFolderUri;
 
@@ -87,20 +85,13 @@ public abstract class TaskHandler {
 				new File(parentFolder + File.separator + fileName).delete();
 				// Saving like an EMF model
 				String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
-				normalSave(rootElem, parentFolder, newFileName);
+				ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
 			}
 		}
 		else {
 			// It is not a statechart model, regular saving
-			normalSave(rootElem, parentFolder, fileName);
+			ecoreUtil.normalSave(rootElem, parentFolder, fileName);
 		}
-	}
-
-	protected void normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		Resource saveResource = resourceSet.createResource(URI.createFileURI(URI.decode(parentFolder + File.separator + fileName)));
-		saveResource.getContents().add(rootElem);
-		saveResource.save(Collections.EMPTY_MAP);
 	}
 	
 	private void serialize(EObject rootElem, String parentFolder, String fileName) throws IOException {
