@@ -313,6 +313,7 @@ class LowlevelToXSTSTransformer {
 		]
 		xSts.typeDeclarations += enumTypeDeclaration
 		xSts.variableDeclarations += xStsRegionVariable // Target model modification
+		xSts.controlVariables += xStsRegionVariable // Putting it in the control location variable list
 		trace.put(lowlevelRegion, xStsRegionVariable) // Tracing
 		// Creating top region variable group
 		xStsRegionVariable.getCorrespondingVariableGroup => [
@@ -420,6 +421,7 @@ class LowlevelToXSTSTransformer {
 				]
 				xSts.variableDeclarations += xStsVariable // Target model modification
 				trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
+				xSts.clockVariables += xStsVariable // Putting it in the clock variable list
 				xSts.getTimeoutGroup.variables += trace.getXStsVariable(lowlevelTimeoutVariable)
 			].build
 		}

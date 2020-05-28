@@ -71,7 +71,18 @@ class DeclarationSerializer {
 	// Variable
 
 	def String serializeVariableDeclaration(VariableDeclaration variable) '''
-		var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
+		«variable.serializeModifier»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
 	'''
+	
+	private def serializeModifier(VariableDeclaration variable) {
+//		val xSts = variable.eContainer as XSTS
+//		if (xSts.controlVariables.contains(variable)) {
+//			return "ctrl "
+//		}
+//		if (xSts.clockVariables.contains(variable)) {
+//			return "clk "
+//		}
+		return ""
+	}
 	
 }
