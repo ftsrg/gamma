@@ -62,6 +62,7 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 
 class LowlevelToXSTSTransformer {
@@ -205,22 +206,22 @@ class LowlevelToXSTSTransformer {
 			eventsRule = createRule(Events.instance).action [
 				val lowlevelEvent = it.event
 				val xStsEventVariable = createVariableDeclaration => [
-					it.name = lowlevelEvent.name
+					it.name = lowlevelEvent.name.eventName
 					it.type = createBooleanTypeDefinition // isRaised bool variable
 				]
 				xSts.variableDeclarations += xStsEventVariable // Target model modification
 				val eventVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
-						xSts.inEventVariableGroup
-					} else {
-						xSts.outEventVariableGroup
-					}
+					xSts.inEventVariableGroup
+				} else {
+					xSts.outEventVariableGroup
+				}
 				eventVariableGroup.variables += xStsEventVariable // Variable group modification
 				trace.put(lowlevelEvent, xStsEventVariable) // Tracing event
 				trace.put(lowlevelEvent.isRaised, xStsEventVariable) // Tracing the contained isRaisedVariable
 				// Parameters 
 				for (lowlevelEventParameter : lowlevelEvent.parameters) {
 					val xStsParam = createVariableDeclaration => [
-						it.name = lowlevelEventParameter.name
+						it.name = lowlevelEventParameter.name.variableName
 						it.type = lowlevelEventParameter.type.transformType
 					]
 					val eventParameterVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
@@ -291,7 +292,7 @@ class LowlevelToXSTSTransformer {
 		// Enum literals are based on states
 		for (lowlevelState : lowlevelRegion.stateNodes.filter(State)) {
 			val xStsEnumLiteral = createEnumerationLiteralDefinition => [
-				it.name = lowlevelState.name
+				it.name = lowlevelState.name.stateEnumLiteralName
 			]
 			enumType.literals += xStsEnumLiteral
 			trace.put(lowlevelState, xStsEnumLiteral) // Tracing
@@ -299,10 +300,10 @@ class LowlevelToXSTSTransformer {
 		// Creating type declaration from the enum type definition
 		val enumTypeDeclaration = createTypeDeclaration => [
 			it.type = enumType
-			it.name = lowlevelRegion.name.toFirstUpper // Uppercase first character
+			it.name = lowlevelRegion.name.regionTypeName // Uppercase first character
 		]
 		val xStsRegionVariable = createVariableDeclaration => [
-			it.name = lowlevelRegion.name.toFirstLower // Lowercase first character
+			it.name = lowlevelRegion.name.regionVariableName // Lowercase first character
 			it.type = createTypeReference => [
 				it.reference = enumTypeDeclaration
 			] // Enum variable
@@ -380,7 +381,7 @@ class LowlevelToXSTSTransformer {
 				// Rule-based transformation is not applicable as the order of parameters is essential
 				for (lowlevelVariable : it.statechart.parameterDeclarations) {
 					val xStsVariable = createVariableDeclaration => [
-						it.name = lowlevelVariable.name
+						it.name = lowlevelVariable.name.variableName
 						it.type = lowlevelVariable.type.transformType
 					]
 					xSts.variableDeclarations += xStsVariable // Target model modification
@@ -397,7 +398,7 @@ class LowlevelToXSTSTransformer {
 			plainVariablesRule = createRule(PlainVariables.instance).action [
 				val lowlevelVariable = it.variable
 				val xStsVariable = createVariableDeclaration => [
-					it.name = lowlevelVariable.name
+					it.name = lowlevelVariable.name.variableName
 					it.type = lowlevelVariable.type.transformType
 				]
 				xSts.variableDeclarations += xStsVariable // Target model modification
@@ -413,7 +414,7 @@ class LowlevelToXSTSTransformer {
 			timeoutsRule = createRule(Timeouts.instance).action [
 				val lowlevelTimeoutVariable = it.timeout
 				val xStsVariable = createVariableDeclaration => [
-					it.name = lowlevelTimeoutVariable.name
+					it.name = lowlevelTimeoutVariable.name.variableName
 					it.type = lowlevelTimeoutVariable.type.transformType
 					it.expression = lowlevelTimeoutVariable.expression.clone // Timeouts are initially true
 				]

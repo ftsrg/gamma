@@ -8,10 +8,10 @@ Export-Package: hu.bme.mit.gamma.lowlevel.xsts.transformation,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer
-Require-Bundle: hu.bme.mit.gamma.xsts.model,
- hu.bme.mit.gamma.expression.model,
+Require-Bundle: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.statechart.lowlevel.model,
+ hu.bme.mit.gamma.xsts.model,
  org.eclipse.viatra.query.runtime,
  org.eclipse.viatra.transformation.runtime.emf,
  org.eclipse.viatra.transformation.evm,
@@ -19,7 +19,8 @@ Require-Bundle: hu.bme.mit.gamma.xsts.model,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
- hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability,
+ hu.bme.mit.gamma.xsts.transformation.util
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.lowlevel.xsts.transformation
 Import-Package: org.apache.log4j
