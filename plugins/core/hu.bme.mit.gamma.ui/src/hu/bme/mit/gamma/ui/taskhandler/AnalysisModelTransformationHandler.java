@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
@@ -43,76 +44,33 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstrain
 import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler;
-import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ModelPreprocessor;
+import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
 import uppaal.NTA;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
 
 	public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
 		checkArgument(analysisModelTransformation.getLanguage().size() == 1, 
-				"A single formal modeling language must be specified: " + analysisModelTransformation.getLanguage());
-		checkArgument(analysisModelTransformation.getLanguage().get(0) == AnalysisLanguage.UPPAAL, 
-				"Currently only UPPAAL is supported.");
+			"A single formal modeling language must be specified: " + analysisModelTransformation.getLanguage());
+		final AnalysisLanguage analysisLanguage = analysisModelTransformation.getLanguage().get(0);
 		setAnalysisModelTransformation(analysisModelTransformation);
-		// Unfolding the given system
-		Component component = analysisModelTransformation.getComponent();
-		Package gammaPackage = (Package) component.eContainer();
-		ModelPreprocessor preprocessor = new ModelPreprocessor();
-		Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
-				File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
-		// Checking the model whether it contains forbidden elements
-		ModelValidator validator = new ModelValidator(newTopComponent, false);
-		validator.checkModel();
-		// State coverage
-		Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
-						.filter(it -> it instanceof StateCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
-				newTopComponent, stateCoverage);
-		// Transition coverage
-		Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
-						.filter(it -> it instanceof TransitionCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
-				newTopComponent, transitionCoverage);
-		// Out event coverage
-		Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
-						.filter(it -> it instanceof OutEventCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
-				newTopComponent, outEventCoverage);
-		// Interaction coverage
-		Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
-						.filter(it -> it instanceof InteractionCoverage).findFirst();
-		List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
-				newTopComponent, interactionCoverage);
-		TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
-				testedComponentsForStates, testedComponentsForTransitions,
-				testedComponentsForOutEvents, testedComponentsForInteractions);
-		if (interactionCoverage.isPresent()) {
-			InteractionCoverage coverage = (InteractionCoverage) interactionCoverage.get();
-			testGenerationHandler.setInteractionRepresentation(
-					getInteractionRepresentation(coverage.getInteractionRepresentation()));
+		AnalysisModelTransformer transformer;
+		switch (analysisLanguage) {
+			case UPPAAL:
+				transformer = new UppaalTransformer();
+				break;
+			case THETA:
+				transformer = new ThetaTransformer();
+				break;
+			default:
+				throw new IllegalArgumentException("Currently only UPPAAL and Theta supported.");
 		}
-		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + newTopComponent.eResource().getResourceSet());
-		Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
-		CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
-			newTopComponent, analysisModelTransformation.getArguments(),
-			getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
-			constraint,
-			analysisModelTransformation.isMinimalElementSet(),
-			testGenerationHandler); // newTopComponent
-		SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
-		NTA nta = resultModels.getKey();
-		// Saving the generated models
-		normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
-		normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
-		// Serializing the NTA model to XML
-		UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
-		// Creating a new query file
-		new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
-		UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
-		transformer.dispose();
+		transformer.execute(analysisModelTransformation);
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
@@ -127,77 +85,164 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 	}
 	
-	private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
-			Optional<Coverage> coverage) {
-		SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
-		if (coverage.isPresent()) {
-			Coverage presentCoverage = coverage.get();
-			List<? extends ComponentInstance> includedComponents = presentCoverage.getInclude();
-			if (includedComponents.isEmpty()) {
-				// If there is no include in the coverage, it means all instances need to be tested
-				includedComponents = simpleInstanceHandler.getNewSimpleInstances(component);
+	abstract class AnalysisModelTransformer {
+		protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
+		public abstract void execute(AnalysisModelTransformation analysisModelTransformation);
+	}
+	
+	class UppaalTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+			// Unfolding the given system
+			Component component = analysisModelTransformation.getComponent();
+			Package gammaPackage = (Package) component.eContainer();
+			UppaalModelPreprocessor preprocessor = new UppaalModelPreprocessor();
+			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
+					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
+			// Checking the model whether it contains forbidden elements
+			ModelValidator validator = new ModelValidator(newTopComponent, false);
+			validator.checkModel();
+			// State coverage
+			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof StateCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
+					newTopComponent, stateCoverage);
+			// Transition coverage
+			Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof TransitionCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
+					newTopComponent, transitionCoverage);
+			// Out event coverage
+			Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof OutEventCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
+					newTopComponent, outEventCoverage);
+			// Interaction coverage
+			Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof InteractionCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
+					newTopComponent, interactionCoverage);
+			TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
+					testedComponentsForStates, testedComponentsForTransitions,
+					testedComponentsForOutEvents, testedComponentsForInteractions);
+			if (interactionCoverage.isPresent()) {
+				InteractionCoverage coverage = (InteractionCoverage) interactionCoverage.get();
+				testGenerationHandler.setInteractionRepresentation(
+						getInteractionRepresentation(coverage.getInteractionRepresentation()));
 			}
-			return simpleInstanceHandler.getNewSimpleInstances(includedComponents, presentCoverage.getExclude(), component);
+			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + newTopComponent.eResource().getResourceSet());
+			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
+			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
+				newTopComponent, analysisModelTransformation.getArguments(),
+				getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
+				constraint,
+				analysisModelTransformation.isMinimalElementSet(),
+				testGenerationHandler); // newTopComponent
+			SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
+			NTA nta = resultModels.getKey();
+			// Saving the generated models
+			ecoreUtil.normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
+			ecoreUtil.normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
+			// Serializing the NTA model to XML
+			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
+			// Creating a new query file
+			new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
+			UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
+			transformer.dispose();
 		}
-		return Collections.emptyList();
-	}
-	
-	private Constraint transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint, Component newComponent) {
-		if (constraint == null) {
-			return null;
-		}
-		if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
-			hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
-			return new OrchestratingConstraint(orchestratingConstraint.getMinimumPeriod(), orchestratingConstraint.getMaximumPeriod());
-		}
-		if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
-			hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint = (hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
-			SchedulingConstraint gammaSchedulingConstraint = new SchedulingConstraint();
-			for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint : schedulingConstraint.getInstanceConstraint()) {
-				gammaSchedulingConstraint.getInstanceConstraints().addAll(transformAsynchronousInstanceConstraint(instanceConstraint, newComponent));
+		
+		private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
+				Optional<Coverage> coverage) {
+			SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
+			if (coverage.isPresent()) {
+				Coverage presentCoverage = coverage.get();
+				List<? extends ComponentInstance> includedComponents = presentCoverage.getInclude();
+				if (includedComponents.isEmpty()) {
+					// If there is no include in the coverage, it means all instances need to be tested
+					includedComponents = simpleInstanceHandler.getNewSimpleInstances(component);
+				}
+				return simpleInstanceHandler.getNewSimpleInstances(includedComponents, presentCoverage.getExclude(), component);
 			}
-			return gammaSchedulingConstraint;
+			return Collections.emptyList();
 		}
-		throw new IllegalArgumentException("Not known constraint: " + constraint);
+		
+		private Constraint transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint, Component newComponent) {
+			if (constraint == null) {
+				return null;
+			}
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
+				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint = (hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+				return new OrchestratingConstraint(orchestratingConstraint.getMinimumPeriod(), orchestratingConstraint.getMaximumPeriod());
+			}
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) {
+				hu.bme.mit.gamma.genmodel.model.SchedulingConstraint schedulingConstraint = (hu.bme.mit.gamma.genmodel.model.SchedulingConstraint) constraint;
+				SchedulingConstraint gammaSchedulingConstraint = new SchedulingConstraint();
+				for (hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint instanceConstraint : schedulingConstraint.getInstanceConstraint()) {
+					gammaSchedulingConstraint.getInstanceConstraints().addAll(transformAsynchronousInstanceConstraint(instanceConstraint, newComponent));
+				}
+				return gammaSchedulingConstraint;
+			}
+			throw new IllegalArgumentException("Not known constraint: " + constraint);
+		}
+		
+		private List<AsynchronousInstanceConstraint> transformAsynchronousInstanceConstraint(
+				hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint asynchronousInstanceConstraint, Component newComponent) {
+			if (newComponent instanceof AsynchronousAdapter) {
+				// In the case of asynchronous adapters, the referred instance will be null
+				return Collections.singletonList(new AsynchronousInstanceConstraint(null,
+					(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
+			}
+			// Asynchronous composite components
+			SimpleInstanceHandler instanceHandler = new SimpleInstanceHandler();
+			List<AsynchronousInstanceConstraint> asynchronousInstanceConstraints = new ArrayList<AsynchronousInstanceConstraint>();
+			AsynchronousComponentInstance originalInstance = asynchronousInstanceConstraint.getInstance();
+			List<AsynchronousComponentInstance> newAsynchronousSimpleInstances = instanceHandler
+					.getNewAsynchronousSimpleInstances(originalInstance, newComponent);
+			for (AsynchronousComponentInstance newAsynchronousSimpleInstance : newAsynchronousSimpleInstances) {
+				asynchronousInstanceConstraints.add(new AsynchronousInstanceConstraint(newAsynchronousSimpleInstance,
+					(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
+			}
+			return asynchronousInstanceConstraints;
+		}
+		
+		private Scheduler getGammaScheduler(hu.bme.mit.gamma.genmodel.model.Scheduler scheduler) {
+			switch (scheduler) {
+			case FAIR:
+				return Scheduler.FAIR;
+			default:
+				return Scheduler.RANDOM;
+			}
+		}
+		
+		private InteractionRepresentation getInteractionRepresentation(
+				hu.bme.mit.gamma.genmodel.model.InteractionRepresentation interactionRepresentation) {
+			switch (interactionRepresentation) {
+			case OVER_APPROXIMATION:
+				return InteractionRepresentation.OVER_APPROXIMATION;
+			default:
+				return InteractionRepresentation.UNDER_APPROXIMATION;
+			}
+		}
+		
 	}
 	
-	private List<AsynchronousInstanceConstraint> transformAsynchronousInstanceConstraint(
-			hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint asynchronousInstanceConstraint, Component newComponent) {
-		if (newComponent instanceof AsynchronousAdapter) {
-			// In the case of asynchronous adapters, the referred instance will be null
-			return Collections.singletonList(new AsynchronousInstanceConstraint(null,
-				(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
+	class ThetaTransformer  extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+			logger.log(Level.INFO, "Starting XSTS transformation.");
+			// Unfolding the given system
+			Component component = analysisModelTransformation.getComponent();
+			Package gammaPackage = (Package) component.eContainer();
+			AnalysisModelPreprocessor preprocessor = new AnalysisModelPreprocessor();
+			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
+					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
+			Package newPackage = (Package) newTopComponent.eContainer();
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
+			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
+			gammaToXSTSTransformer.executeAndSerializeAndSave(newPackage, xStsFile);
+			logger.log(Level.INFO, "XSTS transformation has been finished.");
 		}
-		// Asynchronous composite components
-		SimpleInstanceHandler instanceHandler = new SimpleInstanceHandler();
-		List<AsynchronousInstanceConstraint> asynchronousInstanceConstraints = new ArrayList<AsynchronousInstanceConstraint>();
-		AsynchronousComponentInstance originalInstance = asynchronousInstanceConstraint.getInstance();
-		List<AsynchronousComponentInstance> newAsynchronousSimpleInstances = instanceHandler
-				.getNewAsynchronousSimpleInstances(originalInstance, newComponent);
-		for (AsynchronousComponentInstance newAsynchronousSimpleInstance : newAsynchronousSimpleInstances) {
-			asynchronousInstanceConstraints.add(new AsynchronousInstanceConstraint(newAsynchronousSimpleInstance,
-				(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
-		}
-		return asynchronousInstanceConstraints;
-	}
 	
-	private Scheduler getGammaScheduler(hu.bme.mit.gamma.genmodel.model.Scheduler scheduler) {
-		switch (scheduler) {
-		case FAIR:
-			return Scheduler.FAIR;
-		default:
-			return Scheduler.RANDOM;
-		}
-	}
-	
-	private InteractionRepresentation getInteractionRepresentation(
-			hu.bme.mit.gamma.genmodel.model.InteractionRepresentation interactionRepresentation) {
-		switch (interactionRepresentation) {
-		case OVER_APPROXIMATION:
-			return InteractionRepresentation.OVER_APPROXIMATION;
-		default:
-			return InteractionRepresentation.UNDER_APPROXIMATION;
-		}
 	}
 	
 }

@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Gamma Generator Language Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.genmodel.model;singleton:=true
 Bundle-Version: 2.3.1.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: %providerName
+Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.genmodel.model,

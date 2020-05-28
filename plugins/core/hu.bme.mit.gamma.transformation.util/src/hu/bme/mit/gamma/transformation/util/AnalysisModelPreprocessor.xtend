@@ -26,7 +26,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class ModelPreprocessor {
+class AnalysisModelPreprocessor {
 	
 	protected val logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = new StatechartUtil

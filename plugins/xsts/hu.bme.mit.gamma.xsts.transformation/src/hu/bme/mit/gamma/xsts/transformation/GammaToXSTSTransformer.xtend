@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeC
 import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.transformation.util.ModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
@@ -29,6 +28,7 @@ import java.io.File
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 
 class GammaToXSTSTransformer {
 	// Transformers
@@ -44,7 +44,7 @@ class GammaToXSTSTransformer {
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
-		val modelPreprocessor = new ModelPreprocessor
+		val modelPreprocessor = new AnalysisModelPreprocessor
 		val component = modelPreprocessor.preprocess(_package, containingFile)
 		val newPackage = component.containingPackage
 		return newPackage.executeAndSerialize

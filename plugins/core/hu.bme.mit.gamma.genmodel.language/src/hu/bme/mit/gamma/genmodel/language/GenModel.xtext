@@ -149,7 +149,7 @@ enum Scheduler returns Scheduler:
 ;
 
 enum AnalysisLanguage returns AnalysisLanguage:
-	UPPAAL = "UPPAAL"
+	UPPAAL = "UPPAAL" | THETA = "Theta"
 ;
 
 Coverage returns Coverage:
