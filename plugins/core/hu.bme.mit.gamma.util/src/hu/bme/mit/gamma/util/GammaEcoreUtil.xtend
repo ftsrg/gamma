@@ -35,7 +35,7 @@ class GammaEcoreUtil {
 	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
-		EcoreUtil.delete(oldObject) // Remove does not deletes other references
+		EcoreUtil.delete(oldObject) // Remove does not delete other references
 	}
 	
 	def void changeAll(EObject newObject, EObject oldObject, EObject container) {

@@ -91,7 +91,9 @@ class GammaToXSTSTransformer {
 	
 	protected def void transformParameters(Component component, List<Expression> arguments) {
 		val _package = component.containingPackage
-		for (parameter : component.parameterDeclarations) {
+		val parameterDeclarations = newArrayList
+		parameterDeclarations += component.parameterDeclarations // So delete does not mess the list up
+		for (parameter : parameterDeclarations) {
 			val argumentConstant = createConstantDeclaration => [
 				it.name = parameter.name + "Argument"
 				it.type = parameter.type.clone(true, true)
@@ -99,7 +101,8 @@ class GammaToXSTSTransformer {
 			]
 			_package.constantDeclarations += argumentConstant
 			// Changing the references to the constant
-			argumentConstant.change(parameter, component)
+			// Deleting because the parameter variables are not needed
+			argumentConstant.changeAndDelete(parameter, component)
 		}
 	}
 	
