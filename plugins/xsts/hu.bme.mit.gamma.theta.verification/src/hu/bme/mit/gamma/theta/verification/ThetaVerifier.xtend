@@ -68,8 +68,8 @@ class ThetaVerifier extends AbstractVerifier {
 		}
 	}
 	
-	override getTemporaryQueryFilename() {
-		return ".temporary_query.prop"
+	override getTemporaryQueryFilename(File modelFile) {
+		return "." + modelFile.extensionlessName + ".prop"
 	}
 	
 }

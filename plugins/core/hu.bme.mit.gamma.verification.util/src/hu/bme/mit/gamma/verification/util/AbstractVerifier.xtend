@@ -30,7 +30,7 @@ abstract class AbstractVerifier {
 			String query, boolean log, boolean storeOutput) {
 		// Writing the query to a temporary file
 		val parentFolder = modelFile.parent
-		val tempQueryFile = new File(parentFolder + File.separator + temporaryQueryFilename)
+		val tempQueryFile = new File(parentFolder + File.separator + modelFile.temporaryQueryFilename)
 		tempQueryFile.saveString(query)
 		// Deleting the file on the exit of the JVM
 		tempQueryFile.deleteOnExit
@@ -63,8 +63,8 @@ abstract class AbstractVerifier {
 		return output
 	}
 	
-	protected def getTemporaryQueryFilename() {
-		return ".temporary_query.q"
+	protected def getTemporaryQueryFilename(File modelFile) {
+		return "." + modelFile.extensionlessName + ".q"
 	}
 	
 }

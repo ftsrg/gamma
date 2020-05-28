@@ -34,4 +34,14 @@ class FileUtil {
 	def getFile(String sourceFolder, String packageName, String className) {
 		return new File(sourceFolder + File.separator + packageName.toPath + File.separator + className + ".java")
 	}
+	
+	def getExtensionlessName(File file) {
+		val fileName = file.name
+		val lastIndex = fileName.lastIndexOf(".")
+		if (lastIndex < 0) {
+			return fileName
+		}
+		return fileName.substring(0, lastIndex)
+	}
+	
 }

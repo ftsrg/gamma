@@ -198,6 +198,6 @@ abstract class AbstractQueryGenerator {
 		SynchronousComponentInstance instance)
 	
 	protected abstract def String getTargetOutEventParameterName(Event event, Port port,
-		ParameterDeclaration parameter,SynchronousComponentInstance instance)
+		ParameterDeclaration parameter, SynchronousComponentInstance instance)
 	
 }
