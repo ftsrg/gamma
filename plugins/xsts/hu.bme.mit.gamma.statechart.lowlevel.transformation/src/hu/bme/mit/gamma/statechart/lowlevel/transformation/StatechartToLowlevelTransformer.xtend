@@ -95,7 +95,7 @@ class StatechartToLowlevelTransformer {
 	
 	protected def transform(TypeDeclaration typeDeclaration) {
 		val newTypeDeclaration = constraintFactory.create(typeDeclaration.eClass) as TypeDeclaration => [
-			it.name = typeDeclaration.name
+			it.name = getName(typeDeclaration)
 			it.type = typeDeclaration.type.transformType
 		]
 		trace.put(typeDeclaration, newTypeDeclaration)
@@ -105,7 +105,7 @@ class StatechartToLowlevelTransformer {
 	protected def VariableDeclaration transform(ParameterDeclaration gammaParameter) {
 		// Cloning the variable
 		val lowlevelVariable = createVariableDeclaration => [
-			it.name = gammaParameter.name
+			it.name = gammaParameter.componentParameterName
 			it.type = gammaParameter.type.transformType
 		]
 		trace.put(gammaParameter, lowlevelVariable)
@@ -182,7 +182,7 @@ class StatechartToLowlevelTransformer {
 
 	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
 		val lowlevelTimeout = createVariableDeclaration => [
-			it.name = timeout.name
+			it.name = getName(timeout)
 			it.type = createIntegerTypeDefinition // Could be rational
 		]
 		trace.put(timeout, lowlevelTimeout)
@@ -203,7 +203,7 @@ class StatechartToLowlevelTransformer {
 			return trace.get(statechart)
 		}
 		val lowlevelStatechart = createStatechartDefinition => [
-			it.name = statechart.name
+			it.name = getName(statechart)
 			it.schedulingOrder = statechart.schedulingOrder.transform
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
