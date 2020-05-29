@@ -12,9 +12,7 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -129,20 +127,5 @@ class CompositeComponentCodeGenerator {
 			«port.name.toFirstLower» = new «port.name.toFirstUpper»();
 		«ENDFOR»
 	'''
-	
-	/**
-	 * Returns the instances (in order) that should be scheduled in the given AbstractSynchronousCompositeComponent.
-	 * Note that in cascade composite an instance might be scheduled multiple times.
-	 */
-	dispatch def getInstancesToBeScheduled(AbstractSynchronousCompositeComponent component) {
-		return component.components
-	}
-	
-	dispatch def getInstancesToBeScheduled(CascadeCompositeComponent component) {
-		if (component.executionList.empty) {
-			return component.components
-		}
-		return component.executionList
-	}
 	
 }

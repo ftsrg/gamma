@@ -122,7 +122,6 @@ class LowlevelToXSTSTransformer {
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
 		this.xSts = createXSTS => [
 			it.name = _package.name
-			it.environmentalAction = createSequentialAction
 		]
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
@@ -179,6 +178,41 @@ class LowlevelToXSTSTransformer {
 		optimizeActions
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
+	}
+		
+	protected def getVariableInitializingAction() {
+		if (xSts.variableInitializingAction === null) {
+			xSts.variableInitializingAction = createSequentialAction
+		}
+		return xSts.variableInitializingAction
+	}
+	
+	protected def getConfigurationInitializingAction() {
+		if (xSts.configurationInitializingAction === null) {
+			xSts.configurationInitializingAction = createSequentialAction
+		}
+		return xSts.configurationInitializingAction
+	}
+	
+	protected def getEntryEventAction() {
+		if (xSts.entryEventAction === null) {
+			xSts.entryEventAction = createSequentialAction
+		}
+		return xSts.entryEventAction
+	}
+	
+	protected def getInEventAction() {
+		if (xSts.inEventAction === null) {
+			xSts.inEventAction = createSequentialAction
+		}
+		return xSts.inEventAction
+	}
+	
+	protected def getOutEventAction() {
+		if (xSts.outEventAction === null) {
+			xSts.outEventAction = createSequentialAction
+		}
+		return xSts.outEventAction
 	}
 
 	protected def getTypeDeclarationsRule() {
@@ -264,7 +298,7 @@ class LowlevelToXSTSTransformer {
 					regionInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
-				variableInitializingAction as CompositeAction => [
+				entryEventAction as CompositeAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -273,20 +307,6 @@ class LowlevelToXSTSTransformer {
 			].build
 		}
 		return topRegionInitializationRule
-	}
-
-	protected def getConfigurationInitializingAction() {
-		if (xSts.configurationInitializingAction === null) {
-			xSts.configurationInitializingAction = createSequentialAction
-		}
-		return xSts.configurationInitializingAction
-	}
-	
-		protected def getVariableInitializingAction() {
-		if (xSts.variableInitializingAction === null) {
-			xSts.variableInitializingAction = createSequentialAction
-		}
-		return xSts.variableInitializingAction
 	}
 
 	/**
@@ -467,7 +487,7 @@ class LowlevelToXSTSTransformer {
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
 		for (xStsVariable : xStsVariables) {
 			// configurationInitializingAction as it must be set before setting the configuration
-			configurationInitializingAction as SequentialAction => [
+			variableInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
 					it.lhs = createReferenceExpression => [it.declaration = xStsVariable]
 					it.rhs = xStsVariable.initialValue
@@ -478,7 +498,6 @@ class LowlevelToXSTSTransformer {
 
 	/**
 	 * Simple transitions between any states, composite states are not differentiated.
-	 * 
 	 */
 	protected def getSimpleTransitionsBetweenStatesRule() {
 		if (simpleTransitionBetweenStatesRule === null) {
@@ -556,7 +575,7 @@ class LowlevelToXSTSTransformer {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				val lowlevelEnvironmentalAction = xSts.environmentalAction as SequentialAction
+				val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 				val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 				lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
 					// Event is raised
@@ -612,7 +631,7 @@ class LowlevelToXSTSTransformer {
 		if (outEventEnvironmentalActionRule === null) {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
-				val lowlevelEnvironmentalAction = xSts.environmentalAction as SequentialAction
+				val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 				val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 				lowlevelEnvironmentalAction.actions += createAssignmentAction => [
 					it.lhs = createReferenceExpression => [
@@ -738,10 +757,12 @@ class LowlevelToXSTSTransformer {
 	}
 
 	protected def optimizeActions() {
-		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
 		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
+		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
+		xSts.entryEventAction = xSts.entryEventAction.optimize
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
-		xSts.environmentalAction = xSts.environmentalAction.optimize
+		xSts.inEventAction = xSts.inEventAction.optimize
+		xSts.outEventAction = xSts.outEventAction.optimize
 		/* Note: no optimization on the list of transitions as the
 		 deletion of actions would mean the breaking of the trace. */
 	}

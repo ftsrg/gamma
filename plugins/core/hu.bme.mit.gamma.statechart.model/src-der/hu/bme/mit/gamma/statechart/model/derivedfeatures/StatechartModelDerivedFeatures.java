@@ -836,4 +836,14 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return instances.stream().findFirst().get();
 	}
 	
+	public static List<SynchronousComponentInstance> getScheduledInstances(AbstractSynchronousCompositeComponent component) {
+		if (component instanceof CascadeCompositeComponent) {
+			CascadeCompositeComponent cascade = (CascadeCompositeComponent) component;
+			if (!cascade.getExecutionList().isEmpty()) {
+				return cascade.getExecutionList();
+			}
+		}
+		return component.getComponents();
+	}
+	
 }
