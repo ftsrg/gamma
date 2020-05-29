@@ -244,7 +244,7 @@ class SynchronousCompositeComponentCodeGenerator {
 				// Starts with the clearing of the previous out-event flags
 				clearPorts();
 				// Running contained components
-				«FOR instance : component.instancesToBeScheduled»
+				«FOR instance : component.scheduledInstances»
 					«IF component instanceof CascadeCompositeComponent && instance.type instanceof SynchronousCompositeComponent»
 						«instance.name».runCycle();
 					«ELSE»

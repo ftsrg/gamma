@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
@@ -87,10 +88,12 @@ class GammaToXSTSTransformer {
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Optimizing
-		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
 		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
+		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
+		xSts.entryEventAction = xSts.entryEventAction.optimize
+		xSts.inEventAction = xSts.inEventAction.optimize
+		xSts.outEventAction = xSts.outEventAction.optimize
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
-		xSts.environmentalAction = xSts.environmentalAction.optimize
 		return xSts
 	}
 	
@@ -117,7 +120,9 @@ class GammaToXSTSTransformer {
 	
 	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		var XSTS xSts = null
-		for (subcomponent : component.components) {
+		val scheduledInstances = component.scheduledInstances
+		for (var i = 0; i < scheduledInstances.size; i++) {
+			val subcomponent = scheduledInstances.get(i)
 			val type = subcomponent.type
 			type.transformParameters(subcomponent.arguments) // Change the reference from parameters to constants
 			val newXSts = type.transform(lowlevelPackage)
@@ -142,20 +147,43 @@ class GammaToXSTSTransformer {
 				mergedAction.actions += newXSts.mergedTransition.action
 				xSts.mergedTransition.action = mergedAction
 				// Initializing action
-				val configInitAction = createSequentialAction
-				configInitAction.actions += xSts.configurationInitializingAction
-				configInitAction.actions += newXSts.configurationInitializingAction
-				xSts.configurationInitializingAction = configInitAction
 				val variableInitAction = createSequentialAction
 				variableInitAction.actions += xSts.variableInitializingAction
 				variableInitAction.actions += newXSts.variableInitializingAction
 				xSts.variableInitializingAction = variableInitAction
+				val configInitAction = createSequentialAction
+				configInitAction.actions += xSts.configurationInitializingAction
+				configInitAction.actions += newXSts.configurationInitializingAction
+				xSts.configurationInitializingAction = configInitAction
+				val entryAction = createSequentialAction
+				entryAction.actions += xSts.entryEventAction
+				entryAction.actions += newXSts.entryEventAction
+				xSts.entryEventAction = entryAction
 				// Environmental action
-				val environmentAction = createSequentialAction
-				environmentAction.actions += xSts.environmentalAction
-				environmentAction.actions += newXSts.environmentalAction
-				environmentAction.filter(component) // Filtering events not led out to the port
-				xSts.environmentalAction = environmentAction
+				val lastSchedulingIndex = scheduledInstances.lastIndexOf(subcomponent)
+				val newInEventAction = newXSts.inEventAction as CompositeAction
+				if (component instanceof CascadeCompositeComponent && i !== lastSchedulingIndex) {
+					newInEventAction.resetNonPersistentParameters(type)
+					// If this instance is scheduled multiple times, the inputs must be reset
+					// Except after the last time:i !== lastSchedulingIndex
+					mergedAction.actions += newInEventAction // Putting the reset in the merged action
+					// When i == lastSchedulingIndex, the else branch will be executed and there will be only one in-event setting
+				}
+				else {
+					val inEventAction = createSequentialAction
+					inEventAction.actions += xSts.inEventAction
+					inEventAction.actions += newInEventAction
+					// Resetting events not led out to the system port (internal/channel events)
+					inEventAction.resetInternalAssignments(component)
+					xSts.inEventAction = inEventAction
+				}
+				// Out event
+				val outEventAction = createSequentialAction
+				outEventAction.actions += xSts.outEventAction
+				outEventAction.actions += newXSts.outEventAction
+					// Resetting events not led out to the system port (internal/channel events)
+				outEventAction.resetInternalAssignments(component)
+				xSts.outEventAction = outEventAction
 			}
 		}
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
@@ -197,9 +225,9 @@ class GammaToXSTSTransformer {
 				]
 			}
 			// Original action
-			it.actions += xSts.environmentalAction
+			it.actions += xSts.inEventAction
 		]
-		xSts.environmentalAction = xStsEnvironmentalAction
+		xSts.inEventAction = xStsEnvironmentalAction
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
 	}
 	

@@ -286,8 +286,20 @@ class ActionOptimizer {
 	 * The isTop flag specifies whether the given action should be preserved (true) or deleted (false).
 	 */
 	protected def dispatch List<Action> simplifyNonDeterministicActions(NonDeterministicAction action, boolean isTop) {
+		val actions = action.actions
 		val newXStsActions = newLinkedList
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		// Removing same branches
+		val coveredXStsActions = newArrayList
+		for (var i = 0; i < actions.size - 1; i++) {
+			val lhs = actions.get(i)
+			for (var j = i + 1; j < actions.size; j++) {
+				val rhs = actions.get(j)
+				if (lhs.helperEquals(rhs)) {
+					coveredXStsActions += lhs
+				}
+			}
+		}
+		for (xStsSubaction : actions.reject[coveredXStsActions.contains(it)].map[it.clone(true, true)]) {
 			if (xStsSubaction instanceof NonDeterministicAction) {
 				// Subactions of a NonDeterministicAction
 				for (xStsNonDeterministicSubaction : xStsSubaction.actions) {
