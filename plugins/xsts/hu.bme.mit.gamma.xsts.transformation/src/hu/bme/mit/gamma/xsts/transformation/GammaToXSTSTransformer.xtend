@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
+import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -49,13 +50,16 @@ class GammaToXSTSTransformer {
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	// Top component arguments
 	protected final List<Expression> topComponentArguments
+	// Scheduling constraint
+	protected final Integer schedulingConstraint
 	
 	new() {
-		this(#[])
+		this(#[], null)
 	}
 	
-	new(List<Expression> topComponentArguments) {
+	new(List<Expression> topComponentArguments, Integer schedulingConstraint) {
 		this.topComponentArguments = topComponentArguments
+		this.schedulingConstraint = schedulingConstraint
 	}
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
@@ -83,7 +87,8 @@ class GammaToXSTSTransformer {
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Optimizing
-		xSts.initializingAction = xSts.initializingAction.optimize
+		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
+		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
 		xSts.environmentalAction = xSts.environmentalAction.optimize
 		return xSts
@@ -128,6 +133,7 @@ class GammaToXSTSTransformer {
 				xSts.variableDeclarations += newXSts.variableDeclarations
 				xSts.transientVariables += newXSts.transientVariables
 				xSts.controlVariables += newXSts.controlVariables
+				xSts.clockVariables += newXSts.clockVariables
 				xSts.transitions += newXSts.transitions
 				xSts.constraints += newXSts.constraints
 				// Merged action
@@ -136,10 +142,14 @@ class GammaToXSTSTransformer {
 				mergedAction.actions += newXSts.mergedTransition.action
 				xSts.mergedTransition.action = mergedAction
 				// Initializing action
-				val initAction = createSequentialAction
-				initAction.actions += xSts.initializingAction
-				initAction.actions += newXSts.initializingAction
-				xSts.initializingAction = initAction
+				val configInitAction = createSequentialAction
+				configInitAction.actions += xSts.configurationInitializingAction
+				configInitAction.actions += newXSts.configurationInitializingAction
+				xSts.configurationInitializingAction = configInitAction
+				val variableInitAction = createSequentialAction
+				variableInitAction.actions += xSts.variableInitializingAction
+				variableInitAction.actions += newXSts.variableInitializingAction
+				xSts.variableInitializingAction = variableInitAction
 				// Environmental action
 				val environmentAction = createSequentialAction
 				environmentAction.actions += xSts.environmentalAction
@@ -160,7 +170,37 @@ class GammaToXSTSTransformer {
 		lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
-		return xStsEntry.key
+		val xSts = xStsEntry.key
+		xSts.setClockVariables
+		return xSts
+	}
+	
+	protected def void setClockVariables(XSTS xSts) {
+		if (schedulingConstraint === null) {
+			return
+		}
+		val xStsEnvironmentalAction = createSequentialAction => [
+			// Increasing the clock variables
+			for (xStsClockVariable : xSts.clockVariables) {
+				it.actions += createAssignmentAction => [
+					it.lhs = createReferenceExpression => [
+						it.declaration = xStsClockVariable
+					]
+					it.rhs = createAddExpression => [
+						it.operands += createReferenceExpression => [
+							it.declaration = xStsClockVariable
+						]
+						it.operands += createIntegerLiteralExpression => [
+							it.value = BigInteger.valueOf(schedulingConstraint)
+						]
+					]
+				]
+			}
+			// Original action
+			it.actions += xSts.environmentalAction
+		]
+		xSts.environmentalAction = xStsEnvironmentalAction
+		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
 	}
 	
 	protected def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {

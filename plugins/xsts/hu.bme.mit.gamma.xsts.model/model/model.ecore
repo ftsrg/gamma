@@ -27,8 +27,10 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableGroups" upperBound="-1"
         eType="#//VariableGroup" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="initializingAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="configurationInitializingAction"
+        lowerBound="1" eType="#//Action" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingAction"
+        lowerBound="1" eType="#//Action" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="environmentalAction" lowerBound="1"
         eType="#//Action" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"

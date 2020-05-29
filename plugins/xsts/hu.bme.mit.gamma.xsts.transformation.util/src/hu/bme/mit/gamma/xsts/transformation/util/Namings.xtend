@@ -53,6 +53,7 @@ class Namings {
 	// XSTS customization
 	
 	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable).variableName»_«instance.name»'''
+	static def String customizeName(TimeoutDeclaration timeout, ComponentInstance instance) '''«getName(timeout).variableName»_«instance.name»'''
 	static def String customizeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
 	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getInName(port).variableName»_«instance.name»'''
 	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance.name»'''
