@@ -163,7 +163,7 @@ class GammaToXSTSTransformer {
 				val lastSchedulingIndex = scheduledInstances.lastIndexOf(subcomponent)
 				val newInEventAction = newXSts.inEventAction as CompositeAction
 				if (component instanceof CascadeCompositeComponent && i !== lastSchedulingIndex) {
-					newInEventAction.resetNonPersistentParameters(type)
+					newInEventAction.resetNonPersistentParameters(type) // TODO not working in the case of sync
 					// If this instance is scheduled multiple times, the inputs must be reset
 					// Except after the last time: i !== lastSchedulingIndex
 					mergedAction.actions += newInEventAction // Putting the reset in the merged action
@@ -174,7 +174,7 @@ class GammaToXSTSTransformer {
 					inEventAction.actions += xSts.inEventAction
 					inEventAction.actions += newInEventAction
 					// Resetting events not led out to the system port (internal/channel events)
-					inEventAction.resetInternalAssignments(component)
+					inEventAction.resetInternalAssignments(component) // TODO not working in the case of sync
 					xSts.inEventAction = inEventAction
 				}
 				// Out event
@@ -182,7 +182,7 @@ class GammaToXSTSTransformer {
 				outEventAction.actions += xSts.outEventAction
 				outEventAction.actions += newXSts.outEventAction
 				// Resetting events not led out to the system port (internal/channel events)
-				outEventAction.resetInternalAssignments(component)
+				outEventAction.resetInternalAssignments(component) // TODO not working in the case of sync
 				xSts.outEventAction = outEventAction
 			}
 		}

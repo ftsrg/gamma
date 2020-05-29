@@ -30,16 +30,18 @@ import hu.bme.mit.gamma.statechart.model.Region
 import hu.bme.mit.gamma.statechart.model.SchedulingOrder
 import hu.bme.mit.gamma.statechart.model.State
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.model.TimeoutAction
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import java.util.List
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -181,6 +183,39 @@ class StatechartToLowlevelTransformer {
 	}
 
 	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
+		val statechart = timeout.containingStatechart
+		val transitions = statechart.transitions.filter[EcoreUtil.getAllContents(it, true)
+			.filter(TimeoutEventReference).exists[it.timeout === timeout]]
+		// We can optimize, if this timeout is used for triggering the transitions of only one state
+		if (transitions.size == 1) {
+			val transition = transitions.head
+			val source = transition.sourceState
+			if (source instanceof State) {
+				// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
+				if (EcoreUtil.getAllContents(source, true)
+						.filter(TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
+					// We can optimize, if all outgoing transitions use (potentially) only this timeout
+					if (source.outgoingTransitions.map[EcoreUtil.getAllContents(it, true)
+							.filter(TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
+						val gammaParentRegion = source.parentRegion
+						if (trace.doesRegionHaveOptimizedTimeout(gammaParentRegion)) {
+							val lowlevelTimeout = trace.getTimeout(gammaParentRegion)
+							trace.put(timeout, lowlevelTimeout)
+							return lowlevelTimeout
+						}
+						else {
+							val lowlevelTimeout = timeout.createTimeoutVariable
+							trace.put(gammaParentRegion, lowlevelTimeout)
+							return lowlevelTimeout
+						}
+					}
+				}
+			}
+		}
+		return timeout.createTimeoutVariable
+	}
+	
+	protected def createTimeoutVariable(TimeoutDeclaration timeout) {
 		val lowlevelTimeout = createVariableDeclaration => [
 			it.name = getName(timeout)
 			it.type = createIntegerTypeDefinition // Could be rational

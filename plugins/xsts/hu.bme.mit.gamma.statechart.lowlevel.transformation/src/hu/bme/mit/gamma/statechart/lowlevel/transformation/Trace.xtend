@@ -48,6 +48,9 @@ package class Trace {
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = new HashMap<State, hu.bme.mit.gamma.statechart.lowlevel.model.State>
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = new HashMap<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState>
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = new HashMap<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition>
+	// For timeout declaration optimization
+	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
+	
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -406,6 +409,23 @@ package class Trace {
 	def get(Transition gammaTransition) {
 		checkNotNull(gammaTransition)
 		transitionMappings.get(gammaTransition)
+	}
+	
+	// TimeoutDeclaration optimization
+	def put(Region gammaRegion, VariableDeclaration lowlevelTimeout) {
+		checkNotNull(gammaRegion)
+		checkNotNull(lowlevelTimeout)
+		regionTimeoutMappings.put(gammaRegion, lowlevelTimeout)
+	}
+
+	def doesRegionHaveOptimizedTimeout(Region gammaRegion) {
+		checkNotNull(gammaRegion)
+		regionTimeoutMappings.containsKey(gammaRegion)
+	}
+
+	def getTimeout(Region gammaRegion) {
+		checkNotNull(gammaRegion)
+		regionTimeoutMappings.get(gammaRegion)
 	}
 	
 	private static class Triple<K, V, T> {
