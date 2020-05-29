@@ -144,7 +144,10 @@ class GammaToXSTSTransformer {
 				// Merged action
 				val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
 				mergedAction.actions += xSts.mergedTransition.action
-				mergedAction.actions += newXSts.mergedTransition.action
+				val actualComponentMergedAction = createSequentialAction => [
+					it.actions += newXSts.mergedTransition.action
+				]
+				mergedAction.actions += actualComponentMergedAction
 				xSts.mergedTransition.action = mergedAction
 				// Initializing action
 				val variableInitAction = createSequentialAction
@@ -160,29 +163,32 @@ class GammaToXSTSTransformer {
 				entryAction.actions += newXSts.entryEventAction
 				xSts.entryEventAction = entryAction
 				// Environmental action
-				val lastSchedulingIndex = scheduledInstances.lastIndexOf(subcomponent)
 				val newInEventAction = newXSts.inEventAction as CompositeAction
-				if (component instanceof CascadeCompositeComponent && i !== lastSchedulingIndex) {
-					newInEventAction.resetNonPersistentParameters(type) // TODO not working in the case of sync
-					// If this instance is scheduled multiple times, the inputs must be reset
-					// Except after the last time: i !== lastSchedulingIndex
-					mergedAction.actions += newInEventAction // Putting the reset in the merged action
-					// When i == lastSchedulingIndex, the else branch will be executed and there will be only one in-event setting
+				val newOutEventAction = newXSts.outEventAction as CompositeAction
+				// Resetting channel events
+				if (component instanceof CascadeCompositeComponent) {
+					// Resetting IN events AFTER schedule
+					val clonedNewInEventAction = newInEventAction.clone(true, true) // Clone is important
+					clonedNewInEventAction.resetEverythingExceptPersistentParameters(type)
+					actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
 				}
 				else {
-					val inEventAction = createSequentialAction
-					inEventAction.actions += xSts.inEventAction
-					inEventAction.actions += newInEventAction
-					// Resetting events not led out to the system port (internal/channel events)
-					inEventAction.resetInternalAssignments(component) // TODO not working in the case of sync
-					xSts.inEventAction = inEventAction
+					// Resetting OUT events BEFORE schedule
+					val clonedNewOutEventAction = newOutEventAction.clone(true, true) // Clone is important
+					clonedNewOutEventAction.resetEverythingExceptPersistentParameters(type)
+					actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 				}
+				// In event
+				newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+				val inEventAction = createSequentialAction
+				inEventAction.actions += xSts.inEventAction
+				inEventAction.actions += newInEventAction
+				xSts.inEventAction = inEventAction
 				// Out event
+				newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
 				val outEventAction = createSequentialAction
 				outEventAction.actions += xSts.outEventAction
-				outEventAction.actions += newXSts.outEventAction
-				// Resetting events not led out to the system port (internal/channel events)
-				outEventAction.resetInternalAssignments(component) // TODO not working in the case of sync
+				outEventAction.actions += newOutEventAction
 				xSts.outEventAction = outEventAction
 			}
 		}

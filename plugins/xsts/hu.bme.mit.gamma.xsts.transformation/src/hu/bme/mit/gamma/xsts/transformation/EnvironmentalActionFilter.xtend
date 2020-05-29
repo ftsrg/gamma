@@ -29,7 +29,7 @@ class EnvironmentalActionFilter {
 	// Auxiliary objects
 	protected extension ExpressionUtil expressionUtil = new ExpressionUtil
 	
-	def void resetInternalAssignments(CompositeAction action, Component component) {
+	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
 		// Input and output events and parameters
 		for (port : component.allConnectedSimplePorts) {
@@ -48,16 +48,16 @@ class EnvironmentalActionFilter {
 			}
 		}
 		// Clock variable settings are retained too - not necessary as the timeouts are in the merged action now
-		for (simpleInstance : component.allSimpleInstances) {
-			val statechart = simpleInstance.type as StatechartDefinition
-			for (timeoutDelcaration : statechart.timeoutDeclarations) {
-				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
-			}
-		}
-		action.filter
+//		for (simpleInstance : component.allSimpleInstances) {
+//			val statechart = simpleInstance.type as StatechartDefinition
+//			for (timeoutDelcaration : statechart.timeoutDeclarations) {
+//				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
+//			}
+//		}
+		action.delete
 	}
 	
-	def void resetNonPersistentParameters(CompositeAction action, Component component) {
+	def void resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
@@ -72,10 +72,10 @@ class EnvironmentalActionFilter {
 				}
 			}
 		}
-		action.filter
+		action.reset
 	}
 	
-	private def void filter(CompositeAction action) {
+	private def void reset(CompositeAction action) {
 		val xStsSubactions = action.actions
 		val copyXStsSubactions = newArrayList
 		copyXStsSubactions += xStsSubactions
@@ -96,7 +96,32 @@ class EnvironmentalActionFilter {
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {
-				xStsSubaction.filter
+				xStsSubaction.reset
+			}
+		}
+	}
+	
+	private def void delete(CompositeAction action) {
+		val xStsSubactions = action.actions
+		val copyXStsSubactions = newArrayList
+		copyXStsSubactions += xStsSubactions
+		for (xStsSubaction : copyXStsSubactions) {
+			if (xStsSubaction instanceof AssignmentAction) {
+				val name = xStsSubaction.lhs.declaration.name
+				if (!necessaryNames.contains(name)) {
+					// Deleting
+					xStsSubactions -= xStsSubaction
+				}
+			}
+			else if (xStsSubaction instanceof AssumeAction) {
+				val variables = xStsSubaction.assumption.referredVariables
+				if (!variables.exists[necessaryNames.contains(it.name)]) {
+					// Deleting the assume action
+					xStsSubactions -= xStsSubaction
+				}
+			}
+			else if (xStsSubaction instanceof CompositeAction) {
+				xStsSubaction.delete
 			}
 		}
 	}
