@@ -325,7 +325,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static Collection<Port> getAllConnectedSimplePorts(Component component) {
-		List<Port> simplePorts = new ArrayList<Port>();
+		Set<Port> simplePorts = new HashSet<Port>();
 		for (Port port : getAllPorts(component)) {
 			simplePorts.addAll(getAllConnectedSimplePorts(port));
 		}
@@ -333,7 +333,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static Collection<Port> getAllConnectedSimplePorts(Port port) {
-		List<Port> simplePorts = new ArrayList<Port>();
+		Set<Port> simplePorts = new HashSet<Port>();
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
 			simplePorts.add(port);
