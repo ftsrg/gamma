@@ -19,6 +19,7 @@ import java.util.Set
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 
 class EnvironmentalActionFilter {
 	// Names that need to be kept
@@ -28,10 +29,11 @@ class EnvironmentalActionFilter {
 	
 	def void filter(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
+		// Input and output events and parameters
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
-			for (eventDeclaration : port.interfaceRealization.interface.events) {
+			for (eventDeclaration : port.interfaceRealization.interface.allEventDeclarations) {
 				val event = eventDeclaration.event
 				necessaryNames += customizeInputName(event, port, instance)
 				necessaryNames += customizeOutputName(event, port, instance)
@@ -39,6 +41,13 @@ class EnvironmentalActionFilter {
 					necessaryNames += customizeInName(parameter, port, instance)
 					necessaryNames += customizeOutName(parameter, port, instance)
 				}
+			}
+		}
+		// Clock variable settings are retained too
+		for (simpleInstance : component.allSimpleInstances) {
+			val statechart = simpleInstance.type as StatechartDefinition
+			for (timeoutDelcaration : statechart.timeoutDeclarations) {
+				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
 			}
 		}
 		action.filter

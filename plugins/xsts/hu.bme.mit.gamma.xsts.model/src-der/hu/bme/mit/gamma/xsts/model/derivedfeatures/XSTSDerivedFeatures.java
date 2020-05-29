@@ -34,9 +34,19 @@ import hu.bme.mit.gamma.xsts.model.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.model.XSTS;
+import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 
 public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 
+	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public static SequentialAction getInitializingAction(XSTS xSts) {
+		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getConfigurationInitializingAction(), true, true));
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getVariableInitializingAction(), true, true));
+		return sequentialAction;
+	}
+	
 	public static Declaration getOriginalVariable(Declaration variable) {
 		if (variable instanceof PrimedVariable) {
 			VariableDeclaration primedVariable = ((PrimedVariable) variable).getPrimedVariable();

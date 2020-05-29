@@ -257,25 +257,36 @@ class LowlevelToXSTSTransformer {
 			topRegionInitializationRule = createRule(Statecharts.instance).action [
 				val lowlevelStatechart = it.statechart
 				val regionInitializingAction = createParallelAction // Each region at the same time
-				initializingAction as CompositeAction => [
+				configurationInitializingAction as CompositeAction => [
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					regionInitializingAction.actions += createSequentialAction => [
-						it.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
-						it.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
-					]
+					regionInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
+				}
+				val entryEventInitializingAction = createParallelAction // Each region at the same time
+				variableInitializingAction as CompositeAction => [
+					it.actions += entryEventInitializingAction
+				]
+				for (lowlevelTopRegion : lowlevelStatechart.regions) {
+					entryEventInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
 				}
 			].build
 		}
 		return topRegionInitializationRule
 	}
 
-	protected def getInitializingAction() {
-		if (xSts.initializingAction === null) {
-			xSts.initializingAction = createSequentialAction
+	protected def getConfigurationInitializingAction() {
+		if (xSts.configurationInitializingAction === null) {
+			xSts.configurationInitializingAction = createSequentialAction
 		}
-		return xSts.initializingAction
+		return xSts.configurationInitializingAction
+	}
+	
+		protected def getVariableInitializingAction() {
+		if (xSts.variableInitializingAction === null) {
+			xSts.variableInitializingAction = createSequentialAction
+		}
+		return xSts.variableInitializingAction
 	}
 
 	/**
@@ -455,7 +466,8 @@ class LowlevelToXSTSTransformer {
 		// Initial value to the events, their order is not interesting
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
 		for (xStsVariable : xStsVariables) {
-			initializingAction as SequentialAction => [
+			// configurationInitializingAction as it must be set before setting the configuration
+			configurationInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
 					it.lhs = createReferenceExpression => [it.declaration = xStsVariable]
 					it.rhs = xStsVariable.initialValue
@@ -726,7 +738,8 @@ class LowlevelToXSTSTransformer {
 	}
 
 	protected def optimizeActions() {
-		xSts.initializingAction = xSts.initializingAction.optimize
+		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
+		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
 		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
 		xSts.environmentalAction = xSts.environmentalAction.optimize
 		/* Note: no optimization on the list of transitions as the

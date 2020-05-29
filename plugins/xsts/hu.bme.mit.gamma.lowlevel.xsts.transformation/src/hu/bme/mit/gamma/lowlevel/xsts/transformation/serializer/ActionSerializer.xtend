@@ -20,9 +20,11 @@ import hu.bme.mit.gamma.xsts.model.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XTransition
 
+import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
+
 class ActionSerializer {
 	// Auxiliary objects
-	protected final extension DeclarationSerializer declarationSerializer = new DeclarationSerializer();
+	protected final extension DeclarationSerializer declarationSerializer = new DeclarationSerializer
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 		
 	def serializeXSTS(XSTS xSts) '''

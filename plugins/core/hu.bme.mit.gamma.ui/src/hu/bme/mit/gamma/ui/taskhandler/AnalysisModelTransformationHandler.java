@@ -29,11 +29,13 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.TimeSpecification;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
@@ -68,7 +70,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				transformer = new ThetaTransformer();
 				break;
 			default:
-				throw new IllegalArgumentException("Currently only UPPAAL and Theta supported.");
+				throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
 		}
 		transformer.execute(analysisModelTransformation);
 	}
@@ -130,7 +132,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				testGenerationHandler.setInteractionRepresentation(
 						getInteractionRepresentation(coverage.getInteractionRepresentation()));
 			}
-			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " + newTopComponent.eResource().getResourceSet());
+			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
+					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
 				newTopComponent, analysisModelTransformation.getArguments(),
@@ -228,19 +231,41 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class ThetaTransformer  extends AnalysisModelTransformer {
 		
+		protected StatechartUtil statechartUtil = new StatechartUtil();
+		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			// Unfolding the given system
 			Component component = analysisModelTransformation.getComponent();
 			Package gammaPackage = (Package) component.eContainer();
 			AnalysisModelPreprocessor preprocessor = new AnalysisModelPreprocessor();
+			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
 			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
 					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
 			Package newPackage = (Package) newTopComponent.eContainer();
-			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(analysisModelTransformation.getArguments());
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(analysisModelTransformation.getArguments(),
+					schedulingConstraint);
 			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
 			gammaToXSTSTransformer.executeAndSerializeAndSave(newPackage, xStsFile);
 			logger.log(Level.INFO, "XSTS transformation has been finished.");
+		}
+		
+		private Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
+			if (constraint == null) {
+				return null;
+			}
+			if (constraint instanceof hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) {
+				hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint orchestratingConstraint =
+						(hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint) constraint;
+				TimeSpecification minimumPeriod = orchestratingConstraint.getMinimumPeriod();
+				TimeSpecification maximumPeriod = orchestratingConstraint.getMaximumPeriod();
+				int min = statechartUtil.evaluateMilliseconds(minimumPeriod);
+				int max = statechartUtil.evaluateMilliseconds(maximumPeriod);
+				if (min == max) {
+					return min;
+				}
+			}
+			throw new IllegalArgumentException("Not known constraint: " + constraint);
 		}
 	
 	}
