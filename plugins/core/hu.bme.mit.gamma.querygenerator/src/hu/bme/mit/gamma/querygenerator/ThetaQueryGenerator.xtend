@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
@@ -50,7 +51,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return parentRegion.customizeName(instance) + " == " + state.customizeName
+		return '''«parentRegion.customizeName(instance)» == «state.customizeName»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.parentRegion.customizeName(instance)» == «parent.customizeName»«ENDFOR»'''
 	}
 	
 	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
