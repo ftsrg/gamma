@@ -165,7 +165,7 @@ class GammaToXSTSTransformer {
 				if (component instanceof CascadeCompositeComponent && i !== lastSchedulingIndex) {
 					newInEventAction.resetNonPersistentParameters(type)
 					// If this instance is scheduled multiple times, the inputs must be reset
-					// Except after the last time:i !== lastSchedulingIndex
+					// Except after the last time: i !== lastSchedulingIndex
 					mergedAction.actions += newInEventAction // Putting the reset in the merged action
 					// When i == lastSchedulingIndex, the else branch will be executed and there will be only one in-event setting
 				}
@@ -181,7 +181,7 @@ class GammaToXSTSTransformer {
 				val outEventAction = createSequentialAction
 				outEventAction.actions += xSts.outEventAction
 				outEventAction.actions += newXSts.outEventAction
-					// Resetting events not led out to the system port (internal/channel events)
+				// Resetting events not led out to the system port (internal/channel events)
 				outEventAction.resetInternalAssignments(component)
 				xSts.outEventAction = outEventAction
 			}
@@ -207,7 +207,7 @@ class GammaToXSTSTransformer {
 		if (schedulingConstraint === null) {
 			return
 		}
-		val xStsEnvironmentalAction = createSequentialAction => [
+		val xStsClockSettingAction = createSequentialAction => [
 			// Increasing the clock variables
 			for (xStsClockVariable : xSts.clockVariables) {
 				it.actions += createAssignmentAction => [
@@ -224,10 +224,10 @@ class GammaToXSTSTransformer {
 					]
 				]
 			}
-			// Original action
-			it.actions += xSts.inEventAction
+			// Putting it in merged transition as it does not work in environment action
+			it.actions += xSts.mergedTransition.action
 		]
-		xSts.inEventAction = xStsEnvironmentalAction
+		xSts.mergedTransition.action = xStsClockSettingAction
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
 	}
 	

@@ -728,7 +728,8 @@ class LowlevelToXSTSTransformer {
 		// if there are orthogonal regions as ParallelActions and SequentialActions mean
 		// AND logical relation in between the assumptions, so even if a certain region
 		// has no enabled transitions, the following orthogonal regions should be able to fire
-		if (!xStsTransitionGuards.empty && lowlevelRegion.hasOrthogonalRegion) {
+		// It is also needed if there are no orthogonal regions?
+		if (!xStsTransitionGuards.empty/* && lowlevelRegion.hasOrthogonalRegion*/) {
 			xStsAction.extendChoiceWithBranch(
 				createAndExpression => [
 					// Region is active
