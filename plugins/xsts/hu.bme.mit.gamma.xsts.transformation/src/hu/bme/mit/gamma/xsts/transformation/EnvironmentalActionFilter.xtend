@@ -47,7 +47,7 @@ class EnvironmentalActionFilter {
 				}
 			}
 		}
-		// Clock variable settings are retained too
+		// Clock variable settings are retained too - not necessary as the timeouts are in the merged action now
 		for (simpleInstance : component.allSimpleInstances) {
 			val statechart = simpleInstance.type as StatechartDefinition
 			for (timeoutDelcaration : statechart.timeoutDeclarations) {

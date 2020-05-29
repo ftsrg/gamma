@@ -42,9 +42,18 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getVariableInitializingAction(), true, true));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getConfigurationInitializingAction(), true, true));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getEntryEventAction(), true, true));
+		final Action variableInitializingAction = xSts.getVariableInitializingAction();
+		if (!(variableInitializingAction instanceof EmptyAction)) {
+			sequentialAction.getActions().add(ecoreUtil.clone(variableInitializingAction, true, true));
+		}
+		final Action configurationInitializingAction = xSts.getConfigurationInitializingAction();
+		if (!(configurationInitializingAction instanceof EmptyAction)) {
+			sequentialAction.getActions().add(ecoreUtil.clone(configurationInitializingAction, true, true));
+		}
+		final Action entryEventAction = xSts.getEntryEventAction();
+		if (!(entryEventAction instanceof EmptyAction)) {
+			sequentialAction.getActions().add(ecoreUtil.clone(entryEventAction, true, true));
+		}
 		return sequentialAction;
 	}
 	
