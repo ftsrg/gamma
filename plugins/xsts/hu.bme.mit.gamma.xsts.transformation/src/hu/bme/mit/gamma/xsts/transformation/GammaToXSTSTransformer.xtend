@@ -32,7 +32,6 @@ import java.io.File
 import java.math.BigInteger
 import java.util.List
 
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -121,6 +120,7 @@ class GammaToXSTSTransformer {
 	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
 		var XSTS xSts = null
 		val scheduledInstances = component.scheduledInstances
+		val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
 		for (var i = 0; i < scheduledInstances.size; i++) {
 			val subcomponent = scheduledInstances.get(i)
 			val type = subcomponent.type
@@ -141,14 +141,6 @@ class GammaToXSTSTransformer {
 				xSts.clockVariables += newXSts.clockVariables
 				xSts.transitions += newXSts.transitions
 				xSts.constraints += newXSts.constraints
-				// Merged action
-				val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
-				mergedAction.actions += xSts.mergedTransition.action
-				val actualComponentMergedAction = createSequentialAction => [
-					it.actions += newXSts.mergedTransition.action
-				]
-				mergedAction.actions += actualComponentMergedAction
-				xSts.mergedTransition.action = mergedAction
 				// Initializing action
 				val variableInitAction = createSequentialAction
 				variableInitAction.actions += xSts.variableInitializingAction
@@ -162,36 +154,50 @@ class GammaToXSTSTransformer {
 				entryAction.actions += xSts.entryEventAction
 				entryAction.actions += newXSts.entryEventAction
 				xSts.entryEventAction = entryAction
-				// Environmental action
-				val newInEventAction = newXSts.inEventAction as CompositeAction
-				val newOutEventAction = newXSts.outEventAction as CompositeAction
-				// Resetting channel events
-				if (component instanceof CascadeCompositeComponent) {
-					// Resetting IN events AFTER schedule
-					val clonedNewInEventAction = newInEventAction.clone(true, true) // Clone is important
-					clonedNewInEventAction.resetEverythingExceptPersistentParameters(type)
-					actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
-				}
-				else {
-					// Resetting OUT events BEFORE schedule
-					val clonedNewOutEventAction = newOutEventAction.clone(true, true) // Clone is important
-					clonedNewOutEventAction.resetEverythingExceptPersistentParameters(type)
-					actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
-				}
-				// In event
-				newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			}
+			// Merged action
+			val actualComponentMergedAction = createSequentialAction => [
+				it.actions += newXSts.mergedTransition.action
+			]
+			mergedAction.actions += actualComponentMergedAction
+			// In and Out actions
+			val newInEventAction = newXSts.inEventAction as CompositeAction
+			val newOutEventAction = newXSts.outEventAction as CompositeAction
+			// Resetting channel events
+			// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
+			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
+			// Note, System in and out events are reset in the env action
+			if (component instanceof CascadeCompositeComponent) {
+				// Resetting IN events AFTER schedule
+				val clonedNewInEventAction = newInEventAction.clone(true, true) // Clone is important
+				clonedNewInEventAction.resetEverythingExceptPersistentParameters(type)
+				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
+			}
+			else {
+				// Resetting OUT events BEFORE schedule
+				val clonedNewOutEventAction = newOutEventAction.clone(true, true) // Clone is important
+				clonedNewOutEventAction.resetEverythingExceptPersistentParameters(type)
+				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
+			}
+			// In event
+			newInEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
 				val inEventAction = createSequentialAction
 				inEventAction.actions += xSts.inEventAction
 				inEventAction.actions += newInEventAction
 				xSts.inEventAction = inEventAction
-				// Out event
-				newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			}
+			// Out event
+			newOutEventAction.deleteEverythingExceptSystemEventsAndParameters(component)
+			if (xSts !== newXSts) { // Only if this is not the first component
 				val outEventAction = createSequentialAction
 				outEventAction.actions += xSts.outEventAction
 				outEventAction.actions += newOutEventAction
 				xSts.outEventAction = outEventAction
 			}
 		}
+		xSts.mergedTransition.action = mergedAction
+		// Connect only after xSts.mergedTransition.action = mergedAction
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		xSts.name = component.name
 		return xSts
@@ -206,6 +212,11 @@ class GammaToXSTSTransformer {
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key
 		xSts.setClockVariables
+		// 0-ing all variable declaration initial expression, the normal ones are in the init action
+		for (variable : xSts.variableDeclarations) {
+			val type = variable.type
+			variable.expression = type.defaultExpression
+		}
 		return xSts
 	}
 	
