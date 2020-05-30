@@ -13,10 +13,11 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.xsts.model.model.XSTS
 
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class StatechartWrapperCodeGenerator {
 
@@ -26,17 +27,19 @@ class StatechartWrapperCodeGenerator {
 	final String CLASS_NAME
 	
 	final StatechartDefinition gammaStatechart
+	final XSTS xSts
 	
 	final extension TypeSerializer typeSerializer = new TypeSerializer
 	final extension PortDiagnoser portDiagnoser = new PortDiagnoser
 	
 	new(String basePackageName, String interfacePackageName, String statechartPackageName,
-			StatechartDefinition gammaStatechart) {
+			StatechartDefinition gammaStatechart, XSTS xSts) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.INTERFACE_PACKAGE_NAME = interfacePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
 		this.CLASS_NAME = gammaStatechart.componentClassName
 		this.gammaStatechart = gammaStatechart
+		this.xSts = xSts
 	}
 	
 	protected def createStatechartWrapperClass() '''
@@ -178,12 +181,12 @@ class StatechartWrapperCodeGenerator {
 			}
 			
 			private void executeStep() {
-				«IF !gammaStatechart.timeoutDeclarations.empty»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
-				«FOR timeout : gammaStatechart.timeoutDeclarations»
+				«IF !xSts.clockVariables.empty»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
+				«FOR timeout : xSts.clockVariables»
 					«CLASS_NAME.toFirstLower».set«timeout.name.toFirstUpper»(«CLASS_NAME.toFirstLower».get«timeout.name.toFirstUpper»() + elapsedTime);
 				«ENDFOR»
 				«CLASS_NAME.toFirstLower».runCycle();
-				«IF !gammaStatechart.timeoutDeclarations.empty»timer.saveTime(this);«ENDIF»
+				«IF !xSts.clockVariables.empty»timer.saveTime(this);«ENDIF»
 				notifyListeners();
 			}
 			

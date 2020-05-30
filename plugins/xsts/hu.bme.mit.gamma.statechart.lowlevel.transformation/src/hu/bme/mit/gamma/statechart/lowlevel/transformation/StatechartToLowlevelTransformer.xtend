@@ -219,6 +219,7 @@ class StatechartToLowlevelTransformer {
 		val lowlevelTimeout = createVariableDeclaration => [
 			it.name = getName(timeout)
 			it.type = createIntegerTypeDefinition // Could be rational
+			// Initial expression in EventReferenceTransformer
 		]
 		trace.put(timeout, lowlevelTimeout)
 		return lowlevelTimeout

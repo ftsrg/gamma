@@ -31,7 +31,7 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public String getParameters() {
-		return "--domain EXPL --cex " + getTraceFile();
+		return "--domain EXPL";
 	}
 
 	@Override
@@ -52,10 +52,6 @@ public class ThetaController extends AbstractController {
 	@Override
 	public AbstractVerifier createVerifier() {
 		return new ThetaVerifier();
-	}
-	
-	public String getTraceFile() {
-		return getLocation(file).substring(0, getLocation(file).lastIndexOf(".")) + ".cex";
 	}
 
 }

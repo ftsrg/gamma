@@ -67,7 +67,7 @@ class StatechartToJavaCodeGenerator {
 		this.statechartInterfaceGenerator = new StatechartInterfaceCodeGenerator(INTERFACE_PACKAGE_NAME,
 			STATECHART_PACKAGE_NAME, gammaStatechart)
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(BASE_PACKAGE_NAME,
-			INTERFACE_PACKAGE_NAME, STATECHART_PACKAGE_NAME, gammaStatechart)
+			INTERFACE_PACKAGE_NAME, STATECHART_PACKAGE_NAME, gammaStatechart, xSts)
 		this.statechartCodeGenerator = new StatechartCodeGenerator(BASE_PACKAGE_NAME, STATECHART_PACKAGE_NAME,
 			gammaStatechart.wrappedStatemachineClassName, xSts, actionSerializer)
 		this.gammaStatechart = gammaStatechart

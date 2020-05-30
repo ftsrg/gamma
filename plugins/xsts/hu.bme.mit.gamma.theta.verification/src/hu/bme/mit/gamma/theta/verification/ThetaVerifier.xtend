@@ -41,7 +41,7 @@ class ThetaVerifier extends AbstractVerifier {
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop --loglevel RESULT
-			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\" --loglevel RESULT"
+			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\"  --cex " + modelFile.traceFile
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process = Runtime.getRuntime().exec(command)
@@ -70,6 +70,10 @@ class ThetaVerifier extends AbstractVerifier {
 	
 	override getTemporaryQueryFilename(File modelFile) {
 		return "." + modelFile.extensionlessName + ".prop"
+	}
+	
+	def getTraceFile(File modelFile) {
+		return modelFile.parent + File.separator + modelFile.extensionlessName + ".cex";
 	}
 	
 }
