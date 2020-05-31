@@ -663,11 +663,7 @@ class LowlevelToXSTSTransformer {
 		val xStsMergedAction = createNonDeterministicAction
 		statechart.mergeTransitions(xStsMergedAction)
 		// Putting it in the XSTS model
-		xSts.mergedTransition = createXTransition => [
-			it.action = xStsMergedAction
-			it.reads += it.action.readVariables
-			it.writes += it.action.writtenVariables
-		]
+		xSts.mergedAction = xStsMergedAction
 		// Adding default else branch: if "region" cannot fire
 		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
 	}
@@ -725,7 +721,7 @@ class LowlevelToXSTSTransformer {
 		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
 		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
 		xSts.entryEventAction = xSts.entryEventAction.optimize
-		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
+		xSts.mergedAction = xSts.mergedAction.optimize
 		xSts.inEventAction = xSts.inEventAction.optimize
 		xSts.outEventAction = xSts.outEventAction.optimize
 		/* Note: no optimization on the list of transitions as the

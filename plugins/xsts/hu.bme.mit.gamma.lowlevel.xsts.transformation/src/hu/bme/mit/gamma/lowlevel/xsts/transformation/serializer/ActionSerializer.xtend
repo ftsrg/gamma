@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.xsts.model.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.model.XSTS
-import hu.bme.mit.gamma.xsts.model.model.XTransition
 
 import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
@@ -31,7 +30,7 @@ class ActionSerializer {
 		«xSts.serializeDeclarations(false)»
 		
 		trans {
-			«xSts.mergedTransition.serializeTransition»
+			«xSts.mergedAction.serialize»
 		}
 		init {
 			«xSts.initializingAction.serialize»
@@ -39,16 +38,6 @@ class ActionSerializer {
 		env {
 			«xSts.environmentalAction.serialize»
 		}
-	'''
-	
-	def serializeXSTSTransitions(XSTS xSts) '''
-		«FOR xStsTransition : xSts.transitions»
-			«xStsTransition.serializeTransition»
-		«ENDFOR»
-	'''
-	
-	def serializeTransition(XTransition xStsTransition) '''
-		«xStsTransition.action.serialize»
 	'''
 	
 	def dispatch String serialize(AssumeAction action) '''

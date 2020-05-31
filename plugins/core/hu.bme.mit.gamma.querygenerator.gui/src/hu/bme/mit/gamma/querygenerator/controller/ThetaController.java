@@ -31,7 +31,7 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public String getParameters() {
-		return "--domain EXPL";
+		return "";//"--domain EXPL";
 	}
 
 	@Override
