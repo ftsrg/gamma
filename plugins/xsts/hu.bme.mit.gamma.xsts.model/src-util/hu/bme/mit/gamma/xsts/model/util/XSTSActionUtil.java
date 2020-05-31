@@ -169,6 +169,9 @@ public class XSTSActionUtil {
 	}
 
 	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
+		if (switchAction.getActions().isEmpty()) {
+			return;
+		}
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		OrExpression orExpression = expressionFactory.createOrExpression();
 		negatedCondition.setOperand(orExpression);
