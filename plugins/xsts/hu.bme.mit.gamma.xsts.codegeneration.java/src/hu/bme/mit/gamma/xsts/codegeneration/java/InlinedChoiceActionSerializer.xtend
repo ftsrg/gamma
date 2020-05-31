@@ -61,7 +61,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			private void changeState() {
 				// Initializing the temporary variables
 				«variableDeclarations.serializeInitializationAssignments»
-				«xSts.mergedTransition.action.serialize»
+				«xSts.mergedAction.serialize»
 				// Finalizing the actions
 				«variableDeclarations.serializeFinalizationAssignments»
 			}

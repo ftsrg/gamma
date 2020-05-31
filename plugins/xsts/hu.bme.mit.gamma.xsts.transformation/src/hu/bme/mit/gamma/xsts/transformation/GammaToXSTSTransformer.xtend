@@ -92,7 +92,7 @@ class GammaToXSTSTransformer {
 		xSts.entryEventAction = xSts.entryEventAction.optimize
 		xSts.inEventAction = xSts.inEventAction.optimize
 		xSts.outEventAction = xSts.outEventAction.optimize
-		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
+		xSts.mergedAction = xSts.mergedAction.optimize
 		return xSts
 	}
 	
@@ -157,7 +157,7 @@ class GammaToXSTSTransformer {
 			}
 			// Merged action
 			val actualComponentMergedAction = createSequentialAction => [
-				it.actions += newXSts.mergedTransition.action
+				it.actions += newXSts.mergedAction
 			]
 			mergedAction.actions += actualComponentMergedAction
 			// In and Out actions
@@ -196,7 +196,7 @@ class GammaToXSTSTransformer {
 				xSts.outEventAction = outEventAction
 			}
 		}
-		xSts.mergedTransition.action = mergedAction
+		xSts.mergedAction = mergedAction
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		xSts.name = component.name
@@ -242,9 +242,9 @@ class GammaToXSTSTransformer {
 				]
 			}
 			// Putting it in merged transition as it does not work in environment action
-			it.actions += xSts.mergedTransition.action
+			it.actions += xSts.mergedAction
 		]
-		xSts.mergedTransition.action = xStsClockSettingAction
+		xSts.mergedAction = xStsClockSettingAction
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
 	}
 	
