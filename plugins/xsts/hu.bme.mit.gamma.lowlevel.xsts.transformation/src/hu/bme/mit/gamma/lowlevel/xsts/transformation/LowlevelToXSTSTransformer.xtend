@@ -62,9 +62,8 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import org.eclipse.emf.ecore.util.EcoreUtil
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class LowlevelToXSTSTransformer {
 	// Transformation-related extensions
@@ -177,7 +176,6 @@ class LowlevelToXSTSTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
 		optimizeActions
-		extendChoicesWithDefaultBranch
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -670,6 +668,8 @@ class LowlevelToXSTSTransformer {
 			it.reads += it.action.readVariables
 			it.writes += it.action.writtenVariables
 		]
+		// Adding default else branch: if "region" cannot fire
+		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
 	}
 
 	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
@@ -681,6 +681,8 @@ class LowlevelToXSTSTransformer {
 				val xStsSubchoiceAction = createNonDeterministicAction
 				xStsParallelAction.actions += xStsSubchoiceAction
 				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
+				// Adding default else branch: if "region" cannot fire
+				xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
 			}
 		} else if (lowlevelRegions.size == 1) {
 			lowlevelRegions.head.mergeTransitionsOfRegion(xStsAction)
@@ -689,12 +691,11 @@ class LowlevelToXSTSTransformer {
 
 	protected def void mergeTransitionsOfRegion(Region lowlevelRegion, NonDeterministicAction xStsAction) {
 		val xStsTransitions = newHashSet
-		val xStsTransitionGuards = newLinkedList
 		val lowlevelStates = lowlevelRegion.stateNodes.filter(State)
 		// Simple outgoing transitions
 		for (lowlevelState : lowlevelStates) {
-			for (lowlevelOutgoingTransition : lowlevelState.outgoingTransitions.
-				filter[trace.isTraced(it)] /* Simple transitions */ ) {
+			for (lowlevelOutgoingTransition : lowlevelState.outgoingTransitions
+					.filter[trace.isTraced(it)] /* Simple transitions */ ) {
 				xStsTransitions += trace.getXStsTransition(lowlevelOutgoingTransition)
 			}
 			if (lowlevelState.isComposite) {
@@ -718,45 +719,6 @@ class LowlevelToXSTSTransformer {
 		for (xStsTransition : xStsTransitions) {
 			xStsAction.actions += xStsTransition.action.clone // Cloning is important
 		}
-		// Collecting preconditions for the else branch
-		for (lowlevelState : lowlevelStates) {
-			for (lowlevelOutgoingTransition : lowlevelState.outgoingTransitions
-			 /* Every transition, not just the simple and the pseudo ones above, as the pseudo ones are in
-			    a different region, which might cause trouble when identifying a region as unable to fire */ ) {
-				xStsTransitionGuards += lowlevelOutgoingTransition.createXStsTransitionPrecondition
-			}
-		}
-		// Else branch in the choice if the region has no enabled transitions, is needed
-		// if there are orthogonal regions as ParallelActions and SequentialActions mean
-		// AND logical relation in between the assumptions, so even if a certain region
-		// has no enabled transitions, the following orthogonal regions should be able to fire
-		// It is also needed if there are no orthogonal regions?
-//		if (!xStsTransitionGuards.empty/* && lowlevelRegion.hasOrthogonalRegion*/) {
-//			xStsAction.extendChoiceWithBranch(
-//				createAndExpression => [
-//					// Region is active
-//					it.operands += createNotExpression => [
-//						it.operand = createEqualityExpression => [
-//							it.leftOperand = createReferenceExpression => [
-//								it.declaration = trace.getXStsVariable(lowlevelRegion)
-//							]
-//							it.rightOperand = createEnumerationLiteralExpression => [
-//								it.reference = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
-//							]
-//						]
-//					]
-//					// None of the transitions are enabled
-//					it.operands += createNotExpression => [
-//						it.operand = createOrExpression => [
-//							for (xStsTransitionGuard : xStsTransitionGuards) {
-//								it.operands += xStsTransitionGuard
-//							}
-//						]
-//					]
-//				],
-//				createEmptyAction
-//			)
-//		}
 	}
 
 	protected def optimizeActions() {
@@ -770,15 +732,6 @@ class LowlevelToXSTSTransformer {
 		 deletion of actions would mean the breaking of the trace. */
 	}
 	
-	protected def extendChoicesWithDefaultBranch() {
-		val xStsChoices = EcoreUtil.getAllContents(xSts.mergedTransition, true)
-			.filter(NonDeterministicAction).toSet
-		for (xStsChoice : xStsChoices) {
-			xStsChoice.extendChoiceWithDefaultBranch(createEmptyAction)
-		}
-		xSts.mergedTransition.action = xSts.mergedTransition.action.optimize
-	}
-
 	def dispose() {
 		if (transformation !== null) {
 			transformation.ruleEngine.dispose
