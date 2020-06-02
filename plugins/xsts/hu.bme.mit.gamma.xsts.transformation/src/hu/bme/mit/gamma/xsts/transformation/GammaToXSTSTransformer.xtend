@@ -170,14 +170,14 @@ class GammaToXSTSTransformer {
 			// Note, System in and out events are reset in the env action
 			if (component instanceof CascadeCompositeComponent) {
 				// Resetting IN events AFTER schedule
-				val clonedNewInEventAction = newInEventAction.clone(true, true) // Clone is important
-				clonedNewInEventAction.resetEverythingExceptPersistentParameters(type)
+				val clonedNewInEventAction = newInEventAction.clone(true, true)
+					.resetEverythingExceptPersistentParameters(type) // Clone is important
 				actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
 			}
 			else {
 				// Resetting OUT events BEFORE schedule
 				val clonedNewOutEventAction = newOutEventAction.clone(true, true) // Clone is important
-				clonedNewOutEventAction.resetEverythingExceptPersistentParameters(type)
+					.resetEverythingExceptPersistentParameters(type)
 				actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 			}
 			// In event
