@@ -115,25 +115,25 @@ abstract class AbstractQueryGenerator {
 			if (result.contains(stateName)) {
 				val targetStateName = getTargetStateName(stateName)
 				// The parentheses need to be \-d
-				result = result.replaceAll(stateName, targetStateName)
+				result = result.replace(stateName, targetStateName)  // Replaces all occurrences
 			}
 		}
 		for (String variableName : variableNames) {
 			if (result.contains(variableName)) {
 				val targetVariableName = getTargetVariableName(variableName)
-				result = result.replaceAll(variableName, targetVariableName)
+				result = result.replace(variableName, targetVariableName) // Replaces all occurrences
 			}
 		}
 		for (String systemOutEventName : systemOutEventNames) {
 			if (result.contains(systemOutEventName)) {
 				val targetVariableName = getTargetOutEventName(systemOutEventName)
-				result = result.replaceAll(systemOutEventName, targetVariableName)
+				result = result.replace(systemOutEventName, targetVariableName) // Replaces all occurrences
 			}
 		}
 		for (String systemOutEventParameterName : systemOutEventParameterNames) {
 			if (result.contains(systemOutEventParameterName)) {
 				val targetVariableName = getTargetOutEventParameterName(systemOutEventParameterName)
-				result = result.replaceAll(systemOutEventParameterName, targetVariableName)
+				result = result.replace(systemOutEventParameterName, targetVariableName)  // Replaces all occurrences
 			}
 		}
 		return result.wrap
