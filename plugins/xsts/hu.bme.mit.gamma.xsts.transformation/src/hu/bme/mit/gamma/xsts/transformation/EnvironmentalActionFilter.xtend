@@ -13,10 +13,13 @@ package hu.bme.mit.gamma.xsts.transformation
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency
+import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.util.Set
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -28,6 +31,7 @@ class EnvironmentalActionFilter {
 	Set<String> necessaryNames
 	// Auxiliary objects
 	protected extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
@@ -57,7 +61,7 @@ class EnvironmentalActionFilter {
 		action.delete
 	}
 	
-	def void resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
+	def Action resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
 		necessaryNames = newHashSet
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
@@ -72,33 +76,24 @@ class EnvironmentalActionFilter {
 				}
 			}
 		}
-		action.reset
+		return action.reset
 	}
 	
-	private def void reset(CompositeAction action) {
-		val xStsSubactions = action.actions
-		val copyXStsSubactions = newArrayList
-		copyXStsSubactions += xStsSubactions
-		for (xStsSubaction : copyXStsSubactions) {
-			if (xStsSubaction instanceof AssignmentAction) {
-				val name = xStsSubaction.lhs.declaration.name
-				if (!necessaryNames.contains(name)) {
-					// Resetting the variable if it is not led out to the system port
-					val defaultExpression = xStsSubaction.lhs.declaration.type.defaultExpression
-					xStsSubaction.rhs = defaultExpression
-				}
-			}
-			else if (xStsSubaction instanceof AssumeAction) {
-				val variables = xStsSubaction.assumption.referredVariables
-				if (!variables.exists[necessaryNames.contains(it.name)]) {
-					// Deleting the assume action
-					xStsSubactions -= xStsSubaction
-				}
-			}
-			else if (xStsSubaction instanceof CompositeAction) {
-				xStsSubaction.reset
+	private def Action reset(CompositeAction action) {
+		val xStsAssignments = newHashSet
+		for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction).toIterable) {
+			val declaration = xStsAssignment.lhs.declaration
+			val name = declaration.name
+			if (!necessaryNames.contains(name)) {
+				// Resetting the variable if it is not led out to the system port
+				val defaultExpression = declaration.type.defaultExpression
+				xStsAssignment.rhs = defaultExpression
+				xStsAssignments += xStsAssignment
 			}
 		}
+		return createSequentialAction => [
+			it.actions += xStsAssignments
+		]
 	}
 	
 	private def void delete(CompositeAction action) {
