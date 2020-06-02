@@ -25,7 +25,13 @@ class GammaEcoreUtil {
 			if (referenceHolder instanceof List) {
 				val list =  referenceHolder as List<EObject>
 				val index = list.indexOf(oldObject)
-				list.set(index, newObject)
+				if (list.contains(newObject)) {
+					// To avoid 'no duplicates' constraint violation
+					list.remove(index)
+				}
+				else {
+					list.set(index, newObject)
+				}
 			}
 			else {
 				oldReference.set(newObject)

@@ -25,19 +25,22 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
+import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionTransformer {
+	// Auxiliary object
+	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
@@ -48,7 +51,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transformExpression(NullaryExpression expression) {
-		return expression.clone
+		return expression.clone(true, true)
 	}
 	
 	def dispatch Expression transformExpression(UnaryExpression expression) {
@@ -69,6 +72,19 @@ class ExpressionTransformer {
 	def dispatch Expression transformExpression(ReferenceExpression expression) {
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
+			// Constant type declarations have to be transformed as their right hand side is inlined
+			val constantType = declaration.type
+			if (constantType instanceof TypeReference) {
+				val constantTypeDeclaration = constantType.reference
+				val typeDefinition = constantTypeDeclaration.type
+				if (!typeDefinition.isPrimitive) {
+					if (!trace.isMapped(constantTypeDeclaration)) {
+						val transformedTypeDeclaration = constantTypeDeclaration.transformTypeDeclaration
+						val lowlevelPackage = trace.lowlevelPackage
+						lowlevelPackage.typeDeclarations += transformedTypeDeclaration
+					}
+				}
+			}
 			return declaration.expression.transformExpression
 		}
 		checkState(declaration instanceof VariableDeclaration || 
@@ -118,23 +134,23 @@ class ExpressionTransformer {
 	}
 
 	protected def dispatch Type transformType(BooleanTypeDefinition type) {
-		return type.clone
+		return type.clone(true, true)
 	}
 
 	protected def dispatch Type transformType(IntegerTypeDefinition type) {
-		return type.clone
+		return type.clone(true, true)
 	}
 
 	protected def dispatch Type transformType(DecimalTypeDefinition type) {
-		return type.clone
+		return type.clone(true, true)
 	}
 	
 	protected def dispatch Type transformType(RationalTypeDefinition type) {
-		return type.clone
+		return type.clone(true, true)
 	}
 	
 	protected def dispatch Type transformType(EnumerationTypeDefinition type) {
-		return type.clone
+		return type.clone(true, true)
 	}
 	
 	protected def dispatch Type transformType(TypeReference type) {
@@ -144,10 +160,28 @@ class ExpressionTransformer {
 		if (typeDefinition.isPrimitive) {
 			return typeDefinition.transformType
 		}
-		checkState(trace.isMapped(typeDeclaration))		
+		val lowlevelTypeDeclaration = if (trace.isMapped(typeDeclaration)) {
+			trace.get(typeDeclaration)
+		}
+		else {
+			// Transforming type declaration
+			val transformedTypeDeclaration = typeDeclaration.transformTypeDeclaration
+			val lowlevelPackage = trace.lowlevelPackage
+			lowlevelPackage.typeDeclarations += transformedTypeDeclaration
+			transformedTypeDeclaration
+		}
 		return createTypeReference => [
-			it.reference = trace.get(typeDeclaration)
+			it.reference = lowlevelTypeDeclaration
 		]
+	}
+	
+	protected def transformTypeDeclaration(TypeDeclaration typeDeclaration) {
+		val newTypeDeclaration = constraintFactory.create(typeDeclaration.eClass) as TypeDeclaration => [
+			it.name = getName(typeDeclaration)
+			it.type = typeDeclaration.type.transformType
+		]
+		trace.put(typeDeclaration, newTypeDeclaration)
+		return newTypeDeclaration
 	}
 	
 	protected def VariableDeclaration transformVariable(VariableDeclaration variable) {
@@ -158,11 +192,4 @@ class ExpressionTransformer {
 		]
 	}
 	
-	protected def <T extends EObject> T clone(T element) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		val copier = new Copier(true, true)
-		val clone = copier.copy(element) as T;
-		copier.copyReferences();
-		return clone;
-	}
 }

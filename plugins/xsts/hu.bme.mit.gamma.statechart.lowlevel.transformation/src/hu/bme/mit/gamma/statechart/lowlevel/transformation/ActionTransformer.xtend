@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.BreakStatement
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.EmptyStatement
+import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
@@ -28,14 +29,15 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.model.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
 import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Collection
 import java.util.List
-import hu.bme.mit.gamma.action.model.ExpressionStatement
 
 class ActionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
@@ -170,7 +172,7 @@ class ActionTransformer {
 		return createForStatement => [
 			it.parameter = createParameterDeclaration => [
 				it.name = action.parameter.name
-				it.type = action.parameter.type.clone
+				it.type = action.parameter.type.clone(true, true)
 			]
 			it.range = action.range.transformExpression
 			it.body = action.body.transformAction
