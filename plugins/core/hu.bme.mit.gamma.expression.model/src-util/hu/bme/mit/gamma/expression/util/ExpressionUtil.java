@@ -97,6 +97,18 @@ public class ExpressionUtil {
 		}
 		return evaluatedExpressions;
 	}
+	
+	public Collection<EnumerationLiteralExpression> mapToEnumerationLiterals(EnumerationTypeDefinition type,
+			Collection<Expression> expressions) {
+		List<EnumerationLiteralExpression> literals = new ArrayList<EnumerationLiteralExpression>();
+		for (Expression expression : expressions) {
+			int index = evaluator.evaluate(expression);
+			EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
+			literalExpression.setReference(type.getLiterals().get(index));
+			literals.add(literalExpression);
+		}
+		return literals;
+	}
 
 	public boolean isDefinitelyTrueExpression(Expression expression) {
 		if (expression instanceof TrueExpression) {
