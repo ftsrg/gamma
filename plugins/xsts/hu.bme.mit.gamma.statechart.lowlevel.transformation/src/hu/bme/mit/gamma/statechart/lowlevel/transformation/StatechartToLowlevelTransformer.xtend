@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
@@ -37,6 +36,7 @@ import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.TransitionPriority
 import hu.bme.mit.gamma.statechart.model.interface_.Event
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 import org.eclipse.emf.ecore.util.EcoreUtil
 
@@ -47,6 +47,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
+	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
 	protected final extension ActionUtil actionUtil = new ActionUtil
 	protected final extension EventAttributeTransformer eventAttributeTransformer = new EventAttributeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
@@ -85,23 +86,9 @@ class StatechartToLowlevelTransformer {
 			it.name = _package.name
 		]
 		trace.put(_package, lowlevelPackage) // Saving in trace
-		for (typeDeclaration : _package.typeDeclarations
-				.reject[it.type.isPrimitive] /* Not serializing "typedefs" */) {
-			lowlevelPackage.typeDeclarations += typeDeclaration.transform
-		}
-		for (_import : _package.imports) {
-			lowlevelPackage.imports += _import.transform
-		}
+		// Transforming other type declarations in ExpressionTransformer during variable transformation
+		// Not transforming imports as it is unnecessary (Traces.getLowlevelPackage would not work either)
 		return lowlevelPackage
-	}
-	
-	protected def transform(TypeDeclaration typeDeclaration) {
-		val newTypeDeclaration = constraintFactory.create(typeDeclaration.eClass) as TypeDeclaration => [
-			it.name = getName(typeDeclaration)
-			it.type = typeDeclaration.type.transformType
-		]
-		trace.put(typeDeclaration, newTypeDeclaration)
-		return newTypeDeclaration
 	}
 	
 	protected def VariableDeclaration transform(ParameterDeclaration gammaParameter) {
@@ -370,7 +357,7 @@ class StatechartToLowlevelTransformer {
 											.reject[it === transition]
 											.map[it.guard]) {
 						it.operands += createNotExpression => [
-							it.operand = otherGuard.clone
+							it.operand = otherGuard.clone(true, true)
 						]
 					}
 				]

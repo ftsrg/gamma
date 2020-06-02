@@ -69,6 +69,12 @@ package class Trace {
 		packageMappings.get(gammaPackage)
 	}
 	
+	def getLowlevelPackage() {
+		val packages = packageMappings.values
+		checkState(packages.size == 1)
+		return packages.head
+	}
+	
 	// Type declarations
 	def put(TypeDeclaration gammaType, TypeDeclaration lowlevelType) {
 		checkNotNull(gammaType)

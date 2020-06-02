@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.statechart.model.TimeSpecification
 import hu.bme.mit.gamma.statechart.model.TimeUnit
 import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
@@ -31,6 +32,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class EventReferenceTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
@@ -86,13 +88,13 @@ class EventReferenceTransformer {
 			val lowlevelTimeoutVar = trace.get(timeout)
 			// The timeouts are TRUE at start according to semantics, that is why they have to set to the highest value
 			if (lowlevelTimeoutVar.expression === null) {
-				lowlevelTimeoutVar.expression = value.clone // This is already a low-level expression
+				lowlevelTimeoutVar.expression = value.clone(true, true) // This is already a low-level expression
 			}
 			else {
 				// Multiple timeouts can be transformed to a single variable (optimization)
 				lowlevelTimeoutVar.expression = createAddExpression => [
 					it.operands += lowlevelTimeoutVar.expression
-					it.operands += value.clone
+					it.operands += value.clone(true, true)
 				]
 			}
 			// [500 <= timeoutClock]
