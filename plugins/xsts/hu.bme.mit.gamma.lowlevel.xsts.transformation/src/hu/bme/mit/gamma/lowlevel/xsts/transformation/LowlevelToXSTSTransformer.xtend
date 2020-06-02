@@ -64,6 +64,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class LowlevelToXSTSTransformer {
 	// Transformation-related extensions
@@ -596,11 +598,22 @@ class LowlevelToXSTSTransformer {
 				for (lowlevelParameterDeclaration : it.event.parameters) {
 					val xStsAllPossibleParameterValues = newHashSet
 					// Initial value
-					xStsAllPossibleParameterValues += lowlevelParameterDeclaration.type.initialValueOfType
+					val type = lowlevelParameterDeclaration.type
+					xStsAllPossibleParameterValues += type.initialValueOfType
 					for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
 						xStsAllPossibleParameterValues += lowlevelValue.clone // Cloning is important
 					}
 					val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
+					if (type instanceof TypeReference) {
+						// Mapping back to enum literals if necessary
+						val typeDeclaration = type.reference
+						val typeDefinition = typeDeclaration.type
+						if (typeDefinition instanceof EnumerationTypeDefinition) {
+							val enumLiterals = typeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
+							xStsPossibleParameterValues.clear
+							xStsPossibleParameterValues += enumLiterals
+						}
+					}
 					val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 					lowlevelEnvironmentalAction.actions += createIfAction(
 						// Only if the event is raised
