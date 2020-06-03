@@ -17,6 +17,8 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.util.EcoreUtil
 
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class TraceBackAnnotator {
 	
 	protected final String XSTS_TRACE = "(Trace"
@@ -125,74 +127,74 @@ class TraceBackAnnotator {
 					line = traceScanner.nextLine
 					line = traceScanner.nextLine.trim
 				}
-				default: {
-					// This is the place for the parsing
-					// First line contains a (ExplState ...
-					if (line.startsWith(EXPL_STATE)) {
-						line = line.substring(EXPL_STATE.length + 1)
-					}
-					line = line.unwrap
-					val split = line.split(" ")
-					val id = split.get(0)
-					val value = split.get(1)
-					switch (state) {
-						case STATE_CHECK: {
-							// It is either a state or a variable id
+			}
+			// We parse in every turn
+			// First line contains a (ExplState ...
+			if (line.startsWith(EXPL_STATE)) {
+				line = line.substring(EXPL_STATE.length + 1)
+			}
+			line = line.unwrap
+			val split = line.split(" ")
+			val id = split.get(0)
+			val value = split.get(1)
+			switch (state) {
+				case STATE_CHECK: {
+					try {
+						val instanceState = thetaQueryGenerator.getSourceState('''«id» == «value»''')
+						step.addInstanceState(instanceState.value, instanceState.key)
+					} catch (IllegalArgumentException e) {
+						try {
+							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
+							step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+						} catch (IllegalArgumentException e1) {
 							try {
-								val instanceState = thetaQueryGenerator.getSourceState('''«id» == «value»''')
-								step.addInstanceState(instanceState.value, instanceState.key)
-							} catch (IllegalArgumentException e) {
-								try {
-									val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
-									step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
-								} catch (IllegalArgumentException e1) {
-									try {
-										val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
-										if (value.equals("true")) {
-											val event = systemOutEvent.get(0) as Event
-											val port = systemOutEvent.get(1) as Port
-											step.addOutEvent(port, event)
-											// Denoting that this event has been actually
-											raisedOutEvents += new Pair(port, event)
-										}
-									} catch (IllegalArgumentException e2) {
-										try {
-											val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
-											val event = systemOutEvent.get(0) as Event
-											val port = systemOutEvent.get(1) as Port
-											val parameter = systemOutEvent.get(2) as ParameterDeclaration
-											step.addOutEventWithStringParameter(port, event, parameter, value)
-										} catch (IllegalArgumentException e3) {}
-									}
-								}
-							}
-						}
-						case ENVIRONMENT_CHECK: {
-							// TODO delays
-							try {
-								val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
+								val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
 								if (value.equals("true")) {
-									val event = systemInEvent.get(0) as Event
-									val port = systemInEvent.get(1) as Port
-									step.addInEvent(port, event)
+									val event = systemOutEvent.get(0) as Event
+									val port = systemOutEvent.get(1) as Port
+									val systemPort = port.connectedTopComponentPort
+									step.addOutEvent(systemPort, event)
 									// Denoting that this event has been actually
-									raisedInEvents += new Pair(port, event)
+									raisedOutEvents += new Pair(port, event)
 								}
-							} catch (IllegalArgumentException e) {
+							} catch (IllegalArgumentException e2) {
 								try {
-									val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
-									val event = systemInEvent.get(0) as Event
-									val port = systemInEvent.get(1) as Port
-									val parameter = systemInEvent.get(2) as ParameterDeclaration
-									step.addInEventWithParameter(port, event, parameter, value)
-								} catch (IllegalArgumentException e1) {}
+									val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
+									val event = systemOutEvent.get(0) as Event
+									val port = systemOutEvent.get(1) as Port
+									val systemPort = port.connectedTopComponentPort
+									val parameter = systemOutEvent.get(2) as ParameterDeclaration
+									step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+								} catch (IllegalArgumentException e3) {}
 							}
 						}
-						default: 
-							throw new IllegalArgumentException("Not known state: " + state)
 					}
 				}
-				
+				case ENVIRONMENT_CHECK: {
+					// TODO delays
+					try {
+						val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
+						if (value.equals("true")) {
+							val event = systemInEvent.get(0) as Event
+							val port = systemInEvent.get(1) as Port
+							val systemPort = port.connectedTopComponentPort
+							step.addInEvent(systemPort, event)
+							// Denoting that this event has been actually
+							raisedInEvents += new Pair(port, event)
+						}
+					} catch (IllegalArgumentException e) {
+						try {
+							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
+							val event = systemInEvent.get(0) as Event
+							val port = systemInEvent.get(1) as Port
+							val systemPort = port.connectedTopComponentPort
+							val parameter = systemInEvent.get(2) as ParameterDeclaration
+							step.addInEventWithParameter(systemPort, event, parameter, value)
+						} catch (IllegalArgumentException e1) {}
+					}
+				}
+				default:
+					throw new IllegalArgumentException("Not known state: " + state)
 			}
 		}
 		// Sorting if needed
