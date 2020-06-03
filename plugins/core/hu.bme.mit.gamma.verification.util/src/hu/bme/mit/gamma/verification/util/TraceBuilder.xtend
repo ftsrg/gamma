@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.verification
+package hu.bme.mit.gamma.verification.util
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
@@ -49,14 +49,7 @@ class TraceBuilder {
 	}
 	
 	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String string) {
-		switch (string) {
-			case "false":
-				return addInEvent(step, port, event, parameter, 0)
-			case "true":
-				return addInEvent(step, port, event, parameter, 1)
-			default:
-				return addInEvent(step, port, event, parameter, Integer.parseInt(string))
-		}
+		return addInEvent(step, port, event, parameter, string.parseString)
 	}
 	
 	def addInEvent(Step step, Port port, Event event) {
@@ -78,8 +71,7 @@ class TraceBuilder {
 		}
 	}
 	
-	protected def createRaiseEventAct(Port port, Event event,
-			ParameterDeclaration parameter,	Integer value) {
+	protected def createRaiseEventAct(Port port, Event event, ParameterDeclaration parameter, Integer value) {
 		val RaiseEventAct eventRaise = createRaiseEventAct => [
 			it.port = port
 			it.event = event
@@ -103,10 +95,29 @@ class TraceBuilder {
 		return paramType.createLiteral(value)
 	}
 	
-	protected def createVariableLiteral(VariableDeclaration variable,
-			Integer value) {
+	def createVariableLiteral(VariableDeclaration variable, String value) {
 		val type = variable.type
 		return type.createLiteral(value)
+	}
+	
+	def createVariableLiteral(VariableDeclaration variable, Integer value) {
+		val type = variable.type
+		return type.createLiteral(value)
+	}
+	
+	private def parseString(String value) {
+		switch (value) {
+			case "false":
+				return 0
+			case "true":
+				return 1
+			default:
+				return Integer.parseInt(value)
+		}
+	}
+	
+	private def Expression createLiteral(Type paramType, String value) {
+		return paramType.createLiteral(value.parseString)
 	}
 	
 	private def Expression createLiteral(Type paramType, Integer value) {
@@ -169,7 +180,7 @@ class TraceBuilder {
 		addOutEventWithParameter(step, port, event, null, null)
 	}
 	
-	protected def addOutEventWithParameter(Step step, Port port, Event event,
+	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = createRaiseEventAct(port, event, parameter, value)
 		val originalRaise = step.outEvents.findFirst[it.isOverWritten(eventRaise)]
@@ -184,8 +195,18 @@ class TraceBuilder {
 		}
 	}
 	
-	protected def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable,	Expression value) {
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, String value) {
+		val type = variable.type
+		step.instanceStates += createInstanceVariableState => [
+			it.instance = instance
+			it.declaration = variable
+			it.value = type.createLiteral(value)
+		]
+	}
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, Expression value) {
 		step.instanceStates += createInstanceVariableState => [
 			it.instance = instance
 			it.declaration = variable
@@ -193,7 +214,7 @@ class TraceBuilder {
 		]
 	}
 	
-	protected def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
+	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
 		step.instanceStates += createInstanceStateConfiguration => [
 			it.instance = instance
 			it.state = state

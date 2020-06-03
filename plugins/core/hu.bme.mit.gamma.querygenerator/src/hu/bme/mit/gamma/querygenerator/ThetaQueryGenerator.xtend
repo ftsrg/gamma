@@ -51,7 +51,11 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeName»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.parentRegion.customizeName(instance)» == «parent.customizeName»«ENDFOR»'''
+		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
+	}
+	
+	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
+		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
 	}
 	
 	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
@@ -70,11 +74,12 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceState(String targetStateName) {
 		for (match : instanceStates) {
-			val name = getTargetStateName(match.state, match.parentRegion, match.instance)
+			val name = getSingleTargetStateName(match.state, match.parentRegion, match.instance)
 			if (name.equals(targetStateName)) {
 				return new Pair(match.state, match.instance)
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 	def getSourceVariable(String targetVariableName) {
@@ -84,6 +89,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				return new Pair(match.variable, match.instance)
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
@@ -93,6 +99,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				return #[match.event, match.port, match.instance]
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 	def getSourceOutEventParamater(String targetOutEventParameterName) {
@@ -105,6 +112,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				}
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 }

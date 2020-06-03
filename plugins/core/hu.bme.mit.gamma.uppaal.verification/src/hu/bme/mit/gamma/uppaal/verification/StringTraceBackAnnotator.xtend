@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.uppaal.verification.patterns.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.verification.patterns.Traces
 import hu.bme.mit.gamma.uppaal.verification.patterns.VariableDelcarations
 import hu.bme.mit.gamma.uppaal.verification.patterns.VariableToEvent
+import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
