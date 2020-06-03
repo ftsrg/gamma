@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
+import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*

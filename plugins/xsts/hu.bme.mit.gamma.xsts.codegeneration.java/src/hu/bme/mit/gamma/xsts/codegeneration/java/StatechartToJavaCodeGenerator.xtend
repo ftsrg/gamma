@@ -11,16 +11,17 @@
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.EventCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.ReflectiveComponentCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerCallbackInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import java.io.File
-import java.io.FileWriter
-import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 
@@ -44,17 +45,21 @@ class StatechartToJavaCodeGenerator {
 	final StatechartInterfaceCodeGenerator statechartInterfaceGenerator
 	final StatechartWrapperCodeGenerator statechartWrapperCodeGenerator
 	final StatechartCodeGenerator statechartCodeGenerator
+	final ReflectiveComponentCodeGenerator reflectiveComponentCodeGenerator
 	
 	final StatechartDefinition gammaStatechart 
 	final XSTS xSts 
+	
+	// Auxiliary objects
+	protected final extension FileUtil fileUtil = new FileUtil
 	
 	new(String targetFolderUri, String basePackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts, ActionSerializer actionSerializer) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.BASE_FOLDER_URI = targetFolderUri + "/" + BASE_PACKAGE_NAME.replaceAll("\\.", "/")
-		this.INTERFACE_PACKAGE_NAME = BASE_PACKAGE_NAME + ".interfaces"
+		this.INTERFACE_PACKAGE_NAME = BASE_PACKAGE_NAME.interfacePackageString
 		this.INTERFACE_FOLDER_URI = targetFolderUri + "/" + INTERFACE_PACKAGE_NAME.replaceAll("\\.", "/")
-		this.STATECHART_PACKAGE_NAME = BASE_PACKAGE_NAME + "." + xSts.name.toLowerCase
+		this.STATECHART_PACKAGE_NAME = gammaStatechart.getPackageString(BASE_PACKAGE_NAME)
 		this.STATECHART_FOLDER_URI = targetFolderUri + "/" + STATECHART_PACKAGE_NAME.replaceAll("\\.", "/")
 		// Classes
 		this.eventCodeGenerator = new EventCodeGenerator(BASE_PACKAGE_NAME)
@@ -70,6 +75,7 @@ class StatechartToJavaCodeGenerator {
 			INTERFACE_PACKAGE_NAME, STATECHART_PACKAGE_NAME, gammaStatechart, xSts)
 		this.statechartCodeGenerator = new StatechartCodeGenerator(BASE_PACKAGE_NAME, STATECHART_PACKAGE_NAME,
 			gammaStatechart.wrappedStatemachineClassName, xSts, actionSerializer)
+		this.reflectiveComponentCodeGenerator = new ReflectiveComponentCodeGenerator(BASE_PACKAGE_NAME, gammaStatechart)
 		this.gammaStatechart = gammaStatechart
 		this.xSts = xSts
 	}
@@ -85,6 +91,8 @@ class StatechartToJavaCodeGenerator {
 		generateStatechartWrapperInterface
 		generateStatechartWrapperClass
 		generateStatechartClass
+		generateReflectiveInterface
+		generateReflectiveClass
 	}
 	
 	def generateEventClass() {
@@ -156,15 +164,24 @@ class StatechartToJavaCodeGenerator {
 		val code = statechartCodeGenerator.createStatechartClass
 		code.saveCode(componentUri)
 	}
+	
+	def generateReflectiveClass() {
+		val componentUri = STATECHART_FOLDER_URI + File.separator + reflectiveComponentCodeGenerator.className + ".java"
+		val code = reflectiveComponentCodeGenerator.createReflectiveClass
+		code.saveCode(componentUri)
+	}
+	
+	def generateReflectiveInterface() {
+		val componentUri = BASE_FOLDER_URI + File.separator + REFLECTIVE_INTERFACE + ".java"
+		val code = interfaceGenerator.createReflectiveInterface
+		code.saveCode(componentUri)
+	}
 
 	/**
 	 * Creates a Java class from the the given code at the location specified by the given URI.
 	 */
 	protected def void saveCode(CharSequence code, String uri) {
-		new File(uri).parentFile.mkdirs
-		val fileWriter = new FileWriter(uri)
-		fileWriter.write(code.toString)
-		fileWriter.close
+		uri.saveString(code.toString)
 	}
 	
 }

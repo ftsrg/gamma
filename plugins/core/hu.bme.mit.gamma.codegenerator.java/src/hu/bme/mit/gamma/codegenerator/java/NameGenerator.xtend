@@ -53,13 +53,6 @@ class NameGenerator {
 	}
 	
 	/**
-	 * Returns the name of the Java class of the component.
-	 */
-	def generateReflectiveComponentClassName(Component component) {
-		return "Reflective" + component.name.toFirstUpper
-	}
-		
-	/**
 	 * Returns the name of the Yakindu statemachine the given component is transformed from.
 	 * They use it for package namings. It does not contain the "Statemachine" suffix."
 	 */

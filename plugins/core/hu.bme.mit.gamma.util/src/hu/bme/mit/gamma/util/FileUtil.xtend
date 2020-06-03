@@ -6,6 +6,10 @@ import java.util.Scanner
 
 class FileUtil {
 	
+	def saveString(String uri, String string) {
+		new File(uri).saveString(string)
+	}
+	
 	def saveString(File file, String string) {
 		file.parentFile.mkdirs
 		try (val fileWriter = new FileWriter(file)) {
