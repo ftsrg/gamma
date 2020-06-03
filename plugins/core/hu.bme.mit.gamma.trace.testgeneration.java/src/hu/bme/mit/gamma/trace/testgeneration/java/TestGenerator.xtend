@@ -136,7 +136,7 @@ class TestGenerator {
 					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
 				«ELSE»
 «««				Each trace must reference the same component with the same parameter values (arguments)!
-				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»);
+				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', '»«parameter.serialize»«ENDFOR»);
 			«ENDIF»
 			}
 			

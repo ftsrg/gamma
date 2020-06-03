@@ -48,7 +48,7 @@ class AnalysisModelPreprocessor {
 			logger.log(Level.INFO, "Saving top component argument for " + parameter.name)
 			gammaPackage.topComponentArguments += argument
 			// Deleting because the parameter variables are not needed
-			argument.changeAndDelete(parameter, component)
+			argument.change(parameter, component)
 		}
 		return gammaPackage.preprocess(containingFile)
 	}
