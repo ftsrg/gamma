@@ -30,7 +30,11 @@ import static hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelD
 abstract class AbstractQueryGenerator {
 		
 	protected ViatraQueryEngine engine
-		
+	
+	def setEngine(ViatraQueryEngine engine) {
+		this.engine = engine
+	}
+	
 	def wrap(String id) {
 		return "(" + id + ")"
 	}
@@ -41,9 +45,13 @@ abstract class AbstractQueryGenerator {
 	
 	// Gamma identifiers
 	
+	def getInstanceStates() {
+		return InstanceStates.Matcher.on(engine).allMatches
+	}
+	
 	def List<String> getStateNames() {
 		val stateNames = newArrayList
-		for (InstanceStates.Match statesMatch : InstanceStates.Matcher.on(engine).allMatches) {
+		for (statesMatch : getInstanceStates) {
 			val stateName = statesMatch.state.name
 			val entry = getStateName(statesMatch.instance, statesMatch.parentRegion, statesMatch.state)
 			if (!stateName.startsWith("LocalReaction")) {
@@ -57,9 +65,13 @@ abstract class AbstractQueryGenerator {
 		return (instance.name + "." + getFullRegionPathName(parentRegion) + "." + state.name).wrap
 	}
 	
+	def getInstanceVariables() {
+		return InstanceVariables.Matcher.on(engine).allMatches
+	}
+	
 	def List<String> getVariableNames() {
 		val variableNames = newArrayList
-		for (InstanceVariables.Match variableMatch : InstanceVariables.Matcher.on(engine).allMatches) {
+		for (variableMatch : getInstanceVariables) {
 			val entry = variableMatch.instance.getVariableName(variableMatch.variable)
 			variableNames.add(entry)
 		}
@@ -70,9 +82,13 @@ abstract class AbstractQueryGenerator {
 		return (instance.name + "." + variable.name).wrap
 	}
 	
+	def getSystemOutEvents() {
+		return TopSyncSystemOutEvents.Matcher.on(engine).allMatches
+	}
+	
 	def List<String> getSystemOutEventNames() {
 		val eventNames = newArrayList
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+		for (eventsMatch : getSystemOutEvents) {
 			val entry = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			eventNames.add(entry)
 		}
@@ -85,7 +101,7 @@ abstract class AbstractQueryGenerator {
 	
 	def List<String> getSystemOutEventParameterNames() {
 		val parameterNames = newArrayList
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+		for (eventsMatch : getSystemOutEvents) {
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
 				val systemPort = eventsMatch.systemPort
@@ -156,7 +172,7 @@ abstract class AbstractQueryGenerator {
 	}
 	
 	protected def String getTargetVariableName(String variableName) {
-		for (InstanceVariables.Match instancesMatch : InstanceVariables.Matcher.on(engine).allMatches) {
+		for (instancesMatch : getInstanceVariables) {
 			val name = getVariableName(instancesMatch.instance, instancesMatch.variable)
 			if (variableName.equals(name)) {
 				return getTargetVariableName(instancesMatch.variable, instancesMatch.instance)
@@ -166,7 +182,7 @@ abstract class AbstractQueryGenerator {
 	}
 	
 	protected def String getTargetOutEventName(String portEventName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+		for (eventsMatch : getSystemOutEvents) {
 			val name = getSystemOutEventName(eventsMatch.systemPort, eventsMatch.event)
 			if (name.equals(portEventName)) {
 				return getTargetOutEventName(eventsMatch.event, eventsMatch.port, eventsMatch.instance)
@@ -176,7 +192,7 @@ abstract class AbstractQueryGenerator {
 	}
 	
 	protected def String getTargetOutEventParameterName(String portEventParameterName) {
-		for (TopSyncSystemOutEvents.Match eventsMatch : TopSyncSystemOutEvents.Matcher.on(engine).allMatches) {
+		for (eventsMatch : getSystemOutEvents) {
 			val systemPort = eventsMatch.systemPort
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {

@@ -36,7 +36,6 @@ import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
@@ -238,15 +237,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Unfolding the given system
 			Component component = analysisModelTransformation.getComponent();
 			Package gammaPackage = (Package) component.eContainer();
-			AnalysisModelPreprocessor preprocessor = new AnalysisModelPreprocessor();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
-					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
-			Package newPackage = (Package) newTopComponent.eContainer();
 			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(analysisModelTransformation.getArguments(),
 					schedulingConstraint);
 			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
-			gammaToXSTSTransformer.executeAndSerializeAndSave(newPackage, xStsFile);
+			gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(gammaPackage, xStsFile);
 			logger.log(Level.INFO, "XSTS transformation has been finished.");
 		}
 		
