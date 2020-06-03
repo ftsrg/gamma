@@ -21,10 +21,9 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 
 class TraceBackAnnotator {
 	
-	protected final String XSTS_TRACE = "(Trace"
-	protected final String XSTS_STATE = "(XstsState "
-	protected final String EXPL_STATE = "(ExplState "
-	protected final String XSTS_ACTION = "(XstsAction"
+	protected final String XSTS_TRACE = "(XstsStateSequence"
+	protected final String XSTS_STATE = "(XstsState"
+	protected final String EXPL_STATE = "(ExplState"
 	
 	protected final Scanner traceScanner
 	protected final extension ThetaQueryGenerator thetaQueryGenerator
@@ -83,13 +82,14 @@ class TraceBackAnnotator {
 							countedExplicitState++
 						}
 					}
+					line = traceScanner.nextLine.trim
 					state = BackAnnotatorState.STATE_CHECK
 				}
-				case line.startsWith(XSTS_ACTION): {
+				case line.startsWith(XSTS_STATE): {
 					// Deleting unnecessary in and out events
 					switch (state) {
 						case STATE_CHECK: {
-							val raiseEventActs = step.outEvents.filter(RaiseEventAct)
+							val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
 							for (raiseEventAct : raiseEventActs) {
 								if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
 									EcoreUtil.delete(raiseEventAct)
@@ -103,7 +103,7 @@ class TraceBackAnnotator {
 							state = BackAnnotatorState.ENVIRONMENT_CHECK
 						}
 						case ENVIRONMENT_CHECK: {
-							val raiseEventActs = step.actions.filter(RaiseEventAct)
+							val raiseEventActs = step.actions.filter(RaiseEventAct).toList
 							for (raiseEventAct : raiseEventActs) {
 								if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
 									EcoreUtil.delete(raiseEventAct)
@@ -122,17 +122,8 @@ class TraceBackAnnotator {
 					line = traceScanner.nextLine
 					line = traceScanner.nextLine.trim
 				}
-				case line.startsWith(XSTS_STATE): {
-					// Skipping actions
-					line = traceScanner.nextLine
-					line = traceScanner.nextLine.trim
-				}
 			}
 			// We parse in every turn
-			// First line contains a (ExplState ...
-			if (line.startsWith(EXPL_STATE)) {
-				line = line.substring(EXPL_STATE.length + 1)
-			}
 			line = line.unwrap
 			val split = line.split(" ")
 			val id = split.get(0)

@@ -48,8 +48,9 @@ class TraceBuilder {
 		}
 	}
 	
-	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String string) {
-		return addInEvent(step, port, event, parameter, string.parseString)
+	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String value) {
+		val type = parameter.type
+		return addInEvent(step, port, event, parameter, type.parseString(value))
 	}
 	
 	def addInEvent(Step step, Port port, Event event) {
@@ -105,7 +106,12 @@ class TraceBuilder {
 		return type.createLiteral(value)
 	}
 	
-	private def parseString(String value) {
+	private def parseString(Type type, String value) {
+		if (type instanceof EnumerationTypeDefinition) {
+			val literals = type.literals
+			val literal = literals.findFirst[it.name.equals(value)]
+			return literals.indexOf(literal)
+		}
 		switch (value) {
 			case "false":
 				return 0
@@ -117,7 +123,7 @@ class TraceBuilder {
 	}
 	
 	private def Expression createLiteral(Type paramType, String value) {
-		return paramType.createLiteral(value.parseString)
+		return paramType.createLiteral(paramType.parseString(value))
 	}
 	
 	private def Expression createLiteral(Type paramType, Integer value) {
@@ -182,7 +188,8 @@ class TraceBuilder {
 	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		addOutEventWithParameter(step, port, event, parameter, value.parseString)
+		val type = parameter.type
+		addOutEventWithParameter(step, port, event, parameter, type.parseString(value))
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
