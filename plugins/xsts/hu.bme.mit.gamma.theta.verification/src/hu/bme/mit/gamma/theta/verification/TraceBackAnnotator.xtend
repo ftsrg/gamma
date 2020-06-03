@@ -17,6 +17,8 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.util.EcoreUtil
 
+import static com.google.common.base.Preconditions.checkState
+
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TraceBackAnnotator {
@@ -60,6 +62,9 @@ class TraceBackAnnotator {
 		]
 		// Setting the arguments: AnalysisModelPreprocessor saved them in the Package
 		// Note that the top component does not contain parameter declarations anymore due to the preprocessing
+		checkState(gammaPackage.topComponentArguments.size == component.parameterDeclarations.size, 
+			"The numbers of top component arguments and top component parameters are not equal: " +
+			gammaPackage.topComponentArguments.size + " - " + component.parameterDeclarations.size)
 		logger.log(Level.INFO, "The number of arguments of the top component is " +
 			gammaPackage.topComponentArguments.size)
 		trace.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
@@ -82,6 +87,8 @@ class TraceBackAnnotator {
 							countedExplicitState++
 						}
 					}
+					// Adding reset
+					step.actions += createReset
 					line = traceScanner.nextLine.trim
 					state = BackAnnotatorState.STATE_CHECK
 				}
@@ -143,17 +150,17 @@ class TraceBackAnnotator {
 								if (value.equals("true")) {
 									val event = systemOutEvent.get(0) as Event
 									val port = systemOutEvent.get(1) as Port
-									val systemPort = port.connectedTopComponentPort
+									val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 									step.addOutEvent(systemPort, event)
 									// Denoting that this event has been actually
-									raisedOutEvents += new Pair(port, event)
+									raisedOutEvents += new Pair(systemPort, event)
 								}
 							} catch (IllegalArgumentException e2) {
 								try {
 									val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
 									val event = systemOutEvent.get(0) as Event
 									val port = systemOutEvent.get(1) as Port
-									val systemPort = port.connectedTopComponentPort
+									val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 									val parameter = systemOutEvent.get(2) as ParameterDeclaration
 									step.addOutEventWithStringParameter(systemPort, event, parameter, value)
 								} catch (IllegalArgumentException e3) {}
@@ -168,17 +175,17 @@ class TraceBackAnnotator {
 						if (value.equals("true")) {
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort
+							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							step.addInEvent(systemPort, event)
 							// Denoting that this event has been actually
-							raisedInEvents += new Pair(port, event)
+							raisedInEvents += new Pair(systemPort, event)
 						}
 					} catch (IllegalArgumentException e) {
 						try {
 							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
 							val event = systemInEvent.get(0) as Event
 							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort
+							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
 							step.addInEventWithParameter(systemPort, event, parameter, value)
 						} catch (IllegalArgumentException e1) {}
