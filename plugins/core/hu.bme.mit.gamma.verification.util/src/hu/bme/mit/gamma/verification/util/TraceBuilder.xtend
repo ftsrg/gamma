@@ -49,7 +49,7 @@ class TraceBuilder {
 	}
 	
 	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String value) {
-		val type = parameter.type
+		val type = parameter.type.typeDefinition
 		return addInEvent(step, port, event, parameter, type.parseString(value))
 	}
 	
@@ -188,7 +188,7 @@ class TraceBuilder {
 	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		val type = parameter.type
+		val type = parameter.type.typeDefinition
 		addOutEventWithParameter(step, port, event, parameter, type.parseString(value))
 	}
 	
