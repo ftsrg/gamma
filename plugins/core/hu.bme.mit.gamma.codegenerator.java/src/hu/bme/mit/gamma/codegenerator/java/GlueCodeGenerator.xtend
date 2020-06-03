@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimerCallbackInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
+import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
 import hu.bme.mit.gamma.statechart.model.Package
@@ -276,7 +277,7 @@ class GlueCodeGenerator {
 				val componentUri = BASE_PACKAGE_URI + File.separator  + it.statechartDefinition.containingPackage.name.toLowerCase
 				// Generating the reflective class
 				val reflectiveCode = it.statechartDefinition.generateReflectiveClass
-				reflectiveCode.saveCode(componentUri + File.separator + it.statechartDefinition.generateReflectiveComponentClassName + ".java")
+				reflectiveCode.saveCode(componentUri + File.separator + it.statechartDefinition.reflectiveClassName + ".java")
 			].build		
 		}
 		return simpleComponentsReflectionRule
@@ -310,7 +311,7 @@ class GlueCodeGenerator {
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generatePortOwnerInterfaceName + ".java")
 				// Generating the reflective class
 				val reflectiveCode = it.synchronousCompositeComponent.generateReflectiveClass
-				reflectiveCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.generateReflectiveComponentClassName + ".java")
+				reflectiveCode.saveCode(compositeSystemUri + File.separator + it.synchronousCompositeComponent.reflectiveClassName + ".java")
 			].build		
 		}
 		return synchronousCompositeComponentsRule

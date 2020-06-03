@@ -11,8 +11,12 @@
 package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.statechart.model.Port
+import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+
+import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class Namings {
 	
@@ -33,6 +37,12 @@ class Namings {
 	
 	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
 	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
+	
+	static def String getPackageString(Package _package, String base) '''«base».«_package.name.toLowerCase»'''
+	
+	static def String getPackageString(Component component, String base) '''«component.containingPackage.getPackageString(base)»'''
+	
+	static def String getInterfacePackageString(String base) '''«base».«INTERFACE_PACKAGE_POSTFIX»'''
 	
 	/**
 	 * Returns the name of the Java interface generated from the given Gamma interface, e.g., PortInterface. 
@@ -58,5 +68,10 @@ class Namings {
 	 * Returns the name of the Java class of the wrapped statemachine component.
 	 */
 	static def String getWrappedStatemachineClassName(Component component) '''«component.componentClassName»Statemachine'''
+	
+	/**
+	 * Returns the name of the Java object of the wrapped synchronous component.
+	 */
+	static def String getWrappedComponentName(AsynchronousAdapter component) '''«component.wrappedComponent.name»'''
 	
 }

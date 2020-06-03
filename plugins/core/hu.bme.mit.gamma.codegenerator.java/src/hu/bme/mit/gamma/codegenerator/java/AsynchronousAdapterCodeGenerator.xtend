@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.codegenerator.java.queries.ClockTriggersOfWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.PortEventTriggersOfWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfEvents
+import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.statechart.model.AnyTrigger
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.TimeSpecification

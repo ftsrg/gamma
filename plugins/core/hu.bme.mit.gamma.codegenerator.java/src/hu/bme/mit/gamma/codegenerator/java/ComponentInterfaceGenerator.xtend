@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
@@ -28,10 +29,12 @@ class ComponentInterfaceGenerator {
 	protected final String PACKAGE_NAME
 	//
 	protected final extension NameGenerator nameGenerator
+	protected final extension InterfaceCodeGenerator interfaceCodeGenerator
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName
 		this.nameGenerator = new NameGenerator(this.PACKAGE_NAME)
+		this.interfaceCodeGenerator = new InterfaceCodeGenerator(this.PACKAGE_NAME)
 	}
 	
 	/**
@@ -74,42 +77,8 @@ class ComponentInterfaceGenerator {
 		return interfaceCode
 	}
 	
-	protected def generateReflectiveInterface() '''
-		package «PACKAGE_NAME»;
-		
-		public interface «Namings.REFLECTIVE_INTERFACE» {
-			
-			void reset();
-					
-			String[] getPorts();
-					
-			String[] getEvents(String port);
-					
-			void raiseEvent(String port, String event, Object[] parameters);
-					
-			boolean isRaisedEvent(String port, String event, Object[] parameters);
-			
-			void schedule(String instance);
-			
-			boolean isStateActive(String region, String state);
-			
-			String[] getRegions();
-			
-			String[] getStates(String region);
-			
-			String[] getVariables();
-			
-			Object getValue(String variable);
-			
-			default boolean checkVariableValue(String variable, Object expectedValue) {
-				return getValue(variable).equals(expectedValue);
-			}
-			
-			String[] getComponents();
-			
-			ReflectiveComponentInterface getComponent(String component);
-			
-		}
-	'''
+	def generateReflectiveInterface() {
+		interfaceCodeGenerator.createReflectiveInterface
+	}
 	
 }
