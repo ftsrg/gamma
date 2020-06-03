@@ -11,5 +11,6 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.verification.util
+ hu.bme.mit.gamma.verification.util,
+ hu.bme.mit.gamma.querygenerator
 Export-Package: hu.bme.mit.gamma.theta.verification

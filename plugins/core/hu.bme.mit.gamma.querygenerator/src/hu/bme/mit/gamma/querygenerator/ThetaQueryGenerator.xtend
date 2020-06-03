@@ -66,4 +66,45 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return parameter.customizeOutName(port, instance)
 	}
 	
+	// Auxiliary methods for back-annotation
+	
+	def getSourceState(String targetStateName) {
+		for (match : instanceStates) {
+			val name = getTargetStateName(match.state, match.parentRegion, match.instance)
+			if (name.equals(targetStateName)) {
+				return new Pair(match.state, match.instance)
+			}
+		}
+	}
+	
+	def getSourceVariable(String targetVariableName) {
+		for (match : instanceVariables) {
+			val name = getTargetVariableName(match.variable, match.instance)
+			if (name.equals(targetVariableName)) {
+				return new Pair(match.variable, match.instance)
+			}
+		}
+	}
+	
+	def getSourceOutEvent(String targetOutEventName) {
+		for (match : systemOutEvents) {
+			val name = getTargetOutEventName(match.event, match.port, match.instance)
+			if (name.equals(targetOutEventName)) {
+				return #[match.event, match.port, match.instance]
+			}
+		}
+	}
+	
+	def getSourceOutEventParamater(String targetOutEventParameterName) {
+		for (match : systemOutEvents) {
+			val event = match.event
+			for (parameter : event.parameterDeclarations) {
+				val name = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
+				if (name.equals(targetOutEventParameterName)) {
+					return #[event, match.port, parameter, match.instance]
+				}
+			}
+		}
+	}
+	
 }

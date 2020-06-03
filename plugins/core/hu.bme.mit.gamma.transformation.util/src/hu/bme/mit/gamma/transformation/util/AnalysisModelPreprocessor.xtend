@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition
 import hu.bme.mit.gamma.statechart.model.composite.Component
@@ -19,10 +21,13 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collections
+import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.util.EcoreUtil
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -31,6 +36,22 @@ class AnalysisModelPreprocessor {
 	protected val logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = new StatechartUtil
 	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+	
+	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
+		val component = gammaPackage.components.head
+		val parameters = component.parameterDeclarations
+		checkState(parameters.size == topComponentArguments.size)
+		for (var i = 0; i < parameters. size; i++) {
+			val parameter = parameters.get(i)
+			val argument = topComponentArguments.get(i).clone(true, true)
+			logger.log(Level.INFO, "Saving top component argument for " + parameter.name)
+			gammaPackage.topComponentArguments += argument
+			// Deleting because the parameter variables are not needed
+			argument.changeAndDelete(parameter, component)
+		}
+		return gammaPackage.preprocess(containingFile)
+	}
 	
 	def preprocess(Package gammaPackage, File containingFile) {
 		val parentFolder = containingFile.parent

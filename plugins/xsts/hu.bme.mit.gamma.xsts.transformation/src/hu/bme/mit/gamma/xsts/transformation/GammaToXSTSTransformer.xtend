@@ -47,6 +47,7 @@ class GammaToXSTSTransformer {
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
 	protected final extension EventConnector eventConnector = new EventConnector
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
+	protected final extension AnalysisModelPreprocessor modelPreprocessor = new AnalysisModelPreprocessor
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	// Top component arguments
@@ -63,25 +64,26 @@ class GammaToXSTSTransformer {
 		this.schedulingConstraint = schedulingConstraint
 	}
 	
-	def preprocessAndExecute(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
-		val modelPreprocessor = new AnalysisModelPreprocessor
-		val component = modelPreprocessor.preprocess(_package, containingFile)
+	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
+		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
 		val newPackage = component.containingPackage
-		return newPackage.executeAndSerialize
+		newPackage.executeAndSerializeAndSave(containingFile)
 	}
 	
+	/**
+	 * Note that there is no preprocess and argument process in this method.
+	 */
 	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File file) {
-		val string = _package.execute.serializeXSTS.toString
+		val string = _package.executeAndSerialize
 		file.saveString(string)
 	}
 	
-	def String executeAndSerialize(hu.bme.mit.gamma.statechart.model.Package _package) {
+	private def String executeAndSerialize(hu.bme.mit.gamma.statechart.model.Package _package) {
 		return _package.execute.serializeXSTS.toString
 	}
 	
-	def execute(hu.bme.mit.gamma.statechart.model.Package _package) {
+	private def execute(hu.bme.mit.gamma.statechart.model.Package _package) {
 		val gammaComponent = _package.components.head // Getting the first component
-		gammaComponent.transformParameters(topComponentArguments) // Setting the parameter references
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
@@ -97,13 +99,14 @@ class GammaToXSTSTransformer {
 		return xSts
 	}
 	
-	protected def void transformParameters(Component component, List<Expression> arguments) {
+	protected def transformParameters(Component component, List<Expression> arguments) {
 		val _package = component.containingPackage
 		val parameterDeclarations = newArrayList
 		parameterDeclarations += component.parameterDeclarations // So delete does not mess the list up
+		// Theta back-annotation retrieves the argument values from the constant list
 		for (parameter : parameterDeclarations) {
 			val argumentConstant = createConstantDeclaration => [
-				it.name = parameter.name + "Argument"
+				it.name = "__" + parameter.name + "Argument__"
 				it.type = parameter.type.clone(true, true)
 				it.expression = arguments.get(parameter.index).clone(true, true)
 			]
