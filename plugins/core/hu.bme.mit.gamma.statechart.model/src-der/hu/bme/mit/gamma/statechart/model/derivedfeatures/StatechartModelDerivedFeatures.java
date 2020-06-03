@@ -348,6 +348,22 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return simplePorts;
 	}
 	
+	public static Port getConnectedTopComponentPort(Port port) {
+		Package _package = getContainingPackage(port);
+		TreeIterator<Object> contents = EcoreUtil.getAllContents(_package, true);
+		while (contents.hasNext()) {
+			Object next = contents.next();
+			if (next instanceof PortBinding) {
+				PortBinding portBinding = (PortBinding) next;
+				if (portBinding.getInstancePortReference().getPort() == port) {
+					Port systemPort = portBinding.getCompositeSystemPort();
+					return getConnectedTopComponentPort(systemPort);
+				}
+			}
+		}
+		return port;
+	}
+	
 	public static EventSource getEventSource(EventReference eventReference) {
 		if (eventReference instanceof PortEventReference) {
 			return ((PortEventReference) eventReference).getPort();
