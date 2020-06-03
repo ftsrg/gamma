@@ -26,6 +26,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkArgument
 import static hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 
 abstract class AbstractQueryGenerator {
 		
@@ -80,6 +81,10 @@ abstract class AbstractQueryGenerator {
 	
 	def getVariableName(SynchronousComponentInstance instance, VariableDeclaration variable) {
 		return (instance.name + "." + variable.name).wrap
+	}
+	
+	def getSystemInEvents() {
+		return TopSyncSystemInEvents.Matcher.on(engine).allMatches
 	}
 	
 	def getSystemOutEvents() {
