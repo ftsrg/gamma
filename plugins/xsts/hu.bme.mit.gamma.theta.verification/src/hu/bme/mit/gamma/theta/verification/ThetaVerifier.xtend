@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
+import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -41,7 +42,8 @@ class ThetaVerifier extends AbstractVerifier {
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop --loglevel RESULT
-			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\"  --cex " + modelFile.traceFile
+			val traceFile = new File(modelFile.traceFile)
+			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\"  --cex " + traceFile.toString
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process = Runtime.getRuntime().exec(command)
@@ -62,7 +64,9 @@ class ThetaVerifier extends AbstractVerifier {
 			else if (line.contains(UNSAFE)) {
 				super.result = ThreeStateBoolean.FALSE
 			}
-			return null
+			val gammaPackage = traceability as Package
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, new Scanner(traceFile))
+			return backAnnotator.execute
 		} finally {
 			resultReader.close
 		}

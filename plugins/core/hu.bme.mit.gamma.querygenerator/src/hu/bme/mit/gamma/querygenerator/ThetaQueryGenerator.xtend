@@ -70,6 +70,14 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return parameter.customizeOutName(port, instance)
 	}
 	
+	def protected getTargetInEventName(Event event, Port port, SynchronousComponentInstance instance) {
+		return event.customizeInputName(port, instance)
+	}
+	
+	def protected getTargetInEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
+		return parameter.customizeInName(port, instance)
+	}
+	
 	// Auxiliary methods for back-annotation
 	
 	def getSourceState(String targetStateName) {
@@ -108,6 +116,29 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 			for (parameter : event.parameterDeclarations) {
 				val name = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
 				if (name.equals(targetOutEventParameterName)) {
+					return #[event, match.port, parameter, match.instance]
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourceInEvent(String getTargetInEventName) {
+		for (match : systemInEvents) {
+			val name = getTargetInEventName(match.event, match.port, match.instance)
+			if (name.equals(getTargetInEventName)) {
+				return #[match.event, match.port, match.instance]
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	def getSourceInEventParamater(String targetInEventParameterName) {
+		for (match : systemInEvents) {
+			val event = match.event
+			for (parameter : event.parameterDeclarations) {
+				val name = getTargetInEventParameterName(event, match.port, parameter, match.instance)
+				if (name.equals(targetInEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}

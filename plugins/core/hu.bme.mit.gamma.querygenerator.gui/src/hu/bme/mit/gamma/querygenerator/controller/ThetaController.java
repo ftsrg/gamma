@@ -20,12 +20,14 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class ThetaController extends AbstractController {
+	
+	final Package gammaPackage;
 
 	public ThetaController(View view, IFile file) {
 		this.file = file;
 		this.view = view;
 		URI uri = URI.createFileURI(getUnwrappedFile());
-		Package gammaPackage = (Package) ecoreUtil.normalLoad(uri);
+		this.gammaPackage = (Package) ecoreUtil.normalLoad(uri);
 		this.queryGenerator = new ThetaQueryGenerator(gammaPackage); // For state-location
 	}
 
@@ -46,7 +48,7 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public Object getTraceability() {
-		return null;
+		return gammaPackage;
 	}
 
 	@Override

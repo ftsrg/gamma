@@ -180,6 +180,11 @@ class TraceBuilder {
 		addOutEventWithParameter(step, port, event, null, null)
 	}
 	
+	def addOutEventWithStringParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, String value) {
+		addOutEventWithParameter(step, port, event, parameter, value.parseString)
+	}
+	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = createRaiseEventAct(port, event, parameter, value)
