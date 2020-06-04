@@ -93,7 +93,8 @@ class SystemReducer {
 		val statechart = transition.eContainer as StatechartDefinition
 		val target = transition.targetState
 		if (target.incomingTransitions.size == 1) {
-			for (outgoingTransition : target.outgoingTransitions) {
+			for (outgoingTransition : target.outgoingTransitions
+					.reject[it === transition] /* Addressing loop edges */) {
 				outgoingTransition.removeTransition
 			}
 			val region = target.parentRegion
