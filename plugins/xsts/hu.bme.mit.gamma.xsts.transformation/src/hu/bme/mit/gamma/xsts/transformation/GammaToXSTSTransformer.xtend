@@ -90,12 +90,7 @@ class GammaToXSTSTransformer {
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Optimizing
-		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
-		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
-		xSts.entryEventAction = xSts.entryEventAction.optimize
-		xSts.inEventAction = xSts.inEventAction.optimize
-		xSts.outEventAction = xSts.outEventAction.optimize
-		xSts.mergedAction = xSts.mergedAction.optimize
+		xSts.optimize
 		return xSts
 	}
 	
@@ -276,6 +271,26 @@ class GammaToXSTSTransformer {
 				}
 			}
 		}
+	}
+	
+	protected def optimize(XSTS xSts) {
+		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
+		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
+		xSts.entryEventAction = xSts.entryEventAction.optimize
+		xSts.inEventAction = xSts.inEventAction.optimize
+		xSts.outEventAction = xSts.outEventAction.optimize
+		xSts.mergedAction = xSts.mergedAction.optimize
+	}
+	
+	protected def removeUnusedVariables(XSTS xSts) {
+//		val usedVariables = (xSts.mergedAction.referredVariables).toSet
+//		val unusedVariables = xSts.variableDeclarations.reject[usedVariables.contains(it)].toSet
+//		EcoreUtil.getAllProperContents(xSts, true)
+//			.filter(ReferenceExpression).filter[unusedVariables.contains(it.declaration)]
+//			.forEach[EcoreUtil.delete(it.eContainer)] // Deleting the container
+//		for (unusedVariable : unusedVariables) {
+//			EcoreUtil.delete(unusedVariable)
+//		}
 	}
 	
 }
