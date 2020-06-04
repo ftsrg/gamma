@@ -107,18 +107,22 @@ class TraceBuilder {
 	}
 	
 	private def parseString(Type type, String value) {
-		if (type instanceof EnumerationTypeDefinition) {
-			val literals = type.literals
-			val literal = literals.findFirst[it.name.equals(value)]
-			return literals.indexOf(literal)
-		}
 		switch (value) {
 			case "false":
 				return 0
 			case "true":
 				return 1
 			default:
-				return Integer.parseInt(value)
+				try {
+					return Integer.parseInt(value)
+				} catch (NumberFormatException e) {
+					if (type instanceof EnumerationTypeDefinition) {
+						val literals = type.literals
+						val literal = literals.findFirst[it.name.equals(value)]
+						return literals.indexOf(literal)
+					}
+					throw new IllegalArgumentException("Not known value: " + value)
+				}
 		}
 	}
 	

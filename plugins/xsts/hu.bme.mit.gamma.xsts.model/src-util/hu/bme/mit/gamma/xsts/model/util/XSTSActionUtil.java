@@ -183,6 +183,9 @@ public class XSTSActionUtil {
 				.filter(it -> it.getActions().get(0) instanceof AssumeAction)
 				.map(it -> ((AssumeAction) it.getActions().get(0)).getAssumption())
 				.collect(Collectors.toList());
+		if (conditions.isEmpty()) {
+			return;
+		}
 		for (Expression condition : conditions) {
 			orExpression.getOperands().add(clone(condition));
 		}
