@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.model.Port
 import hu.bme.mit.gamma.statechart.model.State
@@ -41,14 +40,11 @@ class TraceBuilder {
 	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
 	
 	protected final extension TraceUtil traceUtil = new TraceUtil
-		
-	def scheduleIfSynchronousComponent(Step step, Component component) {
-		if (component instanceof SynchronousComponent) {
-			step.addComponentScheduling
-		}
-	}
 	
-	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String value) {
+	// In event
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, String value) {
 		val type = parameter.type.typeDefinition
 		return addInEvent(step, port, event, parameter, type.convertStringToInt(value))
 	}
@@ -57,7 +53,7 @@ class TraceBuilder {
 		addInEvent(step, port, event, null, null)		
 	}
 	
-	protected def addInEvent(Step step, Port port, Event event,
+	private def addInEvent(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = createRaiseEventAct(port, event, parameter, value)
 		val originalRaise = step.actions.filter(RaiseEventAct).findFirst[it.isOverWritten(eventRaise)]
@@ -72,7 +68,102 @@ class TraceBuilder {
 		}
 	}
 	
-	protected def createRaiseEventAct(Port port, Event event, ParameterDeclaration parameter, Integer value) {
+	// Time elapse
+	
+	def addTimeElapse(Step step, int elapsedTime) {
+		val timeElapseActions = step.actions.filter(TimeElapse)
+		if (!timeElapseActions.empty) {
+			// A single time elapse action in all steps
+			val action = timeElapseActions.head
+			val newTime = action.elapsedTime + BigInteger.valueOf(elapsedTime)
+			action.elapsedTime = newTime
+		}
+		else {
+			// No time elapses in this step so far
+			step.actions += createTimeElapse => [
+				it.elapsedTime = BigInteger.valueOf(elapsedTime)
+			]
+		}
+	}
+	
+	// Schedule
+	
+	def addScheduling(Step step, AsynchronousComponentInstance instance) {
+		step.actions += createInstanceSchedule => [
+			it.scheduledInstance = instance
+		]
+	}
+	
+	def addComponentScheduling(Step step) {
+		step.actions += createComponentSchedule
+	}
+	
+	def scheduleIfSynchronousComponent(Step step, Component component) {
+		if (component instanceof SynchronousComponent) {
+			step.addComponentScheduling
+		}
+	}
+	
+	// Out event
+	
+	def addOutEvent(Step step, Port port, Event event) {
+		addOutEventWithParameter(step, port, event, null, null)
+	}
+	
+	def addOutEventWithStringParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, String value) {
+		val type = parameter.type.typeDefinition
+		addOutEventWithParameter(step, port, event, parameter, type.convertStringToInt(value))
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+		val originalRaise = step.outEvents.findFirst[it.isOverWritten(eventRaise)]
+		if (originalRaise === null) {
+			// This is the first raise
+			step.outEvents += eventRaise
+		}
+		else if (parameter !== null) {
+			// Already a raise has been done, setting this parameter too
+			val index = parameter.index
+			originalRaise.arguments.set(index, parameter.createParameter(value))
+		}
+	}
+	
+	// Instance variables
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, String value) {
+		val type = variable.type.typeDefinition
+		step.instanceStates += createInstanceVariableState => [
+			it.instance = instance
+			it.declaration = variable
+			it.value = type.createLiteral(value)
+		]
+	}
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, Expression value) {
+		step.instanceStates += createInstanceVariableState => [
+			it.instance = instance
+			it.declaration = variable
+			it.value = value
+		]
+	}
+	
+	// Instance states
+	
+	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
+		step.instanceStates += createInstanceStateConfiguration => [
+			it.instance = instance
+			it.state = state
+		]
+	}
+	
+	// Raise event act
+		
+	private def createRaiseEventAct(Port port, Event event, ParameterDeclaration parameter, Integer value) {
 		val RaiseEventAct eventRaise = createRaiseEventAct => [
 			it.port = port
 			it.event = event
@@ -84,26 +175,23 @@ class TraceBuilder {
 		if (parameter !== null) {
 			val index = parameter.index
 			eventRaise.arguments.set(index, parameter.createParameter(value))
-		}		
+		}
 		return eventRaise
 	}
 	
-	protected def createParameter(ParameterDeclaration parameter, Integer value) {
+	// String and int parsing
+	
+	def createVariableLiteral(VariableDeclaration variable, Integer value) {
+		val type = variable.type.typeDefinition
+		return type.createLiteral(value)
+	}
+	
+	private def createParameter(ParameterDeclaration parameter, Integer value) {
 		if (parameter === null) {
 			return null
 		}
 		val paramType = parameter.type.typeDefinition
 		return paramType.createLiteral(value)
-	}
-	
-	def createVariableLiteral(VariableDeclaration variable, String value) {
-		val type = variable.type.typeDefinition
-		return type.createLiteral(value)
-	}
-	
-	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		val type = variable.type.typeDefinition
-		return type.createLiteral(value)
 	}
 	
 	private def convertStringToInt(Type type, String value) {
@@ -150,83 +238,6 @@ class TraceBuilder {
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
 		return literal
-	}
-	
-	def addTimeElapse(Step step, int elapsedTime) {
-		val timeElapseActions = step.actions.filter(TimeElapse)
-		if (!timeElapseActions.empty) {
-			// A single time elapse action in all steps
-			val action = timeElapseActions.head
-			val newTime = action.elapsedTime + BigInteger.valueOf(elapsedTime)
-			action.elapsedTime = newTime
-		}
-		else {
-			// No time elapses in this step so far
-			step.actions += createTimeElapse => [
-				it.elapsedTime = BigInteger.valueOf(elapsedTime)
-			]
-		}
-	}
-	
-	def addScheduling(Step step, AsynchronousComponentInstance instance) {
-		step.actions += createInstanceSchedule => [
-			it.scheduledInstance = instance
-		]
-	}
-	
-	def addComponentScheduling(Step step) {
-		step.actions += createComponentSchedule
-	}
-	
-	def addOutEvent(Step step, Port port, Event event) {
-		addOutEventWithParameter(step, port, event, null, null)
-	}
-	
-	def addOutEventWithStringParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, String value) {
-		val type = parameter.type.typeDefinition
-		addOutEventWithParameter(step, port, event, parameter, type.convertStringToInt(value))
-	}
-	
-	def addOutEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = createRaiseEventAct(port, event, parameter, value)
-		val originalRaise = step.outEvents.findFirst[it.isOverWritten(eventRaise)]
-		if (originalRaise === null) {
-			// This is the first raise
-			step.outEvents += eventRaise
-		}
-		else if (parameter !== null) {
-			// Already a raise has been done, setting this parameter too
-			val index = parameter.index
-			originalRaise.arguments.set(index, parameter.createParameter(value))
-		}
-	}
-	
-	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable, String value) {
-		val type = variable.type.typeDefinition
-		step.instanceStates += createInstanceVariableState => [
-			it.instance = instance
-			it.declaration = variable
-			it.value = type.createLiteral(value)
-		]
-	}
-	
-	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable, Expression value) {
-		step.instanceStates += createInstanceVariableState => [
-			it.instance = instance
-			it.declaration = variable
-			it.value = value
-		]
-	}
-	
-	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
-		step.instanceStates += createInstanceStateConfiguration => [
-			it.instance = instance
-			it.state = state
-		]
 	}
 	
 }

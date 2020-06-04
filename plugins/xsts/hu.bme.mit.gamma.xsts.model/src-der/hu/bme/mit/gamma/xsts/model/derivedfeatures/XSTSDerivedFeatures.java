@@ -262,5 +262,11 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 					"Unhandled parameter types: " + Arrays.<Object>asList(action).toString());
 		}
 	}
+	
+	public static Set<VariableDeclaration> getReferredVariables(final Action action) {
+		Set<VariableDeclaration> referredVariables = getReadVariables(action);
+		referredVariables.addAll(getWrittenVariables(action));
+		return referredVariables;
+	}
 
 }
