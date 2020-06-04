@@ -50,7 +50,7 @@ class TraceBuilder {
 	
 	def addInEventWithParameter(Step step, Port port, Event event, ParameterDeclaration parameter, String value) {
 		val type = parameter.type.typeDefinition
-		return addInEvent(step, port, event, parameter, type.parseString(value))
+		return addInEvent(step, port, event, parameter, type.convertStringToInt(value))
 	}
 	
 	def addInEvent(Step step, Port port, Event event) {
@@ -92,21 +92,21 @@ class TraceBuilder {
 		if (parameter === null) {
 			return null
 		}
-		val paramType = parameter.type
+		val paramType = parameter.type.typeDefinition
 		return paramType.createLiteral(value)
 	}
 	
 	def createVariableLiteral(VariableDeclaration variable, String value) {
-		val type = variable.type
+		val type = variable.type.typeDefinition
 		return type.createLiteral(value)
 	}
 	
 	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		val type = variable.type
+		val type = variable.type.typeDefinition
 		return type.createLiteral(value)
 	}
 	
-	private def parseString(Type type, String value) {
+	private def convertStringToInt(Type type, String value) {
 		switch (value) {
 			case "false":
 				return 0
@@ -127,9 +127,12 @@ class TraceBuilder {
 	}
 	
 	private def Expression createLiteral(Type paramType, String value) {
-		return paramType.createLiteral(paramType.parseString(value))
+		return paramType.createLiteral(paramType.convertStringToInt(value))
 	}
 	
+	/**
+	 * Only primitive types and enums are accepted, type references are not.
+	 */
 	private def Expression createLiteral(Type paramType, Integer value) {
 		val literal = switch (paramType) {
 			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(value)]
@@ -141,21 +144,10 @@ class TraceBuilder {
 					createTrueExpression
 				}
 			}
-			TypeReference: {
-				val typeDeclaration = paramType.reference
-				val type = typeDeclaration.type
-				if (type.isPrimitive) {
-					return type.createLiteral(value)
-				}
-				switch (type) {
-					EnumerationTypeDefinition:
-						return createEnumerationLiteralExpression => [ it.reference = type.literals.get(value) ]				
-					default: 
-						throw new IllegalArgumentException("Not known type definition: " + type)
-				}
-			}
+			EnumerationTypeDefinition:
+				return createEnumerationLiteralExpression => [ it.reference = paramType.literals.get(value) ]
 			default: 
-				throw new IllegalArgumentException("Not known type: " + paramType)
+				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
 		return literal
 	}
@@ -193,7 +185,7 @@ class TraceBuilder {
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
 		val type = parameter.type.typeDefinition
-		addOutEventWithParameter(step, port, event, parameter, type.parseString(value))
+		addOutEventWithParameter(step, port, event, parameter, type.convertStringToInt(value))
 	}
 	
 	def addOutEventWithParameter(Step step, Port port, Event event,
@@ -213,7 +205,7 @@ class TraceBuilder {
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
-		val type = variable.type
+		val type = variable.type.typeDefinition
 		step.instanceStates += createInstanceVariableState => [
 			it.instance = instance
 			it.declaration = variable
