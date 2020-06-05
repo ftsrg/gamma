@@ -33,6 +33,7 @@ class StatechartWrapperCodeGenerator {
 	protected final String YAKINDU_PACKAGE_NAME
 	// 
 	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension YakinduDefaultExpressionRetriever yakinduDefaultExpressionRetriever = new YakinduDefaultExpressionRetriever
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer
@@ -162,6 +163,7 @@ class StatechartWrapperCodeGenerator {
 				}
 				«component.generateStatemachineInstanceName».runCycle();
 				notifyListeners();
+«««				The parameters of transient in events do not have to be reset, as Yakindu does not allow to use a parameter, if the event is not raised
 			}
 			
 			// Inner classes representing Ports
@@ -361,7 +363,12 @@ class StatechartWrapperCodeGenerator {
 							throw new IllegalStateException(e);
 						}
 					«ELSE»
-						return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+						try {
+							return «component.generateStatemachineInstanceName».get«port.yakinduInterfaceName»().get«event.toYakinduEvent(port).name.toFirstUpper»Value();
+						} catch (IllegalStateException e) {
+							// If this is a reset parameter of a transient event, we return a default expression
+							return «event.toYakinduEvent(port).type.defaultExpression»;
+						}
 					«ENDIF»
 				}
 			«ENDIF»

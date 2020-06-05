@@ -166,7 +166,7 @@ class LowlevelToXSTSTransformer {
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
-		initializeInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
+		initializeVariableInitializingAction // After getVariableInitializationsRule, but before getTopRegionsInitializationRule
 		getTopRegionsInitializationRule.fireAllCurrent // Setting the top region (variables) into their initial states
 		getSimpleTransitionsBetweenStatesRule.fireAllCurrent
 		getSimpleTransitionsToHistoryStatesRule.fireAllCurrent
@@ -473,7 +473,7 @@ class LowlevelToXSTSTransformer {
 		return variableInitializationsRule
 	}
 
-	protected def initializeInitializingAction() {
+	protected def initializeVariableInitializingAction() {
 		val xStsVariables = newLinkedList
 		// Cycle on the original declarations, as their order is important due to 'var a = b'-like assignments
 		for (lowlevelStatechart : _package.components.filter(StatechartDefinition)) {
