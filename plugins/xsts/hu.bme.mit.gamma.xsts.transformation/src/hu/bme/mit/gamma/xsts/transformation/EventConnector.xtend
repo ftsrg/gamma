@@ -49,36 +49,48 @@ class EventConnector {
 					for (event : requiredSimplePort.inputEvents) {
 						val requiredInEventName = event.customizeInputName(requiredSimplePort, requiredInstance)
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredInEventName]
-						val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
-						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
-						if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
-						xStsInEventVariable.changeAndDelete(xStsOutEventVariable, xSts)
-						// In-parameters
-						for (parameter : event.parameterDeclarations) {
-							val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
-							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredInParamaterName]
-							val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
-							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
-							if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
-							xStsInParameterVariable.changeAndDelete(xStsOutParameterVariable, xSts)
+						if (xStsInEventVariable !== null) {
+							val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
+							val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
+							if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
+								xStsInEventVariable.changeAndDelete(xStsOutEventVariable, xSts)
+								// In-parameters
+								for (parameter : event.parameterDeclarations) {
+									val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
+									val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredInParamaterName]
+									if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization
+										val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
+										val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
+										if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
+											xStsInParameterVariable.changeAndDelete(xStsOutParameterVariable, xSts)
+										}
+									}
+								}
+							}
 						}
 					}
 					// Out events on required port
 					for (event : requiredSimplePort.outputEvents) {
 						val requiredOutEventName = event.customizeOutputName(requiredSimplePort, requiredInstance)
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutEventName]
-						val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
-						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
-						if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
-						xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
-						// Out-parameters
-						for (parameter : event.parameterDeclarations) {
-							val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
-							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
-							val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
-							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
-							if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
-							xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
+						if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
+							val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
+							val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
+							if (xStsInEventVariable !== null) { // Can be null due to XSTS optimization
+								xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
+								// Out-parameters
+								for (parameter : event.parameterDeclarations) {
+									val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
+									val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
+									if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
+										val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
+										val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
+										if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization
+											xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
+										}
+									}
+								}
+							}
 						}
 					}
 				}
