@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 
 class TraceBackAnnotator {
 	
@@ -70,9 +71,10 @@ class TraceBackAnnotator {
 		trace.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
 		var step = createStep
 		trace.steps += step
-		// Sets for raised in and out events
+		// Sets for raised in and out events and activated states
 		val raisedOutEvents = newHashSet
 		val raisedInEvents = newHashSet
+		val activatedStates = newHashSet
 		// Parsing
 		var state = BackAnnotatorState.INIT
 		while (traceScanner.hasNext) {
@@ -102,7 +104,16 @@ class TraceBackAnnotator {
 									EcoreUtil.delete(raiseEventAct)
 								}
 							}
+							val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
+							for (instanceState : instanceStates) {
+								// A state is active if all of its ancestor states are active
+								val ancestorStates = instanceState.state.ancestors
+								if (!activatedStates.containsAll(ancestorStates)) {
+									EcoreUtil.delete(instanceState)
+								}
+							}
 							raisedOutEvents.clear
+							activatedStates.clear
 							// Creating a new step
 							step = createStep
 							trace.steps += step
@@ -139,7 +150,10 @@ class TraceBackAnnotator {
 				case STATE_CHECK: {
 					try {
 						val instanceState = thetaQueryGenerator.getSourceState('''«id» == «value»''')
-						step.addInstanceState(instanceState.value, instanceState.key)
+						val controlState = instanceState.key
+						val instance = instanceState.value
+						step.addInstanceState(instance, controlState)
+						activatedStates += controlState
 					} catch (IllegalArgumentException e) {
 						try {
 							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
