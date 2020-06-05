@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComparisons
@@ -22,6 +24,8 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.RegionVariableGroups
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Regions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.SimpleTransitionsBetweenStates
@@ -35,6 +39,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Variables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
+import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
@@ -52,6 +57,7 @@ import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.model.util.XSTSActionUtil
 import java.util.AbstractMap.SimpleEntry
+import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
@@ -64,8 +70,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
-import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class LowlevelToXSTSTransformer {
 	// Transformation-related extensions
@@ -117,8 +121,17 @@ class LowlevelToXSTSTransformer {
 	protected BatchTransformationRule<FirstChoiceStates.Match, FirstChoiceStates.Matcher> firstChoiceTransitionsRule
 	protected BatchTransformationRule<InEvents.Match, InEvents.Matcher> inEventEnvironmentalActionRule
 	protected BatchTransformationRule<OutEvents.Match, OutEvents.Matcher> outEventEnvironmentalActionRule
+	// Optimization
+	protected boolean optimize
+	protected Set<EventDeclaration> referredEvents
+	protected Set<VariableDeclaration> referredVariables
+	
 	
 	new(Package _package) {
+		this(_package, false)
+	}
+	
+	new(Package _package, boolean optimize) {
 		this._package = _package
 		// Note: we do not expect cross references to other resources
 		this.engine = ViatraQueryEngine.on(new EMFScope(_package))
@@ -141,14 +154,13 @@ class LowlevelToXSTSTransformer {
 		this.terminalTransitionToXTransitionTransformer = new TerminalTransitionToXTransitionTransformer(
 			this.engine, this.trace)
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
-		createTransformation
-	}
-
-	private def createTransformation() {
-		// Create VIATRA Batch transformation
-		transformation = BatchTransformation.forEngine(engine).build
-		// Initialize batch transformation statements
-		statements = transformation.transformationStatements
+		this.transformation = BatchTransformation.forEngine(engine).build
+		this.statements = transformation.transformationStatements
+		this.optimize = optimize
+		if (optimize) {
+			this.referredEvents = ReferredEvents.Matcher.on(engine).allValuesOfevent
+			this.referredVariables = ReferredVariables.Matcher.on(engine).allValuesOfvariable
+		}
 	}
 
 	def execute() {
@@ -488,7 +500,7 @@ class LowlevelToXSTSTransformer {
 		// Initial value to the events, their order is not interesting
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
 		for (xStsVariable : xStsVariables) {
-			// configurationInitializingAction as it must be set before setting the configuration
+			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
 					it.lhs = createReferenceExpression => [it.declaration = xStsVariable]
@@ -577,63 +589,65 @@ class LowlevelToXSTSTransformer {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				val lowlevelEnvironmentalAction = inEventAction as SequentialAction
-				val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
-				lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
-					// Event is raised
-					it.actions += createAssignmentAction => [
-						it.lhs = createReferenceExpression => [
-							it.declaration = xStsEventVariable
-						]
-						it.rhs = createTrueExpression
-					]
-					// Event is not raised
-					it.actions += createAssignmentAction => [
-						it.lhs = createReferenceExpression => [
-							it.declaration = xStsEventVariable
-						]
-						it.rhs = createFalseExpression
-					]
-				]
-				for (lowlevelParameterDeclaration : it.event.parameters) {
-					val xStsAllPossibleParameterValues = newHashSet
-					// Initial value
-					val type = lowlevelParameterDeclaration.type
-					xStsAllPossibleParameterValues += type.initialValueOfType
-					for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-						xStsAllPossibleParameterValues += lowlevelValue.clone // Cloning is important
-					}
-					val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
-					if (type instanceof TypeReference) {
-						// Mapping back to enum literals if necessary
-						val typeDeclaration = type.reference
-						val typeDefinition = typeDeclaration.type
-						if (typeDefinition instanceof EnumerationTypeDefinition) {
-							val enumLiterals = typeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
-							xStsPossibleParameterValues.clear
-							xStsPossibleParameterValues += enumLiterals
-						}
-					}
-					val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
-					lowlevelEnvironmentalAction.actions += createIfAction(
-						// Only if the event is raised
-						createEqualityExpression => [
-							it.leftOperand = createReferenceExpression => [
+				if (!optimize || referredEvents.contains(lowlevelEvent)) {
+					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
+					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
+					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
+						// Event is raised
+						it.actions += createAssignmentAction => [
+							it.lhs = createReferenceExpression => [
 								it.declaration = xStsEventVariable
 							]
-							it.rightOperand = createTrueExpression
-						],
-						createNonDeterministicAction => [
-							for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
-								it.actions += createAssignmentAction => [
-									it.lhs = createReferenceExpression => [
-										it.declaration = xStsParameterVariable
-									]
-									it.rhs = xStsPossibleParameterValue
-								]
-							}
+							it.rhs = createTrueExpression
 						]
-					)
+						// Event is not raised
+						it.actions += createAssignmentAction => [
+							it.lhs = createReferenceExpression => [
+								it.declaration = xStsEventVariable
+							]
+							it.rhs = createFalseExpression
+						]
+					]
+					for (lowlevelParameterDeclaration : it.event.parameters) {
+						val xStsAllPossibleParameterValues = newHashSet
+						// Initial value
+						val type = lowlevelParameterDeclaration.type
+						xStsAllPossibleParameterValues += type.initialValueOfType
+						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
+							xStsAllPossibleParameterValues += lowlevelValue.clone // Cloning is important
+						}
+						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
+						if (type instanceof TypeReference) {
+							// Mapping back to enum literals if necessary
+							val typeDeclaration = type.reference
+							val typeDefinition = typeDeclaration.type
+							if (typeDefinition instanceof EnumerationTypeDefinition) {
+								val enumLiterals = typeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
+								xStsPossibleParameterValues.clear
+								xStsPossibleParameterValues += enumLiterals
+							}
+						}
+						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
+						lowlevelEnvironmentalAction.actions += createIfAction(
+							// Only if the event is raised
+							createEqualityExpression => [
+								it.leftOperand = createReferenceExpression => [
+									it.declaration = xStsEventVariable
+								]
+								it.rightOperand = createTrueExpression
+							],
+							createNonDeterministicAction => [
+								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
+									it.actions += createAssignmentAction => [
+										it.lhs = createReferenceExpression => [
+											it.declaration = xStsParameterVariable
+										]
+										it.rhs = xStsPossibleParameterValue
+									]
+								}
+							]
+						)
+					}
 				}
 			].build
 		}
