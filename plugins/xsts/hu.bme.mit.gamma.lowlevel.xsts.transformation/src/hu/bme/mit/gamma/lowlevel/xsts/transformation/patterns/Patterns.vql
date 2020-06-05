@@ -34,6 +34,14 @@ pattern outEvents(event : EventDeclaration) {
 	EventDeclaration.direction(event, ::OUT);
 }
 
+pattern referredEvents(event : EventDeclaration) {
+	EventDeclaration.isRaised(event, variable);
+	find referredVariables(variable);
+} or {
+	EventDeclaration.parameters(event, variable);
+	find referredVariables(variable);
+}
+
 pattern eventParameterComparisons(parameter : VariableDeclaration, value : Expression) {
 	EventDeclaration.parameters(_, parameter);
 	PredicateExpression(predicate);
@@ -96,6 +104,11 @@ pattern plainVariables(variable : VariableDeclaration) {
 
 pattern variables(variable : VariableDeclaration) {
 	VariableDeclaration(variable);
+}
+
+pattern referredVariables(variable : VariableDeclaration) {
+	ReferenceExpression.declaration(_, variable);
+	find variables(variable);
 }
 
 private pattern sameRegionStateNodes(region : Region, stateNodeLeft : StateNode, stateNodeRight : StateNode) {
