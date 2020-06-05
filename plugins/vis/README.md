@@ -28,4 +28,12 @@ To open the PlantUML View window, select “Window -> Show View -> Other -> Plan
 
 ## Usage
 
-To create a visualization from a Gamma statechart definition, simply double click on the .gcd file in the Project Explorer, put the focus into the editor (click into it), and the corresponding statechart diagram should appear in the PlantUML view. To copy the PlantUML source code, right click on the diagram, and select “Copy source”.
+To create a visualization from a Gamma statechart definition, simply double click on the .gcd file in the Project/Package Explorer, put the focus into the editor (click into it), and the corresponding statechart diagram should appear in the PlantUML view. To copy the PlantUML source code, right click on the diagram, and select “Copy source”.
+
+## Limitations
+
+Currently, the PlantUML statechart visualization does not support 
+
+* Multiple top level regions,
+* Multiple entry states in a region, e.g., an initial state and a history state,
+* Transitions connecting states in different regions.

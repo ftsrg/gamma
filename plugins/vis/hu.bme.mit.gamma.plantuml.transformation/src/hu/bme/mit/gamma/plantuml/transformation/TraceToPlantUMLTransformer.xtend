@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.statechart.plantuml.transformation
+package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import org.eclipse.emf.ecore.resource.Resource

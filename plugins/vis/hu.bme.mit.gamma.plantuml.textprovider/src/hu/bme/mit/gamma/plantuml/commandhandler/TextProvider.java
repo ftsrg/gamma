@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.statechart.plantuml.commandhandler;
+package hu.bme.mit.gamma.plantuml.commandhandler;
 
 import java.util.Map;
 
@@ -24,12 +24,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import hu.bme.mit.gamma.statechart.plantuml.transformation.StatechartToPlantUMLTransformer;
-import hu.bme.mit.gamma.statechart.plantuml.transformation.TraceToPlantUMLTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
 import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
 
-public class StatechartModelTextProvider extends AbstractDiagramTextProvider implements DiagramTextProvider2 {
+public class TextProvider extends AbstractDiagramTextProvider implements DiagramTextProvider2 {
 
 	private String plantumlModel;
 
@@ -80,7 +80,7 @@ public class StatechartModelTextProvider extends AbstractDiagramTextProvider imp
 			getTracePlantUMLCode(getResource(path));
 			return "@startuml\r\n" + plantumlModel + "@enduml";
 		}
-		return "";
+		return null; // "" would prevent other visualizations (Java class diagram)
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class StatechartModelTextProvider extends AbstractDiagramTextProvider imp
 			IPath path = file.getFullPath();
 			return getDiagramText(path);
 		}
-		return "";
+		return null; // "" would prevent other visualizations (Java class diagram)
 	}
 
 	@Override

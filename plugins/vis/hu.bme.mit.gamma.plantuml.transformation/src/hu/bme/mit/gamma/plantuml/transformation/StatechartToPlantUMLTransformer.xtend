@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.statechart.plantuml.transformation
+package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.AssignmentStatement
@@ -46,7 +46,7 @@ import org.eclipse.emf.ecore.resource.Resource
 
 class StatechartToPlantUMLTransformer {
 	
-	protected Resource resource
+	protected final Resource resource
 	protected String transitionsString
 	
 	protected extension ExpressionSerializer expressionSerializer = new ExpressionSerializer

@@ -6,7 +6,7 @@
 
       <diagramTextProvider
 	    id="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
-	    providerClass="hu.bme.mit.gamma.statechart.plantuml.commandhandler.StatechartModelTextProvider"
+	    providerClass="hu.bme.mit.gamma.plantuml.commandhandler.TextProvider"
       	label="Gamma statechart model visualizer"
 	    >
       </diagramTextProvider>
