@@ -706,11 +706,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		StateNode source = transition.getSourceState();
 		StateNode target = transition.getTargetState();
 		if (source instanceof ChoiceState) {
-			if (transition.getTrigger() != null) {
-				error("Transitions from choice nodes must not have triggers.", StatechartModelPackage.Literals.TRANSITION__TRIGGER);
-			}
 			if (transition.getGuard() == null) {
-				warning("Transitions from choice nodes should have guards if you want deterministic behavior.", StatechartModelPackage.Literals.TRANSITION__GUARD);
+				warning("Transitions from choice nodes should have guards if deterministic behavior is expected.", StatechartModelPackage.Literals.TRANSITION__GUARD);
 			}
 		}
 		if (source instanceof ForkState) {

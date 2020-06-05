@@ -1256,16 +1256,16 @@ class CompositeToUppaalTransformer {
 			checkState(edge.guard === null) // Must this assert be true at all times?
 			val owner = edge.owner
 			val triggerGuard = it.trigger.transformTrigger(owner)
-			if (edge.guard === null) {
+//			if (edge.guard === null) {
 				edge.guard = triggerGuard
-			}
+//			}
 //			else {
 //				edge.guard = channelVar.createLogicalExpression(LogicalOperator.OR, edge.guard)
 //			}
-			// This condition will be necessary when we want to enable triggers on all kinds of transitions?
-//			if (it.transition.sourceState instanceof State) {
+			// This condition is necessary as we enable triggers from both states and choices (no entry, fork, join and merge)
+			if (it.transition.sourceState instanceof State) {
 				edge.setRunCycle
-//			}
+			}
 			// Creating the trace
 			addToTrace(it.trigger, #{triggerGuard}, trace)		
 		}
