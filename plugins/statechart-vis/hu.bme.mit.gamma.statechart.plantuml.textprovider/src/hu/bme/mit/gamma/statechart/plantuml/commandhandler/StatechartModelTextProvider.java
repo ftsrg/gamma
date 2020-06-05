@@ -25,6 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import hu.bme.mit.gamma.statechart.plantuml.transformation.StatechartToPlantUMLTransformer;
+import hu.bme.mit.gamma.statechart.plantuml.transformation.TraceToPlantUMLTransformer;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
 import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
 
@@ -35,46 +36,51 @@ public class StatechartModelTextProvider extends AbstractDiagramTextProvider imp
 	@Override
 	public boolean supportsSelection(ISelection sel) {
 		if (sel instanceof IStructuredSelection) {
-			getPlantUMLCode(sel);
-			if (plantumlModel != null) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void getPlantUMLCode(ISelection sel) {
-		if (sel instanceof IStructuredSelection) {
 			IStructuredSelection selection = (IStructuredSelection) sel;
 			if (selection.size() == 1) {
 				if (selection.getFirstElement() instanceof IFile) {
 					IFile firstElement = (IFile) selection.getFirstElement();
-					if (firstElement.getFileExtension().equals("gcd")) {
-						getPlantUMLCode(firstElement.getFullPath());
+					final String fileExtension = firstElement.getFileExtension();
+					if (fileExtension.equals("gcd") || fileExtension.equals("get")) {
+						return true;
 					}
 				}
 			}
 		}
+		return false;
+	}
+	
+	private Resource getResource(IPath path) {
+		ResourceSet resourceSet = new ResourceSetImpl();
+		URI traceModelUri = URI.createPlatformResourceURI(path.toString(), true);
+		Resource resource = resourceSet.getResource(traceModelUri, true);
+		return resource;
 	}
 
-	private void getPlantUMLCode(IPath path) {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		URI compositeSystemURI = URI.createPlatformResourceURI(path.toString(), true);
-		Resource resource = resourceSet.getResource(compositeSystemURI, true);
-		// Model processing
+	private void getStatechartPlantUMLCode(Resource resource) {
 		StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(resource);
 		transformer.execute();
 		if (transformer.getTransitions() != null) {
 			plantumlModel = transformer.getTransitions();
 		}
 	}
+	
+	private void getTracePlantUMLCode(Resource resource) {
+		TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(resource);
+		plantumlModel = transformer.execute();
+	}
 
 	@Override
 	public String getDiagramText(IPath path) {
 		if (path.getFileExtension().equals("gcd")) {
-			getPlantUMLCode(path);
+			getStatechartPlantUMLCode(getResource(path));
+			return "@startuml\r\n" + plantumlModel + "@enduml";
 		}
-		return "@startuml\r\n" + plantumlModel + "@enduml";
+		if (path.getFileExtension().equals("get")) {
+			getTracePlantUMLCode(getResource(path));
+			return "@startuml\r\n" + plantumlModel + "@enduml";
+		}
+		return "";
 	}
 
 	@Override
@@ -90,7 +96,7 @@ public class StatechartModelTextProvider extends AbstractDiagramTextProvider imp
 
 	@Override
 	public boolean supportsPath(IPath arg0) {
-		return "gcd".equals(arg0.getFileExtension());
+		return "gcd".equals(arg0.getFileExtension()) || "get".equals(arg0.getFileExtension());
 	}
 
 }

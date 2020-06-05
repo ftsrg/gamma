@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gamma Statechart Model PlanttUML Visualizer Commandhandler
+Bundle-Name: Gamma Statechart Model PlantUML Visualizer Commandhandler
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.plantuml.textprovider;singleton:=true
 Bundle-Version: 2.3.1.qualifier
 Bundle-Vendor: BME-FTSRG
@@ -12,8 +12,10 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.equinox.registry,
  net.sourceforge.plantuml.eclipse,
  net.sourceforge.plantuml.text,
- hu.bme.mit.gamma.statechart.plantuml.transformation
+ hu.bme.mit.gamma.statechart.plantuml.transformation,
+ hu.bme.mit.gamma.trace.plantuml.transformation
 Export-Package: hu.bme.mit.gamma.statechart.plantuml.commandhandler
 Import-Package: org.eclipse.core.resources,
  org.eclipse.emf.common.util,
- org.eclipse.emf.ecore.resource
+ org.eclipse.emf.ecore.resource,
+ org.eclipse.jface.text

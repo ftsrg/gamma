@@ -4,8 +4,8 @@ Bundle-Name: Gamma Statechart to PlantUML Transformation
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.plantuml.transformation;singleton:=true
 Bundle-Version: 2.3.1.qualifier
 Bundle-Vendor: BME-FTSRG
-Require-Bundle: hu.bme.mit.gamma.statechart.model,
- org.eclipse.xtext.xbase.lib
+Require-Bundle: org.eclipse.xtext.xbase.lib,
+ hu.bme.mit.gamma.trace.model
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.plantuml.transformation
 Import-Package: org.apache.log4j
