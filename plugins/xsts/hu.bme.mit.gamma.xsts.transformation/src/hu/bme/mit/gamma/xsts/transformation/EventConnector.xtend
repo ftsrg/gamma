@@ -51,6 +51,7 @@ class EventConnector {
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredInEventName]
 						val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
+						if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
 						xStsInEventVariable.changeAndDelete(xStsOutEventVariable, xSts)
 						// In-parameters
 						for (parameter : event.parameterDeclarations) {
@@ -58,6 +59,7 @@ class EventConnector {
 							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredInParamaterName]
 							val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
 							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
+							if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
 							xStsInParameterVariable.changeAndDelete(xStsOutParameterVariable, xSts)
 						}
 					}
@@ -67,6 +69,7 @@ class EventConnector {
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutEventName]
 						val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
 						val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
+						if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
 						xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
 						// Out-parameters
 						for (parameter : event.parameterDeclarations) {
@@ -74,6 +77,7 @@ class EventConnector {
 							val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
 							val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
 							val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
+							if (xStsInEventVariable !== null && xStsOutEventVariable !== null) // Can be null due to optimization
 							xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
 						}
 					}
