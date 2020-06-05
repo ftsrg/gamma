@@ -193,6 +193,14 @@ class LowlevelToXSTSTransformer {
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
+	
+	protected def isNotOptimizable(EventDeclaration lowlevelEvent) {
+		return !optimize || referredEvents.contains(lowlevelEvent)
+	}
+	
+	protected def isNotOptimizable(VariableDeclaration lowlevelVariable) {
+		return !optimize || referredVariables.contains(lowlevelVariable)
+	}
 		
 	protected def getVariableInitializingAction() {
 		if (xSts.variableInitializingAction === null) {
@@ -253,37 +261,39 @@ class LowlevelToXSTSTransformer {
 		if (eventsRule === null) {
 			eventsRule = createRule(Events.instance).action [
 				val lowlevelEvent = it.event
-				val xStsEventVariable = createVariableDeclaration => [
-					it.name = lowlevelEvent.name.eventName
-					it.type = createBooleanTypeDefinition // isRaised bool variable
-				]
-				xSts.variableDeclarations += xStsEventVariable // Target model modification
-				val eventVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
-					xSts.inEventVariableGroup
-				} else {
-					xSts.outEventVariableGroup
-				}
-				eventVariableGroup.variables += xStsEventVariable // Variable group modification
-				trace.put(lowlevelEvent, xStsEventVariable) // Tracing event
-				trace.put(lowlevelEvent.isRaised, xStsEventVariable) // Tracing the contained isRaisedVariable
-				// Parameters 
-				for (lowlevelEventParameter : lowlevelEvent.parameters) {
-					val xStsParam = createVariableDeclaration => [
-						it.name = lowlevelEventParameter.name.variableName
-						it.type = lowlevelEventParameter.type.transformType
+				if (lowlevelEvent.notOptimizable) {
+					val xStsEventVariable = createVariableDeclaration => [
+						it.name = lowlevelEvent.name.eventName
+						it.type = createBooleanTypeDefinition // isRaised bool variable
 					]
-					val eventParameterVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
-						xSts.inEventParameterVariableGroup
+					xSts.variableDeclarations += xStsEventVariable // Target model modification
+					val eventVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
+						xSts.inEventVariableGroup
 					} else {
-						xSts.outEventParameterVariableGroup
+						xSts.outEventVariableGroup
 					}
-					xSts.variableDeclarations += xStsParam // Target model modification
-					if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
-						// If event is transient, than its parameters are marked transient variables
-						xSts.transientVariables += xStsParam
+					eventVariableGroup.variables += xStsEventVariable // Variable group modification
+					trace.put(lowlevelEvent, xStsEventVariable) // Tracing event
+					trace.put(lowlevelEvent.isRaised, xStsEventVariable) // Tracing the contained isRaisedVariable
+					// Parameters 
+					for (lowlevelEventParameter : lowlevelEvent.parameters) {
+						val xStsParam = createVariableDeclaration => [
+							it.name = lowlevelEventParameter.name.variableName
+							it.type = lowlevelEventParameter.type.transformType
+						]
+						val eventParameterVariableGroup = if (lowlevelEvent.direction == EventDirection.IN) {
+							xSts.inEventParameterVariableGroup
+						} else {
+							xSts.outEventParameterVariableGroup
+						}
+						xSts.variableDeclarations += xStsParam // Target model modification
+						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
+							// If event is transient, than its parameters are marked transient variables
+							xSts.transientVariables += xStsParam
+						}
+						eventParameterVariableGroup.variables += xStsParam
+						trace.put(lowlevelEventParameter, xStsParam) // Tracing
 					}
-					eventParameterVariableGroup.variables += xStsParam
-					trace.put(lowlevelEventParameter, xStsParam) // Tracing
 				}
 			].build
 		}
@@ -443,13 +453,15 @@ class LowlevelToXSTSTransformer {
 		if (plainVariablesRule === null) {
 			plainVariablesRule = createRule(PlainVariables.instance).action [
 				val lowlevelVariable = it.variable
-				val xStsVariable = createVariableDeclaration => [
-					it.name = lowlevelVariable.name.variableName
-					it.type = lowlevelVariable.type.transformType
-				]
-				xSts.variableDeclarations += xStsVariable // Target model modification
-				trace.put(lowlevelVariable, xStsVariable) // Tracing
-				xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
+				if (lowlevelVariable.notOptimizable) {
+					val xStsVariable = createVariableDeclaration => [
+						it.name = lowlevelVariable.name.variableName
+						it.type = lowlevelVariable.type.transformType
+					]
+					xSts.variableDeclarations += xStsVariable // Target model modification
+					trace.put(lowlevelVariable, xStsVariable) // Tracing
+					xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
+				}
 			].build
 		}
 		return plainVariablesRule
@@ -459,15 +471,17 @@ class LowlevelToXSTSTransformer {
 		if (timeoutsRule === null) {
 			timeoutsRule = createRule(Timeouts.instance).action [
 				val lowlevelTimeoutVariable = it.timeout
-				val xStsVariable = createVariableDeclaration => [
-					it.name = lowlevelTimeoutVariable.name.variableName
-					it.type = lowlevelTimeoutVariable.type.transformType
-					it.expression = lowlevelTimeoutVariable.expression.clone // Timeouts are initially true
-				]
-				xSts.variableDeclarations += xStsVariable // Target model modification
-				trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
-				xSts.clockVariables += xStsVariable // Putting it in the clock variable list
-				xSts.getTimeoutGroup.variables += trace.getXStsVariable(lowlevelTimeoutVariable)
+				if (lowlevelTimeoutVariable.notOptimizable) {
+					val xStsVariable = createVariableDeclaration => [
+						it.name = lowlevelTimeoutVariable.name.variableName
+						it.type = lowlevelTimeoutVariable.type.transformType
+						it.expression = lowlevelTimeoutVariable.expression.clone // Timeouts are initially true
+					]
+					xSts.variableDeclarations += xStsVariable // Target model modification
+					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
+					xSts.clockVariables += xStsVariable // Putting it in the clock variable list
+					xSts.getTimeoutGroup.variables += trace.getXStsVariable(lowlevelTimeoutVariable)
+				}
 			].build
 		}
 		return timeoutsRule
@@ -477,20 +491,24 @@ class LowlevelToXSTSTransformer {
 		if (variableInitializationsRule === null) {
 			variableInitializationsRule = createRule(Variables.instance).action [
 				val lowlevelVariable = it.variable
-				val xStsVariable = trace.getXStsVariable(lowlevelVariable)
-				// By now all variables must be traced because of such initializations: var a = b
-				xStsVariable.expression = lowlevelVariable.initialValue
+				if (lowlevelVariable.notOptimizable) {
+					val xStsVariable = trace.getXStsVariable(lowlevelVariable)
+					// By now all variables must be traced because of such initializations: var a = b
+					xStsVariable.expression = lowlevelVariable.initialValue
+				}
 			].build
 		}
 		return variableInitializationsRule
 	}
-
+	
 	protected def initializeVariableInitializingAction() {
 		val xStsVariables = newLinkedList
 		// Cycle on the original declarations, as their order is important due to 'var a = b'-like assignments
 		for (lowlevelStatechart : _package.components.filter(StatechartDefinition)) {
 			for (lowlevelVariable : lowlevelStatechart.variableDeclarations) {
-				xStsVariables += trace.getXStsVariable(lowlevelVariable)
+				if (lowlevelVariable.notOptimizable) {
+					xStsVariables += trace.getXStsVariable(lowlevelVariable)
+				}
 			}
 		}
 		// Parameters must not be given initial value
@@ -499,6 +517,7 @@ class LowlevelToXSTSTransformer {
 		xStsVariables += xSts.regionGroups.map[it.variables].flatten
 		// Initial value to the events, their order is not interesting
 		xStsVariables += xSts.inEventVariableGroup.variables + xSts.outEventVariableGroup.variables
+		// Note that optimization is NOT needed here, as these are already XSTS variables
 		for (xStsVariable : xStsVariables) {
 			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
@@ -589,7 +608,7 @@ class LowlevelToXSTSTransformer {
 		if (inEventEnvironmentalActionRule === null) {
 			inEventEnvironmentalActionRule = createRule(InEvents.instance).action [
 				val lowlevelEvent = it.event
-				if (!optimize || referredEvents.contains(lowlevelEvent)) {
+				if (lowlevelEvent.notOptimizable) {
 					val lowlevelEnvironmentalAction = inEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
@@ -658,24 +677,26 @@ class LowlevelToXSTSTransformer {
 		if (outEventEnvironmentalActionRule === null) {
 			outEventEnvironmentalActionRule = createRule(OutEvents.instance).action [
 				val lowlevelEvent = it.event
-				val lowlevelEnvironmentalAction = outEventAction as SequentialAction
-				val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
-				lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-					it.lhs = createReferenceExpression => [
-						it.declaration = xStsEventVariable
-					]
-					it.rhs = createFalseExpression
-				]
-				if (event.persistency == Persistency.TRANSIENT) {
-					// Resetting parameter for out event
-					for (lowlevelParameterDeclaration : it.event.parameters) {
-						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
-						lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-							it.lhs = createReferenceExpression => [
-								it.declaration = xStsParameterVariable
-							]
-							it.rhs = xStsParameterVariable.initialValue
+				if (lowlevelEvent.notOptimizable) {
+					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
+					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
+					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
+						it.lhs = createReferenceExpression => [
+							it.declaration = xStsEventVariable
 						]
+						it.rhs = createFalseExpression
+					]
+					if (event.persistency == Persistency.TRANSIENT) {
+						// Resetting parameter for out event
+						for (lowlevelParameterDeclaration : it.event.parameters) {
+							val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
+							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
+								it.lhs = createReferenceExpression => [
+									it.declaration = xStsParameterVariable
+								]
+								it.rhs = xStsParameterVariable.initialValue
+							]
+						}
 					}
 				}
 			].build
