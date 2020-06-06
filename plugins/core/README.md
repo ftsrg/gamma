@@ -2,7 +2,9 @@
 
 ## Eclipse setup
 
-The presented framework has been implemented as a set of Eclipse plugins. To use the
+You will need Java 11 to setup Gamma.
+
+Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
 * Eclipse Modeling Framework SDK 2.21.0.
 * Xtext Complete SDK 2.21.0. (It contains Xtend, no need for the additional download
@@ -12,6 +14,20 @@ of Xtend.)
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
+
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2020-03/r/eclipse-ide-java-and-dsl-developers).
+- Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
+  - Install VIATRA 2.3.1 from update site: http://download.eclipse.org/viatra/updates/release/2.3.1.
+    - Choose the whole _VIATRA Query and Transformation SDK_ package
+ - Intall the Yakindu Statechart Tools 3.5.10. from update site: http://updates.yakindu.com/statecharts/releases/.
+   - From the Yakindu Standard Edition choose
+	- _Yakindu Statechart Tools_,
+	- _Yakindu Statechart Tools Base_,
+	- _Yakindu Statechart Tools Java Code Generator_ and
+	- _YAKINDU License Integration For Standard Edition_
+   subpackages in package _Yakindu Statechart Tools Standard Edition_.
+
+_Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
 
 ## Plugin setup
 
