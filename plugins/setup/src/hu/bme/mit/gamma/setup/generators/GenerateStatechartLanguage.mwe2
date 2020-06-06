@@ -8,7 +8,9 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-module hu.bme.mit.gamma.setup.generators.GenerateActionLanguage
+module hu.bme.mit.gamma.setup.generators.GenerateStatechartLanguage
+
+/*************DOES NOT WORK YET**************/
 
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
@@ -27,12 +29,19 @@ Workflow {
     	registerGeneratedEPackage = "hu.bme.mit.gamma.expression.model.ExpressionModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.action.model/model/action.genmodel"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.action.model.ActionModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
+    	registerEcoreFile = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.model.StatechartModelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.model.composite.CompositePackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.model.contract.ContractPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.model.phase.PhasePackage"
     }
-	
+    
 	component = XtextGenerator {
 		configuration = {
 			project = StandardProjectConfig {
-				baseName = "hu.bme.mit.gamma.action.language"
+				baseName = "hu.bme.mit.gamma.statechart.language"
 				rootPath = rootPath
 				eclipsePlugin = {
 					enabled = true
@@ -45,10 +54,13 @@ Workflow {
 				preferXtendStubs = false
 			}
 		}
-		language = StandardLanguage {
-    		referencedResource = "platform:/resource/hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/ExpressionLanguage.xtext"
-			name = "hu.bme.mit.gamma.action.language.ActionLanguage"
-			fileExtensions = "gad"
+		language = StandardLanguage {			
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/ExpressionLanguage.xtext"
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/action/language/ActionLanguage.xtext"
+			name = "hu.bme.mit.gamma.statechart.language.StatechartLanguage"
+			fileExtensions = "gcd"
+			//referencedResource = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
+			
 			
 			fragment = ecore2xtext.Ecore2XtextValueConverterServiceFragment2 auto-inject {}
 
