@@ -34,6 +34,6 @@ To create a visualization from a Gamma statechart definition, simply double clic
 
 Currently, the PlantUML statechart visualization does not support 
 
-* Multiple top level regions,
-* Multiple entry states in a region, e.g., an initial state and a history state,
-* Transitions connecting states in different regions.
+* multiple top level regions,
+* multiple entry states in a region, e.g., an initial state and a history state,
+* transitions connecting states in different regions.
