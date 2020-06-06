@@ -73,7 +73,7 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 | Project | Path |
 |-|-|
 | `hu.bme.mit.gamma.expression.language` | `/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` |
-| `hu.bme.mit.gamma.action.language` | `/src/hu/bme/mit/gamma/expression/language/GenerateActionLanguage.mwe2` |
+| `hu.bme.mit.gamma.action.language` | `/src/hu/bme/mit/gamma/action/language/GenerateActionLanguage.mwe2` |
 | `hu.bme.mit.gamma.statechart.language` | `/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` |
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |

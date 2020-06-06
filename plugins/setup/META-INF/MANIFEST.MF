@@ -24,6 +24,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.apache.log4j,
  hu.bme.mit.gamma.expression.model,
- hu.bme.mit.gamma.action.model
+ hu.bme.mit.gamma.action.model,
+ hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.trace.model,
+ hu.bme.mit.gamma.genmodel.model
 Automatic-Module-Name: hu.bme.mit.gamma.setup
 Bundle-RequiredExecutionEnvironment: JavaSE-11
