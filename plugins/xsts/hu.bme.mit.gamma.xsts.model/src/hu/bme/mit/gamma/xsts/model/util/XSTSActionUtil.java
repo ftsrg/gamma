@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.xsts.model.model.Action;
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction;
+import hu.bme.mit.gamma.xsts.model.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 
@@ -200,6 +201,35 @@ public class XSTSActionUtil {
 		sequentialAction.getActions().add(action); // Last action
 		// Merging into the parent
 		switchAction.getActions().add(sequentialAction);
+	}
+	
+	public Expression getPrecondition(Action action) {
+		if (action == null) {
+			return expressionFactory.createTrueExpression();
+		}
+		if (action instanceof AssumeAction) {
+			AssumeAction assumeAction = (AssumeAction) action;
+			return clone(assumeAction.getAssumption());
+		}
+		if (action instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) action;
+			return getPrecondition(sequentialAction.getActions().get(0));
+		}
+		if (action instanceof ParallelAction) {
+			ParallelAction parallelAction = (ParallelAction) action;
+			AndExpression andExpression = expressionFactory.createAndExpression();
+			for (Action subaction : parallelAction.getActions()) {
+				andExpression.getOperands().add(getPrecondition(subaction));
+			}
+		}
+		if (action instanceof NonDeterministicAction) {
+			NonDeterministicAction nonDeterministicAction = (NonDeterministicAction) action;
+			OrExpression orExpression = expressionFactory.createOrExpression();
+			for (Action subaction : nonDeterministicAction.getActions()) {
+				orExpression.getOperands().add(getPrecondition(subaction));
+			}
+		}
+		throw new IllegalArgumentException("Not supported aciton: " + action);
 	}
 	
 	@SuppressWarnings("unchecked")
