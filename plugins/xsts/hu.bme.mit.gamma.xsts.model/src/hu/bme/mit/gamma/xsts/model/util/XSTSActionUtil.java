@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
@@ -25,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.model.Action;
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction;
@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 
 public class XSTSActionUtil {
 
+	private GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil();
 	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	private XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
@@ -221,6 +222,7 @@ public class XSTSActionUtil {
 			for (Action subaction : parallelAction.getActions()) {
 				andExpression.getOperands().add(getPrecondition(subaction));
 			}
+			return andExpression;
 		}
 		if (action instanceof NonDeterministicAction) {
 			NonDeterministicAction nonDeterministicAction = (NonDeterministicAction) action;
@@ -228,17 +230,13 @@ public class XSTSActionUtil {
 			for (Action subaction : nonDeterministicAction.getActions()) {
 				orExpression.getOperands().add(getPrecondition(subaction));
 			}
+			return orExpression;
 		}
 		throw new IllegalArgumentException("Not supported aciton: " + action);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private <T extends EObject> T clone(T element) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		Copier copier = new Copier(true, true);
-		T clone = (T) copier.copy(element);
-		copier.copyReferences();
-		return clone;
+		return gammaEcoreUtil.clone(element, true, true);
 	}
 	
 }

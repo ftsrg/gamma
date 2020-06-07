@@ -720,13 +720,20 @@ class LowlevelToXSTSTransformer {
 	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
 		val lowlevelRegions = lowlevelComposite.regions
 		if (lowlevelRegions.size > 1) {
+			val xStsSequentialAction = createSequentialAction
+			xStsAction.actions += xStsSequentialAction
+			val xStsAssumeAction = createAssumeAction
+			val orExpression = createOrExpression // This parallel action can fire only if one of its regions can fire
+			xStsAssumeAction.assumption = orExpression
+			xStsSequentialAction.actions += xStsAssumeAction
 			val xStsParallelAction = createParallelAction
-			xStsAction.actions += xStsParallelAction
+			xStsSequentialAction.actions += xStsParallelAction
 			for (lowlevelRegion : lowlevelRegions) {
 				val xStsSubchoiceAction = createNonDeterministicAction
 				xStsParallelAction.actions += xStsSubchoiceAction
 				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
 				// Adding default else branch: if "region" cannot fire
+				orExpression.operands += xStsSubchoiceAction.precondition
 				xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
 				// For this to work, each assume action has to be at index 0 of the containing composite action
 			}
