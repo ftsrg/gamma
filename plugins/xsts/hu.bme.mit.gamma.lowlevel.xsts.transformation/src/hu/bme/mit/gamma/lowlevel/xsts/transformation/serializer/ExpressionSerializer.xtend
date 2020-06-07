@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.xsts.model.model.PrimedVariable
 
@@ -23,6 +24,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		// No op, this cannot be transformed on this level
 		throw new IllegalArgumentException("Cannot be transformed")
 	}
+	
+	override String _serialize(IfThenElseExpression expression) '''(if «expression.condition.serialize» then «expression.then.serialize» else «expression.^else.serialize»)'''
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	

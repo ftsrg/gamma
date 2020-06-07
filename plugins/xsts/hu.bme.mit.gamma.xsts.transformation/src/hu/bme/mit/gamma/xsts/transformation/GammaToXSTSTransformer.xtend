@@ -282,15 +282,4 @@ class GammaToXSTSTransformer {
 		xSts.mergedAction = xSts.mergedAction.optimize
 	}
 	
-	protected def removeUnusedVariables(XSTS xSts) {
-//		val usedVariables = (xSts.mergedAction.referredVariables).toSet
-//		val unusedVariables = xSts.variableDeclarations.reject[usedVariables.contains(it)].toSet
-//		EcoreUtil.getAllProperContents(xSts, true)
-//			.filter(ReferenceExpression).filter[unusedVariables.contains(it.declaration)]
-//			.forEach[EcoreUtil.delete(it.eContainer)] // Deleting the container
-//		for (unusedVariable : unusedVariables) {
-//			EcoreUtil.delete(unusedVariable)
-//		}
-	}
-	
 }

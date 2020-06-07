@@ -132,4 +132,10 @@
     <eLiterals name="UNDER_APPROXIMATION"/>
     <eLiterals name="OVER_APPROXIMATION" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
+        upperBound="-1" eType="#//AnalysisLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" lowerBound="1"
+        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>
