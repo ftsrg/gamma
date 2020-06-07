@@ -714,6 +714,7 @@ class LowlevelToXSTSTransformer {
 		xSts.mergedAction = xStsMergedAction
 		// Adding default else branch: if "region" cannot fire
 		xStsMergedAction.extendChoiceWithDefaultBranch(createEmptyAction)
+		// For this to work, each assume action has to be at index 0 of the containing composite action
 	}
 
 	protected def void mergeTransitions(CompositeElement lowlevelComposite, NonDeterministicAction xStsAction) {
@@ -727,6 +728,7 @@ class LowlevelToXSTSTransformer {
 				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
 				// Adding default else branch: if "region" cannot fire
 				xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
+				// For this to work, each assume action has to be at index 0 of the containing composite action
 			}
 		} else if (lowlevelRegions.size == 1) {
 			lowlevelRegions.head.mergeTransitionsOfRegion(xStsAction)
