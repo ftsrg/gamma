@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.trace.model.impl.ExecutionTraceImpl
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.Schedule
 
 class TraceToPlantUMLTransformer {
 	
@@ -17,7 +18,6 @@ class TraceToPlantUMLTransformer {
 	}
 	
 	def execute() {
-		var int stepno = 0;
 		return '''
 			@startuml
 			!pragma teoz true
@@ -26,7 +26,6 @@ class TraceToPlantUMLTransformer {
 			
 			title «trace.name» of «trace.component.name»
 			
-			participant Environment
 			participant "«trace.component.name»" as System <<SUT>>
 			
 			«««{step«stepno++»} Environment -> System ** : initialize
@@ -38,7 +37,11 @@ class TraceToPlantUMLTransformer {
 				«ENDFOR»
 				
 				«FOR act : step.actions.filter(RaiseEventAct)»
-				{step«stepno++»} Environment -> System : «act.port.name».«act.event.name»
+				[o-> System : «act.port.name».«act.event.name»
+				«ENDFOR»
+				
+				«FOR act : step.actions.filter(Schedule)»
+				== Execute ==
 				«ENDFOR»
 				
 				hnote over System 
@@ -53,7 +56,7 @@ class TraceToPlantUMLTransformer {
 				endhnote
 				
 				«FOR act : step.outEvents»
-				{step«stepno++»} System -> Environment : «act.port.name».«act.event.name»
+				System ->o] : «act.port.name».«act.event.name»
 				«ENDFOR»
 			«ENDFOR»
 			
@@ -66,7 +69,7 @@ class TraceToPlantUMLTransformer {
 					«ENDFOR»
 					
 					«FOR act : step.actions.filter(RaiseEventAct)»
-					{step«stepno++»} Environment -> System : «act.port.name».«act.event.name»
+					[o-> System : «act.port.name».«act.event.name»
 					«ENDFOR»
 					
 					hnote over System 
@@ -81,7 +84,7 @@ class TraceToPlantUMLTransformer {
 					endhnote
 					
 					«FOR act : step.outEvents»
-					{step«stepno++»} System -> Environment : «act.port.name».«act.event.name»
+					System ->o] : «act.port.name».«act.event.name»
 					«ENDFOR»
 				«ENDFOR»
 			end loop
