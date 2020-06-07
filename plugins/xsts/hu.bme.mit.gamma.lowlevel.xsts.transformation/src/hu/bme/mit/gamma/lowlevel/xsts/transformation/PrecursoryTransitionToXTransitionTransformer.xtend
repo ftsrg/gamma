@@ -10,13 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.PrecursoryState
 import hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
+import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction
@@ -43,7 +44,7 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		val xStsAction = lowlevelLastJoinState.transformBackward
 		val xStsParallelAction = xStsAction.actions.head as ParallelAction
 		val xStsRecursivePrecondition = lowlevelLastJoinState.createRecursiveXStsBackwardPrecondition
-		// The precondition has to be contained in an EMF tree (trace serialization)
+		// The precondition has to be contained in an EMF tree (trace serialization) at index 0
 		xStsAction.actions.add(0, xStsRecursivePrecondition.createAssumeAction)
 		val xStsForwardAction = lowlevelLastJoinState.transformForward
 		xStsAction.actions += xStsForwardAction
@@ -56,7 +57,7 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		val xStsAction = lowlevelLastMergeState.transformBackward
 		val xStsChoiceAction = xStsAction.actions.head as NonDeterministicAction
 		val xStsRecursivePrecondition = lowlevelLastMergeState.createRecursiveXStsBackwardPrecondition
-		// The precondition has to be contained in an EMF tree (trace serialization)
+		// The precondition has to be contained in an EMF tree (trace serialization) at index 0
 		xStsAction.actions.add(0, xStsRecursivePrecondition.createAssumeAction)
 		val xStsForwardAction = lowlevelLastMergeState.transformForward
 		xStsAction.actions += xStsForwardAction
@@ -76,7 +77,6 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		checkArgument(lowlevelIncomingTransitions.size >= 1)
 		val lowlevelOutgoingTransitions = lowlevelJoinState.outgoingTransitions
 		checkArgument(lowlevelOutgoingTransitions.size == 1)
-		// Precondition
 		val exitedLowlevelRegions = lowlevelJoinState.recursiveLowlevelDeactivatedRegions
 		val lowlevelSourceAncestor = lowlevelJoinState.sourceAncestor
 		// Fork action that is traced
@@ -109,17 +109,8 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		val xStsMergedPreconditionAction = createNonDeterministicAction
 		for (lowlevelIncomingTransition : lowlevelMergeState.incomingTransitions) {
 			val lowlevelSourceNode = lowlevelIncomingTransition.source
-			val lowlevelSourceGuard = lowlevelIncomingTransition.guard
 			// This "inner condition" is needed so the corresponding state exit can be executed
-			val andExpression = createAndExpression => [
-				if (lowlevelSourceNode instanceof State) {
-					it.operands += lowlevelSourceNode.createRecursiveXStsStateAssumption // State
-				}
-				if (lowlevelSourceGuard !== null) {
-					it.operands += lowlevelSourceGuard.transformExpression // Guard
-				}
-			]
-			val branchGuard = if (andExpression.operands.empty) createTrueExpression else andExpression
+			val branchGuard = lowlevelSourceNode.createRecursiveXStsBackwardPrecondition(lowlevelIncomingTransition)
 			xStsMergedPreconditionAction.extendChoiceWithBranch(branchGuard,
 				// Going backward
 				lowlevelMergeState.createRecursiveXStsBackwardNodeConnection(lowlevelIncomingTransition, lowlevelSourceNode)
@@ -199,24 +190,39 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 	}
 	
 	// Precondition creation: only assumptions of transitions going out from states are regarded,
-	// in-action assumptions are not as on this level the assignments to variables cannot be considered correctly
+	// in-action assumptions are not, as on this level, the assignments to variables cannot be considered correctly
 	
-	protected def createRecursiveXStsBackwardPrecondition(PrecursoryState lowlevelPrecursoryState) {
-		val xStsMergedPrecondition = createAndExpression 
-		lowlevelPrecursoryState.createRecursiveXStsBackwardPrecondition(xStsMergedPrecondition)
-		return xStsMergedPrecondition
+	protected def dispatch createRecursiveXStsBackwardPrecondition(StateNode lowlevelStateNode) {
+		throw new IllegalArgumentException("Not supported state node: " + lowlevelStateNode)
 	}
 	
-	protected def void createRecursiveXStsBackwardPrecondition(PrecursoryState lowlevelPrecursoryState,
-			AndExpression andExpression) {
-		// The createXStsTransitionPrecondition method handles the state conditions of merges, joins, etc. correctly
-		andExpression.operands += lowlevelPrecursoryState.createSingleXStsTransitionPrecondition
-		for (lowlevelIncomingTransition : lowlevelPrecursoryState.incomingTransitions) {
-			val lowlevelSource = lowlevelIncomingTransition.source
-			if (lowlevelSource instanceof PrecursoryState) {
-				lowlevelSource.createRecursiveXStsBackwardPrecondition(andExpression)
+	protected def dispatch Expression createRecursiveXStsBackwardPrecondition(MergeState lowlevelPrecursoryState) {
+		return createOrExpression => [
+			for (lowlevelIncomingTransition : lowlevelPrecursoryState.incomingTransitions) {
+				val lowlevelSource = lowlevelIncomingTransition.source
+				it.operands += lowlevelSource.createRecursiveXStsBackwardPrecondition(lowlevelIncomingTransition)
 			}
-		}
+		]
+	}
+	
+	protected def dispatch Expression createRecursiveXStsBackwardPrecondition(JoinState lowlevelPrecursoryState) {
+		return createAndExpression => [
+			for (lowlevelIncomingTransition : lowlevelPrecursoryState.incomingTransitions) {
+				val lowlevelSource = lowlevelIncomingTransition.source
+				it.operands += lowlevelSource.createRecursiveXStsBackwardPrecondition(lowlevelIncomingTransition)
+			}
+		]
+	}
+	
+	protected def dispatch createRecursiveXStsBackwardPrecondition(State lowlevelState, Transition lowlevelOutgoingTransition) {
+		return lowlevelOutgoingTransition.createXStsTransitionPrecondition
+	}
+	
+	protected def dispatch createRecursiveXStsBackwardPrecondition(PrecursoryState lowlevelPrecursoryState,
+			Transition lowlevelOutgoingTransition) {
+		checkArgument(lowlevelOutgoingTransition.guard === null,
+			"Transitions going out from precursory states cannot have guards: " + lowlevelOutgoingTransition)
+		return lowlevelPrecursoryState.createRecursiveXStsBackwardPrecondition
 	}
 	
 	//
@@ -247,7 +253,6 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		val lowlevelSourceAncestor = lowlevelTransition.sourceAncestor  // Checking activated parent regions until this state
 		val deactivatedLowlevelRegions = newHashSet
 		val lowlevelSource = lowlevelTransition.source
-		val lowlevelTarget = lowlevelTransition.target
 		if (lowlevelSource instanceof State) {
 			val deactivatedLowlevelRegionFraction = lowlevelSource.getParentRegionsRecursively(lowlevelSourceAncestor)
 			deactivatedLowlevelRegionFraction += lowlevelSource.getSubregionsRecursively
@@ -259,8 +264,8 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 			// Recursion
 			deactivatedLowlevelRegions += lowlevelSource.getRecursiveLowlevelDeactivatedRegions
 		}
-		else if (lowlevelTarget instanceof MergeState) {
-			val lowlevelIncomingTransitions = lowlevelTarget.incomingTransitions
+		else if (lowlevelSource instanceof MergeState) {
+			val lowlevelIncomingTransitions = lowlevelSource.incomingTransitions
 			val firstIncomingLowlevelTransition = lowlevelIncomingTransitions.head
 			val lowlevelParentRegion = firstIncomingLowlevelTransition.source.parentRegion
 			if (lowlevelIncomingTransitions.map[it.source]
@@ -274,7 +279,9 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 					deactivatedLowlevelRegions += lowlevelIncomingTransition.getRecursiveLowlevelDeactivatedRegions
 				}
 			}
-			
+			else {
+				throw new IllegalArgumentException("Not supported merge -> join structure: " + lowlevelSource)
+			}
 		}
 		return deactivatedLowlevelRegions
 	}
@@ -303,5 +310,4 @@ class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToX
 		return xStsRegionExitActions
 	}
 	
-	//
 }

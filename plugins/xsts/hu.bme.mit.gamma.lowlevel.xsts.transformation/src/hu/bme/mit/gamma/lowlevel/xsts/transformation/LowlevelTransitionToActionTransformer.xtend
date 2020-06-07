@@ -174,8 +174,7 @@ class LowlevelTransitionToActionTransformer {
 		return actions
 	}
 	
-	protected def createRecursiveXStsTransitionParentExitActions(
-			Transition lowlevelTransition) {
+	protected def createRecursiveXStsTransitionParentExitActions(Transition lowlevelTransition) {
 		val lowlevelSourceNode = lowlevelTransition.source
 		val actions = newLinkedList
 		if (isToHigherNode(lowlevelSourceNode, null, lowlevelTransition, null) || 

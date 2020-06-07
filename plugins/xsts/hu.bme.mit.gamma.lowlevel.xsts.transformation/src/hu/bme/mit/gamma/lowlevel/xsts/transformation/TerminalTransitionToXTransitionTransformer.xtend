@@ -43,9 +43,9 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		val xStsAction = lowlevelFirstForkState.transformForward
 		val xStsPreconditionAction = xStsAction.actions.head as AssumeAction
 		val xStsPrecondition = xStsPreconditionAction.assumption
-		val xStsChoiceAction = xStsAction.actions.last as ParallelAction
+		val xStsForkAction = xStsAction.actions.last as ParallelAction
 		val xStsComplexTransition = xStsAction.createXStsTransition
-		trace.put(lowlevelFirstForkState, xStsComplexTransition, xStsPrecondition, xStsChoiceAction)
+		trace.put(lowlevelFirstForkState, xStsComplexTransition, xStsPrecondition, xStsForkAction)
 		return xStsComplexTransition
 	}
 	

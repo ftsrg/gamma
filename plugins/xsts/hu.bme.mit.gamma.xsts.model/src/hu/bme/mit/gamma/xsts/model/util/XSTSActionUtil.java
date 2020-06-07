@@ -183,6 +183,11 @@ public class XSTSActionUtil {
 				.filter(it -> it.getActions().get(0) instanceof AssumeAction)
 				.map(it -> ((AssumeAction) it.getActions().get(0)).getAssumption())
 				.collect(Collectors.toList());
+		// Collecting atomic assumptions too
+		switchAction.getActions().stream()
+			.filter(it -> it instanceof AssumeAction)
+			.map(it -> ((AssumeAction) it).getAssumption()).
+			forEach(it -> conditions.add(it));
 		if (conditions.isEmpty()) {
 			return;
 		}
