@@ -103,5 +103,9 @@
     <genClasses ecoreClass="genmodel.ecore#//PhaseStatechartGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//PhaseStatechartGeneration/statechart"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//Verification">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/language"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/queryFiles"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

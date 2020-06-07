@@ -48,4 +48,8 @@ class FileUtil {
 		return fileName.substring(0, lastIndex)
 	}
 	
+	def exploreRelativeFile(File anchor, String relativePath) {
+		
+	}
+	
 }
