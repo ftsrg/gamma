@@ -67,7 +67,7 @@ public abstract class TaskHandler {
 			}
 			task.getTargetFolder().add(targetFolder);
 		}
-		// Setting the attribute
+		// Setting the attribute, the target folder is a RELATIVE path now from the project
 		targetFolderUri = URI.decode(projectLocation + File.separator + task.getTargetFolder().get(0));
 	}
 	

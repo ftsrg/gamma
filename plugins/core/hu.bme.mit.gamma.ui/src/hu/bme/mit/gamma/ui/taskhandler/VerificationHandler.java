@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
@@ -21,6 +22,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class VerificationHandler extends TaskHandler {
 
+	protected String testFolderUri;
+	
 	public VerificationHandler(IFile file) {
 		super(file);
 	}
@@ -60,15 +63,20 @@ public class VerificationHandler extends TaskHandler {
 		className += "Simulation" + id;
 		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
 		String testCode = testGenerator.execute();
-		fileUtil.saveString(projectLocation + File.separator + "test-gen" + File.separator +
-			testGenerator.getPackageName().replaceAll("\\.", "/") + File.separator + className + ".java", testCode);
-	
+		String testFolder = testFolderUri;
+		fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
+				File.separator + className + ".java", testCode);
 	}
 
 	private void setVerification(Verification verification) {
 		if (verification.getPackageName().isEmpty()) {
 			verification.getPackageName().add(file.getProject().getName().toLowerCase());
 		}
+		if (verification.getTestFolder().isEmpty()) {
+			verification.getTestFolder().add("test-gen");
+		}
+		// Setting the attribute, the test folder is a RELATIVE path now from the project
+		testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
 		File file = new File(super.file.getLocation().toString());
 		// Setting the file paths
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
