@@ -129,6 +129,10 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (files.size != 1) {
 			error("A single model file must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
 		}
+		val testFolders = verification.testFolder
+		if (testFolders.size > 1) {
+			error("A single test folder can be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+		}
 	}
 	
 	@Check

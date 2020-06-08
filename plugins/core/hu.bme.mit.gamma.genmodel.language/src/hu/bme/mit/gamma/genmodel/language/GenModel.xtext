@@ -193,12 +193,13 @@ enum InteractionRepresentation returns InteractionRepresentation:
 Verification  returns Verification:
 	{Verification} 'verification' '{'
 		(
-			'folder' ':' targetFolder+=STRING |	// Trace folder
+			'trace-folder' ':' targetFolder+=STRING |	// Trace folder
 			'file' ':' fileName+=STRING | // Analysis model
 			'language' ':' languages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'base-package' ':' packageName+=STRING  | // Java base package
-			'test-language' ':' language+=ProgrammingLanguage
+			'test-language' ':' language+=ProgrammingLanguage |
+			'test-folder' ':' testFolder+=STRING
 		)*
 	'}'
 ;
