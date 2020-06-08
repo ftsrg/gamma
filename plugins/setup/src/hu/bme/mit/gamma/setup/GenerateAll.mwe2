@@ -9,4 +9,7 @@ Workflow {
     component = @generators.GenerateUppaalTraceabilityModel {}
     component = @generators.GenerateGenmodelModel {}
     component = @generators.GenerateYakinduTraceabilityModel {}
+    component = @generators.GenerateLowlevelModel {}
+    component = @generators.GenerateXstsModel {}
+    component = @generators.GenerateLowlevelXstsTraceabilityModel {}
 }

@@ -9,4 +9,7 @@ Workflow {
     component = @cleaners.CleanUppaalTraceabilityModel {}
     component = @cleaners.CleanGenmodelModel {}
     component = @cleaners.CleanYakinduTraceabilityModel {}
+    component = @cleaners.CleanLowlevelModel {}
+    component = @cleaners.CleanXstsModel {}
+    component = @cleaners.CleanLowlevelXstsTraceabilityModel {}
 }
