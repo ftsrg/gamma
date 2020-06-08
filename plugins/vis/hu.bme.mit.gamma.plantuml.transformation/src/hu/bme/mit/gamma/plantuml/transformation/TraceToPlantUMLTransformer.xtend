@@ -3,15 +3,17 @@ package hu.bme.mit.gamma.plantuml.transformation
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import org.eclipse.emf.ecore.resource.Resource
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.impl.ExecutionTraceImpl
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.Schedule
+import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 
 class TraceToPlantUMLTransformer {
 	
 	protected final ExecutionTrace trace
+	
+	protected extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
 	
 	new(Resource resource) {
 		this.trace = resource.contents.head as ExecutionTrace
@@ -23,6 +25,19 @@ class TraceToPlantUMLTransformer {
 			!pragma teoz true
 			
 			hide footbox
+			skinparam shadowing false
+			skinparam ArrowColor #0b910b
+			skinparam SequenceLifeLineBorderColor #0b910b
+			skinparam SequenceLifeLineBackgroundColor #3ec43e
+			skinparam ParticipantBorderColor #043204
+			skinparam ParticipantBackgroundColor #3ec43e
+			skinparam NoteBackgroundColor #ffe7a4
+			skinparam NoteBorderColor #914e0b
+			skinparam SequenceDividerBackgroundColor #8cdc8c
+			skinparam SequenceDividerBorderColor #0b910b
+			skinparam SequenceGroupBackgroundColor #8cdc8c
+			skinparam SequenceGroupBorderColor #043204
+			
 			
 			title «trace.name» of «trace.component.name»
 			
@@ -43,21 +58,24 @@ class TraceToPlantUMLTransformer {
 				«FOR act : step.actions.filter(Schedule)»
 				== Execute ==
 				«ENDFOR»
-				
-				hnote over System 
-				«FOR state : step.instanceStates.filter(InstanceStateConfiguration).sortBy[it.instance.name]»
-				«state.instance.name».«state.state.name»
-				«ENDFOR»
-				endhnote
-				hnote over System
-				«FOR state : step.instanceStates.filter(InstanceVariableState).sortBy[it.instance.name]»
-				«state.instance.name».«state.declaration.name» = «state.value»
-				«ENDFOR»
-				endhnote
-				
+								
 				«FOR act : step.outEvents»
 				System ->o] : «act.port.name».«act.event.name»
 				«ENDFOR»
+				
+				hnote over System 
+				«FOR config : step.instanceStates.filter(InstanceStateConfiguration).groupBy[it.instance].entrySet.sortBy[it.key.name]»
+				«config.key.name» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceStates.filter(InstanceVariableState).exists[it.instance.equals(config.key)]»with«ENDIF»
+					«FOR varconstraint : step.instanceStates.filter(InstanceVariableState).filter[it.instance.equals(config.key)].sortBy[it.declaration.name]»
+					«varconstraint.declaration.name» = «varconstraint.value.serialize»
+					«ENDFOR»
+				«ENDFOR»
+				endhnote
+				«««hnote over System
+				««««FOR state : step.instanceStates.filter(InstanceVariableState).sortBy[it.instance.name]»
+				««««state.instance.name».«state.declaration.name» = «state.value»
+				««««ENDFOR»
+				«««endhnote
 			«ENDFOR»
 			
 			«IF trace.cycle!=null»
@@ -75,21 +93,24 @@ class TraceToPlantUMLTransformer {
 					«FOR act : step.actions.filter(Schedule)»
 					== Execute ==
 					«ENDFOR»
-					
-					hnote over System 
-					«FOR state : step.instanceStates.filter(InstanceStateConfiguration).sortBy[it.instance.name]»
-					«state.instance.name».«state.state.name»
-					«ENDFOR»
-					endhnote
-					hnote over System
-					«FOR state : step.instanceStates.filter(InstanceVariableState).sortBy[it.instance.name]»
-					«state.instance.name».«state.declaration.name» = «state.value»
-					«ENDFOR»
-					endhnote
-					
+									
 					«FOR act : step.outEvents»
 					System ->o] : «act.port.name».«act.event.name»
 					«ENDFOR»
+					
+					hnote over System 
+					«FOR config : step.instanceStates.filter(InstanceStateConfiguration).groupBy[it.instance].entrySet.sortBy[it.key.name]»
+					«config.key.name» in {«config.value.map[it.state.name].join(", ")»} «IF step.instanceStates.filter(InstanceVariableState).exists[it.instance.equals(config.key)]»with«ENDIF»
+						«FOR varconstraint : step.instanceStates.filter(InstanceVariableState).filter[it.instance.equals(config.key)].sortBy[it.declaration.name]»
+						«varconstraint.declaration.name» = «varconstraint.value.serialize»
+						«ENDFOR»
+					«ENDFOR»
+					endhnote
+					«««hnote over System
+					««««FOR state : step.instanceStates.filter(InstanceVariableState).sortBy[it.instance.name]»
+					««««state.instance.name».«state.declaration.name» = «state.value»
+					««««ENDFOR»
+					«««endhnote
 				«ENDFOR»
 			end loop
 			«ENDIF»
