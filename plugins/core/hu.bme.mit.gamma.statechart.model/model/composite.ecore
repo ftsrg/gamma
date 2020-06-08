@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="composite" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+    nsPrefix="hu.bme.mit.gamma.statechart.composite">
+  <eAnnotations source="http://www.eclipse.org/emf/2002/Ecore">
+    <details key="settingDelegates" value="org.eclipse.viatra.query.querybasedfeature"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="PrioritizedElement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="priority" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"
+        defaultValueLiteral="0"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CompositeComponent" abstract="true"
+      eSuperTypes="interface.ecore#//Component">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
+        eType="#//PortBinding" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="channels" upperBound="-1"
+        eType="#//Channel" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstance" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PortBinding">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="compositeSystemPort" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//Port"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancePortReference"
+        lowerBound="1" eType="#//InstancePortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Channel" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="providedPort" lowerBound="1"
+        eType="#//InstancePortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstancePortReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="#//ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BroadcastChannel" eSuperTypes="#//Channel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPorts" lowerBound="1"
+        upperBound="-1" eType="#//InstancePortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SimpleChannel" eSuperTypes="#//Channel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="requiredPort" lowerBound="1"
+        eType="#//InstancePortReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ControlSpecification">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="controlFunction" eType="#//ControlFunction"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="trigger" lowerBound="1"
+        eType="ecore:EClass interface.ecore#//SimpleTrigger" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="ControlFunction">
+    <eLiterals name="RUN_ONCE"/>
+    <eLiterals name="RUN_TO_COMPLETION" value="1"/>
+    <eLiterals name="RESET" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageQueue" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//PrioritizedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="capacity" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
+        upperBound="-1" eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
+      eSuperTypes="interface.ecore#//Component"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousComponent" abstract="true"
+      eSuperTypes="interface.ecore#//Component"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponentInstance" eSuperTypes="#//ComponentInstance">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//SynchronousComponent"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousComponentInstance" eSuperTypes="#//ComponentInstance">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//AsynchronousComponent"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractSynchronousCompositeComponent"
+      abstract="true" eSuperTypes="#//CompositeComponent #//SynchronousComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
+        eType="#//SynchronousComponentInstance" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousCompositeComponent" eSuperTypes="#//CompositeComponent #//AsynchronousComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="components" upperBound="-1"
+        eType="#//AsynchronousComponentInstance" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AsynchronousAdapter" eSuperTypes="#//AsynchronousComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="controlSpecifications"
+        lowerBound="1" upperBound="-1" eType="#//ControlSpecification" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="messageQueues" lowerBound="1"
+        upperBound="-1" eType="#//MessageQueue" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="clocks" upperBound="-1"
+        eType="ecore:EClass interface.ecore#//Clock" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="wrappedComponent" lowerBound="1"
+        eType="#//SynchronousComponentInstance" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="CascadeCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionList" unique="false"
+        upperBound="-1" eType="#//SynchronousComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent"/>
+</ecore:EPackage>

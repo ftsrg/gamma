@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="phase" nsURI="http://www.mit.bme.hu/gamma/statechart/Model/Phase"
+    nsPrefix="hu.bme.mit.gamma.statechart.phase">
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation"/>
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="stateDefinitions" upperBound="-1"
+          eType="#//MissionPhaseStateDefinition" containment="true"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="MissionPhaseStateDefinition">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+          eType="ecore:EClass composite.ecore#//SynchronousComponentInstance" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="portBindings" upperBound="-1"
+          eType="ecore:EClass composite.ecore#//PortBinding" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variableBindings" upperBound="-1"
+          eType="#//VariableBinding" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="history" lowerBound="1"
+          eType="#//History"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="VariableBinding">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="instanceVariableReference"
+          lowerBound="1" eType="#//InstanceVariableReference" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="statechartVariable" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableReference">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+          eType="ecore:EClass composite.ecore#//SynchronousComponentInstance"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+          eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="History">
+      <eLiterals name="NO_HISTORY" literal="NO_HISTORY"/>
+      <eLiterals name="SHALLOW_HISTORY" value="1" literal="SHALLOW_HISTORY"/>
+      <eLiterals name="DEEP_HISTORY" value="2" literal="DEEP_HISTORY"/>
+    </eClassifiers>
+</ecore:EPackage>
