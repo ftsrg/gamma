@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.ui.taskhandler;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
@@ -20,6 +22,10 @@ import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class InterfaceCompilationHandler extends YakinduCompilationHandler {
 
+	public InterfaceCompilationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(InterfaceCompilation interfaceCompilation) throws IOException {
 		setYakinduCompilation(interfaceCompilation);
 		InterfaceTransformer transformer = new InterfaceTransformer(

@@ -17,11 +17,13 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.eclipse.compare,
  org.eclipse.xtext.builder,
  hu.bme.mit.gamma.action.language.ui,
- hu.bme.mit.gamma.expression.language.ui
+ hu.bme.mit.gamma.expression.language.ui,
+ hu.bme.mit.gamma.language.util
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.statechart.language.ui.contentassist,
  hu.bme.mit.gamma.statechart.language.ui.internal,
- hu.bme.mit.gamma.statechart.language.ui.quickfix
+ hu.bme.mit.gamma.statechart.language.ui.quickfix,
+ hu.bme.mit.gamma.statechart.language.ui.serializer
 Bundle-Activator: hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.language.ui

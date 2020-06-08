@@ -14,38 +14,49 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
-import com.google.inject.Injector;
-
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
-import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
-import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
+import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public abstract class TaskHandler {
 	
+	protected final IFile file;
+	
 	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
+	protected FileUtil fileUtil = new FileUtil();
 	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final String projectLocation;
 	protected String targetFolderUri;
-
-	public void setTargetFolder(Task task, IFile file, String parentFolderUri) {
-		checkArgument(task.getTargetFolder().size() <= 1);
+	
+	public TaskHandler(IFile file) {
+		this.file = file;
 		// E.g., C:/Users/...
-		String projectLocation = file.getProject().getLocation().toString();
+		this.projectLocation = file.getProject().getLocation().toString(); 
+	}
+
+	public void setTargetFolder(Task task, String parentFolderUri) {
+		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
-			if (task instanceof CodeGeneration) {
+			if (task instanceof Verification) {
+				targetFolder = "trace";
+			}
+			else if (task instanceof CodeGeneration) {
 				targetFolder = "src-gen";
 			}
 			else if (task instanceof TestGeneration || task instanceof AdaptiveContractTestGeneration) {
@@ -72,34 +83,33 @@ public abstract class TaskHandler {
 	 * Responsible for saving the given element into a resource file.
 	 */
 	public void saveModel(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		if (rootElem instanceof Package) {
-			// A Gamma statechart model
-			try {
-				// Trying to serialize the model
-				serialize(rootElem, parentFolder, fileName);
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.log(Level.WARNING, e.getMessage() + System.lineSeparator() +
-						"Possibly you have two more model elements with the same name specified in the previous error message.");
-				DialogUtil.showErrorWithStackTrace("Statechart cannot be serialized.", e);
-				new File(parentFolder + File.separator + fileName).delete();
-				// Saving like an EMF model
-				String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
-				ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
+		// A Gamma statechart model
+		try {
+			// Trying to serialize the model
+			if (rootElem instanceof Package) {
+				serializeStatechart(rootElem, parentFolder, fileName);
 			}
-		}
-		else {
-			// It is not a statechart model, regular saving
-			ecoreUtil.normalSave(rootElem, parentFolder, fileName);
+			else if (rootElem instanceof ExecutionTrace) { 
+				serializeTrace(rootElem, parentFolder, fileName);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
+			new File(parentFolder + File.separator + fileName).delete();
+			// Saving like an EMF model
+			String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
+			ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
 		}
 	}
 	
-	private void serialize(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		// This is how an injected object can be retrieved
-		Injector injector = LanguageActivator.getInstance()
-				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_STATECHART_LANGUAGE_STATECHARTLANGUAGE);
-		GammaLanguageSerializer serializer = injector.getInstance(GammaLanguageSerializer.class);
-		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+	private void serializeStatechart(EObject rootElem, String parentFolder, String fileName) throws IOException {
+		StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
+		serializer.serialize(rootElem, parentFolder, fileName);
+	}
+	
+	private void serializeTrace(EObject rootElem, String parentFolder, String fileName) throws IOException {
+		TraceLanguageSerializer serializer = new TraceLanguageSerializer();
+		serializer.serialize(rootElem, parentFolder, fileName);
 	}
 	
 }

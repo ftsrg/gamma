@@ -24,15 +24,11 @@ import java.util.logging.Logger;
 import javax.swing.SwingWorker;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
-import com.google.inject.Injector;
-
-import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
 import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
-import hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator;
+import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
@@ -143,11 +139,8 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	}
 	
 	private void serialize(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		// This is how an injected object can be retrieved
-		Injector injector = LanguageActivator.getInstance()
-				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_TRACE_LANGUAGE_TRACELANGUAGE);
-		GammaLanguageSerializer serializer = injector.getInstance(GammaLanguageSerializer.class);
-		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+		TraceLanguageSerializer serializer = new TraceLanguageSerializer();
+		serializer.serialize(rootElem, parentFolder, fileName);
    }
 	
 	@Override

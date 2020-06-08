@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.logging.Level;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -28,6 +29,10 @@ import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedF
 
 public class CodeGenerationHandler extends TaskHandler {
 
+	public CodeGenerationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(CodeGeneration codeGeneration, String packageName) {
 		checkArgument(codeGeneration.getLanguage().size() == 1, 
 				"A single programming language must be specified: " + codeGeneration.getLanguage());

@@ -12,9 +12,15 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 
 public abstract class YakinduCompilationHandler extends TaskHandler {
+	
+	public YakinduCompilationHandler(IFile file) {
+		super(file);
+	}
 	
 	protected void setYakinduCompilation(YakinduCompilation yakinduCompilation) {
 		String fileName = getNameWithoutExtension(getContainingFileName(yakinduCompilation.getStatechart()));

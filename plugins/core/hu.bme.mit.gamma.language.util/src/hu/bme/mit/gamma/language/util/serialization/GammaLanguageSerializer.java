@@ -47,14 +47,18 @@ public class GammaLanguageSerializer {
 		}
 	}
 
-	public void save(EObject object, String fileName) throws IOException {
-		URI traceUri = URI.createFileURI(fileName);
+	public void save(EObject object, String fileUri) throws IOException {
+		save(object, URI.createFileURI(fileUri));
+	}
+	
+	public void save(EObject object, URI uri) throws IOException {
 		// Theoretically, all referenced resources must be in the resource set
 		resolveResources(object, new HashSet<Resource>());
 		// Tried using getResource instead of createResource. Unfortunately, it did not solve the import problem
 		// (automatic update of import reference to the new serialized model and thus, the new contained object elements).
-		Resource traceResource = resourceSet.createResource(traceUri);
-		traceResource.getContents().add(object);
-		traceResource.save(Collections.EMPTY_MAP);
+		Resource resource = resourceSet.createResource(uri);
+		resource.getContents().add(object);
+		resource.save(Collections.EMPTY_MAP);
 	}
+	
 }

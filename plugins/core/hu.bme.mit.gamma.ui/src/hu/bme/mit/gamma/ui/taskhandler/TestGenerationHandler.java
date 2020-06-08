@@ -17,6 +17,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -24,6 +26,10 @@ import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 
 public class TestGenerationHandler extends TaskHandler {
 
+	public TestGenerationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(TestGeneration testGeneration, String packageName) throws IOException {
 		checkArgument(testGeneration.getLanguage().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getLanguage());

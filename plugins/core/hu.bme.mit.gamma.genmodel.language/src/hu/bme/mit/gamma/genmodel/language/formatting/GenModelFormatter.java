@@ -60,7 +60,7 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getGroup_5());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getTargetFolderAssignment_6_0_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getFileNameAssignment_6_1_2());
-        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguageAssignment_6_2_2());
+        c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getLanguagesAssignment_6_2_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getAlternatives_6_3_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getConstraintAssignment_6_5_2());
         c.setLinewrap(1).after(f.getAnalysisModelTransformationAccess().getCoveragesAssignment_6_6());

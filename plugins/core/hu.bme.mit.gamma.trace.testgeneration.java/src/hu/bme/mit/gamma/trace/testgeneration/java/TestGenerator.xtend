@@ -43,7 +43,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 
 class TestGenerator {
 	// Constant strings
-	protected final String YAKINDU_PACKAGE_NAME_PREFIX
+	protected final String BASE_PACKAGE
 	protected final String TEST_FOLDER = "test-gen"
 	protected final String TIMER_CLASS_NAME = "VirtualTimerService"
 	protected final String TIMER_OBJECT_NAME = "timer"
@@ -77,12 +77,12 @@ class TestGenerator {
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
 	 * Each trace must reference the same component with the same parameter values (arguments).
 	 */
-	new(List<ExecutionTrace> traces, String yakinduPackageName, String className) {
+	new(List<ExecutionTrace> traces, String basePackage, String className) {
 		this.component = traces.head.component // Theoretically, the same thing what loadModels do
 		this.resourceSet = component.eResource.resourceSet
 		checkArgument(this.resourceSet !== null)
 		this.gammaPackage = component.eContainer as Package
-		this.YAKINDU_PACKAGE_NAME_PREFIX = yakinduPackageName // For some reason, package platform URI does not work
+		this.BASE_PACKAGE = basePackage // For some reason, package platform URI does not work
 		this.traces = traces
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 		// Initializing the string variables
@@ -112,7 +112,7 @@ class TestGenerator {
 		} else {
 			finalName = name;
 		}
-		return YAKINDU_PACKAGE_NAME_PREFIX + "." + finalName
+		return BASE_PACKAGE + "." + finalName
 	}
 	
 	private def createPackageName() '''package «PACKAGE_NAME»;'''
@@ -158,7 +158,7 @@ class TestGenerator {
 	'''
 	
 	protected def generateImports(Component component) '''
-		import «YAKINDU_PACKAGE_NAME_PREFIX».*;
+		import «BASE_PACKAGE».*;
 		
 		import static org.junit.Assert.«ASSERT_TRUE»;
 		

@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
@@ -22,6 +24,10 @@ import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartToStatech
 
 public class PhaseGenerationHandler extends TaskHandler {
 
+	public PhaseGenerationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(PhaseStatechartGeneration phaseStatechartGeneration) throws IOException {
 		setFileName(phaseStatechartGeneration);
 		StatechartDefinition statechart = phaseStatechartGeneration.getStatechart();
