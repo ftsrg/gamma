@@ -1,5 +1,3 @@
 */bin/
 
-*.edit/
-*.editor/
 *.tests/
