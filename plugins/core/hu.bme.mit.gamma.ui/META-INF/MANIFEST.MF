@@ -29,5 +29,6 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.statechart.contract.testgeneration.java,
  hu.bme.mit.gamma.statechart.phase.transformation,
  hu.bme.mit.gamma.xsts.transformation,
- hu.bme.mit.gamma.transformation.util
+ hu.bme.mit.gamma.transformation.util,
+ hu.bme.mit.gamma.theta.verification
 Export-Package: hu.bme.mit.gamma.ui

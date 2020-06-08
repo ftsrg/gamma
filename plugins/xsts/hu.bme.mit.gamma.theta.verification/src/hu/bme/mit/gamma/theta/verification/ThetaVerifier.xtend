@@ -41,7 +41,7 @@ class ThetaVerifier extends AbstractVerifier {
 		try {
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop --loglevel RESULT
+			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
 			val command = "java -jar \"" + jar + "\" " + parameters + " --model \"" + modelFile.toString + "\" --property \"" + queryFile.canonicalPath + "\"  --cex " + traceFile.toString
 			// Executing the command
