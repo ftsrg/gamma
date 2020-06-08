@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.eventpriority.transformation.EventPriorityTransformer;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.statechart.model.Package;
@@ -21,6 +23,10 @@ import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 
 public class EventPriorityTransformationHandler extends TaskHandler {
 
+	public EventPriorityTransformationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(EventPriorityTransformation eventPriorityTransformation) throws IOException {
 		setFileName(eventPriorityTransformation);
 		StatechartDefinition statechart = eventPriorityTransformation.getStatechart();

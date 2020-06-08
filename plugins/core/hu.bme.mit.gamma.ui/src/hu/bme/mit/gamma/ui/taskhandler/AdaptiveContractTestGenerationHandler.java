@@ -15,11 +15,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.statechart.contract.testgeneration.java.StatechartToTestTransformer;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
+	
+	public AdaptiveContractTestGenerationHandler(IFile file) {
+		super(file);
+	}
 	
 	public void execute(AdaptiveContractTestGeneration testGeneration, String containingFile, String packageName) throws IOException {
 		checkArgument(testGeneration.getLanguage().size() == 1, 

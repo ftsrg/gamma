@@ -32,7 +32,8 @@ GenModel returns GenModel:
 
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
-		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration
+		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
+		Verification
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -108,7 +109,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 		(
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
-			'language' ':' language+=AnalysisLanguage |
+			'language' ':' languages+=AnalysisLanguage |
 			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
@@ -189,6 +190,18 @@ enum InteractionRepresentation returns InteractionRepresentation:
 	UNDER_APPROXIMATION = "under-approximation" |  OVER_APPROXIMATION = "over-approximation"
 ;
 
+Verification  returns Verification:
+	{Verification} 'verification' '{'
+		(
+			'folder' ':' targetFolder+=STRING |	// Trace folder
+			'file' ':' fileName+=STRING | // Analysis model
+			'language' ':' languages+=AnalysisLanguage |
+			'query-file' ':' queryFiles+=STRING | // Queries
+			'base-package' ':' packageName+=STRING  | // Java base package
+			'test-language' ':' language+=ProgrammingLanguage
+		)*
+	'}'
+;
 
 InterfaceMapping  returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'

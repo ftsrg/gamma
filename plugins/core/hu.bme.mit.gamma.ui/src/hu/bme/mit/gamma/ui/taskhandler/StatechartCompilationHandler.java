@@ -15,6 +15,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.eclipse.core.resources.IFile;
+
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.yakindu.transformation.batch.ModelValidator;
@@ -23,6 +25,10 @@ import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
 
 public class StatechartCompilationHandler extends YakinduCompilationHandler {
 
+	public StatechartCompilationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(StatechartCompilation statechartCompilation) throws IOException {
 		setYakinduCompilation(statechartCompilation);
 		setStatechartCompilation(statechartCompilation, statechartCompilation.getStatechart().getName());

@@ -5,7 +5,8 @@ Bundle-Vendor: BME-FTSRG
 Bundle-Version: 2.3.1.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.language.ui; singleton:=true
 Bundle-ActivationPolicy: lazy
-Require-Bundle: hu.bme.mit.gamma.expression.language.ui,
+Require-Bundle: hu.bme.mit.gamma.language.util,
+ hu.bme.mit.gamma.expression.language.ui,
  hu.bme.mit.gamma.trace.language,
  hu.bme.mit.gamma.trace.language.ide,
  hu.bme.mit.gamma.trace.model,
@@ -23,6 +24,7 @@ Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.trace.language.ui.contentassist,
  hu.bme.mit.gamma.trace.language.ui.internal,
- hu.bme.mit.gamma.trace.language.ui.quickfix
+ hu.bme.mit.gamma.trace.language.ui.quickfix,
+ hu.bme.mit.gamma.trace.language.ui.serializer
 Bundle-Activator: hu.bme.mit.gamma.trace.language.ui.internal.LanguageActivator
 Automatic-Module-Name: hu.bme.mit.gamma.trace.language.ui

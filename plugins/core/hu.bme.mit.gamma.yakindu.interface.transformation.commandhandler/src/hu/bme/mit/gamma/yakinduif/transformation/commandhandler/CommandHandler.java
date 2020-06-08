@@ -31,11 +31,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.yakindu.sct.model.sgraph.Statechart;
 
-import com.google.inject.Injector;
-
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.language.util.serialization.GammaLanguageSerializer;
-import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
+import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.yakindu.transformation.batch.InterfaceTransformer;
 import hu.bme.mit.gamma.yakindu.transformation.traceability.Y2GTrace;
@@ -127,10 +124,8 @@ public class CommandHandler extends AbstractHandler {
 	}
 	
 	private void serialize(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		Injector injector = LanguageActivator.getInstance()
-				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_STATECHART_LANGUAGE_STATECHARTLANGUAGE);
-		GammaLanguageSerializer serializer = injector.getInstance(GammaLanguageSerializer.class);
-		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+		StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
+		serializer.serialize(rootElem, parentFolder, fileName);
    }
 	
 }

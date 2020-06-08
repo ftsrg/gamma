@@ -1700,9 +1700,9 @@
         <description xmi:type="style:FlatContainerStyleDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@style"/>
       </ownedStyle>
       <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
-      <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_W3JJkB5ZEem57Ol9CFi0_Q" name="language : AnalysisLanguage" tooltipText="">
-        <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//AnalysisModelTransformation/language"/>
-        <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//AnalysisModelTransformation/language"/>
+      <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_W3JJkB5ZEem57Ol9CFi0_Q" name="languages : AnalysisLanguage" tooltipText="">
+        <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//AnalysisModelTransformation/languages"/>
+        <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//AnalysisModelTransformation/languages"/>
         <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_cI1FoB5ZEem57Ol9CFi0_Q" labelAlignment="LEFT" description="_Wx9Z8B-cEeewsaLc7xftQA">
           <labelFormat>bold</labelFormat>
         </ownedStyle>
@@ -2524,9 +2524,9 @@
         <description xmi:type="style:FlatContainerStyleDescription" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']/@style"/>
       </ownedStyle>
       <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/org.eclipse.emf.ecoretools.design/description/ecore.odesign#//@ownedViewpoints[name='Design']/@ownedRepresentations[name='Entities']/@defaultLayer/@containerMappings[name='EC%20EClass']"/>
-      <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_jhYdsKjBEeqSVfyLqua2kA" name="language : AnalysisLanguage" tooltipText="">
-        <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//Verification/language"/>
-        <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//Verification/language"/>
+      <ownedElements xmi:type="diagram:DNodeListElement" xmi:id="_jhYdsKjBEeqSVfyLqua2kA" name="languages : AnalysisLanguage" tooltipText="">
+        <target xmi:type="ecore:EAttribute" href="genmodel.ecore#//Verification/languages"/>
+        <semanticElements xmi:type="ecore:EAttribute" href="genmodel.ecore#//Verification/languages"/>
         <ownedStyle xmi:type="diagram:BundledImage" xmi:id="_q56KcKjBEeqSVfyLqua2kA" labelAlignment="LEFT" description="_Wx9Z8B-cEeewsaLc7xftQA">
           <labelFormat>bold</labelFormat>
         </ownedStyle>

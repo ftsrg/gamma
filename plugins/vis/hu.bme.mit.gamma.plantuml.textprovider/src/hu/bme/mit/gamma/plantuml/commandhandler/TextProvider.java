@@ -41,6 +41,9 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 				if (selection.getFirstElement() instanceof IFile) {
 					IFile firstElement = (IFile) selection.getFirstElement();
 					final String fileExtension = firstElement.getFileExtension();
+					if (fileExtension == null) {
+						return false;
+					}
 					if (fileExtension.equals("gcd") || fileExtension.equals("get")) {
 						return true;
 					}

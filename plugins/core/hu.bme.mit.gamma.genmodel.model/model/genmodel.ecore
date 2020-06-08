@@ -29,7 +29,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" unique="false"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" unique="false"
         lowerBound="1" upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
@@ -132,8 +132,8 @@
     <eLiterals name="UNDER_APPROXIMATION"/>
     <eLiterals name="OVER_APPROXIMATION" value="1"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//Task">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
+  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractCodeGeneration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" lowerBound="1"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

@@ -17,9 +17,13 @@ import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
+
+import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -54,24 +58,28 @@ import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
 import uppaal.NTA;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
-
+	
+	public AnalysisModelTransformationHandler(IFile file) {
+		super(file);
+	}
+	
 	public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
-		checkArgument(analysisModelTransformation.getLanguage().size() == 1, 
-			"A single formal modeling language must be specified: " + analysisModelTransformation.getLanguage());
-		final AnalysisLanguage analysisLanguage = analysisModelTransformation.getLanguage().get(0);
 		setAnalysisModelTransformation(analysisModelTransformation);
-		AnalysisModelTransformer transformer;
-		switch (analysisLanguage) {
-			case UPPAAL:
-				transformer = new UppaalTransformer();
-				break;
-			case THETA:
-				transformer = new ThetaTransformer();
-				break;
-			default:
-				throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
+		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(analysisModelTransformation.getLanguages());
+		for (AnalysisLanguage analysisLanguage : languagesSet) {
+			AnalysisModelTransformer transformer;
+			switch (analysisLanguage) {
+				case UPPAAL:
+					transformer = new UppaalTransformer();
+					break;
+				case THETA:
+					transformer = new ThetaTransformer();
+					break;
+				default:
+					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
+			}
+			transformer.execute(analysisModelTransformation);
 		}
-		transformer.execute(analysisModelTransformation);
 	}
 	
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {

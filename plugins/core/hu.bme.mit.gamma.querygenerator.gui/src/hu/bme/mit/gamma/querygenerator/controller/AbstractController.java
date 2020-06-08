@@ -11,8 +11,6 @@
 package hu.bme.mit.gamma.querygenerator.controller;
 
 import java.io.File;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +27,7 @@ import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.gui.util.GeneratedTestVerifier;
 import hu.bme.mit.gamma.querygenerator.gui.util.GuiVerifier;
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
@@ -48,6 +47,7 @@ public abstract class AbstractController {
 	
 	// Util
 	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
+	protected FileUtil fileUtil = new FileUtil();
 	protected Logger logger = Logger.getLogger("GammaLogger");
 
 	protected final String TEST_GEN_FOLDER_NAME = "test-gen";
@@ -141,24 +141,8 @@ public abstract class AbstractController {
      * Returns the next valid name for the file containing the back-annotation.
      */
     public Map.Entry<String, Integer> getFileName(String fileExtension) {
-    	final String TRACE_FILE_NAME = "ExecutionTrace";
-    	List<Integer> usedIds = new ArrayList<Integer>();
-    	File traceFile = new File(getTraceFolder());
-    	traceFile.mkdirs();
-    	// Searching the trace folder for highest id
-    	for (File file: new File(getTraceFolder()).listFiles()) {
-    		if (file.getName().matches(TRACE_FILE_NAME + "[0-9]+\\..*")) {
-    			String id = file.getName().substring(TRACE_FILE_NAME.length(), file.getName().length() - ("." + fileExtension).length());
-    			usedIds.add(Integer.parseInt(id));
-    		}
-    	}
-    	if (usedIds.isEmpty()) {
-    		return new AbstractMap.SimpleEntry<String, Integer>(TRACE_FILE_NAME + "0." + fileExtension, 0);
-    	}
-    	Collections.sort(usedIds);
-    	Integer biggestId = usedIds.get(usedIds.size() - 1);
-    	return new AbstractMap.SimpleEntry<String, Integer>(
-    			TRACE_FILE_NAME + (biggestId + 1) + "." + fileExtension, (biggestId + 1));
+    	File traceFolder = new File(getTraceFolder());
+    	return fileUtil.getFileName(traceFolder, "ExecutionTrace", fileExtension);
     }
     
 	protected String getCompositeSystemName() {

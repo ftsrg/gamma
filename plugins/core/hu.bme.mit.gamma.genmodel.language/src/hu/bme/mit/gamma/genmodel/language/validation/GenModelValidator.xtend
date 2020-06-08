@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
@@ -24,12 +25,14 @@ import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
+import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration
 import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint
 import hu.bme.mit.gamma.genmodel.model.StateCoverage
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
+import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.statechart.model.RealizationMode
 import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
@@ -50,8 +53,6 @@ import org.eclipse.xtext.validation.Check
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
-import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
-import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -95,8 +96,9 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (analysisModelTransformation.scheduler.size > 1) {
 			error("At most one scheduler type can be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER)
 		}
-		if (analysisModelTransformation.language.size != 1) {
-			error("A single formal language must be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGE)
+		val languages = analysisModelTransformation.languages
+		if (languages.size != languages.toSet.size) {
+			error("A single formal language can be specified only once.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
 		}
 		if (analysisModelTransformation.coverages.filter(TransitionCoverage).size > 1) {
 			error("A single transition coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
@@ -110,6 +112,22 @@ class GenModelValidator extends AbstractGenModelValidator {
 			if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
 				error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
 			}
+		}
+	}
+	
+	@Check
+	def checkTasks(Verification verification) {
+		val languages = verification.languages
+		if (languages.size != 1) {
+			error("A single formal language must be specified.", GenmodelPackage.Literals.VERIFICATION__LANGUAGES)
+		}
+		val queryFiles = verification.queryFiles
+		if (queryFiles.size != 1) {
+			error("A single query file must be specified.", GenmodelPackage.Literals.VERIFICATION__QUERY_FILES)
+		}
+		val files = verification.fileName
+		if (files.size != 1) {
+			error("A single model file must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
 		}
 	}
 	
