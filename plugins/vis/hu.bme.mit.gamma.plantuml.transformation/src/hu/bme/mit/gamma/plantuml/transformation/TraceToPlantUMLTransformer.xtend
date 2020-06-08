@@ -78,7 +78,7 @@ class TraceToPlantUMLTransformer {
 				«««endhnote
 			«ENDFOR»
 			
-			«IF trace.cycle!=null»
+			«IF trace.cycle !== null»
 			loop
 				«FOR step : trace.cycle.steps»
 					«FOR time : step.actions.filter(TimeElapse)»

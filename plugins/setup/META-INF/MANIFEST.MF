@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Setup
+Bundle-Name: Gamma Setup
 Bundle-SymbolicName: hu.bme.mit.gamma.setup
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 2.3.1.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.yakindu.base.types;visibility:=reexport,
  org.yakindu.sct.model.sgraph;visibility:=reexport,
@@ -30,3 +30,4 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.genmodel.model
 Automatic-Module-Name: hu.bme.mit.gamma.setup
 Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Vendor: BME-FTSRG
