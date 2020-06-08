@@ -72,6 +72,10 @@ class TraceToPlantUMLTransformer {
 					[o-> System : «act.port.name».«act.event.name»
 					«ENDFOR»
 					
+					«FOR act : step.actions.filter(Schedule)»
+					== Execute ==
+					«ENDFOR»
+					
 					hnote over System 
 					«FOR state : step.instanceStates.filter(InstanceStateConfiguration).sortBy[it.instance.name]»
 					«state.instance.name».«state.state.name»
