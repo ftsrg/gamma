@@ -21,7 +21,5 @@ Workflow {
     component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {
 		genModel = "platform:/resource/${projectName}/model/${modelName}.genmodel"
 		srcPath = "platform:/resource/${projectName}/src-gen"
-		generateEdit = true
-		generateEditor = true
 	}
 }

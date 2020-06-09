@@ -5,7 +5,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechartImports" upperBound="-1"
         eType="ecore:EClass ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.ecore#//Statechart"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="packageImports" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
         eType="#//Task" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="traceImports" upperBound="-1"
@@ -26,13 +26,13 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CodeGeneration" eSuperTypes="#//AbstractCodeGeneration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnalysisModelTransformation" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" unique="false"
         lowerBound="1" upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/Component"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="scheduler" unique="false"
         upperBound="-1" eType="#//Scheduler"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="coverages" upperBound="-1"
@@ -43,12 +43,12 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InterfaceMapping">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="realizationMode" lowerBound="1"
-        eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//RealizationMode"
+        eType="ecore:EEnum ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//RealizationMode"
         defaultValueLiteral="PROVIDED"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduInterface" lowerBound="1"
         eType="ecore:EClass ../../org.yakindu.sct.model.stext/model/SText.ecore#//InterfaceScope"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="gammaInterface" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Interface"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Interface"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventMappings" upperBound="-1"
         eType="#//EventMapping" containment="true"/>
   </eClassifiers>
@@ -56,7 +56,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="yakinduEvent" lowerBound="1"
         eType="ecore:EClass ../../org.yakindu.base.types/model/types.ecore#//Event"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="gammaEvent" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Event"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ProgrammingLanguage">
     <eLiterals name="JAVA"/>
@@ -84,9 +84,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventPriorityTransformation" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
@@ -103,15 +103,15 @@
         eType="#//AsynchronousInstanceConstraint" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OrchestratingConstraint" eSuperTypes="#//Constraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="minimumPeriod" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="minimumPeriod" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeSpecification"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="maximumPeriod" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//TimeSpecification"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="maximumPeriod" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//TimeSpecification"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousInstanceConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="orchestratingConstraint"
         lowerBound="1" eType="#//OrchestratingConstraint" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/AsynchronousComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//AsynchronousComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractCodeGeneration" abstract="true"
       eSuperTypes="#//Task">

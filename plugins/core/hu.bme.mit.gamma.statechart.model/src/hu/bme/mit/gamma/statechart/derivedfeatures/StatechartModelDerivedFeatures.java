@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.statechart.model.derivedfeatures;
+package hu.bme.mit.gamma.statechart.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,47 +17,48 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.CompositeElement;
-import hu.bme.mit.gamma.statechart.model.DeepHistoryState;
-import hu.bme.mit.gamma.statechart.model.EntryState;
-import hu.bme.mit.gamma.statechart.model.EventReference;
-import hu.bme.mit.gamma.statechart.model.EventSource;
-import hu.bme.mit.gamma.statechart.model.InitialState;
-import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.Port;
-import hu.bme.mit.gamma.statechart.model.PortEventReference;
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.model.RealizationMode;
-import hu.bme.mit.gamma.statechart.model.Region;
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction;
-import hu.bme.mit.gamma.statechart.model.ShallowHistoryState;
-import hu.bme.mit.gamma.statechart.model.State;
-import hu.bme.mit.gamma.statechart.model.StateAnnotation;
-import hu.bme.mit.gamma.statechart.model.StateNode;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.TimeSpecification;
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference;
-import hu.bme.mit.gamma.statechart.model.Transition;
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.interface_.Event;
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
-import hu.bme.mit.gamma.statechart.model.interface_.Interface;
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.EventReference;
+import hu.bme.mit.gamma.statechart.interface_.EventSource;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
+import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.InitialState;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
+
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -554,25 +555,25 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return subregions;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.model.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
-		List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(lhs);
+	public static List<hu.bme.mit.gamma.statechart.statechart.State> getCommonAncestors(StateNode lhs, StateNode rhs) {
+		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(lhs);
 		ancestors.retainAll(getAncestors(rhs));
 		return ancestors;
 	}
 	
-	public static List<hu.bme.mit.gamma.statechart.model.State> getAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
-			List<hu.bme.mit.gamma.statechart.model.State> ancestors = getAncestors(parentState);
+	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestors(StateNode node) {
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
+			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
+			List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(parentState);
 			ancestors.add(parentState);
 			return ancestors;
 		}
-		return new ArrayList<hu.bme.mit.gamma.statechart.model.State>();
+		return new ArrayList<hu.bme.mit.gamma.statechart.statechart.State>();
 	}
 	
 	public static List<Region> getRegionAncestors(StateNode node) {
-		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) node.eContainer().eContainer();
+		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
+			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();
 			List<Region> ancestors = getRegionAncestors(parentState);
 			ancestors.add((Region) node.eContainer());
 			return ancestors;

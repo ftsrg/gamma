@@ -5,20 +5,20 @@ import org.eclipse.emf.common.util.EList;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.statechart.model.Port;
-import hu.bme.mit.gamma.statechart.model.TimeSpecification;
-import hu.bme.mit.gamma.statechart.model.TimeUnit;
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.CompositeFactory;
-import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
+import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 
 public class StatechartUtil extends ExpressionUtil {
 
-	protected CompositeFactory compositeFactory = CompositeFactory.eINSTANCE;
+	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
 		int value = evaluator.evaluateInteger(time.getValue());
