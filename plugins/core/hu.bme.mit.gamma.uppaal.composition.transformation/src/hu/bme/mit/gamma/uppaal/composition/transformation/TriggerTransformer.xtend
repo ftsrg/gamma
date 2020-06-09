@@ -10,16 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.BinaryTrigger
-import hu.bme.mit.gamma.statechart.model.EventTrigger
-import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PortEventReference
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.model.UnaryTrigger
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import java.util.Collection
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DeclarationsFactory
@@ -29,7 +29,7 @@ import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
 import uppaal.types.TypesFactory
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TriggerTransformer {
 	// UPPAAL factories

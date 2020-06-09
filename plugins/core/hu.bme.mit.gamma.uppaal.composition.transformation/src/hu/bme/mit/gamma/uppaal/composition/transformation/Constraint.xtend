@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import java.util.List
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 
 import  org.eclipse.xtend.lib.annotations.Data
 

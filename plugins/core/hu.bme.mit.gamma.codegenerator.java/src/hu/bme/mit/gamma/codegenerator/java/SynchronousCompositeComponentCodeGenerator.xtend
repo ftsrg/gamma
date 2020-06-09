@@ -14,13 +14,13 @@ import hu.bme.mit.gamma.codegenerator.java.queries.BroadcastChannels
 import hu.bme.mit.gamma.codegenerator.java.queries.SimpleChannels
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class SynchronousCompositeComponentCodeGenerator {
 	

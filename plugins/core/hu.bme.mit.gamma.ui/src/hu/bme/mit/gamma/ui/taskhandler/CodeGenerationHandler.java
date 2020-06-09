@@ -22,10 +22,10 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 
 public class CodeGenerationHandler extends TaskHandler {
 

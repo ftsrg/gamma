@@ -10,10 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Clock
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.QueuesOfClocks
 import hu.bme.mit.gamma.transformation.util.queries.WrapperInEvents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.ClockRepresentation

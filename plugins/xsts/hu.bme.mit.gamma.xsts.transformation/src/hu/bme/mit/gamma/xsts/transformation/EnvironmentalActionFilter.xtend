@@ -11,8 +11,8 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.interface_.Persistency
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Persistency
 import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction
@@ -24,7 +24,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class EnvironmentalActionFilter {
 	// Names that need to be kept

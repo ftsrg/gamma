@@ -27,7 +27,7 @@ import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
-import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.util.FileUtil;

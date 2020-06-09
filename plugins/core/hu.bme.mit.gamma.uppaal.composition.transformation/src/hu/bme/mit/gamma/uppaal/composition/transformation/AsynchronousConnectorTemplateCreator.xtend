@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
-import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
+import hu.bme.mit.gamma.statechart.interface_.Clock
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.EventsIntoMessageQueues
 import hu.bme.mit.gamma.transformation.util.queries.QueuePriorities
 import hu.bme.mit.gamma.transformation.util.queries.RunOnceClockControl
@@ -56,7 +56,7 @@ import uppaal.templates.TemplatesPackage
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AsynchronousConnectorTemplateCreator {
 	// Transformation rule-related extensions

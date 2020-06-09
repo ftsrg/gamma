@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.uppaal.verification.patterns
 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 import "http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability"
 import "http://www.uni-paderborn.de/uppaal/declarations/0.4.0"

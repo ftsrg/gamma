@@ -30,39 +30,39 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.model.InterfaceRealization;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.Port;
-import hu.bme.mit.gamma.statechart.model.PortEventReference;
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.model.StateNode;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
-import hu.bme.mit.gamma.statechart.model.Transition;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.CompositePackage;
-import hu.bme.mit.gamma.statechart.model.composite.ControlSpecification;
-import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation;
-import hu.bme.mit.gamma.statechart.model.contract.ContractPackage;
-import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.model.interface_.Event;
-import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.model.interface_.Interface;
-import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
-import hu.bme.mit.gamma.statechart.model.phase.InstanceVariableReference;
-import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition;
-import hu.bme.mit.gamma.statechart.model.phase.PhasePackage;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.MessageQueue;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 
 /**
  * This class contains custom scoping description.
@@ -81,7 +81,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		try {
 			// Adaptive
 			if (context instanceof AdaptiveContractAnnotation &&
-					reference == ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
+					reference == ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Set<Component> allComponents = StatechartModelDerivedFeatures.getAllComponents(parentPackage);
@@ -89,7 +89,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(allComponents);
 			}
 			if (context instanceof StateContractAnnotation &&
-					reference == ContractPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS) {
+					reference == ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Set<StatechartDefinition> allComponents = StatechartModelDerivedFeatures.getAllStatechartComponents(parentPackage);
@@ -98,7 +98,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			// Phase
 			if (context instanceof InstanceVariableReference &&
-					reference == PhasePackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+					reference == PhaseModelPackage.Literals.INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
 				MissionPhaseStateDefinition container = EcoreUtil2.getContainerOfType(context, MissionPhaseStateDefinition.class);
 				SynchronousComponentInstance instance = container.getComponent();
 				SynchronousComponent type = instance.getType();
@@ -150,19 +150,19 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			 * contains invalid characters: '.' (0x2e) */
 			// Valueof
 			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
+					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PORT) {
 				Component component = StatechartModelDerivedFeatures.getContainingComponent(context);				
 				return Scopes.scopeFor(component.getPorts());
 			}
 			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
+					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT) {
 				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
 				checkState(expression.getPort() != null);
 				Port port = expression.getPort();
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getInputEvents(port));
 			}
 			if (context instanceof EventParameterReferenceExpression
-					&& reference == InterfacePackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
+					&& reference == InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__PARAMETER) {
 				EventParameterReferenceExpression expression = (EventParameterReferenceExpression) context;
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
@@ -172,7 +172,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Composite system
 
 			// Ports
-			if (context instanceof InterfaceRealization && reference == StatechartModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE) {
+			if (context instanceof InterfaceRealization && reference == InterfaceModelPackage.Literals.INTERFACE_REALIZATION__INTERFACE) {
 				Package gammaPackage = (Package) context.eContainer().eContainer().eContainer();
 				if (!gammaPackage.getImports().isEmpty()) {
 					Set<Interface> interfaces = new HashSet<Interface>();
@@ -180,7 +180,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					return Scopes.scopeFor(interfaces);
 				}
 			}
-			if (context instanceof InstancePortReference && reference == CompositePackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
+			if (context instanceof InstancePortReference && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				InstancePortReference portInstance = (InstancePortReference) context;
 				ComponentInstance instance = portInstance.getInstance();
 				Component type = (instance instanceof SynchronousComponentInstance) ? 
@@ -197,7 +197,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}				
 				return Scopes.scopeFor(ports);
 			}
-			if (context instanceof CompositeComponent && reference == CompositePackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
+			if (context instanceof CompositeComponent && reference == CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT) {
 				// If the branch above does not handle it
 				CompositeComponent component = (CompositeComponent) context;
 				List<? extends ComponentInstance> components = StatechartModelDerivedFeatures.getDerivedComponents(component);
@@ -208,13 +208,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(ports); 
 			}
 			// Types
-			if (context instanceof SynchronousComponentInstance && reference == CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
+			if (context instanceof SynchronousComponentInstance && reference == CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
 				Package _package = StatechartModelDerivedFeatures.getContainingPackage(context);
 				Set<SynchronousComponent> components = StatechartModelDerivedFeatures.getAllSynchronousComponents(_package);
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}
-			if (context instanceof AsynchronousComponentInstance && reference == CompositePackage.Literals.ASYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
+			if (context instanceof AsynchronousComponentInstance && reference == CompositeModelPackage.Literals.ASYNCHRONOUS_COMPONENT_INSTANCE__TYPE) {
 				Package _package = StatechartModelDerivedFeatures.getContainingPackage(context);
 				Set<AsynchronousComponent> components = StatechartModelDerivedFeatures.getAllAsynchronousComponents(_package);
 				components.remove(context.eContainer());

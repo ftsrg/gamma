@@ -11,20 +11,20 @@
 package hu.bme.mit.gamma.statechart.phase.transformation
 
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation
-import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition
-import hu.bme.mit.gamma.statechart.model.phase.VariableBinding
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.composite.PortBinding
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition
+import hu.bme.mit.gamma.statechart.phase.VariableBinding
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 

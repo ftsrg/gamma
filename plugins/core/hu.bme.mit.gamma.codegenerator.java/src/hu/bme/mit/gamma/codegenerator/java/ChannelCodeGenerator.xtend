@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.Interface
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 

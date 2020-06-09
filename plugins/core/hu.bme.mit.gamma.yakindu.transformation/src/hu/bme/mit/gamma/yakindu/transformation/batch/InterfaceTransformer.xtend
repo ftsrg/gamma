@@ -14,14 +14,14 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ParametricElement
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
-import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.yakindu.transformation.queries.Events
 import hu.bme.mit.gamma.yakindu.transformation.queries.Interfaces
 import hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityFactory
@@ -40,6 +40,7 @@ import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransforma
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 import org.yakindu.sct.model.sgraph.Statechart
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 
 class InterfaceTransformer {
 
@@ -62,7 +63,7 @@ class InterfaceTransformer {
 
 	// Packages of the metamodels
 	extension StatechartModelPackage sctPackage = StatechartModelPackage.eINSTANCE
-	extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
+	extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
 	extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
 	extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
 	
@@ -77,7 +78,7 @@ class InterfaceTransformer {
 		this.yakinduStatechart = yakinduStatechart
 		val scope = new EMFScope(yakinduStatechart)
 		engine = ViatraQueryEngine.on(scope);
-		statechartInterfaces = StatechartModelFactory.eINSTANCE.createPackage=> [
+		statechartInterfaces = InterfaceModelFactory.eINSTANCE.createPackage=> [
 			it.name = packageName
 		]
 		traceRoot = TraceabilityFactory.eINSTANCE.createY2GTrace => [

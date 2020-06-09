@@ -17,11 +17,11 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -33,7 +33,7 @@ import java.math.BigInteger
 import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
@@ -64,7 +64,7 @@ class GammaToXSTSTransformer {
 		this.schedulingConstraint = schedulingConstraint
 	}
 	
-	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File containingFile) {
+	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package, File containingFile) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
 		val newPackage = component.containingPackage
 		newPackage.executeAndSerializeAndSave(containingFile)
@@ -73,16 +73,16 @@ class GammaToXSTSTransformer {
 	/**
 	 * Note that there is no preprocess and argument process in this method.
 	 */
-	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.model.Package _package, File file) {
+	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package, File file) {
 		val string = _package.executeAndSerialize
 		file.saveString(string)
 	}
 	
-	private def String executeAndSerialize(hu.bme.mit.gamma.statechart.model.Package _package) {
+	private def String executeAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		return _package.execute.serializeXSTS.toString
 	}
 	
-	private def execute(hu.bme.mit.gamma.statechart.model.Package _package) {
+	private def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		val gammaComponent = _package.components.head // Getting the first component
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS

@@ -25,11 +25,11 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
@@ -86,7 +86,7 @@ class ExpressionTransformer {
 	protected extension IModelManipulations manipulation	
     
     protected extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
-    protected extension InterfacePackage ifPackage = InterfacePackage.eINSTANCE
+    protected extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
     protected extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
 	protected extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     protected extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE	

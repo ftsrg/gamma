@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
-import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class EventConnector {

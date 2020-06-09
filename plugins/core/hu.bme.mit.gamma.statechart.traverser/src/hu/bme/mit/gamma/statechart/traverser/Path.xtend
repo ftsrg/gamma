@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.traverser
 
-import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import java.util.List
 
 class Path {

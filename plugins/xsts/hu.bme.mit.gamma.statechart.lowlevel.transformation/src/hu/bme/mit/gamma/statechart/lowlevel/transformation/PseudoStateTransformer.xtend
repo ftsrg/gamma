@@ -11,17 +11,17 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.model.ChoiceState
-import hu.bme.mit.gamma.statechart.model.DeepHistoryState
-import hu.bme.mit.gamma.statechart.model.ForkState
-import hu.bme.mit.gamma.statechart.model.InitialState
-import hu.bme.mit.gamma.statechart.model.JoinState
-import hu.bme.mit.gamma.statechart.model.MergeState
-import hu.bme.mit.gamma.statechart.model.ShallowHistoryState
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
+import hu.bme.mit.gamma.statechart.statechart.ForkState
+import hu.bme.mit.gamma.statechart.statechart.InitialState
+import hu.bme.mit.gamma.statechart.statechart.JoinState
+import hu.bme.mit.gamma.statechart.statechart.MergeState
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 
 import static com.google.common.base.Preconditions.checkArgument
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PseudoStateTransformer {
 	// Low-level statechart model factory

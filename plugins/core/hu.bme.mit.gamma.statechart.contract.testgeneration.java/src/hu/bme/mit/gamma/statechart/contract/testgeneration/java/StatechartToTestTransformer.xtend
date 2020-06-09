@@ -12,10 +12,10 @@ package hu.bme.mit.gamma.statechart.contract.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.contract.tracegeneration.StatechartContractToTraceTransformer
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
-import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
@@ -24,7 +24,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.List
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier
 
 class StatechartToTestTransformer {

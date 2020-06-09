@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import java.math.BigInteger
 
 class InPlaceExpressionTransformer {

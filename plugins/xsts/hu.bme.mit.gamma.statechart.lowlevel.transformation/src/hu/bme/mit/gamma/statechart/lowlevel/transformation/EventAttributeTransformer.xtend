@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 
 class EventAttributeTransformer {
 	
-	protected def EventDirection transform(hu.bme.mit.gamma.statechart.model.interface_.EventDirection direction) {
+	protected def EventDirection transform(hu.bme.mit.gamma.statechart.interface_.EventDirection direction) {
 		switch (direction) {
 			case OUT: {
 				return EventDirection.OUT
@@ -29,7 +29,7 @@ class EventAttributeTransformer {
 		}
 	}
 	
-	protected def Persistency transform(hu.bme.mit.gamma.statechart.model.interface_.Persistency persistency) {
+	protected def Persistency transform(hu.bme.mit.gamma.statechart.interface_.Persistency persistency) {
 		switch (persistency) {
 			case TRANSIENT: {
 				return Persistency.TRANSIENT

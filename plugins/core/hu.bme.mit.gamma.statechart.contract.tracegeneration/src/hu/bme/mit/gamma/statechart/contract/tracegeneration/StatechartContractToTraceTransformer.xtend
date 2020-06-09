@@ -10,13 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.contract.tracegeneration
 
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.traverser.LooplessPathRetriever
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceFactory
 import java.util.List
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.trace.model.Schedule
 
 class StatechartContractToTraceTransformer {

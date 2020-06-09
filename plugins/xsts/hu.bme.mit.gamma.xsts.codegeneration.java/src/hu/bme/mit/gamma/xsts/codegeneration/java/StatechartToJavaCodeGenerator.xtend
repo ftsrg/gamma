@@ -18,7 +18,7 @@ import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import java.io.File

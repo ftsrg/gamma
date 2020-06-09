@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
-import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarations
 import hu.bme.mit.gamma.uppaal.transformation.queries.ConstantDeclarationsWithoutInit
 import hu.bme.mit.gamma.uppaal.transformation.queries.EntryStatesWithIncorrectIncomingTransition

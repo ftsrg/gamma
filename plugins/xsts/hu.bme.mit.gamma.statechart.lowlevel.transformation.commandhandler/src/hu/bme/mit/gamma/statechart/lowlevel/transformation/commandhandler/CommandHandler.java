@@ -40,9 +40,9 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommon
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.xsts.codegeneration.java.CommonizedVariableActionSerializer;
 import hu.bme.mit.gamma.xsts.codegeneration.java.StatechartToJavaCodeGenerator;
 import hu.bme.mit.gamma.xsts.model.model.XSTS;

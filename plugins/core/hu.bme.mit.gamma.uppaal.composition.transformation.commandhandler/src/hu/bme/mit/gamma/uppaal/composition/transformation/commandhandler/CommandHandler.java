@@ -28,7 +28,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer;
 
 public class CommandHandler extends AbstractHandler {
