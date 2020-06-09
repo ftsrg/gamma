@@ -9,8 +9,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 
 public class TraceUtil {
 	// Singleton

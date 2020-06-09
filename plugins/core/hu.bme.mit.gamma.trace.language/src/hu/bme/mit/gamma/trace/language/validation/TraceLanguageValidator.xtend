@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.validation
 
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -22,14 +22,14 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TracePackage
 import org.eclipse.xtext.validation.Check
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.xtext.EcoreUtil2
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.InstanceState
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 
 /**
  * This class contains custom validation rules. 
@@ -94,7 +94,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 		val type = instance.type
 		if (type instanceof StatechartDefinition) {
 			val state = configuration.state
-			val states =  EcoreUtil2.getAllContentsOfType(type, hu.bme.mit.gamma.statechart.model.State)
+			val states =  EcoreUtil2.getAllContentsOfType(type, hu.bme.mit.gamma.statechart.statechart.State)
 			if (!states.contains(state)) {
 				error("This is not a valid state in the specified statechart.", TracePackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE)
 			}

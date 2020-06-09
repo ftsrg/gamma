@@ -12,22 +12,22 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.statechart.model.EntryState
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.TransitionPriority
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.statechart.EntryState
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.InputInstanceEvents
 import hu.bme.mit.gamma.transformation.util.queries.InstanceRegions
 import hu.bme.mit.gamma.transformation.util.queries.InstanceTimeouts
@@ -141,7 +141,7 @@ import uppaal.types.TypesPackage
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class CompositeToUppaalTransformer {

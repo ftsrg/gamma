@@ -13,11 +13,11 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.util.Namings
 import java.util.Collection
@@ -26,7 +26,7 @@ import java.util.Set
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation
 

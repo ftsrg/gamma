@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class ReflectiveComponentCodeGenerator extends hu.bme.mit.gamma.codegenerator.java.util.ReflectiveComponentCodeGenerator {
 	

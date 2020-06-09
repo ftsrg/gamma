@@ -11,21 +11,21 @@
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.model.ClockTickReference
-import hu.bme.mit.gamma.statechart.model.EventTrigger
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.PortEventReference
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import java.util.Collection
 import java.util.HashMap
 import java.util.Map
@@ -35,7 +35,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkNotNull
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelUnfolder {
 	

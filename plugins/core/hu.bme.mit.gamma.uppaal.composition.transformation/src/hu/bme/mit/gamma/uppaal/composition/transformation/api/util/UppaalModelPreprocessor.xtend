@@ -10,14 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import java.io.File
 import java.util.Collections
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class UppaalModelPreprocessor {
 	

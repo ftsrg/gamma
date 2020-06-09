@@ -12,8 +12,8 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.queries.EventToEvent
 import hu.bme.mit.gamma.codegenerator.java.queries.Traces
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.Component
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.yakindu.base.types.Event
@@ -43,7 +43,7 @@ class Trace {
 	/**
 	 * Returns the Yakindu event the given Gamma event is generated from.
 	 */
-	protected def Event toYakinduEvent(hu.bme.mit.gamma.statechart.model.interface_.Event event, Port port) {
+	protected def Event toYakinduEvent(hu.bme.mit.gamma.statechart.interface_.Event event, Port port) {
 		val yEvents = EventToEvent.Matcher.on(engine).getAllValuesOfyEvent(port, event)
 		if (yEvents.size != 1) {
 			val component = port.eContainer as Component

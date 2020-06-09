@@ -45,69 +45,68 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.statechart.model.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.model.AnyTrigger;
-import hu.bme.mit.gamma.statechart.model.ChoiceState;
-import hu.bme.mit.gamma.statechart.model.Clock;
-import hu.bme.mit.gamma.statechart.model.ClockTickReference;
-import hu.bme.mit.gamma.statechart.model.EntryState;
-import hu.bme.mit.gamma.statechart.model.EventReference;
-import hu.bme.mit.gamma.statechart.model.EventTrigger;
-import hu.bme.mit.gamma.statechart.model.ForkState;
-import hu.bme.mit.gamma.statechart.model.JoinState;
-import hu.bme.mit.gamma.statechart.model.MergeState;
-import hu.bme.mit.gamma.statechart.model.OpaqueTrigger;
-import hu.bme.mit.gamma.statechart.model.OrthogonalRegionSchedulingOrder;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.Port;
-import hu.bme.mit.gamma.statechart.model.PortEventReference;
-import hu.bme.mit.gamma.statechart.model.PseudoState;
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.model.RealizationMode;
-import hu.bme.mit.gamma.statechart.model.Region;
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder;
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction;
-import hu.bme.mit.gamma.statechart.model.SimpleTrigger;
-import hu.bme.mit.gamma.statechart.model.StateNode;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage;
-import hu.bme.mit.gamma.statechart.model.TimeSpecification;
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration;
-import hu.bme.mit.gamma.statechart.model.Transition;
-import hu.bme.mit.gamma.statechart.model.TransitionPriority;
-import hu.bme.mit.gamma.statechart.model.Trigger;
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel;
-import hu.bme.mit.gamma.statechart.model.composite.CascadeCompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.Channel;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.model.composite.CompositePackage;
-import hu.bme.mit.gamma.statechart.model.composite.ControlSpecification;
-import hu.bme.mit.gamma.statechart.model.composite.InstancePortReference;
-import hu.bme.mit.gamma.statechart.model.composite.MessageQueue;
-import hu.bme.mit.gamma.statechart.model.composite.PortBinding;
-import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation;
-import hu.bme.mit.gamma.statechart.model.contract.ContractPackage;
-import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.model.interface_.Event;
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection;
-import hu.bme.mit.gamma.statechart.model.interface_.Interface;
-import hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage;
-import hu.bme.mit.gamma.statechart.model.interface_.Persistency;
-import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateAnnotation;
-import hu.bme.mit.gamma.statechart.model.phase.MissionPhaseStateDefinition;
-import hu.bme.mit.gamma.statechart.model.phase.PhasePackage;
-import hu.bme.mit.gamma.statechart.model.phase.VariableBinding;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
+import hu.bme.mit.gamma.statechart.interface_.Clock;
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
+import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.interface_.EventReference;
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
+import hu.bme.mit.gamma.statechart.statechart.ForkState;
+import hu.bme.mit.gamma.statechart.statechart.JoinState;
+import hu.bme.mit.gamma.statechart.statechart.MergeState;
+import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.PseudoState;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.Channel;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
+import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
+import hu.bme.mit.gamma.statechart.composite.MessageQueue;
+import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
+import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
+import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Persistency;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
+import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
+import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
+import hu.bme.mit.gamma.statechart.phase.VariableBinding;
 
 /**
  * This class contains custom validation rules. 
@@ -133,10 +132,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Package parentPackage = (Package) component.eContainer();
 		int index = parentPackage.getComponents().indexOf(component);
 		if (!parentPackage.getInterfaces().isEmpty()) {
-			error("Components cannot be defined in package containing an interface.", parentPackage, StatechartModelPackage.Literals.PACKAGE__COMPONENTS, index);
+			error("Components cannot be defined in package containing an interface.", parentPackage, InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index);
 		}
 		if (!parentPackage.getTypeDeclarations().isEmpty()) {
-			error("Components cannot be defined in package containing a type declaration.", parentPackage, StatechartModelPackage.Literals.PACKAGE__COMPONENTS, index);
+			error("Components cannot be defined in package containing a type declaration.", parentPackage, InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index);
 		}
 	}
 	
@@ -202,7 +201,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkEventPersistency(Event event) {
 		if (event.getPersistency() == Persistency.PERSISTENT) {
 			if (event.getParameterDeclarations().isEmpty()) {
-				error("A persistent event must have a parameter.", InterfacePackage.Literals.EVENT__PERSISTENCY);
+				error("A persistent event must have a parameter.", InterfaceModelPackage.Literals.EVENT__PERSISTENCY);
 			}
 		}
 	}
@@ -225,7 +224,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
 		if (!(statechart.getAnnotation() instanceof AdaptiveContractAnnotation)) {
 			error("States with state contracts can be defined only in adaptive contract statecharts.",
-					ContractPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS);
+					ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS);
 		}
 	}
 	
@@ -235,7 +234,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Component monitoredComponent = annotation.getMonitoredComponent();
 		if (!StatechartModelDerivedFeatures.areInterfacesEqual(component, monitoredComponent)) {
 			error("The contained ports of the monitored component are not equal to that of the adaptive statechart.",
-					ContractPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT);
+					ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT);
 		}
 	}
 	
@@ -247,7 +246,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		SynchronousComponent type = component.getType();
 		if (!(type instanceof StatechartDefinition)) {
 			error("Mission phase state definitions can refer to only statechart definitions as type.",
-					component, CompositePackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE);
+					component, CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE);
 		}
 		EList<VariableBinding> variableBindings = stateDefinition.getVariableBindings();
 		for (int i = 0; i < variableBindings.size() - 1; i++) {
@@ -258,7 +257,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				VariableDeclaration rhsInstanceVariable = rhs.getInstanceVariableReference().getVariable();
 				if (lhsInstanceVariable == rhsInstanceVariable) {
 					error("More than one statechart variable is bound to this instance variable.",
-							lhs, PhasePackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
+							lhs, PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
 				}
 			}
 		}
@@ -269,7 +268,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		VariableDeclaration statechartVariable = variableBinding.getStatechartVariable();
 		VariableDeclaration variable = variableBinding.getInstanceVariableReference().getVariable();
 		checkTypeAndTypeConformance(statechartVariable.getType(), variable.getType(),
-				PhasePackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
+				PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
 	}
 	
 	// Statechart
@@ -330,7 +329,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			enumDefinitions.retainAll(usedEnumLiterals);
 			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
 				int index = _package.getImports().indexOf(importedPackage);
-				warning("No component or interface or type declaration from this imported package is used.", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
+				warning("No component or interface or type declaration from this imported package is used.", InterfaceModelPackage.Literals.PACKAGE__IMPORTS, index);
 			}
 		}
 	}
@@ -390,7 +389,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		try {
 			int value = expressionEvaluator.evaluateInteger(timeSpecification.getValue());
 			if (value <= 0) {
-				error("Time specifications must have positive values: " + value, StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
+				error("Time specifications must have positive values: " + value, InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE);
 			}
 		} catch (IllegalArgumentException e) {
 			// Untransformable expression, it contains variable declarations
@@ -404,7 +403,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				statechart.getTransitionPriority() != TransitionPriority.VALUE_BASED) {
 			warning("The transition priority setting is not set to value-based, it is set to " 
 				+ statechart.getTransitionPriority() + " therefore this priority specification has no effect.",
-				CompositePackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+				CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
 		}
 	}
 	
@@ -520,8 +519,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			return true;
 		}
 		// Checking child nodes of composite state node with incoming transitions 
-		if (node instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State stateNode = (hu.bme.mit.gamma.statechart.model.State) node;
+		if (node instanceof hu.bme.mit.gamma.statechart.statechart.State) {
+			hu.bme.mit.gamma.statechart.statechart.State stateNode = (hu.bme.mit.gamma.statechart.statechart.State) node;
 			Set<StateNode> childNodes = new HashSet<StateNode>();
 			stateNode.getRegions().stream().map(it -> it.getStateNodes()).forEach(it -> childNodes.addAll(it));
 			for (StateNode childNode : childNodes) {
@@ -756,7 +755,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	public void checkTimeoutTransitions(hu.bme.mit.gamma.statechart.model.State state) {
+	public void checkTimeoutTransitions(hu.bme.mit.gamma.statechart.statechart.State state) {
 		boolean multipleTimedTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(state).stream()
 			.filter(it -> it.getTrigger() instanceof EventTrigger && 
 			((EventTrigger) it.getTrigger()).getEventReference() instanceof ClockTickReference &&
@@ -857,8 +856,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	private Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode source) {
-		if (source.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) source.eContainer().eContainer();
+		if (source.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
+			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) source.eContainer().eContainer();
 			Collection<Transition> transitions = StatechartModelDerivedFeatures.getOutgoingTransitions(parentState) ;
 			transitions.addAll(getOutgoingTransitionsOfAncestors(parentState));
 			return transitions;
@@ -893,8 +892,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	private Transition getSameTriggedTransitionOfParallelRegions(Transition transition) {
 		StateNode sourceState = transition.getSourceState();
 		Region parentRegion = (Region) sourceState.eContainer();
-		if (parentRegion.eContainer() instanceof hu.bme.mit.gamma.statechart.model.State) {
-			hu.bme.mit.gamma.statechart.model.State parentState = (hu.bme.mit.gamma.statechart.model.State) parentRegion.eContainer();
+		if (parentRegion.eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
+			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) parentRegion.eContainer();
 			Collection<Region> siblingRegions = new HashSet<Region>(parentState.getRegions());
 			siblingRegions.remove(parentRegion);
 			Collection<Transition> parallelTransitions = getTransitionsOfSiblingRegions(siblingRegions);
@@ -970,7 +969,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkTimeSpecification(TimeSpecification timeSpecification) {
 		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
-			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE);
+			error("Time values must be of type integer.", InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE);
 		}
 	}
 	
@@ -1016,7 +1015,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		for (Package importedPackage : gammaPackage.getImports()) {
 			if (importedPackages.contains(importedPackage)) {
 				int index = gammaPackage.getImports().indexOf(importedPackage);
-				warning("Package " + importedPackage.getName() + " is already imported!", StatechartModelPackage.Literals.PACKAGE__IMPORTS, index);
+				warning("Package " + importedPackage.getName() + " is already imported!", InterfaceModelPackage.Literals.PACKAGE__IMPORTS, index);
 			}
 			importedPackages.add(importedPackage);
 		}
@@ -1101,12 +1100,12 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (!StatechartModelDerivedFeatures.getOutputEvents(systemPort).isEmpty() &&
 				portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
 			error("This system port is connected to multiple ports of instances!",
-					CompositePackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT);
+					CompositeModelPackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT);
 		}
 		if (portBindings.stream().filter(it -> it.getInstancePortReference().getPort() == instancePort &&
 				it.getInstancePortReference().getInstance() == instance).count() > 1) {
 			error("Multiple system ports are connected to the port of this instance!",
-					CompositePackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+					CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
 		}
 	}
 	
@@ -1118,11 +1117,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Interface instancePortIf = portDefinition.getInstancePortReference().getPort().getInterfaceRealization().getInterface(); 
 		if (systemPortIT != instancePortIT) {
 			error("Ports can be connected only if their interface types match. This is not realized in this case: " + systemPortIT.getName() 
-				+ " -> " + instancePortIT.getName(), CompositePackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+				+ " -> " + instancePortIT.getName(), CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
 		}	
 		if (systemPortIf != instancePortIf) {
 			error("Ports can be connected only if their interfaces match. This is not realized in this case: " + systemPortIf.getName()
-				+ " -> " + instancePortIf.getName(), CompositePackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+				+ " -> " + instancePortIf.getName(), CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
 		}	
 	}
 	
@@ -1137,7 +1136,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		Collection<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 		if (!ports.contains(port)) {
 			error("The specified port is not on instance " + instance.getName() + ".",
-					CompositePackage.Literals.INSTANCE_PORT_REFERENCE__PORT);
+					CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT);
 		}
 	}
 	
@@ -1149,11 +1148,11 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			// Broadcast ports can be used in multiple places
 			if (!isBroadcast(channel.getProvidedPort().getPort()) && equals(channel.getProvidedPort(), portDefinition.getInstancePortReference())) {
 				error("A port of an instance can be included either in a channel or a port binding!",
-						CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+						CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 			}
 			if (equals(channel.getRequiredPort(), portDefinition.getInstancePortReference())) {
 				error("A port of an instance can be included either in a channel or a port binding!",
-						CompositePackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+						CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
 			}
 		}			
 	}
@@ -1170,7 +1169,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			for (InstancePortReference output : channel.getRequiredPorts()) {
 				if (equals(output, portDefinition.getInstancePortReference())) {
 					error("A port of an instance can be included either in a channel or a port binding!",
-							CompositePackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
+							CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
 				}
 			}
 		}			
@@ -1190,7 +1189,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 						.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
 			if (equals(instancePortReference, channel.getProvidedPort())) {
-				error("A port of an instance can be included only in a single channel!", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+				error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 			}
 		}
 	}
@@ -1208,7 +1207,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			if (equals(instancePortReference, channel.getRequiredPort())) {
-				error("A port of an instance can be included only in a single channel!", CompositePackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+				error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
 			}
 		}
 	}
@@ -1228,7 +1227,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
 				if (equals(instancePortReference, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort);
-					error("A port of an instance can be included only in a single channel!", CompositePackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+					error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
 				}
 			}
 		}
@@ -1238,7 +1237,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					.filter(it -> it != requiredPort && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 				if (equals(requiredPort2, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort2);
-					error("A port of an instance can be included only in a single channel!", CompositePackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+					error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
 				}
 			}
 		}
@@ -1251,21 +1250,21 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkChannelInput(Channel channel) {
 		if (!(channel.getProvidedPort().getPort().getInterfaceRealization().getRealizationMode() == RealizationMode.PROVIDED)) {
-			error("A port providing an interface is needed here!", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			error("A port providing an interface is needed here!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 		}		
 	}
 	
 	@Check
 	public void checkSimpleChannelOutput(SimpleChannel channel) {
 		if (channel.getRequiredPort().getPort().getInterfaceRealization().getRealizationMode()  != RealizationMode.REQUIRED) {
-			error("A port requiring an interface is needed here!", CompositePackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+			error("A port requiring an interface is needed here!", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
 		}
 		// Checking the interfaces
 		Interface providedInterface = channel.getProvidedPort().getPort().getInterfaceRealization().getInterface();
 		Interface requiredInterface = channel.getRequiredPort().getPort().getInterfaceRealization().getInterface();
 		if (providedInterface != requiredInterface) {
 			error("Ports connected with a channel must have the same interface! This is not realized in this case. The provided interface: " + providedInterface.getName() +
-					". The required interface: " + requiredInterface.getName() + ".", CompositePackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+					". The required interface: " + requiredInterface.getName() + ".", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
 		}
 	}
 	
@@ -1273,18 +1272,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkBroadcastChannelOutput(BroadcastChannel channel) {
 		if (!isBroadcast(channel.getProvidedPort().getPort()) && !(channel.eContainer() instanceof AsynchronousComponent)) {
 			// Asynchronous components can have two-way broadcast channels 
-			error("A port providing a broadcast interface is needed here!", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			error("A port providing a broadcast interface is needed here!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 		}
 		for (InstancePortReference output : channel.getRequiredPorts()) {
 			if (output.getPort().getInterfaceRealization().getRealizationMode() != RealizationMode.REQUIRED) {
 				int index = channel.getRequiredPorts().indexOf(output);
-				error("A port requiring an interface is needed here!", CompositePackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+				error("A port requiring an interface is needed here!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
 			}
 			Interface requiredInterface = output.getPort().getInterfaceRealization().getInterface();
 			Interface providedInterface = channel.getProvidedPort().getPort().getInterfaceRealization().getInterface();
 			if (providedInterface != requiredInterface) {
 				error("Ports connected with a broadcast channel must have the same interface! This is not realized in this case. The provided interface: "
-						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName() + ".", CompositePackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
+						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName() + ".", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
 			}
 		}		
 	}
@@ -1294,7 +1293,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
 		if (StatechartModelDerivedFeatures.getDerivedType(instance) instanceof AbstractSynchronousCompositeComponent &&
 				instance == channel.getRequiredPort().getInstance()) {			
-			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 		}
 	}
 	
@@ -1303,7 +1302,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
 		if (StatechartModelDerivedFeatures.getDerivedType(instance)  instanceof AbstractSynchronousCompositeComponent &&
 				channel.getRequiredPorts().stream().anyMatch(it -> it.getInstance() == instance)) {			
-			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositePackage.Literals.CHANNEL__PROVIDED_PORT);
+			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
 		}
 	}
 	
@@ -1341,7 +1340,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 						Collection<Event> alreadyContainedEvents = containedEvents.get(containedPort);
 						if (alreadyContainedEvents.contains(containedEvent)) {
 							error("Event " + containedEvent.getName() + " is already forwarded to a message queue.",
-									queue, CompositePackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+									queue, CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
 						}
 						else {
 							alreadyContainedEvents.add(containedEvent);
@@ -1362,7 +1361,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 						alreadyContainedEvents.addAll(events);
 						Collection<String> alreadyContainedEventNames = alreadyContainedEvents.stream().map(it -> it.getName()).collect(Collectors.toSet());
 						error("Events " + alreadyContainedEventNames + " are already forwarded to a message queue.",
-								queue, CompositePackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+								queue, CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
 					}
 					else {
 						containedEvents.put(containedPort, events);
@@ -1406,7 +1405,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				if (getSemanticEvents(Collections.singleton(containedPort), EventDirection.OUT).stream()
 						.filter(it -> ((EventDeclaration) it.eContainer()).getDirection() != EventDirection.INOUT)
 						.anyMatch(it -> it == containedEvent)) {
-					error("Event " + containedEvent.getName() + " is an out event and can not be used in a control specification.", CompositePackage.Literals.CONTROL_SPECIFICATION__TRIGGER);
+					error("Event " + containedEvent.getName() + " is an out event and can not be used in a control specification.", CompositeModelPackage.Literals.CONTROL_SPECIFICATION__TRIGGER);
 				}
 			}	 
 		}
@@ -1420,7 +1419,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			int priorityValue = queue.getPriority().intValue();
 			if (priorityValues.contains(priorityValue)) {
 				warning("Another queue with the same priority is already defined.", queue,
-						CompositePackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+						CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
 			}
 			else {
 				priorityValues.add(priorityValue);
@@ -1441,7 +1440,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				if (getSemanticEvents(Collections.singleton(containedPort), EventDirection.OUT).stream()
 						.filter(it -> ((EventDeclaration) it.eContainer()).getDirection() != EventDirection.INOUT)
 						.anyMatch(it -> it == containedEvent)) {
-					error("Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue.", CompositePackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+					error("Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue.", CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
 				}
 			}			
 		}
@@ -1531,7 +1530,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			int index =  adapter.getControlSpecifications().indexOf(controlSpecification);
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
-					error("This control specification with any trigger enshadows all other control specifications.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+					error("This control specification with any trigger enshadows all other control specifications.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
 					return;
 				}
 			}
@@ -1544,7 +1543,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 					Collection<Event> portEvents = getSemanticEvents(Collections.singleton(port), EventDirection.IN);
 					if (usedEvents.containsKey(port)) {
 						error("This control specification with any port trigger enshadows all control specifications "
-							+ "with reference to the same port.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+							+ "with reference to the same port.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
 						Collection<Event> containedEvents = usedEvents.get(port);
 						containedEvents.addAll(portEvents);
 					}
@@ -1560,7 +1559,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 						Collection<Event> containedEvents = usedEvents.get(port);
 						if (containedEvents.contains(event)) {
 							error("This control specification with port event trigger has the same effect as some "
-									+ "previous control specification.", adapter, CompositePackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+									+ "previous control specification.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
 						}
 						else {
 							containedEvents.add(event);
@@ -1593,7 +1592,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		containedInstances.removeAll(cascade.getExecutionList());
 		if (!containedInstances.isEmpty()) {
 			error("The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
-					.collect(Collectors.toSet()) + ".",	CompositePackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
+					.collect(Collectors.toSet()) + ".",	CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
 		}
 	}
 	

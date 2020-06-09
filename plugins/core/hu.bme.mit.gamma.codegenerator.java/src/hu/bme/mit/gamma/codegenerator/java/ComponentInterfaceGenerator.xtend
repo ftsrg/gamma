@@ -12,17 +12,17 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import java.util.HashSet
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ComponentInterfaceGenerator {
 	

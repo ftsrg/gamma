@@ -14,16 +14,16 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PseudoState
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import java.util.HashMap
 import java.util.Map
 

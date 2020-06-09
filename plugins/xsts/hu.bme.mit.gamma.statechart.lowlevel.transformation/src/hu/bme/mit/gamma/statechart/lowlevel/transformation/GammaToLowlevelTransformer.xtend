@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
 

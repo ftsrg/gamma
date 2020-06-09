@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.querygenerator.patterns
 
 import "http://www.mit.bme.hu/gamma/expression/Model" 
-import "http://www.mit.bme.hu/gamma/statechart/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite"
 
 pattern simpleInstances(instance : SynchronousComponentInstance, statechart : StatechartDefinition) {

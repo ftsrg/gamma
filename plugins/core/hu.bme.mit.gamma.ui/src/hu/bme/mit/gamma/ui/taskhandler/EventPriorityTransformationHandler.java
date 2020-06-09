@@ -18,8 +18,8 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.eventpriority.transformation.EventPriorityTransformer;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
 public class EventPriorityTransformationHandler extends TaskHandler {
 

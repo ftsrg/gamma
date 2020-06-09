@@ -11,7 +11,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

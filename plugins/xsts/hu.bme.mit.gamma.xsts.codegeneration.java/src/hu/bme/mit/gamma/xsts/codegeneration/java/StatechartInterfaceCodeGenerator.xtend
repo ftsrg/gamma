@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 

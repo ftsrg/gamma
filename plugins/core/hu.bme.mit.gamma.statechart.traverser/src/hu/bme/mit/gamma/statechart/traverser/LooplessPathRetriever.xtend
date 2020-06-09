@@ -10,13 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.traverser
 
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.StateNode
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.StateNode
 import java.util.Collection
 import java.util.logging.Level
 import java.util.logging.Logger
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class LooplessPathRetriever {
 	

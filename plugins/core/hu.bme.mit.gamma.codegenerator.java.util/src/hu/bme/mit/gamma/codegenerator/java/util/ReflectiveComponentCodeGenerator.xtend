@@ -15,14 +15,14 @@ import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ReflectiveComponentCodeGenerator {
 	

@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.transformation.util.queries.QueuesOfClocks
 import hu.bme.mit.gamma.transformation.util.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopAsyncCompositeComponents

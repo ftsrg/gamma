@@ -17,9 +17,9 @@ import java.io.IOException;
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartToStatechartTransformer;
 
 public class PhaseGenerationHandler extends TaskHandler {

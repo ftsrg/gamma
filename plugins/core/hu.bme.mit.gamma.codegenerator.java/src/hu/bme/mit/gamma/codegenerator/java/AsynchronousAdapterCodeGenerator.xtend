@@ -16,15 +16,15 @@ import hu.bme.mit.gamma.codegenerator.java.queries.PortEventTriggersOfWrappers
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfClocks
 import hu.bme.mit.gamma.codegenerator.java.queries.QueuesOfEvents
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
-import hu.bme.mit.gamma.statechart.model.AnyTrigger
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeUnit
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.ControlFunction
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.ControlFunction
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AsynchronousAdapterCodeGenerator {
 	

@@ -13,16 +13,16 @@ package hu.bme.mit.gamma.xsts.transformation.util
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 class Namings {
 	

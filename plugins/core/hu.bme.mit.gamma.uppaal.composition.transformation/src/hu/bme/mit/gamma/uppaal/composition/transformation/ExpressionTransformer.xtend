@@ -38,8 +38,8 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -67,7 +67,7 @@ import uppaal.expressions.PlusExpression
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ExpressionTransformer {
     // For model creation

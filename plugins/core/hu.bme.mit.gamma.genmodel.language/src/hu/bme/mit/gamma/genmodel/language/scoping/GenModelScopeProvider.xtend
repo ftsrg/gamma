@@ -17,15 +17,15 @@ import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import org.eclipse.xtext.EcoreUtil2
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 
 /**
  * This class contains custom scoping description.

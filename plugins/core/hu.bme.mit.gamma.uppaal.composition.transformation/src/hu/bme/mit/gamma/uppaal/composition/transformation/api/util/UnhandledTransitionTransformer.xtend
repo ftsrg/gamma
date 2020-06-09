@@ -10,13 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import java.util.logging.Level
 
 class UnhandledTransitionTransformer {

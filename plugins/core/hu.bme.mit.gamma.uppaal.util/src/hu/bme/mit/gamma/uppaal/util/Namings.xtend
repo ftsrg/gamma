@@ -11,16 +11,16 @@
 package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.Clock
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Clock
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
 import uppaal.declarations.Variable
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 

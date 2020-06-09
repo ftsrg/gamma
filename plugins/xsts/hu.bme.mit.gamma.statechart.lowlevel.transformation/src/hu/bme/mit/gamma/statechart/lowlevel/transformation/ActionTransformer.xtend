@@ -26,9 +26,9 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
-import hu.bme.mit.gamma.statechart.model.DeactivateTimeoutAction
-import hu.bme.mit.gamma.statechart.model.RaiseEventAction
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Collection

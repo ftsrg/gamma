@@ -21,36 +21,36 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
-import hu.bme.mit.gamma.statechart.model.BinaryTrigger
-import hu.bme.mit.gamma.statechart.model.BinaryType
-import hu.bme.mit.gamma.statechart.model.ChoiceState
-import hu.bme.mit.gamma.statechart.model.DeepHistoryState
-import hu.bme.mit.gamma.statechart.model.EntryState
-import hu.bme.mit.gamma.statechart.model.EventTrigger
-import hu.bme.mit.gamma.statechart.model.ForkState
-import hu.bme.mit.gamma.statechart.model.InitialState
-import hu.bme.mit.gamma.statechart.model.InterfaceRealization
-import hu.bme.mit.gamma.statechart.model.JoinState
-import hu.bme.mit.gamma.statechart.model.MergeState
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PortEventReference
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder
-import hu.bme.mit.gamma.statechart.model.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.model.ShallowHistoryState
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.TransitionPriority
-import hu.bme.mit.gamma.statechart.model.Trigger
-import hu.bme.mit.gamma.statechart.model.composite.CompositePackage
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
+import hu.bme.mit.gamma.statechart.statechart.EntryState
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.statechart.ForkState
+import hu.bme.mit.gamma.statechart.statechart.InitialState
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization
+import hu.bme.mit.gamma.statechart.statechart.JoinState
+import hu.bme.mit.gamma.statechart.statechart.MergeState
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
+import hu.bme.mit.gamma.statechart.interface_.Trigger
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.yakindu.transformation.queries.ActionsOfRegularLocalReactions
 import hu.bme.mit.gamma.yakindu.transformation.queries.Choices
 import hu.bme.mit.gamma.yakindu.transformation.queries.CompositeStateRegions
@@ -114,7 +114,9 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -148,8 +150,8 @@ class YakinduToGammaTransformer {
     protected StatechartDefinition gammaStatechart
     
     // Packages of the metamodels
-    extension CompositePackage compPackage = CompositePackage.eINSTANCE
     extension StatechartModelPackage stmPackage = StatechartModelPackage.eINSTANCE
+    extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
     extension ActionModelPackage acPackage = ActionModelPackage.eINSTANCE
     extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
     extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE
@@ -171,7 +173,7 @@ class YakinduToGammaTransformer {
     		// Yakindu models are always prioritized
     		it.transitionPriority = TransitionPriority.ORDER_BASED
     	]
-        gammaPackage = StatechartModelFactory.eINSTANCE.createPackage => [
+        gammaPackage = InterfaceModelFactory.eINSTANCE.createPackage => [
     		it.name = packageName
     		it.components += gammaStatechart
     		it.imports += genmodel.packageImports.filter[it.components.empty]
@@ -845,9 +847,9 @@ class YakinduToGammaTransformer {
     			it.transform(timeSpecification_Value, yExpression)
     			it.unit = switch(timeUnit) {
     				case SECOND: 
-    					hu.bme.mit.gamma.statechart.model.TimeUnit.SECOND
+    					hu.bme.mit.gamma.statechart.interface_.TimeUnit.SECOND
     				case MILLISECOND: 
-    					hu.bme.mit.gamma.statechart.model.TimeUnit.MILLISECOND
+    					hu.bme.mit.gamma.statechart.interface_.TimeUnit.MILLISECOND
 					default: 
 						throw new IllegalArgumentException("Only second and millisecond are supported!")
     			}

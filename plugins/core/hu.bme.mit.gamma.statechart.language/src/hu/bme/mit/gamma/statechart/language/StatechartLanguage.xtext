@@ -12,17 +12,17 @@ grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage
 	with hu.bme.mit.gamma.action.language.ActionLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
-import "http://www.mit.bme.hu/gamma/statechart/Model" 
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" 
 import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as CompositeModel
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as InterfaceModel 
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//contract" as ContractModel 
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//phase" as PhaseModel 
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeModel
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel 
+import "http://www.mit.bme.hu/gamma/statechart/Model/Contract" as ContractModel 
+import "http://www.mit.bme.hu/gamma/statechart/Model/Phase" as PhaseModel 
 
-Package returns Package:
+Package returns InterfaceModel::Package:
 	'package' name=ID
-	('import' imports+=[Package | STRING])*	
+	('import' imports+=[InterfaceModel::Package | STRING])*	
 	(
 		constantDeclarations+=ConstantDeclaration |
 		functionDeclarations+=FunctionDeclaration |
@@ -56,7 +56,7 @@ enum Imply returns BinaryType:
 	IMPLY = '->'
 ;
 
-Trigger returns Trigger:
+Trigger returns InterfaceModel::Trigger:
 	OnCycleTrigger |
 	AnyTrigger |
 	ComplexTrigger
@@ -66,42 +66,42 @@ Trigger returns Trigger:
  * Used by ControlSpecification.
  * The other trigger rules have precedence rules and defined according to left recursion.
  */
-SimpleTrigger returns SimpleTrigger:
+SimpleTrigger returns InterfaceModel::SimpleTrigger:
 	OnCycleTrigger |
 	AnyTrigger |
 	OpaqueTrigger |
 	EventTrigger
 ;
 
-ComplexTrigger returns Trigger:
+ComplexTrigger returns InterfaceModel::Trigger:
 	BinaryTrigger 
 ;
 
-BinaryTrigger returns Trigger:
+BinaryTrigger returns InterfaceModel::Trigger:
 	EqualTrigger
 ;
 
-EqualTrigger returns Trigger:
+EqualTrigger returns InterfaceModel::Trigger:
 	ImplyTrigger ({BinaryTrigger.leftOperand=current} type=Equal rightOperand=EqualTrigger)?
 ;
 
-ImplyTrigger returns Trigger:
+ImplyTrigger returns InterfaceModel::Trigger:
 	OrTrigger ({BinaryTrigger.leftOperand=current} type=Imply rightOperand=ImplyTrigger)?
 ;
 
-OrTrigger returns Trigger:
+OrTrigger returns InterfaceModel::Trigger:
 	XorTrigger ({BinaryTrigger.leftOperand=current} type=Or rightOperand=OrTrigger)?
 ;
 
-XorTrigger returns Trigger:
+XorTrigger returns InterfaceModel::Trigger:
 	AndTrigger ({BinaryTrigger.leftOperand=current} type=Xor rightOperand=XorTrigger)?
 ;
 
-AndTrigger returns Trigger:
+AndTrigger returns InterfaceModel::Trigger:
 	BinaryOperand ({BinaryTrigger.leftOperand=current} type=And rightOperand=AndTrigger)?
 ;
 
-BinaryOperand returns Trigger:
+BinaryOperand returns InterfaceModel::Trigger:
 	UnaryTrigger | ParenthesesTrigger
 ;
 
@@ -109,7 +109,7 @@ enum Not returns UnaryType:
 	NOT='!'
 ;
 
-UnaryTrigger returns Trigger:
+UnaryTrigger returns InterfaceModel::Trigger:
 	NotTrigger | EventTrigger | OpaqueTrigger 
 ;
 
@@ -117,7 +117,7 @@ NotTrigger returns UnaryTrigger:
 	((type=Not) (operand=ParenthesesTrigger))
 ;
 
-ParenthesesTrigger returns Trigger:
+ParenthesesTrigger returns InterfaceModel::Trigger:
 	'('EqualTrigger')'
 ;
 
@@ -125,19 +125,19 @@ OnCycleTrigger returns OnCycleTrigger:
 	{OnCycleTrigger} 'cycle'
 ;
 
-AnyTrigger returns AnyTrigger:
-	{AnyTrigger} 'any'
+AnyTrigger returns InterfaceModel::AnyTrigger:
+	{InterfaceModel::AnyTrigger} 'any'
 ;
 
 OpaqueTrigger returns OpaqueTrigger:
 	trigger=STRING
 ;
 
-EventTrigger returns EventTrigger:
+EventTrigger returns InterfaceModel::EventTrigger:
 	eventReference=EventReference
 ;
 
-EventReference returns EventReference:
+EventReference returns InterfaceModel::EventReference:
 	ClockTickReference | 
 	TimeoutEventReference |
 	AnyPortEventReference | 
@@ -145,7 +145,7 @@ EventReference returns EventReference:
 ;
 
 ClockTickReference returns ClockTickReference:
-	clock=[Clock]
+	clock=[InterfaceModel::Clock]
 ;
 
 TimeoutEventReference returns TimeoutEventReference:
@@ -153,22 +153,22 @@ TimeoutEventReference returns TimeoutEventReference:
 ;
 
 AnyPortEventReference returns AnyPortEventReference:
-	port=[Port] '.' 'any'
+	port=[InterfaceModel::Port] '.' 'any'
 ;
 
 PortEventReference returns PortEventReference:
-	port=[Port] '.' event=[InterfaceModel::Event]
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event]
 ;
 
-Port returns Port:
+Port returns InterfaceModel::Port:
 	'port' name=ID ':' interfaceRealization=InterfaceRealization
 ;
 
-InterfaceRealization returns InterfaceRealization:
+InterfaceRealization returns InterfaceModel::InterfaceRealization:
 	realizationMode=RealizationMode interface=[InterfaceModel::Interface]
 ;
 
-enum RealizationMode returns RealizationMode:
+enum RealizationMode returns InterfaceModel::RealizationMode:
 	PROVIDED = 'provides' | REQUIRED = 'requires'
 ;
 
@@ -342,7 +342,7 @@ DeepHistoryState returns DeepHistoryState:
 
 // Composition language 
  
-Component returns CompositeModel::Component:
+Component returns InterfaceModel::Component:
 	SynchronousComponent |
 	AsynchronousComponent
 ;
@@ -416,15 +416,15 @@ AsynchronousAdapter returns CompositeModel::AsynchronousAdapter:
 		'}'
 ;
 
-ClockDeclaration returns Clock:
+ClockDeclaration returns InterfaceModel::Clock:
 	'clock' name=ID '(' 'rate' '=' timeSpecification=TimeSpecification')'
 ;
 
-TimeSpecification returns TimeSpecification:
+TimeSpecification returns InterfaceModel::TimeSpecification:
 	value=AdditiveExpression unit=TimeUnit
 ;
 
-enum TimeUnit returns TimeUnit:
+enum TimeUnit returns InterfaceModel::TimeUnit:
 	MILLISECOND = 'ms' | SECOND = 's'
 ;	
 
@@ -444,11 +444,11 @@ MessageQueue returns CompositeModel::MessageQueue:
 ;
 
 PortBinding returns CompositeModel::PortBinding:
-	'bind' compositeSystemPort=[Port] '->' instancePortReference=InstancePortReference
+	'bind' compositeSystemPort=[InterfaceModel::Port] '->' instancePortReference=InstancePortReference
 ;
 
 InstancePortReference returns CompositeModel::InstancePortReference:
-	instance=[CompositeModel::ComponentInstance] '.' port=[Port] 
+	instance=[CompositeModel::ComponentInstance] '.' port=[InterfaceModel::Port] 
 ;
 
 ComponentInstance returns CompositeModel::ComponentInstance:
@@ -511,7 +511,7 @@ PrimaryExpression returns ConstraintModel::Expression:
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:
-	port=[Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
+	port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] '::' parameter=[ConstraintModel::ParameterDeclaration];
 
 
 // Action Language Extensions
@@ -537,7 +537,7 @@ InlineStatement returns ActionModel::Statement:
 ;
 
 RaiseEventAction returns RaiseEventAction:
-	'raise'  port=[Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
+	'raise'  port=[InterfaceModel::Port] '.' event=[InterfaceModel::Event] ('(' (arguments+=Expression)(',' arguments+=Expression)* ')')?
 ;
 
 SetTimeoutAction returns SetTimeoutAction:

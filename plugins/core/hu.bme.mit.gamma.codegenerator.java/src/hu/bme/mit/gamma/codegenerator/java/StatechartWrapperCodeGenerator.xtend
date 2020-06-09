@@ -13,10 +13,10 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.interface_.Persistency
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Persistency
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
@@ -25,7 +25,7 @@ import org.yakindu.sct.model.stext.stext.InternalScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartWrapperCodeGenerator {
 	

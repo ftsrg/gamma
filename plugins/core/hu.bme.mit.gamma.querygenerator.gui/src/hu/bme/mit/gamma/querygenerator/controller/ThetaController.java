@@ -15,7 +15,7 @@ import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
-import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 

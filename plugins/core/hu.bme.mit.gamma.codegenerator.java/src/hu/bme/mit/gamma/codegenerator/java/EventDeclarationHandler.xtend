@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Interface
 import java.util.Collections
 import java.util.HashSet
 import java.util.Set

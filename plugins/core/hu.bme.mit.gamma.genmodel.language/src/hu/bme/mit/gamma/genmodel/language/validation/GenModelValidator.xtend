@@ -34,15 +34,15 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.model.TimeSpecification
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.model.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.model.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Interface
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -56,7 +56,8 @@ import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 
 /**
  * This class contains custom validation rules. 
@@ -157,7 +158,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTimeSpecification(TimeSpecification timeSpecification) {
 		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
-			error("Time values must be of type integer.", StatechartModelPackage.Literals.TIME_SPECIFICATION__VALUE)
+			error("Time values must be of type integer.", InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)
 		}
 	}
 	
@@ -432,7 +433,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkEventMappingCount(InterfaceMapping mapping) {
 		val mappedYakinduEvents = new HashSet<Event>
-		val mappedGammaEvents = new HashMap<hu.bme.mit.gamma.statechart.model.interface_.Event, Set<Event>>
+		val mappedGammaEvents = new HashMap<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>>
 		for (eventMapping : mapping.eventMappings) {
 			val yakinduEvent = eventMapping.yakinduEvent
 			val gammaEvent = eventMapping.gammaEvent
@@ -522,7 +523,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 	}
 	
-	private def checkParameters(Event yEvent, hu.bme.mit.gamma.statechart.model.interface_.Event gEvent) {
+	private def checkParameters(Event yEvent, hu.bme.mit.gamma.statechart.interface_.Event gEvent) {
 		// event.type is null not void if no explicit type is declared
 		if (yEvent.type === null && gEvent.parameterDeclarations.empty) {
 			return true

@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
-import hu.bme.mit.gamma.statechart.model.CompositeElement
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.composite.BroadcastChannel
-import hu.bme.mit.gamma.statechart.model.composite.SimpleChannel
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.model.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
 import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
@@ -30,7 +30,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class SystemReducer {
 	

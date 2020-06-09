@@ -11,9 +11,9 @@
 grammar hu.bme.mit.gamma.genmodel.language.GenModel with hu.bme.mit.gamma.expression.language.ExpressionLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
-import "http://www.mit.bme.hu/gamma/statechart/Model" as model
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface" as interface
-import "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite" as composite
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as statechart
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
 import "http://www.mit.bme.hu/gamma/genmodel/Model"
 import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 
@@ -69,7 +69,7 @@ StatechartCompilation returns StatechartCompilation:
 
 CodeGeneration returns CodeGeneration:
 	'code'  '{'
-		'component' ':' component=[composite::Component]
+		'component' ':' component=[interface::Component]
 		(
 			'folder' ':' targetFolder+=STRING |
 			'base-package' ':' packageName+=STRING | // Java base package
@@ -92,7 +92,7 @@ TestGeneration returns TestGeneration:
 
 EventPriorityTransformation returns EventPriorityTransformation:
 	'event-priority' '{'
-		'statechart' ':' statechart=[model::StatechartDefinition]
+		'statechart' ':' statechart=[statechart::StatechartDefinition]
 		(
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING // The name of the generated file
@@ -106,7 +106,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' '{'
-		'component' ':' component=[composite::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 		(
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
@@ -138,11 +138,11 @@ OrchestratingConstraint returns OrchestratingConstraint:
 	'maximum-orchestrating-period' ':'maximumPeriod=TimeSpecification
 ;
 
-TimeSpecification returns model::TimeSpecification:
+TimeSpecification returns interface::TimeSpecification:
 	value=AdditiveExpression unit=TimeUnit
 ;
 
-enum TimeUnit returns model::TimeUnit:
+enum TimeUnit returns interface::TimeUnit:
 	MILLISECOND = 'ms' | SECOND = 's'
 ;
 
@@ -216,13 +216,13 @@ EventMapping returns EventMapping:
 	'map' yakinduEvent=[types::Event] '=' gammaEvent=[interface::Event] 
 ;
 
-enum RealizationMode returns model::RealizationMode:
+enum RealizationMode returns interface::RealizationMode:
 	PROVIDED = 'provided' | REQUIRED = 'required'
 ;
 
 AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 	{AdaptiveContractTestGeneration} 'adaptive-test' '{'
-		'statechart' ':' statechartContract=[model::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		'statechart' ':' statechartContract=[statechart::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING | // The name of the generated file
@@ -234,7 +234,7 @@ AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 
 PhaseStatechartGeneration returns PhaseStatechartGeneration:
 	{PhaseStatechartGeneration} 'phase-statechart' '{'
-		'statechart' ':' statechart=[model::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		'statechart' ':' statechart=[statechart::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING // The name of the generated file

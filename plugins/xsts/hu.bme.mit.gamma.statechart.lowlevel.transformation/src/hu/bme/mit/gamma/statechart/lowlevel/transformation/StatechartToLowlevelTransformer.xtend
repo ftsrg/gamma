@@ -21,28 +21,28 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Port
-import hu.bme.mit.gamma.statechart.model.PseudoState
-import hu.bme.mit.gamma.statechart.model.RealizationMode
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.SchedulingOrder
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.TimeoutAction
-import hu.bme.mit.gamma.statechart.model.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
-import hu.bme.mit.gamma.statechart.model.Transition
-import hu.bme.mit.gamma.statechart.model.TransitionPriority
-import hu.bme.mit.gamma.statechart.model.interface_.Event
-import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
+import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class StatechartToLowlevelTransformer {
@@ -111,7 +111,7 @@ class StatechartToLowlevelTransformer {
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
 	 */
-	protected def List<EventDeclaration> transform(hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration declaration, Port gammaPort) {
+	protected def List<EventDeclaration> transform(hu.bme.mit.gamma.statechart.interface_.EventDeclaration declaration, Port gammaPort) {
 		val gammaDirection = declaration.direction
 		val realizationMode = gammaPort.interfaceRealization.realizationMode
 		if (gammaDirection == EventDirection.IN &&
@@ -216,7 +216,7 @@ class StatechartToLowlevelTransformer {
 		return port.interfaceRealization.interface.events
 	}
 
-	protected def dispatch Component transformComponent(hu.bme.mit.gamma.statechart.model.composite.Component component) {
+	protected def dispatch Component transformComponent(hu.bme.mit.gamma.statechart.interface_.Component component) {
 		throw new IllegalArgumentException("Not known component: " + component)
 	}
 

@@ -10,7 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.statechart.model.composite.Component
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class ComponentCodeGenerator {
 	

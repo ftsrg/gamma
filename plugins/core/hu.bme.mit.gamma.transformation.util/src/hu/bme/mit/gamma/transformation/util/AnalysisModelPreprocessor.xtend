@@ -12,11 +12,11 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.composite.Component
-import hu.bme.mit.gamma.statechart.model.contract.AdaptiveContractAnnotation
-import hu.bme.mit.gamma.statechart.model.contract.StateContractAnnotation
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
@@ -29,7 +29,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AnalysisModelPreprocessor {
 	
