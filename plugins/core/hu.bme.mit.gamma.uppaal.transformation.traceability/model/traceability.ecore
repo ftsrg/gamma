@@ -5,7 +5,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="G2UTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="traces" upperBound="-1"
         eType="#//AbstractTrace" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaPackage" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="gammaPackage" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="nta" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//NTA"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractTrace" abstract="true"/>
@@ -18,17 +18,17 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="to" upperBound="-1" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/ComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="element" upperBound="-1"
         eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PortTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Port"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="declarations" upperBound="-1"
         eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/VariableDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MessageQueueTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="queue" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/MessageQueue"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="queue" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//MessageQueue"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="peekFunction" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/FunctionDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="shiftFunction" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/FunctionDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="pushFunction" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/FunctionDeclaration"/>
@@ -38,16 +38,16 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="array" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/DataVariableDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventRepresentation" eSuperTypes="#//AbstractEventRepresentation">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Port"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//interface/Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractEventRepresentation" abstract="true"
       eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constantRepresentation"
         lowerBound="1" eType="ecore:EClass ../../de.uni_paderborn.uppaal/model/uppaal.ecore#//declarations/DataVariableDeclaration"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="wrapper" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//composite/AsynchronousAdapter"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="wrapper" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//AsynchronousAdapter"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ClockRepresentation" eSuperTypes="#//AbstractEventRepresentation">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Clock"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="clock" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Clock"/>
   </eClassifiers>
 </ecore:EPackage>

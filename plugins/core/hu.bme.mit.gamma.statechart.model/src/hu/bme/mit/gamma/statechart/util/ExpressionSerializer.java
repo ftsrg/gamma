@@ -1,7 +1,7 @@
 package hu.bme.mit.gamma.statechart.util;
 
 import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton

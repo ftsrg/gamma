@@ -9,8 +9,17 @@
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated statechart -->
       <package
-            uri="http://www.mit.bme.hu/gamma/statechart/Model"
-            class="hu.bme.mit.gamma.statechart.model.StatechartModelPackage"
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
+            class="hu.bme.mit.gamma.statechart.composite.CompositeModelPackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
+
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Model/Contract"
+            class="hu.bme.mit.gamma.statechart.contract.ContractModelPackage"
             genModel="model/statechart.genmodel"/>
    </extension>
 
@@ -18,23 +27,7 @@
       <!-- @generated statechart -->
       <package
             uri="http://www.mit.bme.hu/gamma/statechart/Model/Interface"
-            class="hu.bme.mit.gamma.statechart.model.interface_.InterfacePackage"
-            genModel="model/statechart.genmodel"/>
-   </extension>
-
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated statechart -->
-      <package
-            uri="http://www.mit.bme.hu/gamma/statechart/Model/Composite"
-            class="hu.bme.mit.gamma.statechart.model.composite.CompositePackage"
-            genModel="model/statechart.genmodel"/>
-   </extension>
-
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated statechart -->
-      <package
-            uri="http://www.mit.bme.hu/gamma/statechart/Model/Contract"
-            class="hu.bme.mit.gamma.statechart.model.contract.ContractPackage"
+            class="hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage"
             genModel="model/statechart.genmodel"/>
    </extension>
 
@@ -42,8 +35,15 @@
       <!-- @generated statechart -->
       <package
             uri="http://www.mit.bme.hu/gamma/statechart/Model/Phase"
-            class="hu.bme.mit.gamma.statechart.model.phase.PhasePackage"
+            class="hu.bme.mit.gamma.statechart.phase.PhaseModelPackage"
             genModel="model/statechart.genmodel"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated statechart -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/statechart/Statechart"
+            class="hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage"
+            genModel="model/statechart.genmodel"/>
+   </extension>
 </plugin>
