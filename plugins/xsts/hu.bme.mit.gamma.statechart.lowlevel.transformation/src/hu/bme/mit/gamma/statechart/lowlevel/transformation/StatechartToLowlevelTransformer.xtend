@@ -382,7 +382,8 @@ class StatechartToLowlevelTransformer {
 		for (gammaTransition : statechart.transitions) {
 			val lowlevelTransition = trace.get(gammaTransition)
 			val lowlevelSource = lowlevelTransition.source
-			if (lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.State) {
+			if (lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.State || 
+					lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState) {
 				val newGuardExpression = createAndExpression
 				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
 					newGuardExpression.operands += createNotExpression => [

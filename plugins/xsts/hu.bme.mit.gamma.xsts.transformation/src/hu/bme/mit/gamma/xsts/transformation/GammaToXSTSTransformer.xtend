@@ -35,6 +35,7 @@ import java.util.List
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import org.eclipse.emf.ecore.util.EcoreUtil
 
 class GammaToXSTSTransformer {
 	// Transformers
@@ -107,9 +108,10 @@ class GammaToXSTSTransformer {
 			]
 			_package.constantDeclarations += argumentConstant
 			// Changing the references to the constant
-			// Deleting because the parameter variables are not needed
-			argumentConstant.changeAndDelete(parameter, component)
+			argumentConstant.change(parameter, component)
 		}
+		// Deleting after the index settings have been completed (otherwise the index always returns 0)
+		EcoreUtil.deleteAll(parameterDeclarations, true)
 	}
 	
 	protected def dispatch XSTS transform(Component component, Package lowlevelPackage) {
@@ -253,10 +255,10 @@ class GammaToXSTSTransformer {
 			for (variable : xSts.variableDeclarations) {
 				variable.name = variable.customizeName(instance)
 			}
-			for (typeDeclaration : xSts.typeDeclarations) {
-				typeDeclaration.name = typeDeclaration.customizeName(type)
-			}
 		}
+		// Type declaration names are not customized as multiple types can refer to the same type
+		// These types would be different in XSTS, when they are the same in Gamma
+		// Note: for this reason, every type declaration must have a different name
 	}
 	
 	protected def removeDuplicatedTypes(XSTS xSts) {

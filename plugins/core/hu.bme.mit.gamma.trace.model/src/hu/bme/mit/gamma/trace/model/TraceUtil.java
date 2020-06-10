@@ -50,6 +50,10 @@ public class TraceUtil {
 				// First - instance state, second - instance variable
 				return -1;
 			}
+			else if (lhs instanceof InstanceVariableState && rhs instanceof InstanceStateConfiguration) {
+				// First - instance state, second - instance variable
+				return 1;
+			}
 			return 0;
 		}
 		
