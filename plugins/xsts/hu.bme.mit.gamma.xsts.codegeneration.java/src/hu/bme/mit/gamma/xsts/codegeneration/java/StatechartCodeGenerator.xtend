@@ -27,7 +27,7 @@ class StatechartCodeGenerator {
 	final extension TypeSerializer typeSerializer = new TypeSerializer
 	final extension VariableDiagnoser variableDiagnoser = new VariableDiagnoser
 	final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
-	final extension ExpressionUtil expressionUtil = new ExpressionUtil
+	final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
 	// Depending on the xSTS form
 	final extension ActionSerializer actionSerializer
 	

@@ -44,8 +44,8 @@ class TransitionToStepTransformer {
 
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
-	protected final extension StatechartUtil statechartUtil = new StatechartUtil
-	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.instance
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	
 	def execute(Transition transition) {
 		val step = createStep

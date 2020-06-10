@@ -95,7 +95,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	abstract class AnalysisModelTransformer {
-		protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
+		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.getInstance();
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation);
 	}
 	
@@ -238,7 +238,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class ThetaTransformer  extends AnalysisModelTransformer {
 		
-		protected StatechartUtil statechartUtil = new StatechartUtil();
+		protected StatechartUtil statechartUtil = StatechartUtil.getInstance();
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS transformation.");

@@ -46,8 +46,8 @@ public abstract class AbstractController {
 	protected IFile file;
 	
 	// Util
-	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
-	protected FileUtil fileUtil = new FileUtil();
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.getInstance();
+	protected FileUtil fileUtil = FileUtil.getInstance();
 	protected Logger logger = Logger.getLogger("GammaLogger");
 
 	protected final String TEST_GEN_FOLDER_NAME = "test-gen";

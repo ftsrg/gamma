@@ -78,8 +78,8 @@ class LowlevelToXSTSTransformer {
 	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
-	protected final extension XSTSActionUtil actionFactory = new XSTSActionUtil
-	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.instance
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
 	protected final extension ReadWrittenVariableLocator variableLocator = new ReadWrittenVariableLocator
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
 	protected final extension VariableGroupRetriever variableGroupRetriever = new VariableGroupRetriever
@@ -647,6 +647,15 @@ class LowlevelToXSTSTransformer {
 							}
 						}
 						val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
+						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
+							// Synchronous composite components do not reset transient parameters!
+							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
+								it.lhs = createReferenceExpression => [
+									it.declaration = xStsParameterVariable
+								]
+								it.rhs = xStsParameterVariable.initialValue
+							]
+						}
 						lowlevelEnvironmentalAction.actions += createIfAction(
 							// Only if the event is raised
 							createEqualityExpression => [

@@ -18,7 +18,7 @@ import java.util.logging.Level
 
 class DefaultCompositionToUppaalTransformer {
 	
-    protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	TestQueryGenerationHandler testQueryGenerationHandler
 	
 	def transformComponent(Package gammaPackage, File containingFile) {

@@ -17,6 +17,19 @@ import static com.google.common.base.Preconditions.checkState
 
 class GammaEcoreUtil {
 	
+	static GammaEcoreUtil instance = null;
+	
+	def static GammaEcoreUtil getInstance() {
+		if (instance === null) {
+			instance = new GammaEcoreUtil();
+		}
+		return instance;
+	}
+	
+	protected new() {}
+	
+	// Singleton
+	
 	@SuppressWarnings("unchecked")
 	def void change(EObject newObject, EObject oldObject, EObject container) {
 		val oldReferences = UsageCrossReferencer.find(oldObject, container)

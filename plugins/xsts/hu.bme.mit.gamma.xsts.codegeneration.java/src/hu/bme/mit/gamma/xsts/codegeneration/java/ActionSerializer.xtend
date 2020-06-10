@@ -18,8 +18,8 @@ import hu.bme.mit.gamma.xsts.model.model.XSTS
 abstract class ActionSerializer {
 	
 	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
-	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
-	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	abstract def CharSequence serializeInitializingAction(XSTS xSts)

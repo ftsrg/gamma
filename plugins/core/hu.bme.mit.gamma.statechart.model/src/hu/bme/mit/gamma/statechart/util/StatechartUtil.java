@@ -18,6 +18,19 @@ import hu.bme.mit.gamma.statechart.model.composite.SynchronousComponentInstance;
 
 public class StatechartUtil extends ExpressionUtil {
 
+	private static StatechartUtil instance = null;
+	
+	public static StatechartUtil getInstance() {
+		if (instance == null) {
+			instance = new StatechartUtil();
+		}
+		return instance;
+	}
+	
+	protected StatechartUtil() {}
+	
+	// Singleton
+	
 	protected CompositeFactory compositeFactory = CompositeFactory.eINSTANCE;
 	
 	public int evaluateMilliseconds(TimeSpecification time) {

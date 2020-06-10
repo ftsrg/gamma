@@ -32,7 +32,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class EventReferenceTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
-	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace

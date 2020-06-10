@@ -39,7 +39,7 @@ class TraceBuilder {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
 	
-	protected final extension TraceUtil traceUtil = new TraceUtil
+	protected final extension TraceUtil traceUtil = TraceUtil.instance
 	
 	// In event
 	

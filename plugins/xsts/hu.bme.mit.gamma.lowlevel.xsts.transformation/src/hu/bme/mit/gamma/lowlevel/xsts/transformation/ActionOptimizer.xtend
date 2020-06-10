@@ -34,8 +34,8 @@ import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedF
 class ActionOptimizer {
 	// Auxiliary objects
 	protected final extension ReadWrittenVariableLocator locator = new ReadWrittenVariableLocator
-	protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
-	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	

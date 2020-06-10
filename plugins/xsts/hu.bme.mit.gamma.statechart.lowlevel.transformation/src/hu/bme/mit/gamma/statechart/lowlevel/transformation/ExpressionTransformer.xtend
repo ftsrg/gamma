@@ -40,7 +40,7 @@ import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.Expres
 
 class ExpressionTransformer {
 	// Auxiliary object
-	protected final extension GammaEcoreUtil gammaEcoreUtil = new GammaEcoreUtil
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings

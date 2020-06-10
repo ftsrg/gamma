@@ -22,7 +22,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class UppaalModelPreprocessor {
 	
 	protected val preprocessor = new AnalysisModelPreprocessor
-	protected extension StatechartUtil statechartUtil = new StatechartUtil
+	protected extension StatechartUtil statechartUtil = StatechartUtil.instance
 	
 	def preprocess(Package gammaPackage, File containingFile) {
 		val topComponent = preprocessor.preprocess(gammaPackage, containingFile)

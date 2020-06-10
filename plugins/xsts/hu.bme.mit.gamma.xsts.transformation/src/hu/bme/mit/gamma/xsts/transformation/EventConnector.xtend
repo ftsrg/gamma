@@ -23,7 +23,7 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class EventConnector {
 	// Auxiliary objects
-	protected extension GammaEcoreUtil expressionUtil = new GammaEcoreUtil
+	protected extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.instance
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
 		for (channel : component.channels) {

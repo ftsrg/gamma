@@ -27,7 +27,7 @@ import static com.google.common.base.Preconditions.checkState
 
 class LowlevelTransitionToActionTransformer {
 	// Auxiliary objects
-	protected final extension XSTSActionUtil actionFactory = new XSTSActionUtil
+	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.instance
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
 	protected final extension RegionActivator regionActivator

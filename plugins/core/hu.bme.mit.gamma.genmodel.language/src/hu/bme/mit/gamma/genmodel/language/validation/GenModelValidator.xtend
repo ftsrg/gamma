@@ -63,7 +63,7 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
  */
 class GenModelValidator extends AbstractGenModelValidator {
 	
-	extension StatechartUtil statechartUtil = new StatechartUtil
+	extension StatechartUtil statechartUtil = StatechartUtil.instance
 	
 	// Checking tasks, only one parameter is acceptable
 	

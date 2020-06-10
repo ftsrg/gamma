@@ -31,8 +31,8 @@ class StatechartToTestTransformer {
 	
 	val queryParameters = "-C -t1"
 	
-	protected final extension FileUtil fileUtil = new FileUtil
-	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension FileUtil fileUtil = FileUtil.instance
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	
 	def execute(StatechartDefinition statechart, File containingFile, File testFolder, String basePackageName) {
 		execute(statechart, #[], containingFile, testFolder, basePackageName, null)

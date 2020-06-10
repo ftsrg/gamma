@@ -203,8 +203,8 @@ class CompositeToUppaalTransformer {
 	protected extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler
-    protected final extension ExpressionUtil expressionUtil = new ExpressionUtil
-    protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+    protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	// Auxiliary transformer objects
 	protected AsynchronousConstantsCreator asynchronousConstantsCreator

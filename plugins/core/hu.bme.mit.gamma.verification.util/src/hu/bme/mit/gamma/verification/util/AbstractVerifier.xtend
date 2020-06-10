@@ -24,7 +24,7 @@ abstract class AbstractVerifier {
 	protected String output
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	
-	protected extension FileUtil codeGeneratorUtil = new FileUtil
+	protected extension FileUtil codeGeneratorUtil = FileUtil.instance
 	
 	def ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {

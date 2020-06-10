@@ -28,7 +28,7 @@ class ActionTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	// Action utility
-	protected final extension XSTSActionUtil xStsActionUtil = new XSTSActionUtil
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.instance
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	// Trace

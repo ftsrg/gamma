@@ -17,7 +17,20 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.Block;
 
 public class ActionUtil {
+	
+	private static ActionUtil instance = null;
+	
+	public static ActionUtil getInstance() {
+		if (instance == null) {
+			instance = new ActionUtil();
+		}
+		return instance;
+	}
+	
+	protected ActionUtil() {}
 
+	// Singleton
+	
 	private ActionModelFactory factory = ActionModelFactory.eINSTANCE;
 	
 	public Action extend(Action originalAction, Action newAction) {

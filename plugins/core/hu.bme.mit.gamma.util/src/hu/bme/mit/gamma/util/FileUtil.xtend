@@ -10,6 +10,19 @@ import java.util.Scanner
 
 class FileUtil {
 	
+	static FileUtil instance = null;
+	
+	def static FileUtil getInstance() {
+		if (instance === null) {
+			instance = new FileUtil();
+		}
+		return instance;
+	}
+	
+	protected new() {}
+	
+	// Singleton
+	
 	def saveString(String uri, String string) {
 		new File(uri).saveString(string)
 	}

@@ -30,7 +30,7 @@ import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
 class PhaseStatechartToStatechartTransformer {
 
-	protected final extension GammaEcoreUtil ecoreUtil = new GammaEcoreUtil
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
 	protected final extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	
 	def execute(StatechartDefinition phaseStatechart) {

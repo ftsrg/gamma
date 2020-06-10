@@ -5,6 +5,19 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventParameterReferenceExpre
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 
+	private static ExpressionSerializer instance = null;
+	
+	public static ExpressionSerializer getInstance() {
+		if (instance == null) {
+			instance = new ExpressionSerializer();
+		}
+		return instance;
+	}
+	
+	protected ExpressionSerializer() {}
+	
+	// Singleton
+	
 	protected String _serialize(EventParameterReferenceExpression expression) {
 		return expression.getPort().getName() + "." + expression.getEvent().getName() + "::"
 				+ expression.getParameter().getName();

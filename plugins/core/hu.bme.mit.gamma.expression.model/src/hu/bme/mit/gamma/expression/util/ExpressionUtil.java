@@ -48,8 +48,21 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionUtil {
 	
-	protected GammaEcoreUtil ecoreUtil = new GammaEcoreUtil();
-	protected ExpressionEvaluator evaluator = new ExpressionEvaluator();
+	private static ExpressionUtil instance = null;
+	
+	public static ExpressionUtil getInstance() {
+		if (instance == null) {
+			instance = new ExpressionUtil();
+		}
+		return instance;
+	}
+	
+	protected ExpressionUtil() {}
+	
+	// Singleton
+	
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.getInstance();
+	protected ExpressionEvaluator evaluator = ExpressionEvaluator.getInstance();
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	public ExpressionEvaluator getEvaluator() {

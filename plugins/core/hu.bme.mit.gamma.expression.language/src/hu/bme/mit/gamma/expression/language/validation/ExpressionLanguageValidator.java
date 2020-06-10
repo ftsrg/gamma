@@ -63,7 +63,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil;
  */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
 	
-	protected ExpressionUtil expressionUtil = new ExpressionUtil();
+	protected ExpressionUtil expressionUtil = ExpressionUtil.getInstance();
 	protected ExpressionEvaluator expressionEvaluator = expressionUtil.getEvaluator();
 	protected ExpressionTypeDeterminator typeDeterminator = new ExpressionTypeDeterminator();
 	

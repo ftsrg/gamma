@@ -49,6 +49,19 @@ import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 
 public class ExpressionSerializer {
+	
+	private static ExpressionSerializer instance = null;
+	
+	public static ExpressionSerializer getInstance() {
+		if (instance == null) {
+			instance = new ExpressionSerializer();
+		}
+		return instance;
+	}
+	
+	protected ExpressionSerializer() {}
+	
+	// Singleton
 
 	protected String _serialize(final ElseExpression expression) {
 		return "else";

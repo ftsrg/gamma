@@ -30,7 +30,7 @@ class EnvironmentalActionFilter {
 	// Names that need to be kept
 	Set<String> necessaryNames
 	// Auxiliary objects
-	protected extension ExpressionUtil expressionUtil = new ExpressionUtil
+	protected extension ExpressionUtil expressionUtil = ExpressionUtil.instance
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {

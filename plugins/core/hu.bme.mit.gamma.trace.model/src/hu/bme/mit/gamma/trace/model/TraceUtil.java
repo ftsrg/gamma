@@ -14,6 +14,19 @@ import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedF
 
 public class TraceUtil {
 	
+	static TraceUtil instance = null;
+	
+	public static TraceUtil getInstance() {
+		if (instance == null) {
+			instance = new TraceUtil();
+		}
+		return instance;
+	}
+	
+	protected TraceUtil() {}
+	
+	// Singleton
+	
 	public static InstanceStateSorter instanceStateSorter = new InstanceStateSorter();
 	
 	// Step sorter

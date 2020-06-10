@@ -45,8 +45,8 @@ class GammaToXSTSTransformer {
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	LowlevelToXSTSTransformer lowlevelToXSTSTransformer
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil expressionUtil = new GammaEcoreUtil
-	protected final extension FileUtil fileUtil = new FileUtil
+	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.instance
+	protected final extension FileUtil fileUtil = FileUtil.instance
 	protected final extension ActionSerializer actionSerializer = new ActionSerializer
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
 	protected final extension EventConnector eventConnector = new EventConnector
