@@ -35,10 +35,10 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	override parseRegularQuery(String text, TemporalOperator operator) {
 		switch (operator) {
 			case MUST_ALWAYS: {
-				return text.parseIdentifiers
+				return operator.operator + " " + text.parseIdentifiers
 			}
 			case MIGHT_EVENTUALLY: {
-				return "!" + text.parseIdentifiers.wrap
+				return operator.operator + " " + text.parseIdentifiers.wrap
 			}
 			default: {
 				throw new IllegalArgumentException("Not supported temporal operator: " + operator.toString)

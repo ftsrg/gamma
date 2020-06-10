@@ -195,7 +195,11 @@ public class View extends JFrame {
 				controller = thetaController;
 			}
 		});
-		uppaal.doClick(); // To trigger the action listener
+		try {
+			uppaal.doClick(); // To trigger the action listener
+		} catch (Exception e) {
+			theta.doClick(); // If an UPPAAL model is not present, we try the Theta controller
+		}
 		modelCheckerGroup = new ButtonGroup();
 		modelCheckerGroup.add(uppaal);
 		modelCheckerGroup.add(theta);

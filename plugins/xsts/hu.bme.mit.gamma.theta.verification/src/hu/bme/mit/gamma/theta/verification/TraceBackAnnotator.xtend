@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import java.util.NoSuchElementException
 
 class TraceBackAnnotator {
 	
@@ -77,141 +78,146 @@ class TraceBackAnnotator {
 		val activatedStates = newHashSet
 		// Parsing
 		var state = BackAnnotatorState.INIT
-		while (traceScanner.hasNext) {
-			var line = traceScanner.nextLine.trim // Trimming leading white spaces
-			switch (line) {
-				case line.startsWith(XSTS_TRACE): {
-					// Skipping the first state
-					var countedExplicitState = 0
-					while (countedExplicitState < 2) {
+		try {
+			while (traceScanner.hasNext) {
+				var line = traceScanner.nextLine.trim // Trimming leading white spaces
+				switch (line) {
+					case line.startsWith(XSTS_TRACE): {
+						// Skipping the first state
+						var countedExplicitState = 0
+						while (countedExplicitState < 2) {
+							line = traceScanner.nextLine.trim
+							if (line.startsWith(EXPL_STATE)) {
+								countedExplicitState++
+							}
+						}
+						// Adding reset
+						step.actions += createReset
 						line = traceScanner.nextLine.trim
-						if (line.startsWith(EXPL_STATE)) {
-							countedExplicitState++
-						}
+						state = BackAnnotatorState.STATE_CHECK
 					}
-					// Adding reset
-					step.actions += createReset
-					line = traceScanner.nextLine.trim
-					state = BackAnnotatorState.STATE_CHECK
-				}
-				case line.startsWith(XSTS_STATE): {
-					// Deleting unnecessary in and out events
-					switch (state) {
-						case STATE_CHECK: {
-							val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
-							for (raiseEventAct : raiseEventActs) {
-								if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-									EcoreUtil.delete(raiseEventAct)
+					case line.startsWith(XSTS_STATE): {
+						// Deleting unnecessary in and out events
+						switch (state) {
+							case STATE_CHECK: {
+								val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
+								for (raiseEventAct : raiseEventActs) {
+									if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+										EcoreUtil.delete(raiseEventAct)
+									}
 								}
-							}
-							val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
-							for (instanceState : instanceStates) {
-								// A state is active if all of its ancestor states are active
-								val ancestorStates = instanceState.state.ancestors
-								if (!activatedStates.containsAll(ancestorStates)) {
-									EcoreUtil.delete(instanceState)
+								val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
+								for (instanceState : instanceStates) {
+									// A state is active if all of its ancestor states are active
+									val ancestorStates = instanceState.state.ancestors
+									if (!activatedStates.containsAll(ancestorStates)) {
+										EcoreUtil.delete(instanceState)
+									}
 								}
+								raisedOutEvents.clear
+								activatedStates.clear
+								// Creating a new step
+								step = createStep
+								trace.steps += step
+								// Setting the state
+								state = BackAnnotatorState.ENVIRONMENT_CHECK
 							}
-							raisedOutEvents.clear
-							activatedStates.clear
-							// Creating a new step
-							step = createStep
-							trace.steps += step
-							// Setting the state
-							state = BackAnnotatorState.ENVIRONMENT_CHECK
+							case ENVIRONMENT_CHECK: {
+								val raiseEventActs = step.actions.filter(RaiseEventAct).toList
+								for (raiseEventAct : raiseEventActs) {
+									if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+										EcoreUtil.delete(raiseEventAct)
+									}
+								}
+								raisedInEvents.clear
+								// Add schedule
+								step.addComponentScheduling
+								// Setting the state
+								state = BackAnnotatorState.STATE_CHECK
+							}
+							default:
+								throw new IllegalArgumentException("Not know state: " + state)
 						}
-						case ENVIRONMENT_CHECK: {
-							val raiseEventActs = step.actions.filter(RaiseEventAct).toList
-							for (raiseEventAct : raiseEventActs) {
-								if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-									EcoreUtil.delete(raiseEventAct)
-								}
-							}
-							raisedInEvents.clear
-							// Add schedule
-							step.addComponentScheduling
-							// Setting the state
-							state = BackAnnotatorState.STATE_CHECK
-						}
-						default:
-							throw new IllegalArgumentException("Not know state: " + state)
+						// Skipping two lines
+						line = traceScanner.nextLine
+						line = traceScanner.nextLine.trim
 					}
-					// Skipping two lines
-					line = traceScanner.nextLine
-					line = traceScanner.nextLine.trim
 				}
-			}
-			// We parse in every turn
-			line = line.unwrap
-			val split = line.split(" ")
-			val id = split.get(0)
-			val value = split.get(1)
-			switch (state) {
-				case STATE_CHECK: {
-					try {
-						val instanceState = thetaQueryGenerator.getSourceState('''«id» == «value»''')
-						val controlState = instanceState.key
-						val instance = instanceState.value
-						step.addInstanceState(instance, controlState)
-						activatedStates += controlState
-					} catch (IllegalArgumentException e) {
+				// We parse in every turn
+				line = line.unwrap
+				val split = line.split(" ")
+				val id = split.get(0)
+				val value = split.get(1)
+				switch (state) {
+					case STATE_CHECK: {
 						try {
-							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
-							step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
-						} catch (IllegalArgumentException e1) {
+							val instanceState = thetaQueryGenerator.getSourceState('''«id» == «value»''')
+							val controlState = instanceState.key
+							val instance = instanceState.value
+							step.addInstanceState(instance, controlState)
+							activatedStates += controlState
+						} catch (IllegalArgumentException e) {
 							try {
-								val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
-								if (value.equals("true")) {
-									val event = systemOutEvent.get(0) as Event
-									val port = systemOutEvent.get(1) as Port
-									val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-									step.addOutEvent(systemPort, event)
-									// Denoting that this event has been actually
-									raisedOutEvents += new Pair(systemPort, event)
-								}
-							} catch (IllegalArgumentException e2) {
+								val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
+								step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+							} catch (IllegalArgumentException e1) {
 								try {
-									val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
-									val event = systemOutEvent.get(0) as Event
-									val port = systemOutEvent.get(1) as Port
-									val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-									val parameter = systemOutEvent.get(2) as ParameterDeclaration
-									step.addOutEventWithStringParameter(systemPort, event, parameter, value)
-								} catch (IllegalArgumentException e3) {}
+									val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
+									if (value.equals("true")) {
+										val event = systemOutEvent.get(0) as Event
+										val port = systemOutEvent.get(1) as Port
+										val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+										step.addOutEvent(systemPort, event)
+										// Denoting that this event has been actually
+										raisedOutEvents += new Pair(systemPort, event)
+									}
+								} catch (IllegalArgumentException e2) {
+									try {
+										val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(id)
+										val event = systemOutEvent.get(0) as Event
+										val port = systemOutEvent.get(1) as Port
+										val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+										val parameter = systemOutEvent.get(2) as ParameterDeclaration
+										step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+									} catch (IllegalArgumentException e3) {}
+								}
 							}
 						}
 					}
-				}
-				case ENVIRONMENT_CHECK: {
-					// TODO delays
-					try {
-						val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
-						if (value.equals("true")) {
-							val event = systemInEvent.get(0) as Event
-							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-							step.addInEvent(systemPort, event)
-							// Denoting that this event has been actually
-							raisedInEvents += new Pair(systemPort, event)
-						}
-					} catch (IllegalArgumentException e) {
+					case ENVIRONMENT_CHECK: {
+						// TODO delays
 						try {
-							val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
-							val event = systemInEvent.get(0) as Event
-							val port = systemInEvent.get(1) as Port
-							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-							val parameter = systemInEvent.get(2) as ParameterDeclaration
-							step.addInEventWithParameter(systemPort, event, parameter, value)
-						} catch (IllegalArgumentException e1) {}
+							val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
+							if (value.equals("true")) {
+								val event = systemInEvent.get(0) as Event
+								val port = systemInEvent.get(1) as Port
+								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								step.addInEvent(systemPort, event)
+								// Denoting that this event has been actually
+								raisedInEvents += new Pair(systemPort, event)
+							}
+						} catch (IllegalArgumentException e) {
+							try {
+								val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(id)
+								val event = systemInEvent.get(0) as Event
+								val port = systemInEvent.get(1) as Port
+								val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+								val parameter = systemInEvent.get(2) as ParameterDeclaration
+								step.addInEventWithParameter(systemPort, event, parameter, value)
+							} catch (IllegalArgumentException e1) {}
+						}
 					}
+					default:
+						throw new IllegalArgumentException("Not known state: " + state)
 				}
-				default:
-					throw new IllegalArgumentException("Not known state: " + state)
 			}
-		}
-		// Sorting if needed
-		if (sortTrace) {
-			trace.sortInstanceStates
+			// Sorting if needed
+			if (sortTrace) {
+				trace.sortInstanceStates
+			}
+		} catch (NoSuchElementException e) {
+			// If there are not enough lines, that means there are no environment actions
+			step.actions += createReset
 		}
 		return trace
 	}

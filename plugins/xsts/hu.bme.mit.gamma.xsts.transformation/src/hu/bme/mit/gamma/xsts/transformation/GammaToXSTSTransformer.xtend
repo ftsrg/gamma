@@ -30,12 +30,15 @@ import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
 import java.math.BigInteger
+import java.util.Collections
 import java.util.List
+import org.eclipse.emf.ecore.util.EcoreUtil
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 class GammaToXSTSTransformer {
 	// Transformers
@@ -256,9 +259,6 @@ class GammaToXSTSTransformer {
 				variable.name = variable.customizeName(instance)
 			}
 		}
-		// Type declaration names are not customized as multiple types can refer to the same type
-		// These types would be different in XSTS, when they are the same in Gamma
-		// Note: for this reason, every type declaration must have a different name
 	}
 	
 	protected def removeDuplicatedTypes(XSTS xSts) {
@@ -273,6 +273,12 @@ class GammaToXSTSTransformer {
 				}
 			}
 		}
+		// Type declaration names are not customized as multiple types can refer to the same type
+		// These types would be different in XSTS, when they are the same in Gamma
+		// Note: for this reason, every type declaration must have a different name
+		val typeDeclarationNames = xSts.typeDeclarations.map[it.name]
+		val duplications = typeDeclarationNames.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
+		checkState(duplications.empty, "The XSTS contains multiple type declarations with the same name:" + duplications)
 	}
 	
 	protected def optimize(XSTS xSts) {
