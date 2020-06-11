@@ -42,6 +42,7 @@ class ThetaVerifier extends AbstractVerifier {
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
+		var Scanner traceFileScanner = null
 		try {
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
@@ -76,10 +77,16 @@ class ThetaVerifier extends AbstractVerifier {
 				return null;
 			}
 			val gammaPackage = traceability as Package
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, new Scanner(traceFile))
+			traceFileScanner = new Scanner(traceFile)
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
 			return backAnnotator.execute
 		} finally {
-			resultReader.close
+			if (resultReader !== null) {
+				resultReader.close
+			}
+			if (traceFileScanner !== null) {
+				traceFileScanner.close
+			}
 		}
 	}
 	
@@ -118,6 +125,10 @@ class ThetaQueryAdapter {
 	}
 	
 	def adaptResult(ThreeStateBoolean thetaResult) {
+		if (thetaResult === null) {
+			// If the process is cancelled, the result will be null
+			return ThreeStateBoolean.UNDEF
+		}
 		if (invert) {
 			return thetaResult.opposite
 		}
