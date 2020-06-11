@@ -39,7 +39,7 @@ class TraceBackAnnotator {
 	// Auxiliary objects	
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.instance
-	protected final extension TraceBuilder traceBuilder = new TraceBuilder
+	protected final extension TraceBuilder traceBuilder = TraceBuilder.instance
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	

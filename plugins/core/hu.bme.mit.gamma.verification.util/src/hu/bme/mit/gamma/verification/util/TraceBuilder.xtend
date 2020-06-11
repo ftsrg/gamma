@@ -36,6 +36,19 @@ import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.Expres
 
 class TraceBuilder {
 	
+	static TraceBuilder instance = null
+	
+	def static TraceBuilder getInstance() {
+		if (instance === null) {
+			instance = new TraceBuilder
+		}
+		return instance
+	}
+	
+	protected new() {}
+	
+	// Singleton
+	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
 	
