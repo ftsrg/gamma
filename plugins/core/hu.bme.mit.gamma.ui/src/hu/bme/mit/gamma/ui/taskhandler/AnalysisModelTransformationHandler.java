@@ -159,6 +159,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
 			UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
 			transformer.dispose();
+			logger.log(Level.INFO, "The UPPAAL transformation has been finished.");
 		}
 		
 		private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
