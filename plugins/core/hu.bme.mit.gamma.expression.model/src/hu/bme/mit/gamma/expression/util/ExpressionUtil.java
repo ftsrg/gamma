@@ -47,22 +47,13 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionUtil {
-	
-	private static ExpressionUtil instance = null;
-	
-	public static ExpressionUtil getInstance() {
-		if (instance == null) {
-			instance = new ExpressionUtil();
-		}
-		return instance;
-	}
-	
-	protected ExpressionUtil() {}
-	
 	// Singleton
+	public static final ExpressionUtil INSTANCE = new ExpressionUtil();
+	protected ExpressionUtil() {}
+	//
 	
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.getInstance();
-	protected ExpressionEvaluator evaluator = ExpressionEvaluator.getInstance();
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	public ExpressionEvaluator getEvaluator() {

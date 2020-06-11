@@ -16,19 +16,10 @@ import org.eclipse.emf.ecore.util.EcoreUtil.UsageCrossReferencer
 import static com.google.common.base.Preconditions.checkState
 
 class GammaEcoreUtil {
-	
-	static GammaEcoreUtil instance = null;
-	
-	def static GammaEcoreUtil getInstance() {
-		if (instance === null) {
-			instance = new GammaEcoreUtil();
-		}
-		return instance;
-	}
-	
-	protected new() {}
-	
 	// Singleton
+	public static final GammaEcoreUtil INSTANCE =  new GammaEcoreUtil
+	protected new() {}
+	//
 	
 	@SuppressWarnings("unchecked")
 	def void change(EObject newObject, EObject oldObject, EObject container) {

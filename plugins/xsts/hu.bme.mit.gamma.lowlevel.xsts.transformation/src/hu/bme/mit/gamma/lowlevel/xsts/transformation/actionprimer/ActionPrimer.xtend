@@ -40,8 +40,8 @@ import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedF
 
 abstract class ActionPrimer {
 	// Auxiliary objects
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.instance
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintModelFactory = ExpressionModelFactory.eINSTANCE

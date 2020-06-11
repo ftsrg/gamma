@@ -13,19 +13,10 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures;
 
 public class TraceUtil {
-	
-	static TraceUtil instance = null;
-	
-	public static TraceUtil getInstance() {
-		if (instance == null) {
-			instance = new TraceUtil();
-		}
-		return instance;
-	}
-	
-	protected TraceUtil() {}
-	
 	// Singleton
+	public static final TraceUtil INSTANCE = new TraceUtil();
+	protected TraceUtil() {}
+	//
 	
 	public static InstanceStateSorter instanceStateSorter = new InstanceStateSorter();
 	

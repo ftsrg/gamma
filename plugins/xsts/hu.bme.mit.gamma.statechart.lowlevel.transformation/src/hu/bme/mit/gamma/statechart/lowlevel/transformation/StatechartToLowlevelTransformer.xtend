@@ -47,8 +47,8 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
-	protected final extension ActionUtil actionUtil = ActionUtil.instance
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = new EventAttributeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ActionTransformer actionTransformer

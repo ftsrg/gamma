@@ -85,7 +85,7 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	abstract class AbstractVerification {
-		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.getInstance();
+		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 		public abstract ExecutionTrace execute(File modelFile, File queryFile);
 	}
 	

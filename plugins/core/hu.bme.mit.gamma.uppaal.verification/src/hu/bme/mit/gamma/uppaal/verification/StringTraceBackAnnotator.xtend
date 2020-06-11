@@ -87,8 +87,8 @@ class StringTraceBackAnnotator {
 	
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
 
-	protected final extension TraceUtil traceUtil = TraceUtil.instance
-	protected final extension TraceBuilder traceBuilder = TraceBuilder.instance
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	
 	new(G2UTrace trace, Scanner traceScanner) {
 		this(trace, traceScanner, true)

@@ -27,7 +27,7 @@ class ExitActionRetriever {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary object
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.instance
+	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ActionTransformer actionTransformer
 	// Trace

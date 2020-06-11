@@ -78,8 +78,8 @@ class LowlevelToXSTSTransformer {
 	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.instance
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ReadWrittenVariableLocator variableLocator = new ReadWrittenVariableLocator
 	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
 	protected final extension VariableGroupRetriever variableGroupRetriever = new VariableGroupRetriever

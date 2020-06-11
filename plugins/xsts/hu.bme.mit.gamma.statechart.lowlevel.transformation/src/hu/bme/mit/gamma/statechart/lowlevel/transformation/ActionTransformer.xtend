@@ -37,7 +37,7 @@ import java.util.List
 class ActionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE

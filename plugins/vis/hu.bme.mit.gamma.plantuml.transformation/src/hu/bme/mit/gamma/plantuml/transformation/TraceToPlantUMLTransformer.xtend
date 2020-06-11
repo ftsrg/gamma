@@ -13,7 +13,7 @@ class TraceToPlantUMLTransformer {
 	
 	protected final ExecutionTrace trace
 	
-	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.instance
+	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
 	new(Resource resource) {
 		this.trace = resource.contents.head as ExecutionTrace

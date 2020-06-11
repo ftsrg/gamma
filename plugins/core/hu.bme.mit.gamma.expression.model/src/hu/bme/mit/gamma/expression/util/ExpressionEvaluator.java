@@ -47,19 +47,10 @@ import hu.bme.mit.gamma.expression.model.XorExpression;
 import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 
 public class ExpressionEvaluator {
-	
-	private static ExpressionEvaluator instance = null;
-	
-	public static ExpressionEvaluator getInstance() {
-		if (instance == null) {
-			instance = new ExpressionEvaluator();
-		}
-		return instance;
-	}
-	
-	protected ExpressionEvaluator() {}
-	
 	// Singleton
+	public static final ExpressionEvaluator INSTANCE = new ExpressionEvaluator();
+	protected ExpressionEvaluator() {}
+	//
 	
 	private static ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	

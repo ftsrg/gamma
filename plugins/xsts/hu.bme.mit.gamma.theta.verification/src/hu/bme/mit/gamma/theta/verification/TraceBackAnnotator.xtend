@@ -38,9 +38,9 @@ class TraceBackAnnotator {
 	protected final boolean sortTrace
 	// Auxiliary objects	
 	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
-	protected final extension TraceUtil traceUtil = TraceUtil.instance
-	protected final extension TraceBuilder traceBuilder = TraceBuilder.instance
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.instance
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
+	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Package gammaPackage, Scanner traceScanner) {

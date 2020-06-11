@@ -51,7 +51,7 @@ class StatechartToJavaCodeGenerator {
 	final XSTS xSts 
 	
 	// Auxiliary objects
-	protected final extension FileUtil fileUtil = FileUtil.instance
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	new(String targetFolderUri, String basePackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts, ActionSerializer actionSerializer) {

@@ -33,21 +33,12 @@ import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 
 public class XSTSActionUtil {
-
-	private static XSTSActionUtil instance = null;
-	
-	public static XSTSActionUtil getInstance() {
-		if (instance == null) {
-			instance = new XSTSActionUtil();
-		}
-		return instance;
-	}
-	
-	protected XSTSActionUtil() {}
-	
 	// Singleton
+	public static final XSTSActionUtil INSTANCE = new XSTSActionUtil();
+	protected XSTSActionUtil() {}
+	//
 	
-	private GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.getInstance();
+	private GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
 	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	private XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	

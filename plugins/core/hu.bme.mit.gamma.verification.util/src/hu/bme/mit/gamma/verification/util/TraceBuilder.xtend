@@ -35,24 +35,14 @@ import java.math.BigInteger
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TraceBuilder {
-	
-	static TraceBuilder instance = null
-	
-	def static TraceBuilder getInstance() {
-		if (instance === null) {
-			instance = new TraceBuilder
-		}
-		return instance
-	}
-	
-	protected new() {}
-	
 	// Singleton
-	
+	public static final TraceBuilder INSTANCE = new TraceBuilder
+	protected new() {}
+	//
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
 	
-	protected final extension TraceUtil traceUtil = TraceUtil.instance
+	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	// In event
 	

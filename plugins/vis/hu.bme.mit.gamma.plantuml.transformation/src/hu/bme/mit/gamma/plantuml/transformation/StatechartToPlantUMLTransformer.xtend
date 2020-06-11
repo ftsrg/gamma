@@ -49,7 +49,7 @@ class StatechartToPlantUMLTransformer {
 	protected final Resource resource
 	protected String transitionsString
 	
-	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.instance
+	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 
 	new(Resource resource) {
 		this.resource = resource

@@ -71,8 +71,8 @@ class EnvironmentCreator {
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
-    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator

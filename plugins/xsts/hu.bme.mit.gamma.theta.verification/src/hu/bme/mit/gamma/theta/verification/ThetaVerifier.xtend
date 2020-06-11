@@ -105,7 +105,7 @@ class ThetaQueryAdapter {
 	final String EF = "E<>"
 	final String AG = "A[]"
 	
-	extension FileUtil fileUtil = FileUtil.instance
+	extension FileUtil fileUtil = FileUtil.INSTANCE
 	boolean invert;
 	
 	def adaptQuery(File queryFile) {

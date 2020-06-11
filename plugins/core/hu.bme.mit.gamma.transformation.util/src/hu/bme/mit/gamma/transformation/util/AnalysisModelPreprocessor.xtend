@@ -34,8 +34,8 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
 class AnalysisModelPreprocessor {
 	
 	protected val logger = Logger.getLogger("GammaLogger")
-	protected final extension StatechartUtil statechartUtil = StatechartUtil.instance
-	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.instance
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {

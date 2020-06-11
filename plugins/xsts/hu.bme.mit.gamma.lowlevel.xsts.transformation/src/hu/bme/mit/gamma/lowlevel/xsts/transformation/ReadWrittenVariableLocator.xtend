@@ -22,7 +22,7 @@ import java.util.Collection
 
 class ReadWrittenVariableLocator {
 	
-	extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+	extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
 	// Read variables in actions
 	

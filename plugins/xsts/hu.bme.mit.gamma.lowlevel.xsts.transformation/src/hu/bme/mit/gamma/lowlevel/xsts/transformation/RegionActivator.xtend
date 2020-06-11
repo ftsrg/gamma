@@ -37,7 +37,7 @@ class RegionActivator {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary objects
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.instance
+	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension StateAssumptionCreator stateAssumptionCreator 
 	protected final RegionInitialStateLocator regionInitialStateLocator
 	// Trace needed for variable references

@@ -35,7 +35,7 @@ class TestQueryGenerationHandler {
 	ModelModifierForTestGeneration modelModifier
 	InteractionRepresentation interactionRepresentation = InteractionRepresentation.UNDER_APPROXIMATION
 	// Auxiliary
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.instance
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// State coverage
 	protected boolean STATE_COVERAGE
 	protected final Set<SynchronousComponentInstance> stateCoverableComponents = newHashSet
