@@ -86,9 +86,12 @@ public class CommandHandler extends AbstractHandler {
 						ActionPrimer actionPrimer = new VariableCommonizer();
 						hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = new CommonizedVariableActionSerializer(); // Good for the original actions too
 						//
-//						xSts.setInitializingAction(actionPrimer.transform(xSts.getInitializingAction()));
-//						xSts.getMergedTransition().setAction(actionPrimer.transform(xSts.getMergedTransition().getAction()));
-//						xSts.setEnvironmentalAction(actionPrimer.transform(xSts.getEnvironmentalAction()));
+//						xSts.setVariableInitializingAction(actionPrimer.transform(xSts.getVariableInitializingAction()));
+//						xSts.setConfigurationInitializingAction(actionPrimer.transform(xSts.getConfigurationInitializingAction()));
+//						xSts.setEntryEventAction(actionPrimer.transform(xSts.getEntryEventAction()));
+//						xSts.setMergedAction(actionPrimer.transform(xSts.getMergedAction()));
+//						xSts.setInEventAction(actionPrimer.transform(xSts.getInEventAction()));
+//						xSts.setOutEventAction(actionPrimer.transform(xSts.getOutEventAction()));
 						// Saving the xSTS model
 						normalSave(xSts, parentFolder, fileNameWithoutExtenstion + ".gsts");
 						normalSave(resultModels.getValue(), parentFolder, "." + fileNameWithoutExtenstion + ".l2s");
@@ -98,12 +101,6 @@ public class CommandHandler extends AbstractHandler {
 						ActionSerializer actionSerializer = new ActionSerializer();
 						CharSequence xStsString = actionSerializer.serializeXSTS(xSts);
 						System.out.println(xStsString);
-						// Generating and serializing the expression from the actions
-//						ActionToExpressionTransformer actionToExpressionTransformer = new ActionToExpressionTransformer();
-//						Expression mergedTransitionExpression = actionToExpressionTransformer.transform(xSts.getMergedTransition().getAction());
-//						ExpressionSerializer expressionSerializer = new ExpressionSerializer();
-//						String mergedTransitionExpressionSerialization = expressionSerializer.serialize(mergedTransitionExpression);
-//						System.out.println(mergedTransitionExpressionSerialization); // Too long string, not shown on the Console
 						logger.log(Level.INFO, "Starting xSTS Java code generation.");
 						IProject project = firstElement.getProject();
 						String targetFolderUri = project.getLocation().toString() +	"/" + "src-gen";
