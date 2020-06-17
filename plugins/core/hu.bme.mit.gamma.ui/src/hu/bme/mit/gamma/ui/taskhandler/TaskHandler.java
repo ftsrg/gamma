@@ -88,18 +88,20 @@ public abstract class TaskHandler {
 			// Trying to serialize the model
 			if (rootElem instanceof Package) {
 				serializeStatechart(rootElem, parentFolder, fileName);
+				return;
 			}
 			else if (rootElem instanceof ExecutionTrace) { 
 				serializeTrace(rootElem, parentFolder, fileName);
+				return;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
-			new File(parentFolder + File.separator + fileName).delete();
-			// Saving like an EMF model
-			String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
-			ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
 		}
+		new File(parentFolder + File.separator + fileName).delete();
+		// Saving like an EMF model
+		String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
+		ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
 	}
 	
 	private void serializeStatechart(EObject rootElem, String parentFolder, String fileName) throws IOException {
