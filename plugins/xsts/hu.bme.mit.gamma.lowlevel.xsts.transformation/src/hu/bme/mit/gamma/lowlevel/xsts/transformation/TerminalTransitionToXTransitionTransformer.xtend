@@ -50,9 +50,15 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 	}
 	
 	def transform(ChoiceState lowlevelFirstChoiceState) {
-		val xStsAction = lowlevelFirstChoiceState.transformForward
-		val xStsPreconditionAction = xStsAction.actions.head as AssumeAction
-		val xStsPrecondition = xStsPreconditionAction.assumption
+		val lowlevelIncomingTransitions = lowlevelFirstChoiceState.incomingTransitions
+		checkArgument(lowlevelIncomingTransitions.size == 1)
+		val lowlevelIncomingTransition = lowlevelIncomingTransitions.head
+		// Computing precondition as it cannot be done in transformForward (it would lead to assumptions placed in wrong places)
+		val xStsPrecondition = lowlevelIncomingTransition.createXStsTransitionPrecondition
+		val xStsPreconditionAction = xStsPrecondition.createAssumeAction
+		val xStsAction = lowlevelFirstChoiceState.transformForward => [
+			it.actions.add(0, xStsPreconditionAction)
+		]
 		val xStsChoiceAction = xStsAction.actions.last as NonDeterministicAction
 		val xStsComplexTransition = xStsAction.createXStsTransition
 		trace.put(lowlevelFirstChoiceState, xStsComplexTransition, xStsPrecondition, xStsChoiceAction)
@@ -112,13 +118,11 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		val lowlevelOutgoingTransitions = lowlevelChoiceState.outgoingTransitions
 		checkArgument(lowlevelOutgoingTransitions.size >= 1)
 		val lowlevelSourceNode = lowlevelIncomingTransition.source
-		val xStsPrecondition = lowlevelIncomingTransition.createXStsTransitionPrecondition // State and guard
 		// Note: precondition is easy now, as currently incoming actions are NOT supported
 		// Precondition (contains this source precondition and all upcoming ones as well)
 		val xStsChoicePostcondition = createNonDeterministicAction // Will contain the branches
 		val xStsChoiceAction = createSequentialAction => [
-			// A precondition is needed even if it is a true expression due to tracing
-			it.actions += xStsPrecondition.createAssumeAction
+			// A precondition CANNOT be put here, it is taken care of by the previous postcondition
 			// No backward: it would lead to infinite recursion, just checking if it the source is a state
 			if (lowlevelSourceNode instanceof State) {
 				it.actions += lowlevelIncomingTransition.createRecursiveXStsTransitionExitActionsWithOrthogonality
@@ -127,7 +131,7 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		]
 		// Postcondition
 		for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
-			val lowlevelTargetGuard = lowlevelOutgoingTransition.guard.transformExpression
+			val lowlevelTargetGuard = lowlevelOutgoingTransition.guard.transformExpression // Here is the precondition
 			checkArgument(lowlevelTargetGuard !== null)
 			val lowlevelTargetNode = lowlevelOutgoingTransition.target
 			xStsChoicePostcondition.extendChoiceWithBranch(lowlevelTargetGuard,
