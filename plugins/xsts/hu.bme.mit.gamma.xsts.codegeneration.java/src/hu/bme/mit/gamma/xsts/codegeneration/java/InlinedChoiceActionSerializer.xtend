@@ -78,6 +78,10 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		throw new IllegalArgumentException("Not supported action: " + action)
 	}
 	
+	def dispatch CharSequence serialize(AssignmentAction action) '''
+		«action.serializeTemporaryAssignment» ««« Setting temporary variables, at the end there is serializeFinalizationAssignments
+	'''
+	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
 		«action.serializeNonDeterministicAction»
 	'''
