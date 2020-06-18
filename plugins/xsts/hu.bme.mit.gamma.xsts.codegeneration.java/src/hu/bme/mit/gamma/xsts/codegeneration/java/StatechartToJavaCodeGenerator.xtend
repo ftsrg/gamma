@@ -108,6 +108,9 @@ class StatechartToJavaCodeGenerator {
 		val gammaComponentUri = BASE_FOLDER_URI + File.separator + timerInterfaceGenerator.gammaInterfaceName + ".java"
 		val gammaCode = timerInterfaceGenerator.createGammaTimerInterfaceCode
 		gammaCode.saveCode(gammaComponentUri)
+		val unifiedTimerInterfaceUri = BASE_FOLDER_URI + File.separator + timerInterfaceGenerator.unifiedInterfaceName + ".java"
+		val unifiedTimerInterfaceCode = timerInterfaceGenerator.createUnifiedTimerInterfaceCode
+		unifiedTimerInterfaceCode.saveCode(unifiedTimerInterfaceUri)
 	}
 	
 	def generateTimerCallbackInterface() {
@@ -123,6 +126,9 @@ class StatechartToJavaCodeGenerator {
 		val gammaComponentUri = BASE_FOLDER_URI + File.separator + timerServiceCodeGenerator.gammaClassName + ".java"
 		val gammaCode = timerServiceCodeGenerator.createGammaTimerClassCode
 		gammaCode.saveCode(gammaComponentUri)
+		val unifiedTimerClassUri = BASE_FOLDER_URI + File.separator + timerServiceCodeGenerator.unifiedClassName + ".java"
+		val unifiedTimerClassCode = timerServiceCodeGenerator.createUnifiedTimerClassCode
+		unifiedTimerClassCode.saveCode(unifiedTimerClassUri)
 	}
 	
 	def generateVirtualTimerServiceClass() {
