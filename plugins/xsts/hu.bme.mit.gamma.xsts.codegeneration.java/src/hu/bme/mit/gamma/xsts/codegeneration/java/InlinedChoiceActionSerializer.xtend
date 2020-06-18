@@ -84,8 +84,8 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(SequentialAction action) {
 		val xStsSubactions = action.actions
-		// Either all contained actions are nondeterministic actions...
-		if (xStsSubactions.forall[it instanceof NonDeterministicAction]) {
+		// Either all contained actions are NOT assume actions...
+		if (!xStsSubactions.exists[it instanceof AssumeAction]) {
 			return '''
 				«FOR xStsSubaction : xStsSubactions»
 					«xStsSubaction.serialize»
