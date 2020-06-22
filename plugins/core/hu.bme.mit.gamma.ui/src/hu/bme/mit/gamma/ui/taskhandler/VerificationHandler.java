@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -16,6 +17,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -23,6 +25,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 public class VerificationHandler extends TaskHandler {
 
 	protected String testFolderUri;
+	protected TraceUtil traceUtil = TraceUtil.INSTANCE;
 	
 	public VerificationHandler(IFile file) {
 		super(file);
@@ -50,6 +53,11 @@ public class VerificationHandler extends TaskHandler {
 		File queryFile = new File(verification.getQueryFiles().get(0));
 		
 		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
+		
+		if (verification.isOptimize()) {
+			logger.log(Level.INFO, "Optimizing trace...");
+			traceUtil.removeCoveredSteps(trace);
+		}
 		
 		String basePackage = verification.getPackageName().get(0);
 		String traceFolder = targetFolderUri;

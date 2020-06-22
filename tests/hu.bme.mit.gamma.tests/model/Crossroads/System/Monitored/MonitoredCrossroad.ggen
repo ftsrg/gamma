@@ -21,5 +21,6 @@ verification {
 	language : UPPAAL
 	file : "MonitoredCrossroad.xml"
 	query-file : "MonitoredCrossroad.q"
+	optimize : true
 	test-language : java
 }

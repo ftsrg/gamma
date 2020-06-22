@@ -200,6 +200,7 @@ Verification  returns Verification:
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' language+=ProgrammingLanguage |
+			'optimize' ':' ('false' | optimize?='true') |
 			'test-folder' ':' testFolder+=STRING
 		)*
 	'}'

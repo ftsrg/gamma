@@ -108,6 +108,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/languages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/queryFiles"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/testFolder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

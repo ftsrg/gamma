@@ -1,12 +1,12 @@
 package interfaces
-interface LightCommands {
-	out event displayYellow
-	out event displayGreen
-	out event displayRed
-	out event displayNone
-}
 interface PoliceInterrupt {
 	out event police
+}
+interface LightCommands {
+	out event displayGreen
+	out event displayYellow
+	out event displayRed
+	out event displayNone
 }
 interface Control {
 	out event toggle
