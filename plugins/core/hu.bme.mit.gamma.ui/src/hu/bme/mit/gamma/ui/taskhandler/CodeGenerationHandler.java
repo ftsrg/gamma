@@ -22,6 +22,8 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
+import hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler.CommandHandler;
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.model.composite.Component;
 import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.model.composite.CompositeComponent;
@@ -40,15 +42,26 @@ public class CodeGenerationHandler extends TaskHandler {
 				"Currently only Java is supported.");
 		setCodeGeneration(codeGeneration, packageName);
 		Component component = codeGeneration.getComponent();
-		ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
-		codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
-		loadStatechartTraces(codeGenerationResourceSet, component);
-		// The presence of the top level component and statechart traces are sufficient in the resource set
-		// Contained composite components are automatically resolved by VIATRA
-		GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
-				codeGeneration.getPackageName().get(0), targetFolderUri);
-		generator.execute();
-		generator.dispose();
+		
+		if (component instanceof StatechartDefinition) {
+			StatechartDefinition statechart = (StatechartDefinition) component;
+			logger.log(Level.INFO, "Starting single statechart code generation...");
+			CommandHandler singleStatechartCommandHandler = new CommandHandler();
+			singleStatechartCommandHandler.run(statechart, ecoreUtil.getFile(codeGeneration.eResource()).getParent(),
+					targetFolderUri, codeGeneration.getPackageName().get(0));
+		}
+		else {
+			logger.log(Level.INFO, "Starting composite component code generation...");
+			ResourceSet codeGenerationResourceSet = new ResourceSetImpl();
+			codeGenerationResourceSet.getResource(component.eResource().getURI(), true);
+			loadStatechartTraces(codeGenerationResourceSet, component);
+			// The presence of the top level component and statechart traces are sufficient in the resource set
+			// Contained composite components are automatically resolved by VIATRA
+			GlueCodeGenerator generator = new GlueCodeGenerator(codeGenerationResourceSet,
+					codeGeneration.getPackageName().get(0), targetFolderUri);
+			generator.execute();
+			generator.dispose();
+		}
 	}
 	
 	private void setCodeGeneration(CodeGeneration codeGeneration, String packageName) {

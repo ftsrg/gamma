@@ -19,3 +19,4 @@ Require-Bundle: org.eclipse.core.commands;bundle-version="3.9.0",
  hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability,
  hu.bme.mit.gamma.xsts.codegeneration.java
 Automatic-Module-Name: hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler
+Export-Package: hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler

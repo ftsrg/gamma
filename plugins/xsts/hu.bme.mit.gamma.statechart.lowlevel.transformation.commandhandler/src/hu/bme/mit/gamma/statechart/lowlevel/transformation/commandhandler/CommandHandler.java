@@ -11,11 +11,7 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,7 +21,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -42,7 +37,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.codegeneration.java.CommonizedVariableActionSerializer;
 import hu.bme.mit.gamma.xsts.codegeneration.java.StatechartToJavaCodeGenerator;
 import hu.bme.mit.gamma.xsts.model.model.XSTS;
@@ -50,6 +45,7 @@ import hu.bme.mit.gamma.xsts.model.model.XSTS;
 public class CommandHandler extends AbstractHandler {
 
 	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -62,53 +58,16 @@ public class CommandHandler extends AbstractHandler {
 						IFile firstElement = (IFile) selection.getFirstElement();
 						String fileURISubstring = firstElement.getLocationURI().toString().substring(5);
 						String parentFolder = fileURISubstring.substring(0, fileURISubstring.lastIndexOf("/"));
-						String fileName = firstElement.getName();
-						String fileNameWithoutExtenstion = fileName.substring(0, fileName.lastIndexOf("."));
-						ResourceSet resSet = new ResourceSetImpl();
-						URI compositeSystemURI = URI.createPlatformResourceURI(firstElement.getFullPath().toString(), true);
-						Resource resource = resSet.getResource(compositeSystemURI, true);
-						Package gammaPackage = (Package) resource.getContents().get(0);
-						StatechartDefinition gammaStatechart = getStatechart(gammaPackage);
-						// Loading all resources, needed as the events and interfaces are in another resource ("Interface.gcd")
-						resolveResources(gammaPackage, resSet, new HashSet<Resource>());
-						GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer();
-						logger.log(Level.INFO, "The resource set before the Gamma - low level statechart transformation: " + resSet);
-						hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.execute(gammaPackage);
-						normalSave(lowlevelPackage, parentFolder, fileNameWithoutExtenstion + ".lgsm");
-						logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished.");
-						logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
-						// Note: the package is not in a resource
-						LowlevelToXSTSTransformer lowlevelTransformer = new LowlevelToXSTSTransformer(lowlevelPackage);
-						Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
-						XSTS xSts = resultModels.getKey();
-						lowlevelTransformer.dispose();
-						// Priming the variables on different branches
-						ActionPrimer actionPrimer = new VariableCommonizer();
-						hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = new CommonizedVariableActionSerializer(); // Good for the original actions too
-						//
-//						xSts.setVariableInitializingAction(actionPrimer.transform(xSts.getVariableInitializingAction()));
-//						xSts.setConfigurationInitializingAction(actionPrimer.transform(xSts.getConfigurationInitializingAction()));
-//						xSts.setEntryEventAction(actionPrimer.transform(xSts.getEntryEventAction()));
-//						xSts.setMergedAction(actionPrimer.transform(xSts.getMergedAction()));
-//						xSts.setInEventAction(actionPrimer.transform(xSts.getInEventAction()));
-//						xSts.setOutEventAction(actionPrimer.transform(xSts.getOutEventAction()));
-						// Saving the xSTS model
-						normalSave(xSts, parentFolder, fileNameWithoutExtenstion + ".gsts");
-						normalSave(resultModels.getValue(), parentFolder, "." + fileNameWithoutExtenstion + ".l2s");
-						logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
-						logger.log(Level.INFO, "Starting xSTS serialization.");
-						// Serializing the xSTS
-						ActionSerializer actionSerializer = new ActionSerializer();
-						CharSequence xStsString = actionSerializer.serializeXSTS(xSts);
-						System.out.println(xStsString);
-						logger.log(Level.INFO, "Starting xSTS Java code generation.");
 						IProject project = firstElement.getProject();
-						String targetFolderUri = project.getLocation().toString() +	"/" + "src-gen";
-						String basePackageName = project.getName().toLowerCase();
-						StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
-							targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);
-						codeGenerator.execute();
-						logger.log(Level.INFO, "The xSTS transformation has been finished.");
+						
+						ResourceSet resourceSet = new ResourceSetImpl();
+						URI packageURI = URI.createPlatformResourceURI(firstElement.getFullPath().toString(), true);
+						Resource resource = resourceSet.getResource(packageURI, true);
+						Package gammaPackage = (Package) resource.getContents().get(0);
+						StatechartDefinition gammaStatechart = (StatechartDefinition) gammaPackage.getComponents().get(0);
+						
+						run(gammaStatechart, parentFolder, project.getLocation().toString() + File.separator +"src-gen",
+							firstElement.getProject().getName().toLowerCase());
 					}
 				}
 			}
@@ -119,31 +78,43 @@ public class CommandHandler extends AbstractHandler {
 		}
 		return null;
 	}
-	
-	private StatechartDefinition getStatechart(Package _package) {
-		Component component = _package.getComponents().get(0);
-		return (StatechartDefinition) component;
-	}
-	
-	private void resolveResources(EObject object, ResourceSet resourceSet, Set<Resource> resolvedResources) {
-		for (EObject crossObject : object.eCrossReferences()) {
-			Resource resource = crossObject.eResource();
-			if (resource != null && !resolvedResources.contains(resource)) {
-				resourceSet.getResource(resource.getURI(), true);
-				resolvedResources.add(resource);
-			}
-			resolveResources(crossObject, resourceSet, resolvedResources);
-		}
-		for (EObject containedObject : object.eContents()) {
-			resolveResources(containedObject, resourceSet, resolvedResources);
-		}
-	}
 
-	private void normalSave(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		ResourceSet resourceSet = new ResourceSetImpl();
-		Resource saveResource = resourceSet.createResource(URI.createFileURI(URI.decode(parentFolder + File.separator + fileName)));
-		saveResource.getContents().add(rootElem);
-		saveResource.save(Collections.EMPTY_MAP);
+	public void run(StatechartDefinition gammaStatechart, String modelFolderUri, String targetFolderUri, String basePackageName) {
+		String fileNameWithoutExtenstion = gammaStatechart.getName();
+		Package gammaPackage = (Package) gammaStatechart.eContainer();
+		GammaToLowlevelTransformer transformer = new GammaToLowlevelTransformer();
+		hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage = transformer.execute(gammaPackage);
+		ecoreUtil.normalSave(lowlevelPackage, modelFolderUri, fileNameWithoutExtenstion + ".lgsm");
+		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished.");
+		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
+		// Note: the package is not in a resource
+		LowlevelToXSTSTransformer lowlevelTransformer = new LowlevelToXSTSTransformer(lowlevelPackage);
+		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
+		XSTS xSts = resultModels.getKey();
+		lowlevelTransformer.dispose();
+		// Priming the variables on different branches
+		ActionPrimer actionPrimer = new VariableCommonizer();
+		hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = new CommonizedVariableActionSerializer(); // Good for the original actions too
+//		xSts.setVariableInitializingAction(actionPrimer.transform(xSts.getVariableInitializingAction()));
+//		xSts.setConfigurationInitializingAction(actionPrimer.transform(xSts.getConfigurationInitializingAction()));
+//		xSts.setEntryEventAction(actionPrimer.transform(xSts.getEntryEventAction()));
+//		xSts.setMergedAction(actionPrimer.transform(xSts.getMergedAction()));
+//		xSts.setInEventAction(actionPrimer.transform(xSts.getInEventAction()));
+//		xSts.setOutEventAction(actionPrimer.transform(xSts.getOutEventAction()));
+		// Saving the xSTS model
+		ecoreUtil.normalSave(xSts, modelFolderUri, fileNameWithoutExtenstion + ".gsts");
+		ecoreUtil.normalSave(resultModels.getValue(), modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
+		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
+		logger.log(Level.INFO, "Starting xSTS serialization.");
+		// Serializing the xSTS
+		ActionSerializer actionSerializer = new ActionSerializer();
+		CharSequence xStsString = actionSerializer.serializeXSTS(xSts);
+		System.out.println(xStsString);
+		logger.log(Level.INFO, "Starting xSTS Java code generation.");
+		StatechartToJavaCodeGenerator codeGenerator = new StatechartToJavaCodeGenerator(
+			targetFolderUri, basePackageName, gammaStatechart, xSts, javaActionSerializer);
+		codeGenerator.execute();
+		logger.log(Level.INFO, "The xSTS transformation has been finished.");
 	}
 	
 }
