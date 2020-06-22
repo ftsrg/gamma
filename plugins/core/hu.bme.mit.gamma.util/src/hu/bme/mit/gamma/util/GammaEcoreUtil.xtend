@@ -155,5 +155,11 @@ class GammaEcoreUtil {
 		return file.parentFile.projectFile
 	}
 	
+	def getIndex(EObject object) {
+		val containingFeature = object.eContainingFeature
+		val container = object.eContainer
+		val list = container.eGet(containingFeature) as List<EObject>
+		return list.indexOf(object)
+	}
 	
 }

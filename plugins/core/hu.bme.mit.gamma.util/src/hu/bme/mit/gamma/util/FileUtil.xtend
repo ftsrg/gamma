@@ -76,6 +76,15 @@ class FileUtil {
 		return parent.exploreRelativeFile(relativePath)
 	}
 	
+	def isValidRelativeFile(File anchor, String relativePath) {
+		try {
+			anchor.exploreRelativeFile(relativePath)
+			return true
+		} catch (NullPointerException e) {
+			return false
+		}
+	}
+	
     /**
      * Returns the next valid name for the file that is suffixed by indices.
      */

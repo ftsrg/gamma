@@ -50,30 +50,34 @@ public class VerificationHandler extends TaskHandler {
 		}
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
-		File queryFile = new File(verification.getQueryFiles().get(0));
 		
-		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
-		
-		if (verification.isOptimize()) {
-			logger.log(Level.INFO, "Optimizing trace...");
-			traceUtil.removeCoveredSteps(trace);
+		for (String queryFileLocation : verification.getQueryFiles()) {
+			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
+			File queryFile = new File(queryFileLocation);
+			
+			ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
+			
+			if (verification.isOptimize()) {
+				logger.log(Level.INFO, "Optimizing trace...");
+				traceUtil.removeCoveredSteps(trace);
+			}
+			
+			String basePackage = verification.getPackageName().get(0);
+			String traceFolder = targetFolderUri;
+			
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
+			String fileName = fileNamePair.getKey();
+			Integer id = fileNamePair.getValue();
+			saveModel(trace, traceFolder, fileName);
+			
+			String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+			className += "Simulation" + id;
+			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+			String testCode = testGenerator.execute();
+			String testFolder = testFolderUri;
+			fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
+					File.separator + className + ".java", testCode);
 		}
-		
-		String basePackage = verification.getPackageName().get(0);
-		String traceFolder = targetFolderUri;
-		
-		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
-		String fileName = fileNamePair.getKey();
-		Integer id = fileNamePair.getValue();
-		saveModel(trace, traceFolder, fileName);
-		
-		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-		className += "Simulation" + id;
-		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-		String testCode = testGenerator.execute();
-		String testFolder = testFolderUri;
-		fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
-				File.separator + className + ".java", testCode);
 	}
 
 	private void setVerification(Verification verification) {

@@ -21,6 +21,7 @@ verification {
 	language : UPPAAL
 	file : "Crossroad.xml"
 	query-file : "Crossroad.q"
+	query-file : "CustomQueries.q"
 	optimize : true
 	test-language : java
 }

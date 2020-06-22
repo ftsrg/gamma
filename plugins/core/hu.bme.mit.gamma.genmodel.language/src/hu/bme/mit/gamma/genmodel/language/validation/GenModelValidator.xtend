@@ -44,6 +44,8 @@ import hu.bme.mit.gamma.statechart.model.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.model.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.model.interface_.Interface
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
@@ -63,7 +65,9 @@ import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.Statec
  */
 class GenModelValidator extends AbstractGenModelValidator {
 	
-	extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	// Checking tasks, only one parameter is acceptable
 	
@@ -121,17 +125,32 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (languages.size != 1) {
 			error("A single formal language must be specified.", GenmodelPackage.Literals.VERIFICATION__LANGUAGES)
 		}
-		val queryFiles = verification.queryFiles
-		if (queryFiles.size != 1) {
-			error("A single query file must be specified.", GenmodelPackage.Literals.VERIFICATION__QUERY_FILES)
-		}
-		val files = verification.fileName
-		if (files.size != 1) {
+		val resourceFile = verification.eResource.file
+		val modelFiles = verification.fileName
+		if (modelFiles.size != 1) {
 			error("A single model file must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+		}
+		for (modelFile : modelFiles) {
+			if (!resourceFile.isValidRelativeFile(modelFile)) {
+				val index = modelFiles.indexOf(modelFile)
+				error("This is not a valid relative path to a model file: " + modelFile,
+					GenmodelPackage.Literals.TASK__FILE_NAME, index)
+			}
+		}
+		val queryFiles = verification.queryFiles
+		if (queryFiles.size < 1) {
+			error("At least one query file must be specified.", GenmodelPackage.Literals.VERIFICATION__QUERY_FILES)
+		}
+		for (queryFile : queryFiles) {
+			if (!resourceFile.isValidRelativeFile(queryFile)) {
+				val index = queryFiles.indexOf(queryFile)
+				error("This is not a valid relative path to a query file: " + queryFile,
+					GenmodelPackage.Literals.VERIFICATION__QUERY_FILES, index)
+			}
 		}
 		val testFolders = verification.testFolder
 		if (testFolders.size > 1) {
-			error("A single test folder can be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+			error("At most one test folder can be specified.", GenmodelPackage.Literals.VERIFICATION__TEST_FOLDER)
 		}
 	}
 	
