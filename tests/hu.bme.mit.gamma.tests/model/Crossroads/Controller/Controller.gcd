@@ -1,0 +1,56 @@
+package controller
+import "platform:/resource/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
+@PrioritizedTransitions = order-based
+statechart Controller [
+	port PriorityPolice : provides PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port PoliceInterrupt : requires PoliceInterrupt
+	port PriorityControl : provides Control
+	port SecondaryControl : provides Control
+] {
+	var a : integer
+	timeout SecondaryPreparesTimeout3
+	timeout PriorityPreparesTimeout4
+	timeout SecondaryTimeout5
+	timeout InitTimeout6
+	timeout PriorityTimeout7
+	transition from Entry0 to G
+	transition from Entry1 to Init
+	transition from Entry2 to Operating
+	transition from Init to PriorityPrepares when timeout InitTimeout6
+	transition from Operating to Operating when PoliceInterrupt.police / raise PriorityPolice.police;
+		raise SecondaryPolice.police;
+	transition from Priority to PriorityPrepares when timeout PriorityTimeout7 [true /= false]
+	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout4
+	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout5
+	transition from SecondaryPrepares to Priority when timeout SecondaryPreparesTimeout3
+	region main_region {
+		state Operating {
+			region operating {
+				state Init {
+					entry / set InitTimeout6 := 2 s; raise PriorityControl.toggle;
+					region r {
+						initial Entry0
+						state G
+					}
+				}
+				shallow history Entry1
+				state Secondary {
+					entry / set SecondaryTimeout5 := 2 s; raise PriorityControl.toggle; raise
+						SecondaryControl.toggle;
+				}
+				state Priority {
+					entry / set PriorityTimeout7 := 2 s; raise PriorityControl.toggle; raise
+						SecondaryControl.toggle;
+				}
+				state PriorityPrepares {
+					entry / set PriorityPreparesTimeout4 := 1 s; raise PriorityControl.toggle;
+				}
+				state SecondaryPrepares {
+					entry / set SecondaryPreparesTimeout3 := 1 s; raise SecondaryControl.toggle;
+				}
+			}
+		}
+		initial Entry2
+	}
+}

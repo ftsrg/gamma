@@ -63,7 +63,11 @@ public abstract class TaskHandler {
 				targetFolder = "test-gen";
 			}
 			else {
-				targetFolder = parentFolderUri.substring(projectLocation.length() + 1);
+				URI relativeUri = task.eResource().getURI();
+				URI parentUri = relativeUri.trimSegments(1);
+				String platformUri = parentUri.toPlatformString(true);
+				targetFolder = platformUri.substring(
+					(File.separator + file.getProject().getName() + File.separator).length());
 			}
 			task.getTargetFolder().add(targetFolder);
 		}
@@ -100,8 +104,7 @@ public abstract class TaskHandler {
 		}
 		new File(parentFolder + File.separator + fileName).delete();
 		// Saving like an EMF model
-		String newFileName = fileName.substring(0, fileName.lastIndexOf(".")) + ".gsm";
-		ecoreUtil.normalSave(rootElem, parentFolder, newFileName);
+		ecoreUtil.normalSave(rootElem, parentFolder, fileName);
 	}
 	
 	private void serializeStatechart(EObject rootElem, String parentFolder, String fileName) throws IOException {

@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
+import hu.bme.mit.gamma.genmodel.model.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
@@ -182,27 +183,28 @@ public class GammaApi {
 	 * This way the user does not have to compile two or three times.
 	 */
 	private List<Task> orderTasks(GenModel genmodel, int iteration) {
+		List<Task> allTasks = GenmodelDerivedFeatures.getAllTasks(genmodel);
 		switch (iteration) {
 			case 0: 
-				return genmodel.getTasks().stream()
+				return allTasks.stream()
 						.filter(it -> it instanceof InterfaceCompilation)
 						.collect(Collectors.toList());
 			case 1: 
-				return genmodel.getTasks().stream()
+				return allTasks.stream()
 						.filter(it -> it instanceof StatechartCompilation)
 						.collect(Collectors.toList());
 			case 2: 
-				return genmodel.getTasks().stream()
+				return allTasks.stream()
 						.filter(it -> it instanceof EventPriorityTransformation ||
 								it instanceof PhaseStatechartGeneration)
 						.collect(Collectors.toList());
 			case 3: 
-				return genmodel.getTasks().stream()
+				return allTasks.stream()
 						.filter(it -> it instanceof AnalysisModelTransformation ||
 								it instanceof CodeGeneration)
 						.collect(Collectors.toList());
 			case 4: 
-				return genmodel.getTasks().stream()
+				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
 								it instanceof AdaptiveContractTestGeneration)
 						.collect(Collectors.toList());

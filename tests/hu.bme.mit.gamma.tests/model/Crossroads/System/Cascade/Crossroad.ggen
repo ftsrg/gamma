@@ -1,0 +1,25 @@
+import "Crossroad.gcd"
+
+code {
+	component : Crossroad
+	language : java
+}
+
+analysis {
+	component : Crossroad // Gamma component to be transformed
+	language : UPPAAL // The target language is the XTA formalism of UPPAAL
+	interaction-coverage {
+		interaction-representation : over-approximation
+	}
+	constraint : {
+		minimum-orchestrating-period : 499 ms
+		maximum-orchestrating-period : 499 ms
+	}
+}
+
+verification {
+	language : UPPAAL
+	file : "Crossroad.xml"
+	query-file : "Crossroad.q"
+	test-language : java
+}

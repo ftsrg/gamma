@@ -3,6 +3,8 @@ package hu.bme.mit.gamma.util
 import java.io.File
 import java.util.Collections
 import java.util.List
+import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.Resource
@@ -109,6 +111,19 @@ class GammaEcoreUtil {
 		copier.copyReferences
 		return clone as T
 	}
-
+	
+	def getFile(Resource resource) {
+		val uri = resource.URI
+		val location =
+		if (uri.isPlatform) {
+			ResourcesPlugin.getWorkspace().getRoot().getFile(
+				new Path(uri.toPlatformString(true))
+			).location.toString
+		}
+		else {
+			uri.toString
+		}
+		return new File(URI.decode(location))
+	}
 	
 }

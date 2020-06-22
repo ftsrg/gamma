@@ -1,0 +1,24 @@
+package monitoredcrossroad
+
+import "Interfaces/Interfaces.gcd"
+import "Monitor/Monitor.gcd"
+import "Synchronous/Crossroad.gcd"
+
+sync MonitoredCrossroad [
+		// Component ports
+		port police : requires PoliceInterrupt,
+		port priorityOutput : provides LightCommands,
+		port secondaryOutput : provides LightCommands,
+		port monitorOutput : provides Error
+] {		
+	component crossroad : Crossroad
+	component monitor : Monitor
+			
+	bind police -> crossroad.police
+	bind priorityOutput -> crossroad.priorityOutput
+	bind secondaryOutput -> crossroad.secondaryOutput
+	bind monitorOutput -> monitor.Error
+	
+	channel	[crossroad.priorityOutput]-o)-[monitor.LightInputs]
+	
+}

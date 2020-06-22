@@ -1,0 +1,14 @@
+GeneratorModel for yakindu::java {
+
+	statechart TrafficLightCtrl {
+	 	
+		feature Outlet {
+			targetProject = "hu.bme.mit.gamma.tests"
+			targetFolder = "src-gen"
+		}
+		
+		feature GeneralFeatures {
+		}
+		
+	}
+}

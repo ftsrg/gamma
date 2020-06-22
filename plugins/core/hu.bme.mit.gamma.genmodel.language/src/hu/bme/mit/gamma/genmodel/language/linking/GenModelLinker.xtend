@@ -23,7 +23,7 @@ class GenModelLinker extends GammaLanguageLinker {
 	}
 	
 	override getRef() {
-		return #[genModel_StatechartImports, genModel_PackageImports, genModel_TraceImports]
+		return #[genModel_StatechartImports, genModel_PackageImports, genModel_TraceImports, genModel_GenmodelImports]
 	}
     
 }

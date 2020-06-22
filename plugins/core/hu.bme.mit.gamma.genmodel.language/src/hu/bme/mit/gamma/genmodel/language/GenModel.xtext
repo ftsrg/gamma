@@ -22,10 +22,11 @@ import "http://www.yakindu.org/sct/statechart/SText" as stext
 import "http://www.yakindu.org/base/types/2.0.0" as types
 
 GenModel returns GenModel:
-	('import' 
+	(('import' 
 		(packageImports+=[model::Package | STRING] |
 		'external' statechartImports+=[sgraph::Statechart| STRING] |
-		'trace' traceImports+=[trace::ExecutionTrace | STRING])
+		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
+		'include' genmodelImports+=[GenModel | STRING]
 	)*
 	(tasks += Task)*
 ;

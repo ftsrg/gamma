@@ -1,0 +1,11 @@
+GeneratorModel for yakindu::java {
+
+	statechart Monitor {
+
+		feature Outlet {
+			targetProject = "hu.bme.mit.gamma.tests"
+			targetFolder = "src-gen"
+		}
+		
+	}
+}
