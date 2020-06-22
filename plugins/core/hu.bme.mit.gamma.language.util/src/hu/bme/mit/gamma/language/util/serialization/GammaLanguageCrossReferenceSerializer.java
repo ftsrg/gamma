@@ -19,8 +19,12 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic.Acceptor;
 import org.eclipse.xtext.serializer.tokens.CrossReferenceSerializer;
 
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
+
 public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferenceSerializer {
 
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	
 	public String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref,
 			EObject target, final IScope scope, Acceptor errors) {
 		if (getContext().isInstance(semanticObject)) {
@@ -33,10 +37,7 @@ public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferen
 					string = uri.toPlatformString(true);
 				}
 				else {
-					// Absolute URI - trimming the workspace from the beginning
-					String workspaceLocation = "file:/" + 
-							ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
-					string = uri.toString().replaceFirst(workspaceLocation, "");
+					string = ecoreUtil.getPlatformUri(resource).toString();
 				}
 				return "\"" + string + "\"";
 			}

@@ -121,9 +121,39 @@ class GammaEcoreUtil {
 			).location.toString
 		}
 		else {
-			uri.toString
+			// Deleting file:/ from the beginning
+			uri.toString.substring(("file:" + File.separator).length)
 		}
 		return new File(URI.decode(location))
 	}
+	
+	def getPlatformUri(Resource resource) {
+		val uri = resource.URI
+		if (uri.isPlatform) {
+			return resource
+		}
+		val resourceFile = resource.file
+		val projectFile = resourceFile.parentFile.projectFile
+		val location = resourceFile.toString.substring(projectFile.parent.length)
+		return URI.createPlatformResourceURI(location, true)
+	}
+	
+	def getAbsoluteUri(Resource resource) {
+		val uri = resource.URI
+		if (!uri.isPlatform) {
+			return resource
+		}
+		val resourceFile = resource.file
+		return URI.createFileURI(resourceFile.toString)
+	}
+	
+	def File getProjectFile(File file) {
+		val containedFileNames = file.listFiles.map[it.name]
+		if (containedFileNames.contains(".project")) {
+			return file
+		}
+		return file.parentFile.projectFile
+	}
+	
 	
 }
