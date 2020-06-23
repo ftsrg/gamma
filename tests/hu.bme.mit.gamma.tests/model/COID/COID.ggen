@@ -1,0 +1,6 @@
+include "Antivalence/MO_ANTIVAL_CHK.ggen"
+include "Jelzo/COID.ggen"
+include "Valto/VALTO_OAK.ggen"
+include "System/ANTIVAL_CHK_COID/ANTIVAL_CHK_COID_System.ggen"
+include "System/OAK_FALSE/VALTO_OAK_System.ggen"
+include "System/OAK_TRUE/VALTO_OAK_System.ggen"

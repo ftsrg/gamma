@@ -1,0 +1,12 @@
+package valto_oak_true_system
+import "Interface/Interfaces"
+import "Valto/VALTO_OAK.gcd"
+/* Gamma is a composition framework, so the generated VALTO_OAK statechart needs
+ * to be instantiated in order to use the functionalities of the framework.
+ */
+sync VALTO_OAK_System [
+	port StateMachine_Port : provides StateMachine_Interface_For_VALTO_OAK
+] {
+	component valto_oak : VALTO_OAK(true)
+	bind StateMachine_Port -> valto_oak.StateMachine_Port
+}

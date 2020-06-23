@@ -24,12 +24,14 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.model.Action;
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
+import hu.bme.mit.gamma.xsts.model.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 
 public class XSTSActionUtil {
@@ -41,6 +43,15 @@ public class XSTSActionUtil {
 	private GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
 	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	private XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public VariableDeclaration getVariable(XSTS xSts, String name) {
+		List<VariableDeclaration> variables = xSts.getVariableDeclarations().stream()
+				.filter(it -> it.getName().equals(name)).collect(Collectors.toList());
+		if (variables.size() != 1) {
+			throw new IllegalArgumentException("Not one variable: " + variables);
+		}
+		return variables.get(0);
+	}
 	
 	public AssumeAction createAssumeAction(Expression condition) {
 		AssumeAction assumeAction = xStsFactory.createAssumeAction();

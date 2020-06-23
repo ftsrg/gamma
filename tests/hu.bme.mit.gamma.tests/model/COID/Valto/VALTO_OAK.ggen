@@ -1,0 +1,6 @@
+import "VALTO_OAK.gcd"
+
+code {
+	component : VALTO_OAK
+	language : java
+}

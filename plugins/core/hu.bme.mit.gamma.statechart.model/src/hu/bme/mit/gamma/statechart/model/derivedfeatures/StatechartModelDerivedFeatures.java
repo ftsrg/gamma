@@ -245,16 +245,24 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return statecharts;
 	}
 	
-	public static Collection<EventDeclaration> getAllEventDeclarations(Interface _interface) {
-		Set<EventDeclaration> eventDeclarations = new HashSet<EventDeclaration>(_interface.getEvents());
+	public static List<EventDeclaration> getAllEventDeclarations(Interface _interface) {
+		List<EventDeclaration> eventDeclarations = new ArrayList<EventDeclaration>(_interface.getEvents());
 		for (Interface parentInterface : _interface.getParents()) {
 			eventDeclarations.addAll(getAllEventDeclarations(parentInterface));
 		}
 		return eventDeclarations;
 	}
 	
-	public static Collection<Event> getAllEvents(Interface _interface) {
-		return getAllEventDeclarations(_interface).stream().map(it -> it.getEvent()).collect(Collectors.toSet());
+	public static List<Event> getAllEvents(Interface _interface) {
+		return getAllEventDeclarations(_interface).stream().map(it -> it.getEvent()).collect(Collectors.toList());
+	}
+	
+	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
+		return getAllEventDeclarations(port.getInterfaceRealization().getInterface());
+	}
+	
+	public static List<Event> getAllEvents(Port port) {
+		return getAllEvents(port.getInterfaceRealization().getInterface());
 	}
 	
 	public static Collection<Event> getInputEvents(Port port) {

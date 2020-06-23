@@ -10,14 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.model.composite.Component
 import hu.bme.mit.gamma.statechart.model.interface_.Persistency
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.model.Action
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.util.XSTSActionUtil
 import java.util.Set
 import org.eclipse.emf.ecore.util.EcoreUtil
 
@@ -25,16 +28,18 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.model.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
 class EnvironmentalActionFilter {
-	// Names that need to be kept
-	Set<String> necessaryNames
 	// Auxiliary objects
-	protected extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
-		necessaryNames = newHashSet
+		val necessaryNames = newHashSet
 		// Input and output events and parameters
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
@@ -58,15 +63,15 @@ class EnvironmentalActionFilter {
 //				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
 //			}
 //		}
-		action.delete
+		action.delete(necessaryNames)
 	}
 	
 	def Action resetEverythingExceptPersistentParameters(CompositeAction action, Component component) {
-		necessaryNames = newHashSet
+		val necessaryNames = newHashSet
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
-			for (eventDeclaration : port.interfaceRealization.interface.allEventDeclarations) {
+			for (eventDeclaration : port.allEventDeclarations) {
 				val event = eventDeclaration.event
 				if (event.persistency == Persistency.PERSISTENT) {
 					for (parameter : event.parameterDeclarations) {
@@ -76,10 +81,65 @@ class EnvironmentalActionFilter {
 				}
 			}
 		}
-		return action.reset
+		return action.reset(necessaryNames)
 	}
 	
-	private def Action reset(CompositeAction action) {
+	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
+		// It is based on the fact that the in-event actions of components are in ORDER 
+		val xSts = action.containingXSTS
+		for (systemPort : component.allPorts) {
+			val connectedSimplePorts = systemPort.allConnectedSimplePorts
+			val size = connectedSimplePorts.size
+			if (size > 1) {
+				// More than one bound simple port
+				val orderedPorts = newHashMap
+				for (port : connectedSimplePorts) {
+					val statechart = port.containingStatechart
+					val instance = statechart.referencingComponentInstance
+					val index = instance.index
+					orderedPorts.put(index, port)
+				}
+				// Ports are ordered
+				val firstPort = orderedPorts.get(0)
+				val firstSatechart = firstPort.containingStatechart
+				val firstInstance = firstSatechart.referencingComponentInstance
+				val firstEvents = firstPort.allEvents
+				for (boundPort : orderedPorts.entrySet.reject[it.key == 0].map[it.value]) {
+					val boundSatechart = boundPort.containingStatechart
+					val boundInstance = boundSatechart.referencingComponentInstance
+					val boundEvents = boundPort.inputEvents
+					for (boundEvent : boundEvents) {
+						val i = boundEvent.containingEventDeclaration.index
+						val event = firstEvents.get(i)
+						val xStsEventName = customizeInputName(event, firstPort, firstInstance)
+						val xStsEventVariable = xSts.getVariable(xStsEventName)
+						val parameters = event.parameterDeclarations
+						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
+						val xStsBoundEventVariable = xSts.getVariable(xStsBoundEventName)
+						for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
+								.filter[it.lhs.declaration === xStsBoundEventVariable].toIterable) {
+							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
+						}
+						val boundParameters = boundEvent.parameterDeclarations
+						for (var j = 0; j < boundParameters.size; j++) {
+							val parameter = parameters.get(j)
+							val xStsParameterName = customizeInName(parameter, firstPort, firstInstance)
+							val xStsParameterVariable = xSts.getVariable(xStsParameterName)
+							val boundParameter = boundParameters.get(j)
+							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
+							val xStsBoundParameterVariable = xSts.getVariable(xStsBoundParameterName)
+							for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
+									.filter[it.lhs.declaration === xStsBoundParameterVariable].toIterable) {
+								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
 		for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction).toIterable) {
 			val declaration = xStsAssignment.lhs.declaration
@@ -96,7 +156,7 @@ class EnvironmentalActionFilter {
 		]
 	}
 	
-	private def void delete(CompositeAction action) {
+	private def void delete(CompositeAction action, Set<String> necessaryNames) {
 		val xStsSubactions = action.actions
 		val copyXStsSubactions = newArrayList
 		copyXStsSubactions += xStsSubactions
@@ -116,10 +176,9 @@ class EnvironmentalActionFilter {
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {
-				xStsSubaction.delete
+				xStsSubaction.delete(necessaryNames)
 			}
 		}
 	}
-	
 	
 }

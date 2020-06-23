@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
@@ -39,6 +41,10 @@ import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
 public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public static XSTS getContainingXSTS(EObject object) {
+		return (XSTS) EcoreUtil.getRootContainer(object);
+	}
 	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();

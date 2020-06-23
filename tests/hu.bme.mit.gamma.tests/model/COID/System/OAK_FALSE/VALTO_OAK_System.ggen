@@ -1,0 +1,23 @@
+import "VALTO_OAK_System.gcd"
+/* The generator model needed to transform the Gamma model to UPPAAL and 
+ * generate the queries necessary for the transition-coverage test suite.
+ */
+
+code {
+	component : VALTO_OAK_System
+	language : java 
+}
+ 
+analysis {
+	component : VALTO_OAK_System
+	language : UPPAAL
+	transition-coverage
+}
+
+verification {
+	language : UPPAAL
+	file : "VALTO_OAK_System.xml"
+	query-file : "VALTO_OAK_System.q"
+	optimize : true
+	test-language : java
+}

@@ -205,6 +205,7 @@ class GammaToXSTSTransformer {
 		xSts.mergedAction = mergedAction
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+		xSts.inEventAction.bindEventsBoundToTheSameSystemPort(component) // Bind together ports connected to the same system port
 		xSts.name = component.name
 		return xSts
 	}
