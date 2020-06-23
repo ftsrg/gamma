@@ -25,7 +25,6 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
@@ -164,9 +163,12 @@ class GammaToXSTSTransformer {
 				it.actions += newXSts.mergedAction
 			]
 			mergedAction.actions += actualComponentMergedAction
-			// In and Out actions
-			val newInEventAction = newXSts.inEventAction as CompositeAction
-			val newOutEventAction = newXSts.outEventAction as CompositeAction
+			// In and Out actions - using sequential actions to make sure they are composite actions
+			// Methods reset... and delete... require this
+			val newInEventAction = createSequentialAction => [ it.actions += newXSts.inEventAction ]
+			newXSts.inEventAction = newInEventAction
+			val newOutEventAction = createSequentialAction => [ it.actions += newXSts.outEventAction ]
+			newXSts.outEventAction = newOutEventAction
 			// Resetting channel events
 			// 1) the Sync ort semantics: Resetting channel IN events AFTER schedule would result in a deadlock
 			// 2) the Casc semantics: Resetting channel OUT events BEFORE schedule would delete in events of subsequent components
