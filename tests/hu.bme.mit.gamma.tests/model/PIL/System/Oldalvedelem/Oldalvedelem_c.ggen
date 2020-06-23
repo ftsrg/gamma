@@ -1,0 +1,7 @@
+import "Oldalvedelem_c.gcd"
+analysis {
+	component : Oldalvedelem_c
+	language : UPPAAL
+//	language : Theta
+	state-coverage
+}

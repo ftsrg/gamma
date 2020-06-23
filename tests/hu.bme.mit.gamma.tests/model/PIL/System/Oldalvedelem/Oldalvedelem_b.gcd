@@ -1,0 +1,114 @@
+package oldalvedelem_b_system
+
+import "Interfaces/Interfaces.gcd"
+import "Types/Types.gcd"
+import "Jelzo/Jelzo.gcd"
+import "Valto/Valto.gcd"
+
+cascade Oldalvedelem_b [
+	port Felso_Fojelzo1 : requires F_VU_lez
+
+	port Also_Fojelzo0 : requires Jelzo_Also
+	port Also_Fojelzo1 : requires Jelzo_Also
+
+	port Also_Celjelzo0 : requires Jelzo_Also
+	port Also_Celjelzo1 : requires Jelzo_Also
+	port Also_Celjelzo2 : requires Jelzo_Also
+
+	port Also_Valto2 : requires Valto_Also
+	port Also_Valto4 : requires Valto_Also
+	port Also_Valto61 : requires Valto_Also
+	port Also_Valto60 : requires Valto_Also
+	port Also_Valto8 : requires Valto_Also
+] {
+	component fojelzo0 : Jelzo(::EGYESITETT, 0, 0)
+	component fojelzo1 : Jelzo(::EGYESITETT, 0, 1)
+
+	component valto2 : Valto(::BAL, 0, 0, 0, 0, 0, 12)
+	component valto4 : Valto(::BAL, 0, 0, 0, 0, 0, 14)
+	component valto61 : Valto(::BAL, 0, 0, 0, 0, 0, 161)
+	component valto60 : Valto(::BAL, 0, 0, 0, 0, 0, 160)
+	component valto8 : Valto(::BAL, 0, 0, 0, 0, 0, 18)
+
+	component celjelzo0 : Jelzo(::EGYESITETT, 0, 2)
+	component celjelzo1 : Jelzo(::EGYESITETT, 0, 3)
+	component celjelzo2 : Jelzo(::EGYESITETT, 0, 4)
+
+	bind Felso_Fojelzo1 -> fojelzo1.F_VU_lez
+
+//	bind Also_Fojelzo0 -> fojelzo0.Also
+	bind Also_Fojelzo1 -> fojelzo1.A
+
+//	bind Also_Celjelzo2 -> celjelzo2.Also
+//	bind Also_Celjelzo1 -> celjelzo1.Also
+	bind Also_Celjelzo0 -> celjelzo0.A
+
+//	bind Also_Valto2 -> valto2.Also
+	bind Also_Valto4 -> valto4.A
+//	bind Also_Valto61 -> valto61.Also
+//	bind Also_Valto60 -> valto60.Also
+//	bind Also_Valto8 -> valto8.Also
+
+	// Lez
+	channel [ fojelzo0.S_VU_lez_Out ] -o)- [ valto2.E_VU_lez_In ]
+	channel [ valto2.E_VU_lez_Out ] -o)- [ fojelzo0.S_VU_lez_In ]
+
+	channel [ valto2.B_VU_lez_Out ] -o)- [ valto8.B_VU_lez_In ]
+	channel [ valto8.B_VU_lez_Out ] -o)- [ valto2.B_VU_lez_In ]
+
+	channel [ valto2.J_VU_lez_Out ] -o)- [ valto61.B_VU_lez_In ]
+	channel [ valto61.B_VU_lez_Out ] -o)- [ valto2.J_VU_lez_In ]
+
+	channel [ valto4.J_VU_lez_Out ] -o)- [ valto61.J_VU_lez_In ]
+	channel [ valto61.J_VU_lez_Out ] -o)- [ valto4.J_VU_lez_In ]
+
+	channel [ valto61.E_VU_lez_Out ] -o)- [ valto60.E_VU_lez_In ]
+	channel [ valto60.E_VU_lez_Out ] -o)- [ valto61.E_VU_lez_In ]
+
+	channel [ valto60.B_VU_lez_Out ] -o)- [ valto8.J_VU_lez_In ]
+	channel [ valto8.J_VU_lez_Out ] -o)- [ valto60.B_VU_lez_In ]
+
+	channel [ fojelzo1.S_VU_lez_Out ] -o)- [ valto4.E_VU_lez_In ]
+	channel [ valto4.E_VU_lez_Out ] -o)- [ fojelzo1.S_VU_lez_In ]
+
+	channel [ celjelzo0.C_VU_lez_Out ] -o)- [ valto4.B_VU_lez_In ] // Changed direction
+	channel [ valto4.B_VU_lez_Out ] -o)- [ celjelzo0.C_VU_lez_In ]
+
+	channel [ celjelzo1.S_VU_lez_Out ] -o)- [ valto60.J_VU_lez_In ]
+	channel [ valto60.J_VU_lez_Out ] -o)- [ celjelzo1.S_VU_lez_In ]
+
+	channel [ celjelzo2.S_VU_lez_Out ] -o)- [ valto8.E_VU_lez_In ]
+	channel [ valto8.E_VU_lez_Out ] -o)- [ celjelzo2.S_VU_lez_In ]
+
+	// OV
+	channel [ fojelzo0.S_OV_keres_Out ] -o)- [ valto2.E_OV_keres_In ]
+	channel [ valto2.E_OV_keres_Out ] -o)- [ fojelzo0.S_OV_keres_In ]
+
+	channel [ valto2.B_OV_keres_Out ] -o)- [ valto8.B_OV_keres_In ]
+	channel [ valto8.B_OV_keres_Out ] -o)- [ valto2.B_OV_keres_In ]
+
+	channel [ valto2.J_OV_keres_Out ] -o)- [ valto61.B_OV_keres_In ]
+	channel [ valto61.B_OV_keres_Out ] -o)- [ valto2.J_OV_keres_In ]
+
+	channel [ valto4.J_OV_keres_Out ] -o)- [ valto61.J_OV_keres_In ]
+	channel [ valto61.J_OV_keres_Out ] -o)- [ valto4.J_OV_keres_In ]
+
+	channel [ valto61.E_OV_keres_Out ] -o)- [ valto60.E_OV_keres_In ]
+	channel [ valto60.E_OV_keres_Out ] -o)- [ valto61.E_OV_keres_In ]
+
+	channel [ valto60.B_OV_keres_Out ] -o)- [ valto8.J_OV_keres_In ]
+	channel [ valto8.J_OV_keres_Out ] -o)- [ valto60.B_OV_keres_In ]
+
+	channel [ fojelzo1.S_OV_keres_Out ] -o)- [ valto4.E_OV_keres_In ]
+	channel [ valto4.E_OV_keres_Out ] -o)- [ fojelzo1.S_OV_keres_In ]
+
+	channel [ celjelzo0.C_OV_keres_Out ] -o)- [ valto4.B_OV_keres_In ] // Changed direction
+	channel [ valto4.B_OV_keres_Out ] -o)- [ celjelzo0.C_OV_keres_In ]
+
+	channel [ celjelzo1.S_OV_keres_Out ] -o)- [ valto60.J_OV_keres_In ]
+	channel [ valto60.J_OV_keres_Out ] -o)- [ celjelzo1.S_OV_keres_In ]
+
+	channel [ celjelzo2.S_OV_keres_Out ] -o)- [ valto8.E_OV_keres_In ]
+	channel [ valto8.E_OV_keres_Out ] -o)- [ celjelzo2.S_OV_keres_In ]
+
+}

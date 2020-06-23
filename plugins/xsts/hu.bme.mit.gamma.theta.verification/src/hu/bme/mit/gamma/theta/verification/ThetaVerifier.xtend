@@ -21,7 +21,7 @@ import java.util.logging.Level
 
 class ThetaVerifier extends AbstractVerifier {
 	
-	protected final extension ThetaQueryAdapter thetaQueryAdapter = new ThetaQueryAdapter
+	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta-xsts-cli.jar"
 	
@@ -30,13 +30,24 @@ class ThetaVerifier extends AbstractVerifier {
 	
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {
-		val parsedQuery = query.adaptQuery
-		val wrappedQuery = '''
-			prop {
-				«parsedQuery»
+		var ExecutionTrace trace = null
+		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
+			// Supporting multiple queries in a single line
+			val parsedQuery = query.adaptQuery
+			val wrappedQuery = '''
+				prop {
+					«parsedQuery»
+				}
+			'''
+			val newTrace = super.verifyQuery(traceability, parameters, modelFile, wrappedQuery, log, storeOutput)
+			if (trace === null) {
+				trace = newTrace
 			}
-		'''
-		return super.verifyQuery(traceability, parameters, modelFile, wrappedQuery, log, storeOutput)
+			else {
+				trace.extend(newTrace)
+			}
+		}
+		return trace
 	}
 	
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
@@ -101,7 +112,9 @@ class ThetaVerifier extends AbstractVerifier {
 }
 
 class ThetaQueryAdapter {
-	
+	public static ThetaQueryAdapter INSTANCE = new ThetaQueryAdapter
+	private new() {}
+	// Singleton
 	final String EF = "E<>"
 	final String AG = "A[]"
 	

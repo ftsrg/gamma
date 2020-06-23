@@ -28,7 +28,7 @@ class FileUtil {
 		val builder = new StringBuilder
 		try (val scanner = new Scanner(file)) {
 			while (scanner.hasNext) {
-				builder.append(scanner.nextLine)
+				builder.append(scanner.nextLine + System.lineSeparator)
 			}
 		}
 		return builder.toString

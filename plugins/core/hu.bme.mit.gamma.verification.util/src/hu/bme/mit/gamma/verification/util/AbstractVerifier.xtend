@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
 import java.util.logging.Logger
+import hu.bme.mit.gamma.trace.model.TraceUtil
 
 abstract class AbstractVerifier {
 	
@@ -25,6 +26,7 @@ abstract class AbstractVerifier {
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	
 	protected extension FileUtil codeGeneratorUtil = FileUtil.INSTANCE
+	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	def ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {

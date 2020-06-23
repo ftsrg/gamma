@@ -1,0 +1,6 @@
+import "Oldalvedelem_a.gcd"
+analysis {
+	component : Oldalvedelem_a
+	language : UPPAAL
+	state-coverage
+}

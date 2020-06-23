@@ -1,0 +1,158 @@
+package jelzo
+
+// F_VU_lez_In.ker::ker_VU_tip = ::VONAT and (P_J_tipus = ::FOJELZO or P_J_tipus = ::EGYESITETT) or
+// F_VU_lez_In.ker::ker_VU_tip = ::TOLATO and (P_J_tipus = ::TOLATASJELZO or P_J_tipus = ::EGYESITETT)
+import "Interfaces/Interfaces.gcd"
+import "Types/Types.gcd"
+
+@PrioritizedTransitions = order-based
+statechart Jelzo(P_J_tipus : J_tipus_t, P_megcs : tavolsag_t, P_id : obj_t) [
+	port F_VU_lez : requires F_VU_lez
+	port C_VU_lez_Out : provides F_VU_lez
+	port C_VU_lez_In : requires F_VU_lez
+	port S_VU_lez_Out : provides F_VU_lez
+	port S_VU_lez_In : requires F_VU_lez
+	port A : requires Jelzo_Also
+	// OV_keres
+	port C_OV_keres_Out : provides OV_keres
+	port C_OV_keres_In : requires OV_keres
+	port S_OV_keres_Out : provides OV_keres
+	port S_OV_keres_In : requires OV_keres
+] {
+	var VU_tip : VU_tip_t
+	var BA_S_VU_tip : VU_tip_t
+	var BA_T_VU_tip : VU_tip_t
+	var BA_C_VU_tip : VU_tip_t
+	var BA_A_VU_tip : VU_tip_t
+	var BA_S_lez : boolean
+	var BA_A_lez : boolean
+	var BA_T_lez : boolean
+	var BA_C_lez : boolean
+	var BA_celkiz : boolean
+	region F_VU_lez_reg {
+		initial F_VU_lez_Init
+		state F_VU_lez_Inputra_Var
+		state F_VU_lez_Valaszra_Var
+		choice F_VU_lez_Feltetel_Teljesul
+		choice F_VU_lez_Valasz_Tipus
+		choice F_VU_lez_Valasz_Sikeres_Fork
+	}
+	transition from F_VU_lez_Init to F_VU_lez_Inputra_Var
+	transition from F_VU_lez_Inputra_Var to F_VU_lez_Feltetel_Teljesul when F_VU_lez.ker
+	transition from F_VU_lez_Feltetel_Teljesul to F_VU_lez_Valaszra_Var [F_VU_lez.ker ::ker_VU_tip =
+		::VONAT and (P_J_tipus = ::FOJELZO or P_J_tipus = ::EGYESITETT) or F_VU_lez.ker ::ker_VU_tip =
+		::TOLATO and (P_J_tipus = ::TOLATASJELZO or P_J_tipus = ::EGYESITETT) and !BA_S_lez and !BA_A_lez and
+		!BA_T_lez and A.AI_jelzes ::AI_jelzesValue = ::MEGALLJ] / VU_tip := F_VU_lez.ker ::ker_VU_tip; raise
+		S_VU_lez_Out.ker(VU_tip);
+	transition from F_VU_lez_Feltetel_Teljesul to F_VU_lez_Inputra_Var [else] / raise
+		F_VU_lez.val(::ELUTASITVA, P_id);
+	transition from F_VU_lez_Valaszra_Var to F_VU_lez_Valasz_Tipus when S_VU_lez_Out.val
+	// Siker
+	transition from F_VU_lez_Valasz_Tipus to F_VU_lez_Valasz_Sikeres_Fork [S_VU_lez_Out.val ::val_VU_tip =
+		::SIKERES]
+	transition from F_VU_lez_Valasz_Sikeres_Fork to F_VU_lez_Inputra_Var [C_VU_lez_In.ker ::ker_VU_tip =
+		::VONAT and (P_J_tipus = ::FOJELZO or P_J_tipus = ::EGYESITETT) or C_VU_lez_In.ker ::ker_VU_tip =
+		::TOLATO and (P_J_tipus = ::TOLATASJELZO or P_J_tipus = ::EGYESITETT) /* Furcsa feltetel */ ] /
+		BA_S_lez := true; BA_S_VU_tip := VU_tip; raise F_VU_lez.val(::SIKERES, S_VU_lez_Out.val ::obj_id);
+	transition from F_VU_lez_Valasz_Sikeres_Fork to F_VU_lez_Inputra_Var [else] / BA_T_lez := true;
+		BA_T_VU_tip := VU_tip; raise F_VU_lez.val(::SIKERES, S_VU_lez_Out.val ::obj_id);
+		// Elutasitva
+	transition from F_VU_lez_Valasz_Tipus to F_VU_lez_Inputra_Var [S_VU_lez_Out.val ::val_VU_tip =
+		::ELUTASITVA] / raise F_VU_lez.val(::ELUTASITVA, S_VU_lez_Out.val ::obj_id);
+	region C_VU_lez_reg {
+		initial C_VU_lez_Init
+		state C_VU_lez_Inputra_Var
+		state C_VU_lez_Valaszra_Var
+		choice C_VU_lez_Feltetel_Teljesul
+		choice C_VU_lez_Feltetel_Teljesul_Fork
+		choice C_VU_lez_Valasz_Tipus
+		choice C_VU_lez_Valasz_Sikeres_Fork
+	}
+	transition from C_VU_lez_Init to C_VU_lez_Inputra_Var
+	transition from C_VU_lez_Inputra_Var to C_VU_lez_Feltetel_Teljesul when C_VU_lez_In.ker
+	// Accept
+	transition from C_VU_lez_Feltetel_Teljesul to C_VU_lez_Feltetel_Teljesul_Fork [C_VU_lez_In.ker
+		::ker_VU_tip = ::VONAT and (P_J_tipus = ::FOJELZO or P_J_tipus = ::EGYESITETT) or C_VU_lez_In.ker
+		::ker_VU_tip = ::TOLATO and (P_J_tipus = ::TOLATASJELZO or P_J_tipus = ::EGYESITETT)]
+	transition from C_VU_lez_Feltetel_Teljesul_Fork to C_VU_lez_Inputra_Var [!BA_C_lez and !BA_A_lez and
+		!BA_T_lez and !BA_celkiz and A.AI_jelzes ::AI_jelzesValue = ::MEGALLJ] / BA_C_lez := true;
+	/* BA_C_lez  := VU_lezaras( VU_tip ); */
+	BA_C_VU_tip := C_VU_lez_In.ker ::ker_VU_tip; raise C_VU_lez_In.val(::SIKERES, P_id);
+	transition from C_VU_lez_Feltetel_Teljesul_Fork to C_VU_lez_Inputra_Var [else] / raise
+		C_VU_lez_In.val(::ELUTASITVA, P_id);
+		// Req
+	transition from C_VU_lez_Feltetel_Teljesul to C_VU_lez_Valaszra_Var [!BA_C_lez and !BA_A_lez and
+		!BA_T_lez and !BA_celkiz] / raise S_VU_lez_Out.ker(C_VU_lez_In.ker ::ker_VU_tip);
+	transition from C_VU_lez_Feltetel_Teljesul to C_VU_lez_Inputra_Var [else] / raise
+		C_VU_lez_In.val(::ELUTASITVA, P_id);
+	transition from C_VU_lez_Valaszra_Var to C_VU_lez_Valasz_Tipus when S_VU_lez_Out.val
+	// Siker
+	transition from C_VU_lez_Valasz_Tipus to C_VU_lez_Valasz_Sikeres_Fork [S_VU_lez_Out.val ::val_VU_tip =
+		::SIKERES]
+	transition from C_VU_lez_Valasz_Sikeres_Fork to C_VU_lez_Inputra_Var [C_VU_lez_In.ker ::ker_VU_tip =
+		::VONAT and (P_J_tipus = ::FOJELZO or P_J_tipus = ::EGYESITETT) or C_VU_lez_In.ker ::ker_VU_tip =
+		::TOLATO and (P_J_tipus = ::TOLATASJELZO or P_J_tipus = ::EGYESITETT)] / BA_S_lez := true;
+		BA_S_VU_tip := VU_tip; raise C_VU_lez_In.val(::SIKERES, S_VU_lez_Out.val ::obj_id);
+	transition from C_VU_lez_Valasz_Sikeres_Fork to C_VU_lez_Inputra_Var [else] / BA_T_lez := true;
+		BA_T_VU_tip := VU_tip; raise C_VU_lez_In.val(::SIKERES, S_VU_lez_Out.val ::obj_id);
+		// Elutasitva
+	transition from C_VU_lez_Valasz_Tipus to C_VU_lez_Inputra_Var [S_VU_lez_Out.val ::val_VU_tip =
+		::ELUTASITVA] / raise C_VU_lez_In.val(::ELUTASITVA, S_VU_lez_Out.val ::obj_id);
+	region S_VU_lez_reg {
+		initial S_VU_lez_Init
+		state S_VU_Inputra_Var
+		state S_VU_Valaszra_Var
+		choice S_VU_Feltetel_Teljesul
+		choice S_VU_Valasz_Tipus
+	}
+	transition from S_VU_lez_Init to S_VU_Inputra_Var
+	transition from S_VU_Inputra_Var to S_VU_Feltetel_Teljesul when S_VU_lez_In.ker
+	transition from S_VU_Feltetel_Teljesul to S_VU_Valaszra_Var [!BA_C_lez and !BA_S_lez and !BA_A_lez and
+		!BA_T_lez] / raise C_VU_lez_Out.ker(S_VU_lez_In.ker ::ker_VU_tip);
+	transition from S_VU_Feltetel_Teljesul to S_VU_Inputra_Var [else] / raise
+		S_VU_lez_In.val(::ELUTASITVA, P_id);
+	transition from S_VU_Valaszra_Var to S_VU_Valasz_Tipus when C_VU_lez_Out.val
+	transition from S_VU_Valasz_Tipus to S_VU_Inputra_Var [C_VU_lez_Out.val ::val_VU_tip = ::SIKERES] /
+		BA_A_lez := true; BA_A_VU_tip := VU_tip; raise S_VU_lez_In.val(::SIKERES, C_VU_lez_Out.val ::obj_id);
+	transition from S_VU_Valasz_Tipus to S_VU_Inputra_Var [C_VU_lez_Out.val ::val_VU_tip = ::ELUTASITVA] /
+		raise S_VU_lez_In.val(::ELUTASITVA, C_VU_lez_Out.val ::obj_id);
+	// OV_keres
+	region C_OV_keres_reg {
+		initial C_OV_keres_Init
+		state C_OV_keres_Inputra_Var
+		state C_OV_keres_Valaszra_Var
+	}
+	transition from C_OV_keres_Init to C_OV_keres_Inputra_Var
+	transition from C_OV_keres_Inputra_Var to C_OV_keres_Valaszra_Var when C_OV_keres_In.ker / raise
+		S_OV_keres_Out.ker(C_OV_keres_In.ker ::ker_OV_tav);
+	transition from C_OV_keres_Valaszra_Var to C_OV_keres_Inputra_Var when C_OV_keres_In.felold /
+		raise S_OV_keres_Out.felold;
+	transition from C_OV_keres_Valaszra_Var to C_OV_keres_Inputra_Var when
+		S_OV_keres_Out.val [S_OV_keres_Out.val ::val_OV_tip = ::ELUTASITVA] / BA_celkiz := false; raise
+		C_OV_keres_In.val(::ELUTASITVA);
+	region S_OV_keres_reg {
+		initial S_OV_keres_Init
+		state S_OV_keres_Inputra_Var
+		choice S_OV_keres_Feltetel_Teljesul
+		state S_OV_keres_Accept1
+		state S_OV_keres_Accept2
+	}
+	transition from S_OV_keres_Init to S_OV_keres_Inputra_Var
+	transition from S_OV_keres_Inputra_Var to S_OV_keres_Feltetel_Teljesul when S_OV_keres_In.ker
+	transition from S_OV_keres_Feltetel_Teljesul to S_OV_keres_Accept1 [S_OV_keres_In.ker
+		::ker_OV_tav > P_megcs and A.AI_jelzes ::AI_jelzesValue = ::MEGALLJ]
+	transition from S_OV_keres_Feltetel_Teljesul to S_OV_keres_Accept2 [A.AI_jelzes ::AI_jelzesValue =
+		::MEGALLJ and !BA_C_lez] / BA_celkiz := true; // Vissza kell ezt allitani, ha mar nem teljesul?
+	transition from S_OV_keres_Feltetel_Teljesul to S_OV_keres_Inputra_Var [else] / raise
+		S_OV_keres_In.val(::ELUTASITVA);
+	// Accept1
+	transition from S_OV_keres_Accept1 to S_OV_keres_Inputra_Var when cycle [!(A.AI_jelzes
+		::AI_jelzesValue = ::MEGALLJ)] / raise S_OV_keres_In.val(::ELUTASITVA); raise
+		C_OV_keres_Out.felold;
+	transition from S_OV_keres_Accept1 to S_OV_keres_Inputra_Var when S_OV_keres_In.felold
+	// Accept2
+	transition from S_OV_keres_Accept2 to S_OV_keres_Inputra_Var when cycle [!(A.AI_jelzes
+		::AI_jelzesValue = ::MEGALLJ and !BA_C_lez)] / raise S_OV_keres_In.val(::ELUTASITVA); raise
+		C_OV_keres_Out.felold;
+	transition from S_OV_keres_Accept2 to S_OV_keres_Inputra_Var when S_OV_keres_In.felold
+}

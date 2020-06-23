@@ -79,6 +79,12 @@ public class TraceUtil {
 		instanceStates.addAll(list);
 	}
 	
+	// Extend
+	
+	public void extend(ExecutionTrace original, ExecutionTrace extension) {
+		original.getSteps().addAll(extension.getSteps());
+	}
+	
 	// Overwriting
 	
 	public boolean isOverWritten(RaiseEventAct lhs, RaiseEventAct rhs) {

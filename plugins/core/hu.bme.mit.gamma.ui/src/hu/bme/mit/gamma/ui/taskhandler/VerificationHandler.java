@@ -122,7 +122,8 @@ public class VerificationHandler extends TaskHandler {
 					fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
 			EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 			ThetaVerifier verifier = new ThetaVerifier();
-			return verifier.verifyQuery(gammaPackage, "", modelFile, queryFile, true, true);
+			String queries = fileUtil.loadString(queryFile);
+			return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
 		}
 		
 	}
