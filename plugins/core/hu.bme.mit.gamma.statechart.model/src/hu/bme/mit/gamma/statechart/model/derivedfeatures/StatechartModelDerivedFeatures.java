@@ -346,11 +346,13 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		if (component instanceof StatechartDefinition) {
 			simplePorts.add(port);
 		}
-		if (component instanceof CompositeComponent) {
+		else if (component instanceof CompositeComponent) {
 			CompositeComponent composite = (CompositeComponent) component;
 			for (PortBinding portBinding : composite.getPortBindings()) {
-				// Makes sense only if the containment hierarchy is a tree structure
-				simplePorts.addAll(getAllConnectedSimplePorts(portBinding.getInstancePortReference().getPort()));
+				if (portBinding.getCompositeSystemPort() == port) {
+					// Makes sense only if the containment hierarchy is a tree structure
+					simplePorts.addAll(getAllConnectedSimplePorts(portBinding.getInstancePortReference().getPort()));
+				}
 			}
 		}
 		return simplePorts;

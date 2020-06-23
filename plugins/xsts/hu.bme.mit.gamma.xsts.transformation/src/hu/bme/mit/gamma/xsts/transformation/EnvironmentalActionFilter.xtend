@@ -85,7 +85,6 @@ class EnvironmentalActionFilter {
 	}
 	
 	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
-		// It is based on the fact that the in-event actions of components are in ORDER 
 		val xSts = action.containingXSTS
 		for (systemPort : component.allPorts) {
 			val connectedSimplePorts = systemPort.allConnectedSimplePorts
@@ -99,7 +98,7 @@ class EnvironmentalActionFilter {
 					val index = instance.index
 					orderedPorts.put(index, port)
 				}
-				// Ports are ordered
+				// Ports are ordered now, and the algorithm is based on the fact that the in-event actions of components are in ORDER 
 				val firstPort = orderedPorts.get(0)
 				val firstSatechart = firstPort.containingStatechart
 				val firstInstance = firstSatechart.referencingComponentInstance
@@ -118,6 +117,7 @@ class EnvironmentalActionFilter {
 						val xStsBoundEventVariable = xSts.getVariable(xStsBoundEventName)
 						for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
 								.filter[it.lhs.declaration === xStsBoundEventVariable].toIterable) {
+							// "Binding" the variable 
 							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
 						}
 						val boundParameters = boundEvent.parameterDeclarations
@@ -130,6 +130,7 @@ class EnvironmentalActionFilter {
 							val xStsBoundParameterVariable = xSts.getVariable(xStsBoundParameterName)
 							for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
 									.filter[it.lhs.declaration === xStsBoundParameterVariable].toIterable) {
+								// "Binding" the variable 
 								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
 							}
 						}

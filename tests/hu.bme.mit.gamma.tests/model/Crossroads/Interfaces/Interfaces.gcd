@@ -1,19 +1,19 @@
 package interfaces
-interface LightCommands {
-	out event displayRed
-	out event displayYellow
-	out event displayGreen
-	out event displayNone
-}
-interface Executable {
-	in event ^execute(executeValue : integer)
+interface PoliceInterrupt {
+	out event police
 }
 interface Control {
 	out event toggle
 }
-interface PoliceInterrupt {
-	out event police
+interface Executable {
+	in event ^execute(executeValue : integer)
 }
 interface Error {
 	out event error
+}
+interface LightCommands {
+	out event displayYellow
+	out event displayGreen
+	out event displayNone
+	out event displayRed
 }
