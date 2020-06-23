@@ -5,3 +5,7 @@ include "Monitor/Monitor.ggen"
 include "System/Cascade/Crossroad.ggen"
 include "System/Synchronous/Crossroad.ggen"
 include "System/Monitored/MonitoredCrossroad.ggen"
+// Code generation has to be done after system code generation (there are .y2g traces)
+include "TrafficLight/TrafficLightCtrlCode.ggen"
+include "Controller/ControllerCode.ggen"
+include "Monitor/MonitorCode.ggen"

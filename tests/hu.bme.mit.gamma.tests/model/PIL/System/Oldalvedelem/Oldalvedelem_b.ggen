@@ -1,7 +1,18 @@
 import "Oldalvedelem_b.gcd"
+
+code {
+	component : Oldalvedelem_b
+	language : java
+}
+
 analysis {
 	component : Oldalvedelem_b
-//	language : UPPAAL
 	language : Theta
-	state-coverage
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_b.xsts"
+	query-file : "CustomQueriesOldalvedelem_b.prop"
+	test-language : java
 }

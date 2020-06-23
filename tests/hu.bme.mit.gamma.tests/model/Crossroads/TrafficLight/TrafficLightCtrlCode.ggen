@@ -1,0 +1,6 @@
+import "TrafficLightCtrl.gcd"
+
+code {
+	component : TrafficLightCtrl
+	language : java
+}

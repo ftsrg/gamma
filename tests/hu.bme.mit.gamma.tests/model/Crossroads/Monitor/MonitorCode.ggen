@@ -1,0 +1,6 @@
+import "Monitor.gcd"
+
+code {
+	component : Monitor
+	language : java
+}

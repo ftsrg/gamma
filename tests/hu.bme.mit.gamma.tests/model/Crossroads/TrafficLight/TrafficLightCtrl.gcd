@@ -2,21 +2,21 @@ package trafficlightctrl
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
 @PrioritizedTransitions = order-based
 statechart TrafficLightCtrl [
+	port Control : requires Control
 	port PoliceInterrupt : requires PoliceInterrupt
 	port LightCommands : provides LightCommands
-	port Control : requires Control
 ] {
-	var asd : integer
-	var a : boolean
-	var c : boolean
 	var b : integer
-	timeout BlinkingYellowTimeout3
-	timeout BlackTimeout4
-	transition from Black to BlinkingYellow when timeout BlackTimeout4
-	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
-	transition from Entry0 to Red
-	transition from Entry1 to Normal
-	transition from Entry2 to BlinkingYellow
+	var asd : integer
+	var c : boolean
+	var a : boolean
+	timeout BlackTimeout3
+	timeout BlinkingYellowTimeout4
+	transition from Black to BlinkingYellow when timeout BlackTimeout3
+	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout4
+	transition from Entry0 to BlinkingYellow
+	transition from Entry1 to Red
+	transition from Entry2 to Normal
 	transition from Green to Yellow when Control.toggle / b := 4;
 	transition from Interrupted to Normal when PoliceInterrupt.police
 	transition from Normal to Interrupted when PoliceInterrupt.police
@@ -26,30 +26,30 @@ statechart TrafficLightCtrl [
 		state Normal {
 			exit / asd := 321;
 			region normal {
-				shallow history Entry0
-				state Red {
-					entry / raise LightCommands.displayRed;
-					exit / a := true;
-				}
+				shallow history Entry1
 				state Green {
 					entry / raise LightCommands.displayGreen;
 				}
 				state Yellow {
 					entry / raise LightCommands.displayYellow;
 				}
+				state Red {
+					entry / raise LightCommands.displayRed;
+					exit / a := true;
+				}
 			}
 		}
 		state Interrupted {
 			region interrupted {
-				initial Entry2
-				state Black {
-					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
-				}
+				initial Entry0
 				state BlinkingYellow {
-					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
+					entry / set BlinkingYellowTimeout4 := 500 ms; raise LightCommands.displayYellow;
+				}
+				state Black {
+					entry / set BlackTimeout3 := 500 ms; raise LightCommands.displayNone;
 				}
 			}
 		}
-		initial Entry1
+		initial Entry2
 	}
 }

@@ -1,0 +1,6 @@
+import "Controller.gcd"
+
+code {
+	component : Controller
+	language : java
+}

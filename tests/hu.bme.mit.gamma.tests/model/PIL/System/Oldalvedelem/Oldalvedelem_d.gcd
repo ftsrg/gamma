@@ -49,11 +49,11 @@ cascade Oldalvedelem_d [
 	bind Also_Celjelzo1 -> celjelzo1.A
 //	bind Also_Celjelzo0 -> celjelzo0.A
 
-	bind Also_Valto2 -> valto2.A
-	bind Also_Valto4 -> valto4.A
-	bind Also_Valto61 -> valto61.A
+//	bind Also_Valto2 -> valto2.A
+//	bind Also_Valto4 -> valto4.A
+//	bind Also_Valto61 -> valto61.A
 	bind Also_Valto60 -> valto60.A
-	bind Also_Valto8 -> valto8.A
+//	bind Also_Valto8 -> valto8.A
 
 	// Lez
 	channel [ fojelzo0.S_VU_lez_Out ] -o)- [ valto2.E_VU_lez_In ]

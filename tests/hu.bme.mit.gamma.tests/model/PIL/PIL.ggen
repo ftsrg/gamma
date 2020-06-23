@@ -1,3 +1,6 @@
 include "Valto/Valto.ggen"
 include "Jelzo/Jelzo.ggen"
 include "System/Vaganyut/Vaganyut.ggen"
+include "System/Oldalvedelem/Oldalvedelem_b.ggen"
+include "System/Oldalvedelem/Oldalvedelem_c.ggen"
+include "System/Oldalvedelem/Oldalvedelem_d.ggen"
