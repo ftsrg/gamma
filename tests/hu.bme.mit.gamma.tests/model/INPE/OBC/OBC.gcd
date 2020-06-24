@@ -4,31 +4,31 @@ import "/hu.bme.mit.gamma.tests/model/INPE/Interface/Interfaces.gcd"
 statechart OBC [
 	port PL : provides Data
 ] {
-	var writeOBC : integer
 	var PLGetData : integer
-	var OBCData : integer
+	var writeOBC : integer
 	var sendOBC : integer
+	var OBCData : integer
 	transition from Entry0 to OBC_IDLE
-	transition from OBC_IDLE to OBC_SEND when PL.getData [PL.getData ::getDataValue == 0] / PLGetData
+	transition from OBC_IDLE to OBC_SEND when PL.getData [PL.getData ::getDataValue = 0] / PLGetData
 		:= PL.getData ::getDataValue; sendOBC := 1; raise PL.sendData(sendOBC);
-	transition from OBC_IDLE to OBC_SEND when PL.getData [PL.getData ::getDataValue == 1] / PLGetData
+	transition from OBC_IDLE to OBC_SEND when PL.getData [PL.getData ::getDataValue = 1] / PLGetData
 		:= PL.getData ::getDataValue; sendOBC := 2; raise PL.sendData(sendOBC); writeOBC := 2;
 	transition from OBC_IDLE to OBC_SEND when PL.getData [(PL.getData ::getDataValue != 0 and
 		PL.getData ::getDataValue != 1) and PL.getData ::getDataValue != 2] / PLGetData := PL.getData
 		::getDataValue; sendOBC := 0; raise PL.sendData(sendOBC);
 	transition from OBC_Receive to OBC_IDLE when cycle [(PLGetData != 1 and PLGetData != 2) and
 		writeOBC != 1]
-	transition from OBC_Receive to OBC_Write when PL.getData [PL.getData ::getDataValue == 2] /
+	transition from OBC_Receive to OBC_Write when PL.getData [PL.getData ::getDataValue = 2] /
 		OBCData := PL.getData ::getDataValue;
-	transition from OBC_Receive to OBC_IDLE when PL.getData [PL.getData ::getDataValue == 1 or
-		writeOBC == 1] / PLGetData := PL.getData ::getDataValue;
+	transition from OBC_Receive to OBC_IDLE when PL.getData [PL.getData ::getDataValue = 1 or
+		writeOBC = 1] / PLGetData := PL.getData ::getDataValue;
 	transition from OBC_SEND to OBC_Receive when cycle
 	transition from OBC_Write to OBC_Receive when cycle / writeOBC := 1;
 	region main_region {
 		initial Entry0
 		state OBC_SEND
 		state OBC_Write
-		state OBC_Receive
 		state OBC_IDLE
+		state OBC_Receive
 	}
 }

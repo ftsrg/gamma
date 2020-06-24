@@ -1,0 +1,11 @@
+package interfaces
+
+interface DataSource {
+	out event data//(payload : integer)
+	in event ping
+}
+
+interface StationControl {
+	out event start
+	out event shutdown
+}

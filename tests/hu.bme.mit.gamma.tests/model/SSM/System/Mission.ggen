@@ -1,0 +1,36 @@
+import "Mission.gcd"
+import "GroundStation/GroundStation.gcd"
+import "Spacecraft/Spacecraft.gcd"
+
+code {
+	component : GroundStation
+	language : java
+}
+
+code {
+	component : Spacecraft
+	language : java
+}
+
+code {
+	component : Mission
+	language : java
+}
+
+analysis {
+	component : Mission
+	language : UPPAAL
+	transition-coverage
+	constraint : {
+		minimum-orchestrating-period : 999 ms
+		maximum-orchestrating-period : 999 ms
+	}
+}
+
+verification {
+	language : UPPAAL
+	file : "Mission.xml"
+	query-file : "Mission.q"
+	optimize : true
+	test-language : java
+}

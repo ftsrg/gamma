@@ -1,4 +1,4 @@
-package mission
+package inpe_mission
 
 import "OBC/OBC.gcd"
 import "SLP/SLP.gcd"
