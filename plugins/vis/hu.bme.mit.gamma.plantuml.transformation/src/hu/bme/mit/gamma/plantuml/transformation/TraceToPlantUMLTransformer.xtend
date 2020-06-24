@@ -52,7 +52,7 @@ class TraceToPlantUMLTransformer {
 				«ENDFOR»
 				
 				«FOR act : step.actions.filter(RaiseEventAct)»
-				[o-> System : «act.port.name».«act.event.name»
+				[o-> System : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 				«ENDFOR»
 				
 				«FOR act : step.actions.filter(Schedule)»
@@ -60,7 +60,7 @@ class TraceToPlantUMLTransformer {
 				«ENDFOR»
 								
 				«FOR act : step.outEvents»
-				System ->o] : «act.port.name».«act.event.name»
+				System ->o] : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 				«ENDFOR»
 				
 				hnote over System 
@@ -87,7 +87,7 @@ class TraceToPlantUMLTransformer {
 					«ENDFOR»
 					
 					«FOR act : step.actions.filter(RaiseEventAct)»
-					[o-> System : «act.port.name».«act.event.name»
+					[o-> System : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 					«ENDFOR»
 					
 					«FOR act : step.actions.filter(Schedule)»
@@ -95,7 +95,7 @@ class TraceToPlantUMLTransformer {
 					«ENDFOR»
 									
 					«FOR act : step.outEvents»
-					System ->o] : «act.port.name».«act.event.name»
+					System ->o] : «act.port.name».«act.event.name»(«FOR argument : act.arguments SEPARATOR ', '»«argument.serialize»«ENDFOR»)
 					«ENDFOR»
 					
 					hnote over System 
