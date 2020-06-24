@@ -26,6 +26,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
+import hu.bme.mit.gamma.statechart.model.Package;
+import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
 import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
 
@@ -61,15 +65,21 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 	}
 
 	private void getStatechartPlantUMLCode(Resource resource) {
-		StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(resource);
-		transformer.execute();
-		if (transformer.getTransitions() != null) {
-			plantumlModel = transformer.getTransitions();
+		Package _package = (Package) resource.getContents().get(0);
+		Component component = _package.getComponents().get(0);
+		if (component instanceof StatechartDefinition) {
+			StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+			StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
+			transformer.execute();
+			if (transformer.getTransitions() != null) {
+				plantumlModel = transformer.getTransitions();
+			}
 		}
 	}
 	
 	private void getTracePlantUMLCode(Resource resource) {
-		TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(resource);
+		ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
+		TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
 		plantumlModel = transformer.execute();
 	}
 

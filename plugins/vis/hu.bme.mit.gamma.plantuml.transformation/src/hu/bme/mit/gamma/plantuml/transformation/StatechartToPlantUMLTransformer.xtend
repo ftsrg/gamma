@@ -28,7 +28,6 @@ import hu.bme.mit.gamma.statechart.model.JoinState
 import hu.bme.mit.gamma.statechart.model.MergeState
 import hu.bme.mit.gamma.statechart.model.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.model.OpaqueTrigger
-import hu.bme.mit.gamma.statechart.model.Package
 import hu.bme.mit.gamma.statechart.model.PortEventReference
 import hu.bme.mit.gamma.statechart.model.PseudoState
 import hu.bme.mit.gamma.statechart.model.RaiseEventAction
@@ -42,33 +41,24 @@ import hu.bme.mit.gamma.statechart.model.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.model.Transition
 import hu.bme.mit.gamma.statechart.model.UnaryTrigger
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
-import org.eclipse.emf.ecore.resource.Resource
 
 class StatechartToPlantUMLTransformer {
 	
-	protected final Resource resource
+	protected final StatechartDefinition statechart
 	protected String transitionsString
 	
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 
-	new(Resource resource) {
-		this.resource = resource
+	new(StatechartDefinition statechart) {
+		this.statechart = statechart
 		transitionsString = ""
 	}
 
 	def execute() {
-		if (resource.contents.empty) {
+		if (statechart === null) {
 			return
 		}
-		val package = resource.contents.get(0) as Package
-		if (package !== null) {
-			val statechart = package.components.filter(StatechartDefinition).head as StatechartDefinition
-			if (statechart !== null) {
-				transitionsString = mainRegionSearch(statechart)
-			} else {
-				transitionsString = null
-			}
-		}
+		transitionsString = mainRegionSearch(statechart)
 	}
 	
 ///////////////////// TRIGGER DISPATCH /////////////////////	

@@ -1,13 +1,12 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
+import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import org.eclipse.emf.ecore.resource.Resource
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Schedule
-import hu.bme.mit.gamma.expression.util.ExpressionSerializer
+import hu.bme.mit.gamma.trace.model.TimeElapse
 
 class TraceToPlantUMLTransformer {
 	
@@ -15,8 +14,8 @@ class TraceToPlantUMLTransformer {
 	
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
-	new(Resource resource) {
-		this.trace = resource.contents.head as ExecutionTrace
+	new(ExecutionTrace trace) {
+		this.trace = trace
 	}
 	
 	def execute() {

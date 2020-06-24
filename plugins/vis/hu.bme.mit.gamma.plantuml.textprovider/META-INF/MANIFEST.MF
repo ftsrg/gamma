@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.equinox.registry,
  net.sourceforge.plantuml.eclipse,
  net.sourceforge.plantuml.text,
- hu.bme.mit.gamma.statechart.plantuml.transformation
+ hu.bme.mit.gamma.statechart.plantuml.transformation,
+ hu.bme.mit.gamma.trace.model
 Export-Package: hu.bme.mit.gamma.plantuml.commandhandler
 Import-Package: org.eclipse.core.resources,
  org.eclipse.emf.common.util,
