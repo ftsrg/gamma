@@ -1,0 +1,5 @@
+package interfaces
+interface Data {
+	in event getData(getDataValue : integer)
+	out event sendData(sendDataValue : integer)
+}

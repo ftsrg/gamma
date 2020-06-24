@@ -1,0 +1,17 @@
+GeneratorModel for yakindu::java {
+
+	statechart OBC {
+
+		feature Outlet {
+			targetProject = "hu.bme.mit.inpe.casestudy"
+			targetFolder = "src-gen"
+			libraryTargetFolder = "src"
+		}
+
+		feature GeneralFeatures {
+			TimerService = true
+			InterfaceObserverSupport = true
+		}
+
+	}
+}

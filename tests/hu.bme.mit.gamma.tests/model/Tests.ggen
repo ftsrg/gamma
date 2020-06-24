@@ -1,3 +1,4 @@
 include "Crossroads/Crossroad.ggen"
 include "PIL/PIL.ggen"
 include "COID/COID.ggen"
+include "INPE/INPE.ggen"

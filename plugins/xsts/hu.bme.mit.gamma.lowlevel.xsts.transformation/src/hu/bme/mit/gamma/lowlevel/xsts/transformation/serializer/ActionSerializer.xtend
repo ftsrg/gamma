@@ -48,9 +48,8 @@ class ActionSerializer {
 		«action.lhs.serialize» := «action.rhs.serialize»;
 	'''
 	
-	def dispatch String serialize(EmptyAction action) '''
-		nop;
-	'''
+	// nop cannot be parsed by Theta
+	def dispatch String serialize(EmptyAction action) ''''''
 	
 	def dispatch String serialize(NonDeterministicAction action) '''
 		choice «FOR subaction : action.actions SEPARATOR " or "»{

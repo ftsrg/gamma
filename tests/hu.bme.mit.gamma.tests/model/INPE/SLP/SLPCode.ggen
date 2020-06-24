@@ -1,0 +1,6 @@
+import "SLP.gcd"
+
+code {
+	component : SLP
+	language : java
+}

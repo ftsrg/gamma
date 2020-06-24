@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
@@ -25,6 +26,7 @@ import hu.bme.mit.gamma.statechart.model.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.model.XSTS
 import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
 import java.io.File
@@ -258,8 +260,14 @@ class GammaToXSTSTransformer {
 	protected def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
 		val type = instance.derivedType
 		if (type instanceof StatechartDefinition) {
+			// Customizing every variable name
 			for (variable : xSts.variableDeclarations) {
 				variable.name = variable.customizeName(instance)
+			}
+			// Customizing region type declaration name
+			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]
+					.map[it.variables].flatten.map[it.type].filter(TypeReference).map[it.reference]) {
+				regionType.name = regionType.customizeRegionTypeName(type)
 			}
 		}
 	}

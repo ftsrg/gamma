@@ -1,0 +1,12 @@
+package mission
+
+import "OBC/OBC.gcd"
+import "SLP/SLP.gcd"
+
+cascade Mission [
+] {
+	component slp : SLP
+	component obc : OBC
+
+	channel [ obc.PL ] -o)- [ slp.ODC ]
+}

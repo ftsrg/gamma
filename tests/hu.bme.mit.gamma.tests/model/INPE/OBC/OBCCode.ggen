@@ -1,0 +1,6 @@
+import "OBC.gcd"
+
+code {
+	component : OBC
+	language : java
+}

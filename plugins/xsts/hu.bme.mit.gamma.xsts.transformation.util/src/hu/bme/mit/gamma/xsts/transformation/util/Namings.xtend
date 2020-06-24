@@ -54,13 +54,13 @@ class Namings {
 	
 	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable).variableName»_«instance.name»'''
 	static def String customizeName(TimeoutDeclaration timeout, ComponentInstance instance) '''«getName(timeout).variableName»_«instance.name»'''
-	static def String customizeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
+	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
 	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getInName(port).variableName»_«instance.name»'''
 	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance.name»'''
 	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«event.getInputName(port).eventName»_«instance.name»'''
 	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«event.getOutputName(port).eventName»_«instance.name»'''
 	// Regions
 	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals
-	static def String customizeName(Region region, ComponentInstance instance) '''«region.regionName.regionVariableName»_«instance.name»''' // For regions
+	static def String customizeName(Region region, ComponentInstance instance) '''«region.regionName.regionVariableName»_«instance.name»''' // For region variables
 	
 }
