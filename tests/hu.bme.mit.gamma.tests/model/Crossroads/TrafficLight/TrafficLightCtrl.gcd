@@ -1,22 +1,22 @@
 package trafficlightctrl
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart TrafficLightCtrl [
+	port PoliceInterrupt : requires PoliceInterrupt
 	port LightCommands : provides LightCommands
 	port Control : requires Control
-	port PoliceInterrupt : requires PoliceInterrupt
 ] {
-	var c : boolean
-	var b : integer
 	var a : boolean
+	var b : integer
+	var c : boolean
 	var asd : integer
 	timeout BlinkingYellowTimeout3
 	timeout BlackTimeout4
 	transition from Black to BlinkingYellow when timeout BlackTimeout4
 	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
-	transition from Entry0 to Normal
-	transition from Entry1 to Red
-	transition from Entry2 to BlinkingYellow
+	transition from Entry0 to Red
+	transition from Entry1 to BlinkingYellow
+	transition from Entry2 to Normal
 	transition from Green to Yellow when Control.toggle / b := 4;
 	transition from Interrupted to Normal when PoliceInterrupt.police
 	transition from Normal to Interrupted when PoliceInterrupt.police
@@ -25,7 +25,7 @@ statechart TrafficLightCtrl [
 	region Main_region {
 		state Interrupted {
 			region interrupted {
-				initial Entry2
+				initial Entry1
 				state BlinkingYellow {
 					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
 				}
@@ -37,19 +37,19 @@ statechart TrafficLightCtrl [
 		state Normal {
 			exit / asd := 321;
 			region normal {
-				shallow history Entry1
-				state Yellow {
-					entry / raise LightCommands.displayYellow;
-				}
+				shallow history Entry0
 				state Red {
 					entry / raise LightCommands.displayRed;
 					exit / a := true;
+				}
+				state Yellow {
+					entry / raise LightCommands.displayYellow;
 				}
 				state Green {
 					entry / raise LightCommands.displayGreen;
 				}
 			}
 		}
-		initial Entry0
+		initial Entry2
 	}
 }

@@ -174,8 +174,9 @@ enum RealizationMode returns RealizationMode:
 
 StatechartDefinition returns StatechartDefinition:
 	(
-		('@Schedule' '=' schedulingOrder=SchedulingOrder)? &
-		('@PrioritizedTransitions' '=' transitionPriority=TransitionPriority)? &
+		('@RegionSchedule' '=' schedulingOrder=SchedulingOrder)? &
+		('@OrthogonalRegionSchedule' '=' orthogonalRegionSchedulingOrder=OrthogonalRegionSchedulingOrder)? &
+		('@TransitionPriority' '=' transitionPriority=TransitionPriority)? &
 		(annotation=StatechartContractAnnotation)?
 	)
 	'statechart' name=ID 
@@ -199,6 +200,10 @@ StatechartDefinition returns StatechartDefinition:
 
 enum SchedulingOrder returns SchedulingOrder:
 	TOP_DOWN = 'top-down' | BOTTOM_UP = 'bottom-up'
+;
+
+enum OrthogonalRegionSchedulingOrder returns OrthogonalRegionSchedulingOrder:
+	SEQUENTIAL = 'sequential' | RANDOM = 'random'
 ;
 
 enum TransitionPriority returns TransitionPriority:

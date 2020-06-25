@@ -1,13 +1,13 @@
 package slp
 import "/hu.bme.mit.gamma.tests/model/INPE/Interface/Interfaces.gcd"
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart SLP [
 	port ODC : requires Data
 ] {
+	var sendPL : integer
+	var PLBuffer : integer
 	var sendDataOBC : integer
 	var ODCGetData : integer
-	var PLBuffer : integer
-	var sendPL : integer
 	transition from Entry0 to SLP_ON
 	transition from SLP_Acquisition_Experiment to SLP_Receive when cycle / PLBuffer := 3;
 	transition from SLP_ON to SLP_Receive when cycle / sendPL := 0; raise ODC.getData(sendPL);
@@ -18,20 +18,20 @@ statechart SLP [
 	transition from SLP_Receive to SLP_Send when ODC.sendData [ODC.sendData ::sendDataValue = 0] /
 		ODCGetData := ODC.sendData ::sendDataValue; sendPL := 2; raise ODC.getData(sendPL); sendDataOBC
 		:= 0;
-	transition from SLP_Receive to SLP_Send when ODC.sendData [ODC.sendData ::sendDataValue != 1 and
-		ODC.sendData ::sendDataValue != 2] / ODCGetData := ODC.sendData ::sendDataValue; sendPL := 0;
+	transition from SLP_Receive to SLP_Send when ODC.sendData [ODC.sendData ::sendDataValue /= 1 and
+		ODC.sendData ::sendDataValue /= 2] / ODCGetData := ODC.sendData ::sendDataValue; sendPL := 0;
 		raise ODC.getData(sendPL);
-	transition from SLP_Send to SLP_Read_Experiment when cycle [sendPL = 2 and ODCGetData != 0]
-	transition from SLP_Send to SLP_Receive when cycle [(sendPL != 1 and sendPL != 2) and sendDataOBC
+	transition from SLP_Send to SLP_Read_Experiment when cycle [sendPL = 2 and ODCGetData /= 0]
+	transition from SLP_Send to SLP_Receive when cycle [(sendPL /= 1 and sendPL /= 2) and sendDataOBC
 		= 0] / sendPL := 0; raise ODC.getData(sendPL);
 	transition from SLP_Send to SLP_Acquisition_Experiment when cycle [sendPL = 1 or sendDataOBC = 1]
 		/ sendPL := 1; raise ODC.getData(sendPL);
 	region main_region {
 		initial Entry0
-		state SLP_Read_Experiment
+		state SLP_Receive
+		state SLP_Acquisition_Experiment
 		state SLP_Send
 		state SLP_ON
-		state SLP_Acquisition_Experiment
-		state SLP_Receive
+		state SLP_Read_Experiment
 	}
 }

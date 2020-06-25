@@ -3,7 +3,7 @@ package valto
 import "Interfaces/Interfaces.gcd"
 import "Types/Types.gcd"
 
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart Valto(P_vezer : V_vezer_t, P_OV_tav : tavolsag_t, P_V_bal_hossz : tavolsag_t,
 	P_V_jobb_hossz : tavolsag_t, P_V_belso_hossz : tavolsag_t, P_V_eleje_hossz : tavolsag_t, P_id : obj_t) [
 	port E_VU_lez_Out : provides F_VU_lez

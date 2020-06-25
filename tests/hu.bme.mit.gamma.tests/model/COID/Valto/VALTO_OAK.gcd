@@ -1,28 +1,31 @@
 package valto_oak
+
 import "Interface/Interfaces"
 import "Types/Types"
+
 /* The statechart generated from the MagicDraw VALTO_OAK model.
  * Also, some elements have been adjusted and extended manually,
  * due to the limitations of the model transformer.
  */
 // Definition of VALTO_OAK statechart with parameters
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart VALTO_OAK(P_OAK : boolean) [
 	port StateMachine_Port : provides StateMachine_Interface_For_VALTO_OAK
 ] {
 	var RS_OAK : Kenyszeritett
 	var O_OAK : integer
 	var a : integer
-	transition from Oldalvedelem_athelyezes_kenyszeritve_2 to Oldalvedelem_athelyezes_kenyszeritve_2 when
-		StateMachine_Port.RP_OAKBE / raise StateMachine_Port.NEG_NYUGTA;
+	transition from Oldalvedelem_athelyezes_kenyszeritve_2 to Oldalvedelem_athelyezes_kenyszeritve_2
+		when StateMachine_Port.RP_OAKBE / raise StateMachine_Port.NEG_NYUGTA;
 	transition from Oldalvedelem_athelyezes_nem_kenyszeritheto_0 to
 		Oldalvedelem_athelyezes_nem_kenyszeritheto_0 when StateMachine_Port.RP_OAKKI / raise
 		StateMachine_Port.NEG_NYUGTA; O_OAK := 2;
 	transition from Oldalvedelem_athelyezes_nincs_kenyszeritve_1 to
 		Oldalvedelem_athelyezes_nincs_kenyszeritve_1 when StateMachine_Port.RP_OAKKI / raise
 		StateMachine_Port.NEG_NYUGTA;
-	transition from Oldalvedelem_athelyezes_kenyszeritve_2 to Oldalvedelem_athelyezes_nincs_kenyszeritve_1
-		when StateMachine_Port.RP_OAKKI / raise StateMachine_Port.POS_NYUGTA;
+	transition from Oldalvedelem_athelyezes_kenyszeritve_2 to
+		Oldalvedelem_athelyezes_nincs_kenyszeritve_1 when StateMachine_Port.RP_OAKKI / raise
+		StateMachine_Port.POS_NYUGTA;
 	transition from choice_5_in_main_region_of_VALTO_OAK to
 		Oldalvedelem_athelyezes_nincs_kenyszeritve_1 [P_OAK = true] / a := a + 3;
 	transition from choice_5_in_main_region_of_VALTO_OAK to
@@ -31,8 +34,9 @@ statechart VALTO_OAK(P_OAK : boolean) [
 	transition from Oldalvedelem_athelyezes_nem_kenyszeritheto_0 to
 		Oldalvedelem_athelyezes_nem_kenyszeritheto_0 when StateMachine_Port.RP_OAKBE / raise
 		StateMachine_Port.NEG_NYUGTA; O_OAK := 1;
-	transition from Oldalvedelem_athelyezes_nincs_kenyszeritve_1 to Oldalvedelem_athelyezes_kenyszeritve_2
-		when StateMachine_Port.RP_OAKBE / raise StateMachine_Port.POS_NYUGTA;
+	transition from Oldalvedelem_athelyezes_nincs_kenyszeritve_1 to
+		Oldalvedelem_athelyezes_kenyszeritve_2 when StateMachine_Port.RP_OAKBE / raise
+		StateMachine_Port.POS_NYUGTA;
 	region main_region_of_VALTO_OAK {
 		state Oldalvedelem_athelyezes_nem_kenyszeritheto_0 {
 			entry / RS_OAK := ::NINCS_KENYSZERITVE; a := 314;

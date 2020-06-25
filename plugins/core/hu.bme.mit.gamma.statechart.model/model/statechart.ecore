@@ -26,6 +26,8 @@
         eType="#//Transition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="schedulingOrder" lowerBound="1"
         eType="#//SchedulingOrder" defaultValueLiteral="TOP_DOWN"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="orthogonalRegionSchedulingOrder"
+        lowerBound="1" eType="#//OrthogonalRegionSchedulingOrder" defaultValueLiteral="SEQUENTIAL"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transitionPriority" lowerBound="1"
         eType="#//TransitionPriority" defaultValueLiteral="OFF"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotation" eType="#//StatechartAnnotation"
@@ -34,6 +36,10 @@
   <eClassifiers xsi:type="ecore:EEnum" name="SchedulingOrder">
     <eLiterals name="TOP_DOWN"/>
     <eLiterals name="BOTTOM_UP" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="OrthogonalRegionSchedulingOrder">
+    <eLiterals name="SEQUENTIAL"/>
+    <eLiterals name="RANDOM" value="1"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="TransitionPriority">
     <eLiterals name="OFF"/>

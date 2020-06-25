@@ -1,9 +1,9 @@
 package monitor
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart Monitor [
-	port Error : provides Error
 	port LightInputs : requires LightCommands
+	port Error : provides Error
 ] {
 	transition from Entry0 to Other
 	transition from Green to Error when LightInputs.displayGreen / raise Error.error;
@@ -20,7 +20,7 @@ statechart Monitor [
 		initial Entry0
 		state Red
 		state Green
-		state Other
 		state Error
+		state Other
 	}
 }

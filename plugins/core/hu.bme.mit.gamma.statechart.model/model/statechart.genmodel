@@ -14,6 +14,10 @@
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//SchedulingOrder/TOP_DOWN"/>
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//SchedulingOrder/BOTTOM_UP"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//OrthogonalRegionSchedulingOrder">
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/SEQUENTIAL"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//OrthogonalRegionSchedulingOrder/RANDOM"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//TransitionPriority">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/OFF"/>
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/ORDER_BASED"/>
@@ -48,6 +52,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/timeoutDeclarations"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/transitions"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/schedulingOrder"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotation"/>
     </genClasses>

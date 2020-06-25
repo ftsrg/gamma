@@ -51,7 +51,9 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).after(f.getVariableDeclarationRule());
         c.setLinewrap(1, 1, 2).after(f.getTimeoutDeclarationRule());
         c.setLinewrap(1).before(f.getComponentRule());
-        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getTransitionPriorityAssignment_0_1_2());
+        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getSchedulingOrderAssignment_0_0_2());
+        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
+        c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
         c.setLinewrap(1).before(f.getTransitionRule());
         c.setLinewrap(1).after(f.getTransitionRule());
         c.setLinewrap(1).before(f.getRegionRule());

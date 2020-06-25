@@ -57,6 +57,7 @@ import hu.bme.mit.gamma.statechart.model.ForkState;
 import hu.bme.mit.gamma.statechart.model.JoinState;
 import hu.bme.mit.gamma.statechart.model.MergeState;
 import hu.bme.mit.gamma.statechart.model.OpaqueTrigger;
+import hu.bme.mit.gamma.statechart.model.OrthogonalRegionSchedulingOrder;
 import hu.bme.mit.gamma.statechart.model.Package;
 import hu.bme.mit.gamma.statechart.model.Port;
 import hu.bme.mit.gamma.statechart.model.PortEventReference;
@@ -272,6 +273,14 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	// Statechart
+	
+	@Check
+	public void checkStatechartScheduling(StatechartDefinition statechart) {
+		if (statechart.getOrthogonalRegionSchedulingOrder() != OrthogonalRegionSchedulingOrder.SEQUENTIAL) {
+			error("Only the sequential scheduling of orthogonal regions is supported.",
+					StatechartModelPackage.Literals.STATECHART_DEFINITION__ORTHOGONAL_REGION_SCHEDULING_ORDER);
+		}
+	}
 	
 	@Check
 	public void checkImports(Package _package) {

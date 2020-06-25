@@ -2,7 +2,7 @@ package groundstation
 
 import "Interfaces/Interfaces.gcd"
 
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart GroundStation [
 	port connection : requires DataSource
 	port control : requires StationControl

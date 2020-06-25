@@ -6,7 +6,7 @@ import "Types/Types"
  * which are not perfectly in accordance with the semantics used by the engineers of Prolan.
  * Therefore, this is actually a rough, elementary version of that model.
  */
-@Schedule = bottom-up
+@RegionSchedule = bottom-up
 statechart bJbCOID_allapotgep(P_COID : boolean, P_COIDT : integer, PCOID_H : integer) [
 	port I_FT : requires E_I_H_Interface
 	port I_CR : requires E_I_H_Interface

@@ -5,7 +5,7 @@ package jelzo
 import "Interfaces/Interfaces.gcd"
 import "Types/Types.gcd"
 
-@PrioritizedTransitions = order-based
+@TransitionPriority = order-based
 statechart Jelzo(P_J_tipus : J_tipus_t, P_megcs : tavolsag_t, P_id : obj_t) [
 	port F_VU_lez : requires F_VU_lez
 	port C_VU_lez_Out : provides F_VU_lez
