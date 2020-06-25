@@ -1074,8 +1074,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("A Gamma instance identifier cannot start or end with an '_' underscore character.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			return;
 		}
-		if (type instanceof AsynchronousAdapter) {
-			// Not checking AsynchronousAdapters
+		EObject container = instance.eContainer();
+		if (type instanceof AsynchronousAdapter || !(container instanceof CompositeComponent)) {
+			// Not checking AsynchronousAdapters or port bindings not contained by CompositeComponents
 			return;
 		}
 		EObject root = EcoreUtil2.getRootContainer(instance);

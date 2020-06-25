@@ -215,11 +215,11 @@ StatechartContractAnnotation returns StatechartAnnotation:
 ;
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
-	'@AdaptiveContract' '=' monitoredComponent=[CompositeModel::Component]
+	'@AdaptiveContractStatechart' '=' monitoredComponent=[CompositeModel::Component]
 ;
 
 MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
-	{PhaseModel::MissionPhaseAnnotation} '@Phase'
+	{PhaseModel::MissionPhaseAnnotation} '@PhaseStatechart'
 ;
 
 StatechartReference returns StatechartReference:
@@ -530,8 +530,7 @@ InlineStatement returns ActionModel::Statement:
 	
 	//Extensions:
 	RaiseEventAction |
-	SetTimeoutAction |
-	DeactivateTimeoutAction 
+	SetTimeoutAction
 	)
 	
 	';'

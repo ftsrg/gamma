@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -66,13 +67,16 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 
 	private void getStatechartPlantUMLCode(Resource resource) {
 		Package _package = (Package) resource.getContents().get(0);
-		Component component = _package.getComponents().get(0);
-		if (component instanceof StatechartDefinition) {
-			StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-			StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
-			transformer.execute();
-			if (transformer.getTransitions() != null) {
-				plantumlModel = transformer.getTransitions();
+		EList<Component> components = _package.getComponents();
+		if (!components.isEmpty()) {
+			Component component = components.get(0);
+			if (component instanceof StatechartDefinition) {
+				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+				StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
+				transformer.execute();
+				if (transformer.getTransitions() != null) {
+					plantumlModel = transformer.getTransitions();
+				}
 			}
 		}
 	}
