@@ -94,6 +94,8 @@ class GammaToXSTSTransformer {
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
+		// Setting clock variable increase
+		xSts.setClockVariables
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -220,7 +222,6 @@ class GammaToXSTSTransformer {
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key
-		xSts.setClockVariables
 		// 0-ing all variable declaration initial expression, the normal ones are in the init action
 		for (variable : xSts.variableDeclarations) {
 			val type = variable.type
