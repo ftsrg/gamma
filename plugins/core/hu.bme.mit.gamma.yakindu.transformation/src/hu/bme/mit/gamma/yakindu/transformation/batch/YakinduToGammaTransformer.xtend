@@ -21,19 +21,23 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.EntryState
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.ForkState
 import hu.bme.mit.gamma.statechart.statechart.InitialState
-import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization
 import hu.bme.mit.gamma.statechart.statechart.JoinState
 import hu.bme.mit.gamma.statechart.statechart.MergeState
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
@@ -44,13 +48,10 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.interface_.Trigger
-import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.yakindu.transformation.queries.ActionsOfRegularLocalReactions
 import hu.bme.mit.gamma.yakindu.transformation.queries.Choices
 import hu.bme.mit.gamma.yakindu.transformation.queries.CompositeStateRegions
@@ -115,8 +116,6 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions

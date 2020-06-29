@@ -28,7 +28,6 @@ import hu.bme.mit.gamma.statechart.statechart.JoinState
 import hu.bme.mit.gamma.statechart.statechart.MergeState
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction

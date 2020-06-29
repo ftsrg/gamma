@@ -14,14 +14,13 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ParametricElement
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.yakindu.transformation.queries.Events
 import hu.bme.mit.gamma.yakindu.transformation.queries.Interfaces
 import hu.bme.mit.gamma.yakindu.transformation.traceability.TraceabilityFactory
@@ -40,15 +39,14 @@ import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransforma
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 import org.yakindu.sct.model.sgraph.Statechart
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 
 class InterfaceTransformer {
 
-	/* Transformation-related extensions */
+	// Transformation-related extensions
 	extension BatchTransformation transformation
 	extension BatchTransformationStatements statements
 
-	/* Transformation rule-related extensions */
+	// Transformation rule-related extensions
 	extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	extension IModelManipulations manipulation
 
@@ -62,7 +60,6 @@ class InterfaceTransformer {
 	protected Y2GTrace traceRoot
 
 	// Packages of the metamodels
-	extension StatechartModelPackage sctPackage = StatechartModelPackage.eINSTANCE
 	extension InterfaceModelPackage ifPackage = InterfaceModelPackage.eINSTANCE
 	extension ExpressionModelPackage cmPackage = ExpressionModelPackage.eINSTANCE
 	extension TraceabilityPackage trPackage = TraceabilityPackage.eINSTANCE

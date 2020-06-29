@@ -80,6 +80,17 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 				interfaceRealization.getInterface().getEvents().stream().allMatch(it -> it.getDirection() == EventDirection.OUT);
 	}
 	
+	public static RealizationMode getOpposite(RealizationMode realizationMode) {
+		switch (realizationMode) {
+			case PROVIDED:
+				return RealizationMode.PROVIDED;
+			case REQUIRED:
+				return RealizationMode.REQUIRED;
+			default:
+				throw new IllegalArgumentException("Not known realization mode: " + realizationMode);
+		}
+	}
+	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
 	}

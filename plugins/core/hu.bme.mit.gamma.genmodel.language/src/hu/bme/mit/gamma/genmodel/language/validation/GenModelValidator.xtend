@@ -34,15 +34,15 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -57,7 +57,6 @@ import org.yakindu.base.types.Event
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 
 /**
  * This class contains custom validation rules. 
