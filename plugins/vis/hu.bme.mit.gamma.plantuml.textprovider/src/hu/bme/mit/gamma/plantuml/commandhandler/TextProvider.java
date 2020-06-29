@@ -66,25 +66,29 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 	}
 
 	private void getStatechartPlantUMLCode(Resource resource) {
-		Package _package = (Package) resource.getContents().get(0);
-		EList<Component> components = _package.getComponents();
-		if (!components.isEmpty()) {
-			Component component = components.get(0);
-			if (component instanceof StatechartDefinition) {
-				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-				StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
-				transformer.execute();
-				if (transformer.getTransitions() != null) {
-					plantumlModel = transformer.getTransitions();
+		if (!resource.getContents().isEmpty()) {
+			Package _package = (Package) resource.getContents().get(0);
+			EList<Component> components = _package.getComponents();
+			if (!components.isEmpty()) {
+				Component component = components.get(0);
+				if (component instanceof StatechartDefinition) {
+					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+					StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
+					transformer.execute();
+					if (transformer.getTransitions() != null) {
+						plantumlModel = transformer.getTransitions();
+					}
 				}
 			}
 		}
 	}
 	
 	private void getTracePlantUMLCode(Resource resource) {
-		ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
-		TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
-		plantumlModel = transformer.execute();
+		if (!resource.getContents().isEmpty()) {
+			ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
+			TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
+			plantumlModel = transformer.execute();
+		}
 	}
 
 	@Override
