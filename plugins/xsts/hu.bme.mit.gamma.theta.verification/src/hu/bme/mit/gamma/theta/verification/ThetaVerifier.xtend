@@ -19,9 +19,12 @@ import java.io.File
 import java.util.Scanner
 import java.util.logging.Level
 
+import static com.google.common.base.Preconditions.checkState
+
 class ThetaVerifier extends AbstractVerifier {
 	
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
+	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	
 	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta-xsts-cli.jar"
 	
@@ -55,6 +58,7 @@ class ThetaVerifier extends AbstractVerifier {
 		var Scanner resultReader = null
 		var Scanner traceFileScanner = null
 		try {
+			ENVIRONMENT_VARIABLE_FOR_THETA_JAR.validate
 			// The 'theta-xsts-cli.jar' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %theta-xsts-cli.jar% --model trafficlight.xsts --property red_green.prop
@@ -146,6 +150,20 @@ class ThetaQueryAdapter {
 			return thetaResult.opposite
 		}
 		return thetaResult
+	}
+	
+}
+
+class ThetaValidator {
+	public static ThetaValidator INSTANCE = new ThetaValidator
+	private new() {}
+	// Singleton
+	
+	def validate(String thetaEnvironmentVariable) {
+		val jar = System.getenv(thetaEnvironmentVariable)
+		val thetaJarFile = new File(jar)
+		checkState(thetaJarFile.exists && !thetaJarFile.directory, "The environment variable " + 
+				thetaEnvironmentVariable + " does not refer to a valid jar file: " + jar)
 	}
 	
 }
