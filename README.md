@@ -9,20 +9,18 @@ Check out http://gamma.inf.mit.bme.hu for more resources about Gamma. A good sta
 To cite Gamma, please cite the following paper.
 
 ```
-@inproceedings{DBLP:conf/icse/MolnarGVMV18,
-  author    = {Vince Moln{\'{a}}r and
-               Bence Graics and
-               Andr{\'{a}}s V{\"{o}}r{\"{o}}s and
-               Istv{\'{a}}n Majzik and
-               D{\'{a}}niel Varr{\'{o}}},
-  title     = {The Gamma statechart composition framework: design, verification
-               and code generation for component-based reactive systems},
-  booktitle = {Proceedings of the 40th International Conference on Software Engineering:
-               Companion Proceeedings, {ICSE} 2018, Gothenburg, Sweden, May 27 -
-               June 03, 2018},
-  pages     = {113--116},
-  year      = {2018},
-  doi       = {10.1145/3183440.3183489}
+@inproceedings{molnar2018gamma,
+    author = {Vince Moln{\'{a}}r and
+              Bence Graics and
+              Andr{\'{a}}s V{\"{o}}r{\"{o}}s and
+              Istv{\'{a}}n Majzik and
+              D{\'{a}}niel Varr{\'{o}}},
+    title = {The {G}amma statechart composition framework: design, verification and code generation for component-based reactive systems},
+    booktitle = {Proceedings of the 40th International Conference on Software Engineering: Companion Proceeedings},
+    pages = {113--116},
+    year = {2018},
+    publisher = {ACM},
+    doi = {10.1145/3183440.3183489}
 }
 ```
 
