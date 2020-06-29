@@ -25,8 +25,10 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
+import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUMLTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
+import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -65,7 +67,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 		return resource;
 	}
 
-	private void getStatechartPlantUMLCode(Resource resource) {
+	private void getComponentPlantUMLCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			Package _package = (Package) resource.getContents().get(0);
 			EList<Component> components = _package.getComponents();
@@ -78,6 +80,10 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 					if (transformer.getTransitions() != null) {
 						plantumlModel = transformer.getTransitions();
 					}
+				} else if (component instanceof CompositeComponent) {
+					CompositeComponent composite = (CompositeComponent) component;
+					CompositeToPlantUMLTransformer transformer = new CompositeToPlantUMLTransformer(composite);
+					plantumlModel = transformer.execute();
 				}
 			}
 		}
@@ -94,7 +100,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 	@Override
 	public String getDiagramText(IPath path) {
 		if (path.getFileExtension().equals("gcd")) {
-			getStatechartPlantUMLCode(getResource(path));
+			getComponentPlantUMLCode(getResource(path));
 			return "@startuml\r\n" + plantumlModel + "@enduml";
 		}
 		if (path.getFileExtension().equals("get")) {

@@ -20,7 +20,6 @@ class TraceToPlantUMLTransformer {
 	
 	def execute() {
 		return '''
-			@startuml
 			!pragma teoz true
 			
 			hide footbox
@@ -116,7 +115,6 @@ class TraceToPlantUMLTransformer {
 			
 			«««{step«stepno++»} Environment -> System !! : shut down
 			
-			@enduml
 		'''
 	}
 	
