@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="**/.gitignore" kind="src" path="src-gen"/>
 	<classpathentry excluding="**/.gitignore" kind="src" path="test-gen"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-11.0.7.10-hotspot">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
