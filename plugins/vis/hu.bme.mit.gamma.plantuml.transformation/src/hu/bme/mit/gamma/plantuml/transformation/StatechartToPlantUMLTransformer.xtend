@@ -357,7 +357,7 @@ class StatechartToPlantUMLTransformer {
 						[H] --> «transition.targetState.name»
 					«ENDIF»
 				«ELSE»
-					«transition.sourceState.name» --> «transition.targetState.name» «IF transition.guard !== null»:[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
+					«transition.sourceState.name» --> «transition.targetState.name» : «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
 				«ENDIF»
 			«ELSE»	
 				«transition.sourceState.name» --> «transition.targetState.name» : «IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
