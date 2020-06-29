@@ -22,10 +22,14 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
+import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -36,8 +40,8 @@ import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventSource;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
-import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
@@ -384,6 +388,18 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			}
 		}
 		return port;
+	}
+	
+	public static List<InstancePortReference> getRequiredPorts(Channel channel) {
+		if (channel instanceof SimpleChannel) {
+			SimpleChannel simpleChannel = (SimpleChannel) channel;
+			return Collections.singletonList(simpleChannel.getRequiredPort());
+		}
+		if (channel instanceof BroadcastChannel) {
+			BroadcastChannel broadcastChannel = (BroadcastChannel) channel;
+			return Collections.unmodifiableList(broadcastChannel.getRequiredPorts());
+		}
+		throw new IllegalArgumentException("Not known channel type: " + channel);
 	}
 	
 	public static EventSource getEventSource(EventReference eventReference) {
