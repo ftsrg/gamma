@@ -27,7 +27,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler.CommandHandler;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
 public class CodeGenerationHandler extends TaskHandler {
 

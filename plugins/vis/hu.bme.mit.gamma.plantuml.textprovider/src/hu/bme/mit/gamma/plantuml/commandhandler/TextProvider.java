@@ -27,10 +27,10 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
-import hu.bme.mit.gamma.statechart.model.Package;
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.model.composite.Component;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
 import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
 

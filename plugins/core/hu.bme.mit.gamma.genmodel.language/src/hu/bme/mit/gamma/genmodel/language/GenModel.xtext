@@ -23,7 +23,7 @@ import "http://www.yakindu.org/base/types/2.0.0" as types
 
 GenModel returns GenModel:
 	(('import' 
-		(packageImports+=[model::Package | STRING] |
+		(packageImports+=[interface::Package | STRING] |
 		'external' statechartImports+=[sgraph::Statechart| STRING] |
 		'trace' traceImports+=[trace::ExecutionTrace | STRING])) |
 		'include' genmodelImports+=[GenModel | STRING]

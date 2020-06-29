@@ -22,7 +22,7 @@ public class StatechartUtil extends ExpressionUtil {
 	protected StatechartUtil() {}
 	//
 	
-	protected CompositeFactory compositeFactory = CompositeFactory.eINSTANCE;
+	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
 		int value = evaluator.evaluateInteger(time.getValue());

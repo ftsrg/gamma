@@ -215,7 +215,7 @@ StatechartContractAnnotation returns StatechartAnnotation:
 ;
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
-	'@AdaptiveContractStatechart' '=' monitoredComponent=[CompositeModel::Component]
+	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
 ;
 
 MissionPhaseAnnotation returns PhaseModel::MissionPhaseAnnotation:
