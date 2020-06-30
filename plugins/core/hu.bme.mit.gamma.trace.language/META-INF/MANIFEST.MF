@@ -6,6 +6,8 @@ Bundle-Version: 2.3.1.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.trace.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.language.util,
  hu.bme.mit.gamma.trace.model,
  org.eclipse.xtext,

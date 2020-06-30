@@ -1,15 +1,6 @@
 module hu.bme.mit.gamma.setup.CleanAll
 
 Workflow {	
-    component = @cleaners.CleanUppaalModel {}
-    component = @cleaners.CleanExpressionModel {}
-    component = @cleaners.CleanActionModel {}
-    component = @cleaners.CleanStatechartModel {}
-    component = @cleaners.CleanTraceModel {}
-    component = @cleaners.CleanUppaalTraceabilityModel {}
-    component = @cleaners.CleanGenmodelModel {}
-    component = @cleaners.CleanYakinduTraceabilityModel {}
-    component = @cleaners.CleanLowlevelModel {}
-    component = @cleaners.CleanXstsModel {}
-    component = @cleaners.CleanLowlevelXstsTraceabilityModel {}
+    component = @CleanAllModels {}
+    component = @CleanAllLanguages {} 
 }

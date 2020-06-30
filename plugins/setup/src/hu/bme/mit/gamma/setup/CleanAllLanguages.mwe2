@@ -1,0 +1,9 @@
+module hu.bme.mit.gamma.setup.CleanAllLanguages
+
+Workflow {	
+    component = @cleaners.languages.CleanExpressionLanguage {}
+    component = @cleaners.languages.CleanActionLanguage {}
+    component = @cleaners.languages.CleanStatechartLanguage {}
+    component = @cleaners.languages.CleanTraceLanguage {}
+    component = @cleaners.languages.CleanGenmodelLanguage {}
+}

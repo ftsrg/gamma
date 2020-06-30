@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.trace.model,
- hu.bme.mit.gamma.genmodel.model
+ hu.bme.mit.gamma.genmodel.model,
+ hu.bme.mit.gamma.action.language
 Automatic-Module-Name: hu.bme.mit.gamma.setup
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: BME-FTSRG

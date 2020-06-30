@@ -1,0 +1,15 @@
+module hu.bme.mit.gamma.setup.CleanAllModels
+
+Workflow {	
+    component = @cleaners.models.CleanUppaalModel {}
+    component = @cleaners.models.CleanExpressionModel {}
+    component = @cleaners.models.CleanActionModel {}
+    component = @cleaners.models.CleanStatechartModel {}
+    component = @cleaners.models.CleanTraceModel {}
+    component = @cleaners.models.CleanUppaalTraceabilityModel {}
+    component = @cleaners.models.CleanGenmodelModel {}
+    component = @cleaners.models.CleanYakinduTraceabilityModel {}
+    component = @cleaners.models.CleanLowlevelModel {}
+    component = @cleaners.models.CleanXstsModel {}
+    component = @cleaners.models.CleanLowlevelXstsTraceabilityModel {}
+}
