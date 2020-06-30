@@ -43,7 +43,9 @@ class TraceToEnvironmentModelTransformer {
 	}
 	
 	def execute() {
-		val statechart = createStatechartDefinition
+		val statechart = createStatechartDefinition => [
+			it.name = executionTrace.name
+		]
 		statechart.transformPorts(trace)
 		val mainRegion = createRegion
 		statechart.regions += mainRegion
@@ -140,6 +142,10 @@ class TraceToEnvironmentModelTransformer {
 		]
 		region.containingStatechart.transitions += newTransition
 		return newTransition
+	}
+	
+	def getTrace() {
+		return trace
 	}
 	
 }

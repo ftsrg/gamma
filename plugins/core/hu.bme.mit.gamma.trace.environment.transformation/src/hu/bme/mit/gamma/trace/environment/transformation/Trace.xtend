@@ -23,6 +23,10 @@ class Trace {
 		return ports.get(componentPort)
 	}
 	
+	def getPortPairs() {
+		return ports.entrySet
+	}
+	
 	// Timeout declaration
 	
 	def hasTimeoutDeclaration() {

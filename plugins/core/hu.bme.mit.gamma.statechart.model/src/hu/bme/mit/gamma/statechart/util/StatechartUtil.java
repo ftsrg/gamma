@@ -5,13 +5,18 @@ import org.eclipse.emf.common.util.EList;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
@@ -27,6 +32,7 @@ public class StatechartUtil extends ExpressionUtil {
 	protected StatechartUtil() {}
 	//
 
+	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
@@ -54,6 +60,37 @@ public class StatechartUtil extends ExpressionUtil {
 		default:
 			throw new IllegalArgumentException("Not known unit: " + unit);
 		}
+	}
+	
+	public Package wrapIntoPackage(Component component) {
+		Package _package = interfaceFactory.createPackage();
+		_package.setName(component.getName().toLowerCase());
+		_package.getComponents().add(component);
+		return _package;
+	}
+	
+	public ComponentInstance instantiateComponent(Component component) {
+		if (component instanceof SynchronousComponent) {
+			return instantiateSynchronousComponent((SynchronousComponent) component);
+		}
+		if (component instanceof AsynchronousComponent) {
+			return instantiateAsynchronousComponent((AsynchronousComponent) component);
+		}
+		throw new IllegalArgumentException("Not known type" + component);
+	}
+	
+	public SynchronousComponentInstance instantiateSynchronousComponent(SynchronousComponent component) {
+		SynchronousComponentInstance instance = compositeFactory.createSynchronousComponentInstance();
+		instance.setName(getWrapperInstanceName(component));
+		instance.setType(component);
+		return instance;
+	}
+	
+	public AsynchronousComponentInstance instantiateAsynchronousComponent(AsynchronousComponent component) {
+		AsynchronousComponentInstance instance = compositeFactory.createAsynchronousComponentInstance();
+		instance.setName(getWrapperInstanceName(component));
+		instance.setType(component);
+		return instance;
 	}
 	
 	public CascadeCompositeComponent wrapSynchronousComponent(SynchronousComponent component) {
