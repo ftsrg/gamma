@@ -143,4 +143,8 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TestReplayModelGeneration" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="executionTrace" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.trace.model/model/trace.ecore#//ExecutionTrace"/>
+  </eClassifiers>
 </ecore:EPackage>

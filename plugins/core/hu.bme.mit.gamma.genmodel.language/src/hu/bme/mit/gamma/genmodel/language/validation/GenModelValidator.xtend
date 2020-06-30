@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.genmodel.model.StateCoverage
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.genmodel.model.Task
 import hu.bme.mit.gamma.genmodel.model.TestGeneration
+import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
@@ -151,6 +152,18 @@ class GenModelValidator extends AbstractGenModelValidator {
 		val testFolders = verification.testFolder
 		if (testFolders.size > 1) {
 			error("At most one test folder can be specified.", GenmodelPackage.Literals.VERIFICATION__TEST_FOLDER)
+		}
+	}
+	
+	@Check
+	def checkTasks(TestReplayModelGeneration modelGeneration) {
+		val systemFileNames = modelGeneration.fileName
+		if (systemFileNames.size != 1) {
+			error("A single system file name must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+		}
+		val targetFolders = modelGeneration.targetFolder
+		if (targetFolders.size > 1) {
+			error("At most one test folder can be specified.", GenmodelPackage.Literals.TASK__TARGET_FOLDER)
 		}
 	}
 	
@@ -287,6 +300,9 @@ class GenModelValidator extends AbstractGenModelValidator {
 		val traceImports = genmodel.traceImports.toSet
 		for (testGenerationTask : genmodel.tasks.filter(TestGeneration)) {
 			traceImports -= testGenerationTask.executionTrace
+		}
+		for (testReplayModelGeneration : genmodel.tasks.filter(TestReplayModelGeneration)) {
+			traceImports -= testReplayModelGeneration.executionTrace
 		}
 		for (traceImport : traceImports) {
 			val index = genmodel.traceImports.indexOf(traceImport);

@@ -34,7 +34,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification
+		Verification | TestReplayModelGeneration
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -191,7 +191,7 @@ enum InteractionRepresentation returns InteractionRepresentation:
 	UNDER_APPROXIMATION = "under-approximation" |  OVER_APPROXIMATION = "over-approximation"
 ;
 
-Verification  returns Verification:
+Verification returns Verification:
 	{Verification} 'verification' '{'
 		(
 			'trace-folder' ':' targetFolder+=STRING |	// Trace folder
@@ -206,7 +206,17 @@ Verification  returns Verification:
 	'}'
 ;
 
-InterfaceMapping  returns InterfaceMapping:
+TestReplayModelGeneration returns TestReplayModelGeneration:
+	{TestReplayModelGeneration} 'test-replay' '{'
+		'trace' ':' executionTrace=[trace::ExecutionTrace]
+		(
+			'system-file' ':' fileName+=STRING | // Analysis model
+			'folder' ':' targetFolder+=STRING	// Trace folder
+		)*
+	'}'
+;
+
+InterfaceMapping returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'
 		eventMappings+=EventMapping*
 	'}')?

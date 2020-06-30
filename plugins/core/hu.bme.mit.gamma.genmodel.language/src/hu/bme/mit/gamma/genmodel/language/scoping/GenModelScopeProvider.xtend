@@ -71,7 +71,8 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				return Scopes.scopeFor(component.allAsynchronousSimpleInstances)
 			}
 		}
-		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE) {
+		if (reference == GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
+				reference == GenmodelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
 		}

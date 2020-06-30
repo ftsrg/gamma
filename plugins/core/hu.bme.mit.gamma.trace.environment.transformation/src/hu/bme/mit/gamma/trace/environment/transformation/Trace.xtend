@@ -30,7 +30,7 @@ class Trace {
 	// Timeout declaration
 	
 	def hasTimeoutDeclaration() {
-		return timeoutDeclaration === null
+		return timeoutDeclaration !== null
 	}
 	
 	def setTimeoutDeclaration(TimeoutDeclaration timeoutDeclaration) {

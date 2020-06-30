@@ -28,7 +28,8 @@ class TestReplayModelGenerator {
 	 */
 	def execute() {
 		val transformer = new TraceToEnvironmentModelTransformer(executionTrace)
-		val environmentModel = transformer.execute
+		val result = transformer.execute
+		val environmentModel = result.key
 		val trace = transformer.getTrace
 		
 		val testModel = executionTrace.component as SynchronousComponent

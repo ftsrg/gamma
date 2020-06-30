@@ -110,5 +110,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/testFolder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//TestReplayModelGeneration">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//TestReplayModelGeneration/executionTrace"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

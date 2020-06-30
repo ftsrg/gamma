@@ -11,3 +11,4 @@ Require-Bundle: com.google.guava,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
  hu.bme.mit.gamma.trace.model
+Export-Package: hu.bme.mit.gamma.trace.environment.transformation

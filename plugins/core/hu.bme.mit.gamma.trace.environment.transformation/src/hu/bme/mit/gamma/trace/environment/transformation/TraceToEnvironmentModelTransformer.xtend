@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.AbstractMap.SimpleEntry
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -49,7 +50,9 @@ class TraceToEnvironmentModelTransformer {
 		statechart.transformPorts(trace)
 		val mainRegion = createRegion
 		statechart.regions += mainRegion
-		val initialState = createInitialState
+		val initialState = createInitialState => [
+			it.name = '''Initial'''
+		]
 		mainRegion.stateNodes += initialState
 		val firstState = createState => [
 			it.name = '''_«id++»'''
@@ -67,12 +70,14 @@ class TraceToEnvironmentModelTransformer {
 		for (action : actions) {
 			actualTransition = action.transformTrigger(actualTransition)
 		}
-		return statechart
+		val lastState = actualTransition.targetState
+		return new SimpleEntry(statechart, lastState)
 	}
 	
 	protected def transformPorts(StatechartDefinition statechart, Trace trace) {
 		for (componentPort : executionTrace.component.ports) {
 			val environmentPort = componentPort.clone(true, true)
+			statechart.ports += environmentPort
 			val interfaceRealization = environmentPort.interfaceRealization
 			interfaceRealization.realizationMode = interfaceRealization.realizationMode.opposite
 			trace.put(componentPort, environmentPort)
@@ -82,7 +87,12 @@ class TraceToEnvironmentModelTransformer {
 	protected def dispatch transformTrigger(TimeElapse act, Transition transition) {
 		val elapsedTime = act.elapsedTime
 		if (!trace.hasTimeoutDeclaration) {
-			trace.timeoutDeclaration = statechartModelFactory.createTimeoutDeclaration
+			val timeout = statechartModelFactory.createTimeoutDeclaration => [
+				it.name = "Timeout"
+			]
+			val statechart = transition.containingStatechart
+			statechart.timeoutDeclarations += timeout
+			trace.timeoutDeclaration = timeout
 		}
 		val timeoutDeclaration = trace.timeoutDeclaration
 		

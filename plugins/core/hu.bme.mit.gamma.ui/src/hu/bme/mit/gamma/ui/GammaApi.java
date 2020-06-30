@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
+import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
 import hu.bme.mit.gamma.genmodel.model.derivedfeatures.GenmodelDerivedFeatures;
@@ -51,6 +52,7 @@ import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.TestReplayModelGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler;
 
 public class GammaApi {
@@ -139,6 +141,13 @@ public class GammaApi {
 							handler.execute(verification);
 							logger.log(Level.INFO, "The verification has been finished.");
 						}
+						else if (task instanceof TestReplayModelGeneration) {
+							TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
+							TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
+							handler.setTargetFolder(testReplayModelGeneration, parentFolderUri);
+							handler.execute(testReplayModelGeneration);
+							logger.log(Level.INFO, "The test replay model generation has been finished.");
+						}
 						else if (task instanceof AdaptiveContractTestGeneration) {
 							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
@@ -206,7 +215,8 @@ public class GammaApi {
 			case 4: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
-								it instanceof AdaptiveContractTestGeneration)
+								it instanceof AdaptiveContractTestGeneration ||
+								it instanceof TestReplayModelGeneration)
 						.collect(Collectors.toList());
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
