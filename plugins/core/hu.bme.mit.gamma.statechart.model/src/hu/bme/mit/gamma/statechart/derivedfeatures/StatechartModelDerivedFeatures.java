@@ -63,7 +63,6 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
-
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {

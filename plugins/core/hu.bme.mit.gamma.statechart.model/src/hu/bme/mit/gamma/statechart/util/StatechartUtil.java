@@ -5,24 +5,43 @@ import org.eclipse.emf.common.util.EList;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
+import hu.bme.mit.gamma.statechart.interface_.Trigger;
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger;
+import hu.bme.mit.gamma.statechart.statechart.BinaryType;
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
 
 public class StatechartUtil extends ExpressionUtil {
 	// Singleton
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}
 	//
-	
+
+	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
+	
+	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
+		if (transition.getTrigger() == null) {
+			transition.setTrigger(trigger);
+		}
+		else {
+			BinaryTrigger binaryTrigger = statechartFactory.createBinaryTrigger();
+			binaryTrigger.setType(type);
+			binaryTrigger.setLeftOperand(transition.getTrigger());
+			binaryTrigger.setRightOperand(trigger);
+			transition.setTrigger(binaryTrigger);
+		}
+	}
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
 		int value = evaluator.evaluateInteger(time.getValue());
