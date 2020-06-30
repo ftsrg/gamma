@@ -63,7 +63,6 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
-
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
@@ -80,8 +79,12 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 
 	public static boolean isBroadcast(InterfaceRealization interfaceRealization) {
-		return interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED &&
-				interfaceRealization.getInterface().getEvents().stream().allMatch(it -> it.getDirection() == EventDirection.OUT);
+		return isProvided(interfaceRealization) &&
+			interfaceRealization.getInterface().getEvents().stream().allMatch(it -> it.getDirection() == EventDirection.OUT);
+	}
+	
+	public static boolean isProvided(InterfaceRealization interfaceRealization) {
+		return interfaceRealization.getRealizationMode() == RealizationMode.PROVIDED;
 	}
 	
 	public static RealizationMode getOpposite(RealizationMode realizationMode) {
@@ -97,6 +100,10 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static boolean isBroadcast(Port port) {
 		return isBroadcast(port.getInterfaceRealization());
+	}
+	
+	public static boolean isProvided(Port port) {
+		return isProvided(port.getInterfaceRealization());
 	}
 	
 	public static EventDirection getOpposite(EventDirection eventDirection) {

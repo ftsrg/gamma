@@ -128,7 +128,7 @@ class GammaToXSTSTransformer {
 		var XSTS xSts = null
 		val scheduledInstances = component.scheduledInstances
 		val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
-		val componentMergedActions = newHashMap // To handle multiple schedulings in  CascadeCompositeComponents
+		val componentMergedActions = newHashMap // To handle multiple schedulings in CascadeCompositeComponents
 		for (var i = 0; i < scheduledInstances.size; i++) {
 			val subcomponent = scheduledInstances.get(i)
 			val type = subcomponent.type
