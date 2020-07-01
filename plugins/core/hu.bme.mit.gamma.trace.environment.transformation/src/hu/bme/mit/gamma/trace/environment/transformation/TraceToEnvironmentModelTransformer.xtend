@@ -75,7 +75,7 @@ class TraceToEnvironmentModelTransformer {
 			actualTransition = action.transformTrigger(actualTransition)
 		}
 		// There is an unnecessary empty transition at the end
-		val lastState = actualTransition.sourceState
+		val lastState = actualTransition.sourceState as State
 		actualTransition.targetState.delete
 		actualTransition.delete
 		

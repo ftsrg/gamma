@@ -210,8 +210,8 @@ TestReplayModelGeneration returns TestReplayModelGeneration:
 	{TestReplayModelGeneration} 'test-replay' '{'
 		'trace' ':' executionTrace=[trace::ExecutionTrace]
 		(
-			'system-file' ':' fileName+=STRING | // Analysis model
-			'folder' ':' targetFolder+=STRING	// Trace folder
+			'system-file' ':' fileName+=STRING | // The name of the file containing the system
+			'folder' ':' targetFolder+=STRING
 		)*
 	'}'
 ;

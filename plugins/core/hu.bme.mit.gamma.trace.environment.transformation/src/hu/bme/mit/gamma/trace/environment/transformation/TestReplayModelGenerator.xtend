@@ -1,13 +1,16 @@
 package hu.bme.mit.gamma.trace.environment.transformation
 
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import java.util.AbstractMap.SimpleEntry
+import org.eclipse.xtend.lib.annotations.Data
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -31,6 +34,7 @@ class TestReplayModelGenerator {
 		val transformer = new TraceToEnvironmentModelTransformer(executionTrace)
 		val result = transformer.execute
 		val environmentModel = result.key
+		val lastState = result.value
 		val trace = transformer.getTrace
 		
 		val testModel = executionTrace.component as SynchronousComponent
@@ -81,7 +85,7 @@ class TestReplayModelGenerator {
 		systemPackage.imports += environmentPackage
 		systemPackage.imports += testModel.containingPackage
 				
-		return new SimpleEntry(environmentModel, systemModel)
+		return new Result(environmentModel, systemModel, lastState)
 	}
 	
 	protected def getInterfaceImports(Component component) {
@@ -90,4 +94,12 @@ class TestReplayModelGenerator {
 	
 	protected def String getSystemModelName(Component environmentModel, Component testModel) '''«environmentModel.name»On«testModel.name»'''
 	
+	@Data
+	static class Result {
+		StatechartDefinition environmentModel
+		CascadeCompositeComponent systemModel
+		State lastState
+	}
+	
 }
+
