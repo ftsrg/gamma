@@ -134,7 +134,7 @@ class GammaEcoreUtil {
 	def getPlatformUri(Resource resource) {
 		val uri = resource.URI
 		if (uri.isPlatform) {
-			return resource
+			return uri
 		}
 		val resourceFile = resource.file
 		val projectFile = resourceFile.parentFile.projectFile

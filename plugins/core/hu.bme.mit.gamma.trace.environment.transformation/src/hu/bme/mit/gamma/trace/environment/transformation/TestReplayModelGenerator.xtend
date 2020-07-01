@@ -34,8 +34,12 @@ class TestReplayModelGenerator {
 		val trace = transformer.getTrace
 		
 		val testModel = executionTrace.component as SynchronousComponent
-		val systemModel = testModel.wrapSynchronousComponent
-		val componentInstance = systemModel.components.head
+		val systemModel = testModel.wrapSynchronousComponent => [
+			it.name = getSystemModelName(environmentModel, testModel)
+		]
+		val componentInstance = systemModel.components.head => [
+			it.name = it.name.toFirstLower
+		]
 		
 		val environmentInstance = environmentModel.instantiateSynchronousComponent
 		systemModel.components.add(0, environmentInstance)
@@ -83,5 +87,7 @@ class TestReplayModelGenerator {
 	protected def getInterfaceImports(Component component) {
 		return component.allPorts.map[it.interface.containingPackage].toList 
 	}
+	
+	protected def String getSystemModelName(Component environmentModel, Component testModel) '''«environmentModel.name»On«testModel.name»'''
 	
 }

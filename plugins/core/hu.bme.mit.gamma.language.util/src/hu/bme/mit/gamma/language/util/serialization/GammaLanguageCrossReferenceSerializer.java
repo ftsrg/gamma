@@ -32,12 +32,10 @@ public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferen
 				URI uri = resource.getURI();
 				String string = null;
 				// We prefer relative URIs as they are platform independent
-				if (uri.isPlatform()) {
-					string = uri.toPlatformString(true);
+				if (!uri.isPlatform()) {
+					uri = ecoreUtil.getPlatformUri(resource);
 				}
-				else {
-					string = ecoreUtil.getPlatformUri(resource).toString();
-				}
+				string = uri.toPlatformString(true);
 				return "\"" + string + "\"";
 			}
 		}
