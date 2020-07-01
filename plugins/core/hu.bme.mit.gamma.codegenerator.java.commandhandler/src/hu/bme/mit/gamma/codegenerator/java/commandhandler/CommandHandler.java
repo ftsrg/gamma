@@ -150,9 +150,8 @@ public class CommandHandler extends AbstractHandler {
 	
 	private String getPackageFileName(Package _package) {
 		URI uri = _package.eResource().getURI();
-		String platformString = uri.toPlatformString(true);
 		// /hu.bme.mit.gamma.tutorial.extra/model/Monitor/Monitor.gcd
-		String packageFileName = platformString.substring(platformString.lastIndexOf("/") + 1);
+		String packageFileName = uri.lastSegment();
 		// Monitor.gcd -> ["Monitor", "gcd"]
 		String[] splittedPackageFileName = packageFileName.split("\\.");
 		return splittedPackageFileName[0];

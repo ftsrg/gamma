@@ -190,6 +190,7 @@ class LowlevelToXSTSTransformer {
 		getOutEventEnvironmentalActionRule.fireAllCurrent
 		mergeTransitions
 		optimizeActions
+		eliminateNullActions
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -792,6 +793,27 @@ class LowlevelToXSTSTransformer {
 		xSts.outEventAction = xSts.outEventAction.optimize
 		/* Note: no optimization on the list of transitions as the
 		 deletion of actions would mean the breaking of the trace. */
+	}
+	
+	protected def eliminateNullActions() {
+		if (xSts.variableInitializingAction === null) {
+			xSts.variableInitializingAction = createEmptyAction
+		}
+		if (xSts.configurationInitializingAction === null) {
+			xSts.configurationInitializingAction = createEmptyAction
+		}
+		if (xSts.entryEventAction === null) {
+			xSts.entryEventAction = createEmptyAction
+		}
+		if (xSts.mergedAction === null) {
+			xSts.mergedAction = createEmptyAction
+		}
+		if (xSts.inEventAction === null) {
+			xSts.inEventAction = createEmptyAction
+		}
+		if (xSts.outEventAction === null) {
+			xSts.outEventAction = createEmptyAction
+		}
 	}
 	
 	def dispose() {

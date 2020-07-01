@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.trace.environment.transformation
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -72,10 +73,15 @@ class TestReplayModelGenerator {
 		val environmentPackage = environmentModel.wrapIntoPackage
 		val systemPackage = systemModel.wrapIntoPackage
 		
+		environmentPackage.imports += testModel.interfaceImports // E.g., interfaces
 		systemPackage.imports += environmentPackage
-		systemPackage.imports += systemModel.containingPackage
+		systemPackage.imports += testModel.containingPackage
 				
 		return new SimpleEntry(environmentModel, systemModel)
+	}
+	
+	protected def getInterfaceImports(Component component) {
+		return component.allPorts.map[it.interface.containingPackage].toList 
 	}
 	
 }

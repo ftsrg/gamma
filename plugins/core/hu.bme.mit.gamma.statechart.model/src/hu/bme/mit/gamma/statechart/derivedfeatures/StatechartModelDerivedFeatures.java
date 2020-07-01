@@ -90,9 +90,9 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	public static RealizationMode getOpposite(RealizationMode realizationMode) {
 		switch (realizationMode) {
 			case PROVIDED:
-				return RealizationMode.PROVIDED;
-			case REQUIRED:
 				return RealizationMode.REQUIRED;
+			case REQUIRED:
+				return RealizationMode.PROVIDED;
 			default:
 				throw new IllegalArgumentException("Not known realization mode: " + realizationMode);
 		}
@@ -104,6 +104,10 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static boolean isProvided(Port port) {
 		return isProvided(port.getInterfaceRealization());
+	}
+	
+	public static Interface getInterface(Port port) {
+		return port.getInterfaceRealization().getInterface();
 	}
 	
 	public static EventDirection getOpposite(EventDirection eventDirection) {

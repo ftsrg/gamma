@@ -23,7 +23,8 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class TraceToEnvironmentModelTransformer {
 	
-	int id
+	int timeoutId
+	int stateId
 	
 	protected final ExecutionTrace executionTrace
 	protected final Trace trace
@@ -38,7 +39,8 @@ class TraceToEnvironmentModelTransformer {
 	protected extension TraceFactory traceFactory = TraceFactory.eINSTANCE
 	
 	new(ExecutionTrace executionTrace) {
-		this.id = 0
+		this.timeoutId = 0
+		this.stateId = 0
 		this.executionTrace = executionTrace
 		this.trace = new Trace
 	}
@@ -48,14 +50,16 @@ class TraceToEnvironmentModelTransformer {
 			it.name = executionTrace.name
 		]
 		statechart.transformPorts(trace)
-		val mainRegion = createRegion
+		val mainRegion = createRegion => [
+			it.name = '''MainRegion'''
+		]
 		statechart.regions += mainRegion
 		val initialState = createInitialState => [
 			it.name = '''Initial'''
 		]
 		mainRegion.stateNodes += initialState
 		val firstState = createState => [
-			it.name = '''_«id++»'''
+			it.name = stateName
 		]
 		mainRegion.stateNodes += firstState
 		var actualTransition = createTransition => [
@@ -70,7 +74,11 @@ class TraceToEnvironmentModelTransformer {
 		for (action : actions) {
 			actualTransition = action.transformTrigger(actualTransition)
 		}
-		val lastState = actualTransition.targetState
+		// There is an unnecessary empty transition at the end
+		val lastState = actualTransition.sourceState
+		actualTransition.targetState.delete
+		actualTransition.delete
+		
 		return new SimpleEntry(statechart, lastState)
 	}
 	
@@ -86,16 +94,13 @@ class TraceToEnvironmentModelTransformer {
 	
 	protected def dispatch transformTrigger(TimeElapse act, Transition transition) {
 		val elapsedTime = act.elapsedTime
-		if (!trace.hasTimeoutDeclaration) {
-			val timeout = statechartModelFactory.createTimeoutDeclaration => [
-				it.name = "Timeout"
-			]
-			val statechart = transition.containingStatechart
-			statechart.timeoutDeclarations += timeout
-			trace.timeoutDeclaration = timeout
-		}
-		val timeoutDeclaration = trace.timeoutDeclaration
 		
+		val timeoutDeclaration = statechartModelFactory.createTimeoutDeclaration => [
+			it.name = timeoutDeclarationName
+		]
+		val statechart = transition.containingStatechart
+		statechart.timeoutDeclarations += timeoutDeclaration
+	
 		val source = transition.sourceState as State
 		
 		val setTimeoutActions = source.entryActions.filter(SetTimeoutAction)
@@ -140,10 +145,14 @@ class TraceToEnvironmentModelTransformer {
 	}
 	
 	protected def dispatch transformTrigger(ComponentSchedule act, Transition transition) {
+		if (transition.trigger === null && transition.sourceState instanceof State) {
+			// The old transition has to have a trigger
+			transition.trigger = createOnCycleTrigger
+		}
 		val target = transition.targetState
 		val region = target.parentRegion
 		val newTarget = createState => [
-			it.name = '''_«id++»'''
+			it.name = stateName
 		]
 		region.stateNodes += newTarget
 		val newTransition = createTransition => [
@@ -157,5 +166,8 @@ class TraceToEnvironmentModelTransformer {
 	def getTrace() {
 		return trace
 	}
+	
+	protected def String getStateName() '''_«stateId++»'''
+	protected def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
 	
 }
