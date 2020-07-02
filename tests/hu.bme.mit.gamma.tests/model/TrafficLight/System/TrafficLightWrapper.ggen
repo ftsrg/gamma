@@ -1,0 +1,35 @@
+import "TrafficLight/TrafficLight.gcd"
+import "TrafficLightWrapper.gcd"
+
+code {
+	component : TrafficLightWrapper
+	language : java
+}
+
+code {
+	component : TrafficLight
+	language : java
+}
+
+analysis {
+	component : TrafficLightWrapper
+	(1, true)
+	language : UPPAAL
+	language : Theta
+	transition-coverage
+}
+
+verification {
+	language : UPPAAL
+	file : "TrafficLightWrapper.xml"
+	query-file : "TrafficLightWrapper.q"
+	optimize : true
+	test-language : java
+}
+
+verification {
+	language : Theta
+	file : "TrafficLightWrapper.xsts"
+	query-file : "CustomQueries.prop"
+	test-language : java
+}

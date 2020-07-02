@@ -1,0 +1,15 @@
+package syncTrafficLightpkg
+
+import "Interfaces/Interfaces.gcd"
+import "TrafficLight/TrafficLight.gcd"
+
+cascade TrafficLightWrapper(a : integer, b : boolean) [
+	port Display : provides DisplayInterface
+	port in_default : provides in_default
+	port out_default : provides out_default
+] {
+	component TrafficLight : TrafficLight(a, b)
+	bind Display -> TrafficLight.Display
+	bind in_default -> TrafficLight.in_default
+	bind out_default -> TrafficLight.out_default
+}

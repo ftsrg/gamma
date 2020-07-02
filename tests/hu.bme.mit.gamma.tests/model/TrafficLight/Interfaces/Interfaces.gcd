@@ -1,0 +1,21 @@
+package TrafficLightInterfaces
+interface DisplayInterface {
+	in event Interrupt
+	out event DisplayOff
+	out event DisplayRed
+	in event Leave
+	out event DisplayGreen
+	out event DisplayYellow
+	in event Tick
+	in event Arrive
+	in event Toggle
+}
+interface in_default {
+	in event Toggle
+	in event Tick
+	in event Interrupt
+	in event Leave
+	in event Arrive
+}
+interface out_default {
+}

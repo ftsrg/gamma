@@ -1,0 +1,64 @@
+package TrafficLightpkg
+import "Interfaces/Interfaces.gcd"
+
+const TRANSITION_ID : integer := 10
+
+statechart TrafficLight(i : integer, bc : boolean) [
+	port Display : provides DisplayInterface
+	port in_default : provides in_default
+	port out_default : provides out_default
+] {
+	var clk : integer := 0
+	var counter : integer := 1 + i
+	var _transition : integer := i
+	transition from Green to Yellow when in_default.Toggle
+	transition from Normal to Interrupted when in_default.Interrupt
+	transition from _hBfLsqDdEeq3yKnF2LzTuw to Normal
+	transition from On to Off when in_default.Tick [clk > 3] / clk := 0;
+	transition from Ok to Threshold when in_default.Arrive [counter >= 10]
+	transition from _hBfLsKDdEeq3yKnF2LzTuw to Red
+	transition from Threshold to Interrupted when in_default.Toggle
+	transition from Red to Green when in_default.Toggle
+	transition from _hBfLsaDdEeq3yKnF2LzTuw to On / clk := 0;
+	transition from _hBekoKDdEeq3yKnF2LzTuw to Ok / counter := 0;
+	transition from Yellow to Red when in_default.Toggle
+	transition from Ok to Ok when in_default.Leave [counter > 0] / counter := counter - 1;
+	transition from Off to On when in_default.Tick [clk > 3] / clk := 0; _transition := TRANSITION_ID;
+	transition from Off to Off when in_default.Tick [clk <= 3] / clk := clk + 1;
+	transition from On to On when in_default.Tick [clk <= 3] / clk := clk + 1;
+	transition from Ok to Ok when in_default.Arrive [counter < 10] / counter := counter + 1;
+	transition from Interrupted to Normal when in_default.Interrupt
+	region Main {
+		state Interrupted {
+			region Main_o {
+				state Off {
+					entry / raise Display.DisplayOff;
+				}
+				state On {
+					entry / raise Display.DisplayYellow;
+				}
+				initial _hBfLsaDdEeq3yKnF2LzTuw
+			}
+		}
+		state Normal {
+			region Counting {
+				state Ok
+				state Threshold
+				initial _hBekoKDdEeq3yKnF2LzTuw
+			}
+			region Light {
+				state Red {
+					entry / raise Display.DisplayRed;
+				}
+				state Yellow {
+					entry / raise Display.DisplayYellow;
+				}
+				state Green {
+					entry / raise Display.DisplayGreen;
+				}
+				shallow history _hBfLsKDdEeq3yKnF2LzTuw
+			}
+		}
+		initial _hBfLsqDdEeq3yKnF2LzTuw
+	}
+}
