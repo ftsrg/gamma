@@ -219,13 +219,12 @@ class CompositeToUppaalTransformer {
 	protected ModelModifierForTestGeneration modelModifier
 	
 	new(Component component, TestQueryGenerationHandler testGenerationHandler) {
-		this.initialize(component, Scheduler.RANDOM, null, testGenerationHandler)
+		this(component, #[], Scheduler.RANDOM, null, false, testGenerationHandler)
 	}
 	
 	new(Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			TestQueryGenerationHandler testGenerationHandler) {
-		this.topComponentArguments.addAll(topComponentArguments)
-		this.initialize(component, Scheduler.RANDOM, null, testGenerationHandler)
+		this(component, topComponentArguments, Scheduler.RANDOM, null, false, testGenerationHandler)
 	}
 	
 	new(Component component,
@@ -235,7 +234,8 @@ class CompositeToUppaalTransformer {
 			boolean isMinimalElementSet,
 			TestQueryGenerationHandler testGenerationHandler) { 
 		this.isMinimalElementSet = isMinimalElementSet
-		this.topComponentArguments.addAll(topComponentArguments)
+		// Clone is needed, otherwise the ggen model will be in resource set
+		this.topComponentArguments.addAll(topComponentArguments.map[it.clone(true, true)])
 		// The above parameters have to be set before calling initialize
 		this.initialize(component, asyncScheduler, constraint, testGenerationHandler)
 	}
@@ -670,6 +670,7 @@ class CompositeToUppaalTransformer {
 			val initializer = createExpressionInitializer => [
 				it.transform(expressionInitializer_Expression, argument)
 			]
+			argument.removeFromTraces // This argument is not contained in a resource
 			// The initialization is created, variable has to be created
 			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
 				parameter.name + "Of" + component.name)

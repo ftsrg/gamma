@@ -118,7 +118,7 @@ class CompositeComponentCodeGenerator {
 	
 	/** Sets the parameters of the component and instantiates the necessary components with them. */
 	def createInstances(CompositeComponent component) '''
-		«FOR parameter : component.parameterDeclarations SEPARATOR ", "»
+		«FOR parameter : component.parameterDeclarations»
 			this.«parameter.name» = «parameter.name»;
 		«ENDFOR»
 		«FOR instance : component.derivedComponents»
