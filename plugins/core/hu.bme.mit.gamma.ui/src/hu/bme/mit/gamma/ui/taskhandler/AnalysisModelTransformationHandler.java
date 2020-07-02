@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 
@@ -39,6 +40,7 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
@@ -104,10 +106,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			// Unfolding the given system
 			Component component = analysisModelTransformation.getComponent();
-			Package gammaPackage = (Package) component.eContainer();
+			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			UppaalModelPreprocessor preprocessor = new UppaalModelPreprocessor();
-			Component newTopComponent = preprocessor.preprocess(gammaPackage, new File(targetFolderUri +
-					File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
+			Component newTopComponent = preprocessor.preprocess(gammaPackage, analysisModelTransformation.getArguments(),
+				new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
+			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
+			// Top component arguments can now be contained by the Package
+			newPackage.getTopComponentArguments().addAll(
+					analysisModelTransformation.getArguments().stream()
+					.map(it -> ecoreUtil.clone(it, true, true)).collect(Collectors.toList()));
 			// Checking the model whether it contains forbidden elements
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
 			validator.checkModel();
@@ -143,7 +150,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
-				newTopComponent, analysisModelTransformation.getArguments(),
+				newTopComponent,
 				getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 				constraint,
 				analysisModelTransformation.isMinimalElementSet(),
@@ -247,10 +254,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Component component = analysisModelTransformation.getComponent();
 			Package gammaPackage = (Package) component.eContainer();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(analysisModelTransformation.getArguments(),
-					schedulingConstraint);
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint);
 			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
-			gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(gammaPackage, xStsFile);
+			gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(gammaPackage,
+				analysisModelTransformation.getArguments(),  xStsFile);
 			logger.log(Level.INFO, "XSTS transformation has been finished.");
 		}
 		

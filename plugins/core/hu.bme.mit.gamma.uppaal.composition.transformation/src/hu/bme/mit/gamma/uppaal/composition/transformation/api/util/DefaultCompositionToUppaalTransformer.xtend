@@ -1,8 +1,8 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
@@ -37,7 +37,7 @@ class DefaultCompositionToUppaalTransformer {
 		val fileName = containingFile.name
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
 		val modelPreprocessor = new UppaalModelPreprocessor
-		val topComponent = modelPreprocessor.preprocess(gammaPackage, containingFile)
+		val topComponent = modelPreprocessor.preprocess(gammaPackage, topComponentArguments, containingFile)
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(topComponent)
 		validator.checkModel
@@ -46,7 +46,7 @@ class DefaultCompositionToUppaalTransformer {
 			topComponent.getCoverableInstances(ElementCoverage.TRANSITION_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.OUT_EVENT_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.INTERACTION_COVERAGE, coverage))
-		val transformer = new CompositeToUppaalTransformer(topComponent, topComponentArguments, testQueryGenerationHandler)
+		val transformer = new CompositeToUppaalTransformer(topComponent, testQueryGenerationHandler)
 		val resultModels = transformer.execute
 		val nta = resultModels.key
 		var trace = resultModels.value

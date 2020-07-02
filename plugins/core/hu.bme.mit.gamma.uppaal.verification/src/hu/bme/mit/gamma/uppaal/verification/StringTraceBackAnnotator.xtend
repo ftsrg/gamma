@@ -10,18 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceFactory
@@ -58,7 +57,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import uppaal.declarations.DataVariableDeclaration
-import uppaal.declarations.ExpressionInitializer
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableDeclaration
 import uppaal.templates.Location
@@ -118,16 +116,9 @@ class StringTraceBackAnnotator {
 			it.component = this.component
 			it.import = this.component.eContainer as Package
 			it.name = this.component.name + "Trace"
+			// Setting the top arguments
+			it.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
 		]
-		// Setting the arguments
-		for (parameter : this.component.parameterDeclarations) {
-			val uppaalVariableDeclaration = parameter.allValuesOfTo.head as DataVariableDeclaration
-			val uppaalVariable = uppaalVariableDeclaration.variable.head
-			val initExpression = uppaalVariable.initializer as ExpressionInitializer
-			val gammaExpression = initExpression.expression.allExpressionValuesOfFrom.head as Expression
-			val newGammaExpression = gammaExpression.clone(true, true)
-			trace.arguments += newGammaExpression
-		}
 		// Back-annotating the steps
 		var isFirstStep = true
 		// First active locations - needed for state space reuse and unspecified system resets

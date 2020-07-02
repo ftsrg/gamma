@@ -38,30 +38,21 @@ class AnalysisModelPreprocessor {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
-	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
-		val component = gammaPackage.components.head
-		val parameters = component.parameterDeclarations
-		checkState(parameters.size == topComponentArguments.size)
-		for (var i = 0; i < parameters. size; i++) {
-			val parameter = parameters.get(i)
-			val argument = topComponentArguments.get(i).clone(true, true)
-			logger.log(Level.INFO, "Saving top component argument for " + parameter.name)
-			gammaPackage.topComponentArguments += argument
-			// Deleting because the parameter variables are not needed
-			argument.change(parameter, component)
-		}
-		return gammaPackage.preprocess(containingFile)
+	def preprocess(Package gammaPackage, File containingFile) {
+		return gammaPackage.preprocess(#[], containingFile)
 	}
 	
-	def preprocess(Package gammaPackage, File containingFile) {
+	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
 		val parentFolder = containingFile.parent
 		val fileName = containingFile.name
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
 		// Unfolding the given system
 		val trace = new ModelUnfolder().unfold(gammaPackage)
 		var _package = trace.package
-		// If it is a single statechart, we wrap it
 		val component = trace.topComponent
+		// Transforming parameters if there are any
+		component.transformParameters(topComponentArguments)
+		// If it is a single statechart, we wrap it
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + component)
 			_package.components.add(0, component.wrapSynchronousComponent)
@@ -80,6 +71,26 @@ class AnalysisModelPreprocessor {
 		// Saving the Package of the unfolded model
 		resource.save(Collections.EMPTY_MAP)
 		return _package.components.head
+	}
+	
+	def transformParameters(Component component, List<Expression> topComponentArguments) {
+		val _package = component.containingPackage
+		val parameters = component.parameterDeclarations
+		checkState(parameters.size == topComponentArguments.size)
+		for (var i = 0; i < parameters. size; i++) {
+			val parameter = parameters.get(i)
+			val argument = topComponentArguments.get(i).clone(true, true)
+			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
+			_package.topComponentArguments += argument // Saving top component expression
+			val parameterConstant =  createConstantDeclaration => [
+				it.type = parameter.type
+				it.name = "__" + parameter.name + "__"
+				it.expression = argument.clone(true, true)
+			]
+			_package.constantDeclarations += parameterConstant
+			// Changing the parameter references to constant references
+			parameterConstant.change(parameter, component)
+		}
 	}
 	
 	def removeAnnotations(Component component) {

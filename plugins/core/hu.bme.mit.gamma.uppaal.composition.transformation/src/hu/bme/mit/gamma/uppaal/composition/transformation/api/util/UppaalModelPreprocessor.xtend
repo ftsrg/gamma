@@ -12,20 +12,16 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import java.io.File
 import java.util.Collections
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class UppaalModelPreprocessor {
+class UppaalModelPreprocessor extends AnalysisModelPreprocessor {
 	
-	protected val preprocessor = new AnalysisModelPreprocessor
-	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	
-	def preprocess(Package gammaPackage, File containingFile) {
-		val topComponent = preprocessor.preprocess(gammaPackage, containingFile)
+	override preprocess(Package gammaPackage, File containingFile) {
+		val topComponent = super.preprocess(gammaPackage, containingFile)
 		val resource = topComponent.eResource
 		val _package = topComponent.getContainingPackage
 		// Transforming unhandled transitions to two transitions connected by a choice
@@ -36,10 +32,6 @@ class UppaalModelPreprocessor {
 		// Saving the Package of the unfolded model
 		resource.save(Collections.EMPTY_MAP)
 		return _package.components.head
-	}
-	
-	def getLogger() {
-		return preprocessor.logger
 	}
 	
 }

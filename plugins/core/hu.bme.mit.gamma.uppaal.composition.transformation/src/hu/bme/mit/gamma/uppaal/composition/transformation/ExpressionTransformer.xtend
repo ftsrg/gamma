@@ -38,15 +38,14 @@ import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
-import uppaal.declarations.Variable
 import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.ArithmeticExpression
 import uppaal.expressions.ArithmeticOperator
@@ -160,11 +159,11 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression) {		
-		var Variable declaration
-		val dataDeclarations = expression.declaration.allValuesOfTo.filter(DataVariableDeclaration)
+		val originalDeclaration = expression.declaration
+		val dataDeclarations = originalDeclaration.allValuesOfTo.filter(DataVariableDeclaration)
 		checkState(dataDeclarations.size == 1, "Probably you do not use event parameters correctly: " + dataDeclarations.size)
 		val dataDeclaration = dataDeclarations.head
-		declaration = dataDeclaration.variable.head
+		val declaration = dataDeclaration.variable.head
 		// Normal variables: no owner is needed as now every instance has its own statechart declaration
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
 		newExp.identifier = declaration

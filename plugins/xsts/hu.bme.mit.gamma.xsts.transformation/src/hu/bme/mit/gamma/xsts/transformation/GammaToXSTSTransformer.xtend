@@ -55,21 +55,19 @@ class GammaToXSTSTransformer {
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = new AnalysisModelPreprocessor
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
-	// Top component arguments
-	protected final List<Expression> topComponentArguments
 	// Scheduling constraint
 	protected final Integer schedulingConstraint
 	
 	new() {
-		this(#[], null)
+		this(null)
 	}
 	
-	new(List<Expression> topComponentArguments, Integer schedulingConstraint) {
-		this.topComponentArguments = topComponentArguments
+	new(Integer schedulingConstraint) {
 		this.schedulingConstraint = schedulingConstraint
 	}
 	
-	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package, File containingFile) {
+	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
+			List<Expression> topComponentArguments, File containingFile) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
 		val newPackage = component.containingPackage
 		newPackage.executeAndSerializeAndSave(containingFile)

@@ -12,9 +12,14 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.statechart.statechart.EntryState
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
@@ -23,11 +28,6 @@ import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.transformation.util.queries.InputInstanceEvents
 import hu.bme.mit.gamma.transformation.util.queries.InstanceRegions
 import hu.bme.mit.gamma.transformation.util.queries.InstanceTimeouts
@@ -78,10 +78,8 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
-import java.util.ArrayList
 import java.util.Collection
 import java.util.HashSet
-import java.util.List
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -153,8 +151,6 @@ class CompositeToUppaalTransformer {
 	protected extension IModelManipulations manipulation
 	// Logger
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
-	// Arguments for the top level component
-	protected List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments = new ArrayList<hu.bme.mit.gamma.expression.model.Expression>
 	// Engine on the Gamma resource 
 	protected ViatraQueryEngine engine
 	protected ResourceSet resources
@@ -219,23 +215,15 @@ class CompositeToUppaalTransformer {
 	protected ModelModifierForTestGeneration modelModifier
 	
 	new(Component component, TestQueryGenerationHandler testGenerationHandler) {
-		this(component, #[], Scheduler.RANDOM, null, false, testGenerationHandler)
-	}
-	
-	new(Component component, List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
-			TestQueryGenerationHandler testGenerationHandler) {
-		this(component, topComponentArguments, Scheduler.RANDOM, null, false, testGenerationHandler)
+		this(component, Scheduler.RANDOM, null, false, testGenerationHandler)
 	}
 	
 	new(Component component,
-			List<hu.bme.mit.gamma.expression.model.Expression> topComponentArguments,
 			Scheduler asyncScheduler,
 			Constraint constraint,
 			boolean isMinimalElementSet,
 			TestQueryGenerationHandler testGenerationHandler) { 
 		this.isMinimalElementSet = isMinimalElementSet
-		// Clone is needed, otherwise the ggen model will be in resource set
-		this.topComponentArguments.addAll(topComponentArguments.map[it.clone(true, true)])
 		// The above parameters have to be set before calling initialize
 		this.initialize(component, asyncScheduler, constraint, testGenerationHandler)
 	}
@@ -302,11 +290,10 @@ class CompositeToUppaalTransformer {
 	}
 	
 	def execute() {
-		transformTopComponentArguments
+		constantsRule.fireAllCurrent // Top components are constants now
 		while (!areAllParametersTransformed) {
 			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
 		}
-		constantsRule.fireAllCurrent
 		variablesRule.fireAllCurrent
 		declarationInitRule.fireAllCurrent
 		inputEventsRule.fireAllCurrent
@@ -662,22 +649,6 @@ class CompositeToUppaalTransformer {
 		}
 		// Traces are created in the transformVariable method
 	].build
-	
-	private def transformTopComponentArguments() {
-		for (var i = 0; i < topComponentArguments.size; i++) {
-			val parameter = component.parameterDeclarations.get(i)
-			val argument = topComponentArguments.get(i)
-			val initializer = createExpressionInitializer => [
-				it.transform(expressionInitializer_Expression, argument)
-			]
-			argument.removeFromTraces // This argument is not contained in a resource
-			// The initialization is created, variable has to be created
-			val uppaalVariable = parameter.transformVariable(parameter.type, DataVariablePrefix.CONST,
-				parameter.name + "Of" + component.name)
-			uppaalVariable.variable.head.initializer = initializer
-			// Traces are created in the createVariable method
-		}
-	}
 	
 	/**
 	 * This rule is responsible for transforming the bound parameters.
