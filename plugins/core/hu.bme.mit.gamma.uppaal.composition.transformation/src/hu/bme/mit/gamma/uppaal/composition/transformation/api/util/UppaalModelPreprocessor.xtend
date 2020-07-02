@@ -10,18 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import java.io.File
 import java.util.Collections
+import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class UppaalModelPreprocessor extends AnalysisModelPreprocessor {
 	
-	override preprocess(Package gammaPackage, File containingFile) {
-		val topComponent = super.preprocess(gammaPackage, containingFile)
+	override preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
+		val topComponent = super.preprocess(gammaPackage, topComponentArguments, containingFile)
 		val resource = topComponent.eResource
 		val _package = topComponent.getContainingPackage
 		// Transforming unhandled transitions to two transitions connected by a choice
