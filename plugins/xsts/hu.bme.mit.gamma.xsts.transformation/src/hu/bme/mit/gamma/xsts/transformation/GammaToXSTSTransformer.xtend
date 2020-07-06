@@ -74,7 +74,7 @@ class GammaToXSTSTransformer {
 	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, File containingFile) {
 		val string = _package.preprocessAndExecuteAndSerialize(topComponentArguments, containingFile)
-		string.saveString(string)
+		containingFile.saveString(string)
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
