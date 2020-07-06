@@ -80,7 +80,7 @@ public class CommandHandler extends AbstractHandler {
 							Package _package = (Package) resource.getContents().get(0);
 							GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
 							File xStsFile = new File(absoluteParentFolder + File.separator + fileName + ".xsts");
-							gammaToXSTSTransformer.executeAndSerializeAndSave(_package, xStsFile);
+							gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(_package, xStsFile);
 							logger.log(Level.INFO, "XSTS transformation has been finished.");
 						}
 						if (resource != null) {

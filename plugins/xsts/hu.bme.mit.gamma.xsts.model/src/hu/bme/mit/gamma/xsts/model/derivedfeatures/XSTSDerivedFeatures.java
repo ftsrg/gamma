@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.model.derivedfeatures;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -245,8 +244,7 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 		} else if (action instanceof SequentialAction) {
 			return _getReadVariables((SequentialAction) action);
 		} else {
-			throw new IllegalArgumentException(
-					"Unhandled parameter types: " + Arrays.<Object>asList(action).toString());
+			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
 
@@ -264,8 +262,7 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 		} else if (action instanceof SequentialAction) {
 			return _getWrittenVariables((SequentialAction) action);
 		} else {
-			throw new IllegalArgumentException(
-					"Unhandled parameter types: " + Arrays.<Object>asList(action).toString());
+			throw new IllegalArgumentException("Unhandled action type: " + action);
 		}
 	}
 	

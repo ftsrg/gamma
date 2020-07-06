@@ -67,25 +67,29 @@ class GammaToXSTSTransformer {
 	}
 	
 	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
+			File containingFile) {
+		_package.preprocessAndExecuteAndSerializeAndSave(Collections.emptyList, containingFile)
+	}
+	
+	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
+			List<Expression> topComponentArguments, File containingFile) {
+		val string = _package.preprocessAndExecuteAndSerialize(topComponentArguments, containingFile)
+		string.saveString(string)
+	}
+	
+	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
+			List<Expression> topComponentArguments, File containingFile) {
+		return _package.preprocessAndExecute(topComponentArguments, containingFile).serializeXSTS.toString
+	}
+	
+	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, File containingFile) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
 		val newPackage = component.containingPackage
-		newPackage.executeAndSerializeAndSave(containingFile)
+		return newPackage.execute
 	}
 	
-	/**
-	 * Note that there is no preprocess and argument process in this method.
-	 */
-	def void executeAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package, File file) {
-		val string = _package.executeAndSerialize
-		file.saveString(string)
-	}
-	
-	private def String executeAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package) {
-		return _package.execute.serializeXSTS.toString
-	}
-	
-	private def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
+	def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
 		val gammaComponent = _package.components.head // Getting the first component
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS

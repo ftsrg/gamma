@@ -77,7 +77,7 @@ class AnalysisModelPreprocessor {
 		val _package = component.containingPackage
 		val parameters = component.parameterDeclarations
 		checkState(parameters.size == topComponentArguments.size)
-		for (var i = 0; i < parameters. size; i++) {
+		for (var i = 0; i < parameters.size; i++) {
 			val parameter = parameters.get(i)
 			val argument = topComponentArguments.get(i).clone(true, true)
 			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
