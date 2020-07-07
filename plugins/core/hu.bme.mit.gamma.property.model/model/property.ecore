@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/property/Model" nsPrefix="hu.bme.mit.gamma.property">
+  <eClassifiers xsi:type="ecore:EClass" name="PropertyPackage">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="import" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="component" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Component"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="formulas" upperBound="-1"
+        eType="#//StateFormula" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PathFormula" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StateFormula" abstract="true" eSuperTypes="#//PathFormula"/>
+  <eClassifiers xsi:type="ecore:EClass" name="UnaryOperandPathFormula" eSuperTypes="#//PathFormula">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
+        eType="#//PathFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+        eType="#//UnaryPathOperator"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BinaryOperandPathFormula" eSuperTypes="#//PathFormula">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="leftOperand" lowerBound="1"
+        eType="#//PathFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
+        eType="#//PathFormula" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
+        eType="#//BinaryPathOperator"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="BinaryPathOperator">
+    <eLiterals name="UNTIL"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="UnaryPathOperator">
+    <eLiterals name="GLOBAL"/>
+    <eLiterals name="FUTURE" value="1"/>
+    <eLiterals name="NEXT" value="2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="QuantifiedFormula" eSuperTypes="#//StateFormula">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="quantifier" lowerBound="1"
+        eType="#//PathQuantifier"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="formula" lowerBound="1"
+        eType="#//PathFormula" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="PathQuantifier">
+    <eLiterals name="FORALL"/>
+    <eLiterals name="EXISTS" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AtomicFormula" eSuperTypes="#//StateFormula">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceStateExpression" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//SynchronousComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceStateConfigurationReference"
+      eSuperTypes="#//ComponentInstanceStateExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Region"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//State"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceVariableReference"
+      eSuperTypes="#//ComponentInstanceStateExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventReference" eSuperTypes="#//ComponentInstanceStateExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceEventParameterReference"
+      eSuperTypes="#//ComponentInstanceStateExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Port"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Event"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parameter" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
+  </eClassifiers>
+</ecore:EPackage>
