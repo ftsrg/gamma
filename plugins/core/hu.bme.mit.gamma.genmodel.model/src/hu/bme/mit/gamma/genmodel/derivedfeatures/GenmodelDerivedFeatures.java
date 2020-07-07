@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.genmodel.model.derivedfeatures;
+package hu.bme.mit.gamma.genmodel.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.List;

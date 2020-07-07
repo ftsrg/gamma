@@ -28,9 +28,9 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.querygenerator.application.View;
 import hu.bme.mit.gamma.querygenerator.controller.AbstractController;
+import hu.bme.mit.gamma.trace.TraceUtil;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.model.TraceUtil;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;

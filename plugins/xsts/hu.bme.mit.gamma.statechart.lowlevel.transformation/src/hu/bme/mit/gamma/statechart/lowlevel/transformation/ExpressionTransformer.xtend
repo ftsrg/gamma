@@ -29,14 +29,14 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionTransformer {
 	// Auxiliary object

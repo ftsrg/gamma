@@ -7,8 +7,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.expression.model,
- hu.bme.mit.gamma.expression.model.derivedfeatures,
+Export-Package: hu.bme.mit.gamma.expression.derivedfeatures,
+ hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.expression.model.impl,
  hu.bme.mit.gamma.expression.model.util,
  hu.bme.mit.gamma.expression.util

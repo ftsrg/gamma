@@ -11,20 +11,23 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.action.model.util.ActionUtil
+import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -34,8 +37,6 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 import org.eclipse.emf.ecore.util.EcoreUtil
@@ -389,7 +390,7 @@ class StatechartToLowlevelTransformer {
 			val lowlevelTransition = trace.get(gammaTransition)
 			val lowlevelSource = lowlevelTransition.source
 			if (lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.State || 
-					lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState) {
+					lowlevelSource instanceof ChoiceState) {
 				val newGuardExpression = createAndExpression
 				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
 					newGuardExpression.operands += createNotExpression => [

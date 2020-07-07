@@ -10,26 +10,26 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.validation
 
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
-import hu.bme.mit.gamma.statechart.interface_.EventDirection
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceSchedule
-import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.trace.model.TracePackage
-import org.eclipse.xtext.validation.Check
-import hu.bme.mit.gamma.trace.model.ComponentSchedule
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import org.eclipse.xtext.EcoreUtil2
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
-import hu.bme.mit.gamma.trace.model.InstanceState
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
+import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
+import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceSchedule
+import hu.bme.mit.gamma.trace.model.InstanceState
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.trace.model.TraceModelPackage
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
@@ -82,7 +82,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 				val instance = instanceState.instance
 				val type = instance.type
 				if (!(type instanceof StatechartDefinition)) {
-					error("This is not a statechart instance.", TracePackage.Literals.INSTANCE_STATE__INSTANCE)
+					error("This is not a statechart instance.", TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE)
 				}
 			}
 		}
@@ -96,7 +96,8 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 			val state = configuration.state
 			val states =  EcoreUtil2.getAllContentsOfType(type, hu.bme.mit.gamma.statechart.statechart.State)
 			if (!states.contains(state)) {
-				error("This is not a valid state in the specified statechart.", TracePackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE)
+				error("This is not a valid state in the specified statechart.",
+					TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE)
 			}
 		}
 	}
@@ -109,7 +110,8 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 			val variable = variableState.declaration
 			val variables = type.variableDeclarations
 			if (!variables.contains(variable)) {
-				error("This is not a valid variable in the specified statechart.", ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
+				error("This is not a valid variable in the specified statechart.",
+					ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
 			}
 		}
 	}
@@ -121,7 +123,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 		if (component !== null) {
 			if (!(component instanceof AsynchronousCompositeComponent)) {
 				error("Instance scheduling is valid only if the component is an asynchronous composite component.",
-					TracePackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE)
+					TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE)
 			}
 		}
 	}
@@ -134,7 +136,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 		if (component !== null) {
 			if (!(component instanceof SynchronousComponent || component instanceof AsynchronousAdapter)) {
 				error("Component scheduling is valid only if the component is a synchronous component or synchronous component wrapper.",
-					step, TracePackage.Literals.STEP__ACTIONS, step.actions.indexOf(schedule))
+					step, TraceModelPackage.Literals.STEP__ACTIONS, step.actions.indexOf(schedule))
 			}
 		}
 	}

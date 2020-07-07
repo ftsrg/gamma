@@ -20,12 +20,12 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.xsts.model.model.Action;
 import hu.bme.mit.gamma.xsts.model.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.model.AssumeAction;

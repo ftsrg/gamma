@@ -21,7 +21,7 @@ import hu.bme.mit.gamma.genmodel.model.CodeGeneration
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
 import hu.bme.mit.gamma.genmodel.model.GenModel
-import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
+import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint
@@ -75,47 +75,47 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(Task task) {
 		if (task.fileName.size > 1) {
-			error("At most one file name can be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+			error("At most one file name can be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
 		}
 		if (task.targetFolder.size > 1) {
-			error("At most one target folder can be specified.", GenmodelPackage.Literals.TASK__TARGET_FOLDER)
+			error("At most one target folder can be specified.", GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)
 		}
 	}
 	
 	@Check
 	def checkTasks(YakinduCompilation yakinduCompilation) {
 		if (yakinduCompilation.packageName.size > 1) {
-			error("At most one package name can be specified.", GenmodelPackage.Literals.YAKINDU_COMPILATION__PACKAGE_NAME)
+			error("At most one package name can be specified.", GenmodelModelPackage.Literals.YAKINDU_COMPILATION__PACKAGE_NAME)
 		}
 	}
 	
 	@Check
 	def checkTasks(StatechartCompilation statechartCompilation) {
 		if (statechartCompilation.statechartName.size > 1) {
-			error("At most one statechart name can be specified.", GenmodelPackage.Literals.STATECHART_COMPILATION__STATECHART_NAME)
+			error("At most one statechart name can be specified.", GenmodelModelPackage.Literals.STATECHART_COMPILATION__STATECHART_NAME)
 		}
 	}
 	
 	@Check
 	def checkTasks(AnalysisModelTransformation analysisModelTransformation) {
 		if (analysisModelTransformation.scheduler.size > 1) {
-			error("At most one scheduler type can be specified.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER)
+			error("At most one scheduler type can be specified.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER)
 		}
 		val languages = analysisModelTransformation.languages
 		if (languages.size != languages.toSet.size) {
-			error("A single formal language can be specified only once.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
+			error("A single formal language can be specified only once.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
 		}
 		if (analysisModelTransformation.coverages.filter(TransitionCoverage).size > 1) {
-			error("A single transition coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+			error("A single transition coverage task can be defined.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
 		}
 		if (analysisModelTransformation.coverages.filter(StateCoverage).size > 1) {
-			error("A single state coverage task can be defined.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+			error("A single state coverage task can be defined.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
 		}
 		val constraint = analysisModelTransformation.constraint
 		if (constraint !== null) {
 			val component = analysisModelTransformation.component
 			if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
-				error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
+				error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
 			}
 		}
 	}
@@ -124,34 +124,34 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkTasks(Verification verification) {
 		val languages = verification.languages
 		if (languages.size != 1) {
-			error("A single formal language must be specified.", GenmodelPackage.Literals.VERIFICATION__LANGUAGES)
+			error("A single formal language must be specified.", GenmodelModelPackage.Literals.VERIFICATION__LANGUAGES)
 		}
 		val resourceFile = verification.eResource.file
 		val modelFiles = verification.fileName
 		if (modelFiles.size != 1) {
-			error("A single model file must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+			error("A single model file must be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
 		}
 		for (modelFile : modelFiles) {
 			if (!resourceFile.isValidRelativeFile(modelFile)) {
 				val index = modelFiles.indexOf(modelFile)
 				error("This is not a valid relative path to a model file: " + modelFile,
-					GenmodelPackage.Literals.TASK__FILE_NAME, index)
+					GenmodelModelPackage.Literals.TASK__FILE_NAME, index)
 			}
 		}
 		val queryFiles = verification.queryFiles
 		if (queryFiles.size < 1) {
-			error("At least one query file must be specified.", GenmodelPackage.Literals.VERIFICATION__QUERY_FILES)
+			error("At least one query file must be specified.", GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES)
 		}
 		for (queryFile : queryFiles) {
 			if (!resourceFile.isValidRelativeFile(queryFile)) {
 				val index = queryFiles.indexOf(queryFile)
 				error("This is not a valid relative path to a query file: " + queryFile,
-					GenmodelPackage.Literals.VERIFICATION__QUERY_FILES, index)
+					GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)
 			}
 		}
 		val testFolders = verification.testFolder
 		if (testFolders.size > 1) {
-			error("At most one test folder can be specified.", GenmodelPackage.Literals.VERIFICATION__TEST_FOLDER)
+			error("At most one test folder can be specified.", GenmodelModelPackage.Literals.VERIFICATION__TEST_FOLDER)
 		}
 	}
 	
@@ -159,11 +159,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkTasks(TestReplayModelGeneration modelGeneration) {
 		val systemFileNames = modelGeneration.fileName
 		if (systemFileNames.size != 1) {
-			error("A single system file name must be specified.", GenmodelPackage.Literals.TASK__FILE_NAME)
+			error("A single system file name must be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
 		}
 		val targetFolders = modelGeneration.targetFolder
 		if (targetFolders.size > 1) {
-			error("At most one test folder can be specified.", GenmodelPackage.Literals.TASK__TARGET_FOLDER)
+			error("At most one test folder can be specified.", GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)
 		}
 	}
 	
@@ -182,15 +182,15 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (component instanceof AsynchronousCompositeComponent) {
 			val instance = constraint.instance
 			if (instance === null) {
-				error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+				error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
 			}
 			if (scheduling.instanceConstraint.filter[it.instance === instance].size > 1) {
-				error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+				error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
 			}
 		}
 		if (component instanceof AsynchronousAdapter) {
 			if (scheduling.instanceConstraint.size > 1) {
-				error("Asynchronous adapters can contain at most one constraint.", GenmodelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+				error("Asynchronous adapters can contain at most one constraint.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
 			}
 		}
 	}
@@ -205,38 +205,38 @@ class GenModelValidator extends AbstractGenModelValidator {
 					var minimumIntegerValue = minimum.evaluateMilliseconds
 					var maximumIntegerValue = maximum.evaluateMilliseconds
 					if (minimumIntegerValue < 0) {
-						error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+						error("Time value must be positive.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 					}
 					if (maximumIntegerValue < 0) {
-						error("Time value must be positive.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
+						error("Time value must be positive.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
 					}
 					if (maximumIntegerValue < minimumIntegerValue) {
-						error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+						error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 					}
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			error('''Both the minimum and maximum values must be of type integer.''', GenmodelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+			error('''Both the minimum and maximum values must be of type integer.''', GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
 		}
 	}
 	
 	@Check
 	def checkTasks(CodeGeneration codeGeneration) {
 		if (codeGeneration.packageName.size > 1) {
-			error("At most one package name can be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+			error("At most one package name can be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 		if (codeGeneration.language.size != 1) {
-			error("A single programming language must be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+			error("A single programming language must be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 	}
 	
 	@Check
 	def checkTasks(TestGeneration testGeneration) {
 		if (testGeneration.packageName.size > 1) {
-			error("At most one package name can be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+			error("At most one package name can be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 		if (testGeneration.language.size != 1) {
-			error("A single programming language must be specified.", GenmodelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+			error("A single programming language must be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
 		}
 	}
 	
@@ -279,7 +279,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		for (packageImport : packageImports) {
 			val index = genmodel.packageImports.indexOf(packageImport);
-			warning("This Gamma package import is not used.", GenmodelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)
+			warning("This Gamma package import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)
 		}
 	}
 
@@ -291,7 +291,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		for (statechartImport : statechartImports) {
 			val index = genmodel.statechartImports.indexOf(statechartImport);
-			warning("This Yakindu import is not used.", GenmodelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index);
+			warning("This Yakindu import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index);
 		}
 	}
 	
@@ -306,7 +306,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		for (traceImport : traceImports) {
 			val index = genmodel.traceImports.indexOf(traceImport);
-			warning("This execution trace import is not used.", GenmodelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index);
+			warning("This execution trace import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index);
 		}
 	}
 	
@@ -349,10 +349,10 @@ class GenModelValidator extends AbstractGenModelValidator {
 			val interfacesWithEvents = interfaces.filter[!it.events.empty].toSet
 			val interfacesWithoutEvents = interfaces.filter[it.events.empty].toSet
 			if (!interfacesWithEvents.empty) {
-				error("The following interfaces with events are not mapped: " + interfacesWithEvents.map[it.name] + ".", GenmodelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
+				error("The following interfaces with events are not mapped: " + interfacesWithEvents.map[it.name] + ".", GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
 			}
 			if (!interfacesWithoutEvents.empty) {
-				info("The following interfaces without events are not mapped: " + interfacesWithoutEvents.map[it.name] + ".", GenmodelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
+				info("The following interfaces without events are not mapped: " + interfacesWithoutEvents.map[it.name] + ".", GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
 			}
 		}
 	}
@@ -362,9 +362,9 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (!(mapping.checkConformance)) {
 			switch mapping.realizationMode {
 				case RealizationMode.PROVIDED:
-					error("In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
+					error("In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 				case RealizationMode.REQUIRED:
-					error("In case of required realization mode number of in/out events must equal to the number of out/in events in the Gamma interface and vice versa", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
+					error("In case of required realization mode number of in/out events must equal to the number of out/in events in the Gamma interface and vice versa", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 				default:
 					throw new IllegalArgumentException("Such interface realization mode is not supported: " + mapping.realizationMode)
 			}
@@ -389,7 +389,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (mapping.eventMappings.size == 0) {
 			// If the interface has in-out events, 0 event mapping is surely not acceptable
 			if (!mapping.gammaInterface.events.filter[it.direction == EventDirection.INOUT].empty) {
-				error("The Gamma interface has in-out events, thus an automatic mapping is not possible", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
+				error("The Gamma interface has in-out events, thus an automatic mapping is not possible", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 				return
 			}
 			for (yakinduEvent : mapping.yakinduInterface.events) {
@@ -399,7 +399,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 					&& realizationMode.areWellDirected(yakinduEvent, gammaEvent.eContainer as EventDeclaration))) {
 					val typeName = if (yakinduEvent.type !== null) {" : " + yakinduEvent.type.name} else {""}
 					error("Interface mapping without event mapping is only possible if the names and types of the events of the interfaces are equal. " 
-						+ yakinduEvent.name + typeName + " has no equivalent event in the Gamma interface.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE
+						+ yakinduEvent.name + typeName + " has no equivalent event in the Gamma interface.", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE
 					)
 				}			
 			}
@@ -427,7 +427,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkMappingCount(InterfaceMapping mapping) {
 		// Check only if the interface mapping is not trivial (size != 0)
 		if (mapping.eventMappings.size != 0 && mapping.yakinduInterface.events.size != mapping.eventMappings.size) {
-			error("Each Yakindu event has to be mapped exactly once.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
+			error("Each Yakindu event has to be mapped exactly once.", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 		}
 	}
 	
@@ -437,7 +437,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		val statechartCompilation = mapping.eContainer as StatechartCompilation
 		for (interface : statechartCompilation.interfaceMappings.map[it.yakinduInterface]) {
 			if (interfaces.contains(interface)){
-				error("Each Yakindu event has to be mapped exactly once.", GenmodelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
+				error("Each Yakindu event has to be mapped exactly once.", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 			}
 			else {
 				interfaces.add(interface)
@@ -454,7 +454,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 			val gammaEvent = eventMapping.gammaEvent
 			// Yakindu validation
 			if (mappedYakinduEvents.contains(yakinduEvent)) {
-				error("This event is mapped multiple times: " + yakinduEvent.name + ".", GenmodelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
+				error("This event is mapped multiple times: " + yakinduEvent.name + ".", GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
 			}
 			else {
 				mappedYakinduEvents += yakinduEvent			
@@ -469,12 +469,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 					if (!(yakinduEventSet.filter[it.direction == Direction.IN].size == 1 &&
 							yakinduEventSet.filter[it.direction == Direction.OUT].size == 1)) {
 						error("A single in and a single out event has to be mapped onto this Gamma event: " + gammaEvent.name + ".",
-							GenmodelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
+							GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
 					}
 				}
 				else {
 					// Not an in-out event
-					error("Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.name + ".", GenmodelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
+					error("Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.name + ".", GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)
 				}
 			}
 			else {
@@ -490,9 +490,9 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (!(mapping.checkConformance)) {
 			switch (ifReal.realizationMode) {
 				case RealizationMode.PROVIDED:
-					error("In case of provided realization mode Yakindu events must have the same direction and parameter as Gamma events.", GenmodelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)
+					error("In case of provided realization mode Yakindu events must have the same direction and parameter as Gamma events.", GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)
 				case RealizationMode.REQUIRED:
-					error("In case of required realization mode Yakindu events must have the opposite direction and same parameter of Gamma events.", GenmodelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)		
+					error("In case of required realization mode Yakindu events must have the opposite direction and same parameter of Gamma events.", GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)		
 			default:
 				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.realizationMode)				
 			}
@@ -512,7 +512,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (!usedInterfaces.isEmpty) {
 			warning("This trace depends on interfaces " + usedInterfaces + ", which seem to be about to be recompiled. " + 
 				"The recompilation of interfaces just before the generation of tests might cause a break in the generated test suite.",
-				 GenmodelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)
+				 GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)
 		}
 	}
 	

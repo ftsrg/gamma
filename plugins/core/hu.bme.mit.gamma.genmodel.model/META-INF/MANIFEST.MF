@@ -7,8 +7,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.genmodel.model,
- hu.bme.mit.gamma.genmodel.model.derivedfeatures,
+Export-Package: hu.bme.mit.gamma.genmodel.derivedfeatures,
+ hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.genmodel.model.impl,
  hu.bme.mit.gamma.genmodel.model.util
 Require-Bundle: org.eclipse.core.runtime,

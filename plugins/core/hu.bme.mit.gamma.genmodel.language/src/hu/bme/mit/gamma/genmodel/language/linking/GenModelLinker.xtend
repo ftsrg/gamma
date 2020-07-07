@@ -11,12 +11,12 @@
 package hu.bme.mit.gamma.genmodel.language.linking
 
 import hu.bme.mit.gamma.genmodel.model.GenModel
-import hu.bme.mit.gamma.genmodel.model.GenmodelPackage
+import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 
 class GenModelLinker extends GammaLanguageLinker {
 		
-    public static extension GenmodelPackage pack = GenmodelPackage.eINSTANCE
+    public static extension GenmodelModelPackage pack = GenmodelModelPackage.eINSTANCE
 				
 	override getContext() {
 		return GenModel

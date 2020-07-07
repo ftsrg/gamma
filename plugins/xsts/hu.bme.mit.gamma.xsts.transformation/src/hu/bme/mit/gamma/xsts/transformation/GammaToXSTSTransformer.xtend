@@ -16,13 +16,13 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
+import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -37,7 +37,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 

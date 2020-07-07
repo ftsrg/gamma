@@ -8,7 +8,7 @@
     operationReflection="true" importOrganizing="true">
   <foreignModel>expression.ecore</foreignModel>
   <genPackages prefix="ExpressionModel" basePackage="hu.bme.mit.gamma.expression"
-      disposableProviderFactory="true" ecorePackage="expression.ecore#/">
+      disposableProviderFactory="true" fileExtensions="gem" ecorePackage="expression.ecore#/">
     <genClasses image="false" ecoreClass="expression.ecore#//NamedElement">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//NamedElement/name"/>
     </genClasses>

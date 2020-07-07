@@ -15,7 +15,7 @@ import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.trace.model.TraceFactory
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
 
@@ -36,7 +36,7 @@ class TraceToEnvironmentModelTransformer {
 	protected extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	protected extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
-	protected extension TraceFactory traceFactory = TraceFactory.eINSTANCE
+	protected extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	new(ExecutionTrace executionTrace) {
 		this.timeoutId = 0

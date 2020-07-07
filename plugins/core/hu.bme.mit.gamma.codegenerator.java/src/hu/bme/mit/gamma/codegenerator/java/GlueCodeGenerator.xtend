@@ -42,7 +42,7 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class GlueCodeGenerator {
 	// Transformation-related extensions

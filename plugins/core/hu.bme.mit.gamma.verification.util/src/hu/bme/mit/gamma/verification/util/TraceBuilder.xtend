@@ -18,21 +18,21 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.TraceUtil
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.trace.model.TraceFactory
-import hu.bme.mit.gamma.trace.model.TraceUtil
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import java.math.BigInteger
 
-import static extension hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TraceBuilder {
 	// Singleton
@@ -40,7 +40,7 @@ class TraceBuilder {
 	protected new() {}
 	//
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
+	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	

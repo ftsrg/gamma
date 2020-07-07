@@ -10,7 +10,7 @@
       <!-- @generated genmodel -->
       <package
             uri="http://www.mit.bme.hu/gamma/genmodel/Model"
-            class="hu.bme.mit.gamma.genmodel.model.GenmodelPackage"
+            class="hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage"
             genModel="model/genmodel.genmodel"/>
    </extension>
 

@@ -16,6 +16,7 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -44,7 +45,6 @@ import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.XorExpression;
-import hu.bme.mit.gamma.expression.model.derivedfeatures.ExpressionModelDerivedFeatures;
 
 public class ExpressionEvaluator {
 	// Singleton

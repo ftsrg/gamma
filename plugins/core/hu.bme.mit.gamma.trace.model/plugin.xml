@@ -10,7 +10,7 @@
       <!-- @generated trace -->
       <package
             uri="http://www.mit.bme.hu/gamma/trace/Model"
-            class="hu.bme.mit.gamma.trace.model.TracePackage"
+            class="hu.bme.mit.gamma.trace.model.TraceModelPackage"
             genModel="model/trace.genmodel"/>
    </extension>
 

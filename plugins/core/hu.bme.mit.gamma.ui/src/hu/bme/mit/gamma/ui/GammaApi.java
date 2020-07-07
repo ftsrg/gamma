@@ -30,6 +30,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
@@ -43,7 +44,6 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
-import hu.bme.mit.gamma.genmodel.model.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.ui.taskhandler.AdaptiveContractTestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.AnalysisModelTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;

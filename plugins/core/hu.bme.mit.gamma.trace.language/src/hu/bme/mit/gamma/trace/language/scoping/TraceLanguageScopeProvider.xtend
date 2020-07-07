@@ -16,22 +16,22 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.TracePackage
+import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import java.util.Collection
 import java.util.Collections
 import java.util.HashSet
@@ -49,7 +49,7 @@ import org.eclipse.xtext.scoping.Scopes
 class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 
 	override getScope(EObject context, EReference reference) {
-		if (context instanceof ExecutionTrace && reference == TracePackage.Literals.EXECUTION_TRACE__COMPONENT) {
+		if (context instanceof ExecutionTrace && reference == TraceModelPackage.Literals.EXECUTION_TRACE__COMPONENT) {
 			val executionTrace = context as ExecutionTrace
 			if (executionTrace.import !== null) {
 				return Scopes.scopeFor(executionTrace.import.components)
@@ -78,7 +78,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				}
 			}
 		}	
-		if (context instanceof InstanceSchedule && reference == TracePackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
+		if (context instanceof InstanceSchedule && reference == TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			if (component instanceof AsynchronousCompositeComponent) {
@@ -86,13 +86,14 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				return Scopes.scopeFor(instances)
 			}
 		}
-		if (reference == TracePackage.Literals.INSTANCE_STATE__INSTANCE) {
+		if (reference == TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE) {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			val simpleSyncInstances = component.synchronousInstances
 			return Scopes.scopeFor(simpleSyncInstances)	
 		}
-		if (context instanceof InstanceStateConfiguration && reference == TracePackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE) {
+		if (context instanceof InstanceStateConfiguration &&
+				reference == TraceModelPackage.Literals.INSTANCE_STATE_CONFIGURATION__STATE) {
 			val instanceState = context as InstanceStateConfiguration
 			val instance = instanceState.instance
 			val instanceType = instance.type

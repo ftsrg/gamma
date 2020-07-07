@@ -1,4 +1,14 @@
-package hu.bme.mit.gamma.trace.model;
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+package hu.bme.mit.gamma.trace;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,6 +20,14 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.model.Act;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.InstanceState;
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
+import hu.bme.mit.gamma.trace.model.InstanceVariableState;
+import hu.bme.mit.gamma.trace.model.RaiseEventAct;
+import hu.bme.mit.gamma.trace.model.Reset;
+import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 
 public class TraceUtil {

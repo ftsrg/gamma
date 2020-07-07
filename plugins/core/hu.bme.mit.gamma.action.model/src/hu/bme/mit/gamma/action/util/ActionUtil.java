@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.action.model.util;
+package hu.bme.mit.gamma.action.util;
 
 import java.util.Collection;
 

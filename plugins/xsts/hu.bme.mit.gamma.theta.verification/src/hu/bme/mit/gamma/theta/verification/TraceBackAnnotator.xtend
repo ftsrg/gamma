@@ -2,16 +2,18 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.trace.TraceUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
-import hu.bme.mit.gamma.trace.model.TraceFactory
-import hu.bme.mit.gamma.trace.model.TraceUtil
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import java.util.NoSuchElementException
 import java.util.Scanner
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -20,8 +22,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import java.util.NoSuchElementException
 
 class TraceBackAnnotator {
 	
@@ -37,7 +37,7 @@ class TraceBackAnnotator {
 	
 	protected final boolean sortTrace
 	// Auxiliary objects	
-	protected final extension TraceFactory trFact = TraceFactory.eINSTANCE
+	protected final extension TraceModelFactory trFact = TraceModelFactory.eINSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE

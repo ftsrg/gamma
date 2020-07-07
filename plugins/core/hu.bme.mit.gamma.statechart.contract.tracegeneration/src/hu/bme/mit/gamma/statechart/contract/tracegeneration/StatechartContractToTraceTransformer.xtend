@@ -12,19 +12,19 @@ package hu.bme.mit.gamma.statechart.contract.tracegeneration
 
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.traverser.LooplessPathRetriever
+import hu.bme.mit.gamma.trace.model.Schedule
 import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.trace.model.TraceFactory
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.trace.model.Schedule
 
 class StatechartContractToTraceTransformer {
 	
 	final extension LooplessPathRetriever looplessPathRetriever = new LooplessPathRetriever
 	final extension TransitionToStepTransformer transitionToStepTransformer = new TransitionToStepTransformer
 	
-	final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
+	final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	def execute(StatechartDefinition statechart) {
 		return execute(statechart, false)

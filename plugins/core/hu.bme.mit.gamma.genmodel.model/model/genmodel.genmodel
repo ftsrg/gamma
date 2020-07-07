@@ -8,7 +8,7 @@
     usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../org.yakindu.base.types/model/base.genmodel#//base ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../org.yakindu.sct.model.sgraph/model/emf/sgraph.genmodel#//sgraph ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart ../../org.yakindu.sct.model.stext/model/SText.genmodel#//stext ../../hu.bme.mit.gamma.trace.model/model/trace.genmodel#//model ../../org.yakindu.base.types/model/types.genmodel#//types"
     operationReflection="true" importOrganizing="true">
   <foreignModel>genmodel.ecore</foreignModel>
-  <genPackages prefix="Genmodel" basePackage="hu.bme.mit.gamma.genmodel" disposableProviderFactory="true"
+  <genPackages prefix="GenmodelModel" basePackage="hu.bme.mit.gamma.genmodel" disposableProviderFactory="true"
       fileExtensions="ggm" ecorePackage="genmodel.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//ProgrammingLanguage">
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//ProgrammingLanguage/JAVA"/>

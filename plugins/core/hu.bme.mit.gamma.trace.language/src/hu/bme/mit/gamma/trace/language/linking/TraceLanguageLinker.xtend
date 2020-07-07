@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.trace.language.linking
 
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.TracePackage
+import hu.bme.mit.gamma.trace.model.TraceModelPackage
 
 class TraceLanguageLinker extends GammaLanguageLinker {
 	
@@ -21,7 +21,7 @@ class TraceLanguageLinker extends GammaLanguageLinker {
 	}
 	
 	override getRef() {
-		return #[TracePackage.eINSTANCE.executionTrace_Import]
+		return #[TraceModelPackage.eINSTANCE.executionTrace_Import]
 	}
 		
     

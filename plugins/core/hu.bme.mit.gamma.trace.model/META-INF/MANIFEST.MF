@@ -7,7 +7,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.trace.model,
+Export-Package: hu.bme.mit.gamma.trace,
+ hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.trace.model.impl,
  hu.bme.mit.gamma.trace.model.util
 Require-Bundle: org.eclipse.core.runtime,

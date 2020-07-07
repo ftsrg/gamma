@@ -19,18 +19,18 @@ import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
 import hu.bme.mit.gamma.expression.model.LessEqualExpression
 import hu.bme.mit.gamma.expression.model.LessExpression
-import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.Act
-import hu.bme.mit.gamma.trace.model.TraceFactory
+import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Collection
@@ -43,7 +43,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class TransitionToStepTransformer {
 
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension TraceFactory traceFactory = TraceFactory.eINSTANCE
+	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	

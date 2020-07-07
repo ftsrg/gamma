@@ -8,7 +8,7 @@
     usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//composite ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//interface ../../hu.bme.mit.gamma.statechart.model/model/statechart.genmodel#//statechart"
     operationReflection="true" importOrganizing="true">
   <foreignModel>trace.ecore</foreignModel>
-  <genPackages prefix="Trace" basePackage="hu.bme.mit.gamma.trace" disposableProviderFactory="true"
+  <genPackages prefix="TraceModel" basePackage="hu.bme.mit.gamma.trace" disposableProviderFactory="true"
       fileExtensions="gtr" ecorePackage="trace.ecore#/">
     <genClasses ecoreClass="trace.ecore#//ExecutionTrace">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/steps"/>
