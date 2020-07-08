@@ -23,11 +23,7 @@ import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
-		
-	// Needed for importing
-	override bindILinkingService() {
-		return TraceLanguageLinker
-	}
+	
 	
 	// Theoretically, needed for serialization
 	override bindIScopeProvider() {
@@ -43,9 +39,14 @@ class TraceLanguageRuntimeModule extends AbstractTraceLanguageRuntimeModule {
 		return TraceLanguageFormatter
 	}
 	
+	// Needed for importing
+	override bindILinkingService() {
+		return TraceLanguageLinker
+	}
+	
 	// Needed for import serialization: return value type is needed!
 	def Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
-		return TraceLanguageCrossReferenceSerializer;
-	}	
+		return TraceLanguageCrossReferenceSerializer
+	}
 	
 }

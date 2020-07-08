@@ -1,0 +1,86 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
+grammar hu.bme.mit.gamma.property.language.PropertyLanguage with hu.bme.mit.gamma.statechart.language.StatechartLanguage
+
+import "http://www.mit.bme.hu/gamma/property/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
+import "http://www.mit.bme.hu/gamma/expression/Model" as expression
+import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as statechart
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+PropertyPackage returns PropertyPackage:
+	'import' ^import+=[interface::Package| STRING]
+	'component' component=[interface::Component]
+	('formula' formulas+=StateFormula)*
+;
+
+StateFormula returns StateFormula:
+	QuantifiedFormula | AtomicFormula
+;
+
+PathFormula returns PathFormula:
+	UnaryOperandPathFormula | StateFormula | BinaryOperandPathFormula
+;
+
+@Override
+PrimaryExpression returns expression::Expression:
+	LiteralExpression | ComponentInstanceStateExpression | '(' Expression ')'
+;
+
+ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
+	ComponentInstanceStateConfigurationReference | ComponentInstanceVariableReference |
+		ComponentInstanceEventReference | ComponentInstanceEventParameterReference
+;
+
+ComponentInstanceStateConfigurationReference returns ComponentInstanceStateConfigurationReference:
+	'a' instance=[composite::SynchronousComponentInstance] '.' region=[statechart::Region] '.' state=[statechart::State] 
+;
+
+ComponentInstanceVariableReference returns ComponentInstanceVariableReference:
+	'b' instance=[composite::SynchronousComponentInstance] '.' variable=[expression::VariableDeclaration] 
+;
+
+ComponentInstanceEventReference returns ComponentInstanceEventReference:
+	'c' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event] 
+;
+
+ComponentInstanceEventParameterReference returns ComponentInstanceEventParameterReference:
+	'd' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event] "::" parameter=[expression::ParameterDeclaration]
+;
+
+QuantifiedFormula returns QuantifiedFormula:
+	quantifier=PathQuantifier formula=PathFormula
+;
+
+AtomicFormula returns AtomicFormula:
+	expression=Expression
+;
+
+enum PathQuantifier returns PathQuantifier:
+	FORALL = 'A' | EXISTS = 'E'
+;
+
+UnaryOperandPathFormula returns UnaryOperandPathFormula:
+	operator=UnaryPathOperator operand=PathFormula
+;
+
+enum UnaryPathOperator returns UnaryPathOperator:
+	GLOBAL = 'G' | FUTURE = 'F' | NEXT = 'X'
+;
+
+BinaryOperandPathFormula returns BinaryOperandPathFormula:
+	'[' leftOperand=PathFormula operator=BinaryPathOperator rightOperand=PathFormula ']'
+;
+
+enum BinaryPathOperator returns BinaryPathOperator:
+	UNTIL = 'U' | RELEASE = "R"
+;

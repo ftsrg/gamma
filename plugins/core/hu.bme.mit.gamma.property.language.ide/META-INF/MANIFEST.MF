@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: hu.bme.mit.gamma.property.language.ide
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Property Language IDE
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.3.1.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.property.language.ide; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.property.model,
+ hu.bme.mit.gamma.property.language,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.statechart.language,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: hu.bme.mit.gamma.property.language.ide.contentassist.antlr.internal,
+ hu.bme.mit.gamma.property.language.ide.contentassist.antlr

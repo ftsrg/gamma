@@ -27,9 +27,8 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 		for (Keyword comma: f.findKeywords(",")) {
 			c.setNoSpace().before(comma);
 		}
-f.instanceStateConfigurationAccess
 		// Setting the maximum size of lines
-        c.setAutoLinewrap(130)
+        c.setAutoLinewrap(110)
         // Line break between import and component keywords
         c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1, f.executionTraceAccess.traceKeyword_2)
         // Line breaks after these rules

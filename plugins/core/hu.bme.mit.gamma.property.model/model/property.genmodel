@@ -13,6 +13,7 @@
       fileExtensions="gpm" ecorePackage="property.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//BinaryPathOperator">
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/UNTIL"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryPathOperator/RELEASE"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//UnaryPathOperator">
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//UnaryPathOperator/GLOBAL"/>

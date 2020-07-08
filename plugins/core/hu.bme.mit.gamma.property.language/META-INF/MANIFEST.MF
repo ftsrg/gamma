@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: hu.bme.mit.gamma.property.language
+Bundle-ManifestVersion: 2
+Bundle-Name: Gamma Property Language
+Bundle-Vendor: BME-FTSRG
+Bundle-Version: 2.3.1.qualifier
+Bundle-SymbolicName: hu.bme.mit.gamma.property.language; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: hu.bme.mit.gamma.property.model,
+ org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common,
+ hu.bme.mit.gamma.expression.language,
+ hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.statechart.language,
+ hu.bme.mit.gamma.language.util,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
+ org.eclipse.xtend.lib;bundle-version="2.14.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: hu.bme.mit.gamma.property.language,
+ hu.bme.mit.gamma.property.language.formatting,
+ hu.bme.mit.gamma.property.language.generator,
+ hu.bme.mit.gamma.property.language.linking,
+ hu.bme.mit.gamma.property.language.parser.antlr,
+ hu.bme.mit.gamma.property.language.parser.antlr.internal,
+ hu.bme.mit.gamma.property.language.scoping,
+ hu.bme.mit.gamma.property.language.serializer,
+ hu.bme.mit.gamma.property.language.serializing,
+ hu.bme.mit.gamma.property.language.services,
+ hu.bme.mit.gamma.property.language.validation
+Import-Package: org.apache.log4j
