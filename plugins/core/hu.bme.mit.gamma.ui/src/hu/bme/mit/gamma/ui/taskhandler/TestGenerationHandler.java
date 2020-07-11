@@ -43,7 +43,6 @@ public class TestGenerationHandler extends TaskHandler {
 		String testClass = testGenerator.execute();
 		saveCode(targetFolderUri + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/"),
 				testGeneration.getFileName().get(0) + ".java", testClass);
-		
 	}
 	
 	private void setTestGeneration(TestGeneration testGeneration, String packageName) {
