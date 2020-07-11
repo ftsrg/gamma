@@ -19,8 +19,6 @@ class TraceToPlantUMLTransformer {
 	}
 	
 	def String execute() '''
-		!pragma teoz true
-		
 		hide footbox
 		skinparam shadowing false
 		skinparam ArrowColor #0b910b
