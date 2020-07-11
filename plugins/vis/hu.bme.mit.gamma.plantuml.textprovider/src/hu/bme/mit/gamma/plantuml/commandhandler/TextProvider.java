@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.commandhandler;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -30,15 +32,16 @@ import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
 import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.statechart.interface_.Package;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
 import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
 
 public class TextProvider extends AbstractDiagramTextProvider implements DiagramTextProvider2 {
 
 	private String plantumlModel;
+	private List<String> supportedExtensions = Arrays.asList("gcd", "get");
 
 	@Override
 	public boolean supportsSelection(ISelection sel) {
@@ -51,7 +54,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 					if (fileExtension == null) {
 						return false;
 					}
-					if (fileExtension.equals("gcd") || fileExtension.equals("get")) {
+					if (supportedExtensions.contains(fileExtension)) {
 						return true;
 					}
 				}
@@ -76,10 +79,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 				if (component instanceof StatechartDefinition) {
 					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
 					StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
-					transformer.execute();
-					if (transformer.getTransitions() != null) {
-						plantumlModel = transformer.getTransitions();
-					}
+					plantumlModel = transformer.execute();
 				} else if (component instanceof CompositeComponent) {
 					CompositeComponent composite = (CompositeComponent) component;
 					CompositeToPlantUMLTransformer transformer = new CompositeToPlantUMLTransformer(composite);
@@ -99,11 +99,12 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 
 	@Override
 	public String getDiagramText(IPath path) {
-		if (path.getFileExtension().equals("gcd")) {
+		final String fileExtension = path.getFileExtension();
+		if (fileExtension.equals("gcd")) {
 			getComponentPlantUMLCode(getResource(path));
 			return "@startuml\r\n" + plantumlModel + "@enduml";
 		}
-		if (path.getFileExtension().equals("get")) {
+		if (fileExtension.equals("get")) {
 			getTracePlantUMLCode(getResource(path));
 			return "@startuml\r\n" + plantumlModel + "@enduml";
 		}
@@ -123,7 +124,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 
 	@Override
 	public boolean supportsPath(IPath arg0) {
-		return "gcd".equals(arg0.getFileExtension()) || "get".equals(arg0.getFileExtension());
+		return supportedExtensions.contains(arg0.getFileExtension());
 	}
 
 }

@@ -45,20 +45,15 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 class StatechartToPlantUMLTransformer {
 	
 	protected final StatechartDefinition statechart
-	protected String transitionsString
 	
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 
 	new(StatechartDefinition statechart) {
 		this.statechart = statechart
-		transitionsString = ""
 	}
 
 	def execute() {
-		if (statechart === null) {
-			return
-		}
-		transitionsString = mainRegionSearch(statechart)
+		return statechart.mainRegionSearch
 	}
 	
 ///////////////////// TRIGGER DISPATCH /////////////////////	
@@ -364,11 +359,6 @@ class StatechartToPlantUMLTransformer {
 			«ENDIF»
 		'''
 		return transitions
-	}
-	
-	// Returns the transitionString, which contains the visualization. This is used by the command handler.
-	def getTransitions() {
-		return transitionsString
 	}
 	
 }
