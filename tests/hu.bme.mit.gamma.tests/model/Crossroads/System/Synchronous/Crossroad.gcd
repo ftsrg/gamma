@@ -1,9 +1,9 @@
-package casccrossroads
+package synccrossroads
 import "Interfaces/Interfaces.gcd"
 import "Controller/Controller.gcd"
 import "TrafficLight/TrafficLightCtrl.gcd"
 
-cascade Crossroad() [
+sync Crossroad() [
 // Component ports
 	port police : requires PoliceInterrupt
 	port priorityOutput : provides LightCommands
