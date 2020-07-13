@@ -68,6 +68,10 @@ import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 
 public class ExpressionTypeDeterminator {
+	// Singleton
+	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
+	protected ExpressionTypeDeterminator() {}
+	//
 	
 	/**
 	 * Collector of extension methods.
@@ -410,7 +414,7 @@ public class ExpressionTypeDeterminator {
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
 	
-	// Type equal (in case of complex types, only shallow comparison)
+	// Type equal (in the case of complex types, only shallow comparison)
 	
 	public boolean equals(Type type, ExpressionType expressionType) {
 		return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
@@ -425,7 +429,6 @@ public class ExpressionTypeDeterminator {
 			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
 	}
 	
-
 	protected EnumerationTypeDefinition getEnumerationType(Type type) {
 		EnumerationTypeDefinition enumType = null;
 		if (type instanceof EnumerationTypeDefinition) {

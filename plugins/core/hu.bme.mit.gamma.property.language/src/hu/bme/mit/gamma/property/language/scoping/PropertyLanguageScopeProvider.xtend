@@ -10,13 +10,74 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.scoping
 
+import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
+import hu.bme.mit.gamma.property.model.PropertyModelPackage
+import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.EcoreUtil2
+import org.eclipse.xtext.scoping.Scopes
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvider {
-
+	
+	override getScope(EObject context, EReference reference) {
+		if (context instanceof PropertyPackage) {
+			if (reference == PropertyModelPackage.Literals.PROPERTY_PACKAGE__COMPONENT) {
+				val imports = context.import
+				if (!imports.empty) {
+					return Scopes.scopeFor(imports.map[it.components].flatten)
+				}
+			}
+		}
+		if (context instanceof ComponentInstanceStateExpression) {
+			val root = EcoreUtil2.getRootContainer(context) as PropertyPackage
+			val component = root.component
+			val simpleInstances = component.allSimpleInstances
+			// Base
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_EXPRESSION__INSTANCE) {
+				return Scopes.scopeFor(simpleInstances)
+			}
+			val instance = context.instance
+			val statechart = instance.type as StatechartDefinition
+			// State
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
+				return Scopes.scopeFor(statechart.allRegions)
+			}
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
+				val stateConfigurationReference = context as ComponentInstanceStateConfigurationReference
+				val region = stateConfigurationReference.region
+				return Scopes.scopeFor(region.states)
+			}
+			// Variable
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+				return Scopes.scopeFor(statechart.variableDeclarations)
+			}
+			// Port
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__PORT ||
+					reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PORT) {
+				return Scopes.scopeFor(statechart.ports)
+			}
+			// Event
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__EVENT ||
+					reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
+				if (context instanceof ComponentInstanceEventReference) {
+					return Scopes.scopeFor(context.port.outputEvents)
+				}
+				if (context instanceof ComponentInstanceEventParameterReference) {
+					return Scopes.scopeFor(context.port.outputEvents)
+				}
+			}
+			// Parameter
+			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PARAMETER) {
+				val eventParameterReference = context as ComponentInstanceEventParameterReference
+				return Scopes.scopeFor(eventParameterReference.event.parameterDeclarations)
+			}
+		}
+	}
 }

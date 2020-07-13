@@ -64,8 +64,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
 	
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-	protected ExpressionEvaluator expressionEvaluator = expressionUtil.getEvaluator();
-	protected ExpressionTypeDeterminator typeDeterminator = new ExpressionTypeDeterminator();
+	protected ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
+	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
 	
 	@Check
 	public void checkNameUniqueness(NamedElement element) {

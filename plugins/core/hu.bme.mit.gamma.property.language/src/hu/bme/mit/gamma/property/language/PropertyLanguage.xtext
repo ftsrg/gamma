@@ -42,19 +42,20 @@ ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
 ;
 
 ComponentInstanceStateConfigurationReference returns ComponentInstanceStateConfigurationReference:
-	'a' instance=[composite::SynchronousComponentInstance] '.' region=[statechart::Region] '.' state=[statechart::State] 
+	'state' instance=[composite::SynchronousComponentInstance] '.' region=[statechart::Region] '.' state=[statechart::State]
 ;
 
 ComponentInstanceVariableReference returns ComponentInstanceVariableReference:
-	'b' instance=[composite::SynchronousComponentInstance] '.' variable=[expression::VariableDeclaration] 
+	'var' instance=[composite::SynchronousComponentInstance] '.' variable=[expression::VariableDeclaration]
 ;
 
 ComponentInstanceEventReference returns ComponentInstanceEventReference:
-	'c' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event] 
+	'event' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event]
 ;
 
 ComponentInstanceEventParameterReference returns ComponentInstanceEventParameterReference:
-	'd' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event] "::" parameter=[expression::ParameterDeclaration]
+	'param' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.'
+		event=[interface::Event] '::' parameter=[expression::ParameterDeclaration]
 ;
 
 QuantifiedFormula returns QuantifiedFormula:
