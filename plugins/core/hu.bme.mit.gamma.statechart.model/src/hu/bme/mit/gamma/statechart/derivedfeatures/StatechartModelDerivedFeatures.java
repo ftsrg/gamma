@@ -342,6 +342,14 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return events;
 	}
 	
+	public static boolean isInputEvent(Port port, Event event) {
+		return getInputEvents(port).contains(event);
+	}
+	
+	public static boolean isOutputEvent(Port port, Event event) {
+		return getOutputEvents(port).contains(event);
+	}
+	
 	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
 		Collection<Port> allPorts = new HashSet<Port>(wrapper.getPorts());
 		allPorts.addAll(wrapper.getWrappedComponent().getType().getPorts());

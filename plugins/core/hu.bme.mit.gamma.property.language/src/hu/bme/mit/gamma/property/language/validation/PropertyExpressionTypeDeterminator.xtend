@@ -1,14 +1,12 @@
 package hu.bme.mit.gamma.property.language.validation
 
+import hu.bme.mit.gamma.expression.language.validation.ExpressionType
 import hu.bme.mit.gamma.expression.language.validation.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
-import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
-import hu.bme.mit.gamma.expression.model.BooleanLiteralExpression
-import hu.bme.mit.gamma.expression.language.validation.ExpressionType
-import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
-import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 
 class PropertyExpressionTypeDeterminator extends ExpressionTypeDeterminator {
 	// Singleton

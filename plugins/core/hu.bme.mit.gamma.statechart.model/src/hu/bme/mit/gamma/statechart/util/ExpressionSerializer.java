@@ -25,14 +25,10 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 	}
 
 	public String serialize(Expression expression) {
-		try {
-			return super.serialize(expression);
-		} catch (IllegalArgumentException e) {
-			if (expression instanceof EventParameterReferenceExpression) {
-				return _serialize((EventParameterReferenceExpression) expression);
-			}
+		if (expression instanceof EventParameterReferenceExpression) {
+			return _serialize((EventParameterReferenceExpression) expression);
 		}
-		throw new IllegalArgumentException("Unhandled parameter types: " + expression);
+		return super.serialize(expression);
 	}
 
 }
