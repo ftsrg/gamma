@@ -8,6 +8,7 @@
 			contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
 			default="true"
 			extensions="gpd"
+			icon="icons/gamma-icon-16.png"
 			id="hu.bme.mit.gamma.property.language.PropertyLanguage"
 			name="PropertyLanguage Editor">
 		</editor>

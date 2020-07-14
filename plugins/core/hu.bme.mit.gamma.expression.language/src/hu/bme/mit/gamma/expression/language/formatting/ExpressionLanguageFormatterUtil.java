@@ -18,30 +18,52 @@ import org.eclipse.xtext.util.Pair;
 public class ExpressionLanguageFormatterUtil {
 
 	public void format(FormattingConfig c, AbstractGrammarElementFinder f) {
+		setBrackets(c, f);
+		setParantheses(c, f);
+		setDots(c, f);
+		setExclamationMarks(c, f);
+		setCommas(c, f);
+		setDoubleColons(c, f);
+	}
+
+	public void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Keyword dot : f.findKeywords("::")) {
+			c.setNoSpace().after(dot);
+		}
+	}
+
+	public void setCommas(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Keyword comma : f.findKeywords(";")) {
+			c.setNoSpace().before(comma);
+		}
+	}
+
+	public void setExclamationMarks(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Keyword exclamationMark : f.findKeywords("!")) {
+			c.setNoSpace().after(exclamationMark);
+		}
+	}
+
+	public void setDots(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Keyword dot : f.findKeywords(".")) {
+			c.setNoSpace().around(dot);
+		}
+	}
+
+	public void setParantheses(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
+			c.setNoSpace().after(p.getFirst());
+			c.setNoSpace().before(p.getSecond());
+		}
+	}
+
+	public void setBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
 			c.setIndentation(pair.getFirst(), pair.getSecond());
 			c.setLinewrap(1).after(pair.getFirst());
 			c.setLinewrap(1).before(pair.getSecond());
 			c.setLinewrap(1).after(pair.getSecond());
 		}
-        // No space around parentheses
-        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
-            c.setNoSpace().after(p.getFirst());
-            c.setNoSpace().before(p.getSecond());
-        }
-		for (Keyword dot : f.findKeywords(".")) {
-            c.setNoSpace().around(dot);
-        }
-		for (Keyword exclamationMark : f.findKeywords("!")) {
-            c.setNoSpace().after(exclamationMark);
-        }
-		for (Keyword comma : f.findKeywords(";")) {
-            c.setNoSpace().before(comma);
-        }
-        // No space after double colons
-        for (Keyword dot : f.findKeywords("::")) {
-            c.setNoSpace().after(dot);
-        }
 	}
 	
 }

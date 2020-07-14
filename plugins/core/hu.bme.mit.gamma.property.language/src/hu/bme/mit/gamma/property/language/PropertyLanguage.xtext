@@ -23,13 +23,95 @@ PropertyPackage returns PropertyPackage:
 	('formula' formulas+=StateFormula)*
 ;
 
+// State formula
+
 StateFormula returns StateFormula:
-	QuantifiedFormula | AtomicFormula
+	ImplyStateFormula
 ;
 
-PathFormula returns PathFormula:
-	UnaryOperandPathFormula | StateFormula | BinaryOperandPathFormula
+ImplyStateFormula returns StateFormula:
+	OrStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=ImplyOperator rightOperand=ImplyStateFormula)?
 ;
+
+OrStateFormula returns StateFormula:
+	XorStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=OrOperator rightOperand=OrStateFormula)?
+;
+
+XorStateFormula returns StateFormula:
+	AndStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=XorOperator rightOperand=XorStateFormula)?
+;
+
+AndStateFormula returns StateFormula:
+	UnaryStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=AndOperator rightOperand=AndStateFormula)?
+;
+
+UnaryStateFormula returns StateFormula:
+	NotStateFormula | ParenthesesStateFormula | AtomicFormula | QuantifiedFormula
+;
+
+NotStateFormula returns UnaryOperandLogicalStateFormula:
+	operator=NotOperator operand=ParenthesesStateFormula
+;
+
+ParenthesesStateFormula returns StateFormula:
+	 '(' StateFormula ')'
+;
+
+AtomicFormula returns AtomicFormula:
+	'{' expression=Expression '}'
+;
+
+QuantifiedFormula returns QuantifiedFormula:
+	quantifier=PathQuantifier formula=PathFormula
+;
+
+// Path formula
+
+PathFormula returns PathFormula:
+	ImplyPathFormula
+;
+
+ImplyPathFormula returns PathFormula:
+	OrPathFormula ({BinaryOperandLogicalPathFormula.leftOperand=current} operator=ImplyOperator rightOperand=ImplyPathFormula)?
+;
+
+OrPathFormula returns PathFormula:
+	XorPathFormula ({BinaryOperandLogicalPathFormula.leftOperand=current} operator=OrOperator rightOperand=OrPathFormula)?
+;
+
+XorPathFormula returns PathFormula:
+	AndPathFormula ({BinaryOperandLogicalPathFormula.leftOperand=current} operator=XorOperator rightOperand=XorPathFormula)?
+;
+
+AndPathFormula returns PathFormula:
+	UnaryPathFormula ({BinaryOperandLogicalPathFormula.leftOperand=current} operator=AndOperator rightOperand=AndPathFormula)?
+;
+
+UnaryPathFormula returns PathFormula:
+	NotPathFormula | UnaryOperandPathFormula | BinaryOperandPathFormula
+;
+
+NotPathFormula returns UnaryOperandLogicalPathFormula:
+	operator=NotOperator operand=ParenthesesPathFormula
+;
+
+UnaryOperandPathFormula returns UnaryOperandPathFormula:
+	operator=UnaryPathOperator operand=PathFormula
+;
+
+BinaryOperandPathFormula returns PathFormula:
+	PrimaryPathFormula ({BinaryOperandPathFormula.leftOperand=current} operator=BinaryPathOperator rightOperand=BinaryOperandPathFormula)?
+;
+
+PrimaryPathFormula returns PathFormula:
+	'[' StateFormula ']' | ParenthesesPathFormula
+;
+
+ParenthesesPathFormula returns PathFormula:
+	'('PathFormula')'
+;
+
+// Literals
 
 @Override
 PrimaryExpression returns expression::Expression:
@@ -58,30 +140,36 @@ ComponentInstanceEventParameterReference returns ComponentInstanceEventParameter
 		event=[interface::Event] '::' parameter=[expression::ParameterDeclaration]
 ;
 
-QuantifiedFormula returns QuantifiedFormula:
-	quantifier=PathQuantifier formula=PathFormula
-;
-
-AtomicFormula returns AtomicFormula:
-	expression=Expression
-;
+// Operators
 
 enum PathQuantifier returns PathQuantifier:
 	FORALL = 'A' | EXISTS = 'E'
-;
-
-UnaryOperandPathFormula returns UnaryOperandPathFormula:
-	operator=UnaryPathOperator operand=PathFormula
 ;
 
 enum UnaryPathOperator returns UnaryPathOperator:
 	GLOBAL = 'G' | FUTURE = 'F' | NEXT = 'X'
 ;
 
-BinaryOperandPathFormula returns BinaryOperandPathFormula:
-	'[' leftOperand=PathFormula operator=BinaryPathOperator rightOperand=PathFormula ']'
+enum BinaryPathOperator returns BinaryPathOperator:
+	UNTIL = 'U' | RELEASE = 'R'
 ;
 
-enum BinaryPathOperator returns BinaryPathOperator:
-	UNTIL = 'U' | RELEASE = "R"
+enum NotOperator returns UnaryLogicalOperator:
+	NOT='!'
+;
+
+enum AndOperator returns BinaryLogicalOperator:
+	AND = '&&'
+;
+
+enum XorOperator returns BinaryLogicalOperator:
+	XOR = '^'
+;
+
+enum OrOperator returns BinaryLogicalOperator:
+	OR = '||'
+;
+
+enum ImplyOperator returns BinaryLogicalOperator:
+	IMPLY = '->'
 ;

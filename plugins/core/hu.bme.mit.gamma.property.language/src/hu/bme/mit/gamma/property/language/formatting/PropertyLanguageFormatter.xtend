@@ -17,17 +17,21 @@ import org.eclipse.xtext.formatting.impl.FormattingConfig
 
 class PropertyLanguageFormatter extends AbstractDeclarativeFormatter {
 	
-	final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil
+	extension ExpressionLanguageFormatterUtil formatterUtil = new ExpressionLanguageFormatterUtil
 	
 	protected override void configureFormatting(FormattingConfig c) {
 		val f = grammarAccess as PropertyLanguageGrammarAccess
 		// Using the basic expression language formatting
-		expressionLanguageFormatterUtil.format(c, f)
+		setParantheses(c, f)
+		setDots(c, f)
+		setExclamationMarks(c, f)
+		setCommas(c, f)
+		setDoubleColons(c, f)
 		c.setWrappedLineIndentation(1);
+		c.setAutoLinewrap(105);
 		// Setting the maximum size of lines
-        c.setAutoLinewrap(105);
-        c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.importAssignment_1)
-        c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.componentAssignment_3)
-        c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.formulasAssignment_4_1)
+		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.importAssignment_1)
+		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.componentAssignment_3)
+		c.setLinewrap(1, 1, 2).before(f.propertyPackageAccess.formulaKeyword_4_0)
 	}
 }

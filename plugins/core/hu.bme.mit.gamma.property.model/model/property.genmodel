@@ -24,6 +24,15 @@
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//PathQuantifier/FORALL"/>
       <genEnumLiterals ecoreEnumLiteral="property.ecore#//PathQuantifier/EXISTS"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//BinaryLogicalOperator">
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryLogicalOperator/AND"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryLogicalOperator/XOR"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryLogicalOperator/OR"/>
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//BinaryLogicalOperator/IMPLY"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="property.ecore#//UnaryLogicalOperator">
+      <genEnumLiterals ecoreEnumLiteral="property.ecore#//UnaryLogicalOperator/NOT"/>
+    </genEnums>
     <genClasses ecoreClass="property.ecore#//PropertyPackage">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/import"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/component"/>
@@ -65,6 +74,24 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/port"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/event"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/parameter"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//UnaryOperandLogicalStateFormula">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandLogicalStateFormula/operator"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//UnaryOperandLogicalStateFormula/operand"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//BinaryOperandLogicalStateFormula">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//BinaryOperandLogicalStateFormula/operator"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalStateFormula/leftOperand"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalStateFormula/rightOperand"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//UnaryOperandLogicalPathFormula">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandLogicalPathFormula/operator"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//UnaryOperandLogicalPathFormula/operand"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//BinaryOperandLogicalPathFormula">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//BinaryOperandLogicalPathFormula/operator"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalPathFormula/leftOperand"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalPathFormula/rightOperand"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>
