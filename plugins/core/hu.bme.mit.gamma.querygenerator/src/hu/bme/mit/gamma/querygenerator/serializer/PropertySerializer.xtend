@@ -2,8 +2,14 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.StateFormula
 
-interface PropertySerializer {
+abstract class PropertySerializer {
 	
-	def String serialize(StateFormula formula)
+	protected extension PropertyExpressionSerializer serializer
+	 
+	new(PropertyExpressionSerializer serializer) {
+		this.serializer = serializer
+	}
+	
+	abstract def String serialize(StateFormula formula)
 	
 }

@@ -11,14 +11,13 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 import static com.google.common.base.Preconditions.checkArgument
 
-class UppaalPropertySerializer implements PropertySerializer {
+class UppaalPropertySerializer extends PropertySerializer {
 	// Singleton
 	public static final ThetaPropertySerializer INSTANCE = new ThetaPropertySerializer
-	protected new() {}
+	protected new() {
+		super(new PropertyExpressionSerializer(UppaalReferenceSerializer.INSTANCE))
+	}
 	//
-	
-	protected extension PropertyExpressionSerializer serializer =
-		new PropertyExpressionSerializer(ThetaReferenceSerializer.INSTANCE) 
 	
 	override serialize(StateFormula formula) {
 		val leadsToOperands = formula.checkLeadsTo
@@ -28,9 +27,10 @@ class UppaalPropertySerializer implements PropertySerializer {
 			val right = leadsToOperands.value
 			return '''«left.serializeFormula» --> «right.serializeFormula»'''
 		}
-		// Or a sinmple CTL
-		checkArgument(formula.isSimpleCTL)
-		return formula.serializeFormula
+		// Or a simple CTL
+		val serializedFormula = formula.serializeFormula
+		checkArgument(formula.isSimpleCTL, serializedFormula)
+		return serializedFormula
 	}
 	
 	protected def isSimpleCTL(StateFormula formula) {
@@ -119,10 +119,10 @@ class UppaalPropertySerializer implements PropertySerializer {
 	def String transform(UnaryPathOperator operator) {
 		switch (operator) {
 			case FUTURE: {
-				return '''F'''
+				return '''<>'''
 			}
 			case GLOBAL: {
-				return '''G'''
+				return '''[]'''
 			}
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)
