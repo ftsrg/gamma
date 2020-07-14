@@ -15,18 +15,18 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceStates
 import hu.bme.mit.gamma.querygenerator.patterns.InstanceVariables
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import java.util.List
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkArgument
 import static hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 
 abstract class AbstractQueryGenerator {
 		
