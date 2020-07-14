@@ -12,13 +12,13 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.xsts.model.model.Action
-import hu.bme.mit.gamma.xsts.model.model.AssignmentAction
-import hu.bme.mit.gamma.xsts.model.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.model.EmptyAction
-import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.model.model.ParallelAction
-import hu.bme.mit.gamma.xsts.model.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
+import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
+import hu.bme.mit.gamma.xsts.model.ParallelAction
+import hu.bme.mit.gamma.xsts.model.SequentialAction
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.EObject

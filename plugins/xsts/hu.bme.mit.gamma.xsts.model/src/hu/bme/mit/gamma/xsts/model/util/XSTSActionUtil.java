@@ -26,13 +26,13 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.xsts.model.model.Action;
-import hu.bme.mit.gamma.xsts.model.model.AssumeAction;
-import hu.bme.mit.gamma.xsts.model.model.NonDeterministicAction;
-import hu.bme.mit.gamma.xsts.model.model.ParallelAction;
-import hu.bme.mit.gamma.xsts.model.model.SequentialAction;
-import hu.bme.mit.gamma.xsts.model.model.XSTS;
-import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory;
+import hu.bme.mit.gamma.xsts.model.Action;
+import hu.bme.mit.gamma.xsts.model.AssumeAction;
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
+import hu.bme.mit.gamma.xsts.model.ParallelAction;
+import hu.bme.mit.gamma.xsts.model.SequentialAction;
+import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
 public class XSTSActionUtil {
 	// Singleton

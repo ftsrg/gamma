@@ -21,8 +21,8 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
-import hu.bme.mit.gamma.xsts.model.model.PrimedVariable
-import hu.bme.mit.gamma.xsts.model.model.XSTS
+import hu.bme.mit.gamma.xsts.model.PrimedVariable
+import hu.bme.mit.gamma.xsts.model.XSTS
 
 class DeclarationSerializer {
 	// Auxiliary objects

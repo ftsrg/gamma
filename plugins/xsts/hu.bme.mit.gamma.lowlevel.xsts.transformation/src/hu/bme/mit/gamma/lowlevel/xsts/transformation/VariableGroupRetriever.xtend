@@ -10,16 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
-import hu.bme.mit.gamma.xsts.model.model.ComponentParameterGroup
-import hu.bme.mit.gamma.xsts.model.model.InEventGroup
-import hu.bme.mit.gamma.xsts.model.model.InEventParameterGroup
-import hu.bme.mit.gamma.xsts.model.model.OutEventGroup
-import hu.bme.mit.gamma.xsts.model.model.OutEventParameterGroup
-import hu.bme.mit.gamma.xsts.model.model.PlainVariableGroup
-import hu.bme.mit.gamma.xsts.model.model.RegionGroup
-import hu.bme.mit.gamma.xsts.model.model.TimeoutGroup
-import hu.bme.mit.gamma.xsts.model.model.XSTS
-import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.ComponentParameterGroup
+import hu.bme.mit.gamma.xsts.model.InEventGroup
+import hu.bme.mit.gamma.xsts.model.InEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.OutEventGroup
+import hu.bme.mit.gamma.xsts.model.OutEventParameterGroup
+import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
+import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.TimeoutGroup
+import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 
 import static com.google.common.base.Preconditions.checkState
 

@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
-import hu.bme.mit.gamma.xsts.model.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class StatechartCodeGenerator {

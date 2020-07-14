@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
-import hu.bme.mit.gamma.xsts.model.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*

@@ -10,7 +10,7 @@
       <!-- @generated model -->
       <package
             uri="http://www.mit.bme.hu/gamma/xSTS/Model"
-            class="hu.bme.mit.gamma.xsts.model.model.XSTSModelPackage"
+            class="hu.bme.mit.gamma.xsts.model.XSTSModelPackage"
             genModel="model/model.genmodel"/>
    </extension>
 

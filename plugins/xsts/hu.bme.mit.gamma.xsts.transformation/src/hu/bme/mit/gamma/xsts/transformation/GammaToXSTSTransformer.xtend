@@ -26,9 +26,9 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.model.model.RegionGroup
-import hu.bme.mit.gamma.xsts.model.model.XSTS
-import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import java.io.File
 import java.math.BigInteger
 import java.util.Collections

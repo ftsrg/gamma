@@ -18,8 +18,8 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TransitionsToLower
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
-import hu.bme.mit.gamma.xsts.model.model.Action
-import hu.bme.mit.gamma.xsts.model.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.model.util.XSTSActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
