@@ -26,31 +26,7 @@ PropertyPackage returns PropertyPackage:
 // State formula
 
 StateFormula returns StateFormula:
-	ImplyStateFormula
-;
-
-ImplyStateFormula returns StateFormula:
-	OrStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=ImplyOperator rightOperand=ImplyStateFormula)?
-;
-
-OrStateFormula returns StateFormula:
-	XorStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=OrOperator rightOperand=OrStateFormula)?
-;
-
-XorStateFormula returns StateFormula:
-	AndStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=XorOperator rightOperand=XorStateFormula)?
-;
-
-AndStateFormula returns StateFormula:
-	UnaryStateFormula ({BinaryOperandLogicalStateFormula.leftOperand=current} operator=AndOperator rightOperand=AndStateFormula)?
-;
-
-UnaryStateFormula returns StateFormula:
-	NotStateFormula | ParenthesesStateFormula | AtomicFormula | QuantifiedFormula
-;
-
-NotStateFormula returns UnaryOperandLogicalStateFormula:
-	operator=NotOperator operand=ParenthesesStateFormula
+	ParenthesesStateFormula | AtomicFormula | QuantifiedFormula
 ;
 
 ParenthesesStateFormula returns StateFormula:

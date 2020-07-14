@@ -75,15 +75,6 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/event"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/parameter"/>
     </genClasses>
-    <genClasses ecoreClass="property.ecore#//UnaryOperandLogicalStateFormula">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandLogicalStateFormula/operator"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//UnaryOperandLogicalStateFormula/operand"/>
-    </genClasses>
-    <genClasses ecoreClass="property.ecore#//BinaryOperandLogicalStateFormula">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//BinaryOperandLogicalStateFormula/operator"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalStateFormula/leftOperand"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//BinaryOperandLogicalStateFormula/rightOperand"/>
-    </genClasses>
     <genClasses ecoreClass="property.ecore#//UnaryOperandLogicalPathFormula">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandLogicalPathFormula/operator"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//UnaryOperandLogicalPathFormula/operand"/>

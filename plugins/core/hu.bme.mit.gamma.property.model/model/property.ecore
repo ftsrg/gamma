@@ -86,20 +86,6 @@
   <eClassifiers xsi:type="ecore:EEnum" name="UnaryLogicalOperator">
     <eLiterals name="NOT"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="UnaryOperandLogicalStateFormula" eSuperTypes="#//StateFormula">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
-        eType="#//UnaryLogicalOperator"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
-        eType="#//StateFormula" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="BinaryOperandLogicalStateFormula" eSuperTypes="#//StateFormula">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
-        eType="#//BinaryLogicalOperator"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="leftOperand" lowerBound="1"
-        eType="#//StateFormula" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="rightOperand" lowerBound="1"
-        eType="#//StateFormula" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryOperandLogicalPathFormula" eSuperTypes="#//PathFormula">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="operator" lowerBound="1"
         eType="#//UnaryLogicalOperator"/>
