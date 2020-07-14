@@ -68,11 +68,15 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 					reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
 				if (context instanceof ComponentInstanceEventReference) {
 					val port = context.port
-					return Scopes.scopeFor(port.outputEvents)
+					if (!port.eIsProxy) {
+						return Scopes.scopeFor(port.outputEvents)
+					}
 				}
 				if (context instanceof ComponentInstanceEventParameterReference) {
 					val port = context.port
-					return Scopes.scopeFor(port.outputEvents)
+					if (!port.eIsProxy) {
+						return Scopes.scopeFor(port.outputEvents)
+					}
 				}
 			}
 			// Parameter

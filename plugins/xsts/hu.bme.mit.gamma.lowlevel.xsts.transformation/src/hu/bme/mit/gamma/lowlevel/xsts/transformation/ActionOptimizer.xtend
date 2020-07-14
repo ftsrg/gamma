@@ -53,6 +53,7 @@ class ActionOptimizer {
 			newXStsAction.optimizeAssignmentActions
 			newXStsAction.deleteTrivialNonDeterministicActions
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
+			// TODO remove assume actions not in the first index?
 		}
 		return newXStsAction
 	}

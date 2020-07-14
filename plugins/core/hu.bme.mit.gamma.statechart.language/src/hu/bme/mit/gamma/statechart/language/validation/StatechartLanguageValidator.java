@@ -45,38 +45,6 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
-import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
-import hu.bme.mit.gamma.statechart.interface_.Clock;
-import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
-import hu.bme.mit.gamma.statechart.statechart.EntryState;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
-import hu.bme.mit.gamma.statechart.statechart.ForkState;
-import hu.bme.mit.gamma.statechart.statechart.JoinState;
-import hu.bme.mit.gamma.statechart.statechart.MergeState;
-import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
-import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder;
-import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
-import hu.bme.mit.gamma.statechart.statechart.PseudoState;
-import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
-import hu.bme.mit.gamma.statechart.statechart.Region;
-import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
-import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
-import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
-import hu.bme.mit.gamma.statechart.statechart.StateNode;
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
-import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
-import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
-import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -84,8 +52,8 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
@@ -98,16 +66,49 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
+import hu.bme.mit.gamma.statechart.interface_.Clock;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.EventReference;
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Persistency;
+import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
+import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.Trigger;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
+import hu.bme.mit.gamma.statechart.statechart.EntryState;
+import hu.bme.mit.gamma.statechart.statechart.ForkState;
+import hu.bme.mit.gamma.statechart.statechart.JoinState;
+import hu.bme.mit.gamma.statechart.statechart.MergeState;
+import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
+import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.PseudoState;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 
 /**
  * This class contains custom validation rules. 
@@ -1594,6 +1595,30 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		if (!containedInstances.isEmpty()) {
 			error("The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
 					.collect(Collectors.toSet()) + ".",	CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
+		}
+	}
+	
+	@Check
+	public void checkComponentInstanceReferences(ComponentInstanceReference reference) {
+		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
+		if (instances.isEmpty()) {
+			return;
+		}
+		for (int i = 0; i < instances.size() - 1; i++) {
+			ComponentInstance instance = instances.get(i);
+			ComponentInstance nextInstance = instances.get(i + 1);
+			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
+			List<EObject> containedInstances = type.eContents();
+			if (!containedInstances.contains(nextInstance)) {
+				error(instance.getName() + " does not contain component instance " + nextInstance.getName(),
+					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i);
+			}
+		}
+		ComponentInstance lastInstance = instances.get(instances.size() - 1);
+		Component lastType = StatechartModelDerivedFeatures.getDerivedType(lastInstance);
+		if (!(lastType instanceof StatechartDefinition)) {
+			error("The last component instance must have a statechart type.",
+				CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY);
 		}
 	}
 	
