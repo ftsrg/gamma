@@ -90,4 +90,8 @@
         upperBound="-1" eType="#//SynchronousComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousCompositeComponent" eSuperTypes="#//AbstractSynchronousCompositeComponent"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstanceHierarchy"
+        lowerBound="1" upperBound="-1" eType="#//ComponentInstance"/>
+  </eClassifiers>
 </ecore:EPackage>

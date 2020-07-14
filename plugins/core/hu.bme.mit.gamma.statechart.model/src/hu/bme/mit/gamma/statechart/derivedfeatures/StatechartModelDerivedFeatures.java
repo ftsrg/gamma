@@ -247,6 +247,28 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return asynchronousInstances;
 	}
 	
+	public static List<ComponentInstance> getInstances(Component component) {
+		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
+		if (component instanceof AsynchronousCompositeComponent) {
+			AsynchronousCompositeComponent asynchronousCompositeComponent = (AsynchronousCompositeComponent) component;
+			for (AsynchronousComponentInstance instance : asynchronousCompositeComponent.getComponents()) {
+				instances.add(instance);
+			}
+		}
+		else if (component instanceof AsynchronousAdapter) {
+			AsynchronousAdapter asynchronousAdapter = (AsynchronousAdapter) component;
+			SynchronousComponentInstance wrappedComponent = asynchronousAdapter.getWrappedComponent();
+			instances.add(wrappedComponent);
+		}
+		else if (component instanceof AbstractSynchronousCompositeComponent) {
+			AbstractSynchronousCompositeComponent synchronousCompositeComponent = (AbstractSynchronousCompositeComponent) component;
+			for (SynchronousComponentInstance instance : synchronousCompositeComponent.getComponents()) {
+				instances.add(instance);
+			}
+		}
+		return instances;
+	}
+	
 	public static List<ComponentInstance> getAllInstances(Component component) {
 		List<ComponentInstance> instances = new ArrayList<ComponentInstance>();
 		if (component instanceof AsynchronousCompositeComponent) {

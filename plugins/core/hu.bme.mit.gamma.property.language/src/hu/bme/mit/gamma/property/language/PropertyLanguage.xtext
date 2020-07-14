@@ -124,19 +124,19 @@ ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
 ;
 
 ComponentInstanceStateConfigurationReference returns ComponentInstanceStateConfigurationReference:
-	'state' instance=[composite::SynchronousComponentInstance] '.' region=[statechart::Region] '.' state=[statechart::State]
+	'state' instance=ComponentInstanceReference '.' region=[statechart::Region] '.' state=[statechart::State]
 ;
 
 ComponentInstanceVariableReference returns ComponentInstanceVariableReference:
-	'var' instance=[composite::SynchronousComponentInstance] '.' variable=[expression::VariableDeclaration]
+	'var' instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
 ;
 
 ComponentInstanceEventReference returns ComponentInstanceEventReference:
-	'event' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.' event=[interface::Event]
+	'event' instance=ComponentInstanceReference '.' port=[interface::Port] '.' event=[interface::Event]
 ;
 
 ComponentInstanceEventParameterReference returns ComponentInstanceEventParameterReference:
-	'param' instance=[composite::SynchronousComponentInstance] '.' port=[interface::Port] '.'
+	'param' instance=ComponentInstanceReference '.' port=[interface::Port] '.'
 		event=[interface::Event] '::' parameter=[expression::ParameterDeclaration]
 ;
 

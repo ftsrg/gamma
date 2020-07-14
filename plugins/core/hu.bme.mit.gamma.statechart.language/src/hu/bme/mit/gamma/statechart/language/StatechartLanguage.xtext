@@ -455,6 +455,11 @@ ComponentInstance returns CompositeModel::ComponentInstance:
 	SynchronousComponentInstance | AsynchronousComponentInstance
 ;
 
+// Subgrammars can use this
+ComponentInstanceReference returns CompositeModel::ComponentInstanceReference:
+	componentInstanceHierarchy+=[CompositeModel::ComponentInstance] ('->' componentInstanceHierarchy+=[CompositeModel::ComponentInstance] )*
+;
+
 SynchronousComponentInstance returns CompositeModel::SynchronousComponentInstance:
 	'component' name=ID ':' type=[CompositeModel::SynchronousComponent] ('(' arguments+=Expression (',' arguments+=Expression)* ')')?
 ;

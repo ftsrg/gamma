@@ -7,7 +7,7 @@
     language="" usedGenPackages="../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>model.ecore</foreignModel>
-  <genPackages prefix="XSTSModel" basePackage="hu.bme.mit.gamma.xsts.model" disposableProviderFactory="true"
+  <genPackages prefix="XSTSModel" basePackage="hu.bme.mit.gamma.xsts" disposableProviderFactory="true"
       fileExtensions="xsts" ecorePackage="model.ecore#/">
     <genClasses ecoreClass="model.ecore#//XSTS">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//XSTS/typeDeclarations"/>

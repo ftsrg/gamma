@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationRefere
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -35,16 +36,15 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 				}
 			}
 		}
+		val root = EcoreUtil2.getRootContainer(context) as PropertyPackage
+		val component = root.component
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
+			return Scopes.scopeFor(component.allInstances)
+		}
 		if (context instanceof ComponentInstanceStateExpression) {
-			val root = EcoreUtil2.getRootContainer(context) as PropertyPackage
-			val component = root.component
-			val simpleInstances = component.allSimpleInstances
 			// Base
-			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_EXPRESSION__INSTANCE) {
-				return Scopes.scopeFor(simpleInstances)
-			}
-			val instance = context.instance
-			val statechart = instance.type as StatechartDefinition
+			var instance = context.instance.componentInstanceHierarchy.last
+			val statechart = instance.derivedType as StatechartDefinition
 			// State
 			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
 				return Scopes.scopeFor(statechart.allRegions)
@@ -67,10 +67,12 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 			if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__EVENT ||
 					reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
 				if (context instanceof ComponentInstanceEventReference) {
-					return Scopes.scopeFor(context.port.outputEvents)
+					val port = context.port
+					return Scopes.scopeFor(port.outputEvents)
 				}
 				if (context instanceof ComponentInstanceEventParameterReference) {
-					return Scopes.scopeFor(context.port.outputEvents)
+					val port = context.port
+					return Scopes.scopeFor(port.outputEvents)
 				}
 			}
 			// Parameter

@@ -57,7 +57,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//AtomicFormula/expression"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//ComponentInstanceStateExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceStateExpression/instance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceStateExpression/instance"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//ComponentInstanceStateConfigurationReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceStateConfigurationReference/region"/>
