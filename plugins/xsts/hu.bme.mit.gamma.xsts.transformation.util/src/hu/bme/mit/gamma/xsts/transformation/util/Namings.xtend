@@ -13,16 +13,18 @@ package hu.bme.mit.gamma.xsts.transformation.util
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Event
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class Namings {
 	
@@ -52,15 +54,39 @@ class Namings {
 
 	// XSTS customization
 	
-	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«getName(variable).variableName»_«instance.name»'''
-	static def String customizeName(TimeoutDeclaration timeout, ComponentInstance instance) '''«getName(timeout).variableName»_«instance.name»'''
-	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
-	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getInName(port).variableName»_«instance.name»'''
-	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance.name»'''
-	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«event.getInputName(port).eventName»_«instance.name»'''
-	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«event.getOutputName(port).eventName»_«instance.name»'''
-	// Regions
-	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals
-	static def String customizeName(Region region, ComponentInstance instance) '''«region.regionName.regionVariableName»_«instance.name»''' // For region variables
+	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«customizeName(variable, instance.name)»'''
+	static def String customizeName(VariableDeclaration variable, ComponentInstanceReference instance) '''«customizeName(variable, instance.FQN)»'''
+	static def String customizeName(VariableDeclaration variable, String instance) '''«getName(variable).variableName»_«instance»'''
 	
+	static def String customizeName(TimeoutDeclaration timeout, ComponentInstance instance) '''«customizeName(timeout, instance.name)»'''
+	static def String customizeName(TimeoutDeclaration timeout, ComponentInstanceReference instance) '''«customizeName(timeout, instance.FQN)»'''
+	static def String customizeName(TimeoutDeclaration timeout, String instance) '''«getName(timeout).variableName»_«instance»'''
+	
+	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«customizeInName(parameterDeclaration, port, instance.name)»'''
+	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeInName(parameterDeclaration, port, instance.FQN)»'''
+	static def String customizeInName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getInName(port).variableName»_«instance»'''
+	
+	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstance instance) '''«customizeOutName(parameterDeclaration, port, instance.name)»'''
+	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, ComponentInstanceReference instance) '''«customizeOutName(parameterDeclaration, port, instance.FQN)»'''
+	static def String customizeOutName(ParameterDeclaration parameterDeclaration, Port port, String instance) '''«parameterDeclaration.getOutName(port).variableName»_«instance»'''
+	
+	static def String customizeInputName(Event event, Port port, ComponentInstance instance) '''«customizeInputName(event, port, instance.name)»'''
+	static def String customizeInputName(Event event, Port port, ComponentInstanceReference instance) '''«customizeInputName(event, port, instance.FQN)»'''
+	static def String customizeInputName(Event event, Port port, String instance) '''«event.getInputName(port).eventName»_«instance»'''
+	
+	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«customizeOutputName(event, port, instance.name)»'''
+	static def String customizeOutputName(Event event, Port port, ComponentInstanceReference instance) '''«customizeOutputName(event, port, instance.FQN)»'''
+	static def String customizeOutputName(Event event, Port port, String instance) '''«event.getOutputName(port).eventName»_«instance»'''
+	
+	// Regions
+	
+	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
+	
+	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals
+	
+	static def String customizeName(Region region, ComponentInstance instance) '''«customizeName(region, instance.name)»''' // For region variables
+	static def String customizeName(Region region, ComponentInstanceReference instance) '''«customizeName(region, instance.FQN)»''' // For region variables
+	static def String customizeName(Region region, String instance) '''«region.regionName.regionVariableName»_«instance»''' // For region variables
+	
+
 }

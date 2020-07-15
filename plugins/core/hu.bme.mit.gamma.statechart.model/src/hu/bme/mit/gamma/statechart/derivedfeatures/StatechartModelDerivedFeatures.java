@@ -944,7 +944,9 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static ComponentInstance getReferencingComponentInstance(Component component) {
 		Collection<ComponentInstance> instances = getReferencingComponentInstances(component);
-		assert instances.size() == 1;
+		if (instances.size() != 1) {
+			throw new IllegalArgumentException("Not one referencing instance: " + instances);
+		}
 		return instances.stream().findFirst().get();
 	}
 	
@@ -955,7 +957,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			List<ComponentInstance> parentComponentInstances = getParentComponentInstances(referencingComponentInstance);
 			parentComponentInstances.add(referencingComponentInstance);
 			return parentComponentInstances;
-		} catch (AssertionError e) {
+		} catch (IllegalArgumentException e) {
 			// Top component
 			return new ArrayList<ComponentInstance>();
 		}

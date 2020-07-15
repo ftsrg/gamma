@@ -10,19 +10,22 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.util
 
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Clock
+import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Event
 import uppaal.declarations.Variable
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+
+import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class Namings {
 	
@@ -66,20 +69,52 @@ class Namings {
 		return "Of" + instance.name
 	}
 	
+	def static getOutEventName(Event event, Port port, ComponentInstanceReference owner) {
+		return getOutEventName(event, port, owner.FQN)
+	}
+	
 	def static getOutEventName(Event event, Port port, ComponentInstance owner) {
-		return port.name + "_" + event.name + "Of" + owner.name
+		return getOutEventName(event, port, owner.name)
+	}
+	
+	def static getOutEventName(Event event, Port port, String owner) {
+		return port.name + "_" + event.name + "Of" + owner
+	}
+	
+	def static getToRaiseName(Event event, Port port, ComponentInstanceReference instance) {
+		return getToRaiseName(event, port, instance.FQN)
 	}
 	
 	def static getToRaiseName(Event event, Port port, ComponentInstance instance) {
-		return "toRaise_" + port.name + "_" + event.name + "Of" + instance.name
+		return getToRaiseName(event, port, instance.name)
+	}
+	
+	def static getToRaiseName(Event event, Port port, String instance) {
+		return "toRaise_" + port.name + "_" + event.name + "Of" + instance
+	}
+	
+	def static getIsRaisedName(Event event, Port port, ComponentInstanceReference instance) {
+		return getIsRaisedName(event, port, instance.FQN)
 	}
 	
 	def static getIsRaisedName(Event event, Port port, ComponentInstance instance) {
-		return "isRaised_" + port.name + "_" + event.name + "Of" + instance.name
+		return getIsRaisedName(event, port, instance.name)
+	}
+	
+	def static getIsRaisedName(Event event, Port port, String instance) {
+		return "isRaised_" + port.name + "_" + event.name + "Of" + instance
+	}
+	
+	def static getOutValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+		return getOutEventName(event, port, instance) + parameter.name
 	}
 	
 	def static getOutValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
 		return getOutEventName(event, port, instance) + parameter.name
+	}
+	
+	def static getToRaiseValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+		return getToRaiseName(event, port, instance) + parameter.name
 	}
 	
 	def static getToRaiseValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstance instance) {
@@ -90,8 +125,16 @@ class Namings {
 		return getIsRaisedName(event, port, instance) +  parameter.name
 	}
 	
+	def static getIsRaisedValueOfName(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
+		return getIsRaisedName(event, port, instance) +  parameter.name
+	}
+	
 	def static getValueOfName(Variable variable, ParameterDeclaration parameter) {
 		return variable.name + parameter.name
+	}
+	
+	def static getVariableName(VariableDeclaration variable, ComponentInstanceReference instance) {
+		return getVariableName(variable.name, instance.FQN)
 	}
 	
 	def static getVariableName(VariableDeclaration variable, ComponentInstance instance) {
@@ -105,7 +148,15 @@ class Namings {
 	/**
 	 * Returns the template name of a region.
 	 */
+	def static String getTemplateName(Region region, ComponentInstanceReference instance) {
+		return getTemplateName(region, instance.FQN)
+	}
+	
 	def static String getTemplateName(Region region, SynchronousComponentInstance instance) {
+		return getTemplateName(region, instance.name)
+	}
+	 
+	def static String getTemplateName(Region region, String instance) {
 		var String templateName
 		if (region.eContainer instanceof State) {
 			templateName = (region.name + "Of" + (region.eContainer as State).name)
@@ -113,7 +164,7 @@ class Namings {
 		else {			
 			templateName = (region.name + "OfStatechart")
 		}
-		return templateName.replaceAll(" ","")  + "Of" +  instance.name
+		return templateName.replaceAll(" ","")  + "Of" +  instance
 	}
 	
 	/**

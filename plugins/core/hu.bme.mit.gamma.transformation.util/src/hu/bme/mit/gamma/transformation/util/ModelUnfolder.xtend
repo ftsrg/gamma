@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 import static com.google.common.base.Preconditions.checkNotNull
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class ModelUnfolder {
 	
@@ -51,7 +52,8 @@ class ModelUnfolder {
 		val originalComponent = gammaPackage.component
 		val topComponent = clonedPackage.component
 		val trace = new Trace(clonedPackage, topComponent)
-		topComponent.copyComponents(clonedPackage, "", trace)
+		topComponent.copyComponents(clonedPackage, trace)
+		topComponent.renameInstances
 		originalComponent.traceComponentInstances(topComponent, trace)
 		// Resolving potential name collisions
 		clonedPackage.constantDeclarations.resolveNameCollisions
@@ -60,14 +62,12 @@ class ModelUnfolder {
 		return trace
 	}
 	
-	private dispatch def void copyComponents(Component component, Package gammaPackage,
-			String containerInstanceName, Trace trace) {
+	private dispatch def void copyComponents(Component component, Package gammaPackage, Trace trace) {
 		// Simple statecharts are already cloned
-		
 	}
 	
 	private dispatch def void copyComponents(AbstractSynchronousCompositeComponent component,
-			Package gammaPackage, String containerInstanceName, Trace trace) {
+			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
 			val clonedPackage = type.eContainer.clone(true, true) as Package
@@ -83,17 +83,15 @@ class ModelUnfolder {
 			// Changing the requiredPort references of Channels
 			fixChannelRequiredPorts(component, instance)
 			if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {
-				clonedComponent.copyComponents(gammaPackage, containerInstanceName + instance.name + "_", trace) // Cloning the contained CompositeSystems recursively
+				clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 			}
-			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilities
-			instance.name = containerInstanceName + instance.name
 			// Tracing
 			type.traceComponentInstances(clonedComponent, trace)
 		}
 	}
 	
 	private dispatch def void copyComponents(AsynchronousCompositeComponent component, Package gammaPackage,
-			String containerInstanceName, Trace trace) {
+			Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
 			if (type instanceof AsynchronousCompositeComponent) {
@@ -103,7 +101,7 @@ class ModelUnfolder {
 				val clonedComposite = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousCompositeComponent // Cloning the declaration
 				gammaPackage.components += clonedComposite // Adding it to the "Instance container"
 				instance.type = clonedComposite // Setting the type to the new declaration
-				clonedComposite.copyComponents(gammaPackage, containerInstanceName + instance.name + "_", trace) // Cloning the contained CompositeSystems recursively
+				clonedComposite.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 				// Tracing
 				type.traceComponentInstances(clonedComposite, trace)
 			}
@@ -114,7 +112,7 @@ class ModelUnfolder {
 				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
 				gammaPackage.components += clonedWrapper // Adding it to the "Instance container"
 				instance.type = clonedWrapper // Setting the type to the new declaration
-				clonedWrapper.copyComponents(gammaPackage, containerInstanceName + instance.name + "_", trace) // Cloning the contained CompositeSystems recursively
+				clonedWrapper.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 				// Tracing
 				type.traceComponentInstances(clonedWrapper, trace)
 			}
@@ -124,13 +122,11 @@ class ModelUnfolder {
 			fixChannelProvidedPorts(component, instance)
 			// Changing the requiredPort references of Channels
 			fixChannelRequiredPorts(component, instance)
-			// Renames because of unique UPPAAL variable names and well-functioning back-annotation capabilities
-			instance.name = containerInstanceName + instance.name
 		}
 	}
 	
 	private dispatch def void copyComponents(AsynchronousAdapter component, Package gammaPackage,
-			String containerInstanceName, Trace trace) {
+			Trace trace) {
 		val type = component.wrappedComponent.type
 		val clonedPackage = type.eContainer.clone(true, true) as Package
 		gammaPackage.addDeclarations(clonedPackage)
@@ -141,10 +137,8 @@ class ModelUnfolder {
 		component.fixControlEvents // Fixing control events
 		component.fixMessageQueueEvents // Fixing the message queue event references 
 		if (clonedComponent instanceof AbstractSynchronousCompositeComponent) {				
-			clonedComponent.copyComponents(gammaPackage, containerInstanceName + component.wrappedComponent.name + "_", trace) // Cloning the contained CompositeSystems recursively
+			clonedComponent.copyComponents(gammaPackage, trace) // Cloning the contained CompositeSystems recursively
 		}
-		// Rename
-		component.wrappedComponent.name = containerInstanceName + component.wrappedComponent.name
 		// Tracing
 		type.traceComponentInstances(clonedComponent, trace)
 	}
@@ -271,6 +265,25 @@ class ModelUnfolder {
 			clockTickReference.clock = newClocks.head	
 		}
 	}
+	
+	private def dispatch void renameInstances(CompositeComponent component) {
+		for (instance : component.derivedComponents) {
+			val type = instance.derivedType
+			type.renameInstances
+			// After the contained components have been renamed!
+			instance.name = instance.FQN
+		}
+	}
+	
+	private def dispatch void renameInstances(AsynchronousAdapter component) {
+		val instance = component.wrappedComponent
+		val type = instance.type
+		type.renameInstances
+		// After the contained components have been renamed!
+		instance.name = instance.FQN
+	}
+	
+	private def dispatch void renameInstances(StatechartDefinition component) {}
 	
 	private def getComponent(Package gammaPackage) {
 		// The first component is retrieved
