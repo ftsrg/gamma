@@ -2,7 +2,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.AtomicFormula
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator
-import hu.bme.mit.gamma.property.model.BinaryOperandPathFormula
+import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
 import hu.bme.mit.gamma.property.model.PathQuantifier
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
 import hu.bme.mit.gamma.property.model.StateFormula
@@ -10,8 +10,7 @@ import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 import static com.google.common.base.Preconditions.checkArgument
-
-import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+import static hu.bme.mit.gamma.uppaal.util.Namings.*
 
 class UppaalPropertySerializer extends PropertySerializer {
 	// Singleton
@@ -27,7 +26,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 			// Either a leads to
 			val left = leadsToOperands.key
 			val right = leadsToOperands.value
-			return '''(«left.serializeFormula») && «isStableVariableName» --> («right.serializeFormula» && «isStableVariableName»'''
+			return '''(«left.serializeFormula») && «isStableVariableName» --> («right.serializeFormula») && «isStableVariableName»'''
 		}
 		// Or a simple CTL
 		val serializedFormula = formula.serializeFormula
@@ -64,7 +63,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 					val pathFormula = quantifiedFormula.operand
 					if (operator == UnaryPathOperator.GLOBAL) {
 						// AG
-						if (pathFormula instanceof BinaryOperandPathFormula) {
+						if (pathFormula instanceof BinaryOperandLogicalPathFormula) {
 							val binaryOperator = pathFormula.operator
 							if (binaryOperator == BinaryLogicalOperator.IMPLY) {
 								// AG (... -> ...)

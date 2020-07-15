@@ -83,27 +83,29 @@ public class VerificationHandler extends TaskHandler {
 			File queryFile = new File(queryFileLocation);
 			
 			ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
-			
-			if (verification.isOptimize()) {
-				logger.log(Level.INFO, "Optimizing trace...");
-				traceUtil.removeCoveredSteps(trace);
-			}
-			
-			String basePackage = verification.getPackageName().get(0);
-			String traceFolder = targetFolderUri;
-			
-			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
-			String fileName = fileNamePair.getKey();
-			Integer id = fileNamePair.getValue();
-			saveModel(trace, traceFolder, fileName);
-			
-			String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-			className += "Simulation" + id;
-			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-			String testCode = testGenerator.execute();
-			String testFolder = testFolderUri;
-			fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
+			// Maybe there is no trace
+			if (trace != null) {
+				if (verification.isOptimize()) {
+					logger.log(Level.INFO, "Optimizing trace...");
+					traceUtil.removeCoveredSteps(trace);
+				}
+				
+				String basePackage = verification.getPackageName().get(0);
+				String traceFolder = targetFolderUri;
+				
+				Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
+				String fileName = fileNamePair.getKey();
+				Integer id = fileNamePair.getValue();
+				saveModel(trace, traceFolder, fileName);
+				
+				String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+				className += "Simulation" + id;
+				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+				String testCode = testGenerator.execute();
+				String testFolder = testFolderUri;
+				fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
 					File.separator + className + ".java", testCode);
+			}
 		}
 	}
 
