@@ -53,7 +53,7 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public AbstractVerifier createVerifier() {
-		return new ThetaVerifier();
+		return ThetaVerifier.INSTANCE;
 	}
 
 }

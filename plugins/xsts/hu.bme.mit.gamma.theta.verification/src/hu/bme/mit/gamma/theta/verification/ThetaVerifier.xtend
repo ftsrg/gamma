@@ -22,7 +22,10 @@ import java.util.logging.Level
 import static com.google.common.base.Preconditions.checkState
 
 class ThetaVerifier extends AbstractVerifier {
-	
+	// Singleton
+	public static final ThetaVerifier INSTANCE = new ThetaVerifier
+	protected new() {}
+	//
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	
@@ -35,8 +38,8 @@ class ThetaVerifier extends AbstractVerifier {
 			String query, boolean log, boolean storeOutput) {
 		var ExecutionTrace trace = null
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
-			// Supporting multiple queries in a single line
-			val parsedQuery = query.adaptQuery
+			// Supporting multiple queries in separate files
+			val parsedQuery = singleQuery.adaptQuery
 			val wrappedQuery = '''
 				prop {
 					«parsedQuery»
@@ -132,7 +135,7 @@ class ThetaQueryAdapter {
 	def adaptQuery(String query) {
 		if (query.startsWith("E<>")) {
 			invert = true;
-			return "!" + query.substring(EF.length)
+			return "!(" + query.substring(EF.length) + ")"
 		}
 		if (query.startsWith("A[]")) {
 			invert = false;

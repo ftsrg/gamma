@@ -19,7 +19,10 @@ import java.util.Scanner
 import java.util.logging.Level
 
 class UppaalVerifier extends AbstractVerifier {
-	
+	// Singleton
+	public static final UppaalVerifier INSTANCE = new UppaalVerifier
+	protected new() {}
+	//
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null

@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.trace.TraceUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class VerificationHandler extends TaskHandler {
@@ -47,11 +48,11 @@ public class VerificationHandler extends TaskHandler {
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			switch (analysisLanguage) {
 				case UPPAAL:
-					verificationTask = new UppaalVerification();
+					verificationTask = UppaalVerification.INSTANCE;
 					propertySerializer = UppaalPropertySerializer.INSTANCE;
 					break;
 				case THETA:
-					verificationTask = new ThetaVerification();
+					verificationTask = ThetaVerification.INSTANCE;
 					propertySerializer = ThetaPropertySerializer.INSTANCE;
 					break;
 				default:
@@ -125,36 +126,45 @@ public class VerificationHandler extends TaskHandler {
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 	}
 	
-	abstract class AbstractVerification {
-		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-		public abstract ExecutionTrace execute(File modelFile, File queryFile);
-	}
+}
+
+abstract class AbstractVerification {
+
+	protected FileUtil fileUtil = FileUtil.INSTANCE;
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	public abstract ExecutionTrace execute(File modelFile, File queryFile);
 	
-	class UppaalVerification extends AbstractVerification {
+}
 
-		@Override
-		public ExecutionTrace execute(File modelFile, File queryFile) {
-			String packageFileName =
-					fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "g2u"));
-			EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-			UppaalVerifier verifier = new UppaalVerifier();
-			return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
-		}
-
+class UppaalVerification extends AbstractVerification {
+	// Singleton
+	public static final UppaalVerification INSTANCE = new UppaalVerification();
+	protected UppaalVerification() {}
+	//
+	@Override
+	public ExecutionTrace execute(File modelFile, File queryFile) {
+		String packageFileName =
+				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "g2u"));
+		EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
+		UppaalVerifier verifier = UppaalVerifier.INSTANCE;
+		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
 	}
-	
-	class ThetaVerification extends AbstractVerification {
 
-		@Override
-		public ExecutionTrace execute(File modelFile, File queryFile) {
-			String packageFileName =
-					fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
-			EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-			ThetaVerifier verifier = new ThetaVerifier();
-			String queries = fileUtil.loadString(queryFile);
-			return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
-		}
-		
+}
+
+class ThetaVerification extends AbstractVerification {
+	// Singleton
+	public static final ThetaVerification INSTANCE = new ThetaVerification();
+	protected ThetaVerification() {}
+	//
+	@Override
+	public ExecutionTrace execute(File modelFile, File queryFile) {
+		String packageFileName =
+				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
+		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
+		ThetaVerifier verifier = ThetaVerifier.INSTANCE;
+		String queries = fileUtil.loadString(queryFile);
+		return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
 	}
 	
 }
