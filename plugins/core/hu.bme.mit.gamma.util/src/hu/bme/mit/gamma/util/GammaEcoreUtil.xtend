@@ -70,6 +70,14 @@ class GammaEcoreUtil {
 		changeAll(newObject, oldObject, container)
 		oldObject.delete
 	}
+	
+	def <T extends EObject> T getContainerOfType(EObject object, Class<T> type) {
+		val container = object.eContainer
+		if (type.isInstance(container)) {
+			return container as T
+		}
+		return container.getContainerOfType(type)
+	}
 
 	def EObject normalLoad(URI uri) {
 		val resourceSet = new ResourceSetImpl
