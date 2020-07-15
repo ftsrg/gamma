@@ -32,5 +32,6 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.theta.verification,
  hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler,
- hu.bme.mit.gamma.trace.environment.transformation
+ hu.bme.mit.gamma.trace.environment.transformation,
+ hu.bme.mit.gamma.querygenerator
 Export-Package: hu.bme.mit.gamma.ui

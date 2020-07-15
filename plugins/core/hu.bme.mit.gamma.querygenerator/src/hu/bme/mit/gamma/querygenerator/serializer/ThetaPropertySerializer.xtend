@@ -44,17 +44,17 @@ class ThetaPropertySerializer extends PropertySerializer {
 		return false
 	}
 
-	def dispatch String serializeFormula(AtomicFormula formula) {
+	protected def dispatch String serializeFormula(AtomicFormula formula) {
 		return formula.expression.serialize
 	}
 	
-	def dispatch String serializeFormula(QuantifiedFormula formula) {
+	protected def dispatch String serializeFormula(QuantifiedFormula formula) {
 		val quantifier = formula.quantifier
 		val pathFormula = formula.formula
 		return '''«quantifier.transform»«pathFormula.serializeFormula»'''
 	}
 	
-	def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
+	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
 		return '''«operator.transform» «operand.serializeFormula»'''
@@ -62,7 +62,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 	
 	// Other CTL* formula expressions are not supported by UPPAAL
 	
-	def String transform(UnaryPathOperator operator) {
+	protected def String transform(UnaryPathOperator operator) {
 		switch (operator) {
 			case FUTURE: {
 				return '''<>'''
@@ -75,7 +75,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 		}
 	}
 	
-	def String transform(PathQuantifier quantifier) {
+	protected def String transform(PathQuantifier quantifier) {
 		switch (quantifier) {
 			case FORALL: {
 				return '''A'''

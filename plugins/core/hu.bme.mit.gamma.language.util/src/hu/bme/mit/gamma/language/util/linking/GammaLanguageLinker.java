@@ -13,6 +13,8 @@ package hu.bme.mit.gamma.language.util.linking;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -31,9 +33,12 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
     @Inject IValueConverterService valueConverterService;
     
     public List<EObject> getLinkedObjects(EObject context, EReference ref, INode node) {
-    	if (getContext().isInstance(context)) {
-    		if (getRef().contains(ref)) {
-    			try {
+    	Map<Class<? extends EObject>, Collection<EReference>> context2 = getContext();
+    	for (Entry<Class<? extends EObject>, Collection<EReference>> entry : context2.entrySet()) {
+			Class<? extends EObject> clazz = entry.getKey();
+			Collection<EReference> references = entry.getValue();
+			if (clazz.isInstance(context) && references.contains(ref)) {
+				try {
 		    		String path = valueConverterService.toValue(node.getText(),
 		    				getLinkingHelper().getRuleNameFrom(node.getGrammarElement()), node).toString().replaceAll("\\s","");
 		    		Resource rootResource = context.eResource();
@@ -63,16 +68,15 @@ public abstract class GammaLanguageLinker extends DefaultLinkingService {
 		    		Resource importedResource = resourceSet.getResource(uri, true);
 		    		EObject importedPackage = importedResource.getContents().get(0);
 		    		return Collections.singletonList(importedPackage);
-    			} catch (Exception e) {
-    				// Trivial case: most of the time (during typing) the uri is not correct, thus the loading cannot be done
-    			}
-    		}	
-    	}
+				} catch (Exception e) {
+					// Trivial case: most of the time (during typing) the uri is not correct, thus the loading cannot be done
+				}
+			}
+		}
     	return super.getLinkedObjects(context, ref, node);
     }
     
-    public abstract Class<? extends EObject> getContext();
-    public abstract Collection<EReference> getRef();
+    public abstract Map<Class<? extends EObject>, Collection<EReference>> getContext();
     
     private boolean isCorrectPath(String path) {
     	ResourceSet resourceSet = new ResourceSetImpl();

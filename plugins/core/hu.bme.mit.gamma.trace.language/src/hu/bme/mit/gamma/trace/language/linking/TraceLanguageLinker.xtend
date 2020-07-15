@@ -17,11 +17,7 @@ import hu.bme.mit.gamma.trace.model.TraceModelPackage
 class TraceLanguageLinker extends GammaLanguageLinker {
 	
 	override getContext() {
-		return ExecutionTrace
-	}
-	
-	override getRef() {
-		return #[TraceModelPackage.eINSTANCE.executionTrace_Import]
+		return newHashMap(ExecutionTrace -> #[TraceModelPackage.eINSTANCE.executionTrace_Import])
 	}
     
 }

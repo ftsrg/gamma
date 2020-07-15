@@ -139,7 +139,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 			}
 		}
 		val queryFiles = verification.queryFiles
-		if (queryFiles.size < 1) {
+		val propertyPackages = verification.propertyPackages
+		if (queryFiles.size + propertyPackages.size < 1) {
 			error("At least one query file must be specified.", GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES)
 		}
 		for (queryFile : queryFiles) {

@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.genmodel.language.linking
 
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
+import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
 
 class GenModelLinker extends GammaLanguageLinker {
@@ -19,12 +20,10 @@ class GenModelLinker extends GammaLanguageLinker {
     public static extension GenmodelModelPackage pack = GenmodelModelPackage.eINSTANCE
 				
 	override getContext() {
-		return GenModel
+		return newLinkedHashMap(GenModel -> #[genModel_StatechartImports, genModel_PackageImports,
+			genModel_TraceImports, genModel_GenmodelImports],
+			Verification -> #[verification_PropertyPackages])
 	}
 	
-	override getRef() {
-		return #[genModel_StatechartImports, genModel_PackageImports, genModel_TraceImports, genModel_GenmodelImports]
-	}
-    
 }
 	

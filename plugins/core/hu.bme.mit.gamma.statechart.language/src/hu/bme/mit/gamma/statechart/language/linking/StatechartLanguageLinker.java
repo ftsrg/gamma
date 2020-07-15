@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.statechart.language.linking;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -23,14 +24,8 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 public class StatechartLanguageLinker extends GammaLanguageLinker {
 
 	@Override
-	public Class<? extends EObject> getContext() {
-		return Package.class;
+	public Map<Class<? extends EObject>, Collection<EReference>> getContext() {
+		return Collections.singletonMap(Package.class, Collections.singletonList(InterfaceModelPackage.eINSTANCE.getPackage_Imports()));
 	}
-
-	@Override
-	public Collection<EReference> getRef() {
-		return Collections.singletonList(InterfaceModelPackage.eINSTANCE.getPackage_Imports());
-	}
-
 	
 }

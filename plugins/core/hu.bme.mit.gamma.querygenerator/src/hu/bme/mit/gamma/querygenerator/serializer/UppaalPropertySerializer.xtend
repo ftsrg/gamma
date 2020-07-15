@@ -11,9 +11,11 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 import static com.google.common.base.Preconditions.checkArgument
 
+import static extension hu.bme.mit.gamma.uppaal.util.Namings.*
+
 class UppaalPropertySerializer extends PropertySerializer {
 	// Singleton
-	public static final ThetaPropertySerializer INSTANCE = new ThetaPropertySerializer
+	public static final UppaalPropertySerializer INSTANCE = new UppaalPropertySerializer
 	protected new() {
 		super(new PropertyExpressionSerializer(UppaalReferenceSerializer.INSTANCE))
 	}
@@ -25,7 +27,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 			// Either a leads to
 			val left = leadsToOperands.key
 			val right = leadsToOperands.value
-			return '''«left.serializeFormula» --> «right.serializeFormula»'''
+			return '''(«left.serializeFormula») && «isStableVariableName» --> («right.serializeFormula» && «isStableVariableName»'''
 		}
 		// Or a simple CTL
 		val serializedFormula = formula.serializeFormula
@@ -98,25 +100,25 @@ class UppaalPropertySerializer extends PropertySerializer {
 		return null
 	}
 
-	def dispatch String serializeFormula(AtomicFormula formula) {
+	protected def dispatch String serializeFormula(AtomicFormula formula) {
 		return formula.expression.serialize
 	}
 	
-	def dispatch String serializeFormula(QuantifiedFormula formula) {
+	protected def dispatch String serializeFormula(QuantifiedFormula formula) {
 		val quantifier = formula.quantifier
 		val pathFormula = formula.formula
 		return '''«quantifier.transform»«pathFormula.serializeFormula»'''
 	}
 	
-	def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
+	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» «operand.serializeFormula»'''
+		return '''«operator.transform» («operand.serializeFormula») «operator.addIsStable»'''
 	}
 	
 	// Other CTL* formula expressions are not supported by UPPAAL
 	
-	def String transform(UnaryPathOperator operator) {
+	protected def String transform(UnaryPathOperator operator) {
 		switch (operator) {
 			case FUTURE: {
 				return '''<>'''
@@ -129,7 +131,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 		}
 	}
 	
-	def String transform(PathQuantifier quantifier) {
+	protected def String transform(PathQuantifier quantifier) {
 		switch (quantifier) {
 			case FORALL: {
 				return '''A'''
@@ -139,6 +141,19 @@ class UppaalPropertySerializer extends PropertySerializer {
 			}
 			default: 
 				throw new IllegalArgumentException("Not supported quantifier: " + quantifier)
+		}
+	}
+	
+	protected def String addIsStable(UnaryPathOperator operator) {
+		switch (operator) {
+			case FUTURE: {
+				return '''&& «isStableVariableName»'''
+			}
+			case GLOBAL: {
+				return '''|| !«isStableVariableName»'''
+			}
+			default: 
+				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
 	

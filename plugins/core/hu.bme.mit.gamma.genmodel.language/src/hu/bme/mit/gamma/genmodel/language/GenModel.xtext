@@ -16,6 +16,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as interface
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
 import "http://www.mit.bme.hu/gamma/genmodel/Model"
 import "http://www.mit.bme.hu/gamma/trace/Model" as trace
+import "http://www.mit.bme.hu/gamma/property/Model" as property
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
@@ -198,6 +199,7 @@ Verification returns Verification:
 			'file' ':' fileName+=STRING | // Analysis model
 			'language' ':' languages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
+			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
 			'test-language' ':' language+=ProgrammingLanguage |
 			'optimize' ':' ('false' | optimize?='true') |

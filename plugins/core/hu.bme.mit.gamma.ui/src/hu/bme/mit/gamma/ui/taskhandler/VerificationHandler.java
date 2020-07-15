@@ -4,10 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -15,6 +17,11 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.trace.TraceUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -36,13 +43,16 @@ public class VerificationHandler extends TaskHandler {
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getLanguages());
 		checkArgument(languagesSet.size() == 1);
 		AbstractVerification verificationTask = null;
+		PropertySerializer propertySerializer = null;
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			switch (analysisLanguage) {
 				case UPPAAL:
 					verificationTask = new UppaalVerification();
+					propertySerializer = UppaalPropertySerializer.INSTANCE;
 					break;
 				case THETA:
 					verificationTask = new ThetaVerification();
+					propertySerializer = ThetaPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
@@ -51,7 +61,24 @@ public class VerificationHandler extends TaskHandler {
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
 		
-		for (String queryFileLocation : verification.getQueryFiles()) {
+		List<String> queryFileLocations = new ArrayList<String>();
+		// String locations
+		queryFileLocations.addAll(verification.getQueryFiles());
+		// Serializing property models
+		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
+			File file = ecoreUtil.getFile(propertyPackage.eResource());
+			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
+			File newFile = new File(file.getParentFile().toString() + File.separator + fileName);
+			StringBuilder formulas = new StringBuilder();
+			for (StateFormula formula : propertyPackage.getFormulas()) {
+				String serializedFormula = propertySerializer.serialize(formula);
+				formulas.append(serializedFormula + System.lineSeparator());
+			}
+			fileUtil.saveString(newFile, formulas.toString());
+			queryFileLocations.add(newFile.toString());
+		}
+		
+		for (String queryFileLocation : queryFileLocations) {
 			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
 			File queryFile = new File(queryFileLocation);
 			
