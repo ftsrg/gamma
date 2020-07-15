@@ -68,11 +68,11 @@ UnaryPathFormula returns PathFormula:
 ;
 
 NotPathFormula returns UnaryOperandLogicalPathFormula:
-	operator=NotOperator operand=ParenthesesPathFormula
+	operator=NotOperator operand=PrimaryPathFormula
 ;
 
 UnaryOperandPathFormula returns UnaryOperandPathFormula:
-	operator=UnaryPathOperator operand=PathFormula
+	operator=UnaryPathOperator operand=PrimaryPathFormula
 ;
 
 BinaryOperandPathFormula returns PathFormula:
