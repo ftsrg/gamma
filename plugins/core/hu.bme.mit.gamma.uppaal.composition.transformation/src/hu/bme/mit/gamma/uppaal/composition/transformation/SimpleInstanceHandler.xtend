@@ -47,7 +47,7 @@ class SimpleInstanceHandler {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
 		for (newInstance : newInstances) {
-			if (originalInstances.exists[it.instanceEquals(newInstance)]) {
+			if (originalInstances.exists[it.contains(newInstance)]) {
 				accpedtedNewInstances += newInstance
 			}
 		}
@@ -55,11 +55,15 @@ class SimpleInstanceHandler {
 	}
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
-		return newType.allAsynchronousSimpleInstances.filter[original.instanceEquals(it)].toList
+		return newType.allAsynchronousSimpleInstances.filter[original.contains(it)].toList
+	}
+	
+	private def contains(ComponentInstanceReference original, ComponentInstance copy) {
+		return copy.name.startsWith(original.FQN) // The naming conventions are clear
 	}
 	
 	private def instanceEquals(ComponentInstanceReference original, ComponentInstance copy) {
-		return copy.name == original.FQN // The naming conventions are clear
+		return  copy.name == original.FQN // The naming conventions are clear
 	}
 	
 }
