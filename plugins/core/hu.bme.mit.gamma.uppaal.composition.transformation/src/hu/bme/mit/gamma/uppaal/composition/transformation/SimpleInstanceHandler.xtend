@@ -59,11 +59,13 @@ class SimpleInstanceHandler {
 	}
 	
 	private def contains(ComponentInstanceReference original, ComponentInstance copy) {
-		return copy.name.startsWith(original.FQN) // The naming conventions are clear
-	}
-	
-	private def instanceEquals(ComponentInstanceReference original, ComponentInstance copy) {
-		return  copy.name == original.FQN // The naming conventions are clear
+		val originalInstances = original.componentInstanceHierarchy
+		val copyInstances = copy.parentComponentInstances
+		copyInstances += copy
+		// The naming conventions are clear
+		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
+		return originalInstances.head.name == copyInstances.head.name &&
+			copy.name.startsWith(originalInstances.FQN)
 	}
 	
 }
