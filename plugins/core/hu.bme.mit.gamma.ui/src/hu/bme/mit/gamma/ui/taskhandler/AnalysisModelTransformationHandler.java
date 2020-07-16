@@ -107,7 +107,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Unfolding the given system
 			Component component = analysisModelTransformation.getComponent();
 			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
-			UppaalModelPreprocessor preprocessor = new UppaalModelPreprocessor();
+			UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
 			Component newTopComponent = preprocessor.preprocess(gammaPackage, analysisModelTransformation.getArguments(),
 				new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
 			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);

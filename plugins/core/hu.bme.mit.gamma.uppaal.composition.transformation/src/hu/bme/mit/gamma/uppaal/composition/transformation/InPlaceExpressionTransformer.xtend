@@ -17,6 +17,9 @@ import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import java.math.BigInteger
 
 class InPlaceExpressionTransformer {
+	// Singleton
+	public static final InPlaceExpressionTransformer INSTANCE =  new InPlaceExpressionTransformer
+	protected new() {}
 	// Gamma factory for the millisecond multiplication
 	protected final ExpressionModelFactory constrFactory = ExpressionModelFactory.eINSTANCE
 		

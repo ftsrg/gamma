@@ -21,6 +21,10 @@ import java.util.List
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class UppaalModelPreprocessor extends AnalysisModelPreprocessor {
+	// Singleton
+	public static final UppaalModelPreprocessor INSTANCE =  new UppaalModelPreprocessor
+	protected new() {}
+	//
 	
 	override preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
 		val topComponent = super.preprocess(gammaPackage, topComponentArguments, containingFile)

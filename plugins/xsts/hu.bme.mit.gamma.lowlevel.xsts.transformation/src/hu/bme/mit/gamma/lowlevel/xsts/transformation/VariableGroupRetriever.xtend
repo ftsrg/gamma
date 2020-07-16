@@ -24,6 +24,9 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import static com.google.common.base.Preconditions.checkState
 
 class VariableGroupRetriever {
+	// Singleton
+	public static final VariableGroupRetriever INSTANCE =  new VariableGroupRetriever
+	protected new() {}
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	

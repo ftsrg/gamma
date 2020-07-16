@@ -25,8 +25,11 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 class DeclarationSerializer {
+	// Singleton
+	public static final DeclarationSerializer INSTANCE = new DeclarationSerializer
+	protected new() {}
 	// Auxiliary objects
-	protected final extension ExpressionSerializer expressionSerializer  = new ExpressionSerializer
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
 	// xSts
 	

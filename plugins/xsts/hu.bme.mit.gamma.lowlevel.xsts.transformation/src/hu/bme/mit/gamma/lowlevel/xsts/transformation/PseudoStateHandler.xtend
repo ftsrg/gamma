@@ -23,8 +23,8 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.TerminalState
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 class PseudoStateHandler {
-	protected final ViatraQueryEngine engine
 	
+	protected final ViatraQueryEngine engine
 	
 	new(ViatraQueryEngine engine) {
 		this.engine = engine

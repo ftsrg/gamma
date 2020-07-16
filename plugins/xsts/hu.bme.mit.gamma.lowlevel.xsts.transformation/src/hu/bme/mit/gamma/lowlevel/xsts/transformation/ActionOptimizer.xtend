@@ -32,8 +32,11 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
 class ActionOptimizer {
+	// Singleton
+	public static final ActionOptimizer INSTANCE =  new ActionOptimizer
+	protected new() {}
 	// Auxiliary objects
-	protected final extension ReadWrittenVariableLocator locator = new ReadWrittenVariableLocator
+	protected final extension ReadWrittenVariableLocator locator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Model factories

@@ -31,6 +31,9 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
 class EnvironmentalActionFilter {
+	// Singleton
+	public static final EnvironmentalActionFilter INSTANCE =  new EnvironmentalActionFilter
+	protected new() {}
 	// Auxiliary objects
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE

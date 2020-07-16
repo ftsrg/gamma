@@ -51,7 +51,6 @@ package class Trace {
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
 	
-	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
 		checkNotNull(gammaPackage)

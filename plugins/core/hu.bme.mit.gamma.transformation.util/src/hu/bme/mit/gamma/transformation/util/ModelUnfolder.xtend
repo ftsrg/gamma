@@ -34,6 +34,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkNotNull
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
@@ -54,6 +55,7 @@ class ModelUnfolder {
 		val trace = new Trace(clonedPackage, topComponent)
 		topComponent.copyComponents(clonedPackage, trace)
 		topComponent.renameInstances
+		topComponent.validateInstanceNames
 		originalComponent.traceComponentInstances(topComponent, trace)
 		// Resolving potential name collisions
 		clonedPackage.constantDeclarations.resolveNameCollisions
@@ -266,6 +268,8 @@ class ModelUnfolder {
 		}
 	}
 	
+	// Instance renames
+	
 	private def dispatch void renameInstances(CompositeComponent component) {
 		for (instance : component.derivedComponents) {
 			val type = instance.derivedType
@@ -284,6 +288,19 @@ class ModelUnfolder {
 	}
 	
 	private def dispatch void renameInstances(StatechartDefinition component) {}
+	
+	// Instance name validation
+	
+	private def void validateInstanceNames(Component component) {
+		val names = newHashSet
+		for (instance : component.allInstances) {
+			val name = instance.name
+			checkState(!names.contains(name), "The string " + name + " is generated as a name for multiple instances.")
+			names += name
+		}
+	}
+	
+	// Util
 	
 	private def getComponent(Package gammaPackage) {
 		// The first component is retrieved

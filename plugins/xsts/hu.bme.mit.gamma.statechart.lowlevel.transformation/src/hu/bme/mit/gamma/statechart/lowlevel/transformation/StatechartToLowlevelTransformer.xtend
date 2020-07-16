@@ -50,7 +50,7 @@ class StatechartToLowlevelTransformer {
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
-	protected final extension EventAttributeTransformer eventAttributeTransformer = new EventAttributeTransformer
+	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
@@ -69,7 +69,7 @@ class StatechartToLowlevelTransformer {
 		this.triggerTransformer = new TriggerTransformer(this.trace)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
-
+	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		return _package.transform
 	}

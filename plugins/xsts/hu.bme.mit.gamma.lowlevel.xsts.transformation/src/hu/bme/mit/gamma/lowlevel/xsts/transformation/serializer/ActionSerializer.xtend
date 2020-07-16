@@ -22,9 +22,12 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
 class ActionSerializer {
+	// Singleton
+	public static final ActionSerializer INSTANCE = new ActionSerializer
+	protected new() {}
 	// Auxiliary objects
-	protected final extension DeclarationSerializer declarationSerializer = new DeclarationSerializer
-	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	protected final extension DeclarationSerializer declarationSerializer = DeclarationSerializer.INSTANCE
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 		
 	def serializeXSTS(XSTS xSts) '''
 		«xSts.serializeDeclarations(false)»

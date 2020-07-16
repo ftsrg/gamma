@@ -14,7 +14,10 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 
 class EventAttributeTransformer {
-	
+	// Singleton
+	public static final EventAttributeTransformer INSTANCE =  new EventAttributeTransformer
+	protected new() {}
+	//
 	protected def EventDirection transform(hu.bme.mit.gamma.statechart.interface_.EventDirection direction) {
 		switch (direction) {
 			case OUT: {

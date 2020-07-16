@@ -30,7 +30,7 @@ import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedF
 
 class VariableCommonizer extends ActionPrimer {
 	// Reader writer variable locator for optimization
-	protected final extension ReadWrittenVariableLocator locator = new ReadWrittenVariableLocator
+	protected final extension ReadWrittenVariableLocator locator = ReadWrittenVariableLocator.INSTANCE
 	
 	new() {
 		super(true)

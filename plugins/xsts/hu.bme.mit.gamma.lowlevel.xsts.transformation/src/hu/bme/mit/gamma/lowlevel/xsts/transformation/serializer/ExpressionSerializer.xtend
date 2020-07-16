@@ -19,6 +19,10 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import static extension hu.bme.mit.gamma.xsts.model.derivedfeatures.XSTSDerivedFeatures.*
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
+	// Singleton
+	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
+	protected new() {}
+	//
 	
 	override String _serialize(ElseExpression expression) {
 		// No op, this cannot be transformed on this level

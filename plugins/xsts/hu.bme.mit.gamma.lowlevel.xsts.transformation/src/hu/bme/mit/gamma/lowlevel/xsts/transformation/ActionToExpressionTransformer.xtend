@@ -25,6 +25,9 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 
 class ActionToExpressionTransformer {
+	// Singleton
+	public static final ActionToExpressionTransformer INSTANCE =  new ActionToExpressionTransformer
+	protected new() {}
 	// Logger for indicating some strange or unnecessary elements, e.g., EmptyActions
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	// Model factory

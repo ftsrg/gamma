@@ -42,17 +42,16 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
-	// Transformers
+	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
-	LowlevelToXSTSTransformer lowlevelToXSTSTransformer
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	protected final extension ActionSerializer actionSerializer = new ActionSerializer
-	protected final extension EnvironmentalActionFilter environmentalActionFilter = new EnvironmentalActionFilter
-	protected final extension EventConnector eventConnector = new EventConnector
-	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
-	protected final extension AnalysisModelPreprocessor modelPreprocessor = new AnalysisModelPreprocessor
+	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
+	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
+	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
+	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
+	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	// Scheduling constraint
@@ -231,7 +230,7 @@ class GammaToXSTSTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, true)
+		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, true)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

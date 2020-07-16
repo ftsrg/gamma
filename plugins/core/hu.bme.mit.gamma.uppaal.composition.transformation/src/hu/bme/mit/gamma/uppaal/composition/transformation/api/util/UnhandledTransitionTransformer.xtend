@@ -20,7 +20,11 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import java.util.logging.Level
 
 class UnhandledTransitionTransformer {
-	
+	// Singleton
+	public static final UnhandledTransitionTransformer INSTANCE =  new UnhandledTransitionTransformer
+	protected new() {}
+	//
+
 	extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	// Logger
 	extension Logger logger = Logger.getLogger("GammaLogger")

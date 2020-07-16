@@ -107,7 +107,7 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
 		logger.log(Level.INFO, "Starting xSTS serialization.");
 		// Serializing the xSTS
-		ActionSerializer actionSerializer = new ActionSerializer();
+		ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		CharSequence xStsString = actionSerializer.serializeXSTS(xSts);
 		System.out.println(xStsString);
 		logger.log(Level.INFO, "Starting xSTS Java code generation.");

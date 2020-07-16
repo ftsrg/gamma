@@ -80,9 +80,9 @@ class LowlevelToXSTSTransformer {
 	// Auxiliary objects
 	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	protected final extension ReadWrittenVariableLocator variableLocator = new ReadWrittenVariableLocator
-	protected final extension ActionOptimizer actionSimplifier = new ActionOptimizer
-	protected final extension VariableGroupRetriever variableGroupRetriever = new VariableGroupRetriever
+	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
+	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
+	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension PseudoStateHandler pseudoStateHandler
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever

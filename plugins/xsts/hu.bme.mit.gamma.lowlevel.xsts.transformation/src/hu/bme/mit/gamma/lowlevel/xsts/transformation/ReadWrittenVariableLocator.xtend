@@ -21,7 +21,10 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import java.util.Collection
 
 class ReadWrittenVariableLocator {
-	
+	// Singleton
+	public static final ReadWrittenVariableLocator INSTANCE =  new ReadWrittenVariableLocator
+	protected new() {}
+	//	
 	extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
 	// Read variables in actions

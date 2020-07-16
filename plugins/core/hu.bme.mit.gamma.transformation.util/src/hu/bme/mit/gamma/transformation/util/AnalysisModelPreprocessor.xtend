@@ -32,8 +32,11 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class AnalysisModelPreprocessor {
-	
-	protected val logger = Logger.getLogger("GammaLogger")
+	// Singleton
+	public static final AnalysisModelPreprocessor INSTANCE =  new AnalysisModelPreprocessor
+	protected new() {}
+	//
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
