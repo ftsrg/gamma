@@ -76,6 +76,7 @@ public class VerificationHandler extends TaskHandler {
 				formulas.append(serializedFormula + System.lineSeparator());
 			}
 			fileUtil.saveString(newFile, formulas.toString());
+			newFile.deleteOnExit();
 			queryFileLocations.add(newFile.toString());
 		}
 		
