@@ -10,11 +10,33 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.language.validation
 
+import hu.bme.mit.gamma.property.model.PropertyPackage
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
+import org.eclipse.xtext.validation.Check
+
 class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 	
 	new() {
 		// Registering the ComponentInstanceExpression types
 		super.typeDeterminator = PropertyExpressionTypeDeterminator.INSTANCE
+	}
+	
+	@Check
+	override checkComponentInstanceReferences(ComponentInstanceReference reference) {
+		super.checkComponentInstanceReferences(reference)
+		val instances = reference.componentInstanceHierarchy
+		val model = ecoreUtil.getContainerOfType(reference, PropertyPackage)
+		if (model !== null) {
+			val component = model.component
+			val containedComponents = component.eContents.filter(ComponentInstance)
+			val firstInstance = instances.head
+			if (!containedComponents.contains(firstInstance)) {
+				error("The first component instance must be the component of " + component.name,
+					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)
+			}
+		}
 	}
 	
 }

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.expression.language.scoping;
 
 import hu.bme.mit.gamma.expression.language.scoping.AbstractExpressionLanguageScopeProvider;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
  * This class contains custom scoping description.
@@ -20,4 +21,6 @@ import hu.bme.mit.gamma.expression.language.scoping.AbstractExpressionLanguageSc
  */
 public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageScopeProvider {
 
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	
 }

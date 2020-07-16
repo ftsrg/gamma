@@ -86,9 +86,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="StateCoverage" eSuperTypes="#//Coverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="Coverage" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="include" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstance"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="exclude" upperBound="-1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstance"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventPriorityTransformation" eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
@@ -113,7 +115,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="AsynchronousInstanceConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="orchestratingConstraint"
         lowerBound="1" eType="#//OrchestratingConstraint" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//AsynchronousComponentInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instance" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//ComponentInstanceReference"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractCodeGeneration" abstract="true"
       eSuperTypes="#//Task">

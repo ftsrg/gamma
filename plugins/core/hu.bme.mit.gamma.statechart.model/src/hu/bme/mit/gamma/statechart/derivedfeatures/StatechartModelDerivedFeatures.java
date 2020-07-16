@@ -316,6 +316,12 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getAllEventDeclarations(_interface).stream().map(it -> it.getEvent()).collect(Collectors.toList());
 	}
 	
+	public static EventDirection getDirection(Event event) {
+		EventDeclaration eventDeclaration = ecoreUtil.getContainerOfType(event, EventDeclaration.class);
+		return eventDeclaration.getDirection();
+	}
+	
+	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
 		return getAllEventDeclarations(port.getInterfaceRealization().getInterface());
 	}
@@ -489,12 +495,36 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		throw new IllegalArgumentException("Not known type: " + composite);
 	}
 	
+    public static boolean isSynchronous(Component component) {
+    	return component instanceof SynchronousComponent;
+    }
+    
+    public static boolean isAsynchronous(Component component) {
+    	return component instanceof AsynchronousComponent;
+    }
+	
     public static boolean isCascade(ComponentInstance instance) {
     	if (getDerivedType(instance) instanceof StatechartDefinition) {
     		// Statecharts are cascade if contained by cascade composite components
     		return instance.eContainer() instanceof CascadeCompositeComponent;
    		}
    		return getDerivedType(instance) instanceof CascadeCompositeComponent;
+    }
+    
+    public static boolean isSynchronous(ComponentInstance instance) {
+    	return isSynchronous(getDerivedType(instance));
+    }
+    
+    public static boolean isAsynchronous(ComponentInstance instance) {
+    	return isAsynchronous(getDerivedType(instance));
+    }
+    
+    public static boolean isStatechart(ComponentInstance instance) {
+    	return getDerivedType(instance) instanceof StatechartDefinition;
+    }
+    
+    public static boolean isAdapter(ComponentInstance instance) {
+    	return getDerivedType(instance) instanceof AsynchronousAdapter;
     }
 	
 	public static int getLevel(StateNode stateNode) {

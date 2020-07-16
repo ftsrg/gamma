@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -66,6 +67,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
 	@Check
 	public void checkNameUniqueness(NamedElement element) {

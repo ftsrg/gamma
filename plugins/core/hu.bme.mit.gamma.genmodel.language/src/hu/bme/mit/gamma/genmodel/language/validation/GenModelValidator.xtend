@@ -38,16 +38,16 @@ import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
-import hu.bme.mit.gamma.statechart.interface_.Interface
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.Collections
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Set
@@ -67,7 +67,6 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class GenModelValidator extends AbstractGenModelValidator {
 	
 	protected extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
-	protected extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	// Checking tasks, only one parameter is acceptable
@@ -126,7 +125,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (languages.size != 1) {
 			error("A single formal language must be specified.", GenmodelModelPackage.Literals.VERIFICATION__LANGUAGES)
 		}
-		val resourceFile = verification.eResource.file
+		val resourceFile = ecoreUtil.getFile(verification.eResource)
 		val modelFiles = verification.fileName
 		if (modelFiles.size != 1) {
 			error("A single model file must be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
@@ -179,13 +178,23 @@ class GenModelValidator extends AbstractGenModelValidator {
 	def checkConstraint(AsynchronousInstanceConstraint constraint) {
 		val analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation)
 		val component = analysisModelTransformation.component
+		if (!component.isAsynchronous) {
+			error("Asynchronous component constraints must refer to an asynchronous component.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+			return
+		}
 		val scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint)
+		val instance = constraint.instance
+		if (instance !== null) {
+			val lastInstance = instance.componentInstanceHierarchy.last
+			if (!lastInstance.isAsynchronous) {
+				error("Asynchronous component constraints must contain a reference to a contained asynchronous instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+			}
+		}
 		if (component instanceof AsynchronousCompositeComponent) {
-			val instance = constraint.instance
 			if (instance === null) {
 				error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
 			}
-			if (scheduling.instanceConstraint.filter[it.instance === instance].size > 1) {
+			if (scheduling.instanceConstraint.filter[ecoreUtil.helperEquals(it.instance, instance)].size > 1) {
 				error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
 			}
 		}
@@ -376,8 +385,8 @@ class GenModelValidator extends AbstractGenModelValidator {
 	private def boolean checkConformance(InterfaceMapping mapping) {
 		val yOut = mapping.yakinduInterface.events.filter[it.direction == Direction.OUT].size
 		val yIn = mapping.yakinduInterface.events.filter[it.direction == Direction.IN].size
-		val gOut = mapping.gammaInterface.allEvents.filter[it.direction != EventDirection.IN].size // Regarding in-out events
-		val gIn = mapping.gammaInterface.allEvents.filter[it.direction != EventDirection.OUT].size // Regarding in-out events
+		val gOut = mapping.gammaInterface.allEventDeclarations.filter[it.direction != EventDirection.IN].size // Regarding in-out events
+		val gIn = mapping.gammaInterface.allEventDeclarations.filter[it.direction != EventDirection.OUT].size // Regarding in-out events
 		val realMode = mapping.realizationMode
 		return (realMode == RealizationMode.PROVIDED && yOut == gOut && yIn == gIn) ||
 			(realMode == RealizationMode.REQUIRED && yOut == gIn && yIn == gOut)
@@ -572,18 +581,32 @@ class GenModelValidator extends AbstractGenModelValidator {
 		return false
 	}
 	
-	private def Set<EventDeclaration> getAllEvents(Interface anInterface) {
-		if (anInterface === null) {
-			return Collections.EMPTY_SET
+	@Check
+	def checkComponentInstanceReferences(ComponentInstanceReference reference) {
+		val instances = reference.getComponentInstanceHierarchy
+		if (instances.empty) {
+			return
 		}
-		val eventSet = new HashSet<EventDeclaration>
-		for (parentInterface : anInterface.parents) {
-			eventSet.addAll(parentInterface.getAllEvents)
+		for (var i = 0; i < instances.size - 1; i++) {
+			val instance = instances.get(i)
+			val nextInstance = instances.get(i + 1)
+			val type = instance.derivedType
+			val containedInstances = type.eContents
+			if (!containedInstances.contains(nextInstance)) {
+				error(instance.name + " does not contain component instance " + nextInstance.name,
+					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i)
+			}
 		}
-		for (event : anInterface.events.map[it.event]) {
-			eventSet.add(event.eContainer as EventDeclaration)
+		val model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation)
+		if (model !== null) {
+			val component = model.component
+			val containedComponents = component.eContents.filter(ComponentInstance)
+			val firstInstance = instances.head
+			if (!containedComponents.contains(firstInstance)) {
+				error("The first component instance must be the component of " + component.name,
+					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)
+			}
 		}
-		return eventSet
 	}
 	
 }

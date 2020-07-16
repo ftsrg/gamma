@@ -58,12 +58,12 @@ public class ExpressionLanguageFormatterUtil {
 	}
 
 	public void setBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
-		for (Pair<Keyword, Keyword> pair: f.findKeywordPairs("{", "}")) {
+		for (Pair<Keyword, Keyword> pair : f.findKeywordPairs("{", "}")) {
 			c.setIndentation(pair.getFirst(), pair.getSecond());
 			c.setLinewrap(1).after(pair.getFirst());
 			c.setLinewrap(1).before(pair.getSecond());
 			c.setLinewrap(1).after(pair.getSecond());
 		}
 	}
-	
+
 }

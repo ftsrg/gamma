@@ -33,14 +33,14 @@ import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
-import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.interface_.Component;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
@@ -171,15 +171,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
 				Optional<Coverage> coverage) {
-			SimpleInstanceHandler simpleInstanceHandler = new SimpleInstanceHandler();
+			SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
 			if (coverage.isPresent()) {
 				Coverage presentCoverage = coverage.get();
-				List<? extends ComponentInstance> includedComponents = presentCoverage.getInclude();
-				if (includedComponents.isEmpty()) {
-					// If there is no include in the coverage, it means all instances need to be tested
-					includedComponents = simpleInstanceHandler.getNewSimpleInstances(component);
-				}
-				return simpleInstanceHandler.getNewSimpleInstances(includedComponents, presentCoverage.getExclude(), component);
+				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(),
+					presentCoverage.getExclude(), component);
 			}
 			return Collections.emptyList();
 		}
@@ -211,9 +207,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					(OrchestratingConstraint) transformConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint(), newComponent)));
 			}
 			// Asynchronous composite components
-			SimpleInstanceHandler instanceHandler = new SimpleInstanceHandler();
+			SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE;
 			List<AsynchronousInstanceConstraint> asynchronousInstanceConstraints = new ArrayList<AsynchronousInstanceConstraint>();
-			AsynchronousComponentInstance originalInstance = asynchronousInstanceConstraint.getInstance();
+			ComponentInstanceReference originalInstance = asynchronousInstanceConstraint.getInstance();
 			List<AsynchronousComponentInstance> newAsynchronousSimpleInstances = instanceHandler
 					.getNewAsynchronousSimpleInstances(originalInstance, newComponent);
 			for (AsynchronousComponentInstance newAsynchronousSimpleInstance : newAsynchronousSimpleInstances) {

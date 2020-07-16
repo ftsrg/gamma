@@ -10,49 +10,56 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.interface_.Component
 import java.util.Collection
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class SimpleInstanceHandler {
+	// Singleton
+	public static final SimpleInstanceHandler INSTANCE =  new SimpleInstanceHandler
+	protected new() {}
+	//
 	
 	def getNewSimpleInstances(Component newType) {
 		return newType.allSimpleInstances
 	}
 	
-	def getNewSimpleInstances(Collection<? extends ComponentInstance> includedOriginalInstances,
-			Collection<? extends ComponentInstance> excludedOriginalInstances, Component newType) {
+	def getNewSimpleInstances(Collection<ComponentInstanceReference> includedOriginalInstances,
+			Collection<ComponentInstanceReference> excludedOriginalInstances, Component newType) {
 		// Include - exclude
-		val oldInstances = newArrayList
-		oldInstances += includedOriginalInstances.getNewSimpleInstances(newType)
-		oldInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)
-		return oldInstances
+		val newInstances = newArrayList
+		if (includedOriginalInstances.empty) {
+			// If it is empty, it means all simple instances must be covered
+			newInstances += newType.getNewSimpleInstances
+		}
+		else {
+			newInstances += includedOriginalInstances.getNewSimpleInstances(newType)
+		}
+		newInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)
+		return newInstances
 	}
 	
-	def getNewSimpleInstances(Collection<? extends ComponentInstance> originalInstances, Component newType) {
-		val oldInstances = originalInstances.allSimpleInstances
+	def getNewSimpleInstances(Collection<ComponentInstanceReference> originalInstances, Component newType) {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
 		for (newInstance : newInstances) {
-			if (oldInstances.exists[it.instanceEquals(newInstance)]) {
+			if (originalInstances.exists[it.instanceEquals(newInstance)]) {
 				accpedtedNewInstances += newInstance
 			}
 		}
 		return accpedtedNewInstances
 	}
 	
-	def getNewAsynchronousSimpleInstances(AsynchronousComponentInstance original, Component newType) {
-		return newType.allAsynchronousSimpleInstances
-			.filter[original.instanceEquals(it)].toList
+	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
+		return newType.allAsynchronousSimpleInstances.filter[original.instanceEquals(it)].toList
 	}
 	
-	private def instanceEquals(ComponentInstance original, ComponentInstance copy) {
-		// TODO better equality check (helper equals does not work as the original statecharts have been optimized)
-		return copy.name == original.name /* Flat composite */ ||
-			copy.name.endsWith("_" + original.name) /* Hierarchical composite */
+	private def instanceEquals(ComponentInstanceReference original, ComponentInstance copy) {
+		return copy.name == original.FQN // The naming conventions are clear
 	}
 	
 }

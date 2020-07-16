@@ -72,8 +72,8 @@
     <genClasses ecoreClass="genmodel.ecore#//TransitionCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//StateCoverage"/>
     <genClasses ecoreClass="genmodel.ecore#//Coverage">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/include"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/exclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/include"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//Coverage/exclude"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//EventPriorityTransformation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventPriorityTransformation/statechart"/>
@@ -92,7 +92,7 @@
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AsynchronousInstanceConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/orchestratingConstraint"/>
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/instance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AsynchronousInstanceConstraint/instance"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AbstractCodeGeneration">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/packageName"/>

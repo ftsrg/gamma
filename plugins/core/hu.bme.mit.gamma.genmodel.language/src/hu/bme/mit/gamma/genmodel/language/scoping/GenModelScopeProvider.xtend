@@ -11,13 +11,12 @@
 package hu.bme.mit.gamma.genmodel.language.scoping
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
-import hu.bme.mit.gamma.genmodel.model.Coverage
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -58,19 +57,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			val components = genmodel.packageImports.map[it.components].flatten.filter(StatechartDefinition)
 			return Scopes.scopeFor(components)
 		}
-		if (context instanceof Coverage &&
-				reference == GenmodelModelPackage.Literals.COVERAGE__INCLUDE ||
-				reference == GenmodelModelPackage.Literals.COVERAGE__EXCLUDE) {
-			val analysisModelTransformation = context.eContainer as AnalysisModelTransformation
-			val component = analysisModelTransformation.component
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
+			val analysisModel = ecoreUtil.getSelfOrContainerOfType(context, AnalysisModelTransformation)
+			val component = analysisModel.component
 			return Scopes.scopeFor(component.allInstances)
-		}
-		if (reference == GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE) {
-			val genmodel = EcoreUtil2.getContainerOfType(context, AnalysisModelTransformation)
-			val component = genmodel.component
-			if (component instanceof AsynchronousComponent) {
-				return Scopes.scopeFor(component.allAsynchronousSimpleInstances)
-			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
 				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {

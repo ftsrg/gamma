@@ -128,15 +128,19 @@ SchedulingConstraint returns SchedulingConstraint:
 	(instanceConstraint+=AsynchronousInstanceConstraint)+
 ;
 
+ComponentInstanceReference returns composite::ComponentInstanceReference:
+	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
+;
+
 AsynchronousInstanceConstraint returns AsynchronousInstanceConstraint:
-	(instance=[composite::AsynchronousComponentInstance] | 'top') ':' '{'
+	(instance=ComponentInstanceReference | 'top') ':' '{'
 		orchestratingConstraint=OrchestratingConstraint
 	'}'
 ;
 
 OrchestratingConstraint returns OrchestratingConstraint:
 	'minimum-orchestrating-period' ':' minimumPeriod=TimeSpecification
-	'maximum-orchestrating-period' ':'maximumPeriod=TimeSpecification
+	'maximum-orchestrating-period' ':' maximumPeriod=TimeSpecification
 ;
 
 TimeSpecification returns interface::TimeSpecification:
@@ -161,30 +165,30 @@ Coverage returns Coverage:
 
 StateCoverage returns StateCoverage:
 	{StateCoverage} 'state-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
-		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
 ;
 
 TransitionCoverage returns TransitionCoverage:
 	{TransitionCoverage} 'transition-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
-		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
 ;
 
 OutEventCoverage returns OutEventCoverage:
 	{OutEventCoverage} 'out-event-coverage' ('{' 
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
-		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
 ;
 
 InteractionCoverage returns InteractionCoverage:
 	{InteractionCoverage} 'interaction-coverage' ('{'
 		('interaction-representation' ':' interactionRepresentation=InteractionRepresentation)?
-		('include' ':' '[' include+=[composite::ComponentInstance] (',' include+=[composite::ComponentInstance])* ']')?
-		('exclude' ':' '[' exclude+=[composite::ComponentInstance] (',' exclude+=[composite::ComponentInstance])* ']')?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
 ;
 

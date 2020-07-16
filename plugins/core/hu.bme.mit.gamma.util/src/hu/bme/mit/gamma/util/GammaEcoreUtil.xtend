@@ -71,8 +71,18 @@ class GammaEcoreUtil {
 		oldObject.delete
 	}
 	
+	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
+		if (type.isInstance(object)) {
+			return object as T
+		}
+		return object.getContainerOfType(type)
+	}
+	
 	def <T extends EObject> T getContainerOfType(EObject object, Class<T> type) {
 		val container = object.eContainer
+		if (container === null) {
+			return null
+		}
 		if (type.isInstance(container)) {
 			return container as T
 		}
