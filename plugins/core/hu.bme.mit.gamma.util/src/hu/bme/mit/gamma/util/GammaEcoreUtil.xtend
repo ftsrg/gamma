@@ -78,6 +78,18 @@ class GammaEcoreUtil {
 		}
 		return container.getContainerOfType(type)
 	}
+	
+	def <T extends EObject> List<T> getAllContentsOfType(EObject object, Class<T> type) {
+		val contents = <T>newArrayList
+		val iterator = object.eAllContents
+		while (iterator.hasNext) {
+			val content = iterator.next
+			if (type.isInstance(content)) {
+				contents += content as T
+			}
+		}
+		return contents
+	}
 
 	def EObject normalLoad(URI uri) {
 		val resourceSet = new ResourceSetImpl

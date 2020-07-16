@@ -54,6 +54,7 @@ class ActionOptimizer {
 			newXStsAction.deleteTrivialNonDeterministicActions
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			// TODO remove assume actions not in the first index?
+			newXStsAction.deleteUnnecessaryAssumeActions
 		}
 		return newXStsAction
 	}
@@ -423,6 +424,31 @@ class ActionOptimizer {
 		for (xStsAction : action.actions.filter(CompositeAction)) {
 			xStsAction.optimizeAssignmentActions
 		}
+	}
+	
+	// Assume actions
+	
+	protected def void deleteUnnecessaryAssumeActions(Action action) {
+		for (assumeAction : action.getAllContentsOfType(AssumeAction)) {
+			if (assumeAction.isUnnecessary) {
+				assumeAction.delete
+			}
+		}
+	}
+	
+	/**
+	 * Note that this "unnecessary" definition comes from the characteristics of the Gamma transformation:
+	 * every assume action in a sequential action is placed at index 0. If this is not the case, then
+	 * it must come from a not thorough enough optimization (e.g., empty entry/exit action).
+	 * In other transformations this "unnecessary" definition might not hold.
+	 */
+	protected def isUnnecessary(AssumeAction action) {
+		val container = action.eContainer
+		if (container instanceof SequentialAction) {
+			val actions = container.actions
+			return actions.indexOf(action) != 0
+		}
+		return false
 	}
 	
 	// Non deterministic actions
