@@ -8,8 +8,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.statechart.lowlevel.model,
- hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures,
+Export-Package: hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures,
+ hu.bme.mit.gamma.statechart.lowlevel.model,
  hu.bme.mit.gamma.statechart.lowlevel.model.impl,
  hu.bme.mit.gamma.statechart.lowlevel.model.util
 Require-Bundle: org.eclipse.core.runtime,

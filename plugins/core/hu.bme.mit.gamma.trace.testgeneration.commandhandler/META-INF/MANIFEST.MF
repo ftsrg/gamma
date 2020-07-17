@@ -13,5 +13,5 @@ Require-Bundle: org.eclipse.ui,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.trace.testgeneration.java
 Export-Package: hu.bme.mit.gamma.trace.testgeneration.commandhandler
-Import-Package: hu.bme.mit.gamma.trace
+Import-Package: hu.bme.mit.gamma.trace.util
 Automatic-Module-Name: hu.bme.mit.gamma.trace.testgeneration.commandhandler

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.xsts.model.util;
+package hu.bme.mit.gamma.xsts.util;
 
 import java.util.ArrayList;
 import java.util.List;

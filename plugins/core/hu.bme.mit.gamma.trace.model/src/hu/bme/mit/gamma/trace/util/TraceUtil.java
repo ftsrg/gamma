@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.trace;
+package hu.bme.mit.gamma.trace.util;
 
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.xsts.model.derivedfeatures;
+package hu.bme.mit.gamma.xsts.derivedfeatures;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.verification.util
 
-import hu.bme.mit.gamma.trace.TraceUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File

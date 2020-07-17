@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.statechart.lowlevel.model.derivedfeatures;
+package hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.model.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 
 abstract class LowlevelTransitionToXTransitionTransformer {
 	// Auxiliary object

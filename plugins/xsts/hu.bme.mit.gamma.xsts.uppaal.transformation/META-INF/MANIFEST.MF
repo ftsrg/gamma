@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: XSTS To UPPAAL Transformation
+Bundle-SymbolicName: hu.bme.mit.gamma.xsts.uppaal.transformation
+Bundle-Version: 2.3.1.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.xsts.uppaal.transformation
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.google.guava,
+ org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
+ org.eclipse.xtend.lib.macro,
+ hu.bme.mit.gamma.xsts.model,
+ de.uni_paderborn.uppaal,
+ hu.bme.mit.gamma.uppaal.util
+Export-Package: hu.bme.mit.gamma.xsts.uppaal.transformation
