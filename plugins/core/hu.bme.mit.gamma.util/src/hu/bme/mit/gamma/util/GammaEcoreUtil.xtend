@@ -7,6 +7,7 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.Path
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
@@ -69,6 +70,16 @@ class GammaEcoreUtil {
 	def void changeAllAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		changeAll(newObject, oldObject, container)
 		oldObject.delete
+	}
+	
+	def void add(EObject container, EReference reference, EObject object) {
+		val referenceObject = container.eGet(reference)
+		if (referenceObject instanceof List) {
+			referenceObject += object
+		}
+		else {
+			container.eSet(reference, object)
+		}
 	}
 	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
