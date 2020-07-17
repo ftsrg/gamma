@@ -3,8 +3,8 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
-import hu.bme.mit.gamma.uppaal.composition.transformation.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator

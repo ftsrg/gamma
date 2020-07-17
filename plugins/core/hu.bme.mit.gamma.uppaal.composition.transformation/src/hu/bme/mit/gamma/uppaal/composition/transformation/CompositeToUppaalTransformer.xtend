@@ -76,6 +76,7 @@ import hu.bme.mit.gamma.uppaal.transformation.queries.UpdatesOfTransitions
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityFactory
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
@@ -194,7 +195,6 @@ class CompositeToUppaalTransformer {
 	protected extension CompareExpressionCreator compareExpressionCreator
 	protected extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected extension AssignmentExpressionCreator assignmentExpressionCreator
-	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
     protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
     protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
     protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = InPlaceExpressionTransformer.INSTANCE
@@ -255,8 +255,7 @@ class CompositeToUppaalTransformer {
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.variableTransformer = new VariableTransformer(this.ntaBuilder, this.manipulation, this.traceModel)
-		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.ntaBuilder, 
-			this.manipulation, this.expressionTransformer)
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(this.ntaBuilder, this.expressionTransformer)
 		this.compareExpressionCreator = new CompareExpressionCreator(this.ntaBuilder, this.manipulation,
 			this.expressionTransformer, this.traceModel)
 		this.asynchronousComponentHelper = new AsynchronousComponentHelper(this.component, this.engine,
@@ -420,7 +419,8 @@ class CompositeToUppaalTransformer {
 							val lhs = lastTempVal
 							val tempVar = it.declarations.createVariable(DataVariablePrefix.NONE, target.bool,  "tempVar" + tempId++)
 							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-								it.createAssignmentLogicalExpression(expressionStatement_Expression, tempVar, lhs, match.event.getToRaiseVariable(match.port, match.instance))
+								it.createAssignmentLogicalExpression(expressionStatement_Expression, tempVar, lhs,
+									LogicalOperator.OR, match.event.getToRaiseVariable(match.port, match.instance))
 							]
 							lastTempVal = tempVar
 						}
@@ -1446,7 +1446,7 @@ class CompositeToUppaalTransformer {
 			val expression = expressions.get(i)
 			val parameter = toRaiseEvent.parameterDeclarations.get(i)
 			val assignment = edge.createAssignmentExpression(edge_Update,
-				toRaiseEvent.getToRaiseValueOfVariable(port, parameter, inInstance), expression, inInstance)
+				toRaiseEvent.getToRaiseValueOfVariable(port, parameter, inInstance), expression)
 			addToTrace(eventAction, #{assignment}, expressionTrace)
 		}			
 	}

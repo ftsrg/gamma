@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
 import uppaal.NTA
 import uppaal.declarations.DataVariableDeclaration

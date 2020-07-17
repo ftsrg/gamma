@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
-import hu.bme.mit.gamma.statechart.interface_.Clock
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.MessageQueue
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
+import hu.bme.mit.gamma.statechart.interface_.Clock
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.transformation.util.queries.EventsIntoMessageQueues
 import hu.bme.mit.gamma.transformation.util.queries.QueuePriorities
 import hu.bme.mit.gamma.transformation.util.queries.RunOnceClockControl
@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.transformation.util.queries.UnusedWrapperEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import java.util.Collection
 import java.util.HashSet
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

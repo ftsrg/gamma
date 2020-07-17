@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.transformation.util.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopAsyncCompositeComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import java.util.Optional
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

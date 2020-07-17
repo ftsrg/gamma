@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.uppaal.composition.transformation
+package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection

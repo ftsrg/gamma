@@ -10,13 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
-import hu.bme.mit.gamma.statechart.statechart.CompositeElement
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.Region
-import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
-import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -25,6 +18,13 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Persistency
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.transformation.util.queries.InputInstanceEvents
 import hu.bme.mit.gamma.transformation.util.queries.InstanceRegions
 import hu.bme.mit.gamma.transformation.util.queries.ParameteredEvents
@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import java.util.Collection
 import java.util.List
 import java.util.NoSuchElementException

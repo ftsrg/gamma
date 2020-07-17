@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 import hu.bme.mit.gamma.transformation.util.queries.SimpleWrapperInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRuleFactory
 import uppaal.NTA

@@ -41,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations

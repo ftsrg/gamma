@@ -16,11 +16,11 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.transformation.util.queries.DistinctWrapperInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopAsyncCompositeComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopAsyncSystemInEvents
@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
+import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Set
@@ -190,7 +191,7 @@ class EnvironmentCreator {
 	private def void extendValueOfLoopEdge(Edge loopEdge, Port port, Event event, ParameterDeclaration parameter,
 			ComponentInstance owner, Expression expression) {
 		val valueOfVar = modelTrace.getToRaiseValueOfVariable(event, port, parameter, owner)
-		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression, owner)
+		loopEdge.createAssignmentExpression(edge_Update, valueOfVar, expression)
 	}
 	
 	def getTopWrapperEnvironmentRule() {
