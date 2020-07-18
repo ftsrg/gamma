@@ -600,7 +600,7 @@ class GenModelValidator extends AbstractGenModelValidator {
 		val model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation)
 		if (model !== null) {
 			val component = model.component
-			val containedComponents = component.eContents.filter(ComponentInstance)
+			val containedComponents = component.eContents.filter(ComponentInstance).toList
 			val firstInstance = instances.head
 			if (!containedComponents.contains(firstInstance)) {
 				error("The first component instance must be the component of " + component.name,
