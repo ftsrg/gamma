@@ -32,8 +32,8 @@ class StatechartWrapperCodeGenerator {
 	protected final String PACKAGE_NAME
 	protected final String YAKINDU_PACKAGE_NAME
 	// 
-	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	protected final extension YakinduDefaultExpressionRetriever yakinduDefaultExpressionRetriever = new YakinduDefaultExpressionRetriever
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
+	protected final extension YakinduDefaultExpressionRetriever yakinduDefaultExpressionRetriever = YakinduDefaultExpressionRetriever.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer

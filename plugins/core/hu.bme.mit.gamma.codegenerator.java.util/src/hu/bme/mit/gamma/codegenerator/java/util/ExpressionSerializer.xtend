@@ -42,6 +42,10 @@ import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 
 class ExpressionSerializer {
+	// Singleton
+	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
+	protected new() {}
+	//
 	
 	def dispatch String serialize(Expression expression) {
 		throw new IllegalArgumentException("Not supported expression: " + expression)

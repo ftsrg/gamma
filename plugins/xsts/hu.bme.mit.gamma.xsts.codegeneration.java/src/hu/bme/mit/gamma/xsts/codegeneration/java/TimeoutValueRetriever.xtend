@@ -26,7 +26,10 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TimeoutValueRetriever {
-	
+	// Singleton
+	public static final TimeoutValueRetriever INSTANCE = new TimeoutValueRetriever
+	protected new() {}
+	//
 	extension ExpressionModelFactory constraintModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	def getStateOfTimeout(TimeoutDeclaration timeoutDeclaration) {

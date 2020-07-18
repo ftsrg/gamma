@@ -21,7 +21,7 @@ class InterfaceCodeGenerator {
 	final String BASE_PACKAGE_NAME
 	final String INTERFACE_PACKAGE_NAME
 	
-	final extension TypeSerializer typeSerializer = new TypeSerializer
+	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName

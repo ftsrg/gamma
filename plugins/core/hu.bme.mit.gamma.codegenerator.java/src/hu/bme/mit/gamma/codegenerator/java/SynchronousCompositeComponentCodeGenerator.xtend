@@ -26,7 +26,7 @@ class SynchronousCompositeComponentCodeGenerator {
 	
 	protected final String PACKAGE_NAME
 	// 
-	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer

@@ -29,8 +29,8 @@ class StatechartWrapperCodeGenerator {
 	final StatechartDefinition gammaStatechart
 	final XSTS xSts
 	
-	final extension TypeSerializer typeSerializer = new TypeSerializer
-	final extension PortDiagnoser portDiagnoser = new PortDiagnoser
+	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
 	
 	new(String basePackageName, String interfacePackageName, String statechartPackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts) {

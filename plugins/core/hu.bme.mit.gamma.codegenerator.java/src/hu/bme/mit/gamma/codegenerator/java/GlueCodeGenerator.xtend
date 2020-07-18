@@ -64,7 +64,7 @@ class GlueCodeGenerator {
 	protected final String YAKINDU_PACKAGE_NAME
 	// Trace
 	// Auxiliary transformer objects
-	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension TypeDeclarationGenerator typeDeclarationGenerator
 	protected final extension NameGenerator nameGenerator
 	protected final extension EventCodeGenerator eventCodeGenerator

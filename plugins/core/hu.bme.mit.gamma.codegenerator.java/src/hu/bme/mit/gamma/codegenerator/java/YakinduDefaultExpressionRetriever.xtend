@@ -3,6 +3,11 @@ package hu.bme.mit.gamma.codegenerator.java
 import org.yakindu.base.types.Type
 
 class YakinduDefaultExpressionRetriever {
+	// Singleton
+	public static final YakinduDefaultExpressionRetriever INSTANCE = new YakinduDefaultExpressionRetriever
+	protected new() {}
+	//
+	
 	
 	def getDefaultExpression(Type yakinduType) {
 		val typeName = yakinduType.name

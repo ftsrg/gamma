@@ -11,5 +11,8 @@
 package hu.bme.mit.gamma.codegenerator.java
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
-	
+	// Singleton
+	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
+	protected new() {}
+	//
 }

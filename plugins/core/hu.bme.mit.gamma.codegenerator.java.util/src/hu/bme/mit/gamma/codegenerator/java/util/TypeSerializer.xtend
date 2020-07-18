@@ -21,6 +21,10 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeSerializer {
+	// Singleton
+	public static final TypeSerializer INSTANCE = new TypeSerializer
+	protected new() {}
+	//
 	
 	def dispatch String serialize(Type type) {
 		throw new IllegalArgumentException("Not supported expression: " + type)

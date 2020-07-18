@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.ComponentParameterGroup
 import hu.bme.mit.gamma.xsts.model.InEventGroup
@@ -20,10 +22,12 @@ import hu.bme.mit.gamma.xsts.model.PlainVariableGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.TimeoutGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeReference
 
 class VariableDiagnoser {
+	// Singleton
+	public static final VariableDiagnoser INSTANCE = new VariableDiagnoser
+	protected new() {}
+	//
 	
 	def retrieveInEvents(XSTS xSts) {
 		return xSts.variableGroups

@@ -18,6 +18,10 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class TimingDeterminer {
+	// Singleton
+	public static final TimingDeterminer INSTANCE = new TimingDeterminer
+	protected new() {}
+	//
 	
 	/**
 	 * Returns whether there is a timing specification in any of the statecharts.

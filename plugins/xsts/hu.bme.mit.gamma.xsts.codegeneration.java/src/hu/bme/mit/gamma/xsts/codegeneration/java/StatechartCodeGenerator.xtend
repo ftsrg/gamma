@@ -23,10 +23,10 @@ class StatechartCodeGenerator {
 	
 	final XSTS xSts
 	
-	final extension TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer
-	final extension TypeSerializer typeSerializer = new TypeSerializer
-	final extension VariableDiagnoser variableDiagnoser = new VariableDiagnoser
-	final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
+	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	final extension VariableDiagnoser variableDiagnoser = VariableDiagnoser.INSTANCE
+	final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Depending on the xSTS form
 	final extension ActionSerializer actionSerializer

@@ -15,6 +15,10 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 
 class TypeDeclarationSerializer {
+	// Singleton
+	public static final TypeDeclarationSerializer INSTANCE = new TypeDeclarationSerializer
+	protected new() {}
+	//
 	
 	def String serialize(TypeDeclaration type) {
 		val declaredType = type.type

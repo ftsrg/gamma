@@ -18,6 +18,10 @@ import hu.bme.mit.gamma.statechart.interface_.Interface
 import java.util.Collection
 
 class PortDiagnoser {
+	// Singleton
+	public static final PortDiagnoser INSTANCE = new PortDiagnoser
+	protected new() {}
+	//
 	
 	def getEvents(Port port, EventDirection eventDirection) {
 		val oppositeDirection = eventDirection.opposite

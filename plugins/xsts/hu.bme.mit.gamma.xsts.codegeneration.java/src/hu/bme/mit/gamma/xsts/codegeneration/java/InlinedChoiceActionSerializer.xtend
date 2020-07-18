@@ -29,7 +29,7 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeature
 
 class InlinedChoiceActionSerializer extends ActionSerializer {
 	
-	extension TypeSerializer typeSerializer = new TypeSerializer
+	extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	protected int decisionMethodCount = 0
 	protected Map<Integer, CharSequence> decisionMethodMap = newHashMap

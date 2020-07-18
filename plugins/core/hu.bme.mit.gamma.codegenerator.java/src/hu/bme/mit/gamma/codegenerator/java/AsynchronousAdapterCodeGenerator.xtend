@@ -30,8 +30,8 @@ class AsynchronousAdapterCodeGenerator {
 	
 	protected final String PACKAGE_NAME
 	// 
-	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension Trace trace
 	protected final extension NameGenerator nameGenerator
 	protected final extension TypeTransformer typeTransformer

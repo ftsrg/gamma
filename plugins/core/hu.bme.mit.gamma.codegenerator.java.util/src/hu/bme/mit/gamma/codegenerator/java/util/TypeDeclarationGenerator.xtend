@@ -16,7 +16,7 @@ class TypeDeclarationGenerator {
 	
 	protected final String PACKAGE_NAME
 	
-	protected final extension TypeDeclarationSerializer typeDeclarationSerializer = new TypeDeclarationSerializer
+	protected final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
 	
 	new(String packageName) {
 		this.PACKAGE_NAME = packageName

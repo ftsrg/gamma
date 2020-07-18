@@ -29,8 +29,8 @@ class ReflectiveComponentCodeGenerator {
 	protected final String BASE_PACKAGE_NAME
 	protected Component component
 	// 
-	protected final extension TimingDeterminer timingDeterminer = new TimingDeterminer
-	protected final extension TypeSerializer typeSerializer = new TypeSerializer
+	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 
 	new(String BASE_PACKAGE_NAME, Component component) {
 		this.BASE_PACKAGE_NAME = BASE_PACKAGE_NAME
