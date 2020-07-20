@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EventGroup
@@ -21,7 +22,8 @@ class OrthogonalActionTransformer {
 	//
 	
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected extension XSTSActionUtil xstsActionUtil = XSTSActionUtil.INSTANCE
+	protected extension ExpressionUtil expressionActionUtil = ExpressionUtil.INSTANCE
+	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
@@ -68,6 +70,8 @@ class OrthogonalActionTransformer {
 					mainAction.actions += orthogonalBranch
 					// var := _var_
 					commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
+					// _var_ := 0
+					commonizeAction.actions += orthogonalVariable.createAssignmentAction(orthogonalVariable.initialValue)
 				}
 			}
 			// If the orthogonal action is traced, this can cause trouble (the original action is not contained in a resource)

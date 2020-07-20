@@ -38,7 +38,7 @@ class EventConnector {
 			else if (channel instanceof BroadcastChannel) {
 				requiredPorts += channel.requiredPorts.map[it.port]
 			}
-			// Connection
+			// Connection: keeping out-variables, deleting in-variables
 			val providedSimplePorts = providedPort.allConnectedSimplePorts
 			checkState(providedSimplePorts.size == 1)
 			val providedSimplePort = providedSimplePorts.head
@@ -56,7 +56,7 @@ class EventConnector {
 							val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 							val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
 							if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
-								xStsInEventVariable.changeAndDelete(xStsOutEventVariable, xSts)
+								xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
 								// In-parameters
 								for (parameter : event.parameterDeclarations) {
 									val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
@@ -65,7 +65,7 @@ class EventConnector {
 										val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
 										val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
 										if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-											xStsInParameterVariable.changeAndDelete(xStsOutParameterVariable, xSts)
+											xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
 										}
 									}
 								}
