@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import java.io.File
 import java.math.BigInteger
 import java.util.Collections
@@ -48,6 +49,7 @@ class GammaToXSTSTransformer {
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
+	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
@@ -56,13 +58,15 @@ class GammaToXSTSTransformer {
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
 	// Scheduling constraint
 	protected final Integer schedulingConstraint
+	protected boolean transformOrthogonalActions
 	
 	new() {
-		this(null)
+		this(null, false)
 	}
 	
-	new(Integer schedulingConstraint) {
+	new(Integer schedulingConstraint, boolean transformOrthogonalActions) {
 		this.schedulingConstraint = schedulingConstraint
+		this.transformOrthogonalActions = transformOrthogonalActions
 	}
 	
 	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
@@ -97,6 +101,10 @@ class GammaToXSTSTransformer {
 		xSts.removeDuplicatedTypes
 		// Setting clock variable increase
 		xSts.setClockVariables
+		if (transformOrthogonalActions) {
+			xSts.transform
+			// Before optimize actions
+		}
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -230,7 +238,7 @@ class GammaToXSTSTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, true)
+		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, true, true)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

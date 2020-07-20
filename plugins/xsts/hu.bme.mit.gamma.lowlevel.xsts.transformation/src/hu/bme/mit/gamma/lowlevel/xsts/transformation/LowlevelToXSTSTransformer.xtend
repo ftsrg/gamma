@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
@@ -82,6 +83,7 @@ class LowlevelToXSTSTransformer {
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
+	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
 	protected final extension PseudoStateHandler pseudoStateHandler
 	protected final extension RegionActivator regionActivator
@@ -125,7 +127,6 @@ class LowlevelToXSTSTransformer {
 	protected boolean optimize
 	protected Set<EventDeclaration> referredEvents
 	protected Set<VariableDeclaration> referredVariables
-	
 	
 	new(Package _package) {
 		this(_package, false)

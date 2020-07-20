@@ -88,5 +88,7 @@ class Namings {
 	static def String customizeName(Region region, ComponentInstanceReference instance) '''«customizeName(region, instance.FQN)»''' // For region variables
 	static def String customizeName(Region region, String instance) '''«region.regionName.regionVariableName»_«instance»''' // For region variables
 	
+	// Orthogonal variable renames
+	static def String getOrthogonalName(VariableDeclaration variable) '''_«variable.name»_''' // Caller must make sure there is no name collision
 
 }

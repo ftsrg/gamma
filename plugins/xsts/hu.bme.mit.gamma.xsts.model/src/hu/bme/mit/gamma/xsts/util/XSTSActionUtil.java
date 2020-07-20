@@ -24,9 +24,11 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.Action;
+import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
@@ -40,9 +42,9 @@ public class XSTSActionUtil {
 	protected XSTSActionUtil() {}
 	//
 	
-	private GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
-	private ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
-	private XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	protected GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
+	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
+	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
 	public VariableDeclaration getVariable(XSTS xSts, String name) {
 		List<VariableDeclaration> variables = xSts.getVariableDeclarations().stream()
@@ -51,6 +53,21 @@ public class XSTSActionUtil {
 			throw new IllegalArgumentException("Not one variable: " + variables);
 		}
 		return variables.get(0);
+	}
+	
+	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
+		ReferenceExpression rhsReference = expressionFactory.createReferenceExpression();
+		rhsReference.setDeclaration(rhs);
+		return createAssignmentAction(variable, rhsReference);
+	}
+	
+	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
+		AssignmentAction assignmentAction = xStsFactory.createAssignmentAction();
+		ReferenceExpression lhsReference = expressionFactory.createReferenceExpression();
+		lhsReference.setDeclaration(variable);
+		assignmentAction.setLhs(lhsReference);
+		assignmentAction.setRhs(rhs);
+		return assignmentAction;
 	}
 	
 	public AssumeAction createAssumeAction(Expression condition) {

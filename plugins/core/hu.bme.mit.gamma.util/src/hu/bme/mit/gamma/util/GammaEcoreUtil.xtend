@@ -24,6 +24,13 @@ class GammaEcoreUtil {
 	protected new() {}
 	//
 	
+	def void replace(EObject newObject, EObject oldObject) {
+		EcoreUtil.replace(oldObject, newObject)
+	}
+	
+	/**
+	 * Note that this is used only to change cross-references and not containments.
+	 */
 	@SuppressWarnings("unchecked")
 	def void change(EObject newObject, EObject oldObject, EObject container) {
 		val oldReferences = UsageCrossReferencer.find(oldObject, container)
@@ -35,6 +42,7 @@ class GammaEcoreUtil {
 				if (list.contains(newObject)) {
 					// To avoid 'no duplicates' constraint violation
 					list.remove(index)
+					list.add(index, newObject)
 				}
 				else {
 					list.set(index, newObject)
@@ -89,6 +97,10 @@ class GammaEcoreUtil {
 		return object.getContainerOfType(type)
 	}
 	
+	def EObject getRoot(EObject object) {
+		return EcoreUtil.getRootContainer(object)
+	}
+	
 	def <T extends EObject> T getContainerOfType(EObject object, Class<T> type) {
 		val container = object.eContainer
 		if (container === null) {
@@ -108,6 +120,14 @@ class GammaEcoreUtil {
 			if (type.isInstance(content)) {
 				contents += content as T
 			}
+		}
+		return contents
+	}
+
+	def <T extends EObject> List<T> getSelfAndAllContentsOfType(EObject object, Class<T> type) {
+		val contents = object.getAllContentsOfType(type)
+		if (type.isInstance(object)) {
+			contents += object as T
 		}
 		return contents
 	}
