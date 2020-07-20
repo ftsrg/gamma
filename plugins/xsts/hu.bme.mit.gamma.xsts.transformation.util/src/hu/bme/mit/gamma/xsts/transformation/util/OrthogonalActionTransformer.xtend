@@ -4,10 +4,12 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.EventGroup
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import java.util.Collection
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -24,15 +26,20 @@ class OrthogonalActionTransformer {
 	protected extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
 	def void transform(XSTS xSts) {
-		xSts.variableInitializingAction.transform
-		xSts.configurationInitializingAction.transform
-		xSts.entryEventAction.transform
-		xSts.mergedAction.transform
-		xSts.inEventAction.transform
-		xSts.outEventAction.transform
+		val eventVariables = xSts.variableGroups
+			.filter[it.annotation instanceof EventGroup]
+			.map[it.variables].flatten.toSet
+		if (!eventVariables.empty) {
+			xSts.variableInitializingAction.transform(eventVariables)
+			xSts.configurationInitializingAction.transform(eventVariables)
+			xSts.entryEventAction.transform(eventVariables)
+			xSts.mergedAction.transform(eventVariables)
+			xSts.inEventAction.transform(eventVariables)
+			xSts.outEventAction.transform(eventVariables)
+		}
 	}
 	
-	def void transform(Action action) {
+	def void transform(Action action, Collection<VariableDeclaration> consideredVariables) {
 		val xSts = action.root
 		val orthogonalActions = action.getSelfAndAllContentsOfType(OrthogonalAction)
 		val orthogonalBranchActions = newArrayList
@@ -51,6 +58,7 @@ class OrthogonalActionTransformer {
 			orthogonalBranchActions += orthogonalAction.actions
 			for (orthogonalBranch : orthogonalBranchActions) {
 				val writtenVariables = orthogonalBranch.writtenVariables
+				writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
 				for (writtenVariable : writtenVariables) {
 					val orthogonalVariable = writtenVariable.createOrthogonalVariable
 					// _var_ := var
