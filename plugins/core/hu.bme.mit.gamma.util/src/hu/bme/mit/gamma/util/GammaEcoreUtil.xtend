@@ -42,7 +42,6 @@ class GammaEcoreUtil {
 				if (list.contains(newObject)) {
 					// To avoid 'no duplicates' constraint violation
 					list.remove(index)
-					list.add(index, newObject)
 				}
 				else {
 					list.set(index, newObject)

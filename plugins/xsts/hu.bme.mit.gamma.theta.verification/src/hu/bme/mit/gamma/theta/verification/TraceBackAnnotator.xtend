@@ -193,9 +193,8 @@ class TraceBackAnnotator {
 						throw new IllegalArgumentException("Not known state: " + state)
 				}
 			}
-			// Checking the last state
+			// Checking the last state (in events must NOT be deleted here though)
 			step.checkStates(raisedOutEvents, activatedStates)
-			step.checkInEvents(raisedInEvents)
 			// Sorting if needed
 			if (sortTrace) {
 				trace.sortInstanceStates
