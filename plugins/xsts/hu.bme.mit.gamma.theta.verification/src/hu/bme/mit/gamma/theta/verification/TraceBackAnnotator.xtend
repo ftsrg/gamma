@@ -6,15 +6,18 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.NoSuchElementException
 import java.util.Scanner
+import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.util.EcoreUtil
@@ -100,22 +103,7 @@ class TraceBackAnnotator {
 						// Deleting unnecessary in and out events
 						switch (state) {
 							case STATE_CHECK: {
-								val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
-								for (raiseEventAct : raiseEventActs) {
-									if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-										EcoreUtil.delete(raiseEventAct)
-									}
-								}
-								val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
-								for (instanceState : instanceStates) {
-									// A state is active if all of its ancestor states are active
-									val ancestorStates = instanceState.state.ancestors
-									if (!activatedStates.containsAll(ancestorStates)) {
-										EcoreUtil.delete(instanceState)
-									}
-								}
-								raisedOutEvents.clear
-								activatedStates.clear
+								step.checkStates(raisedOutEvents, activatedStates)
 								// Creating a new step
 								step = createStep
 								trace.steps += step
@@ -123,13 +111,7 @@ class TraceBackAnnotator {
 								state = BackAnnotatorState.ENVIRONMENT_CHECK
 							}
 							case ENVIRONMENT_CHECK: {
-								val raiseEventActs = step.actions.filter(RaiseEventAct).toList
-								for (raiseEventAct : raiseEventActs) {
-									if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
-										EcoreUtil.delete(raiseEventAct)
-									}
-								}
-								raisedInEvents.clear
+								step.checkInEvents(raisedInEvents)
 								// Add schedule
 								step.addComponentScheduling
 								// Setting the state
@@ -211,6 +193,9 @@ class TraceBackAnnotator {
 						throw new IllegalArgumentException("Not known state: " + state)
 				}
 			}
+			// Checking the last state
+			step.checkStates(raisedOutEvents, activatedStates)
+			step.checkInEvents(raisedInEvents)
 			// Sorting if needed
 			if (sortTrace) {
 				trace.sortInstanceStates
@@ -220,6 +205,36 @@ class TraceBackAnnotator {
 			step.actions += createReset
 		}
 		return trace
+	}
+	
+	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
+			Set<State> activatedStates) {
+		val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+				EcoreUtil.delete(raiseEventAct)
+			}
+		}
+		val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
+		for (instanceState : instanceStates) {
+			// A state is active if all of its ancestor states are active
+			val ancestorStates = instanceState.state.ancestors
+			if (!activatedStates.containsAll(ancestorStates)) {
+				EcoreUtil.delete(instanceState)
+			}
+		}
+		raisedOutEvents.clear
+		activatedStates.clear
+	}
+	
+	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
+		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+				EcoreUtil.delete(raiseEventAct)
+			}
+		}
+		raisedInEvents.clear
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}
