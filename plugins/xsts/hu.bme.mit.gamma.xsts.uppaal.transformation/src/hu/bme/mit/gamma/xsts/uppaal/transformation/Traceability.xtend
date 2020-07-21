@@ -38,7 +38,7 @@ class Traceability {
 		variables.containsKey(xStsVariable)
 	}
 	
-	def get(VariableDeclaration xStsVariable, VariableContainer uppaalVariable) {
+	def get(VariableDeclaration xStsVariable) {
 		variables.get(xStsVariable)
 	}
 	

@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
 import hu.bme.mit.gamma.uppaal.transformation.traceability.TraceabilityPackage
+import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import java.util.Collection
 import java.util.List
@@ -101,7 +102,8 @@ class OrchestratorCreator {
 	protected TimeSpecification minimalOrchestratingPeriod
 	protected TimeSpecification maximalOrchestratingPeriod
 	// Auxiliary objects
-    protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
+	protected final extension MultiaryExpressionCreator multiaryExpressionCreator = MultiaryExpressionCreator.INSTANCE
+    protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = InPlaceExpressionTransformer.INSTANCE
 	protected final extension Cloner cloner = new Cloner
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension NtaBuilder ntaBuilder

@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.Collection
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import uppaal.NTA
@@ -24,7 +23,6 @@ import uppaal.declarations.Function
 import uppaal.declarations.Variable
 import uppaal.declarations.VariableContainer
 import uppaal.declarations.system.SystemFactory
-import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
@@ -41,8 +39,6 @@ import uppaal.templates.TemplatesFactory
 import uppaal.types.BuiltInType
 import uppaal.types.PredefinedType
 import uppaal.types.TypesFactory
-
-import static com.google.common.base.Preconditions.checkArgument
 
 class NtaBuilder {
 	// NTA target model
@@ -365,66 +361,6 @@ class NtaBuilder {
 		val loopEdge = sourceLoc.createEdge(targetLoc)
 		loopEdge.setSynchronization(syncVar, syncKind)	
 		return loopEdge
-	}
-	
-	def createLogicalExpression(LogicalOperator operator,
-			Collection<? extends Expression> expressions) {
-		checkArgument(!expressions.empty)
-		if (expressions.size == 1) {
-			return expressions.head
-		}
-		var logicalExpression = createLogicalExpression => [
-			it.operator = operator
-		]
-		var i = 0
-		for (expression : expressions) {
-			if (i == 0) {
-				logicalExpression.firstExpr = expression
-			}
-			else if (i == 1) {
-				logicalExpression.secondExpr = expression
-			}
-			else {
-				val oldExpression = logicalExpression
-				logicalExpression = createLogicalExpression => [
-					it.operator = operator
-					it.firstExpr = oldExpression
-					it.secondExpr = expression
-				]
-			}
-			i++
-		}
-		return logicalExpression
-	}
-	
-	def createArithmeticExpression(ArithmeticOperator operator,
-			Collection<? extends Expression> expressions) {
-		checkArgument(!expressions.empty)
-		if (expressions.size == 1) {
-			return expressions.head
-		}
-		var logicalExpression = createArithmeticExpression => [
-			it.operator = operator
-		]
-		var i = 0
-		for (expression : expressions) {
-			if (i == 0) {
-				logicalExpression.firstExpr = expression
-			}
-			else if (i == 1) {
-				logicalExpression.secondExpr = expression
-			}
-			else {
-				val oldExpression = logicalExpression
-				logicalExpression = createArithmeticExpression => [
-					it.operator = operator
-					it.firstExpr = oldExpression
-					it.secondExpr = expression
-				]
-			}
-			i++
-		}
-		return logicalExpression
 	}
 	
 	def getNta() {

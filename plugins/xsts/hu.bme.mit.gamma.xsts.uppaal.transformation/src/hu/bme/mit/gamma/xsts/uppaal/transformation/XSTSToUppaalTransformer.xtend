@@ -41,6 +41,7 @@ class XSTSToUppaalTransformer {
 	
 	def execute() {
 		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
+		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
 		val mergedAction = xSts.mergedAction
 		
@@ -69,6 +70,10 @@ class XSTSToUppaalTransformer {
 	}
 	
 	protected def dispatch transformAction(NonDeterministicAction action) {
+		
+	}
+	
+	protected def void optimize() {
 		
 	}
 	

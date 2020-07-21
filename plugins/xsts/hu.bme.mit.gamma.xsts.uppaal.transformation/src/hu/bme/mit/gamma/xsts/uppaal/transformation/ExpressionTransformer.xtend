@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EqualityExpression
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression
 import hu.bme.mit.gamma.expression.model.GreaterExpression
@@ -34,90 +33,199 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import uppaal.expressions.Expression
+import uppaal.expressions.ExpressionsFactory
+import uppaal.expressions.LogicalOperator
+import uppaal.expressions.CompareOperator
+import uppaal.expressions.ArithmeticOperator
 
 class ExpressionTransformer {
 	
 	protected final Traceability traceability
+	//
+	protected final extension MultiaryExpressionCreator multiaryExpressionCreator = MultiaryExpressionCreator.INSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionsFactory expressionsFactory = ExpressionsFactory.eINSTANCE
 	
 	new(Traceability traceability) {
 		this.traceability = traceability
 	}
 	
-	def dispatch void transform(Expression expression) {
-		throw new IllegalArgumentException("Not supported expression: " + expression)
+	def dispatch Expression transform(IntegerLiteralExpression expression) {
+		return createLiteralExpression => [it.text = expression.value.toString]
 	}
 	
-	def dispatch void transform(IntegerLiteralExpression expression) {
+	def dispatch Expression transform(TrueExpression expression) {
+		return createLiteralExpression => [it.text = true.toString]
 	}
 	
-	def dispatch void transform(TrueExpression expression) {
+	def dispatch Expression transform(FalseExpression expression) {
+		return createLiteralExpression => [it.text = false.toString]
 	}
 	
-	def dispatch void transform(FalseExpression expression) {
+	def dispatch Expression transform(EnumerationLiteralExpression expression) {
+		val index = expression.reference.index
+		return createLiteralExpression => [
+			it.text = index.toString
+		]
 	}
 	
-	def dispatch void transform(EnumerationLiteralExpression expression) {
+	def dispatch Expression transform(ReferenceExpression expression) {
+		val xStsVariable = expression.declaration as VariableDeclaration
+		val uppaalVariable = traceability.get(xStsVariable)
+		return createIdentifierExpression => [
+			it.identifier = uppaalVariable.variable.head
+		]
 	}
 	
-	def dispatch void transform(ReferenceExpression expression) {		
+	def dispatch Expression transform(NotExpression expression) {
+		return createNegationExpression => [
+			it.negatedExpression = expression.operand.transform
+		]
 	}
 	
-	def dispatch void transform(NotExpression expression) {
+	def dispatch Expression transform(OrExpression expression) {
+		val uppaalOperands = newArrayList
+		for (xStsOperand : expression.operands) {
+			uppaalOperands += xStsOperand.transform
+		}
+		return LogicalOperator.OR.createLogicalExpression(uppaalOperands)
 	}
 	
-	def dispatch void transform(OrExpression expression) {
+	def dispatch Expression transform(XorExpression expression) {
+		val uppaalOperands = newArrayList
+		for (xStsOperand : expression.operands) {
+			uppaalOperands += xStsOperand.transform
+		}
+		return LogicalOperator.XOR.createLogicalExpression(uppaalOperands)
 	}
 	
-	def dispatch void transform(XorExpression expression) {
+	def dispatch Expression transform(AndExpression expression) {
+		val uppaalOperands = newArrayList
+		for (xStsOperand : expression.operands) {
+			uppaalOperands += xStsOperand.transform
+		}
+		return LogicalOperator.AND.createLogicalExpression(uppaalOperands)
 	}
 	
-	def dispatch void transform(AndExpression expression) {
+	def dispatch Expression transform(EqualityExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.EQUAL
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(EqualityExpression expression) {
+	def dispatch Expression transform(InequalityExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.UNEQUAL
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(InequalityExpression expression) {
+	def dispatch Expression transform(GreaterExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.GREATER
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(GreaterExpression expression) {
+	def dispatch Expression transform(GreaterEqualExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.GREATER_OR_EQUAL
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(GreaterEqualExpression expression) {
+	def dispatch Expression transform(LessExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.LESS
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(LessExpression expression) {
+	def dispatch Expression transform(LessEqualExpression expression) {
+		return createCompareExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = CompareOperator.LESS_OR_EQUAL
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(LessEqualExpression expression) {
+	def dispatch Expression transform(AddExpression expression) {
+		val uppaalOperands = newArrayList
+		for (xStsOperand : expression.operands) {
+			uppaalOperands += xStsOperand.transform
+		}
+		return ArithmeticOperator.ADD.createArithmeticExpression(uppaalOperands)
 	}
 	
-	def dispatch void transform(AddExpression expression) {
+	def dispatch Expression transform(SubtractExpression expression) {
+		return createArithmeticExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = ArithmeticOperator.SUBTRACT
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(SubtractExpression expression) {
+	def dispatch Expression transform(MultiplyExpression expression) {
+		val uppaalOperands = newArrayList
+		for (xStsOperand : expression.operands) {
+			uppaalOperands += xStsOperand.transform
+		}
+		return ArithmeticOperator.MULTIPLICATE.createArithmeticExpression(uppaalOperands)
 	}
 	
-	def dispatch void transform(MultiplyExpression expression) {
+	def dispatch Expression transform(DivideExpression expression) {
+		return createArithmeticExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = ArithmeticOperator.DIVIDE // Same as Divide, UPPAAL does not support doubles
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(DivideExpression expression) {
+	def dispatch Expression transform(DivExpression expression) {
+		return createArithmeticExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = ArithmeticOperator.DIVIDE 
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(DivExpression expression) {
+	def dispatch Expression transform(ModExpression expression) {
+		return createArithmeticExpression => [
+			it.firstExpr = expression.leftOperand.transform
+			it.operator = ArithmeticOperator.MODULO 
+			it.secondExpr = expression.rightOperand.transform
+		]
 	}
 	
-	def dispatch void transform(ModExpression expression) {
+	def dispatch Expression transform(UnaryPlusExpression expression) {
+		return createPlusExpression => [
+			it.confirmedExpression = expression.operand.transform
+		]
 	}
 	
-	def dispatch void transform(UnaryPlusExpression expression) {
+	def dispatch Expression transform(UnaryMinusExpression expression) {
+		return createMinusExpression => [
+			it.invertedExpression = expression.operand.transform
+		]
 	}
 	
-	def dispatch void transform(UnaryMinusExpression expression) {
-	}
-	
-	def dispatch void transform(IfThenElseExpression expression) {
+	def dispatch Expression transform(IfThenElseExpression expression) {
+		return createConditionExpression => [
+			it.ifExpression = expression.condition.transform
+			it.thenExpression = expression.then.transform
+			it.elseExpression = expression.^else.transform
+		]
 	}
 	
 }
