@@ -1,4 +1,4 @@
-package vaganyut_system
+package syncvaganyut_system
 
 import "Interfaces/Interfaces.gcd"
 import "Types/Types.gcd"
