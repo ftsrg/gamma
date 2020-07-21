@@ -38,6 +38,7 @@ import uppaal.templates.Template
 import uppaal.templates.TemplatesFactory
 import uppaal.types.BuiltInType
 import uppaal.types.PredefinedType
+import uppaal.types.TypeDefinition
 import uppaal.types.TypesFactory
 
 class NtaBuilder {
@@ -197,7 +198,6 @@ class NtaBuilder {
 		return varContainer
 	}
 	
-		
 	/**
 	 * Initializes a variable with the given string value.
 	 */
@@ -214,10 +214,18 @@ class NtaBuilder {
 	 * This method creates the variables of the given containers based on the given predefined type and name.
 	 */
 	def createTypeAndVariable(VariableContainer container, PredefinedType type, String name) {		
-		container.typeDefinition = createTypeReference => [
+		val typeReference = createTypeReference => [
 			it.referredType = type
 		]
-		// Creating variables for all statechart instances
+		return container.createTypeAndVariable(typeReference, name)
+	}
+	
+	def createTypeAndVariable(VariableContainer container, TypeDefinition type, String name) {		
+		container.typeDefinition = type
+		return container.createVariable(name)
+	}
+	
+	def createVariable(VariableContainer container, String name) {
 		val variable = createVariable => [
 			it.container = container
 			it.name = name

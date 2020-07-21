@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -37,11 +38,11 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import uppaal.expressions.ArithmeticOperator
+import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
-import uppaal.expressions.CompareOperator
-import uppaal.expressions.ArithmeticOperator
 
 class ExpressionTransformer {
 	
@@ -75,11 +76,18 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transform(ReferenceExpression expression) {
-		val xStsVariable = expression.declaration as VariableDeclaration
-		val uppaalVariable = traceability.get(xStsVariable)
-		return createIdentifierExpression => [
-			it.identifier = uppaalVariable.variable.head
-		]
+		val xStsDeclaration = expression.declaration
+		if (xStsDeclaration instanceof ConstantDeclaration) {
+			return xStsDeclaration.expression.transform
+		}
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+		if (xStsVariable instanceof VariableDeclaration) {
+			val uppaalVariable = traceability.get(xStsVariable)
+			return createIdentifierExpression => [
+				it.identifier = uppaalVariable.variable.head
+			]
+		}
+		
 	}
 	
 	def dispatch Expression transform(NotExpression expression) {
