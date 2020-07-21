@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
+import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
@@ -20,9 +21,8 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import uppaal.NTA
 
-import static hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
-
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
 
 class XSTSToUppaalTransformer {
 	
@@ -31,12 +31,16 @@ class XSTSToUppaalTransformer {
 	protected final NTA nta
 	// Auxiliary
 	protected final extension NtaBuilder ntaBuilder
+	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension TypeTransformer typeTransformer
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
 		this.ntaBuilder = new NtaBuilder(xSts.name, false)
 		this.nta = ntaBuilder.nta
 		this.traceability = new Traceability(xSts, nta)
+		this.expressionTransformer = new ExpressionTransformer(traceability)
+		this.typeTransformer = new TypeTransformer(nta)
 	}
 	
 	def execute() {
@@ -48,10 +52,19 @@ class XSTSToUppaalTransformer {
 		return ntaBuilder.nta
 	}
 	
-	protected def transformVariable(VariableDeclaration variable) {
-		
+	protected def transformVariables(XSTS xSts) {
+		for (xStsVariable : xSts.variableDeclarations) {
+			val uppaalVariable = xStsVariable.transformVariable
+			nta.globalDeclarations.declaration += uppaalVariable
+			traceability.put(xStsVariable, uppaalVariable)
+		}
 	}
 	
+	protected def transformVariable(VariableDeclaration variable) {
+		val uppaalType = variable.type.transformType
+		val uppaalVariable = uppaalType.createVariable(variable.uppaalId)
+		return uppaalVariable
+	}
 	
 	protected def dispatch transformAction(AssignmentAction action) {
 		
@@ -74,7 +87,8 @@ class XSTSToUppaalTransformer {
 	}
 	
 	protected def void optimize() {
-		
+		// Empty edges
+		// Subsequent edges with only updates
 	}
 	
 }

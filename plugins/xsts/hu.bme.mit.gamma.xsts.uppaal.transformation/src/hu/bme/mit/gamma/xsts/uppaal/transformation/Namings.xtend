@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.NamedElement
 
 class Namings {
 	
-	def static String getName(NamedElement element) '''«element.name»'''
+	def static String getUppaalId(NamedElement element) '''«element.name»'''
 	
 	def static String getTemplateName() '''System'''
 	def static String getInitialLocationName() '''__InitialLocation__'''

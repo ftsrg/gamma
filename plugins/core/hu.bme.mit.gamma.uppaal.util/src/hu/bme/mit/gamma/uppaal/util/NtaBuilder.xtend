@@ -164,7 +164,6 @@ class NtaBuilder {
 				it.upperBound = upperBound
 			]
 		]
-		// Creating variables for all statechart instances
 		container.variable += createVariable => [
 			it.container = container
 			it.name = name
@@ -173,7 +172,6 @@ class NtaBuilder {
 	
 	/**
 	 * This method is responsible for creating the variables in the resource depending on the received parameters.
-	 * It also creates the traces.
 	 */
 	def createSynchronization(Declarations declarations, boolean isBroadcast, boolean isUrgent, String name) {
 		val syncContainer = createChannelVariableDeclaration => [
@@ -187,13 +185,24 @@ class NtaBuilder {
 	
 	/**
 	 * This method is responsible for creating the variables in the resource depending on the received parameters.
-	 * It also creates the traces.
 	 */
 	def createVariable(Declarations declarations, DataVariablePrefix prefix, PredefinedType type, String name) {
-		val varContainer = createDataVariableDeclaration => [
+		val varContainer = prefix.createVariable(type, name)
+		declarations.declaration += varContainer
+		return varContainer
+	}
+	
+	def createVariable(DataVariablePrefix prefix, PredefinedType type, String name) {
+		val typeReference = createTypeReference => [
+			it.referredType = type
+		]
+		return typeReference.createVariable(name) => [
 			it.prefix = prefix
 		]
-		declarations.declaration += varContainer
+	}
+	
+	def createVariable(TypeDefinition type, String name) {
+		val varContainer = createDataVariableDeclaration
 		varContainer.createTypeAndVariable(type, name)		
 		return varContainer
 	}
