@@ -1,0 +1,26 @@
+import "Vaganyut.gcd"
+
+code {
+	component : Vaganyut
+	language : java
+}
+
+analysis {
+	component : Vaganyut
+	language : UPPAAL
+	language : Theta
+}
+
+verification {
+	language : UPPAAL
+	file : "Vaganyut.xml"
+	query-file : "CustomQueries.q"
+	test-language : java
+}
+
+verification {
+	language : Theta
+	file : "Vaganyut.xsts"
+	query-file : "CustomQueries.prop"
+	test-language : java
+}

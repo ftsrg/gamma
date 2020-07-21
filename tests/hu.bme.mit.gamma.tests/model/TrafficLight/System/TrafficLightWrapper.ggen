@@ -12,8 +12,7 @@ code {
 }
 
 analysis {
-	component : TrafficLightWrapper
-	(1, true)
+	component : TrafficLightWrapper (1, true)
 	language : UPPAAL
 	language : Theta
 	transition-coverage

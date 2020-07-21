@@ -7,7 +7,7 @@ code {
 
 analysis {
 	component : MonitoredCrossroad // Gamma component to be transformed
-	language : UPPAAL // The target language is the XTA formalism of UPPAAL
+	language : UPPAAL
 	interaction-coverage {
 		interaction-representation : over-approximation
 	}
