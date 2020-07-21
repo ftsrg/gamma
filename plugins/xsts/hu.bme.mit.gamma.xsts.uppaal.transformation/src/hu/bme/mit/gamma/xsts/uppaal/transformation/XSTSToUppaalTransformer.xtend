@@ -49,6 +49,8 @@ class XSTSToUppaalTransformer {
 		val environmentalAction = xSts.environmentalAction
 		val mergedAction = xSts.mergedAction
 		
+		xSts.transformVariables
+		
 		return ntaBuilder.nta
 	}
 	

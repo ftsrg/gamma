@@ -17,6 +17,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
 import "http://www.mit.bme.hu/gamma/genmodel/Model"
 import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 import "http://www.mit.bme.hu/gamma/property/Model" as property
+import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
@@ -107,7 +108,7 @@ enum ProgrammingLanguage returns ProgrammingLanguage:
 
 AnalysisModelTransformation returns AnalysisModelTransformation:
 	'analysis' '{'
-		'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		model=ModelReference
 		(
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
@@ -118,6 +119,18 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			coverages+=Coverage
 		)*
 	'}'
+;
+
+ModelReference returns ModelReference:
+	ComponentReference | XSTSReference
+;
+
+ComponentReference returns ComponentReference:
+	'component' ':' component=[interface::Component] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+;
+
+XSTSReference returns XSTSReference:
+	'xsts' ':' xSts=[xsts::XSTS | STRING]
 ;
 
 Constraint returns Constraint:

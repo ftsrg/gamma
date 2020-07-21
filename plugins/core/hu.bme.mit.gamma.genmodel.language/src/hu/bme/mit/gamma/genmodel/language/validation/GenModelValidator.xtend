@@ -15,9 +15,11 @@ import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
+import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation
 import hu.bme.mit.gamma.genmodel.model.GenModel
@@ -34,6 +36,7 @@ import hu.bme.mit.gamma.genmodel.model.TestGeneration
 import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage
 import hu.bme.mit.gamma.genmodel.model.Verification
+import hu.bme.mit.gamma.genmodel.model.XSTSReference
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
@@ -104,6 +107,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 		if (languages.size != languages.toSet.size) {
 			error("A single formal language can be specified only once.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
 		}
+		val modelReference = analysisModelTransformation.model
+		if (modelReference instanceof XSTSReference) {
+			if (languages.exists[it != AnalysisLanguage.UPPAAL]) {
+				error("XSTS models can be transformed only to UPPAAL", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
+			}
+		}
 		if (analysisModelTransformation.coverages.filter(TransitionCoverage).size > 1) {
 			error("A single transition coverage task can be defined.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
 		}
@@ -112,9 +121,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		val constraint = analysisModelTransformation.constraint
 		if (constraint !== null) {
-			val component = analysisModelTransformation.component
-			if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
-				error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
+			if (modelReference instanceof ComponentReference) {
+				val component = modelReference.component
+				if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
+					error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
+				}
 			}
 		}
 	}
@@ -177,30 +188,33 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkConstraint(AsynchronousInstanceConstraint constraint) {
 		val analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation)
-		val component = analysisModelTransformation.component
-		if (!component.isAsynchronous) {
-			error("Asynchronous component constraints must refer to an asynchronous component.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
-			return
-		}
-		val scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint)
-		val instance = constraint.instance
-		if (instance !== null) {
-			val lastInstance = instance.componentInstanceHierarchy.last
-			if (!lastInstance.isAsynchronous) {
-				error("Asynchronous component constraints must contain a reference to a contained asynchronous instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+		val modelReference = analysisModelTransformation.model
+		if (modelReference instanceof ComponentReference) {
+			val component = modelReference.component
+			if (!component.isAsynchronous) {
+				error("Asynchronous component constraints must refer to an asynchronous component.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+				return
 			}
-		}
-		if (component instanceof AsynchronousCompositeComponent) {
-			if (instance === null) {
-				error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+			val scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint)
+			val instance = constraint.instance
+			if (instance !== null) {
+				val lastInstance = instance.componentInstanceHierarchy.last
+				if (!lastInstance.isAsynchronous) {
+					error("Asynchronous component constraints must contain a reference to a contained asynchronous instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+				}
 			}
-			if (scheduling.instanceConstraint.filter[ecoreUtil.helperEquals(it.instance, instance)].size > 1) {
-				error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+			if (component instanceof AsynchronousCompositeComponent) {
+				if (instance === null) {
+					error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+				}
+				if (scheduling.instanceConstraint.filter[ecoreUtil.helperEquals(it.instance, instance)].size > 1) {
+					error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+				}
 			}
-		}
-		if (component instanceof AsynchronousAdapter) {
-			if (scheduling.instanceConstraint.size > 1) {
-				error("Asynchronous adapters can contain at most one constraint.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+			if (component instanceof AsynchronousAdapter) {
+				if (scheduling.instanceConstraint.size > 1) {
+					error("Asynchronous adapters can contain at most one constraint.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+				}
 			}
 		}
 	}
@@ -260,8 +274,12 @@ class GenModelValidator extends AbstractGenModelValidator {
 			packageImports.remove(parentPackage)
 		}
 		for (analysisModelTransformationTask : genmodel.tasks.filter(AnalysisModelTransformation)) {
-			val parentPackage = analysisModelTransformationTask.component.containingPackage
-			packageImports.remove(parentPackage)
+			val modelReference = analysisModelTransformationTask.model
+			if (modelReference instanceof ComponentReference) {
+				val component = modelReference.component
+				val parentPackage = component.containingPackage
+				packageImports.remove(parentPackage)
+			}
 			for (coverage : analysisModelTransformationTask.coverages) {
 				for (instance : coverage.include + coverage.exclude) {
 					val instanceParentPackage = instance.containingPackage
@@ -321,9 +339,9 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
-	def checkParameters(AnalysisModelTransformation analysisModelTransformation) {
-		val type = analysisModelTransformation.component
-		if (analysisModelTransformation.getArguments().size() != type.getParameterDeclarations().size()) {
+	def checkParameters(ComponentReference componentReference) {
+		val type = componentReference.component
+		if (componentReference.getArguments().size() != type.getParameterDeclarations().size()) {
 			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 		}
 	}
@@ -331,19 +349,22 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkComponentInstanceArguments(AnalysisModelTransformation analysisModelTransformation) {
 		try {
-			val type = analysisModelTransformation.component
-			val parameters = type.getParameterDeclarations();
-			for (var i = 0; i < parameters.size(); i++) {
-				val parameter = parameters.get(i);
-				val argument = analysisModelTransformation.getArguments().get(i);
-				val declarationType = parameter.getType();
-				val argumentType = typeDeterminator.getType(argument);
-				if (!typeDeterminator.equals(declarationType, argumentType)) {
-					error("The types of the declaration and the right hand side expression are not the same: " +
-							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
-							argumentType.toString().toLowerCase() + ".",
-							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
-				} 
+			val modelReference = analysisModelTransformation.model
+			if (modelReference instanceof ComponentReference) {
+				val type = modelReference.component
+				val parameters = type.getParameterDeclarations();
+				for (var i = 0; i < parameters.size(); i++) {
+					val parameter = parameters.get(i);
+					val argument = modelReference.getArguments().get(i);
+					val declarationType = parameter.getType();
+					val argumentType = typeDeterminator.getType(argument);
+					if (!typeDeterminator.equals(declarationType, argumentType)) {
+						error("The types of the declaration and the right hand side expression are not the same: " +
+								typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
+								argumentType.toString().toLowerCase() + ".",
+								ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
+					} 
+				}
 			}
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
@@ -599,12 +620,15 @@ class GenModelValidator extends AbstractGenModelValidator {
 		}
 		val model = ecoreUtil.getContainerOfType(reference, AnalysisModelTransformation)
 		if (model !== null) {
-			val component = model.component
-			val containedComponents = component.eContents.filter(ComponentInstance).toList
-			val firstInstance = instances.head
-			if (!containedComponents.contains(firstInstance)) {
-				error("The first component instance must be the component of " + component.name,
-					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)
+			val modelReference = model.model
+			if (modelReference instanceof ComponentReference) {
+				val component = modelReference.component
+				val containedComponents = component.eContents.filter(ComponentInstance).toList
+				val firstInstance = instances.head
+				if (!containedComponents.contains(firstInstance)) {
+					error("The first component instance must be the component of " + component.name,
+						CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)
+				}
 			}
 		}
 	}

@@ -25,14 +25,19 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
+import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
+import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
@@ -56,7 +61,9 @@ import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
+import hu.bme.mit.gamma.xsts.uppaal.transformation.XSTSToUppaalTransformer;
 import uppaal.NTA;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
@@ -66,13 +73,22 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
+		ModelReference modelReference = analysisModelTransformation.getModel();
 		setAnalysisModelTransformation(analysisModelTransformation);
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(analysisModelTransformation.getLanguages());
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
 				case UPPAAL:
-					transformer = new UppaalTransformer();
+					if (modelReference instanceof ComponentReference) {
+						transformer = new UppaalTransformer();
+					}
+					else if (modelReference instanceof XSTSReference) {
+						transformer = new XSTS2UppaalTransformer();
+					}
+					else {
+						throw new IllegalArgumentException("Not known model reference: " + modelReference);
+					}
 					break;
 				case THETA:
 					transformer = new ThetaTransformer();
@@ -87,7 +103,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	private void setAnalysisModelTransformation(AnalysisModelTransformation analysisModelTransformation) {
 		checkArgument(analysisModelTransformation.getFileName().size() <= 1);
 		if (analysisModelTransformation.getFileName().isEmpty()) {
-			String fileName = getNameWithoutExtension(getContainingFileName(analysisModelTransformation.getComponent()));
+			EObject sourceModel = GenmodelDerivedFeatures.getModel(analysisModelTransformation);
+			String fileName = getNameWithoutExtension(getContainingFileName(sourceModel));
 			analysisModelTransformation.getFileName().add(fileName);
 		}
 		checkArgument(analysisModelTransformation.getScheduler().size() <= 1);
@@ -105,15 +122,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			// Unfolding the given system
-			Component component = analysisModelTransformation.getComponent();
+			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
+			Component component = componentReference.getComponent();
 			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
-			Component newTopComponent = preprocessor.preprocess(gammaPackage, analysisModelTransformation.getArguments(),
+			Component newTopComponent = preprocessor.preprocess(gammaPackage, componentReference.getArguments(),
 				new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
 			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
 			// Top component arguments can now be contained by the Package
 			newPackage.getTopComponentArguments().addAll(
-					analysisModelTransformation.getArguments().stream()
+					componentReference.getArguments().stream()
 					.map(it -> ecoreUtil.clone(it, true, true)).collect(Collectors.toList()));
 			// Checking the model whether it contains forbidden elements
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
@@ -240,20 +258,21 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class ThetaTransformer  extends AnalysisModelTransformer {
+	class ThetaTransformer extends AnalysisModelTransformer {
 		
 		protected StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			// Unfolding the given system
-			Component component = analysisModelTransformation.getComponent();
+			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
+			Component component = componentReference.getComponent();
 			Package gammaPackage = (Package) component.eContainer();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
 			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true);
 			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
 			gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(gammaPackage,
-				analysisModelTransformation.getArguments(),  xStsFile);
+				componentReference.getArguments(),  xStsFile);
 			logger.log(Level.INFO, "XSTS transformation has been finished.");
 		}
 		
@@ -275,6 +294,21 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
 		}
 	
+	}
+	
+	class XSTS2UppaalTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+			logger.log(Level.INFO, "Starting XSTS-UPPAAL transformation.");
+			XSTS xSts = (XSTS) GenmodelDerivedFeatures.getModel(analysisModelTransformation);
+			XSTSToUppaalTransformer xStsToUppaalTransformer = new XSTSToUppaalTransformer(xSts);
+			NTA nta = xStsToUppaalTransformer.execute();
+			ecoreUtil.normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
+			// Serializing the NTA model to XML
+			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
+			// Creating a new query file
+			logger.log(Level.INFO, "The transformation has been finished.");
+		}
 	}
 	
 }

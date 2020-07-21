@@ -3,8 +3,14 @@ package hu.bme.mit.gamma.genmodel.derivedfeatures;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
+
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
+import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.Task;
+import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 
 public class GenmodelDerivedFeatures {
 
@@ -20,6 +26,19 @@ public class GenmodelDerivedFeatures {
 			tasks.addAll(getAllTasks(includedGenmodel));
 		}
 		return tasks;
+	}
+	
+	public static EObject getModel(AnalysisModelTransformation analysisModelTransformation) {
+		ModelReference modelReference = analysisModelTransformation.getModel();
+		if (modelReference instanceof ComponentReference) {
+			ComponentReference componentReference = (ComponentReference) modelReference;
+			return componentReference.getComponent();
+		}
+		if (modelReference instanceof XSTSReference) {
+			XSTSReference xStsReference = (XSTSReference) modelReference;
+			return xStsReference.getXSts();
+		}
+		throw new IllegalArgumentException("Not supported model reference: " + modelReference);
 	}
 	
 }

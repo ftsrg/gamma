@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.genmodel.language.scoping
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
+import hu.bme.mit.gamma.genmodel.model.ComponentReference
 import hu.bme.mit.gamma.genmodel.model.EventMapping
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
@@ -42,8 +43,8 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			return Scopes.scopeFor(genmodel.statechartImports)
 		}
 		if (reference == GenmodelModelPackage.Literals.CODE_GENERATION__COMPONENT ||
-				reference == GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COMPONENT) {
-			val genmodel = context.eContainer as GenModel
+				reference == GenmodelModelPackage.Literals.COMPONENT_REFERENCE__COMPONENT) {
+			val genmodel = ecoreUtil.getSelfOrContainerOfType(context, GenModel)
 			val components = genmodel.packageImports.map[it.components].flatten
 			return Scopes.scopeFor(components)
 		}
@@ -59,8 +60,12 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		}
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY) {
 			val analysisModel = ecoreUtil.getSelfOrContainerOfType(context, AnalysisModelTransformation)
-			val component = analysisModel.component
-			return Scopes.scopeFor(component.allInstances)
+			// Only if Gamma model is referenced
+			val modelReference = analysisModel.model
+			if (modelReference instanceof ComponentReference) {
+				val component = modelReference.component
+				return Scopes.scopeFor(component.allInstances)
+			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
 				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
