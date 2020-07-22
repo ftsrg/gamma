@@ -78,16 +78,6 @@ class AssignmentExpressionCreator {
 		]
 	}
 	
-	def createIdentifierExpression(VariableContainer variable) {
-		return variable.variable.head.createIdentifierExpression
-	}
-	
-	def createIdentifierExpression(NamedElement element) {
-		return createIdentifierExpression => [
-			it.identifier = element
-		]
-	}
-	
 	/**
 	 * Puts an assignment expression onto the given container. The left side is the first given variable,
 	 * the right side is the second given variable". E.g.: myFirstVariable = mySecondVariable.

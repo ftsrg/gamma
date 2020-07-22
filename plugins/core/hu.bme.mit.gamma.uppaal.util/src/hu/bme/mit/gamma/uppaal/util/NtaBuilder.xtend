@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import uppaal.NTA
 import uppaal.UppaalFactory
+import uppaal.core.NamedElement
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.Declarations
@@ -38,6 +39,7 @@ import uppaal.templates.Template
 import uppaal.templates.TemplatesFactory
 import uppaal.types.BuiltInType
 import uppaal.types.PredefinedType
+import uppaal.types.Type
 import uppaal.types.TypeDefinition
 import uppaal.types.TypesFactory
 
@@ -145,6 +147,17 @@ class NtaBuilder {
 		return false
 	}
 	
+		
+	def createIdentifierExpression(VariableContainer variable) {
+		return variable.variable.head.createIdentifierExpression
+	}
+	
+	def createIdentifierExpression(NamedElement element) {
+		return createIdentifierExpression => [
+			it.identifier = element
+		]
+	}
+	
 	def Selection addBooleanSelection(Edge edge, String name) {
 		val select = createSelection
 		select.createIntTypeWithRangeAndVariable(
@@ -193,9 +206,7 @@ class NtaBuilder {
 	}
 	
 	def createVariable(DataVariablePrefix prefix, PredefinedType type, String name) {
-		val typeReference = createTypeReference => [
-			it.referredType = type
-		]
+		val typeReference = type.createTypeReference
 		return typeReference.createVariable(name) => [
 			it.prefix = prefix
 		]
@@ -205,6 +216,12 @@ class NtaBuilder {
 		val varContainer = createDataVariableDeclaration
 		varContainer.createTypeAndVariable(type, name)		
 		return varContainer
+	}
+	
+	def createTypeReference(Type type) {
+		return createTypeReference => [
+			it.referredType = type
+		]
 	}
 	
 	/**
@@ -223,9 +240,7 @@ class NtaBuilder {
 	 * This method creates the variables of the given containers based on the given predefined type and name.
 	 */
 	def createTypeAndVariable(VariableContainer container, PredefinedType type, String name) {		
-		val typeReference = createTypeReference => [
-			it.referredType = type
-		]
+		val typeReference = type.createTypeReference
 		return container.createTypeAndVariable(typeReference, name)
 	}
 	
@@ -281,18 +296,14 @@ class NtaBuilder {
 			val oldGuard = edge.guard as Expression
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
 			edge.guard = createLogicalExpression => [
-				it.firstExpr = createIdentifierExpression => [
-					it.identifier = guard.variable.head
-				]
+				it.firstExpr = guard.createIdentifierExpression
 				it.operator = operator
 				it.secondExpr = oldGuard
 			]
 		}
 		// If there is no guard yet
 		else {
-			edge.guard = createIdentifierExpression => [
-				it.identifier = guard.variable.head
-			]
+			edge.guard = guard.createIdentifierExpression
 		}
 		return edge.guard
 	}
@@ -304,9 +315,7 @@ class NtaBuilder {
 			// Creating the new andExpression that will contain the same reference and the regular guard expression
 			edge.guard = createLogicalExpression => [
 				it.firstExpr = createCompareExpression => [
-					it.firstExpr = createIdentifierExpression => [
-						it.identifier = guard.variable.head
-					]
+					it.firstExpr = guard.createIdentifierExpression
 					it.operator = CompareOperator.UNEQUAL
 					it.secondExpr = notEqual.clone(true, true)
 				]
@@ -316,9 +325,7 @@ class NtaBuilder {
 		}
 		// If there is no guard yet
 		else {
-			edge.guard = createIdentifierExpression => [
-				it.identifier = guard.variable.head
-			]
+			edge.guard = guard.createIdentifierExpression
 		}
 		return edge.guard
 	}
@@ -383,9 +390,7 @@ class NtaBuilder {
 	def void setSynchronization(Edge edge, Variable syncVar, SynchronizationKind syncType) {
 		edge.synchronization = createSynchronization => [
 			it.kind = syncType
-			it.channelExpression = createIdentifierExpression => [
-				it.identifier = syncVar
-			]
+			it.channelExpression = syncVar.createIdentifierExpression
 		]	
 	}
 	
