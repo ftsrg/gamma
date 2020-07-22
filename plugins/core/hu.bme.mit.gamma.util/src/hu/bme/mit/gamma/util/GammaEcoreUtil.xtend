@@ -57,6 +57,10 @@ class GammaEcoreUtil {
 		EcoreUtil.delete(object)
 	}
 	
+	def void remove(EObject object) {
+		EcoreUtil.remove(object)
+	}
+	
 	def void changeAndDelete(EObject newObject, EObject oldObject, EObject container) {
 		change(newObject, oldObject, container)
 		oldObject.delete // Remove does not delete other references
@@ -164,6 +168,10 @@ class GammaEcoreUtil {
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
+	}
+
+	def <T extends EObject> T clone(T object) {
+		return object.clone(true, true)
 	}
 
 	@SuppressWarnings("unchecked")

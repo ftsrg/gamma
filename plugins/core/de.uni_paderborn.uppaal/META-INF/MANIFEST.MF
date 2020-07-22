@@ -7,7 +7,8 @@ Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: uppaal,
+Export-Package: de.uni_paderborn.uppaal.derivedfeatures,
+ uppaal,
  uppaal.core,
  uppaal.core.impl,
  uppaal.core.util,

@@ -22,6 +22,7 @@ class Namings {
 	def static String getStableLocationName() '''_StableLocation_'''
 	def static String getInitialLocationName() '''_InitialLocation_'''
 	
+	def static void resetCommittedLocationName() {locationId = 0}
 	def static String getNextCommittedLocationName() '''_«locationId++»_'''
 	
 }

@@ -11,21 +11,21 @@
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
-import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import uppaal.NTA
 import uppaal.templates.Location
+import uppaal.templates.LocationKind
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
-import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
-import uppaal.templates.LocationKind
+import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 
 class XSTSToUppaalTransformer {
 	
@@ -37,6 +37,7 @@ class XSTSToUppaalTransformer {
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension TypeTransformer typeTransformer
+	protected final extension NtaOptimizer ntaOptimizer
 	
 	new(XSTS xSts) {
 		this.xSts = xSts
@@ -46,9 +47,11 @@ class XSTSToUppaalTransformer {
 		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.typeTransformer = new TypeTransformer(nta)
+		this.ntaOptimizer = new NtaOptimizer(ntaBuilder)
 	}
 	
 	def execute() {
+		resetCommittedLocationName
 		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
 		initialLocation.locationTimeKind = LocationKind.COMMITED
 		
@@ -65,9 +68,11 @@ class XSTSToUppaalTransformer {
 		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
-		systemFinishLocation.createEdge(environmentFinishLocation)
+		systemFinishLocation.createEdge(stableLocation)
 		
-		optimize
+		// Optimizing edges from these location
+		initialLocation.optimizeSubsequentEdges
+		stableLocation.optimizeSubsequentEdges
 		
 		ntaBuilder.instantiateTemplates
 		
@@ -126,11 +131,6 @@ class XSTSToUppaalTransformer {
 			choiceTarget.createEdge(target)
 		}
 		return target
-	}
-	
-	protected def void optimize() {
-		// Empty edges
-		// Subsequent edges with only updates
 	}
 	
 }
