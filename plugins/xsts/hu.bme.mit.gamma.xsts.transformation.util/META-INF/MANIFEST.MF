@@ -14,4 +14,5 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.statechart.lowlevel.model,
  hu.bme.mit.gamma.xsts.model,
  hu.bme.mit.gamma.transformation.util
-Export-Package: hu.bme.mit.gamma.xsts.transformation.util
+Export-Package: hu.bme.mit.gamma.xsts.transformation.serializer,
+ hu.bme.mit.gamma.xsts.transformation.util

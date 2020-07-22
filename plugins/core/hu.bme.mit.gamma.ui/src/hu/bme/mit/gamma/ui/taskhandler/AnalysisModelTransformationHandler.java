@@ -60,9 +60,11 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
+import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.XSTSToUppaalTransformer;
 import uppaal.NTA;
 
@@ -261,6 +263,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	class ThetaTransformer extends AnalysisModelTransformer {
 		
 		protected StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+		protected ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+		protected FileUtil fileUtil = FileUtil.INSTANCE;
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
@@ -270,10 +274,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Package gammaPackage = (Package) component.eContainer();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
 			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true);
-			File xStsFile = new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".xsts");
-			gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(gammaPackage,
-				componentReference.getArguments(),  xStsFile);
-			logger.log(Level.INFO, "XSTS transformation has been finished.");
+			final String fileName = analysisModelTransformation.getFileName().get(0);
+			File xStsFile = new File(targetFolderUri + File.separator + fileName + ".xsts");
+			XSTS xSts = gammaToXSTSTransformer.preprocessAndExecute(gammaPackage,
+					componentReference.getArguments(), xStsFile);
+			// EMF
+			ecoreUtil.normalSave(xSts, targetFolderUri, fileName + ".gsts");
+			// String
+			String xStsString = actionSerializer.serializeXSTS(xSts);
+			fileUtil.saveString(xStsFile, xStsString);
+			logger.log(Level.INFO, "The XSTS transformation has been finished.");
 		}
 		
 		private Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
@@ -303,9 +313,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			XSTS xSts = (XSTS) GenmodelDerivedFeatures.getModel(analysisModelTransformation);
 			XSTSToUppaalTransformer xStsToUppaalTransformer = new XSTSToUppaalTransformer(xSts);
 			NTA nta = xStsToUppaalTransformer.execute();
-			ecoreUtil.normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
+			final String fileName = analysisModelTransformation.getFileName().get(0);
+			ecoreUtil.normalSave(nta, targetFolderUri, "." + fileName + ".uppaal");
 			// Serializing the NTA model to XML
-			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
+			UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileName + ".xml");
 			// Creating a new query file
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}

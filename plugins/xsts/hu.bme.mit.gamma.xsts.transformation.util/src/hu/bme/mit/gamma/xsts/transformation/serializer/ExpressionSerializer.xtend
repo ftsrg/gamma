@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer
+package hu.bme.mit.gamma.xsts.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression

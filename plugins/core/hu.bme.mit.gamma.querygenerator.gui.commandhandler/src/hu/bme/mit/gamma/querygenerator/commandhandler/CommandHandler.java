@@ -29,11 +29,16 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import hu.bme.mit.gamma.querygenerator.application.AppMain;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer;
+import hu.bme.mit.gamma.util.FileUtil;
+import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
+import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 
 public class CommandHandler extends AbstractHandler {
 
 	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+	protected FileUtil fileUtil = FileUtil.INSTANCE;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -80,7 +85,8 @@ public class CommandHandler extends AbstractHandler {
 							Package _package = (Package) resource.getContents().get(0);
 							GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
 							File xStsFile = new File(absoluteParentFolder + File.separator + fileName + ".xsts");
-							gammaToXSTSTransformer.preprocessAndExecuteAndSerializeAndSave(_package, xStsFile);
+							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, xStsFile);
+							fileUtil.saveString(xStsFile, xStsString);
 							logger.log(Level.INFO, "XSTS transformation has been finished.");
 						}
 						if (resource != null) {

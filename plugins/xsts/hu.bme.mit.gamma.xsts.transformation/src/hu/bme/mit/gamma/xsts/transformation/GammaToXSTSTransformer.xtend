@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -24,11 +23,11 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import java.io.File
 import java.math.BigInteger
@@ -47,7 +46,6 @@ class GammaToXSTSTransformer {
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
-	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
@@ -69,20 +67,21 @@ class GammaToXSTSTransformer {
 		this.transformOrthogonalActions = transformOrthogonalActions
 	}
 	
-	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
+	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			File containingFile) {
-		_package.preprocessAndExecuteAndSerializeAndSave(Collections.emptyList, containingFile)
-	}
-	
-	def preprocessAndExecuteAndSerializeAndSave(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			List<Expression> topComponentArguments, File containingFile) {
-		val string = _package.preprocessAndExecuteAndSerialize(topComponentArguments, containingFile)
-		containingFile.saveString(string)
+		return _package.preprocessAndExecute(Collections.emptyList, containingFile).serializeXSTS
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, File containingFile) {
-		return _package.preprocessAndExecute(topComponentArguments, containingFile).serializeXSTS.toString
+		return _package.preprocessAndExecute(topComponentArguments, containingFile).serializeXSTS
+	}
+
+	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
+			File containingFile) {
+		val component = modelPreprocessor.preprocess(_package, Collections.emptyList, containingFile)
+		val newPackage = component.containingPackage
+		return newPackage.execute
 	}
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,

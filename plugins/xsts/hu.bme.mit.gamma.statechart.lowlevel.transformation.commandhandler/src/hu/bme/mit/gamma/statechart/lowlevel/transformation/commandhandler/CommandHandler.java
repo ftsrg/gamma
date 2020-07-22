@@ -32,7 +32,6 @@ import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ActionPrimer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommonizer;
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer;
@@ -41,6 +40,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.codegeneration.java.CommonizedVariableActionSerializer;
 import hu.bme.mit.gamma.xsts.codegeneration.java.StatechartToJavaCodeGenerator;
 import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 
 public class CommandHandler extends AbstractHandler {
 
