@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -18,11 +20,11 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -31,6 +33,7 @@ class ExpressionTransformer {
 	protected final Trace trace
 	// Auxiliary objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -63,6 +66,18 @@ class ExpressionTransformer {
 		]
 	}
 	
+	// Key method
+	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {
+		val lowlevelEnumLiteral = expression.reference
+		val index = lowlevelEnumLiteral.index
+		val lowlevelEnumTypeDeclaration = lowlevelEnumLiteral.getContainerOfType(TypeDeclaration)
+		val xStsEnumTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelEnumTypeDeclaration)
+		val xStsEnumTypeDefinition = xStsEnumTypeDeclaration.type as EnumerationTypeDefinition
+		return createEnumerationLiteralExpression => [
+			it.reference = xStsEnumTypeDefinition.literals.get(index)
+		]
+	}
+	
 	def dispatch Expression transformExpression(BinaryExpression expression) {
 		return expression.clone => [
 			it.leftOperand = expression.leftOperand.transformExpression
@@ -90,14 +105,6 @@ class ExpressionTransformer {
 		return createTypeReference => [
 			it.reference = xStsTypeDeclaration
 		]
-	}
-	
-	protected def <T extends EObject> T clone(T element) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		val copier = new Copier(true, true)
-		val clone = copier.copy(element) as T
-		copier.copyReferences()
-		return clone
 	}
 	
 }

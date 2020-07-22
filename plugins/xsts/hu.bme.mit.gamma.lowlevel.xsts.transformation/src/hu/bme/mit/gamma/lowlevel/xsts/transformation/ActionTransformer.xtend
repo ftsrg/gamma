@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
@@ -29,6 +30,7 @@ class ActionTransformer {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	// Action utility
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	// Trace

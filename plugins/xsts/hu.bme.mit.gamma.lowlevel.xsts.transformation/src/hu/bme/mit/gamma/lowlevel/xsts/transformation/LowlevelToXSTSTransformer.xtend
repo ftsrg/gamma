@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Persistency
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -79,6 +80,7 @@ class LowlevelToXSTSTransformer {
 	// Transformation rule-related extensions
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
@@ -477,7 +479,7 @@ class LowlevelToXSTSTransformer {
 					val xStsVariable = createVariableDeclaration => [
 						it.name = lowlevelTimeoutVariable.name.variableName
 						it.type = lowlevelTimeoutVariable.type.transformType
-						it.expression = lowlevelTimeoutVariable.expression.clone // Timeouts are initially true
+						it.expression = lowlevelTimeoutVariable.expression.transformExpression // Timeouts are initially true
 					]
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelTimeoutVariable, xStsVariable) // Tracing
@@ -496,7 +498,7 @@ class LowlevelToXSTSTransformer {
 				if (lowlevelVariable.notOptimizable) {
 					val xStsVariable = trace.getXStsVariable(lowlevelVariable)
 					// By now all variables must be traced because of such initializations: var a = b
-					xStsVariable.expression = lowlevelVariable.initialValue
+					xStsVariable.expression = lowlevelVariable.initialValue.transformExpression
 				}
 			].build
 		}
@@ -632,18 +634,19 @@ class LowlevelToXSTSTransformer {
 					for (lowlevelParameterDeclaration : it.event.parameters) {
 						val xStsAllPossibleParameterValues = newHashSet
 						// Initial value
-						val type = lowlevelParameterDeclaration.type
-						xStsAllPossibleParameterValues += type.initialValueOfType
+						val lowlevelType = lowlevelParameterDeclaration.type
+						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
 						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-							xStsAllPossibleParameterValues += lowlevelValue.clone // Cloning is important
+							xStsAllPossibleParameterValues += lowlevelValue.transformExpression // Cloning is important
 						}
 						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
-						if (type instanceof TypeReference) {
+						if (lowlevelType instanceof TypeReference) {
 							// Mapping back to enum literals if necessary
-							val typeDeclaration = type.reference
-							val typeDefinition = typeDeclaration.type
-							if (typeDefinition instanceof EnumerationTypeDefinition) {
-								val enumLiterals = typeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
+							val lowlevelTypeDeclaration = lowlevelType.reference
+							val xStsTypeDeclaration = trace.getXStsTypeDeclaration(lowlevelTypeDeclaration)
+							val xStsTypeDefinition = xStsTypeDeclaration.type
+							if (xStsTypeDefinition instanceof EnumerationTypeDefinition) {
+								val enumLiterals = xStsTypeDefinition.mapToEnumerationLiterals(xStsPossibleParameterValues)
 								xStsPossibleParameterValues.clear
 								xStsPossibleParameterValues += enumLiterals
 							}

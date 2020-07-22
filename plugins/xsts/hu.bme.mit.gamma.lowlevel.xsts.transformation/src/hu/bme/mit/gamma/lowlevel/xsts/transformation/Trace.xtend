@@ -82,6 +82,11 @@ package class Trace {
 		]
 	}
 	
+	def isTraced(TypeDeclaration lowlevelTypeDeclaration) {
+		checkArgument(lowlevelTypeDeclaration !== null)
+		return TypeDeclarationTrace.Matcher.on(tracingEngine).hasMatch(lowlevelTypeDeclaration, null)
+	}
+	
 	def getXStsTypeDeclaration(TypeDeclaration lowlevelTypeDeclaration) {
 		checkArgument(lowlevelTypeDeclaration !== null)
 		val matches = TypeDeclarationTrace.Matcher.on(tracingEngine).getAllValuesOfxStsTypeDeclaration(lowlevelTypeDeclaration)

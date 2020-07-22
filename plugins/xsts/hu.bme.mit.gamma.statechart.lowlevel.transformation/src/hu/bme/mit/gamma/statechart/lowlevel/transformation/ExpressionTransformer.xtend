@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -102,6 +103,19 @@ class ExpressionTransformer {
 				it.declaration = trace.get(declaration)
 			]
 		}
+	}
+	
+	// Key method
+	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {
+		val gammaEnumLiteral = expression.reference
+		val index = gammaEnumLiteral.index
+		val gammaEnumTypeDeclaration = gammaEnumLiteral.getContainerOfType(TypeDeclaration)
+		checkState(trace.isMapped(gammaEnumTypeDeclaration))
+		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
+		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
+		return createEnumerationLiteralExpression => [
+			it.reference = lowlevelEnumTypeDefinition.literals.get(index)
+		]
 	}
 	
 	// Key method
