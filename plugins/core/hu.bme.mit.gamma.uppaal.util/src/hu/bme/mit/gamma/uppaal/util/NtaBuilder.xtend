@@ -243,6 +243,13 @@ class NtaBuilder {
 		return variable
 	}
 	
+	def Location createLocation(Template template, LocationKind kind, String name) {
+		return template.createLocation => [
+			it.locationTimeKind = kind
+			it.name = name
+		]
+	}
+	
 	def Location createLocation(Template template) {
 		val location = createLocation
 		template.location += location
@@ -348,6 +355,17 @@ class NtaBuilder {
 		return syncEdge		
 	}
 	
+	def Edge createEdgeCommittedSource(Location source, String name) {
+		val template = source.parentTemplate
+		val target= template.createLocation => [
+			it.name = name
+			it.locationTimeKind = LocationKind.COMMITED
+		]
+		template.location += target
+		val edge = source.createEdge(target)
+		return edge		
+	}
+	
 	/**
 	 * Responsible for creating a ! synchronization on an edge and a committed location as the source of the edge.
 	 * The target of the synchronized edge will be the given "target" location.
@@ -378,6 +396,16 @@ class NtaBuilder {
 		val loopEdge = sourceLoc.createEdge(targetLoc)
 		loopEdge.setSynchronization(syncVar, syncKind)	
 		return loopEdge
+	}
+	
+	def void instantiateTemplates() {
+		val system = nta.systemDeclarations.system
+		val instantiationLists = system.instantiationList 
+		val instantiationList = createInstantiationList
+		instantiationLists += instantiationList
+		for (template : nta.template) {
+			instantiationList.template += template
+		}
 	}
 	
 	def getNta() {

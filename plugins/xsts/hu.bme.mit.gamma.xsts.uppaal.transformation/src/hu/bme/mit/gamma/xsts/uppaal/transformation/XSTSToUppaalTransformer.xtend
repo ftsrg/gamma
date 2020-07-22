@@ -20,9 +20,12 @@ import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import uppaal.NTA
+import uppaal.templates.Location
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
+import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
+import uppaal.templates.LocationKind
 
 class XSTSToUppaalTransformer {
 	
@@ -31,6 +34,7 @@ class XSTSToUppaalTransformer {
 	protected final NTA nta
 	// Auxiliary
 	protected final extension NtaBuilder ntaBuilder
+	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension TypeTransformer typeTransformer
 	
@@ -39,17 +43,33 @@ class XSTSToUppaalTransformer {
 		this.ntaBuilder = new NtaBuilder(xSts.name, false)
 		this.nta = ntaBuilder.nta
 		this.traceability = new Traceability(xSts, nta)
+		this.assignmentExpressionCreator = new AssignmentExpressionCreator(ntaBuilder)
 		this.expressionTransformer = new ExpressionTransformer(traceability)
 		this.typeTransformer = new TypeTransformer(nta)
 	}
 	
 	def execute() {
 		val initialLocation = createTemplateWithInitLoc(templateName, initialLocationName)
+		initialLocation.locationTimeKind = LocationKind.COMMITED
+		
 		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
 		val mergedAction = xSts.mergedAction
 		
 		xSts.transformVariables
+		
+		val stableLocation = initializingAction.transformAction(initialLocation)
+		stableLocation.name = stableLocationName
+		stableLocation.locationTimeKind = LocationKind.NORMAL
+		
+		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
+		
+		systemFinishLocation.createEdge(environmentFinishLocation)
+		
+		optimize
+		
+		ntaBuilder.instantiateTemplates
 		
 		return ntaBuilder.nta
 	}
@@ -68,24 +88,44 @@ class XSTSToUppaalTransformer {
 		return uppaalVariable
 	}
 	
-	protected def dispatch transformAction(AssignmentAction action) {
-		
+	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
+		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		val xStsDeclaration = action.lhs.declaration
+		val xStsVariable = xStsDeclaration as VariableDeclaration
+		val uppaalVariable = traceability.get(xStsVariable)
+		val uppaalRhs = action.rhs.transform
+		edge.update += uppaalVariable.createAssignmentExpression(uppaalRhs)
+		return edge.target
 	}
 	
-	protected def dispatch transformAction(AssumeAction action) {
-		
+	protected def dispatch Location transformAction(AssumeAction action, Location source) {
+		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
+		val uppaalExpression = action.assumption.transform
+		edge.guard = uppaalExpression
+		return edge.target
 	}
 	
-	protected def dispatch transformAction(SequentialAction action) {
-		
+	protected def dispatch Location transformAction(SequentialAction action, Location source) {
+		val xStsActions = action.actions
+		var actualSource = source
+		for (xStsAction : xStsActions) {
+			actualSource = xStsAction.transformAction(actualSource)
+		}
+		return actualSource
 	}
 	
-	protected def dispatch transformAction(OrthogonalAction action) {
-		
-	}
-	
-	protected def dispatch transformAction(NonDeterministicAction action) {
-		
+	protected def dispatch Location transformAction(NonDeterministicAction action, Location source) {
+		val xStsActions = action.actions
+		val targets = newArrayList
+		for (xStsAction : xStsActions) {
+			targets += xStsAction.transformAction(source)
+		}
+		val parentTemplate = source.parentTemplate
+		val target = parentTemplate.createLocation(LocationKind.COMMITED, nextCommittedLocationName)
+		for (choiceTarget : targets) {
+			choiceTarget.createEdge(target)
+		}
+		return target
 	}
 	
 	protected def void optimize() {

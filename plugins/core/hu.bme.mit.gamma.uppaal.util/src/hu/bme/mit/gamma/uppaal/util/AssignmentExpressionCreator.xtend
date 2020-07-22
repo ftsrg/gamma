@@ -60,15 +60,31 @@ class AssignmentExpressionCreator {
 		return assignmentExpression
 	}
 	
-	protected def createAssignmentExpression(VariableDeclaration variable, String value) {
+	def createAssignmentExpression(VariableContainer variable, String value) {
 		return createAssignmentExpression => [
-			it.firstExpr = createIdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
+			it.firstExpr = variable.createIdentifierExpression
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = createLiteralExpression => [
 				it.text = value
 			]
+		]
+	}
+	
+	def createAssignmentExpression(VariableContainer variable, Expression rhs) {
+		return createAssignmentExpression => [
+			it.firstExpr = variable.createIdentifierExpression
+			it.operator = AssignmentOperator.EQUAL
+			it.secondExpr = rhs
+		]
+	}
+	
+	def createIdentifierExpression(VariableContainer variable) {
+		return variable.variable.head.createIdentifierExpression
+	}
+	
+	def createIdentifierExpression(NamedElement element) {
+		return createIdentifierExpression => [
+			it.identifier = element
 		]
 	}
 	
@@ -80,13 +96,9 @@ class AssignmentExpressionCreator {
 			DataVariableDeclaration lhs, DataVariableDeclaration rhs) {
    		container.add(reference,
 			createAssignmentExpression => [
-				it.firstExpr = createIdentifierExpression => [
-					it.identifier = lhs.variable.head // Only one variable is expected
-				]
+				it.firstExpr = lhs.createIdentifierExpression
 				it.operator = AssignmentOperator.EQUAL
-				it.secondExpr = createIdentifierExpression => [
-					it.identifier = rhs.variable.head // Only one variable is expected
-				]
+				it.secondExpr = rhs.createIdentifierExpression
 			]
 		)
 	}
@@ -94,9 +106,7 @@ class AssignmentExpressionCreator {
 	def AssignmentExpression createAssignmentExpression(EObject container,
 			EReference reference, VariableContainer variable, Expression rhs) {
 		val assignmentExpression = createAssignmentExpression => [
-			it.firstExpr = createIdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
+			it.firstExpr = variable.createIdentifierExpression
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = rhs
 		]
@@ -107,26 +117,26 @@ class AssignmentExpressionCreator {
 	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference,
 			VariableContainer variable,	NamedElement _if, NamedElement _then, NamedElement _else) {
 		return container.createIfThenElseAssignment(reference, variable, 
-			createIdentifierExpression => [it.identifier = _if],
-			createIdentifierExpression => [it.identifier = _then],
-			createIdentifierExpression => [it.identifier = _else]
+			_if.createIdentifierExpression,
+			_then.createIdentifierExpression,
+			_else.createIdentifierExpression
 		)
 	}
 	
 	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference,
 			VariableContainer variable,	NamedElement _if, String _then, NamedElement _else) {
 		return container.createIfThenElseAssignment(reference, variable, 
-			createIdentifierExpression => [it.identifier = _if],
+			_if.createIdentifierExpression,
 			createLiteralExpression => [it.text = _then],
-			createIdentifierExpression => [it.identifier = _else]
+			_else.createIdentifierExpression
 		)
 	}
 	
 	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference,
 			VariableContainer variable, NamedElement _if, NamedElement _then, String _else) {
 		return container.createIfThenElseAssignment(reference, variable, 
-			createIdentifierExpression => [it.identifier = _if],
-			createIdentifierExpression => [it.identifier = _then],
+			_if.createIdentifierExpression,
+			_then.createIdentifierExpression,
 			createLiteralExpression => [it.text = _else]
 		)
 	}
@@ -134,9 +144,7 @@ class AssignmentExpressionCreator {
 	def AssignmentExpression createIfThenElseAssignment(EObject container, EReference reference,
 			VariableContainer variable, Expression _if, Expression _then, Expression _else) {
 		val assignmentExpression = createAssignmentExpression => [
-			it.firstExpr = createIdentifierExpression => [
-				it.identifier = variable.variable.head // Only one variable is expected
-			]
+			it.firstExpr = variable.createIdentifierExpression
 			it.operator = AssignmentOperator.EQUAL
 			it.secondExpr = createConditionExpression => [
 				it.ifExpression = _if
@@ -157,18 +165,12 @@ class AssignmentExpressionCreator {
 			DataVariableDeclaration lhs, DataVariableDeclaration rhsl, LogicalOperator operator, DataVariableDeclaration rhsr) {
    		container.add(reference,
    			createAssignmentExpression => [
-				it.firstExpr = createIdentifierExpression => [
-					it.identifier = lhs.variable.head // Only one variable is expected
-				]
+				it.firstExpr = lhs.createIdentifierExpression
 				it.operator = AssignmentOperator.EQUAL
 				it.secondExpr = createLogicalExpression => [
-					it.firstExpr = createIdentifierExpression => [
-						it.identifier = rhsl.variable.head // Only one variable is expected
-					]
+					it.firstExpr = rhsl.createIdentifierExpression
 					it.operator = operator
-					it.secondExpr = createIdentifierExpression => [
-						it.identifier = rhsr.variable.head // Only one variable is expected
-					]
+					it.secondExpr = rhsr.createIdentifierExpression
 				]
 			]
 		)
@@ -191,9 +193,7 @@ class AssignmentExpressionCreator {
 	def createLoopEdgeWithGuardedBoolAssignment(Location location, DataVariableDeclaration variable) {
 		val loopEdge = location.createLoopEdgeWithBoolAssignment(variable, true)
 		val negationExpression = createNegationExpression as NegationExpression => [
-			it.negatedExpression = createIdentifierExpression => [
-				it.identifier = variable.variable.head
-			]
+			it.negatedExpression = variable.createIdentifierExpression
 		]
 		// Only fireable if the bool variable is not already set
 		loopEdge.addGuard(negationExpression, LogicalOperator.AND)
@@ -203,9 +203,7 @@ class AssignmentExpressionCreator {
 	def extendLoopEdgeWithGuardedBoolAssignment(Edge loopEdge, DataVariableDeclaration variable) {
 		loopEdge.update += variable.createAssignmentExpression(true.toString)
 		val negationExpression = createNegationExpression as NegationExpression => [
-			it.negatedExpression = createIdentifierExpression => [
-				it.identifier = variable.variable.head
-			]
+			it.negatedExpression = variable.createIdentifierExpression
 		]
 		// Only fireable if the bool variable is not already set
 		loopEdge.addGuard(negationExpression, LogicalOperator.AND)
