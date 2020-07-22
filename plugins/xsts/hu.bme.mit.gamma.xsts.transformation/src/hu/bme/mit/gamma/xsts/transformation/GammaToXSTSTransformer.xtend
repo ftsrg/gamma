@@ -39,13 +39,14 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
@@ -104,6 +105,8 @@ class GammaToXSTSTransformer {
 			xSts.transform
 			// Before optimize actions
 		}
+		// Optimizing - system in events can be reset after the merged transition
+		xSts.resetInEventsAfterMergedAction
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -310,6 +313,22 @@ class GammaToXSTSTransformer {
 		val typeDeclarationNames = xSts.typeDeclarations.map[it.name]
 		val duplications = typeDeclarationNames.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
 		checkState(duplications.empty, "The XSTS contains multiple type declarations with the same name:" + duplications)
+	}
+	
+	protected def void resetInEventsAfterMergedAction(XSTS xSts) {
+		val inEventVariables = xSts.inEventAction.writtenVariables
+		val newMergedAction = createSequentialAction
+		newMergedAction.actions += xSts.mergedAction
+		for (inEventVariable : inEventVariables) {
+			val type = inEventVariable.type
+			newMergedAction.actions += createAssignmentAction => [
+				it.lhs = createReferenceExpression => [
+					it.declaration = inEventVariable
+				]
+				it.rhs = type.defaultExpression
+			]
+		}
+		xSts.mergedAction = newMergedAction
 	}
 	
 	protected def optimize(XSTS xSts) {

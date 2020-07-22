@@ -2,55 +2,55 @@ package controller
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
 @TransitionPriority = order-based
 statechart Controller [
-	port SecondaryControl : provides Control
-	port SecondaryPolice : provides PoliceInterrupt
-	port PoliceInterrupt : requires PoliceInterrupt
-	port PriorityControl : provides Control
 	port PriorityPolice : provides PoliceInterrupt
+	port SecondaryControl : provides Control
+	port PoliceInterrupt : requires PoliceInterrupt
+	port SecondaryPolice : provides PoliceInterrupt
+	port PriorityControl : provides Control
 ] {
 	var a : integer
 	timeout SecondaryPreparesTimeout3
-	timeout PriorityPreparesTimeout4
-	timeout InitTimeout5
-	timeout PriorityTimeout6
-	timeout SecondaryTimeout7
-	transition from Entry0 to G
-	transition from Entry1 to Operating
+	timeout PriorityTimeout4
+	timeout SecondaryTimeout5
+	timeout PriorityPreparesTimeout6
+	timeout InitTimeout7
+	transition from Entry0 to Operating
+	transition from Entry1 to G
 	transition from Entry2 to Init
-	transition from Init to PriorityPrepares when timeout InitTimeout5
+	transition from Init to PriorityPrepares when timeout InitTimeout7
 	transition from Operating to Operating when PoliceInterrupt.police / raise PriorityPolice.police;
 		raise SecondaryPolice.police;
-	transition from Priority to PriorityPrepares when timeout PriorityTimeout6 [true /= false]
-	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout4
-	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout7
+	transition from Priority to PriorityPrepares when timeout PriorityTimeout4 [true /= false]
+	transition from PriorityPrepares to Secondary when timeout PriorityPreparesTimeout6
+	transition from Secondary to SecondaryPrepares when timeout SecondaryTimeout5
 	transition from SecondaryPrepares to Priority when timeout SecondaryPreparesTimeout3
 	region main_region {
 		state Operating {
 			region operating {
 				state Init {
-					entry / set InitTimeout5 := 2 s; raise PriorityControl.toggle;
+					entry / set InitTimeout7 := 2 s; raise PriorityControl.toggle;
 					region r {
-						initial Entry0
+						initial Entry1
 						state G
 					}
 				}
 				shallow history Entry2
+				state PriorityPrepares {
+					entry / set PriorityPreparesTimeout6 := 1 s; raise PriorityControl.toggle;
+				}
 				state Secondary {
-					entry / set SecondaryTimeout7 := 2 s; raise PriorityControl.toggle; raise
+					entry / set SecondaryTimeout5 := 2 s; raise PriorityControl.toggle; raise
 						SecondaryControl.toggle;
 				}
-				state PriorityPrepares {
-					entry / set PriorityPreparesTimeout4 := 1 s; raise PriorityControl.toggle;
+				state Priority {
+					entry / set PriorityTimeout4 := 2 s; raise PriorityControl.toggle; raise
+						SecondaryControl.toggle;
 				}
 				state SecondaryPrepares {
 					entry / set SecondaryPreparesTimeout3 := 1 s; raise SecondaryControl.toggle;
 				}
-				state Priority {
-					entry / set PriorityTimeout6 := 2 s; raise PriorityControl.toggle; raise
-						SecondaryControl.toggle;
-				}
 			}
 		}
-		initial Entry1
+		initial Entry0
 	}
 }

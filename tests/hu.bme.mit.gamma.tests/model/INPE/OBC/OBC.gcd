@@ -5,8 +5,8 @@ statechart OBC [
 	port PL : provides Data
 ] {
 	var PLGetData : integer
-	var OBCData : integer
 	var sendOBC : integer
+	var OBCData : integer
 	var writeOBC : integer
 	transition from Entry0 to OBC_IDLE
 	transition from OBC_IDLE to OBC_SEND when PL.getData [PL.getData ::getDataValue = 0] / PLGetData
@@ -26,9 +26,9 @@ statechart OBC [
 	transition from OBC_Write to OBC_Receive when cycle / writeOBC := 1;
 	region main_region {
 		initial Entry0
-		state OBC_Write
 		state OBC_Receive
-		state OBC_SEND
+		state OBC_Write
 		state OBC_IDLE
+		state OBC_SEND
 	}
 }

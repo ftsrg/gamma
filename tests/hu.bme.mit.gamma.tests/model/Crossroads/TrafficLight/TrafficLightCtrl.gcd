@@ -2,21 +2,21 @@ package trafficlightctrl
 import "/hu.bme.mit.gamma.tests/model/Crossroads/Interfaces/Interfaces.gcd"
 @TransitionPriority = order-based
 statechart TrafficLightCtrl [
-	port PoliceInterrupt : requires PoliceInterrupt
 	port LightCommands : provides LightCommands
+	port PoliceInterrupt : requires PoliceInterrupt
 	port Control : requires Control
 ] {
-	var a : boolean
-	var b : integer
 	var c : boolean
+	var a : boolean
 	var asd : integer
+	var b : integer
 	timeout BlinkingYellowTimeout3
 	timeout BlackTimeout4
 	transition from Black to BlinkingYellow when timeout BlackTimeout4
 	transition from BlinkingYellow to Black when timeout BlinkingYellowTimeout3
 	transition from Entry0 to Red
-	transition from Entry1 to BlinkingYellow
-	transition from Entry2 to Normal
+	transition from Entry1 to Normal
+	transition from Entry2 to BlinkingYellow
 	transition from Green to Yellow when Control.toggle / b := 4;
 	transition from Interrupted to Normal when PoliceInterrupt.police
 	transition from Normal to Interrupted when PoliceInterrupt.police
@@ -25,12 +25,12 @@ statechart TrafficLightCtrl [
 	region Main_region {
 		state Interrupted {
 			region interrupted {
-				initial Entry1
-				state BlinkingYellow {
-					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
-				}
+				initial Entry2
 				state Black {
 					entry / set BlackTimeout4 := 500 ms; raise LightCommands.displayNone;
+				}
+				state BlinkingYellow {
+					entry / set BlinkingYellowTimeout3 := 500 ms; raise LightCommands.displayYellow;
 				}
 			}
 		}
@@ -38,18 +38,18 @@ statechart TrafficLightCtrl [
 			exit / asd := 321;
 			region normal {
 				shallow history Entry0
+				state Yellow {
+					entry / raise LightCommands.displayYellow;
+				}
 				state Red {
 					entry / raise LightCommands.displayRed;
 					exit / a := true;
-				}
-				state Yellow {
-					entry / raise LightCommands.displayYellow;
 				}
 				state Green {
 					entry / raise LightCommands.displayGreen;
 				}
 			}
 		}
-		initial Entry2
+		initial Entry1
 	}
 }

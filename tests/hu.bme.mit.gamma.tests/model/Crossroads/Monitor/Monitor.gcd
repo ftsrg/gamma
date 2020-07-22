@@ -18,9 +18,9 @@ statechart Monitor [
 	transition from Red to Other when LightInputs.displayYellow
 	region main_region {
 		initial Entry0
-		state Red
-		state Green
 		state Error
 		state Other
+		state Red
+		state Green
 	}
 }

@@ -1,25 +1,25 @@
 /*
-satellite: WaitingPing-->Transmitting
+satellite: Recharging-->Recharging
 */
 E<> transitionId == 1 && isStable
 /*
-satellite: Consuming-->Consuming
+station: Operation-->Operation
 */
 E<> transitionId == 2 && isStable
 /*
-station: Waiting-->Waiting
+satellite: Transmitting-->WaitingPing
 */
 E<> transitionId == 3 && isStable
 /*
-satellite: NotRecharging-->Recharging
+station: Operation-->Idle
 */
 E<> transitionId == 4 && isStable
 /*
-station: Idle-->Operation
+satellite: Transmitting-->WaitingPing
 */
 E<> transitionId == 5 && isStable
 /*
-station: Operation-->Operation
+station: Waiting-->Waiting
 */
 E<> transitionId == 6 && isStable
 /*
@@ -27,26 +27,26 @@ station: Idle-->Operation
 */
 E<> transitionId == 7 && isStable
 /*
-satellite: Transmitting-->WaitingPing
+satellite: Recharging-->NotRecharging
 */
 E<> transitionId == 8 && isStable
 /*
-satellite: Recharging-->NotRecharging
+satellite: WaitingPing-->Transmitting
 */
 E<> transitionId == 9 && isStable
 /*
-satellite: Sending-->Sending
+satellite: NotRecharging-->Recharging
 */
 E<> transitionId == 10 && isStable
 /*
-station: Operation-->Idle
+station: Idle-->Operation
 */
 E<> transitionId == 11 && isStable
 /*
-satellite: Recharging-->Recharging
+satellite: Sending-->Sending
 */
 E<> transitionId == 12 && isStable
 /*
-satellite: Transmitting-->WaitingPing
+satellite: Consuming-->Consuming
 */
 E<> transitionId == 13 && isStable
