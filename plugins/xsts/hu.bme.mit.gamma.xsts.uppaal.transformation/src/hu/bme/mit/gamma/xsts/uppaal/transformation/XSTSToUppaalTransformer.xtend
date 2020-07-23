@@ -88,14 +88,14 @@ class XSTSToUppaalTransformer {
 	}
 	
 	protected def transformVariable(VariableDeclaration variable) {
-//		val xSts = variable.containingXSTS
+		val xSts = variable.containingXSTS
 		val uppaalType =
-//		if (xSts.clockVariables.contains(variable)) {
-//			nta.clock.createTypeReference
-//		}
-//		else {
+		if (xSts.clockVariables.contains(variable)) {
+			nta.clock.createTypeReference
+		}
+		else {
 			variable.type.transformType
-//		}
+		}
 		val uppaalVariable = uppaalType.createVariable(variable.uppaalId)
 		return uppaalVariable
 	}

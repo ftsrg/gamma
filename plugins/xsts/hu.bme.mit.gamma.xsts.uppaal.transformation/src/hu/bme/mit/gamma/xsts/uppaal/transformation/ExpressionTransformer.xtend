@@ -43,6 +43,7 @@ import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
+import hu.bme.mit.gamma.expression.util.ExpressionNegator
 
 class ExpressionTransformer {
 	
@@ -50,6 +51,7 @@ class ExpressionTransformer {
 	//
 	protected final extension MultiaryExpressionCreator multiaryExpressionCreator = MultiaryExpressionCreator.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionNegator expressionNegator = ExpressionNegator.INSTANCE
 	protected final extension ExpressionsFactory expressionsFactory = ExpressionsFactory.eINSTANCE
 	
 	new(Traceability traceability) {
@@ -91,9 +93,8 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch Expression transform(NotExpression expression) {
-		return createNegationExpression => [
-			it.negatedExpression = expression.operand.transform
-		]
+		// Needed as UPPAAL cannot work with negations and OR-s in clock expressions
+		return expression.operand.negate.transform
 	}
 	
 	def dispatch Expression transform(OrExpression expression) {
