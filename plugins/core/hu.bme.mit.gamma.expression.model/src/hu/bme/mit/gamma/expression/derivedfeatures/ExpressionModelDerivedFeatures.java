@@ -26,9 +26,9 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionModelDerivedFeatures {
 	
-	protected static ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-	protected static GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected static ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	public static boolean isPrimitive(Type type) {
 		if (type instanceof BooleanTypeDefinition || type instanceof IntegerTypeDefinition ||

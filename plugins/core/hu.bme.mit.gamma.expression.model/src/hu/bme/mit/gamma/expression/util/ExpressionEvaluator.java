@@ -52,7 +52,7 @@ public class ExpressionEvaluator {
 	protected ExpressionEvaluator() {}
 	//
 	
-	private static ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	private static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public int evaluate(Expression expression) {
 		try {

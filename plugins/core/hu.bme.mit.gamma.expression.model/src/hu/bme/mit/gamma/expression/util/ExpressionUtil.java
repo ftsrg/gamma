@@ -62,9 +62,9 @@ public class ExpressionUtil {
 	protected ExpressionUtil() {}
 	//
 	
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
-	protected ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	@SuppressWarnings("unchecked")
 	public <T extends EObject> T getContainer(EObject element, Class<T> _class) {
