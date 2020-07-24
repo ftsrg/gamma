@@ -275,7 +275,7 @@ class Trace {
 	/**
 	 * Returns the Uppaal const representing the given signal.
 	 */
-	def getConstRepresentation(Event event, Port port) {		
+	def getConstRepresentation(Event event, Port port) {
 		var variables = EventRepresentations.Matcher.on(traceEngine).getAllValuesOfrepresentation(port, event)
 		// If the size is 0, it may be because it is a statechart level event and must be transferred to system level: see old code
 		if (variables.size != 1) {

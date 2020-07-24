@@ -125,50 +125,54 @@ class EnvironmentCreator {
 				// Parameter adding if necessary
 				for (systemPort : it.syncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
-						var Edge loopEdge = loopEdges.get(new Pair(systemPort, inEvent))
-						var expressionSet = newHashMap
-						for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-							// Collecting parameter values for each instant parameter
-							for (parameter : match.event.parameterDeclarations) {
-								expressionSet.put(parameter, ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter))
-							}
-						}
-						if (!expressionSet.empty) {
-							// Removing original edge from the model - only if there is a valid expression
-							template.edge -= loopEdge
-							val processableEdges = newArrayList(loopEdge)
-							val processedEdges = newArrayList
-							for (parameter : expressionSet.keySet) {
-								val originalExpressions = expressionSet.get(parameter)
-								val expressions = originalExpressions.removeDuplicatedExpressions // Removing the expression duplications (that are evaluated to the same expression)
-								for (processableEdge : processableEdges) {
-									for (expression : expressions) {
-										// Putting variables raising for ALL instance parameters
-				   						val clonedLoopEdge = processableEdge.clone(true, true)
-				   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
-										}
-										expression.removeGammaElementFromTrace
-										processedEdges += clonedLoopEdge
-									}
-									// Adding a different value if the type is an integer
-									if (originalExpressions.filter(EnumerationLiteralExpression).empty &&
-											expressions.exists[it instanceof IntegerLiteralExpression]) {
-					   					val clonedLoopEdge = processableEdge.clone(true, true)
-										val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
-										val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
-										for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
-											clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, biggerThanMax)
-										}
-										biggerThanMax.removeGammaElementFromTrace
-										processedEdges += clonedLoopEdge
-									}
+						val pair = new Pair(systemPort, inEvent)
+						// If the event is not used, the map does not contain this pair
+						if (loopEdges.containsKey(pair)) {
+							var Edge loopEdge = loopEdges.get(pair)
+							var expressionSet = newHashMap
+							for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+								// Collecting parameter values for each instant parameter
+								for (parameter : match.event.parameterDeclarations) {
+									expressionSet.put(parameter, ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter))
 								}
-								processableEdges.clear
-								processableEdges += processedEdges
-								processedEdges.clear
 							}
-							template.edge += processableEdges
+							if (!expressionSet.empty) {
+								// Removing original edge from the model - only if there is a valid expression
+								template.edge -= loopEdge
+								val processableEdges = newArrayList(loopEdge)
+								val processedEdges = newArrayList
+								for (parameter : expressionSet.keySet) {
+									val originalExpressions = expressionSet.get(parameter)
+									val expressions = originalExpressions.removeDuplicatedExpressions // Removing the expression duplications (that are evaluated to the same expression)
+									for (processableEdge : processableEdges) {
+										for (expression : expressions) {
+											// Putting variables raising for ALL instance parameters
+					   						val clonedLoopEdge = processableEdge.clone(true, true)
+					   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+												clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
+											}
+											expression.removeGammaElementFromTrace
+											processedEdges += clonedLoopEdge
+										}
+										// Adding a different value if the type is an integer
+										if (originalExpressions.filter(EnumerationLiteralExpression).empty &&
+												expressions.exists[it instanceof IntegerLiteralExpression]) {
+						   					val clonedLoopEdge = processableEdge.clone(true, true)
+											val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
+											val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
+											for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
+												clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, biggerThanMax)
+											}
+											biggerThanMax.removeGammaElementFromTrace
+											processedEdges += clonedLoopEdge
+										}
+									}
+									processableEdges.clear
+									processableEdges += processedEdges
+									processedEdges.clear
+								}
+								template.edge += processableEdges
+							}
 						}
 					}
 				}
@@ -270,22 +274,11 @@ class EnvironmentCreator {
 				// Setting updates, one update may affect multiple queues (full in port events can be connected to multiple instance ports)
 				for (systemPort : it.asyncComposite.ports) {
 					for (inEvent : systemPort.inputEvents) {
-						val expressionList = parameterMap.get(new Pair(systemPort, inEvent))
-						if (expressionList.empty) {
-							val loopEdge = initLoc.createEdge(initLoc)
-							loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
-							loopEdge.addInitializedGuards
-							for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
-								val wrapper = match.instance.type as AsynchronousAdapter
-								val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
-								val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
-								loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), createLiteralExpression => [it.text = "0"])
-							}
-						}
-						else {
-							val expressionSet = expressionList.removeDuplicatedExpressions
-							for (expression : expressionSet) {
-								// New edge is needed in every iteration!
+						val pair = new Pair(systemPort, inEvent)
+						// If the event is not used, the map does not contain this pair
+						if (parameterMap.containsKey(pair)) {
+							val expressionList = parameterMap.get(pair)
+							if (expressionList.empty) {
 								val loopEdge = initLoc.createEdge(initLoc)
 								loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
 								loopEdge.addInitializedGuards
@@ -293,7 +286,22 @@ class EnvironmentCreator {
 									val wrapper = match.instance.type as AsynchronousAdapter
 									val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
 									val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
-									loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), expression, null)
+									loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), createLiteralExpression => [it.text = "0"])
+								}
+							}
+							else {
+								val expressionSet = expressionList.removeDuplicatedExpressions
+								for (expression : expressionSet) {
+									// New edge is needed in every iteration!
+									val loopEdge = initLoc.createEdge(initLoc)
+									loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
+									loopEdge.addInitializedGuards
+									for (match : TopAsyncSystemInEvents.Matcher.on(engine).getAllMatches(it.asyncComposite, systemPort, null, null, inEvent)) {
+										val wrapper = match.instance.type as AsynchronousAdapter
+										val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
+										val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
+										loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), expression, null)
+									}
 								}
 							}
 						}

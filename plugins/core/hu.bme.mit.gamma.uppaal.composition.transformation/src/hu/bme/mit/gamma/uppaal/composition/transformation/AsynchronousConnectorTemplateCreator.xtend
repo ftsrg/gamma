@@ -176,12 +176,7 @@ class AsynchronousConnectorTemplateCreator {
 					for (parameter : parameters) {
 						val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter)
 						if (!expressions.empty) {
-							val valueOfVars = match.event.parameterDeclarations.head.allValuesOfTo
-									.filter(DataVariableDeclaration).filter[it.owner == match.instance]
-							if (valueOfVars.size != 1) {
-								throw new IllegalArgumentException("Not one valueOfVar: " + valueOfVars)
-							}	
-							val valueOfVar = valueOfVars.head
+							val valueOfVar = match.event.getToRaiseValueOfVariable(match.port, parameter, match.instance)
 							// Creating the ...Messages().value expression
 							val scopedIdentifierExp = messageQueueTrace.peekFunction.messageValueScopeExp(messageValue.variable.head)
 							// Creating the ...Value = ...Messages().value

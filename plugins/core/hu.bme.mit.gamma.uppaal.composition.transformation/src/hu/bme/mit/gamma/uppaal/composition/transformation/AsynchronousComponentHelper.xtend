@@ -93,16 +93,20 @@ class AsynchronousComponentHelper {
 	/**
 	 * Places a message insert in a queue equivalent update on the given edge.
 	 */
-	def createQueueInsertion(Edge edge, Port systemPort, Event toRaiseEvent, ComponentInstance inInstance, DataVariableDeclaration variable) {
+	def void createQueueInsertion(Edge edge, Port systemPort, Event toRaiseEvent, ComponentInstance inInstance, DataVariableDeclaration variable) {
 		val wrapper = inInstance.derivedType as AsynchronousAdapter
 		val queue = wrapper.getContainerMessageQueue(systemPort, toRaiseEvent) // In what message queue this event is stored
 		val messageQueueTrace = queue.getTrace(inInstance) // Getting the owner
-		val constRepresentation = toRaiseEvent.getConstRepresentation(systemPort)
-		if (variable === null) {  		
-			edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createLiteralExpression => [it.text = "0"])
-		}
-		else {
-			edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createIdentifierExpression => [it.identifier = variable.variable.head])
+		try {
+			val constRepresentation = toRaiseEvent.getConstRepresentation(systemPort)
+			if (variable === null) {  		
+				edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createLiteralExpression => [it.text = "0"])
+			}
+			else {
+				edge.addPushFunctionUpdate(messageQueueTrace, constRepresentation, createIdentifierExpression => [it.identifier = variable.variable.head])
+			}
+		} catch (IllegalArgumentException e) {
+			// The event is not used, we do not have to do anything
 		}
 	}
 	
