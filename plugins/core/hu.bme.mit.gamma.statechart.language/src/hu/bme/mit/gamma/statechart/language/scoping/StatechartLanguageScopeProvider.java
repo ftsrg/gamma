@@ -30,21 +30,9 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
-import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
-import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
-import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
-import hu.bme.mit.gamma.statechart.statechart.StateNode;
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
@@ -56,13 +44,25 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.phase.InstanceVariableReference;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
 import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
+import hu.bme.mit.gamma.statechart.statechart.Transition;
 
 /**
  * This class contains custom scoping description.
@@ -220,18 +220,10 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				components.remove(context.eContainer());
 				return Scopes.scopeFor(components);
 			}		
-			// Synchronous wrapper specific rules
+			// Asynchronous adapter-specific rules
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 				context instanceof AnyPortEventReference && reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT) {
-				AsynchronousAdapter wrapper = null;
-				if (context.eContainer().eContainer() instanceof AsynchronousAdapter) {
-					// Message queues
-					wrapper = (AsynchronousAdapter) context.eContainer().eContainer();
-				}
-				if (context.eContainer().eContainer().eContainer() instanceof AsynchronousAdapter) {
-					// Control specification
-					wrapper = (AsynchronousAdapter) context.eContainer().eContainer().eContainer();
-				}
+				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				if (wrapper != null) {
 					// Derived feature "allPorts" does not work all the time
 					Set<Port> ports = new HashSet<Port>();
@@ -243,12 +235,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
 					(reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__PORT ||
 					reference == StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT)) {
-				AsynchronousAdapter wrapper = (AsynchronousAdapter) context.eContainer();
+				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllPorts(wrapper));
 			}
 			if ((context instanceof MessageQueue || context instanceof ControlSpecification) &&
 					reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
-				AsynchronousAdapter wrapper = (AsynchronousAdapter) context.eContainer();
+				AsynchronousAdapter wrapper = ecoreUtil.getContainerOfType(context, AsynchronousAdapter.class);
 				Collection<Event> events = new HashSet<Event>();
 				StatechartModelDerivedFeatures.getAllPorts(wrapper).stream()
 					.forEach(it -> events.addAll(StatechartModelDerivedFeatures.getInputEvents(it)));
@@ -268,11 +260,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					// The context is not contained by a component, we rely on default scoping
 					return super.getScope(context, reference);
 				}
-				Collection<Declaration> declarations = getAllParameterDeclarations(component);
+				// No longer necessary due to PortEventReference?
+//				Collection<Declaration> declarations = getAllParameterDeclarations(component);
 				// Important to add the normal declarations as well
 				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
-				declarations.addAll(normalDeclarations);
-				return Scopes.scopeFor(declarations);
+//				declarations.addAll(normalDeclarations);
+				return Scopes.scopeFor(normalDeclarations);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty

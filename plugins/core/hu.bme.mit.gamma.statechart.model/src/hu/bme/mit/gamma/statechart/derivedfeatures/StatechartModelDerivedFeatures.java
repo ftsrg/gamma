@@ -852,6 +852,11 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return true;
 	}
 	
+	public static boolean isEmpty(Transition transition) {
+		return transition.getTrigger() == null && transition.getGuard() == null &&
+			transition.getEffects().isEmpty();
+	}
+	
 	public static StateNode getSourceAncestor(Transition transition) {
 		return getSourceAncestor(transition.getSourceState(), transition.getTargetState());
 	}

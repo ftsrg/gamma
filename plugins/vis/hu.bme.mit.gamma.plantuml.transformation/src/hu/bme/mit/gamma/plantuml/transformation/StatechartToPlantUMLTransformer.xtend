@@ -42,6 +42,8 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class StatechartToPlantUMLTransformer {
 	
 	protected final StatechartDefinition statechart
@@ -352,10 +354,10 @@ class StatechartToPlantUMLTransformer {
 						[H] --> «transition.targetState.name»
 					«ENDIF»
 				«ELSE»
-					«transition.sourceState.name» --> «transition.targetState.name» : «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
+					«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
 				«ENDIF»
 			«ELSE»	
-				«transition.sourceState.name» --> «transition.targetState.name» : «IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
+				«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
 			«ENDIF»
 		'''
 		return transitions
