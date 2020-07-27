@@ -51,12 +51,17 @@ public class StatechartUtil extends ExpressionUtil {
 			transition.setTrigger(trigger);
 		}
 		else {
-			BinaryTrigger binaryTrigger = statechartFactory.createBinaryTrigger();
-			binaryTrigger.setType(type);
-			binaryTrigger.setLeftOperand(transition.getTrigger());
-			binaryTrigger.setRightOperand(trigger);
+			BinaryTrigger binaryTrigger = createTrigger(transition.getTrigger(), trigger, type);
 			transition.setTrigger(binaryTrigger);
 		}
+	}
+	
+	public BinaryTrigger createTrigger(Trigger oldTrigger, Trigger newTrigger, BinaryType type) {
+		BinaryTrigger binaryTrigger = statechartFactory.createBinaryTrigger();
+		binaryTrigger.setType(type);
+		binaryTrigger.setLeftOperand(oldTrigger);
+		binaryTrigger.setRightOperand(newTrigger);
+		return binaryTrigger;
 	}
 	
 	public int evaluateMilliseconds(TimeSpecification time) {

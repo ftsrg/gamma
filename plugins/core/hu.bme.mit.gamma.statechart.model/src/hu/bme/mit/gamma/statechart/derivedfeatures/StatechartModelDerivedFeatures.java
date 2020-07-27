@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.derivedfeatures;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -321,6 +322,13 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return eventDeclaration.getDirection();
 	}
 	
+	public static BigInteger getPriorityValue(Event event) {
+		BigInteger priority = event.getPriority();
+		if (priority == null) {
+			return BigInteger.ZERO;
+		}
+		return priority;
+	}
 	
 	public static List<EventDeclaration> getAllEventDeclarations(Port port) {
 		return getAllEventDeclarations(port.getInterfaceRealization().getInterface());

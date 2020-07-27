@@ -10,57 +10,120 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.eventpriority.transformation
 
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Trigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
-import java.util.logging.Level
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.Collection
 import java.util.logging.Logger
 
-import static com.google.common.base.Preconditions.checkState
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class EventPriorityTransformer {
 	
 	protected final Package gammaPackage
 	protected final StatechartDefinition statechart
 	
-	protected final extension EventPriorityDeterminer eventPriorityDeterminer = new EventPriorityDeterminer
-
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	
+	protected final extension InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
+	protected final extension StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
+	
 	protected Logger logger = Logger.getLogger("Gamma")
 	
 	new(StatechartDefinition statechart) {
 		// No cloning to save resources, we process the original model
-		this.gammaPackage = statechart.eContainer as Package
+		this.gammaPackage = statechart.containingPackage
 		this.statechart = statechart
 	}
 	
 	def execute() {
-		if (!(this.statechart.transitionPriority == TransitionPriority.OFF || 
-				this.statechart.transitionPriority == TransitionPriority.VALUE_BASED)) {
-			logger.log(Level.WARNING ,"Transition priority is neither off nor value-based: " + this.statechart.transitionPriority)
-		}
 		for (transition : statechart.transitions) {
-			if (transition.isTransitionTriggerPrioritized) {
-				val trigger = transition.trigger
-				checkState(trigger instanceof EventTrigger,
-					"The trigger of the transition is not an event trigger: " + trigger)
-				if (trigger instanceof EventTrigger) {
-					val eventReference = trigger.eventReference
-					checkState(eventReference instanceof PortEventReference,
-						"The event reference is not a port event reference: " + eventReference)
-					if (eventReference instanceof PortEventReference) {
-						val event = eventReference.event
-						checkState(transition.priority === null || transition.priority.intValue == 0 ||
-							transition.priority == event.priority,
-							"The transition priority is not null or 0: " + transition.priority)
-						transition.priority = event.priority
-						this.statechart.transitionPriority = TransitionPriority.VALUE_BASED
-					}
+			transition.extendTransition
+		}
+		return gammaPackage
+	}
+	
+	def extendTransition(Transition transition) {
+		val trigger = transition.trigger
+		if (trigger !== null) {
+			val eventTriggers = trigger.getSelfAndAllContentsOfType(EventTrigger)
+			for (eventTrigger : eventTriggers) {
+				eventTrigger.extendTrigger
+			}
+		}
+	}
+	
+	///
+	
+	def dispatch void extendTrigger(Trigger trigger) {
+		throw new IllegalArgumentException("Not supported trigger type: " + trigger)
+	}
+	
+	// Note that not-triggers and other any triggers are not supported
+	
+	def dispatch void extendTrigger(BinaryTrigger trigger) {
+		// Not needed as trigger.getSelfAndAllContentsOfType(EventTrigger) is called above
+	}
+	
+	def dispatch void extendTrigger(EventTrigger trigger) {
+		val eventReference = trigger.eventReference
+		if (eventReference instanceof PortEventReference) {
+			val component = trigger.containingComponent
+			val higherPriorityEvents = eventReference.higherPriorityEvents
+			var Trigger actualTrigger = trigger
+			for (higherPriorityEvent : higherPriorityEvents) {
+				for (port : component.ports.filter[it.inputEvents.contains(higherPriorityEvent)]) {
+					val notTrigger = createUnaryTrigger => [
+						it.type = UnaryType.NOT
+						it.operand = createEventTrigger => [
+							it.eventReference = createPortEventReference => [
+								it.port = port
+								it.event = higherPriorityEvent
+							]
+						]
+					]
+					val andTrigger = createTrigger(actualTrigger.clone /*Important due to replace*/, notTrigger, BinaryType.AND)
+					andTrigger.change(actualTrigger, component)
+					andTrigger.replace(actualTrigger)
+					actualTrigger = andTrigger
 				}
 			}
 		}
-		return gammaPackage
+	}
+	
+	///
+		
+	def dispatch Collection<Event> getHigherPriorityEvents(EventReference eventReference) {
+		throw new IllegalArgumentException("Not supported reference type: " + eventReference)
+	}
+	
+	// Note that any port event references and timeout references are not supported
+	
+	def dispatch Collection<Event> getHigherPriorityEvents(PortEventReference eventReference) {
+		val component = eventReference.getContainerOfType(Component)
+		return eventReference.event.getHigherPriorityEvents(component)
+	}
+	
+	///
+	
+	def Collection<Event> getHigherPriorityEvents(Event event, Component component) {
+		val priority = event.priorityValue
+		val events = component.allPorts.map[it.inputEvents].flatten
+		return events.filter[it.priorityValue > priority].toSet
 	}
 	
 }
