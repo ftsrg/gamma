@@ -798,6 +798,32 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return (EventDeclaration) event.eContainer();
 	}
 	
+	public static Collection<PortEventReference> getPortEventReferences(Transition transition) {
+		return ecoreUtil.getAllContentsOfType(transition.getTrigger(),
+				PortEventReference.class);
+	}
+	
+	public static Collection<PortEventReference> getPortEventReferences(
+			Collection<Transition> transitions) {
+		Set<PortEventReference> portEventReferenes = new HashSet<PortEventReference>();
+		for (Transition transition : transitions) {
+			portEventReferenes.addAll(getPortEventReferences(transition));
+		}
+		return portEventReferenes;
+	}
+	
+	public static Collection<Transition> getSelfAndPrecedingTransitions(Transition transition) {
+		StateNode source = transition.getSourceState();
+		Set<Transition> transitions = new HashSet<Transition>();
+		transitions.add(transition);
+		if (!(source instanceof State)) {
+			for (Transition incomingTransition : getIncomingTransitions(source)) {
+				transitions.addAll(getSelfAndPrecedingTransitions(incomingTransition));
+			}
+		}
+		return transitions;
+	}
+	
 	public static boolean isSameRegion(Transition transition) {
 		return getParentRegion(transition.getSourceState()) == getParentRegion(transition.getTargetState());
 	}

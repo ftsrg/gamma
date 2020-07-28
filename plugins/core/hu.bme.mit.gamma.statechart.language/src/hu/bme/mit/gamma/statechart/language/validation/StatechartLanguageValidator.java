@@ -73,6 +73,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.EventReference;
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
@@ -395,6 +396,24 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		} catch (IllegalArgumentException e) {
 			// Untransformable expression, it contains variable declarations
+		}
+	}
+	
+	@Check
+	public void checkPortEventParameterReference(EventParameterReferenceExpression expression) {
+		Port port = expression.getPort();
+		Event event = expression.getEvent();
+		if (event.getPersistency() == Persistency.TRANSIENT) {
+			Transition transition = ecoreUtil.getContainerOfType(expression, Transition.class);
+			if (transition != null) {
+				Collection<Transition> transitions = StatechartModelDerivedFeatures.getSelfAndPrecedingTransitions(transition);
+				// Only actual PortRventReferences are returned (no AnyPortEventReferences) even if they are in a NOT trigger
+				Collection<PortEventReference> references =	StatechartModelDerivedFeatures.getPortEventReferences(transitions);
+				if (references.stream().noneMatch(it -> it.getPort() == port && it.getEvent() == event)) {
+					warning("None of the preceding transitions are triggered by this port-event combination.",
+							InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT);
+				}
+			}
 		}
 	}
 	
