@@ -95,15 +95,13 @@ class SystemReducer {
 		val target = transition.targetState
 		log(Level.INFO, "Removing transition " + transition.sourceState.name + " -> " + target.name)
 		transition.remove
-		if (target.eContainer !== null) {
-			if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
-				for (outgoingTransition : target.outgoingTransitions
-						.reject[it === transition || it.eContainer === null] /* Addressing loops */) {
-					outgoingTransition.removeTransition
-				}
-				log(Level.INFO, "Removing state node " + target.name)
-				target.remove
+		if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
+			for (outgoingTransition : target.outgoingTransitions
+					.reject[it === transition] /* Addressing loops */) {
+				outgoingTransition.removeTransition
 			}
+			log(Level.INFO, "Removing state node " + target.name)
+			target.remove
 		}
 	}
 	
