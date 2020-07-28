@@ -10,19 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
-import hu.bme.mit.gamma.statechart.statechart.CompositeElement
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.Region
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
 import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopRegions
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -36,6 +37,7 @@ class SystemReducer {
 	
 	final ViatraQueryEngine engine
 	
+	final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	final extension Logger logger = Logger.getLogger("GammaLogger")
 
 	new(ResourceSet resourceSet) {
@@ -90,19 +92,19 @@ class SystemReducer {
 	}
 	
 	private def void removeTransition(Transition transition) {
-		val statechart = transition.eContainer as StatechartDefinition
 		val target = transition.targetState
-		if (target.incomingTransitions.size == 1) {
-			for (outgoingTransition : target.outgoingTransitions
-					.reject[it === transition] /* Addressing loop edges */) {
-				outgoingTransition.removeTransition
+		log(Level.INFO, "Removing transition " + transition.sourceState.name + " -> " + target.name)
+		transition.remove
+		if (target.eContainer !== null) {
+			if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
+				for (outgoingTransition : target.outgoingTransitions
+						.reject[it === transition || it.eContainer === null] /* Addressing loops */) {
+					outgoingTransition.removeTransition
+				}
+				log(Level.INFO, "Removing state node " + target.name)
+				target.remove
 			}
-			val region = target.parentRegion
-			log(Level.INFO, "Removing state node " + target.name)
-			region.stateNodes -= target
 		}
-		log(Level.INFO, "Removing transition " + transition.sourceState.name + " -> " + transition.targetState.name)
-		statechart.transitions -= transition
 	}
 	
 	private def void removeUnnecessaryRegion(Region region) {
@@ -114,8 +116,7 @@ class SystemReducer {
 			statechart.transitions -= (states.map[it.incomingTransitions].flatten + 
 				states.map[it.outgoingTransitions].flatten).toList
 			// Removing region
-			val compositeElement = region.eContainer as CompositeElement
-			compositeElement.regions -= region
+			region.remove
 			log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)
 		}
 	}
