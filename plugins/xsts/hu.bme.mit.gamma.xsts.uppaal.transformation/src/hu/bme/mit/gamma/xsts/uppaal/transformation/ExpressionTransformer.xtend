@@ -45,6 +45,8 @@ import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
 
+import static com.google.common.base.Preconditions.checkState
+
 class ExpressionTransformer {
 	
 	protected final Traceability traceability
@@ -94,7 +96,17 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(NotExpression expression) {
 		// Needed as UPPAAL cannot work with negations and OR-s in clock expressions
-		return expression.operand.negate.transform
+		val negatedOperand = expression.operand.negate
+		// It can be an atomic expression, then the result is a NotExpression
+		if (negatedOperand instanceof NotExpression) {
+			val operand = negatedOperand.operand
+			checkState(operand instanceof ReferenceExpression)
+			return createNegationExpression => [
+				it.negatedExpression = operand.transform
+			]
+		}
+		// Composite expression
+		return negatedOperand.transform
 	}
 	
 	def dispatch Expression transform(OrExpression expression) {
