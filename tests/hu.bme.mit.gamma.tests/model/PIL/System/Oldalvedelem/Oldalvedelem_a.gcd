@@ -5,7 +5,7 @@ import "Types/Types.gcd"
 import "Jelzo/TransientJelzo.gcd"
 import "Valto/TransientValto.gcd"
 
-cascade Oldalvedelem_a [
+sync Oldalvedelem_a [
 	port Felso_Fojelzo1 : requires F_VU_lez
 
 	port Also_Fojelzo0 : requires Jelzo_Also
