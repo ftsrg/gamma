@@ -1,0 +1,18 @@
+import "Oldalvedelem_a.gcd"
+
+code {
+	component : Oldalvedelem_a
+	language : java
+}
+
+analysis {
+	component : Oldalvedelem_a
+	language : Theta
+}
+
+verification {
+	language : Theta
+	file : "Oldalvedelem_a.xsts"
+	query-file : "CustomQueriesOldalvedelem_a.prop"
+	test-language : java
+}

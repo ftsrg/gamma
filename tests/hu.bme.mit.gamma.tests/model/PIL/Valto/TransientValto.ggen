@@ -1,0 +1,6 @@
+import "TransientValto.gcd"
+
+code {
+	component : Valto
+	language : java
+}
