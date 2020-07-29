@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EventGroup
+import hu.bme.mit.gamma.xsts.model.EventParameterGroup
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -29,7 +30,7 @@ class OrthogonalActionTransformer {
 	
 	def void transform(XSTS xSts) {
 		val eventVariables = xSts.variableGroups
-			.filter[it.annotation instanceof EventGroup]
+			.filter[it.annotation instanceof EventGroup || it.annotation instanceof EventParameterGroup]
 			.map[it.variables].flatten.toSet
 		if (!eventVariables.empty) {
 			xSts.variableInitializingAction.transform(eventVariables)
