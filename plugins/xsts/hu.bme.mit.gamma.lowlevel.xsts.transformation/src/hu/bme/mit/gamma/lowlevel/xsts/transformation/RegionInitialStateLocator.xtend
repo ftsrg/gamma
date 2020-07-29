@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.EntryState
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
 import hu.bme.mit.gamma.statechart.lowlevel.model.InitialState
+import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
@@ -57,6 +58,11 @@ class RegionInitialStateLocator {
 				Transition lowlevelTransition, State lowlevelTarget) {
 			return lowlevelEntryState.createSingleXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
 		}
+		// A single merge state after the entry state is still supported
+		protected def dispatch createRecursiveXStsForwardNodeConnection(MergeState lowlevelMergeState,
+				Transition lowlevelTransition, State lowlevelTarget) {
+			return lowlevelMergeState.createSingleXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
+		}
 		
 		protected override dispatch createRecursiveXStsForwardNodeConnection(ChoiceState lowlevelChoice,
 				Transition lowlevelTransition, State lowlevelTarget) {
@@ -89,6 +95,11 @@ class RegionInitialStateLocator {
 		protected def dispatch createRecursiveXStsForwardNodeConnection(EntryState lowlevelEntryState,
 				Transition lowlevelTransition, State lowlevelTarget) {
 			return lowlevelEntryState.createSimpleRecursiveXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
+		}
+		// A single merge state after the entry state is still supported
+		protected def dispatch createRecursiveXStsForwardNodeConnection(MergeState lowlevelMergeState,
+				Transition lowlevelTransition, State lowlevelTarget) {
+			return lowlevelMergeState.createSimpleRecursiveXStsForwardNodeConnection(lowlevelTransition, lowlevelTarget)
 		}
 		
 		protected override dispatch createRecursiveXStsForwardNodeConnection(ChoiceState lowlevelChoiceState,
