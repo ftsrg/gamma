@@ -772,13 +772,18 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 				(target instanceof MergeState || source instanceof JoinState)) {
 			error("Transitions cannot connect choice or fork states to merge or join states.", StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
 		}
-		if (source instanceof EntryState && target instanceof MergeState) {
-			Transition outgoingTransition = StatechartModelDerivedFeatures.getOutgoingTransitions(target).get(0);
-			StateNode targetState = outgoingTransition.getTargetState();
-			if (!(targetState instanceof ChoiceState || targetState instanceof ForkState || 
-				targetState instanceof State)) {
-				error("Transitions cannot connect an entry node to a merge that is connected to a pseudo state that is not a choice, fork or normal state.",
-					StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+		if (source instanceof EntryState) { 
+			if (target instanceof JoinState) {
+				error("Transitions cannot connect entry states to join states.", StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+			}
+			else if (target instanceof MergeState) {
+				Transition outgoingTransition = StatechartModelDerivedFeatures.getOutgoingTransitions(target).get(0);
+				StateNode targetState = outgoingTransition.getTargetState();
+				if (!(targetState instanceof ChoiceState || targetState instanceof ForkState || 
+					targetState instanceof State)) {
+					error("Transitions cannot connect an entry node to a merge that is connected to a pseudo state that is not a choice, fork or normal state.",
+						StatechartModelPackage.Literals.TRANSITION__TARGET_STATE);
+				}
 			}
 		}
 	}
