@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransf
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -39,7 +40,6 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class GammaToXSTSTransformer {
@@ -105,8 +105,8 @@ class GammaToXSTSTransformer {
 			xSts.transform
 			// Before optimize actions
 		}
-		// Optimizing - system in events can be reset after the merged transition
-		xSts.resetInEventsAfterMergedAction
+		// Optimizing - system in events (but not PERSISTENT parameters) can be reset after the merged transition
+		xSts.resetInEventsAfterMergedAction(gammaComponent)
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -315,20 +315,18 @@ class GammaToXSTSTransformer {
 		checkState(duplications.empty, "The XSTS contains multiple type declarations with the same name:" + duplications)
 	}
 	
-	protected def void resetInEventsAfterMergedAction(XSTS xSts) {
-		val inEventVariables = xSts.inEventAction.writtenVariables
-		val newMergedAction = createSequentialAction
-		newMergedAction.actions += xSts.mergedAction
-		for (inEventVariable : inEventVariables) {
-			val type = inEventVariable.type
-			newMergedAction.actions += createAssignmentAction => [
-				it.lhs = createReferenceExpression => [
-					it.declaration = inEventVariable
-				]
-				it.rhs = type.defaultExpression
+	protected def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
+		val inEventAction = xSts.inEventAction
+		// Maybe still not perfect?
+		if (inEventAction instanceof CompositeAction) {
+			val clonedInEventAction = inEventAction.clone
+			// Not PERSISTENT parameters
+			val resetAction = clonedInEventAction.resetEverythingExceptPersistentParameters(type)
+			xSts.mergedAction = createSequentialAction => [
+				it.actions += xSts.mergedAction
+				it.actions += resetAction
 			]
 		}
-		xSts.mergedAction = newMergedAction
 	}
 	
 	protected def optimize(XSTS xSts) {

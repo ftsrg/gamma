@@ -88,7 +88,7 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(NotExpression expression) {
-		return "!" + expression.operand.serialize
+		return '''!(«expression.operand.serialize»)'''
 	}
 	
 	def dispatch String serialize(OrExpression expression) {
@@ -100,11 +100,11 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(AndExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " && "»«operand.serialize»«ENDFOR»)'''
+		return '''(«FOR operand : expression.operands SEPARATOR " && "»(«operand.serialize»)«ENDFOR»)'''
 	}
 	
 	def dispatch String serialize(ImplyExpression expression) {
-		return '''(!«expression.leftOperand.serialize» || «expression.rightOperand.serialize»)'''
+		return '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)'''
 	}
 	
 	def dispatch String serialize(IfThenElseExpression expression) {
