@@ -82,7 +82,7 @@ class EntryActionRetriever {
 			val xStsStateAssumption = lowlevelParentState.createSingleXStsStateAssumption
 			// Action taken only if the state is "active" (assume action)
 			val xStsStateEntryAction = xStsStateAssumption.createIfAction(lowlevelParentState.entryAction.transformAction)
-			if (lowlevelGrandparentRegion.hasOrthogonalRegion) {
+			if (lowlevelGrandparentRegion.hasOrthogonalRegion  && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region exit actions
 				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionEntryActions as ParallelAction => [
 					it.actions += xStsStateEntryAction

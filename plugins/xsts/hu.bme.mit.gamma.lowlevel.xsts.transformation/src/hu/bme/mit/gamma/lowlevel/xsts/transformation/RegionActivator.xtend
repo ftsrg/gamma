@@ -92,7 +92,7 @@ class RegionActivator {
 			// Recursion
 			it.actions += lowlevelParentState.createRecursiveXStsParentStateActivatingActionWithOrthogonality(lowlevelTopState)
 			// This level
-			if (lowlevelGrandparentRegion.hasOrthogonalRegion) {
+			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal
 				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionActivatingAction as ParallelAction => [
 					it.actions += singleXStsParentStateActivatingAction

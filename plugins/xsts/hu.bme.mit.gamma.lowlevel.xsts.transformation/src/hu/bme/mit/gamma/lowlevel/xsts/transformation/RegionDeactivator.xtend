@@ -74,7 +74,7 @@ class RegionDeactivator {
 		val lowlevelGrandparentRegion = lowlevelParentState.parentRegion
 		val singleXStsRegionDeactivatingAction = lowlevelGrandparentRegion.createSingleXStsRegionDeactivatingAction
 		return createSequentialAction => [
-			if (lowlevelGrandparentRegion.hasOrthogonalRegion) {
+			if (lowlevelGrandparentRegion.hasOrthogonalRegion && !lowlevelGrandparentRegion.stateNodes.contains(lowlevelTopState)) {
 				// Orthogonal region
 				it.actions += lowlevelGrandparentRegion.createRecursiveXStsOrthogonalRegionDeactivatingAction as ParallelAction => [
 					it.actions += singleXStsRegionDeactivatingAction
