@@ -60,9 +60,6 @@ class SystemReducer {
 		for (region : regionMatcher.allValuesOfregion) {
 			region.removeUnnecessaryRegion
 		}
-		for (transition : statecharts) {
-			
-		}
 		// Statechart optimizing
 		for (statechart : statecharts) {
 			if (statechart.regions.empty || !simpleInstancesMatcher.hasMatch(null, statechart)) {
@@ -94,27 +91,36 @@ class SystemReducer {
 		val target = transition.targetState
 		log(Level.INFO, "Removing transition " + transition.sourceState.name + " -> " + target.name)
 		transition.remove
-		if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
-			for (outgoingTransition : target.outgoingTransitions
-					.reject[it === transition] /* Addressing loops */) {
-				outgoingTransition.removeTransition
+		try {
+			if (target.incomingTransitions.size == 0 /* 0 due to transition.remove */) {
+				for (outgoingTransition : target.outgoingTransitions
+						.reject[it === transition] /* Addressing loops */) {
+					outgoingTransition.removeTransition
+				}
+				log(Level.INFO, "Removing state node " + target.name)
+				target.remove
 			}
-			log(Level.INFO, "Removing state node " + target.name)
-			target.remove
+		} catch (NullPointerException e) {
+			// The ancestor of the target has already been removed
 		}
 	}
 	
 	private def void removeUnnecessaryRegion(Region region) {
 		val states = region.states
-		if (states.forall[!it.composite && it.outgoingTransitions.empty &&
-				it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
-			// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
-			val statechart = region.containingStatechart
-			statechart.transitions -= (states.map[it.incomingTransitions].flatten + 
-				states.map[it.outgoingTransitions].flatten).toList
-			// Removing region
-			region.remove
-			log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)
+		try {
+			if (states.forall[!it.composite && it.outgoingTransitions.empty &&
+					it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
+				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
+				val statechart = region.containingStatechart
+				statechart.transitions -= (states.map[it.incomingTransitions].flatten + 
+					states.map[it.outgoingTransitions].flatten).toList
+				// Removing region
+				region.remove
+				log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)
+			}
+		} catch (NullPointerException e) {
+			// An ancestor of a state has already been removed
+			// Transitions are transitions are checked again, no need to bother with them here
 		}
 	}
 	
