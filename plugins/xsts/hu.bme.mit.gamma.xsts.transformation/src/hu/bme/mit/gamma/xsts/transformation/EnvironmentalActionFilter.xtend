@@ -22,7 +22,6 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Set
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -47,7 +46,7 @@ class EnvironmentalActionFilter {
 		for (port : component.allConnectedSimplePorts) {
 			val statechart = port.containingStatechart
 			val instance = statechart.referencingComponentInstance
-			for (eventDeclaration : port.interfaceRealization.interface.allEventDeclarations) {
+			for (eventDeclaration : port.allEventDeclarations) {
 				val event = eventDeclaration.event
 				necessaryNames += customizeInputName(event, port, instance)
 				necessaryNames += customizeOutputName(event, port, instance)
@@ -89,6 +88,7 @@ class EnvironmentalActionFilter {
 	
 	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
 		val xSts = action.containingXSTS
+		val xStsAssignmentActions = action.getAllContentsOfType(AssignmentAction)
 		for (systemPort : component.allPorts) {
 			val connectedSimplePorts = systemPort.allConnectedSimplePorts
 			val size = connectedSimplePorts.size
@@ -118,8 +118,8 @@ class EnvironmentalActionFilter {
 						val parameters = event.parameterDeclarations
 						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
 						val xStsBoundEventVariable = xSts.getVariable(xStsBoundEventName)
-						for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
-								.filter[it.lhs.declaration === xStsBoundEventVariable].toIterable) {
+						for (xStsAssignment : xStsAssignmentActions
+								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
 							// "Binding" the variable 
 							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
 						}
@@ -131,8 +131,8 @@ class EnvironmentalActionFilter {
 							val boundParameter = boundParameters.get(j)
 							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
 							val xStsBoundParameterVariable = xSts.getVariable(xStsBoundParameterName)
-							for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction)
-									.filter[it.lhs.declaration === xStsBoundParameterVariable].toIterable) {
+							for (xStsAssignment : xStsAssignmentActions
+									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
 								// "Binding" the variable 
 								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
 							}
@@ -145,7 +145,7 @@ class EnvironmentalActionFilter {
 	
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
-		for (xStsAssignment : EcoreUtil.getAllContents(action, true).filter(AssignmentAction).toIterable) {
+		for (xStsAssignment : action.getAllContentsOfType(AssignmentAction)) {
 			val declaration = xStsAssignment.lhs.declaration
 			val name = declaration.name
 			if (!necessaryNames.contains(name)) {

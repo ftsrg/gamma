@@ -114,10 +114,10 @@ class EventConnector {
 			}
 		}
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignmentActions) {
-			xStsDeletableAssignmentAction.delete // This could be tried with remove
+			xStsDeletableAssignmentAction.remove // To speed up the process
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
-			xStsDeletableVariable.delete
+			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
 		}
 	}
 	
