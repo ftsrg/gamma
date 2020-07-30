@@ -114,7 +114,7 @@ class EventConnector {
 			}
 		}
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignmentActions) {
-			xStsDeletableAssignmentAction.delete
+			xStsDeletableAssignmentAction.delete // This could be tried with remove
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.delete

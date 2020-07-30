@@ -452,6 +452,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			error("Else expressions must be an atomic guard in the expression.", container, elseExpression.eContainingFeature());
 		}
 		Transition transition = (Transition) container;
+		if (transition.getTrigger() != null) {
+			error("Else expressions cannot be used with triggers.", container, elseExpression.eContainingFeature());
+		}
 		StateNode node = transition.getSourceState();
 		List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 		outgoingTransitions.remove(transition);

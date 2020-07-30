@@ -321,6 +321,7 @@ class GammaToXSTSTransformer {
 		// It is possible that in some instances of the same region, some states are removed due to optimization
 		var id = 0
 		for (type : types) {
+			// It does not mess up traceability, the variable type names are not important
 			val typeName = type.name
 			if (duplications.contains(typeName)) {
 				type.name = typeName + id++

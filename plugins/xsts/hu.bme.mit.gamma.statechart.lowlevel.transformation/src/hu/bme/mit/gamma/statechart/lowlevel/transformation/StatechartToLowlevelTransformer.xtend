@@ -352,25 +352,35 @@ class StatechartToLowlevelTransformer {
 		if (guard !== null) {
 			// Transforming else expressions
 			if (guard instanceof ElseExpression) {
+				var Expression transformedGuard
 				val source = transition.sourceState
 				val lowlevelOutgoingTransitions = source.outgoingTransitions
 					.reject[it === transition]
 				if (lowlevelOutgoingTransitions.empty) {
-					guard = createTrueExpression
+					transformedGuard = createTrueExpression
 				}
 				else {
-					val andExpression = createAndExpression => [
-						for (otherGuard : lowlevelOutgoingTransitions
-												.map[it.guard]) {
+					transformedGuard = createAndExpression => [
+						for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
 							it.operands += createNotExpression => [
-								it.operand = otherGuard.clone(true, true)
+								val otherTrigger = lowlevelOutgoingTransition.trigger
+								val otherGuard = lowlevelOutgoingTransition.guard
+								it.operand = createAndExpression => [
+									// By default, the transformTrigger returns false expression for null
+									if (otherTrigger !== null) {
+										it.operands += otherTrigger.transformTrigger
+									}
+									it.operands += otherGuard.transformExpression
+								]
 							]
 						}
 					]
-					guard = andExpression
 				}
+				lowlevelGuardList += transformedGuard
 			}
-			lowlevelGuardList += guard.transformExpression // Guard
+			else {
+				lowlevelGuardList += guard.transformExpression
+			}
 		}
 		if (lowlevelGuardList.empty) {
 			return null
