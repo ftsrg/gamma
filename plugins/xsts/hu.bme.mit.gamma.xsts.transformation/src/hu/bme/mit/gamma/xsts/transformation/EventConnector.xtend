@@ -10,11 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -27,8 +32,13 @@ class EventConnector {
 	protected new() {}
 	// Auxiliary objects
 	protected extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
+		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
+		val xStsDeletableAssignmentActions = newHashSet
+		val xStsDeletableVariables = newHashSet
 		for (channel : component.channels) {
 			val providedPort = channel.providedPort.port
 			val requiredPorts = newArrayList
@@ -56,7 +66,8 @@ class EventConnector {
 							val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 							val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
 							if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
-								xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
+								xStsDeletableAssignmentActions += xStsOutEventVariable.connectEvents(xStsInEventVariable, xStsAssignmentActions)
+								xStsDeletableVariables += xStsOutEventVariable
 								// In-parameters
 								for (parameter : event.parameterDeclarations) {
 									val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
@@ -65,7 +76,8 @@ class EventConnector {
 										val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
 										val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
 										if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-											xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
+											xStsDeletableAssignmentActions += xStsOutParameterVariable.connectEvents(xStsInParameterVariable, xStsAssignmentActions)
+											xStsDeletableVariables += xStsOutParameterVariable
 										}
 									}
 								}
@@ -80,7 +92,8 @@ class EventConnector {
 							val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
 							val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
 							if (xStsInEventVariable !== null) { // Can be null due to XSTS optimization
-								xStsOutEventVariable.changeAndDelete(xStsInEventVariable, xSts)
+								xStsDeletableAssignmentActions += xStsOutEventVariable.connectEvents(xStsInEventVariable, xStsAssignmentActions)
+								xStsDeletableVariables += xStsOutEventVariable
 								// Out-parameters
 								for (parameter : event.parameterDeclarations) {
 									val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
@@ -89,7 +102,8 @@ class EventConnector {
 										val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
 										val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
 										if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization
-											xStsOutParameterVariable.changeAndDelete(xStsInParameterVariable, xSts)
+											xStsDeletableAssignmentActions += xStsOutParameterVariable.connectEvents(xStsInParameterVariable, xStsAssignmentActions)
+											xStsDeletableVariables += xStsOutParameterVariable
 										}
 									}
 								}
@@ -99,6 +113,28 @@ class EventConnector {
 				}
 			}
 		}
+		for (xStsDeletableAssignmentAction : xStsDeletableAssignmentActions) {
+			xStsDeletableAssignmentAction.delete
+		}
+		for (xStsDeletableVariable : xStsDeletableVariables) {
+			xStsDeletableVariable.delete
+		}
+	}
+	
+	protected def connectEvents(VariableDeclaration xStsOutVariable,
+			VariableDeclaration xStsInVariable, List<AssignmentAction> xStsAssignmentActions) {
+		val xStsDeletableAssignmentActions = newHashSet
+		for (xStsAssignmentAction : xStsAssignmentActions) {
+			val xStsDeclaration = xStsAssignmentAction.lhs.declaration
+			if (xStsDeclaration === xStsOutVariable) {
+				val xStsNewAssignmentAction = xStsAssignmentAction.clone => [
+					it.lhs.declaration = xStsInVariable
+				]
+				xStsAssignmentAction.appendToAction(xStsNewAssignmentAction)
+				xStsDeletableAssignmentActions += xStsAssignmentAction
+			}
+		}
+		return xStsDeletableAssignmentActions
 	}
 	
 }

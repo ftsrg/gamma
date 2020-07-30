@@ -46,6 +46,16 @@ public class XSTSActionUtil {
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
+	public void appendToAction(Action pivot, Action action) {
+		EObject container = pivot.eContainer();
+		if (!(container instanceof SequentialAction)) {
+			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
+			gammaEcoreUtil.replace(sequentialAction, pivot);
+			sequentialAction.getActions().add(pivot);
+		}
+		gammaEcoreUtil.appendTo(pivot, action);
+	}
+	
 	public VariableDeclaration getVariable(XSTS xSts, String name) {
 		List<VariableDeclaration> variables = xSts.getVariableDeclarations().stream()
 				.filter(it -> it.getName().equals(name)).collect(Collectors.toList());

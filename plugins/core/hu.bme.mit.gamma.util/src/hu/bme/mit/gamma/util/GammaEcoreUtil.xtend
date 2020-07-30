@@ -93,6 +93,15 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void appendTo(EObject pivot, EObject object) {
+		val container = pivot.eContainer
+		val reference = pivot.eContainmentFeature
+		// "Many" cardinality is mandatory
+		val list = container.eGet(reference) as List<EObject>
+		val index = pivot.index + 1
+		list.add(index, object)
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T
