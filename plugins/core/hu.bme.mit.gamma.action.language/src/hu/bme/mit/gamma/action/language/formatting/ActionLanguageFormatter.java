@@ -16,14 +16,6 @@ import org.eclipse.xtext.formatting.impl.FormattingConfig;
 
 import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 
-/**
- * This class contains custom formatting declarations.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#formatting
- * on how and when to use it.
- * 
- * Also see {@link org.eclipse.xtext.xtext.XtextFormatter} as an example
- */
 public class ActionLanguageFormatter extends AbstractDeclarativeFormatter {
 	
 	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();

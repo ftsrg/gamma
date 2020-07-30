@@ -251,7 +251,7 @@ class CompositeToUppaalTransformer {
 		this.traceModel = new Trace(this.manipulation, this.traceRoot)
 		// Auxiliary objects
 		this.triggerTransformer = new TriggerTransformer(this.traceModel)
-		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.traceModel)
+		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.traceModel)
 		this.expressionCopier = new ExpressionCopier(this.manipulation, this.traceModel)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.variableTransformer = new VariableTransformer(this.ntaBuilder, this.manipulation, this.traceModel)

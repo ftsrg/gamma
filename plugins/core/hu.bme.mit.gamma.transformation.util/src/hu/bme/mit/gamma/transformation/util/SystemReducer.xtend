@@ -77,6 +77,7 @@ class SystemReducer {
 					source.containingStatechart
 					target.containingStatechart
 				} catch (NullPointerException exception) {
+					log(Level.INFO, "Removing transition " + source.name + " -> " + target.name)
 					EcoreUtil.delete(transition)
 				}
 			}

@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -253,18 +252,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Component component = null;
-				try {
-					component = StatechartModelDerivedFeatures.getContainingComponent(context);
-				} catch (IllegalArgumentException exception) {
-					// The context is not contained by a component, we rely on default scoping
-					return super.getScope(context, reference);
-				}
-				// No longer necessary due to PortEventReference?
-//				Collection<Declaration> declarations = getAllParameterDeclarations(component);
-				// Important to add the normal declarations as well
 				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
-//				declarations.addAll(normalDeclarations);
 				return Scopes.scopeFor(normalDeclarations);
 			}
 		} catch (NullPointerException e) {
@@ -284,19 +272,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		}
 		types.addAll(_package.getTypeDeclarations());
 		return types;
-	}
-
-	private Collection<Declaration> getAllParameterDeclarations(Component component) {
-		Set<Declaration> declarations = new HashSet<Declaration>(component.getParameterDeclarations());
-		for (Interface gammaInterface : component.getPorts().stream()
-				.map(it -> it.getInterfaceRealization().getInterface()).collect(Collectors.toSet())) {
-			for (Event event : StatechartModelDerivedFeatures.getAllEvents(gammaInterface)) {
-				for (Declaration declaration : event.getParameterDeclarations()) {
-					declarations.add(declaration);
-				}
-			}
-		}
-		return declarations;
 	}
 	
 	private static Collection<StateNode> stateNodesForTransition(final Transition transition) {

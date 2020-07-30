@@ -130,7 +130,7 @@ class OrchestratorCreator {
 		// It is important that resetableVariables is not cloned, it is the same collection! (Variables are added later in the collection)
 		this.resetableVariables = resetableVariables
 		this.isStableVar = isStableVar
-		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.ntaBuilder, this.modelTrace)
+		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.modelTrace)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
 		this.assignmentExpressionCreator = assignmentExpressionCreator
 		this.compareExpressionCreator = compareExpressionCreator

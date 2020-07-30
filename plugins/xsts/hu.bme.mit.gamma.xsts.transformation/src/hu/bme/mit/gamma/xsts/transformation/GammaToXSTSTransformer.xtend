@@ -41,6 +41,8 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import java.util.logging.Logger
+import java.util.logging.Level
 
 class GammaToXSTSTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -58,6 +60,8 @@ class GammaToXSTSTransformer {
 	// Scheduling constraint
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
+	// Logger
+	protected Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
 		this(null, false)
@@ -93,6 +97,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
+		logger.log(Level.INFO, "Starting main execution")
 		val gammaComponent = _package.components.head // Getting the first component
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
