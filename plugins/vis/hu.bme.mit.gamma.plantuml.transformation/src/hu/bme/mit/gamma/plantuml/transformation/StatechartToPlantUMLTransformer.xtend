@@ -161,7 +161,7 @@ class StatechartToPlantUMLTransformer {
 	
 	protected def dispatch transformActionReference(RaiseEventAction raisedEventAction) {
 		return "raise " + raisedEventAction.port.name + "." + raisedEventAction.event.name +
-			'''(«FOR argument : raisedEventAction.arguments»«argument.serialize»«ENDFOR»);'''
+			'''(«FOR argument : raisedEventAction.arguments SEPARATOR  ", "»«argument.serialize»«ENDFOR»);'''
 	}
 
 	protected def dispatch transformActionReference(TimeoutAction timeoutAction) {
