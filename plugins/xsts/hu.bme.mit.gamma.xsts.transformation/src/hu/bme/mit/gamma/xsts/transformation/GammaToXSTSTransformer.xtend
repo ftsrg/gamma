@@ -315,9 +315,17 @@ class GammaToXSTSTransformer {
 		// Type declaration names are not customized as multiple types can refer to the same type
 		// These types would be different in XSTS, when they are the same in Gamma
 		// Note: for this reason, every type declaration must have a different name
-		val typeDeclarationNames = xSts.typeDeclarations.map[it.name]
+		val typeDeclarationNames = types.map[it.name]
 		val duplications = typeDeclarationNames.filter[Collections.frequency(typeDeclarationNames, it) > 1].toList
-		checkState(duplications.empty, "The XSTS contains multiple type declarations with the same name:" + duplications)
+		logger.log(Level.INFO, "The XSTS contains multiple type declarations with the same name:" + duplications)
+		// It is possible that in some instances of the same region, some states are removed due to optimization
+		var id = 0
+		for (type : types) {
+			val typeName = type.name
+			if (duplications.contains(typeName)) {
+				type.name = typeName + id++
+			}
+		}
 	}
 	
 	protected def void resetInEventsAfterMergedAction(XSTS xSts, Component type) {
