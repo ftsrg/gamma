@@ -99,7 +99,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	def execute(hu.bme.mit.gamma.statechart.interface_.Package _package) {
-		logger.log(Level.INFO, "Starting main execution")
+		logger.log(Level.INFO, "Starting main execution of Gamma-XSTS transformation")
 		val gammaComponent = _package.components.head // Getting the first component
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
@@ -109,6 +109,7 @@ class GammaToXSTSTransformer {
 		// Setting clock variable increase
 		xSts.setClockVariables
 		if (transformOrthogonalActions) {
+			logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
 			xSts.transform
 			// Before optimize actions
 		}
@@ -240,7 +241,9 @@ class GammaToXSTSTransformer {
 		}
 		xSts.mergedAction = mergedAction
 		// Connect only after xSts.mergedTransition.action = mergedAction
+		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
+		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
 		xSts.inEventAction.bindEventsBoundToTheSameSystemPort(component) // Bind together ports connected to the same system port
 		xSts.name = component.name
 		return xSts
@@ -350,6 +353,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	protected def optimize(XSTS xSts) {
+		logger.log(Level.INFO, "Optimizing reset, environment and merged actions in " + xSts.name)
 		xSts.variableInitializingAction = xSts.variableInitializingAction.optimize
 		xSts.configurationInitializingAction = xSts.configurationInitializingAction.optimize
 		xSts.entryEventAction = xSts.entryEventAction.optimize
