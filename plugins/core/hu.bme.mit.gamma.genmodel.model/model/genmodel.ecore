@@ -66,6 +66,7 @@
   <eClassifiers xsi:type="ecore:EEnum" name="AnalysisLanguage">
     <eLiterals name="UPPAAL"/>
     <eLiterals name="THETA" value="1"/>
+    <eLiterals name="XSTS_UPPAAL" value="2" literal="XSTS_UPPAAL"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="YakinduCompilation" abstract="true"
       eSuperTypes="#//Task">

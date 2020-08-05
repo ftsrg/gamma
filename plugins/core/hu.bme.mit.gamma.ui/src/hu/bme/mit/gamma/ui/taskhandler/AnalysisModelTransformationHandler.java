@@ -83,7 +83,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			switch (analysisLanguage) {
 				case UPPAAL:
 					if (modelReference instanceof ComponentReference) {
-						transformer = new UppaalTransformer();
+						transformer = new Gamma2UppaalTransformer();
 					}
 					else if (modelReference instanceof XSTSReference) {
 						transformer = new XSTS2UppaalTransformer();
@@ -93,7 +93,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					}
 					break;
 				case THETA:
-					transformer = new ThetaTransformer();
+					transformer = new Gamma2XSTSTransformer();
+					break;
+				case XSTS_UPPAAL:
+					transformer = new Gamma2XSTSUppaalTransformer();
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
@@ -117,10 +120,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	abstract class AnalysisModelTransformer {
 		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+		protected FileUtil fileUtil = FileUtil.INSTANCE;
+		
+		protected final String XSTS_EMF_EXTENSION = "gsts";
+		protected final String XSTS_XTEXT_EXTENSION = "xsts";
+		
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation);
 	}
 	
-	class UppaalTransformer extends AnalysisModelTransformer {
+	class Gamma2UppaalTransformer extends AnalysisModelTransformer {
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			// Unfolding the given system
@@ -260,11 +268,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 	}
 	
-	class ThetaTransformer extends AnalysisModelTransformer {
+	class Gamma2XSTSTransformer extends AnalysisModelTransformer {
 		
 		protected StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 		protected ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
-		protected FileUtil fileUtil = FileUtil.INSTANCE;
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
@@ -274,12 +281,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Package gammaPackage = (Package) component.eContainer();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
 			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true);
-			final String fileName = analysisModelTransformation.getFileName().get(0);
-			File xStsFile = new File(targetFolderUri + File.separator + fileName + ".xsts");
+			String fileName = analysisModelTransformation.getFileName().get(0);
+			File xStsFile = new File(targetFolderUri + File.separator + fileName + "." + XSTS_XTEXT_EXTENSION);
 			XSTS xSts = gammaToXSTSTransformer.preprocessAndExecute(gammaPackage,
 					componentReference.getArguments(), xStsFile);
 			// EMF
-			ecoreUtil.normalSave(xSts, targetFolderUri, fileName + ".gsts");
+			ecoreUtil.normalSave(xSts, targetFolderUri, fileName + "." + XSTS_EMF_EXTENSION);
 			// String
 			String xStsString = actionSerializer.serializeXSTS(xSts);
 			fileUtil.saveString(xStsFile, xStsString);
@@ -311,12 +318,31 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(AnalysisModelTransformation analysisModelTransformation) {
 			logger.log(Level.INFO, "Starting XSTS-UPPAAL transformation.");
 			XSTS xSts = (XSTS) GenmodelDerivedFeatures.getModel(analysisModelTransformation);
+			String fileName = analysisModelTransformation.getFileName().get(0);
+			execute(xSts, fileName);
+		}
+
+		public void execute(XSTS xSts, String fileName) {
 			XSTSToUppaalTransformer xStsToUppaalTransformer = new XSTSToUppaalTransformer(xSts);
 			NTA nta = xStsToUppaalTransformer.execute();
-			final String fileName = analysisModelTransformation.getFileName().get(0);
 			ecoreUtil.normalSave(nta, targetFolderUri, "." + fileName + ".uppaal");
 			// Serializing the NTA model to XML
 			UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileName + ".xml");
+			// Creating a new query file
+			logger.log(Level.INFO, "The transformation has been finished.");
+		}
+	}
+	
+	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");
+			Gamma2XSTSTransformer thetaTransformer = new Gamma2XSTSTransformer();
+			thetaTransformer.execute(analysisModelTransformation);
+			String fileName = analysisModelTransformation.getFileName().get(0);
+			XSTS xSts = (XSTS) ecoreUtil.normalLoad(targetFolderUri, fileName + "." + XSTS_EMF_EXTENSION);
+			XSTS2UppaalTransformer xSts2UppaalTransformer = new XSTS2UppaalTransformer();
+			xSts2UppaalTransformer.execute(xSts, fileName);
 			// Creating a new query file
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}
