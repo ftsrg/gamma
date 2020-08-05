@@ -273,7 +273,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Component component = componentReference.getComponent();
 			Package gammaPackage = (Package) component.eContainer();
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true);
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true);
 			final String fileName = analysisModelTransformation.getFileName().get(0);
 			File xStsFile = new File(targetFolderUri + File.separator + fileName + ".xsts");
 			XSTS xSts = gammaToXSTSTransformer.preprocessAndExecute(gammaPackage,

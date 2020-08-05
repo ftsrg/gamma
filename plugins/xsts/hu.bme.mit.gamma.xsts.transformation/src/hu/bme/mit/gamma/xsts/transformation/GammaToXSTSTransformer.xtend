@@ -57,19 +57,21 @@ class GammaToXSTSTransformer {
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
-	// Scheduling constraint
+	// Transformation settings
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
+	protected boolean optimize
 	// Logger
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, false)
+		this(null, false, true)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions) {
+	new(Integer schedulingConstraint, boolean transformOrthogonalActions, boolean optimize) {
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
+		this.optimize = optimize
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
@@ -110,8 +112,10 @@ class GammaToXSTSTransformer {
 			xSts.transform
 			// Before optimize actions
 		}
-		// Optimizing - system in events (but not PERSISTENT parameters) can be reset after the merged transition
-		xSts.resetInEventsAfterMergedAction(gammaComponent)
+		if (optimize) {
+			// Optimizing: system in events (but not PERSISTENT parameters) can be reset after the merged transition
+			xSts.resetInEventsAfterMergedAction(gammaComponent)
+		}
 		// Optimizing
 		xSts.optimize
 		return xSts
@@ -141,6 +145,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
+		logger.log(Level.INFO, "Transforming abstract synchronous composite " + component.name)
 		var XSTS xSts = null
 		val scheduledInstances = component.scheduledInstances
 		val mergedAction = if (component instanceof CascadeCompositeComponent) createSequentialAction else createOrthogonalAction
@@ -242,10 +247,11 @@ class GammaToXSTSTransformer {
 	}
 	
 	protected def dispatch XSTS transform(StatechartDefinition statechart, Package lowlevelPackage) {
+		logger.log(Level.INFO, "Transforming statechart " + statechart.name)
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, true)
+		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, optimize)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key
