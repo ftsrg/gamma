@@ -112,7 +112,7 @@ class SystemReducer {
 		val pseudoStates = region.stateNodes.filter(PseudoState) // E.g., choice might have an incoming transition from another transition
 		try {
 			if (pseudoStates.forall[it.precedingStates.empty] &&
-				states.forall[!it.composite && it.outgoingTransitions.empty &&
+					states.forall[!it.composite && it.outgoingTransitions.empty &&
 					it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
