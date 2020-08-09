@@ -953,6 +953,20 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		throw new IllegalArgumentException("Not known initial states in the region. " + region.getName() + ": " + entryStates);
 	}
 	
+	public static Set<State> getPrecedingStates(StateNode node) {
+		Set<State> precedingStates = new HashSet<State>();
+		for (Transition incomingTransition : getIncomingTransitions(node)) {
+			StateNode source = incomingTransition.getSourceState();
+			if (source instanceof State) {
+				precedingStates.add((State) source);
+			}
+			else {
+				precedingStates.addAll(getReachableStates(source));
+			}
+		}
+		return precedingStates;
+	}
+	
 	public static Set<State> getReachableStates(StateNode node) {
 		Set<State> reachableStates = new HashSet<State>();
 		for (Transition outgoingTransition : getOutgoingTransitions(node)) {

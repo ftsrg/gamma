@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
@@ -77,7 +78,7 @@ class SystemReducer {
 					source.containingStatechart
 					target.containingStatechart
 				} catch (NullPointerException exception) {
-					log(Level.INFO, "Removing transition " + source.name + " -> " + target.name)
+					log(Level.INFO, "Removing transition as source or target is deleted: " + source.name + " -> " + target.name)
 					EcoreUtil.delete(transition)
 				}
 			}
@@ -108,8 +109,10 @@ class SystemReducer {
 	
 	private def void removeUnnecessaryRegion(Region region) {
 		val states = region.states
+		val pseudoStates = region.stateNodes.filter(PseudoState) // E.g., choice might have an incoming transition from another transition
 		try {
-			if (states.forall[!it.composite && it.outgoingTransitions.empty &&
+			if (pseudoStates.forall[it.precedingStates.empty] &&
+				states.forall[!it.composite && it.outgoingTransitions.empty &&
 					it.entryActions.empty && it.exitActions.empty || it.incomingTransitions.empty]) {
 				// First, removing all related transitions (as otherwise nullptr exceptions are generated in incomingTransitions)
 				val statechart = region.containingStatechart
@@ -121,7 +124,7 @@ class SystemReducer {
 			}
 		} catch (NullPointerException e) {
 			// An ancestor of a state has already been removed
-			// Transitions are transitions are checked again, no need to bother with them here
+			// Transitions are checked again, no need to bother with them here
 		}
 	}
 	
