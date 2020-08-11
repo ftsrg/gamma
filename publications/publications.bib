@@ -8,6 +8,7 @@
     doi = {10.1145/3183440.3183489},
     type = {Conference},
     url_link = {https://dl.acm.org/doi/10.1145/3183440.3183489},
+    url_pdf = {https://inf.mit.bme.hu/sites/default/files/publications/icse18.pdf},
     abstract = {The Gamma Statechart Composition Framework is an integrated tool to support the design, verification and validation as well as code generation for component-based reactive systems. The behavior of each component is captured by a statechart, while assembling the system from components is driven by a domain-specific composition language. Gamma automatically synthesizes executable Java code extending the output of existing statechart-based code generators with composition related parts, and it supports formal verification by mapping composite statecharts to a back-end model checker. Execution traces obtained as witnesses during verification are back-annotated as test cases to replay an error trace or to validate external code generators.},
 }
 
@@ -42,6 +43,7 @@
     note = {Master's Thesis, Budapest University of Technology and Economics},
     year = {2018},
     type = {Thesis},
+    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/MSc2018_Graics.pdf},
 }
 
 @inproceedings{graics_majzik_minisy20,
@@ -51,7 +53,8 @@
     address = {Budapest, Hungary},
     author = {Bence Graics and Istv{\'a}n Majzik},
     editor = {Bal{\'a}zs Renczes},
-    type = {Local event},
+    type = {Local event},    
+    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/Minisy2020_Graics.pdf},
     abstract = {Communication protocols are often designed on the basis of state-based models. During protocol design, the use of formal verification is indispensable, as concurrent behavior is notorious for hidden and sophisticated bugs. This paper presents a formal verification approach to verify an industrial communication protocol using the Gamma StatechartComposition Framework. Gamma is a modeling toolset for the design and analysis of reactive systems. It supports a family of modeling languages with formal semantics for the component-based definition of state-based behavior. It also supports formal verification by automatically mapping the defined models to the input formalisms of verification backends and back-annotating the results. The verification approach is presented in the context of the Orion industrial communication protocol. The verification approach supports the introduction of channel models with different message transmission characteristics and failure modes. Different execution modes of the components are also analyzed.},
 }
 
@@ -64,6 +67,7 @@
     author = {Bence Graics and Vince Moln{\'a}r},
     editor = {Pataki, B{\'e}la},
     type = {Local event},
+    url_pdf = {https://inf.mit.bme.hu/sites/default/files/publications/minisy2018.pdf},
     abstract = {The Gamma Statechart Composition Framework is a modeling tool that supports the hierarchical composition of statechart components with well-defined compositonal semantics, as well as source code generation and formal verification. The purpose of the framework is to provide common ground for modeling and verification tools, as well as to support component-based system design building on existing statechart modeling tools. Currently, the framework has a single composition semantics, which executes the components in a lockstep fashion. This paper presents a new composition language for the Gamma Framework, adding support for two more semantics. Asynchronousreactive semantics supports the proper abstraction of distributed communication, synchronous-reactive supports the modeling of highly synchronous communication, and cascade composition is a sequential decomposition of a single function.},
 }
 
@@ -77,5 +81,6 @@
     author = {Bence Graics and Vince Moln{\'a}r},
     editor = {Pataki, B{\'e}la},
     type = {Local event},
+    url_pdf = {https://inf.mit.bme.hu/sites/default/files/gamma/documents/Minisy2017_Graics.pdf},
     abstract = {Many of today’s safety-critical systems are reactive, embedded systems. Their internal behavior is usually represented by state-based models. Furthermore, as the tasks carried out by such systems are getting more and more complex, there is a strong need for compositional modeling languages. Such modeling formalisms start from the component-level and use composition to build the system-level model as a collection of simple modules. There are a number of solutions supporting the model-based development of safety-critical embedded systems. One of the popular open-source tools is Yakindu, a statechart editor with a rich language and code generation capabilities. However, Yakindu so far lacks support for compositional modeling. This paper proposes a formal compositional language tailored to the semantics of Yakindu statecharts. We propose precise semantics for the composition to facilitate formal analysis and precise code generation. Based on the formal basis laid out here, we plan to build a complete tool-chain for the design and verification of component-based reactive systems.},
 }
