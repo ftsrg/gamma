@@ -43,16 +43,11 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		checkArgument(lowlevelIncomingTransitions.size == 1)
 		val lowlevelIncomingTransition = lowlevelIncomingTransitions.head
 		checkArgument(lowlevelIncomingTransition.source instanceof State)
-		val lowlevelIncomingTransitionAction = lowlevelIncomingTransition.action
 		// Computing precondition as it cannot be done in transformForward (it would lead to assumptions placed in wrong places)
 		val xStsPrecondition = lowlevelIncomingTransition.createXStsTransitionPrecondition
 		val xStsPreconditionAction = xStsPrecondition.createAssumeAction
 		val xStsAction = lowlevelFirstForkState.transformForward => [
-			it.actions.addAll(0, lowlevelIncomingTransition.createRecursiveXStsTransitionExitActionsWithOrthogonality)
-			if (lowlevelIncomingTransitionAction !== null) {
-				// This action must be transformed separately, as the actions on incoming transitions are not handled in transformForward
-				it.actions.add(0, lowlevelIncomingTransitionAction.transformAction)
-			}
+			it.actions.add(0, lowlevelIncomingTransition.connectForkBackward) // Needed as transformForward does not do this
 			it.actions.add(0, xStsPreconditionAction)
 		]
 		val xStsForkAction = xStsAction.actions.last as ParallelAction
@@ -66,22 +61,49 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		checkArgument(lowlevelIncomingTransitions.size == 1)
 		val lowlevelIncomingTransition = lowlevelIncomingTransitions.head
 		checkArgument(lowlevelIncomingTransition.source instanceof State)
-		val lowlevelIncomingTransitionAction = lowlevelIncomingTransition.action
 		// Computing precondition as it cannot be done in transformForward (it would lead to assumptions placed in wrong places)
 		val xStsPrecondition = lowlevelIncomingTransition.createXStsTransitionPrecondition
 		val xStsPreconditionAction = xStsPrecondition.createAssumeAction
 		val xStsAction = lowlevelFirstChoiceState.transformForward => [
-			it.actions.addAll(0, lowlevelIncomingTransition.createRecursiveXStsTransitionExitActionsWithOrthogonality)
-			if (lowlevelIncomingTransitionAction !== null) {
-				// This action must be transformed separately, as the actions on incoming transitions are not handled in transformForward
-				it.actions.add(0, lowlevelIncomingTransitionAction.transformAction)
-			}
+			it.actions.add(0, lowlevelIncomingTransition.connectChoiceBackward) // Needed as transformForward does not do this
 			it.actions.add(0, xStsPreconditionAction)
 		]
 		val xStsChoiceAction = xStsAction.actions.last as NonDeterministicAction
 		val xStsComplexTransition = xStsAction.createXStsTransition
 		trace.put(lowlevelFirstChoiceState, xStsComplexTransition, xStsPrecondition, xStsChoiceAction)
 		return xStsComplexTransition
+	}
+	
+	// Connect back to states
+	
+	protected def connectChoiceBackward(Transition lowlevelTransition) {
+		val lowlevelSource = lowlevelTransition.source
+		val lowlevelTarget = lowlevelTransition.target
+		checkArgument(lowlevelSource instanceof State && lowlevelTarget instanceof ChoiceState)
+		val lowlevelTransitionAction = lowlevelTransition.action
+		return createSequentialAction => [
+			it.actions += lowlevelTransition.createRecursiveXStsTransitionExitActionsWithOrthogonality
+			if (lowlevelTransitionAction !== null) {
+				it.actions += lowlevelTransitionAction.transformAction
+			}
+			it.actions += lowlevelTransition.createRecursiveXStsOrthogonalRegionAndTransitionParentEntryActionsWithOrthogonality
+		]
+	}
+	
+	protected def connectForkBackward(Transition lowlevelTransition) {
+		val lowlevelSource = lowlevelTransition.source
+		val lowlevelTarget = lowlevelTransition.target
+		checkArgument(lowlevelSource instanceof State && lowlevelTarget instanceof ForkState)
+		val lowlevelTransitionAction = lowlevelTransition.action
+		return createSequentialAction => [
+			it.actions += lowlevelTransition.createRecursiveXStsTransitionExitActions(false /* So source ancestors are not exited multiple times */)
+			if (lowlevelTransitionAction !== null) {
+				it.actions += lowlevelTransitionAction.transformAction
+			}
+			it.actions += lowlevelTransition.createRecursiveXStsTransitionParentEntryActions
+		]
+		// The deactivation of the unexited regions still need to be deactivated by the caller
+		// See lowlevelSourceAncestor.createSingleXStsStateExitActions in the Join transformer
 	}
 	
 	// Forward
