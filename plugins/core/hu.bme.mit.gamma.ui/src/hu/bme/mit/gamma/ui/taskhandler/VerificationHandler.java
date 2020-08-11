@@ -147,7 +147,7 @@ class UppaalVerification extends AbstractVerification {
 		String packageFileName =
 				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "g2u"));
 		EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		UppaalVerifier verifier = UppaalVerifier.INSTANCE;
+		UppaalVerifier verifier = new UppaalVerifier();
 		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
 	}
 
@@ -163,7 +163,7 @@ class ThetaVerification extends AbstractVerification {
 		String packageFileName =
 				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
 		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		ThetaVerifier verifier = ThetaVerifier.INSTANCE;
+		ThetaVerifier verifier = new ThetaVerifier();
 		String queries = fileUtil.loadString(queryFile);
 		return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
 	}

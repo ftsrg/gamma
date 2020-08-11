@@ -19,15 +19,13 @@ import java.util.Scanner
 import java.util.logging.Level
 
 class UppaalVerifier extends AbstractVerifier {
-	// Singleton
-	public static final UppaalVerifier INSTANCE = new UppaalVerifier
-	protected new() {}
-	//
+	
+	VerificationResultReader verificationResultReader = null // Created one for each execution
+	
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
-		var VerificationResultReader verificationResultReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
@@ -65,9 +63,9 @@ class UppaalVerifier extends AbstractVerifier {
 			result = e.result
 			return null
 		} finally {
-			resultReader.close();
-			traceReader.close();
-			verificationResultReader.cancel();
+			resultReader.close
+			traceReader.close
+			verificationResultReader.cancel
 		}
 	}
 	
@@ -81,6 +79,11 @@ class UppaalVerifier extends AbstractVerifier {
 		}
 		// In the case of E, empty trace means the requirement is not met
 		return ThreeStateBoolean.FALSE
+	}
+	
+	override cancel() {
+		verificationResultReader.cancel
+		super.cancel
 	}
 	
 }

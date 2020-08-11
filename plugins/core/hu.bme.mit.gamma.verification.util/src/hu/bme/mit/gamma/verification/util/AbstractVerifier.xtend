@@ -45,10 +45,10 @@ abstract class AbstractVerifier {
 	def cancel() {
 		isCancelled = true
 		if (process !== null) {
-			process.destroy();
+			process.destroy
 			try {
 				// Waiting for process to end
-				process.waitFor();
+				process.waitFor
 			} catch (InterruptedException e) {}
 		}
 	}

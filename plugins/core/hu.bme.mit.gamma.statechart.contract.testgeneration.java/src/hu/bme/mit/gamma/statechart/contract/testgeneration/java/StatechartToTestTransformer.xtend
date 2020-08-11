@@ -60,7 +60,7 @@ class StatechartToTestTransformer {
 			// Getting traces to the simple states
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
-			val verifier = UppaalVerifier.INSTANCE
+			val verifier = new UppaalVerifier
 			val simpleStateExecutionTrace = verifier.verifyQuery(uppaalTraceability, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
 			
