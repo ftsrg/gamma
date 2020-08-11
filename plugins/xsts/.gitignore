@@ -1,4 +1,5 @@
 */bin
+*/target/
 
 # Ignore generated edit, editor and test projects
 *.tests/
