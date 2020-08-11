@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -69,6 +70,10 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(DecimalLiteralExpression expression) {
 		return expression.value.toString
+	}
+	
+	def dispatch String serialize(RationalLiteralExpression expression) {
+		return "(((double) " + expression.numerator.toString + ") / " + expression.denominator.toString + ")"
 	}
 	
 	def dispatch String serialize(TrueExpression expression) {
