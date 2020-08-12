@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,13 +57,30 @@ public class XSTSActionUtil {
 		gammaEcoreUtil.appendTo(pivot, action);
 	}
 	
+	public VariableDeclaration checkVariable(XSTS xSts, String name) {
+		VariableDeclaration variable = getVariable(xSts, name);
+		if (variable == null) {
+			throw new IllegalArgumentException("No variable for " + name);
+		}
+		return variable;
+	}
+	
 	public VariableDeclaration getVariable(XSTS xSts, String name) {
 		List<VariableDeclaration> variables = xSts.getVariableDeclarations().stream()
 				.filter(it -> it.getName().equals(name)).collect(Collectors.toList());
-		if (variables.size() != 1) {
+		if (variables.size() > 1) {
 			throw new IllegalArgumentException("Not one variable: " + variables);
 		}
+		if (variables.size() < 1) {
+			return null;
+		}
 		return variables.get(0);
+	}
+	
+	public List<AssignmentAction> getAssignments(VariableDeclaration variable,
+			Collection<AssignmentAction> assignments) {
+		return assignments.stream().filter(it -> it.getLhs().getDeclaration() == variable)
+				.collect(Collectors.toList());
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {

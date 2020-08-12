@@ -11,10 +11,14 @@
 package hu.bme.mit.gamma.action.util;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
+import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 public class ActionUtil {
 	// Singleton
@@ -50,6 +54,12 @@ public class ActionUtil {
 			extensibleAction = extend(extensibleAction, newAction);
 		}
 		return extensibleAction;
+	}
+	
+	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,
+			Collection<AssignmentStatement> assignments) {
+		return assignments.stream().filter(it -> it.getLhs().getDeclaration() == variable)
+				.collect(Collectors.toList());
 	}
 	
 }

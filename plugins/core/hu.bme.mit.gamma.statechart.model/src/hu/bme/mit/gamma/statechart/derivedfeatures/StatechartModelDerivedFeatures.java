@@ -467,6 +467,15 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		throw new IllegalArgumentException("Not known channel type: " + channel);
 	}
 	
+	public static Set<Port> getUnusedPorts(ComponentInstance instance) {
+		Component container = getContainingComponent(instance);
+		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(container, InstancePortReference.class).stream()
+				.filter(it -> it.getInstance() == instance).map(it -> it.getPort()).collect(Collectors.toSet());
+		Set<Port> unusedPorts = new HashSet<Port>(StatechartModelDerivedFeatures.getDerivedType(instance).getPorts());
+		unusedPorts.removeAll(usedPorts);
+		return unusedPorts;
+	}
+	
 	public static EventSource getEventSource(EventReference eventReference) {
 		if (eventReference instanceof PortEventReference) {
 			return ((PortEventReference) eventReference).getPort();

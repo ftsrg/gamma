@@ -53,6 +53,7 @@ class GammaToXSTSTransformer {
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension EnvironmentalActionFilter environmentalActionFilter = EnvironmentalActionFilter.INSTANCE
 	protected final extension EventConnector eventConnector = EventConnector.INSTANCE
+	protected final extension SystemReducer systemReducer = SystemReducer.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
@@ -240,6 +241,8 @@ class GammaToXSTSTransformer {
 			}
 		}
 		xSts.mergedAction = mergedAction
+		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
+		xSts.deleteUnusedPorts(component) // Event (variable setting) connecting across channels
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels

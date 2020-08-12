@@ -48,7 +48,7 @@ class EventConnector {
 			else if (channel instanceof BroadcastChannel) {
 				requiredPorts += channel.requiredPorts.map[it.port]
 			}
-			// Connection: keeping out-variables, deleting in-variables
+			// Connection: keeping in-variables, deleting out-variables
 			val providedSimplePorts = providedPort.allConnectedSimplePorts
 			checkState(providedSimplePorts.size == 1)
 			val providedSimplePort = providedSimplePorts.head

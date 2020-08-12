@@ -1101,11 +1101,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			// Not checking AsynchronousAdapters or port bindings not contained by CompositeComponents
 			return;
 		}
-		EObject root = EcoreUtil2.getRootContainer(instance);
-		Collection<Port> usedPorts = EcoreUtil2.getAllContentsOfType(root, InstancePortReference.class).stream()
-				.filter(it -> it.getInstance() == instance).map(it -> it.getPort()).collect(Collectors.toSet());
-		Collection<Port> unusedPorts = new HashSet<Port>(StatechartModelDerivedFeatures.getDerivedType(instance).getPorts());
-		unusedPorts.removeAll(usedPorts);
+		Collection<Port> unusedPorts = StatechartModelDerivedFeatures.getUnusedPorts(instance);
 		if (!unusedPorts.isEmpty()) {
 			warning("The following ports are not used either in system port binding or a channel: " +
 				unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()), ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
