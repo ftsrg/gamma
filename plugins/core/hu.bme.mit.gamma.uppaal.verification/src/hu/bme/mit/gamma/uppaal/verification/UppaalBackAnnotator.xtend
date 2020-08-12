@@ -64,7 +64,7 @@ import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
 
-class StringTraceBackAnnotator {
+class UppaalBackAnnotator {
 	
 	protected final String ERROR_CONST = "[error]"
 	protected final String WARNING_CONST = "[warning]"

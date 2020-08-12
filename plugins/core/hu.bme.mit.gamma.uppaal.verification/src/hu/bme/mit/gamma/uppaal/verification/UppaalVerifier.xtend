@@ -49,7 +49,7 @@ class UppaalVerifier extends AbstractVerifier {
 				throw new NotBackannotatedException(handleEmptyLines(actualUppaalQuery))
 			}
 			val g2UTrace = traceability as G2UTrace
-			val backAnnotator = new StringTraceBackAnnotator(g2UTrace, traceReader)
+			val backAnnotator = new UppaalBackAnnotator(g2UTrace, traceReader)
 			val traceModel = backAnnotator.execute
 			if (storeOutput) {
 				output = verificationResultReader.output
