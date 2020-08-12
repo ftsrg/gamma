@@ -747,8 +747,11 @@ class LowlevelToXSTSTransformer {
 				xStsParallelAction.actions += xStsSubchoiceAction
 				lowlevelRegion.mergeTransitionsOfRegion(xStsSubchoiceAction)
 				// Adding default else branch: if "region" cannot fire
-				orExpression.operands += xStsSubchoiceAction.precondition
-				xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
+				val xStsPrecondition = xStsSubchoiceAction.precondition
+				if (xStsPrecondition !== null) { // Can be null if the region has no transitions
+					orExpression.operands += xStsPrecondition
+					xStsSubchoiceAction.extendChoiceWithDefaultBranch(createEmptyAction)
+				}
 				// For this to work, each assume action has to be at index 0 of the containing composite action
 			}
 		} else if (lowlevelRegions.size == 1) {

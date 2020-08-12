@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
+import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
@@ -265,13 +266,19 @@ public class XSTSActionUtil {
 	}
 	
 	public Expression getPrecondition(Action action) {
-		if (action == null) {
-			return expressionFactory.createTrueExpression();
-		}
 		if (action instanceof AssumeAction) {
 			AssumeAction assumeAction = (AssumeAction) action;
 			return clone(assumeAction.getAssumption());
 		}
+		// Checking for all composite actions: if it is empty,
+		// we return null, and the caller decides what needs to be done
+		if (action instanceof CompositeAction) {
+			CompositeAction compositeAction = (CompositeAction) action;
+			if (compositeAction.getActions().isEmpty()) {
+				return null;
+			}
+		}
+		//
 		if (action instanceof SequentialAction) {
 			SequentialAction sequentialAction = (SequentialAction) action;
 			return getPrecondition(sequentialAction.getActions().get(0));
