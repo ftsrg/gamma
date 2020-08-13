@@ -66,6 +66,9 @@ class XSTSToUppaalTransformer {
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
 		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		environmentFinishLocation.name = environmentFinishLocationName
+		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
 		systemFinishLocation.createEdge(stableLocation)
@@ -73,6 +76,10 @@ class XSTSToUppaalTransformer {
 		// Optimizing edges from these location
 		initialLocation.optimizeSubsequentEdges
 		stableLocation.optimizeSubsequentEdges
+		environmentFinishLocation.optimizeSubsequentEdges
+		
+		// Model checking is faster if the environment finish location is committed
+		environmentFinishLocation.locationTimeKind = LocationKind.COMMITED 
 		
 		ntaBuilder.instantiateTemplates
 		
