@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
+import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -23,9 +24,8 @@ import uppaal.NTA
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
+import static extension hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
-import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 
 class XSTSToUppaalTransformer {
 	
