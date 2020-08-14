@@ -691,6 +691,3 @@ class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	}
 	
 }
-
-enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
-class EmptyTraceException extends Exception {}
