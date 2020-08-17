@@ -588,7 +588,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return states;
 	}
 	
-	public static Collection<State> getStates(Region region) {
+	public static List<State> getStates(Region region) {
 		List<State> states = new ArrayList<State>();
 		for (StateNode stateNode : region.getStateNodes()) {
 			if (stateNode instanceof State) {
@@ -941,6 +941,12 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static boolean isComposite(State state) {
 		return !state.getRegions().isEmpty();
+	}
+	
+	public static int getLiteralIndex(State state) {
+		Region parent = getParentRegion(state);
+		List<State> states = getStates(parent);
+		return states.indexOf(state) + 1;
 	}
 	
 	public static EntryState getEntryState(Region region) {
