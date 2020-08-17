@@ -1,7 +1,7 @@
 package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
+import hu.bme.mit.gamma.querygenerator.XSTSUppaalQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -19,7 +19,7 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
-	protected final extension ThetaQueryGenerator thetaQueryGenerator
+	protected final XSTSUppaalQueryGenerator xStsUppaalQueryGenerator
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)
@@ -29,7 +29,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		super(traceScanner, sortTrace)
 		this.gammaPackage = gammaPackage
 		this.component = gammaPackage.components.head
-		this.thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage)
+		this.xStsUppaalQueryGenerator = new XSTSUppaalQueryGenerator(gammaPackage)
 	}
 	
 	override execute() throws EmptyTraceException {
@@ -85,12 +85,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 							val locationName = split.last
 							if (locationName.equals(XSTSNamings.stableLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
-								if (localState == StableEnvironmentState.INITIAL) {
-									localState = StableEnvironmentState.FIRST_STABLE
-								}
-								else {
-									localState = StableEnvironmentState.STABLE
-								}
+								localState = StableEnvironmentState.STABLE
 							}
 							else if (locationName.equals(XSTSNamings.environmentFinishLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
@@ -117,33 +112,41 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									switch (localState) {
 										case STABLE: {
 											try {
-												val instanceState = thetaQueryGenerator.getSourceState('''«variable» == «value»''')
+												
+												val index = Integer.parseInt(value) /* Subtract __Inactive__ */
+												val instanceState = xStsUppaalQueryGenerator.getSourceState(
+													'''«variable» == «index»''') // Method made just for this
+												println('''«variable» == «index»''')
 												val controlState = instanceState.key
 												val instance = instanceState.value
-												step.addInstanceState(instance, controlState)
-												activatedStates += controlState
+												println(controlState + " " + instance)
+												if (index > 0) {
+													step.addInstanceState(instance, controlState)
+													activatedStates += controlState
+												}
 											} catch (IllegalArgumentException e) {
 												try {
-													val instanceVariable = thetaQueryGenerator.getSourceVariable(variable)
+													val instanceVariable = xStsUppaalQueryGenerator.getSourceVariable(variable)
 													step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
 												} catch (IllegalArgumentException e1) {
 													try {
-														val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(variable)
+														val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEvent(variable)
 														if (value.equals("1")) {
 															val event = systemOutEvent.get(0) as Event
 															val port = systemOutEvent.get(1) as Port
 															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 															step.addOutEvent(systemPort, event)
-															// TODO Denoting that this event has been actually raised?
+															// TODO Denoting that this event has been actually raised!
 														}
 													} catch (IllegalArgumentException e2) {
 														try {
-															val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(variable)
+															val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
 															val event = systemOutEvent.get(0) as Event
 															val port = systemOutEvent.get(1) as Port
 															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 															val parameter = systemOutEvent.get(2) as ParameterDeclaration
 															step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+															// TODO Denoting that this event has been actually raised!
 														} catch (IllegalArgumentException e3) {}
 													}
 												}
@@ -151,22 +154,23 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 										}
 										case ENVIRONMENT: {
 											try {
-												val systemInEvent = thetaQueryGenerator.getSourceInEvent(variable)
+												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEvent(variable)
 												if (value.equals("1")) {
 													val event = systemInEvent.get(0) as Event
 													val port = systemInEvent.get(1) as Port
 													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 													step.addInEvent(systemPort, event)
-													// TODO Denoting that this event has been actually raised?
+													// TODO Denoting that this event has been actually raised!
 												}
 											} catch (IllegalArgumentException e) {
 												try {
-													val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(variable)
+													val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
 													val event = systemInEvent.get(0) as Event
 													val port = systemInEvent.get(1) as Port
 													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 													val parameter = systemInEvent.get(2) as ParameterDeclaration
 													step.addInEventWithParameter(systemPort, event, parameter, value)
+													// TODO Denoting that this event has been actually raised!
 												} catch (IllegalArgumentException e1) {}
 											}
 										}
@@ -176,15 +180,15 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									}
 								}
 							}
-							if (localState == StableEnvironmentState.STABLE ||
-									localState == StableEnvironmentState.FIRST_STABLE) {
+							if (localState == StableEnvironmentState.STABLE) {
 								// Deleting states that are not inactive due to history
 								step.checkStates(activatedStates)
 								// Creating a new step
 								trace.steps += step
 								step = createStep
 							}
-							if (localState == StableEnvironmentState.STABLE) {
+							if (localState == StableEnvironmentState.ENVIRONMENT) {
+								// Add schedule
 								step.addComponentScheduling
 							}
 						}
@@ -218,4 +222,4 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
 }
 
-enum StableEnvironmentState {INITIAL, FIRST_STABLE, STABLE, ENVIRONMENT, OTHER}
+enum StableEnvironmentState {INITIAL, STABLE, ENVIRONMENT, OTHER}
