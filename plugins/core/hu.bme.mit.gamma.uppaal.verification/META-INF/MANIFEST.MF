@@ -16,6 +16,7 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
  hu.bme.mit.gamma.util,
+ hu.bme.mit.gamma.uppaal.util,
  hu.bme.mit.gamma.verification.util;visibility:=reexport,
  hu.bme.mit.gamma.querygenerator
 Bundle-RequiredExecutionEnvironment: JavaSE-11

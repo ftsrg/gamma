@@ -64,3 +64,7 @@ abstract class AbstractUppaalBackAnnotator {
 	def ExecutionTrace execute() throws EmptyTraceException
 	
 }
+
+enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
+
+class EmptyTraceException extends Exception {}
