@@ -35,10 +35,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	override execute() throws EmptyTraceException {
 		val trace = super.createTrace
 		
-		var step = createStep => [
-			it.addReset
-		]
-		trace.steps += step
+		var Step step = null
 		
 		val activatedStates = newHashSet
 		
@@ -49,11 +46,17 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 			line = traceScanner.nextLine
 			// Variable line contains a single line from the trace
 			switch (line) {
+				case line.empty: {
+					// No operation
+				}
 				case line.contains(ERROR_CONST):
 					// If the condition is not well formed, an exception is thrown
 					throw new IllegalArgumentException("Error in the trace: " + line)
 				case line.contains(WARNING_CONST): {
 					// No operation
+				}
+				case TRANSITIONS_CONST: {
+					state = BackAnnotatorState.TRANSITIONS
 				}
 				case STATE_CONST_PREFIX: // There is a bug where State is written instead of State:
 					state = BackAnnotatorState.STATE_LOCATIONS
@@ -66,6 +69,11 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 				}
 				default: {
 					switch (state) {
+						case BackAnnotatorState.INITIAL: {
+							// Creating a new step
+							step = createStep
+							step.addReset
+						}
 						case BackAnnotatorState.STATE_LOCATIONS: {
 							val processLocationNames = newArrayList
 							processLocationNames += line.split(" ").toList
@@ -77,91 +85,111 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 							val locationName = split.last
 							if (locationName.equals(XSTSNamings.stableLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
-								localState = StableEnvironmentState.STABLE
+								if (localState == StableEnvironmentState.INITIAL) {
+									localState = StableEnvironmentState.FIRST_STABLE
+								}
+								else {
+									localState = StableEnvironmentState.STABLE
+								}
 							}
 							else if (locationName.equals(XSTSNamings.environmentFinishLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
 								localState = StableEnvironmentState.ENVIRONMENT
 							}
-							else {
-								throw new IllegalStateException("Not known location: " + locationName)
+							else if (locationName.equals(XSTSNamings.initialLocationName)) {
+								state = BackAnnotatorState.INITIAL
+								localState = StableEnvironmentState.INITIAL
 							}
+							else {
+								state = BackAnnotatorState.STATE_VARIABLES
+								localState = StableEnvironmentState.OTHER
+							}
+							// Other locations are committed and not checked
 						}
 						case BackAnnotatorState.STATE_VARIABLES: {
-							val variableValues = line.split(" ")
-							for (variableValue : variableValues) {
-								val split = variableValue.split("=")
-								val variable = split.head
-								val value = split.last
-								
-								switch (localState) {
-									case STABLE: {
-										try {
-											val instanceState = thetaQueryGenerator.getSourceState('''«variable» == «value»''')
-											val controlState = instanceState.key
-											val instance = instanceState.value
-											step.addInstanceState(instance, controlState)
-											activatedStates += controlState
-										} catch (IllegalArgumentException e) {
+							if (localState != StableEnvironmentState.OTHER) {
+								val variableValues = line.split(" ")
+								for (variableValue : variableValues) {
+									val split = variableValue.split("=")
+									val variable = split.head
+									val value = split.last
+									
+									switch (localState) {
+										case STABLE: {
 											try {
-												val instanceVariable = thetaQueryGenerator.getSourceVariable(variable)
-												step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
-											} catch (IllegalArgumentException e1) {
+												val instanceState = thetaQueryGenerator.getSourceState('''«variable» == «value»''')
+												val controlState = instanceState.key
+												val instance = instanceState.value
+												step.addInstanceState(instance, controlState)
+												activatedStates += controlState
+											} catch (IllegalArgumentException e) {
 												try {
-													val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(variable)
-													if (value.equals("true")) {
-														val event = systemOutEvent.get(0) as Event
-														val port = systemOutEvent.get(1) as Port
-														val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-														step.addOutEvent(systemPort, event)
-														// TODO Denoting that this event has been actually raised?
-													}
-												} catch (IllegalArgumentException e2) {
+													val instanceVariable = thetaQueryGenerator.getSourceVariable(variable)
+													step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+												} catch (IllegalArgumentException e1) {
 													try {
-														val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(variable)
-														val event = systemOutEvent.get(0) as Event
-														val port = systemOutEvent.get(1) as Port
-														val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-														val parameter = systemOutEvent.get(2) as ParameterDeclaration
-														step.addOutEventWithStringParameter(systemPort, event, parameter, value)
-													} catch (IllegalArgumentException e3) {}
+														val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(variable)
+														if (value.equals("1")) {
+															val event = systemOutEvent.get(0) as Event
+															val port = systemOutEvent.get(1) as Port
+															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+															step.addOutEvent(systemPort, event)
+															// TODO Denoting that this event has been actually raised?
+														}
+													} catch (IllegalArgumentException e2) {
+														try {
+															val systemOutEvent = thetaQueryGenerator.getSourceOutEventParamater(variable)
+															val event = systemOutEvent.get(0) as Event
+															val port = systemOutEvent.get(1) as Port
+															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+															val parameter = systemOutEvent.get(2) as ParameterDeclaration
+															step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+														} catch (IllegalArgumentException e3) {}
+													}
 												}
 											}
 										}
-										
-										step.checkStates(activatedStates)
-										
-										// Creating a new step
-										step = createStep
-										trace.steps += step
-									}
-									case ENVIRONMENT: {
-										try {
-											val systemInEvent = thetaQueryGenerator.getSourceInEvent(variable)
-											if (value.equals("true")) {
-												val event = systemInEvent.get(0) as Event
-												val port = systemInEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-												step.addInEvent(systemPort, event)
-												// TODO Denoting that this event has been actually raised?
-											}
-										} catch (IllegalArgumentException e) {
+										case ENVIRONMENT: {
 											try {
-												val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(variable)
-												val event = systemInEvent.get(0) as Event
-												val port = systemInEvent.get(1) as Port
-												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-												val parameter = systemInEvent.get(2) as ParameterDeclaration
-												step.addInEventWithParameter(systemPort, event, parameter, value)
-											} catch (IllegalArgumentException e1) {}
+												val systemInEvent = thetaQueryGenerator.getSourceInEvent(variable)
+												if (value.equals("1")) {
+													val event = systemInEvent.get(0) as Event
+													val port = systemInEvent.get(1) as Port
+													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													step.addInEvent(systemPort, event)
+													// TODO Denoting that this event has been actually raised?
+												}
+											} catch (IllegalArgumentException e) {
+												try {
+													val systemInEvent = thetaQueryGenerator.getSourceInEventParamater(variable)
+													val event = systemInEvent.get(0) as Event
+													val port = systemInEvent.get(1) as Port
+													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													val parameter = systemInEvent.get(2) as ParameterDeclaration
+													step.addInEventWithParameter(systemPort, event, parameter, value)
+												} catch (IllegalArgumentException e1) {}
+											}
+										}
+										default: {
+											throw new IllegalStateException("Not known state")
 										}
 									}
-									default: {
-										throw new IllegalStateException("Not known state")
-									}
 								}
-								
 							}
+							if (localState == StableEnvironmentState.STABLE ||
+									localState == StableEnvironmentState.FIRST_STABLE) {
+								// Deleting states that are not inactive due to history
+								step.checkStates(activatedStates)
+								// Creating a new step
+								trace.steps += step
+								step = createStep
+							}
+							if (localState == StableEnvironmentState.STABLE) {
+								step.addComponentScheduling
+							}
+						}
+						case BackAnnotatorState.TRANSITIONS: {
+							// No operation
 						}
 						default: {
 							throw new IllegalStateException("Not known state")
@@ -190,4 +218,4 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
 }
 
-enum StableEnvironmentState {INITIAL, STABLE, ENVIRONMENT}
+enum StableEnvironmentState {INITIAL, FIRST_STABLE, STABLE, ENVIRONMENT, OTHER}

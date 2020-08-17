@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
 import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
@@ -54,6 +55,10 @@ public class VerificationHandler extends TaskHandler {
 				case THETA:
 					verificationTask = ThetaVerification.INSTANCE;
 					propertySerializer = ThetaPropertySerializer.INSTANCE;
+					break;
+				case XSTS_UPPAAL:
+					verificationTask = XSTSUppaalVerification.INSTANCE;
+					propertySerializer = XSTSUppaalPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
@@ -149,6 +154,22 @@ class UppaalVerification extends AbstractVerification {
 		EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 		UppaalVerifier verifier = new UppaalVerifier();
 		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
+	}
+
+}
+
+class XSTSUppaalVerification extends AbstractVerification {
+	// Singleton
+	public static final XSTSUppaalVerification INSTANCE = new XSTSUppaalVerification();
+	protected XSTSUppaalVerification() {}
+	//
+	@Override
+	public ExecutionTrace execute(File modelFile, File queryFile) {
+		String packageFileName =
+				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
+		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
+		UppaalVerifier verifier = new UppaalVerifier();
+		return verifier.verifyQuery(gammaPackage, "-C -T -t0", modelFile, queryFile, true, true);
 	}
 
 }
