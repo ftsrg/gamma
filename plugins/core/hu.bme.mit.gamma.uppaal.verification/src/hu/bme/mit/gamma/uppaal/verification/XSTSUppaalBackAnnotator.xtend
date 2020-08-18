@@ -16,9 +16,11 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
+import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.uppaal.util.XSTSNamings
 import java.util.Scanner
 import java.util.Set
@@ -194,11 +196,22 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 								}
 							}
 							if (localState == StableEnvironmentState.STABLE) {
-								// Deleting states that are not inactive due to history
-								step.checkStates(raisedOutEvents, activatedStates)
-								// Creating a new step
-								trace.steps += step
-								step = createStep
+								val schedule = step.actions.filter(ComponentSchedule).head
+								val delay = step.actions.filter(TimeElapse).head
+								if (delay !== null && schedule === null) {
+									/* Delays happen in _StableLocation_ so the state before the delay is doubled.
+									 * Leaving it like this would not cause a bug.
+									 * Nevertheless, the trace is more compact this way. */
+									step = createStep
+									step.actions += delay
+								}
+								else {
+									// Deleting states that are not inactive due to history
+									step.checkStates(raisedOutEvents, activatedStates)
+									// Creating a new step
+									trace.steps += step
+									step = createStep
+								}
 							}
 							if (localState == StableEnvironmentState.ENVIRONMENT) {
 								// Deleting events that are not raised (parameter values are always present)
