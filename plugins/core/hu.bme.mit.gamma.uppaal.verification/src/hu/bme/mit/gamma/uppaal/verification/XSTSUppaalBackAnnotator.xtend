@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
+import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.uppaal.util.XSTSNamings
 import java.util.Scanner
@@ -47,7 +48,9 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		
 		var Step step = null
 		
+		val raisedInEvents = newHashSet
 		val activatedStates = newHashSet
+		val raisedOutEvents = newHashSet
 		
 		var String line = null
 		var state = BackAnnotatorState.INITIAL
@@ -123,13 +126,11 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 										case STABLE: {
 											try {
 												
-												val index = Integer.parseInt(value) /* Subtract __Inactive__ */
+												val index = Integer.parseInt(value)
 												val instanceState = xStsUppaalQueryGenerator.getSourceState(
-													'''«variable» == «index»''') // Method made just for this
-												println('''«variable» == «index»''')
+													'''«variable» == «index»''')
 												val controlState = instanceState.key
 												val instance = instanceState.value
-												println(controlState + " " + instance)
 												if (index > 0) {
 													step.addInstanceState(instance, controlState)
 													activatedStates += controlState
@@ -146,7 +147,8 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 															val port = systemOutEvent.get(1) as Port
 															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 															step.addOutEvent(systemPort, event)
-															// TODO Denoting that this event has been actually raised!
+															// Denoting that this event has been actually raised
+															raisedOutEvents += new Pair(systemPort, event)
 														}
 													} catch (IllegalArgumentException e2) {
 														try {
@@ -156,7 +158,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 															val parameter = systemOutEvent.get(2) as ParameterDeclaration
 															step.addOutEventWithStringParameter(systemPort, event, parameter, value)
-															// TODO Denoting that this event has been actually raised!
+															// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 														} catch (IllegalArgumentException e3) {}
 													}
 												}
@@ -170,7 +172,8 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													val port = systemInEvent.get(1) as Port
 													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 													step.addInEvent(systemPort, event)
-													// TODO Denoting that this event has been actually raised!
+													// Denoting that this event has been actually raised
+													raisedInEvents += new Pair(systemPort, event)
 												}
 											} catch (IllegalArgumentException e) {
 												try {
@@ -180,7 +183,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 													val parameter = systemInEvent.get(2) as ParameterDeclaration
 													step.addInEventWithParameter(systemPort, event, parameter, value)
-													// TODO Denoting that this event has been actually raised!
+													// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 												} catch (IllegalArgumentException e1) {}
 											}
 										}
@@ -192,12 +195,14 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 							}
 							if (localState == StableEnvironmentState.STABLE) {
 								// Deleting states that are not inactive due to history
-								step.checkStates(activatedStates)
+								step.checkStates(raisedOutEvents, activatedStates)
 								// Creating a new step
 								trace.steps += step
 								step = createStep
 							}
 							if (localState == StableEnvironmentState.ENVIRONMENT) {
+								// Deleting events that are not raised (parameter values are always present)
+								step.checkInEvents(raisedInEvents)
 								// Add schedule
 								step.addComponentScheduling
 							}
@@ -218,7 +223,14 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		return trace
 	}
 	
-	protected def void checkStates(Step step, Set<State> activatedStates) {
+	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
+			Set<State> activatedStates) {
+		val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+				EcoreUtil.delete(raiseEventAct)
+			}
+		}
 		val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
 		for (instanceState : instanceStates) {
 			// A state is active if all of its ancestor states are active
@@ -227,7 +239,18 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 				EcoreUtil.delete(instanceState)
 			}
 		}
+		raisedOutEvents.clear
 		activatedStates.clear
+	}
+	
+	protected def void checkInEvents(Step step, Set<Pair<Port, Event>> raisedInEvents) {
+		val raiseEventActs = step.actions.filter(RaiseEventAct).toList
+		for (raiseEventAct : raiseEventActs) {
+			if (!raisedInEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
+				EcoreUtil.delete(raiseEventAct)
+			}
+		}
+		raisedInEvents.clear
 	}
 	
 }

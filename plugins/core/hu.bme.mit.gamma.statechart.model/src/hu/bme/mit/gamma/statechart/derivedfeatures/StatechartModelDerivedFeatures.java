@@ -946,7 +946,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	public static int getLiteralIndex(State state) {
 		Region parent = getParentRegion(state);
 		List<State> states = getStates(parent);
-		return states.indexOf(state) + 1;
+		return states.indexOf(state) + 1 /* + 1 for __Inactive */;
 	}
 	
 	public static EntryState getEntryState(Region region) {
