@@ -24,9 +24,11 @@ Workflow {
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.phase.PhaseModelPackage"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.contract.ContractModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.trace.model/model/trace.genmodel"
-    	registerGeneratedEPackage = "hu.bme.mit.gamma.trace.model.TracePackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.trace.model.TraceModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.property.model/model/property.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.property.model.PropertyModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.genmodel.model/model/genmodel.genmodel"
-    	registerGeneratedEPackage = "hu.bme.mit.gamma.genmodel.model.GenmodelPackage"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage"
     }
     
     component = org.eclipse.emf.mwe.utils.DirectoryCleaner {

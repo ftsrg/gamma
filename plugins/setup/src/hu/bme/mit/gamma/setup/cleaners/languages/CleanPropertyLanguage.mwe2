@@ -1,0 +1,20 @@
+module hu.bme.mit.gamma.setup.cleaners.languages.CleanTraceLanguage
+
+import org.eclipse.xtext.xtext.generator.*
+import org.eclipse.xtext.xtext.generator.model.project.*
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+var rootPath = "../core"
+
+Workflow {
+	bean = ResourceSetImpl : resourceSet {}
+    bean = StandaloneSetup { resourceSet = resourceSet
+    	platformUri = "${rootPath}"
+    	scanClassPath = true
+    }
+	
+	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+        directory = "../core/hu.bme.mit.gamma.property.language/src-gen"
+    }
+}

@@ -35,6 +35,10 @@
     <module>core/hu.bme.mit.gamma.genmodel.language.ui</module>
     <module>core/hu.bme.mit.gamma.genmodel.model</module>
     <module>core/hu.bme.mit.gamma.language.util</module>
+    <module>core/hu.bme.mit.gamma.property.language</module>
+    <module>core/hu.bme.mit.gamma.property.language.ide</module>
+    <module>core/hu.bme.mit.gamma.property.language.ui</module>
+    <module>core/hu.bme.mit.gamma.property.model</module>
     <module>core/hu.bme.mit.gamma.querygenerator</module>
     <module>core/hu.bme.mit.gamma.querygenerator.gui</module>
     <module>core/hu.bme.mit.gamma.querygenerator.gui.commandhandler</module>
@@ -81,6 +85,7 @@
     <module>xsts/hu.bme.mit.gamma.xsts.model</module>
     <module>xsts/hu.bme.mit.gamma.xsts.transformation</module>
     <module>xsts/hu.bme.mit.gamma.xsts.transformation.util</module>
+	<module>xsts/hu.bme.mit.gamma.xsts.uppaal.transformation</module>
   </modules>
   
   <repositories>

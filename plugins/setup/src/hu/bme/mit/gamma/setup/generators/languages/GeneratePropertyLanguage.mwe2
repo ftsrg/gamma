@@ -1,4 +1,4 @@
-module hu.bme.mit.gamma.setup.generators.languages.GenerateTraceLanguage
+module hu.bme.mit.gamma.setup.generators.languages.GeneratePropertyLanguage
 
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
@@ -23,18 +23,18 @@ Workflow {
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.composite.CompositeModelPackage"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.phase.PhaseModelPackage"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.contract.ContractModelPackage"
-    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.trace.model/model/trace.genmodel"
-    	registerGeneratedEPackage = "hu.bme.mit.gamma.trace.model.TraceModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.property.model/model/property.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.property.model.PropertyModelPackage"
     }
 	
 	component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
-        directory = "../core/hu.bme.mit.gamma.trace.language/src-gen"
+        directory = "../core/hu.bme.mit.gamma.property.language/src-gen"
     }
 	
 	component = XtextGenerator {
 		configuration = {
 			project = StandardProjectConfig {
-				baseName = "hu.bme.mit.gamma.trace.language"
+				baseName = "hu.bme.mit.gamma.property.language"
 				rootPath = rootPath
 				eclipsePlugin = {
 					enabled = true
@@ -48,9 +48,9 @@ Workflow {
 			}
 		}
 		language = StandardLanguage {
-			referencedResource = "platform:/resource/hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/ExpressionLanguage.xtext"
-			name = "hu.bme.mit.gamma.trace.language.TraceLanguage"
-			fileExtensions = "get"
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/StatechartLanguage.xtext"
+			name = "hu.bme.mit.gamma.property.language.PropertyLanguage"
+			fileExtensions = "gpd"
 			//referencedResource = "platform:/resource/hu.bme.mit.gamma.trace.model/model/trace.genmodel"
 			
 			fragment = ecore2xtext.Ecore2XtextValueConverterServiceFragment2 auto-inject {}
