@@ -22,10 +22,7 @@ import java.util.logging.Level
 import static com.google.common.base.Preconditions.checkState
 
 class ThetaVerifier extends AbstractVerifier {
-	// Singleton
-	public static final ThetaVerifier INSTANCE = new ThetaVerifier
-	protected new() {}
-	//
+	
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	

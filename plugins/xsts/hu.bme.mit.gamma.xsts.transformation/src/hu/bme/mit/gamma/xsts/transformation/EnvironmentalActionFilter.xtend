@@ -114,10 +114,10 @@ class EnvironmentalActionFilter {
 						val i = boundEvent.containingEventDeclaration.index
 						val event = firstEvents.get(i)
 						val xStsEventName = customizeInputName(event, firstPort, firstInstance)
-						val xStsEventVariable = xSts.getVariable(xStsEventName)
+						val xStsEventVariable = xSts.checkVariable(xStsEventName)
 						val parameters = event.parameterDeclarations
 						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
-						val xStsBoundEventVariable = xSts.getVariable(xStsBoundEventName)
+						val xStsBoundEventVariable = xSts.checkVariable(xStsBoundEventName)
 						for (xStsAssignment : xStsAssignmentActions
 								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
 							// "Binding" the variable 
@@ -127,10 +127,10 @@ class EnvironmentalActionFilter {
 						for (var j = 0; j < boundParameters.size; j++) {
 							val parameter = parameters.get(j)
 							val xStsParameterName = customizeInName(parameter, firstPort, firstInstance)
-							val xStsParameterVariable = xSts.getVariable(xStsParameterName)
+							val xStsParameterVariable = xSts.checkVariable(xStsParameterName)
 							val boundParameter = boundParameters.get(j)
 							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
-							val xStsBoundParameterVariable = xSts.getVariable(xStsBoundParameterName)
+							val xStsBoundParameterVariable = xSts.checkVariable(xStsBoundParameterName)
 							for (xStsAssignment : xStsAssignmentActions
 									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
 								// "Binding" the variable 

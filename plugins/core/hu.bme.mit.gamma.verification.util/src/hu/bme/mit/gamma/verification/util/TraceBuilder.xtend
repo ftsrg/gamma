@@ -97,6 +97,10 @@ class TraceBuilder {
 		]
 	}
 	
+	def addReset(Step step) {
+		step.actions += createReset
+	}
+	
 	def addComponentScheduling(Step step) {
 		step.actions += createComponentSchedule
 	}

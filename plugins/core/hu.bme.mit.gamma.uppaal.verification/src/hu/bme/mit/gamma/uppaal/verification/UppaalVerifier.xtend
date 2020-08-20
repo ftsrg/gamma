@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
@@ -19,15 +20,13 @@ import java.util.Scanner
 import java.util.logging.Level
 
 class UppaalVerifier extends AbstractVerifier {
-	// Singleton
-	public static final UppaalVerifier INSTANCE = new UppaalVerifier
-	protected new() {}
-	//
+	
+	VerificationResultReader verificationResultReader = null // Created one for each execution
+	
 	override ExecutionTrace verifyQuery(Object traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
-		var VerificationResultReader verificationResultReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
@@ -50,8 +49,15 @@ class UppaalVerifier extends AbstractVerifier {
 				// No back annotation of empty lines
 				throw new NotBackannotatedException(handleEmptyLines(actualUppaalQuery))
 			}
-			val g2UTrace = traceability as G2UTrace
-			val backAnnotator = new StringTraceBackAnnotator(g2UTrace, traceReader)
+			val backAnnotator = if (traceability instanceof G2UTrace) {
+				new UppaalBackAnnotator(traceability, traceReader)
+			}
+			else if (traceability instanceof Package) {
+				new XSTSUppaalBackAnnotator(traceability, traceReader)
+			}
+			else {
+				throw new IllegalStateException("Not known traceability element: " + traceability)
+			}
 			val traceModel = backAnnotator.execute
 			if (storeOutput) {
 				output = verificationResultReader.output
@@ -65,9 +71,9 @@ class UppaalVerifier extends AbstractVerifier {
 			result = e.result
 			return null
 		} finally {
-			resultReader.close();
-			traceReader.close();
-			verificationResultReader.cancel();
+			resultReader.close
+			traceReader.close
+			verificationResultReader.cancel
 		}
 	}
 	
@@ -81,6 +87,11 @@ class UppaalVerifier extends AbstractVerifier {
 		}
 		// In the case of E, empty trace means the requirement is not met
 		return ThreeStateBoolean.FALSE
+	}
+	
+	override cancel() {
+		verificationResultReader.cancel
+		super.cancel
 	}
 	
 }

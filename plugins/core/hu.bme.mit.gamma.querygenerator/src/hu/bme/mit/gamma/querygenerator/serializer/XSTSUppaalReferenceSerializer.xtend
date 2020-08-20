@@ -10,20 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
-import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-class ThetaReferenceSerializer implements AbstractReferenceSerializer {
+class XSTSUppaalReferenceSerializer extends ThetaReferenceSerializer {
 	// Singleton
-	public static final ThetaReferenceSerializer INSTANCE = new ThetaReferenceSerializer
+	public static final XSTSUppaalReferenceSerializer INSTANCE = new XSTSUppaalReferenceSerializer
 	protected new() {}
 	//
 	
@@ -31,26 +27,8 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
 	}
 	
-	def protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReference instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
-	}
-	
-	override getId(VariableDeclaration variable, ComponentInstanceReference instance) {
-		return variable.customizeName(instance)
-	}
-	
-	override getId(Event event, Port port, ComponentInstanceReference instance) {
-		if (port.isInputEvent(event)) {
-			event.customizeInputName(port, instance)
-		}
-		return event.customizeOutputName(port, instance)
-	}
-	
-	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
-		if (port.isInputEvent(event)) {
-			parameter.customizeInName(port, instance)
-		}
-		return parameter.customizeOutName(port, instance)
+	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReference instance) {
+		return '''«parentRegion.customizeName(instance)» == «state.literalIndex»'''
 	}
 	
 }

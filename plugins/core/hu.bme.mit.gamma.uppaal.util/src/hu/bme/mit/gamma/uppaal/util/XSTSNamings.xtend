@@ -8,21 +8,22 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.xsts.uppaal.transformation
+package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.expression.model.NamedElement
 
-class Namings {
+class XSTSNamings {
 	
 	static int locationId = 0
+	
+	def static void resetCommittedLocationName() {locationId = 0}
+	def static String getNextCommittedLocationName() '''_«locationId++»_'''
 	
 	def static String getUppaalId(NamedElement element) '''«element.name»'''
 	
 	def static String getTemplateName() '''System'''
 	def static String getStableLocationName() '''_StableLocation_'''
+	def static String getEnvironmentFinishLocationName() '''_EnvironmentFinishLocation_'''
 	def static String getInitialLocationName() '''_InitialLocation_'''
-	
-	def static void resetCommittedLocationName() {locationId = 0}
-	def static String getNextCommittedLocationName() '''_«locationId++»_'''
 	
 }

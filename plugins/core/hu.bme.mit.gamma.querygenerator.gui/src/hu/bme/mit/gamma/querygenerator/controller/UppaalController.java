@@ -51,7 +51,7 @@ public class UppaalController extends AbstractController {
 	
 	@Override
 	public AbstractVerifier createVerifier() {
-		return UppaalVerifier.INSTANCE;
+		return new UppaalVerifier();
 	}
 	
     @Override

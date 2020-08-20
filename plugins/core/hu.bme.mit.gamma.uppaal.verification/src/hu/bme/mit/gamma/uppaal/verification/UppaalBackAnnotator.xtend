@@ -17,14 +17,9 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.Step
-import hu.bme.mit.gamma.trace.model.TraceModelFactory
-import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.uppaal.verification.patterns.EventRepresentations
 import hu.bme.mit.gamma.uppaal.verification.patterns.ExpressionTraces
@@ -41,7 +36,6 @@ import hu.bme.mit.gamma.uppaal.verification.patterns.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.verification.patterns.Traces
 import hu.bme.mit.gamma.uppaal.verification.patterns.VariableDelcarations
 import hu.bme.mit.gamma.uppaal.verification.patterns.VariableToEvent
-import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.AbstractMap.SimpleEntry
 import java.util.ArrayList
 import java.util.Collection
@@ -53,7 +47,6 @@ import java.util.Scanner
 import java.util.regex.Pattern
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.resource.ResourceSet
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import uppaal.declarations.DataVariableDeclaration
@@ -64,29 +57,10 @@ import uppaal.templates.Template
 
 import static com.google.common.base.Preconditions.checkState
 
-class StringTraceBackAnnotator {
-	
-	protected final String ERROR_CONST = "[error]"
-	protected final String WARNING_CONST = "[warning]"
-	
-	protected final String STATE_CONST_PREFIX = "State"
-	protected final String STATE_CONST = "State:"
-	protected final String TRANSITIONS_CONST = "Transitions:"
-	protected final String DELAY_CONST = "Delay:" 
-	
-	protected final Scanner traceScanner
+class UppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
 	protected final ResourceSet resourceSet
 	protected final ViatraQueryEngine engine
-	protected final boolean sortTrace
-	
-	protected Package gammaPackage
-	protected Component component
-	
-	protected final extension TraceModelFactory trFact = TraceModelFactory.eINSTANCE
-
-	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
-	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	
 	new(G2UTrace trace, Scanner traceScanner) {
 		this(trace, traceScanner, true)
@@ -99,10 +73,9 @@ class StringTraceBackAnnotator {
 //			fileWriter.flush
 //		}
 //		fileWriter.close
-		this.traceScanner = traceScanner
+		super(traceScanner, sortTrace)
 		this.resourceSet = trace.eResource.resourceSet
 		checkState(this.resourceSet !== null)
-		this.sortTrace = sortTrace
 		this.resourceSet.loadModels
 		this.engine = ViatraQueryEngine.on(new EMFScope(this.resourceSet))
 	}
@@ -110,15 +83,9 @@ class StringTraceBackAnnotator {
 	/**
 	 * Creates the Trace model.
 	 */
-	def ExecutionTrace execute() throws EmptyTraceException {
+	override execute() throws EmptyTraceException {
 		// Creating the trace component
-		val trace = createExecutionTrace => [
-			it.component = this.component
-			it.import = this.component.eContainer as Package
-			it.name = this.component.name + "Trace"
-			// Setting the top arguments
-			it.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
-		]
+		val trace = super.createTrace
 		// Back-annotating the steps
 		var isFirstStep = true
 		// First active locations - needed for state space reuse and unspecified system resets
@@ -723,15 +690,4 @@ class StringTraceBackAnnotator {
 		return port.name + "_" + event.name + "Of" + owner.name
 	}
 	
-	private def <T extends EObject> T clone(T model, boolean a, boolean b) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		val copier = new Copier(a, b)
-		val clone = copier.copy(model);
-		copier.copyReferences();
-		return clone as T;
-	}
-	
 }
-
-enum BackAnnotatorState {INITIAL, STATE_LOCATIONS, STATE_VARIABLES, TRANSITIONS, DELAY}
-class EmptyTraceException extends Exception {}

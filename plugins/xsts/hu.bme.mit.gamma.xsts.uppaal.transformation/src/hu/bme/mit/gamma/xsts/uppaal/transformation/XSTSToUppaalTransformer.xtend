@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
+import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
@@ -23,9 +24,8 @@ import uppaal.NTA
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
+import static extension hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.uppaal.transformation.Namings.*
-import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 
 class XSTSToUppaalTransformer {
 	
@@ -66,6 +66,9 @@ class XSTSToUppaalTransformer {
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
 		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
+		environmentFinishLocation.name = environmentFinishLocationName
+		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
 		systemFinishLocation.createEdge(stableLocation)
@@ -73,6 +76,10 @@ class XSTSToUppaalTransformer {
 		// Optimizing edges from these location
 		initialLocation.optimizeSubsequentEdges
 		stableLocation.optimizeSubsequentEdges
+		environmentFinishLocation.optimizeSubsequentEdges
+		
+		// Model checking is faster if the environment finish location is committed
+		environmentFinishLocation.locationTimeKind = LocationKind.COMMITED 
 		
 		ntaBuilder.instantiateTemplates
 		
