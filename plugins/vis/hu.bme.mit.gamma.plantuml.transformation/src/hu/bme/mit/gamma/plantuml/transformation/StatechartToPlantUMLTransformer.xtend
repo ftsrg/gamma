@@ -11,17 +11,15 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.action.model.Action
-import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.action.model.ExpressionStatement
 import hu.bme.mit.gamma.action.model.Statement
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement
 import hu.bme.mit.gamma.statechart.statechart.EntryState
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.ForkState
 import hu.bme.mit.gamma.statechart.statechart.InitialState
 import hu.bme.mit.gamma.statechart.statechart.JoinState
@@ -30,16 +28,13 @@ import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
-import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
-import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit
-import hu.bme.mit.gamma.statechart.statechart.TimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -48,6 +43,7 @@ class StatechartToPlantUMLTransformer {
 	
 	protected final StatechartDefinition statechart
 	
+	protected extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 
 	new(StatechartDefinition statechart) {
@@ -147,37 +143,10 @@ class StatechartToPlantUMLTransformer {
 
 	// Handling the different instances of actions
 	
-	protected def dispatch transformActionReference(Action action) {
-		throw new IllegalArgumentException("Not known action: " + action)
+	protected def transformAction(Action action) {
+		return action.serialize
 	}
 
-	protected def dispatch transformActionReference(ExpressionStatement expressionStatement) {
-		return expressionStatement.expression.serialize + ";"
-	}
-	
-	protected def dispatch transformActionReference(AssignmentStatement assignmentStatement) {
-		return assignmentStatement.lhs.serialize + " := " + assignmentStatement.rhs.serialize + ";"
-	}
-	
-	protected def dispatch transformActionReference(RaiseEventAction raisedEventAction) {
-		return "raise " + raisedEventAction.port.name + "." + raisedEventAction.event.name +
-			'''(«FOR argument : raisedEventAction.arguments SEPARATOR  ", "»«argument.serialize»«ENDFOR»);'''
-	}
-
-	protected def dispatch transformActionReference(TimeoutAction timeoutAction) {
-		val setTimeout = timeoutAction as SetTimeoutAction
-		val integer = setTimeout.time.value.serialize
-		return "set " + timeoutAction.timeoutDeclaration.name + " := " + integer + " " +
-			setTimeout.time.unit.serialize + ";"
-	}
-	
-	protected def serialize(TimeUnit timeUnit) {
-		switch (timeUnit) {
-			case SECOND: "s"
-			case MILLISECOND: "ms"
-			default: throw new IllegalArgumentException("Not known time unit: " + timeUnit)
-		}
-	}
 	
 ///////////////////// OTHER FUNCTIONS /////////////////////
 
@@ -257,13 +226,13 @@ class StatechartToPlantUMLTransformer {
 				«IF !(state.getEntryActions().empty)»
 					«FOR entry: state.getEntryActions()»
 						«val entryraise = entry as Statement»
-						«statenode.name» : entry / «entryraise.transformActionReference»
+						«statenode.name» : entry / «entryraise.transformAction»
 					«ENDFOR»
 				«ENDIF»
 				«IF !(state.getExitActions().empty)»
 					«FOR exit: state.getExitActions()»
 						«val exitraise = exit as Statement»
-						«statenode.name» : exit / «exitraise.transformActionReference»
+						«statenode.name» : exit / «exitraise.transformAction»
 					«ENDFOR»
 				«ENDIF»
 			'''
@@ -354,10 +323,10 @@ class StatechartToPlantUMLTransformer {
 						[H] --> «transition.targetState.name»
 					«ENDIF»
 				«ELSE»
-					«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
+					«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 				«ENDIF»
 			«ELSE»	
-				«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformActionReference»«ENDFOR»
+				«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 			«ENDIF»
 		'''
 		return transitions

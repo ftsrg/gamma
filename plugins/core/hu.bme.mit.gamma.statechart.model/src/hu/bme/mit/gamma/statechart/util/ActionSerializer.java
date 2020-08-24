@@ -1,0 +1,59 @@
+package hu.bme.mit.gamma.statechart.util;
+
+import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+
+public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSerializer {
+	// Singleton
+	public static final ActionSerializer INSTANCE = new ActionSerializer();
+
+	protected ActionSerializer() {
+	}
+	//
+
+	protected String _serialize(SetTimeoutAction action) {
+		final TimeSpecification time = action.getTime();
+		return "timeout " + action.getTimeoutDeclaration().getName() + " "
+				+ expressionSerializer.serialize(time.getValue()) + " " + serialize(time.getUnit());
+	}
+
+	protected String serialize(TimeUnit timeUnit) {
+		switch (timeUnit) {
+		case SECOND:
+			return "s";
+		case MILLISECOND:
+			return "ms";
+		default:
+			throw new IllegalArgumentException("Not known time unit: " + timeUnit);
+		}
+	}
+
+	protected String _serialize(RaiseEventAction raiseEventAction) {
+		StringBuilder builder = new StringBuilder(
+				raiseEventAction.getPort().getName() + "." + raiseEventAction.getEvent().getName() + "(");
+		boolean isFirst = true;
+		for (Expression argument : raiseEventAction.getArguments()) {
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				builder.append(", ");
+			}
+			builder.append(expressionSerializer.serialize(argument));
+		}
+		builder.append(")");
+		return builder.toString();
+	}
+
+	public String serialize(Action action) {
+		if (action instanceof SetTimeoutAction) {
+			return _serialize((SetTimeoutAction) action);
+		} else if (action instanceof RaiseEventAction) {
+			return _serialize((RaiseEventAction) action);
+		}
+		return super.serialize(action);
+	}
+}

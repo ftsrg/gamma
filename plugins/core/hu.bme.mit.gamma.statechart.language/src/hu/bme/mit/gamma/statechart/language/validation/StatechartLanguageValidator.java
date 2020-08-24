@@ -29,6 +29,7 @@ import org.eclipse.xtext.validation.Check;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -448,18 +449,20 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkTransitionTriggers(ElseExpression elseExpression) {
 		EObject container = elseExpression.eContainer();
-		if (!(container instanceof Transition)) {
+		if (!(container instanceof Transition) && !(container instanceof Branch)) {
 			error("Else expressions must be an atomic guard in the expression.", container, elseExpression.eContainingFeature());
 		}
-		Transition transition = (Transition) container;
-		if (transition.getTrigger() != null) {
-			error("Else expressions cannot be used with triggers.", container, elseExpression.eContainingFeature());
-		}
-		StateNode node = transition.getSourceState();
-		List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
-		outgoingTransitions.remove(transition);
-		if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
-			error("Only a single transition with and else expression can go out of a certain node.", container, elseExpression.eContainingFeature());
+		if (container instanceof Transition) {
+			Transition transition = (Transition) container;
+			if (transition.getTrigger() != null) {
+				error("Else expressions cannot be used with triggers.", container, elseExpression.eContainingFeature());
+			}
+			StateNode node = transition.getSourceState();
+			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
+			outgoingTransitions.remove(transition);
+			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
+				error("Only a single transition with and else expression can go out of a certain node.", container, elseExpression.eContainingFeature());
+			}
 		}
 	}
 	

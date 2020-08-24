@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -66,6 +67,10 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final ElseExpression expression) {
 		return "else";
+	}
+	
+	protected String _serialize(final DefaultExpression expression) {
+		return "default";
 	}
 
 	protected String _serialize(final TrueExpression expression) {
