@@ -84,7 +84,7 @@ class ActionTransformer {
 		val guards = newLinkedList
 		val actions = newLinkedList
 		for (branch : action.conditionals) {
-			guards += branch.guard.clone
+			guards += branch.guard.transformExpression
 			actions += branch.action.transformAction
 		}
 		return createSwitchAction(guards, actions)
@@ -94,7 +94,7 @@ class ActionTransformer {
 		val guards = newLinkedList
 		val actions = newLinkedList
 		for (branch : action.cases) {
-			guards += branch.guard.clone
+			guards += branch.guard.transformExpression
 			actions += branch.action.transformAction
 		}
 		// In this case it is assumed that each case contains a break at the end
@@ -105,7 +105,7 @@ class ActionTransformer {
 		val guards = newLinkedList
 		val actions = newLinkedList
 		for (branch : action.branches) {
-			guards += branch.guard.clone
+			guards += branch.guard.transformExpression
 			actions += branch.action.transformAction
 		}
 		return createChoiceAction(guards, actions)
