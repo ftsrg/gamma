@@ -20,7 +20,7 @@ import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartToStatechartTransformer;
+import hu.bme.mit.gamma.statechart.phase.transformation.PhaseStatechartTransformer;
 
 public class PhaseGenerationHandler extends TaskHandler {
 
@@ -31,8 +31,8 @@ public class PhaseGenerationHandler extends TaskHandler {
 	public void execute(PhaseStatechartGeneration phaseStatechartGeneration) throws IOException {
 		setFileName(phaseStatechartGeneration);
 		StatechartDefinition statechart = phaseStatechartGeneration.getStatechart();
-		PhaseStatechartToStatechartTransformer transformer = new PhaseStatechartToStatechartTransformer();
-		StatechartDefinition phaseStatechart = transformer.execute(statechart);
+		PhaseStatechartTransformer transformer = new PhaseStatechartTransformer(statechart);
+		StatechartDefinition phaseStatechart = transformer.execute();
 		Package _package = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechart);
 		saveModel(_package, targetFolderUri, phaseStatechartGeneration.getFileName().get(0) + ".gcd");
 	}

@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventReference
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Trigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.BinaryType
@@ -33,7 +32,6 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class EventPriorityTransformer {
 	
-	protected final Package gammaPackage
 	protected final StatechartDefinition statechart
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -46,7 +44,6 @@ class EventPriorityTransformer {
 	
 	new(StatechartDefinition statechart) {
 		// No cloning to save resources, we process the original model
-		this.gammaPackage = statechart.containingPackage
 		this.statechart = statechart
 	}
 	
@@ -54,10 +51,10 @@ class EventPriorityTransformer {
 		for (transition : statechart.transitions) {
 			transition.extendTransition
 		}
-		return gammaPackage
+		return statechart
 	}
 	
-	def extendTransition(Transition transition) {
+	protected def extendTransition(Transition transition) {
 		val trigger = transition.trigger
 		if (trigger !== null) {
 			val eventTriggers = trigger.getSelfAndAllContentsOfType(EventTrigger)
@@ -69,17 +66,17 @@ class EventPriorityTransformer {
 	
 	///
 	
-	def dispatch void extendTrigger(Trigger trigger) {
+	protected def dispatch void extendTrigger(Trigger trigger) {
 		throw new IllegalArgumentException("Not supported trigger type: " + trigger)
 	}
 	
 	// Note that not-triggers and other any triggers are not supported
 	
-	def dispatch void extendTrigger(BinaryTrigger trigger) {
+	protected def dispatch void extendTrigger(BinaryTrigger trigger) {
 		// Not needed as trigger.getSelfAndAllContentsOfType(EventTrigger) is called above
 	}
 	
-	def dispatch void extendTrigger(EventTrigger trigger) {
+	protected def dispatch void extendTrigger(EventTrigger trigger) {
 		val eventReference = trigger.eventReference
 		if (eventReference instanceof PortEventReference) {
 			val component = trigger.containingComponent
@@ -96,7 +93,8 @@ class EventPriorityTransformer {
 							]
 						]
 					]
-					val andTrigger = createTrigger(actualTrigger.clone /*Important due to replace*/, notTrigger, BinaryType.AND)
+					val andTrigger = createBinaryTrigger(
+						actualTrigger.clone /*Important due to replace*/, notTrigger, BinaryType.AND)
 					andTrigger.change(actualTrigger, component)
 					andTrigger.replace(actualTrigger)
 					actualTrigger = andTrigger
@@ -107,20 +105,20 @@ class EventPriorityTransformer {
 	
 	///
 		
-	def dispatch Collection<Event> getHigherPriorityEvents(EventReference eventReference) {
+	protected def dispatch Collection<Event> getHigherPriorityEvents(EventReference eventReference) {
 		throw new IllegalArgumentException("Not supported reference type: " + eventReference)
 	}
 	
 	// Note that any port event references and timeout references are not supported
 	
-	def dispatch Collection<Event> getHigherPriorityEvents(PortEventReference eventReference) {
+	protected def dispatch Collection<Event> getHigherPriorityEvents(PortEventReference eventReference) {
 		val component = eventReference.getContainerOfType(Component)
 		return eventReference.event.getHigherPriorityEvents(component)
 	}
 	
 	///
 	
-	def Collection<Event> getHigherPriorityEvents(Event event, Component component) {
+	protected def Collection<Event> getHigherPriorityEvents(Event event, Component component) {
 		val priority = event.priorityValue
 		val events = component.allPorts.map[it.inputEvents].flatten
 		return events.filter[it.priorityValue > priority].toSet

@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.eventpriority.transformation.EventPriorityTransformer;
 import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
@@ -31,7 +32,9 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 		setFileName(eventPriorityTransformation);
 		StatechartDefinition statechart = eventPriorityTransformation.getStatechart();
 		EventPriorityTransformer eventPriorityTransformer = new EventPriorityTransformer(statechart);
-		Package prioritizedTransitionsStatechartPackage = eventPriorityTransformer.execute();
+		StatechartDefinition prioritizedTransitionsStatechart = eventPriorityTransformer.execute();
+		Package prioritizedTransitionsStatechartPackage =
+				StatechartModelDerivedFeatures.getContainingPackage(prioritizedTransitionsStatechart);
 		saveModel(prioritizedTransitionsStatechartPackage,
 				targetFolderUri, eventPriorityTransformation.getFileName().get(0) + ".gcd");
 	}

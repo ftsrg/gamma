@@ -12,8 +12,25 @@ package hu.bme.mit.gamma.statechart.phase.transformation
 
 import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.phase.History
 
 class Namings {
+	
+	static def getName(History history, ComponentInstance instance) {
+		switch (history) {
+			case NO_HISTORY: {
+				return "InitOf" + instance.name
+			}
+			case SHALLOW_HISTORY : {
+				return "ShallowHistoryInitOf" + instance.name
+			}
+			case DEEP_HISTORY : {
+				return "DeepHistoryInitOf" + instance.name
+			}
+			default:
+				throw new IllegalArgumentException("Not known history: " + history)
+		}
+	}
 	
 	static def getName(NamedElement element, ComponentInstance instance) {
 		return element.getName + "Of" + instance.name

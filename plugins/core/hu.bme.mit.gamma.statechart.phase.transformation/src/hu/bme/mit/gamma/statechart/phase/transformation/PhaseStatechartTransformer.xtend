@@ -28,15 +28,21 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
 
-class PhaseStatechartToStatechartTransformer {
+class PhaseStatechartTransformer {
+
+	protected final StatechartDefinition statechart
 
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	
-	def execute(StatechartDefinition phaseStatechart) {
-		val statechart = phaseStatechart
+	new(StatechartDefinition statechart) {
+		// No cloning to save resources, we process the original model
+		this.statechart = statechart
+	}
+	
+	def execute() {
 		val checkedAnnotations = newHashSet
-		var annotations = statechart.getAllMissionPhaseStateAnnotations
+		var annotations = statechart.allMissionPhaseStateAnnotations
 		while (!checkedAnnotations.containsAll(annotations)) {
 			for (annotation : annotations.reject[checkedAnnotations.contains(it)]) {
 				val stateDefinitions = annotation.stateDefinitions
@@ -124,13 +130,13 @@ class PhaseStatechartToStatechartTransformer {
 		for (inlineableRegion : inlineableRegions) {
 			val newEntryState = switch (history) {
 				case NO_HISTORY: {
-					createInitialState => [it.name = "__Init__"]
+					createInitialState => [it.name = history.getName(instance)]
 				}
 				case SHALLOW_HISTORY : {
-					createShallowHistoryState => [it.name = "__Init__"]
+					createShallowHistoryState => [it.name = history.getName(instance)]
 				}
 				case DEEP_HISTORY : {
-					createDeepHistoryState => [it.name = "__Init__"]
+					createDeepHistoryState => [it.name = history.getName(instance)]
 				}
 			}
 			inlineableRegion.stateNodes += newEntryState
