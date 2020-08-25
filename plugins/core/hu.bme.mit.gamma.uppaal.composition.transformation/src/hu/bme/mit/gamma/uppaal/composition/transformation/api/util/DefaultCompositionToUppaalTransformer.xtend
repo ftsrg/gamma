@@ -38,6 +38,12 @@ class DefaultCompositionToUppaalTransformer {
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
 		val modelPreprocessor = new UppaalModelPreprocessor
 		val topComponent = modelPreprocessor.preprocess(gammaPackage, topComponentArguments, containingFile)
+		//
+//		val annotator = new GammaStatechartAnnotator(topComponent.eContainer as Package,
+//			(topComponent as AbstractSynchronousCompositeComponent).components,
+//			(topComponent as AbstractSynchronousCompositeComponent).components
+//		)
+//		annotator.annotateModel
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(topComponent)
 		validator.checkModel

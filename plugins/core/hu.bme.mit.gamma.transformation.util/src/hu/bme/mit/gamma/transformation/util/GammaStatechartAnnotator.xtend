@@ -2,6 +2,7 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -32,6 +33,7 @@ class GammaStatechartAnnotator {
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
+	protected final Set<ParameterDeclaration> newParameters = newHashSet
 	protected final Map<RaiseEventAction, Integer> sendingIds = newHashMap
 	protected final Map<Transition, Set<Integer>> receivingIds = newHashMap
 	protected int synchronizationId = 0
@@ -131,7 +133,7 @@ class GammaStatechartAnnotator {
 		synchronizationSet += id
 	}
 	
-	protected def annotateModelForInteractionCoverage() {
+	def annotateModelForInteractionCoverage() {
 		if (!INTERACTION_COVERAGE) {
 			return
 		}
@@ -144,10 +146,12 @@ class GammaStatechartAnnotator {
 		receivingComponents.retainAll(interactionMatcher.allValuesOfinInstance)
 		// Creating event parameters
 		for (event : interactionMatcher.allValuesOfraisedEvent) {
-			event.parameterDeclarations += createParameterDeclaration => [
+			val newParameter = createParameterDeclaration => [
 				it.type = createIntegerTypeDefinition
 				it.name = AnnotationNamings.getParameterName(event)
 			]
+			event.parameterDeclarations += newParameter
+			newParameters += newParameter
 		}
 		// Creating in variables
 		for (receivingComponent : receivingComponents) {
@@ -159,8 +163,11 @@ class GammaStatechartAnnotator {
 					interactionCoverableComponents.contains(it.inInstance)]) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
-			val id = raiseEventAction.sendingId
-			raiseEventAction.arguments += createIntegerLiteralExpression => [it.value = BigInteger.valueOf(id)]
+			if (!sendingIds.containsKey(raiseEventAction)) {
+				// One raise event action can synchronize to multiple transitions (broadcast channel)
+				raiseEventAction.arguments += createIntegerLiteralExpression => 
+					[it.value = BigInteger.valueOf(raiseEventAction.sendingId)]
+			}
 			// Receiving
 			val inPort = match.inPort
 			val event = match.raisedEvent
@@ -168,6 +175,7 @@ class GammaStatechartAnnotator {
 			val receivingTransition = match.receivingTransition
 			val inInstance = match.inInstance
 			val receivingVariable = receivingVariables.get(inInstance)
+			// TODO We need multiple interactionVariableOf... = to_Raise_Parameter_Value
 			receivingTransition.effects += createAssignmentStatement => [
 				it.lhs = createReferenceExpression => [
 					it.declaration = receivingVariable
@@ -178,10 +186,15 @@ class GammaStatechartAnnotator {
 					it.parameter = inParameter
 				]
 			]
-			receivingTransition.putReceivingId(id)
 			// Conclusion
-			interactions.put(new Pair(raiseEventAction, receivingTransition), new Pair(receivingVariable, id))
+			receivingTransition.putReceivingId(raiseEventAction.sendingId)
+			interactions.put(new Pair(raiseEventAction, receivingTransition),
+				new Pair(receivingVariable, raiseEventAction.sendingId))
 		}
+	}
+	
+	def getNewParameters() {
+		return this.newParameters
 	}
 	
 	def getInteractions() {

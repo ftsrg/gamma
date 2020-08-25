@@ -12,11 +12,9 @@ Require-Bundle: org.eclipse.core.commands,
  org.eclipse.core.runtime;bundle-version="3.12.0",
  hu.bme.mit.gamma.uppaal.composition.transformation,
  de.uni_paderborn.uppaal,
- hu.bme.mit.gamma.uppaal.transformation,
  hu.bme.mit.gamma.statechart.model,
  hu.bme.mit.gamma.uppaal.serializer,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
- hu.bme.mit.gamma.yakindu.transformation,
  hu.bme.mit.gamma.dialog
 Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler
 Bundle-Vendor: BME-FTSRG
