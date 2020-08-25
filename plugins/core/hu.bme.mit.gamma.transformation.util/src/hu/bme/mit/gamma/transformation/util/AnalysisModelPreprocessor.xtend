@@ -50,7 +50,8 @@ class AnalysisModelPreprocessor {
 		val fileName = containingFile.name
 		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
 		// Unfolding the given system
-		val trace = new ModelUnfolder().unfold(gammaPackage)
+		val modelUnfolder = new ModelUnfolder(gammaPackage)
+		val trace = modelUnfolder.unfold
 		var _package = trace.package
 		val component = trace.topComponent
 		// Transforming parameters if there are any

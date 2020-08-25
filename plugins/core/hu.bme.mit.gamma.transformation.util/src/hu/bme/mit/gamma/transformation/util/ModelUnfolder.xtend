@@ -41,7 +41,13 @@ import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
 class ModelUnfolder {
 	
-	def unfold(Package gammaPackage) {
+	protected final Package gammaPackage
+	
+	new(Package gammaPackage) {
+		this.gammaPackage = gammaPackage
+	}
+	
+	def unfold() {
 		val clonedPackage = gammaPackage.clone(true, true) as Package => [
 			it.imports.clear // Clearing the imports as no reference will be needed in the "Instance container"
 			// The interfaces and type declarations of imports are not copied here as the multiple
