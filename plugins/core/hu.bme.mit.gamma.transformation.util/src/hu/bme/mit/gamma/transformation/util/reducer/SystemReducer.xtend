@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.transformation.util
+package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel
@@ -33,7 +33,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class SystemReducer {
+class SystemReducer implements Reducer {
 	
 	final ViatraQueryEngine engine
 	
@@ -44,7 +44,7 @@ class SystemReducer {
 		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
 	}
 	
-	def execute() {
+	override execute() {
 		val transitionMatcher = RemovableTransitions.Matcher.on(engine)
 		val topRegionsMatcher = TopRegions.Matcher.on(engine)
 		val simpleInstancesMatcher = SimpleInstances.Matcher.on(engine)

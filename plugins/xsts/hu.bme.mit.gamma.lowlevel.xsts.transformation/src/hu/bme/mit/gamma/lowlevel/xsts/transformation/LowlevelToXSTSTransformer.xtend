@@ -637,7 +637,7 @@ class LowlevelToXSTSTransformer {
 						val lowlevelType = lowlevelParameterDeclaration.type
 						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
 						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
-							xStsAllPossibleParameterValues += lowlevelValue.transformExpression // Cloning is important
+							xStsAllPossibleParameterValues += lowlevelValue.transformExpression
 						}
 						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
 						if (lowlevelType instanceof TypeReference) {

@@ -12,12 +12,13 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.transformation.util.reducer.SystemReducer
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collections

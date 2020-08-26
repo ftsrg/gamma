@@ -10,10 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
-import org.eclipse.emf.common.util.EList;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
+
+import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -45,6 +52,44 @@ public class StatechartUtil extends ExpressionUtil {
 	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
+	
+	public Set<VariableDeclaration> getWrittenVariables(EObject object) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		for (AssignmentStatement assignmentStatement :
+				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
+			Declaration declaration = assignmentStatement.getLhs().getDeclaration();
+			if (declaration instanceof VariableDeclaration) {
+				variables.add((VariableDeclaration) declaration);
+			}
+		}
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getReadVariables(EObject object) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		for (ReferenceExpression referenceExpression :
+				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
+			if (!(referenceExpression.eContainer() instanceof AssignmentStatement)) {
+				Declaration declaration = referenceExpression.getDeclaration();
+				if (declaration instanceof VariableDeclaration) {
+					variables.add((VariableDeclaration) declaration);
+				}
+			}
+		}
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getWrittenOnlyVariables(EObject object) {
+		Set<VariableDeclaration> variables = getWrittenVariables(object);
+		variables.removeAll(getReadVariables(object));
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getReadOnlyVariables(EObject object) {
+		Set<VariableDeclaration> variables = getReadVariables(object);
+		variables.removeAll(getWrittenVariables(object));
+		return variables;
+	}
 	
 	public void extendTrigger(Transition transition, Trigger trigger, BinaryType type) {
 		if (transition.getTrigger() == null) {

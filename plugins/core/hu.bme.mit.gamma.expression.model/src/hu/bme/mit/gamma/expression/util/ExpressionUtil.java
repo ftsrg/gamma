@@ -297,7 +297,19 @@ public class ExpressionUtil {
 	}
 
 	// Declaration references
-
+	
+	public Set<VariableDeclaration> getReferredVariables(EObject object) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		for (ReferenceExpression referenceExpression :
+				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
+			Declaration declaration = referenceExpression.getDeclaration();
+			if (declaration instanceof VariableDeclaration) {
+				variables.add((VariableDeclaration) declaration);
+			}
+		}
+		return variables;
+	}
+	
 	protected Set<VariableDeclaration> _getReferredVariables(final NullaryExpression expression) {
 		return Collections.emptySet();
 	}
