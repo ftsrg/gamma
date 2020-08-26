@@ -133,7 +133,12 @@ class EnvironmentCreator {
 							for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 								// Collecting parameter values for each instant parameter
 								for (parameter : match.event.parameterDeclarations) {
-									expressionSet.put(parameter, ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter))
+									val values = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(match.port, match.event, parameter)
+									if (values.empty) {
+										// So if one of the parameters is not referenced, the edge still gets created
+										values += parameter.type.initialValueOfType
+									}
+									expressionSet.put(parameter, values)
 								}
 							}
 							if (!expressionSet.empty) {

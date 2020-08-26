@@ -251,6 +251,6 @@ class AnnotationNamings {
 	
 	def static String getVariableName(Transition transition) '''__«transition.sourceState.name»_«transition.targetState.name»__'''
 	def static String getVariableName(SynchronousComponentInstance instance) '''__interactionOf«instance.name»«id++»__'''
-	def static String getParameterName(Event event) '''interactionOf«event.name»__'''
+	def static String getParameterName(Event event) '''__interactionOf«event.name»__'''
 	
 }
