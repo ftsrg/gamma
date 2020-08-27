@@ -22,7 +22,7 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 	
 	protected extension AbstractReferenceSerializer referenceSerializer
 	
-	new (AbstractReferenceSerializer referenceSerializer) {
+	new(AbstractReferenceSerializer referenceSerializer) {
 		this.referenceSerializer = referenceSerializer
 	}
 	

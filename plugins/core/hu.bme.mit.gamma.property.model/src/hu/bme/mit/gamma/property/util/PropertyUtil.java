@@ -11,10 +11,13 @@
 package hu.bme.mit.gamma.property.util;
 
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
+import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
+import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
 import hu.bme.mit.gamma.property.model.PropertyModelFactory;
@@ -22,13 +25,16 @@ import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 
 public class PropertyUtil extends ExpressionUtil {
 	// Singleton
 	public static final PropertyUtil INSTANCE = new PropertyUtil();
 	protected PropertyUtil() {}
 	//
-	protected PropertyModelFactory factory = PropertyModelFactory.eINSTANCE;
+	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE;
 	
 	public AtomicFormula createAtomicFormula(Expression expression) {
 		AtomicFormula atomicFormula = factory.createAtomicFormula();
@@ -71,6 +77,25 @@ public class PropertyUtil extends ExpressionUtil {
 		imply.setRightOperand(AF);
 		StateFormula AG = createAG(imply);
 		return AG;
+	}
+	
+	public ComponentInstanceEventReference createEventReference(ComponentInstanceReference instance,
+			Port port, Event event) {
+		ComponentInstanceEventReference reference = factory.createComponentInstanceEventReference();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		return reference;
+	}
+	
+	public ComponentInstanceEventParameterReference createParameterReference(
+			ComponentInstanceReference instance, Port port, Event event, ParameterDeclaration parameter) {
+		ComponentInstanceEventParameterReference reference = factory.createComponentInstanceEventParameterReference();
+		reference.setInstance(instance);
+		reference.setPort(port);
+		reference.setEvent(event);
+		reference.setParameter(parameter);
+		return reference;
 	}
 	
 }

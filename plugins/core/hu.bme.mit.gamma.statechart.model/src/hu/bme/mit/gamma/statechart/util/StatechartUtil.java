@@ -26,11 +26,13 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -52,6 +54,14 @@ public class StatechartUtil extends ExpressionUtil {
 	protected InterfaceModelFactory interfaceFactory = InterfaceModelFactory.eINSTANCE;
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
+	
+
+	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
+		ComponentInstanceReference instanceReference = compositeFactory.createComponentInstanceReference();
+		instanceReference.getComponentInstanceHierarchy().addAll(
+				StatechartModelDerivedFeatures.getComponentInstanceChain(instance));
+		return instanceReference;
+	}
 	
 	public Set<VariableDeclaration> getWrittenVariables(EObject object) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
