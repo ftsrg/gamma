@@ -12,12 +12,15 @@ package hu.bme.mit.gamma.property.util;
 
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
+import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
 import hu.bme.mit.gamma.property.model.PropertyModelFactory;
@@ -26,8 +29,10 @@ import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.statechart.State;
 
 public class PropertyUtil extends ExpressionUtil {
 	// Singleton
@@ -77,6 +82,25 @@ public class PropertyUtil extends ExpressionUtil {
 		imply.setRightOperand(AF);
 		StateFormula AG = createAG(imply);
 		return AG;
+	}
+	
+	// Atomic expressions
+	
+	public ComponentInstanceStateConfigurationReference createStateReference(
+			ComponentInstanceReference instance, State state) {
+		ComponentInstanceStateConfigurationReference reference = factory.createComponentInstanceStateConfigurationReference();
+		reference.setInstance(instance);
+		reference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
+		reference.setState(state);
+		return reference;
+	}
+	
+	public ComponentInstanceVariableReference createVariableReference(ComponentInstanceReference instance,
+			VariableDeclaration variable) {
+		ComponentInstanceVariableReference reference = factory.createComponentInstanceVariableReference();
+		reference.setInstance(instance);
+		reference.setVariable(variable);
+		return reference;
 	}
 	
 	public ComponentInstanceEventReference createEventReference(ComponentInstanceReference instance,

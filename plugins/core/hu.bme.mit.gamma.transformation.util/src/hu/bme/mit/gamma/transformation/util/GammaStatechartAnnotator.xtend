@@ -14,9 +14,11 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
 import java.math.BigInteger
+import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.List
 import java.util.Map
+import java.util.Map.Entry
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
@@ -35,12 +37,14 @@ class GammaStatechartAnnotator {
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
-	protected int synchronizationId = 0
+	protected int sendingId = 1 // Multiplying with 0 is not useful here
+	protected int receivingId = 1
 	protected final Map<RaiseEventAction, Integer> sendingIds = newHashMap
-	protected final Map<Transition, List<Pair<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
+	protected final Map<Transition, Integer> receivingIds = newHashMap
+	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
 	protected final Map<SynchronousComponentInstance, List<VariableDeclaration>> receivingVariables = newHashMap // Check: list must be unique
-	protected final Map<Transition, List<Pair<VariableDeclaration, Integer>>> receivingIds = newHashMap // Check: list must be unique
-	protected final Map<Pair<RaiseEventAction, Transition>, Pair<VariableDeclaration, Integer>> interactions = newHashMap // Integer variables
+	protected final Map<Transition, List<Entry<VariableDeclaration, Integer>>> interactionIds = newHashMap // Check: list must be unique
+	protected final Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> interactions = newHashMap // Integer variables
 	// Resetable variables
 	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
@@ -125,7 +129,7 @@ class GammaStatechartAnnotator {
 	
 	protected def getReceivingInteractionVariable(Transition transition, Port port, Event event) {
 		val interactions = receivingInteractions.get(transition)
-		val index = interactions.indexOf(new Pair(port, event)) // The i. interaction is saved using the i. variable
+		val index = interactions.indexOf(new SimpleEntry(port, event)) // The i. interaction is saved using the i. variable
 		val statechart = transition.containingStatechart
 		val instance = statechart.referencingComponentInstance
 		val variables = receivingVariables.get(instance)
@@ -134,17 +138,24 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			sendingIds.put(action, synchronizationId++)
+			sendingIds.put(action, sendingId++)
 		}
 		return sendingIds.get(action)
 	}
 	
-	protected def putReceivingId(Transition transition, VariableDeclaration variable, int id) {
+	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			receivingIds.put(transition, newArrayList)
+			receivingIds.put(transition, receivingId++)
 		}
-		val synchronizations = receivingIds.get(transition)
-		synchronizations += new Pair(transition, id)
+		return receivingIds.get(transition)
+	}
+	
+	protected def putInteractionId(Transition transition, VariableDeclaration variable, int id) {
+		if (!interactionIds.containsKey(transition)) {
+			interactionIds.put(transition, newArrayList)
+		}
+		val synchronizations = interactionIds.get(transition)
+		synchronizations += new SimpleEntry(transition, id)
 	}
 	
 	protected def putReceivingInteraction(Transition transition, Port port, Event event) {
@@ -152,7 +163,7 @@ class GammaStatechartAnnotator {
 			receivingInteractions.put(transition, newArrayList)
 		}
 		val interactions = receivingInteractions.get(transition)
-		interactions += new Pair(port, event)
+		interactions += new SimpleEntry(port, event)
 	}
 	
 	def annotateModelForInteractionCoverage() {
@@ -202,7 +213,7 @@ class GammaStatechartAnnotator {
 			val receivingVariables = receivingVariables.get(inInstance)
 			val receivingInteractions = receivingInteractions.get(receivingTransition)
 			// We do not want to duplicate the same assignments
-			if (!receivingInteractions.contains(new Pair(inPort, event))) {
+			if (!receivingInteractions.contains(new SimpleEntry(inPort, event))) {
 				receivingTransition.putReceivingInteraction(inPort, event)
 				if (receivingVariables.size < receivingInteractions.size) {
 					// The difference can be at most one due to the algorithm
@@ -213,18 +224,24 @@ class GammaStatechartAnnotator {
 					it.lhs = createReferenceExpression => [
 						it.declaration = receivingVariable
 					]
-					it.rhs = createEventParameterReferenceExpression => [
-						it.port = inPort
-						it.event = event
-						it.parameter = inParameter
+					it.rhs = createMultiplyExpression => [ // interactionId = sendingId * receivingId
+						it.operands += createIntegerLiteralExpression => [
+							it.value = BigInteger.valueOf(receivingTransition.receivingId)
+						]
+						it.operands += createEventParameterReferenceExpression => [
+							it.port = inPort
+							it.event = event
+							it.parameter = inParameter
+						]
 					]
 				]
 			}
-			// Conclusion
+			// Conclusion interactionId = sendingId * receivingId
+			val interactionId = raiseEventAction.sendingId * receivingTransition.receivingId
 			val receivingVariable = receivingTransition.getReceivingInteractionVariable(inPort, event)
-			receivingTransition.putReceivingId(receivingVariable, raiseEventAction.sendingId)
-			interactions.put(new Pair(raiseEventAction, receivingTransition),
-				new Pair(receivingVariable, raiseEventAction.sendingId))
+			receivingTransition.putInteractionId(receivingVariable, interactionId)
+			interactions.put(new SimpleEntry(raiseEventAction, receivingTransition),
+				new SimpleEntry(receivingVariable, interactionId))
 		}
 	}
 	

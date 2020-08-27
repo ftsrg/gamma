@@ -44,46 +44,48 @@ class PropertyLanguageScopeProvider extends AbstractPropertyLanguageScopeProvide
 		if (context instanceof ComponentInstanceStateExpression) {
 			// Base
 			var instance = context.instance.componentInstanceHierarchy.last
-			val statechart = instance.derivedType as StatechartDefinition
+			val statechart = instance.derivedType
 			if (statechart !== null) {
-				// State
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
-					return Scopes.scopeFor(statechart.allRegions)
-				}
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
-					val stateConfigurationReference = context as ComponentInstanceStateConfigurationReference
-					val region = stateConfigurationReference.region
-					return Scopes.scopeFor(region.states)
-				}
-				// Variable
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
-					return Scopes.scopeFor(statechart.variableDeclarations)
-				}
-				// Port
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__PORT ||
-						reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PORT) {
-					return Scopes.scopeFor(statechart.ports)
-				}
-				// Event
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__EVENT ||
-						reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
-					if (context instanceof ComponentInstanceEventReference) {
-						val port = context.port
-						if (!port.eIsProxy) {
-							return Scopes.scopeFor(port.outputEvents)
+				if (statechart instanceof StatechartDefinition) {
+					// State
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
+						return Scopes.scopeFor(statechart.allRegions)
+					}
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
+						val stateConfigurationReference = context as ComponentInstanceStateConfigurationReference
+						val region = stateConfigurationReference.region
+						return Scopes.scopeFor(region.states)
+					}
+					// Variable
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+						return Scopes.scopeFor(statechart.variableDeclarations)
+					}
+					// Port
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__PORT ||
+							reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PORT) {
+						return Scopes.scopeFor(statechart.ports)
+					}
+					// Event
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_REFERENCE__EVENT ||
+							reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__EVENT) {
+						if (context instanceof ComponentInstanceEventReference) {
+							val port = context.port
+							if (!port.eIsProxy) {
+								return Scopes.scopeFor(port.outputEvents)
+							}
+						}
+						if (context instanceof ComponentInstanceEventParameterReference) {
+							val port = context.port
+							if (!port.eIsProxy) {
+								return Scopes.scopeFor(port.outputEvents)
+							}
 						}
 					}
-					if (context instanceof ComponentInstanceEventParameterReference) {
-						val port = context.port
-						if (!port.eIsProxy) {
-							return Scopes.scopeFor(port.outputEvents)
-						}
+					// Parameter
+					if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PARAMETER) {
+						val eventParameterReference = context as ComponentInstanceEventParameterReference
+						return Scopes.scopeFor(eventParameterReference.event.parameterDeclarations)
 					}
-				}
-				// Parameter
-				if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_EVENT_PARAMETER_REFERENCE__PARAMETER) {
-					val eventParameterReference = context as ComponentInstanceEventParameterReference
-					return Scopes.scopeFor(eventParameterReference.event.parameterDeclarations)
 				}
 			}
 		}

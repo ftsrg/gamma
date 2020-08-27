@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.querygenerator.serializer
 
 import hu.bme.mit.gamma.property.model.StateFormula
+import java.util.Collection
 
 abstract class PropertySerializer {
 	
@@ -21,5 +22,13 @@ abstract class PropertySerializer {
 	}
 	
 	abstract def String serialize(StateFormula formula)
+	
+	def String serialize(Collection<StateFormula> formulas) {
+		val builder = new StringBuilder
+		for (formula : formulas) {
+			builder.append(formula.serialize + System.lineSeparator)
+		}
+		return builder.toString
+	}
 	
 }

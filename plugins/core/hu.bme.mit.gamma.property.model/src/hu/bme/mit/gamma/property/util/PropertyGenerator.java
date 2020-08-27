@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.property.util;
 
 import java.math.BigInteger;
@@ -22,15 +32,16 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
+import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference;
 import hu.bme.mit.gamma.property.model.PropertyModelFactory;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -175,15 +186,17 @@ public class PropertyGenerator {
 	
 	public List<StateFormula> createTransitionReachability(
 			Map<Transition, VariableDeclaration> transitionVariables) {
+		List<StateFormula> formulas = new ArrayList<StateFormula>();
 		if (transitionVariables.isEmpty()) {
-			throw new IllegalArgumentException("Empty map: " + transitionVariables);
+			return formulas;
 		}
 		
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
 		for (Entry<Transition, VariableDeclaration> entry : transitionVariables.entrySet()) {
 			VariableDeclaration variable = entry.getValue();
-			ReferenceExpression reference = expressionFactory.createReferenceExpression();
-			reference.setDeclaration(variable);
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
+			ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
+			ComponentInstanceVariableReference reference =
+					propertyUtil.createVariableReference(createInstanceReference(instance), variable);
 			StateFormula stateFormula = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(reference));
 			formulas.add(stateFormula);
@@ -194,11 +207,11 @@ public class PropertyGenerator {
 	
 	public List<StateFormula> createInteractionReachability(
 			Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> interactions) {
+		List<StateFormula> formulas = new ArrayList<StateFormula>();
 		if (interactions.isEmpty()) {
-			throw new IllegalArgumentException("Empty map: " + interactions);
+			return formulas;
 		}
 		
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
 		for (Entry<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> entry :
 				interactions.entrySet()) {
 			Entry<VariableDeclaration, Integer> value = entry.getValue();
@@ -206,8 +219,10 @@ public class PropertyGenerator {
 			Integer id = value.getValue();
 			
 			EqualityExpression equalityExpression = expressionFactory.createEqualityExpression();
-			ReferenceExpression reference = expressionFactory.createReferenceExpression();
-			reference.setDeclaration(variable);
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
+			ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
+			ComponentInstanceVariableReference reference =
+					propertyUtil.createVariableReference(createInstanceReference(instance), variable);
 			IntegerLiteralExpression literal = expressionFactory.createIntegerLiteralExpression();
 			literal.setValue(BigInteger.valueOf(id));
 			equalityExpression.setLeftOperand(reference);
@@ -220,8 +235,7 @@ public class PropertyGenerator {
 		return formulas;
 	}
 	
-	protected ComponentInstanceReference createInstanceReference(
-			SynchronousComponentInstance instance) {
+	protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
 			ComponentInstanceReference reference = compositeFactory.createComponentInstanceReference();
 			reference.getComponentInstanceHierarchy().add(instance);

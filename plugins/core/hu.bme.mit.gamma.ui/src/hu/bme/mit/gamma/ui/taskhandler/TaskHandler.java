@@ -26,8 +26,10 @@ import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
-import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
+import hu.bme.mit.gamma.property.language.ui.serializer.PropertyLanguageSerializer;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.trace.language.ui.serializer.TraceLanguageSerializer;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.util.FileUtil;
@@ -98,6 +100,10 @@ public abstract class TaskHandler {
 				serializeTrace(rootElem, parentFolder, fileName);
 				return;
 			}
+			else if (rootElem instanceof PropertyPackage) { 
+				serializeProperty(rootElem, parentFolder, fileName);
+				return;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
@@ -114,6 +120,11 @@ public abstract class TaskHandler {
 	
 	private void serializeTrace(EObject rootElem, String parentFolder, String fileName) throws IOException {
 		TraceLanguageSerializer serializer = new TraceLanguageSerializer();
+		serializer.serialize(rootElem, parentFolder, fileName);
+	}
+	
+	private void serializeProperty(EObject rootElem, String parentFolder, String fileName) throws IOException {
+		PropertyLanguageSerializer serializer = new PropertyLanguageSerializer();
 		serializer.serialize(rootElem, parentFolder, fileName);
 	}
 	

@@ -38,6 +38,9 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.util.PropertyGenerator;
+import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
@@ -47,6 +50,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.transformation.util.GammaStatechartAnnotator;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
@@ -125,12 +129,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final String XSTS_EMF_EXTENSION = "gsts";
 		protected final String XSTS_XTEXT_EXTENSION = "xsts";
 		
-		public abstract void execute(AnalysisModelTransformation analysisModelTransformation);
+		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
 	}
 	
 	class Gamma2UppaalTransformer extends AnalysisModelTransformer {
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
 			// Unfolding the given system
 			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
 			Component component = componentReference.getComponent();
@@ -174,6 +178,27 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				testGenerationHandler.setInteractionRepresentation(
 						getInteractionRepresentation(coverage.getInteractionRepresentation()));
 			}
+//			
+			GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
+					testedComponentsForTransitions, testedComponentsForInteractions);
+			statechartAnnotator.annotateModel();
+			newPackage.eResource().save(Collections.emptyMap());
+			// We are after model unfolding, so the argument is false
+			PropertyGenerator propertyGenerator = new PropertyGenerator(false);
+			PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createTransitionReachability(
+							statechartAnnotator.getTransitionVariables()));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createInteractionReachability(
+							statechartAnnotator.getInteractions()));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createStateReachability(
+							testedComponentsForStates));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createOutEventReachability(
+							testedComponentsForOutEvents));
+//
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
@@ -191,6 +216,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Serializing the NTA model to XML
 			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
 			// Creating a new query file
+//			
+			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
+			UppaalPropertySerializer propertySerializer = UppaalPropertySerializer.INSTANCE;
+			String serializedFormulas = propertySerializer.serialize(propertyPackage.getFormulas());
+			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "2.q", serializedFormulas);
+//			
 			new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
 			UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
 			transformer.dispose();
