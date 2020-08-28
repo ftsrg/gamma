@@ -243,7 +243,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						getInteractionRepresentation(coverage.getInteractionRepresentation()));
 			}
 //			
-			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+//			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 //
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
