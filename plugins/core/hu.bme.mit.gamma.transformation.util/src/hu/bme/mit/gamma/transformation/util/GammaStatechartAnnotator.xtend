@@ -38,8 +38,7 @@ class GammaStatechartAnnotator {
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
-	protected final SubsequentPrimeGenerator sendingId = new SubsequentPrimeGenerator(0, false) // Multiplying with 0 is not useful here
-	protected final SubsequentPrimeGenerator receivingId = new SubsequentPrimeGenerator(0, false)
+	protected final SubsequentPrimeGenerator id = new SubsequentPrimeGenerator(0, true) // id for both the sender and receiver
 	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
@@ -140,14 +139,14 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			sendingIds.put(action, sendingId.nextPrime)
+			sendingIds.put(action, id.nextPrime)
 		}
 		return sendingIds.get(action)
 	}
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			receivingIds.put(transition, receivingId.nextPrime)
+			receivingIds.put(transition, id.nextPrime)
 		}
 		return receivingIds.get(transition)
 	}
