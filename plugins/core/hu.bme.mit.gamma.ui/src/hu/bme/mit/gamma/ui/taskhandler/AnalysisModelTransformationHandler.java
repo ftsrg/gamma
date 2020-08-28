@@ -130,6 +130,70 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final String XSTS_XTEXT_EXTENSION = "xsts";
 		
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
+	
+		protected void annotateModelAndGenerateProperties(
+				AnalysisModelTransformation analysisModelTransformation, 
+				Component newTopComponent) throws IOException {
+			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
+
+			// State coverage
+			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof StateCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
+					newTopComponent, stateCoverage);
+			// Transition coverage
+			Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof TransitionCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
+					newTopComponent, transitionCoverage);
+			// Out event coverage
+			Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof OutEventCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
+					newTopComponent, outEventCoverage);
+			// Interaction coverage
+			Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof InteractionCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
+					newTopComponent, interactionCoverage);
+			
+			GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
+					testedComponentsForTransitions, testedComponentsForInteractions);
+			statechartAnnotator.annotateModel();
+			ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
+			// We are after model unfolding, so the argument is false
+			PropertyGenerator propertyGenerator = new PropertyGenerator(false);
+			PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createTransitionReachability(
+							statechartAnnotator.getTransitionVariables()));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createInteractionReachability(
+							statechartAnnotator.getInteractions()));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createStateReachability(
+							testedComponentsForStates));
+			propertyPackage.getFormulas().addAll(
+					propertyGenerator.createOutEventReachability(newTopComponent,
+							testedComponentsForOutEvents));
+			// Saving the property package
+			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
+			UppaalPropertySerializer propertySerializer = UppaalPropertySerializer.INSTANCE;
+			String serializedFormulas = propertySerializer.serialize(propertyPackage.getFormulas());
+			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "2.q", serializedFormulas);
+		}
+		
+		protected List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
+				Optional<Coverage> coverage) {
+			SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
+			if (coverage.isPresent()) {
+				Coverage presentCoverage = coverage.get();
+				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(),
+					presentCoverage.getExclude(), component);
+			}
+			return Collections.emptyList();
+		}
+		
 	}
 	
 	class Gamma2UppaalTransformer extends AnalysisModelTransformer {
@@ -179,25 +243,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						getInteractionRepresentation(coverage.getInteractionRepresentation()));
 			}
 //			
-			GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
-					testedComponentsForTransitions, testedComponentsForInteractions);
-			statechartAnnotator.annotateModel();
-			newPackage.eResource().save(Collections.emptyMap());
-			// We are after model unfolding, so the argument is false
-			PropertyGenerator propertyGenerator = new PropertyGenerator(false);
-			PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createTransitionReachability(
-							statechartAnnotator.getTransitionVariables()));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createInteractionReachability(
-							statechartAnnotator.getInteractions()));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createStateReachability(
-							testedComponentsForStates));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createOutEventReachability(newTopComponent,
-							testedComponentsForOutEvents));
+			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 //
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
@@ -215,28 +261,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ecoreUtil.normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
 			// Serializing the NTA model to XML
 			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
+			
 			// Creating a new query file
-//			
-			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
-			UppaalPropertySerializer propertySerializer = UppaalPropertySerializer.INSTANCE;
-			String serializedFormulas = propertySerializer.serialize(propertyPackage.getFormulas());
-			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "2.q", serializedFormulas);
-//			
 			new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
 			UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
 			transformer.dispose();
 			logger.log(Level.INFO, "The UPPAAL transformation has been finished.");
-		}
-		
-		private List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
-				Optional<Coverage> coverage) {
-			SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
-			if (coverage.isPresent()) {
-				Coverage presentCoverage = coverage.get();
-				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(),
-					presentCoverage.getExclude(), component);
-			}
-			return Collections.emptyList();
 		}
 		
 		private Constraint transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint, Component newComponent) {

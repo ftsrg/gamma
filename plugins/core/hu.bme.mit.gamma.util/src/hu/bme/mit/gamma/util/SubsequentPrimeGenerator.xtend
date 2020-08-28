@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.transformation.util
+package hu.bme.mit.gamma.util
 
 class SubsequentPrimeGenerator {
 	

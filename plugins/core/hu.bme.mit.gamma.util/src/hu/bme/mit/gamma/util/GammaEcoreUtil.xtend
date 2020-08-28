@@ -174,6 +174,12 @@ class GammaEcoreUtil {
 		return normalSave(new ResourceSetImpl(), rootElem, parentFolder, fileName)
 	}
 
+	def void save(EObject rootElem) {
+		val resource = rootElem.eResource
+		checkState(resource !== null)
+		resource.save(Collections.EMPTY_MAP)
+	}
+
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)

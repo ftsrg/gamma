@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
+import hu.bme.mit.gamma.util.SubsequentPrimeGenerator
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
