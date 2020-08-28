@@ -196,7 +196,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					propertyGenerator.createStateReachability(
 							testedComponentsForStates));
 			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createOutEventReachability(
+					propertyGenerator.createOutEventReachability(newTopComponent,
 							testedComponentsForOutEvents));
 //
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +

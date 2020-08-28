@@ -9,6 +9,7 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
@@ -37,14 +38,14 @@ class GammaStatechartAnnotator {
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
-	protected int sendingId = 1 // Multiplying with 0 is not useful here
-	protected int receivingId = 1
-	protected final Map<RaiseEventAction, Integer> sendingIds = newHashMap
-	protected final Map<Transition, Integer> receivingIds = newHashMap
+	protected final SubsequentPrimeGenerator sendingId = new SubsequentPrimeGenerator(0, false) // Multiplying with 0 is not useful here
+	protected final SubsequentPrimeGenerator receivingId = new SubsequentPrimeGenerator(0, false)
+	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
+	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
 	protected final Map<SynchronousComponentInstance, List<VariableDeclaration>> receivingVariables = newHashMap // Check: list must be unique
-	protected final Map<Transition, List<Entry<VariableDeclaration, Integer>>> interactionIds = newHashMap // Check: list must be unique
-	protected final Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> interactions = newHashMap // Integer variables
+	protected final Map<Transition, List<Entry<VariableDeclaration, Long>>> interactionIds = newHashMap // Check: list must be unique
+	protected final Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> interactions = newHashMap // Long variables
 	// Resetable variables
 	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
@@ -73,7 +74,8 @@ class GammaStatechartAnnotator {
 	// Transition coverage
 	
 	protected def needsAnnotation(Transition transition) {
-		return coverableTransitions.contains(transition)
+		return !(transition.sourceState instanceof EntryState) &&
+			coverableTransitions.contains(transition)
 	}
 	
 	protected def createTransitionVariable(Transition transition) {
@@ -138,19 +140,19 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			sendingIds.put(action, sendingId++)
+			sendingIds.put(action, sendingId.nextPrime)
 		}
 		return sendingIds.get(action)
 	}
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			receivingIds.put(transition, receivingId++)
+			receivingIds.put(transition, receivingId.nextPrime)
 		}
 		return receivingIds.get(transition)
 	}
 	
-	protected def putInteractionId(Transition transition, VariableDeclaration variable, int id) {
+	protected def putInteractionId(Transition transition, VariableDeclaration variable, long id) {
 		if (!interactionIds.containsKey(transition)) {
 			interactionIds.put(transition, newArrayList)
 		}

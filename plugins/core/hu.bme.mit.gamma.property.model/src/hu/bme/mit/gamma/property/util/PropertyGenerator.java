@@ -104,12 +104,15 @@ public class PropertyGenerator {
 		return formulas;
 	}
 	
-	public List<StateFormula> createOutEventReachability(
+	public List<StateFormula> createOutEventReachability(Component component,
 			Collection<SynchronousComponentInstance> instances) {
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
+		Collection<Port> simplePorts = StatechartModelDerivedFeatures.getAllConnectedSimplePorts(component);
+		List<StateFormula> formulas = new ArrayList<StateFormula>(); 
 		for (SynchronousComponentInstance instance : instances) {
 			Component type = instance.getType();
-			for (Port port : type.getPorts()) {
+			List<Port> ports = new ArrayList<Port>(type.getPorts());
+			ports.retainAll(simplePorts); // Only that are led out to the system port
+			for (Port port : ports) {
 				for (Event outEvent : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					EList<ParameterDeclaration> parameters = outEvent.getParameterDeclarations();
 					if (parameters.isEmpty()) {
@@ -206,17 +209,17 @@ public class PropertyGenerator {
 	}
 	
 	public List<StateFormula> createInteractionReachability(
-			Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> interactions) {
+			Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> interactions) {
 		List<StateFormula> formulas = new ArrayList<StateFormula>();
 		if (interactions.isEmpty()) {
 			return formulas;
 		}
 		
-		for (Entry<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Integer>> entry :
+		for (Entry<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> entry :
 				interactions.entrySet()) {
-			Entry<VariableDeclaration, Integer> value = entry.getValue();
+			Entry<VariableDeclaration, Long> value = entry.getValue();
 			VariableDeclaration variable = value.getKey();
-			Integer id = value.getValue();
+			Long id = value.getValue();
 			
 			EqualityExpression equalityExpression = expressionFactory.createEqualityExpression();
 			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
