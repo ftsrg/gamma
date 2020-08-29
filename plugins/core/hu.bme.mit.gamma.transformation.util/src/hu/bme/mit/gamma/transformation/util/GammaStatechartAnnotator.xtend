@@ -52,6 +52,8 @@ class GammaStatechartAnnotator {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
+	// Namings
+	protected final AnnotationNamings annotationNamings = new AnnotationNamings // Instance due to the id
 	
 	new(Package gammaPackage,
 			Collection<SynchronousComponentInstance> transitionCoverableComponents,
@@ -82,7 +84,7 @@ class GammaStatechartAnnotator {
 		val statechart = transition.containingStatechart
 		val variable = createVariableDeclaration => [
 			it.type = createBooleanTypeDefinition
-			it.name = AnnotationNamings.getVariableName(transition)
+			it.name = annotationNamings.getVariableName(transition)
 		]
 		statechart.variableDeclarations += variable
 		transitionVariables.put(transition, variable)
@@ -117,7 +119,7 @@ class GammaStatechartAnnotator {
 		val statechart = instance.type as StatechartDefinition
 		val variable = createVariableDeclaration => [
 			it.type = createIntegerTypeDefinition
-			it.name = AnnotationNamings.getVariableName(instance)
+			it.name = annotationNamings.getVariableName(instance)
 		]
 		statechart.variableDeclarations += variable
 		if (!receivingVariables.containsKey(instance)) {
@@ -183,7 +185,7 @@ class GammaStatechartAnnotator {
 		for (event : interactionMatcher.allValuesOfraisedEvent) {
 			val newParameter = createParameterDeclaration => [
 				it.type = createIntegerTypeDefinition
-				it.name = AnnotationNamings.getParameterName(event)
+				it.name = annotationNamings.getParameterName(event)
 			]
 			event.parameterDeclarations += newParameter
 			newParameters += newParameter
@@ -267,10 +269,10 @@ class AnnotationNamings {
 	public static val PREFIX = "__testAnnotation"
 	public static val POSTFIX = "__"
 	
-	static int id = 0
+	int id = 0
 	
-	def static String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»'''
-	def static String getVariableName(SynchronousComponentInstance instance) '''«PREFIX»«instance.name»«id++»«POSTFIX»'''
-	def static String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
+	def String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»'''
+	def String getVariableName(SynchronousComponentInstance instance) '''«PREFIX»«instance.name»«id++»«POSTFIX»'''
+	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }
