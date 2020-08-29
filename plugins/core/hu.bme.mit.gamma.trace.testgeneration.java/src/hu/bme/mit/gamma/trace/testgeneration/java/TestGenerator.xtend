@@ -10,16 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.transformation.util.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
 import java.util.Collections
@@ -198,19 +200,19 @@ class TestGenerator {
 						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
 						// Act
 						«FOR act : step.actions»
-						«act.serialize»
+							«act.serialize»
 						«ENDFOR»
 						// Checking out events
 						«FOR outEvent : step.outEvents»
-						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
+							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
 						«ENDFOR»
 						// Checking variables
-						«FOR variableState : step.instanceStates.filter(InstanceVariableState)»
-						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
+						«FOR variableState : step.instanceStates.filter(InstanceVariableState).filter[it.declaration.isHandled]»
+							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
 						«ENDFOR»
 						// Checking of states
 						«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
-						«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
+							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
 						«ENDFOR»
 					}
 					
@@ -339,6 +341,16 @@ class TestGenerator {
 			if (stateName.matches(notHandledStateNamePattern)) {
 				return false
 			}
+		}
+		return true
+	}
+	
+	protected def boolean isHandled(Declaration declaration) {
+		// Not perfect as other variables can be named liked this, but works 99,99% of the time
+		val name = declaration.name
+		if (name.startsWith(AnnotationNamings.PREFIX) &&
+				name.endsWith(AnnotationNamings.POSTFIX)) {
+			return false
 		}
 		return true
 	}

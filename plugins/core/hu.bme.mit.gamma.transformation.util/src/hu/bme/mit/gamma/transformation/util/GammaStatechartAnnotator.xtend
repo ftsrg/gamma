@@ -264,10 +264,13 @@ class GammaStatechartAnnotator {
 
 class AnnotationNamings {
 	
+	public static val PREFIX = "__testAnnotation"
+	public static val POSTFIX = "__"
+	
 	static int id = 0
 	
-	def static String getVariableName(Transition transition) '''__«transition.sourceState.name»_«transition.targetState.name»__'''
-	def static String getVariableName(SynchronousComponentInstance instance) '''__interactionOf«instance.name»«id++»__'''
-	def static String getParameterName(Event event) '''__interactionOf«event.name»__'''
+	def static String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«transition.targetState.name»«POSTFIX»'''
+	def static String getVariableName(SynchronousComponentInstance instance) '''«PREFIX»«instance.name»«id++»«POSTFIX»'''
+	def static String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }
