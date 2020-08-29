@@ -269,7 +269,7 @@ class AnnotationNamings {
 	
 	static int id = 0
 	
-	def static String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«transition.targetState.name»«POSTFIX»'''
+	def static String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»'''
 	def static String getVariableName(SynchronousComponentInstance instance) '''«PREFIX»«instance.name»«id++»«POSTFIX»'''
 	def static String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
