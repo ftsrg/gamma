@@ -89,11 +89,16 @@ class TestQueryGenerationHandler {
 		return this.modelModifier
 	}
 
+	// Deadlock
+
+	def String generateDeadlockExpression() {
+		return '''A[] not deadlock«System.lineSeparator»'''
+	}
 	
 	// State coverage
 	
 	def String generateStateCoverageExpressions() {
-		val expressions = new StringBuilder('''A[] not deadlock«System.lineSeparator»''')
+		val expressions = new StringBuilder
 		// VIATRA matches cannot be used here, as testedComponentsForStates has different pointers for some reason
 		for (instance : stateCoverableComponents) {
 			val statechart = instance.type as StatechartDefinition
@@ -235,6 +240,7 @@ class TestQueryGenerationHandler {
 	
 	def generateExpressions() {
 		val expressions = new StringBuilder
+		expressions.append(generateDeadlockExpression)
 		if (STATE_COVERAGE) {
 			expressions.append(generateStateCoverageExpressions)
 		}

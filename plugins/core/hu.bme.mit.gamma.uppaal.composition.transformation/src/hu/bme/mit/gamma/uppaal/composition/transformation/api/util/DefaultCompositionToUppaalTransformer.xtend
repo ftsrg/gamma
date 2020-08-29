@@ -47,7 +47,7 @@ class DefaultCompositionToUppaalTransformer {
 			topComponent.getCoverableInstances(ElementCoverage.TRANSITION_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.OUT_EVENT_COVERAGE, coverage),
 			topComponent.getCoverableInstances(ElementCoverage.INTERACTION_COVERAGE, coverage))
-		val transformer = new CompositeToUppaalTransformer(topComponent, testQueryGenerationHandler)
+		val transformer = new CompositeToUppaalTransformer(topComponent)
 		val resultModels = transformer.execute
 		val nta = resultModels.key
 		var trace = resultModels.value

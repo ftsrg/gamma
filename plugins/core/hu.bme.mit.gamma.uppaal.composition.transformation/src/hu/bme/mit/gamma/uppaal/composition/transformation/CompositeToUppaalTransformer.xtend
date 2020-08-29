@@ -84,7 +84,6 @@ import java.util.HashSet
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
-import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
@@ -150,7 +149,6 @@ class CompositeToUppaalTransformer {
 	protected extension Logger logger = Logger.getLogger("GammaLogger")
 	// Engine on the Gamma resource 
 	protected ViatraQueryEngine engine
-	protected ResourceSet resources
 	// The Gamma composite system to be transformed
 	protected Component component
 	// The Gamma statechart that contains all ComponentDeclarations with the required instances
@@ -207,29 +205,25 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousClockTemplateCreator asynchronousClockTemplateCreator
 	protected AsynchronousSchedulerTemplateCreator asynchronousSchedulerTemplateCreator
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
-	// Test generator
-	protected ModelModifierForTestGeneration modelModifier
 	
-	new(Component component, TestQueryGenerationHandler testGenerationHandler) {
-		this(component, Scheduler.RANDOM, null, false, testGenerationHandler)
+	new(Component component) {
+		this(component, Scheduler.RANDOM, null, false)
 	}
 	
 	new(Component component,
 			Scheduler asyncScheduler,
 			Constraint constraint,
-			boolean isMinimalElementSet,
-			TestQueryGenerationHandler testGenerationHandler) { 
+			boolean isMinimalElementSet) { 
 		this.isMinimalElementSet = isMinimalElementSet
 		// The above parameters have to be set before calling initialize
-		this.initialize(component, asyncScheduler, constraint, testGenerationHandler)
+		this.initialize(component, asyncScheduler, constraint)
 	}
 	
 	private def initialize(Component component, Scheduler asyncScheduler,
-			Constraint constraint, TestQueryGenerationHandler testGenerationHandler) {
+			Constraint constraint) {
 		this.sourceRoot = component.eContainer as Package
 		val resourceSet = sourceRoot.eResource.resourceSet
 		checkState(resourceSet !== null, "The given component is not contained by a resource set")
-		this.resources = resourceSet
 		this.component = component
 		this.ntaBuilder = new NtaBuilder(component.name, this.isMinimalElementSet)
 		this.target = ntaBuilder.nta
@@ -239,7 +233,7 @@ class CompositeToUppaalTransformer {
 			it.nta = this.target
 		]
 		// Create VIATRA engine based on the Gamma resource
-		this.engine = ViatraQueryEngine.on(new EMFScope(this.resources));	  
+		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet));	  
 		// Create VIATRA auxiliary objects
 		this.manipulation = new SimpleModelManipulations(engine)
 		this.transformation = BatchTransformation.forEngine(engine).build
@@ -260,16 +254,13 @@ class CompositeToUppaalTransformer {
 			this.expressionTransformer, this.traceModel)
 		this.asynchronousComponentHelper = new AsynchronousComponentHelper(this.component, this.engine,
 			this.manipulation, this.expressionTransformer, this.ntaBuilder, this.traceModel)
-		this.modelModifier = new ModelModifierForTestGeneration(this.ntaBuilder,
-			this.assignmentExpressionCreator, this.engine, this.traceModel) 
-		testGenerationHandler.modelModifier = modelModifier
 		// Auxiliary transformation objects
 		this.asynchronousConstantsCreator = new AsynchronousConstantsCreator(this.ntaBuilder, this.manipulation, this.traceModel)
 		this.synchronousChannelCreatorOfAsynchronousInstances = new SynchronousChannelCreatorOfAsynchronousInstances(this.ntaBuilder, this.traceModel) 
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, modelModifier.resetableVariables, this.isStableVar)
+			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, #[], this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
@@ -331,8 +322,6 @@ class CompositeToUppaalTransformer {
 //		instantiateUninstantiatedTemplates
 		// New entries to traces, previous adding would cause trouble
 		extendTrace
-		// Modify models for test generation
-		modelModifier.modifyModelForTestGeneration // Before orchestratorCreator
 		// Firing the rules for async components 
 		{asynchronousConstantsCreator.getEventConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]
 		asynchronousConstantsCreator.getClockConstantsRule.fireAllCurrent[component instanceof AsynchronousComponent /*Needed only for async models*/]}

@@ -50,6 +50,7 @@ class StatechartToTestTransformer {
 		
 		// Getting traces from the simple states
 		val modelModifier = uppaalTransformer.testQueryGenerationHandler.modelModifier
+		// TODO this testQueryGenerationHandler does not work anymore, a higher-level property generation is introduced
 		val transitionAnnotations = modelModifier.transitionAnnotations
 		for (transition : transitionAnnotations.keySet
 				.filter[it.targetState instanceof State]

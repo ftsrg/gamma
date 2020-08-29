@@ -40,7 +40,10 @@ import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyGenerator;
+import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
@@ -56,10 +59,8 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceCo
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
-import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation;
 import hu.bme.mit.gamma.uppaal.composition.transformation.OrchestratingConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.SchedulingConstraint;
-import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPreprocessor;
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator;
@@ -178,10 +179,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 							testedComponentsForOutEvents));
 			// Saving the property package
 			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
-			UppaalPropertySerializer propertySerializer = UppaalPropertySerializer.INSTANCE;
+			PropertySerializer propertySerializer = getPropertySerializer();
 			String serializedFormulas = propertySerializer.serialize(propertyPackage.getFormulas());
-			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "2.q", serializedFormulas);
+			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
 		}
+		
+		protected abstract PropertySerializer getPropertySerializer();
+		
+		protected abstract String getQueryFileExtension();
 		
 		protected List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
 				Optional<Coverage> coverage) {
@@ -214,46 +219,17 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Checking the model whether it contains forbidden elements
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
 			validator.checkModel();
-			// State coverage
-			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
-							.filter(it -> it instanceof StateCoverage).findFirst();
-			List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
-					newTopComponent, stateCoverage);
-			// Transition coverage
-			Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
-							.filter(it -> it instanceof TransitionCoverage).findFirst();
-			List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
-					newTopComponent, transitionCoverage);
-			// Out event coverage
-			Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
-							.filter(it -> it instanceof OutEventCoverage).findFirst();
-			List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
-					newTopComponent, outEventCoverage);
-			// Interaction coverage
-			Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
-							.filter(it -> it instanceof InteractionCoverage).findFirst();
-			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
-					newTopComponent, interactionCoverage);
-			TestQueryGenerationHandler testGenerationHandler = new TestQueryGenerationHandler(
-					testedComponentsForStates, testedComponentsForTransitions,
-					testedComponentsForOutEvents, testedComponentsForInteractions);
-			if (interactionCoverage.isPresent()) {
-				InteractionCoverage coverage = (InteractionCoverage) interactionCoverage.get();
-				testGenerationHandler.setInteractionRepresentation(
-						getInteractionRepresentation(coverage.getInteractionRepresentation()));
-			}
 //			
-//			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 //
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
-				newTopComponent,
+				newTopComponent, // newTopComponent
 				getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 				constraint,
-				analysisModelTransformation.isMinimalElementSet(),
-				testGenerationHandler); // newTopComponent
+				analysisModelTransformation.isMinimalElementSet()); 
 			SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 			NTA nta = resultModels.getKey();
 			// Saving the generated models
@@ -261,11 +237,6 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ecoreUtil.normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
 			// Serializing the NTA model to XML
 			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
-			
-			// Creating a new query file
-			new File(targetFolderUri + File.separator +	analysisModelTransformation.getFileName().get(0) + ".q").delete();
-			UppaalModelSerializer.saveString(targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".q", testGenerationHandler.generateExpressions());
-			transformer.dispose();
 			logger.log(Level.INFO, "The UPPAAL transformation has been finished.");
 		}
 		
@@ -317,14 +288,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 		}
 		
-		private InteractionRepresentation getInteractionRepresentation(
-				hu.bme.mit.gamma.genmodel.model.InteractionRepresentation interactionRepresentation) {
-			switch (interactionRepresentation) {
-			case OVER_APPROXIMATION:
-				return InteractionRepresentation.OVER_APPROXIMATION;
-			default:
-				return InteractionRepresentation.UNDER_APPROXIMATION;
-			}
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return UppaalPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return "q";
 		}
 		
 	}
@@ -371,6 +342,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
 		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return ThetaPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return "prop";
+		}
 	
 	}
 	
@@ -392,6 +373,17 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Creating a new query file
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return XSTSUppaalPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return "q";
+		}
+		
 	}
 	
 	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
@@ -407,6 +399,17 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Creating a new query file
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return XSTSUppaalPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return "q";
+		}
+		
 	}
 	
 }
