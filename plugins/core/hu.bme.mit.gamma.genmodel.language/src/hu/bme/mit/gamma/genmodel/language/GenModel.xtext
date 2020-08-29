@@ -199,14 +199,9 @@ OutEventCoverage returns OutEventCoverage:
 
 InteractionCoverage returns InteractionCoverage:
 	{InteractionCoverage} 'interaction-coverage' ('{'
-		('interaction-representation' ':' interactionRepresentation=InteractionRepresentation)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
-;
-
-enum InteractionRepresentation returns InteractionRepresentation:
-	UNDER_APPROXIMATION = "under-approximation" |  OVER_APPROXIMATION = "over-approximation"
 ;
 
 Verification returns Verification:
