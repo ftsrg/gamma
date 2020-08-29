@@ -68,6 +68,18 @@ class FileUtil {
 		return fileName.substring(0, lastIndex)
 	}
 	
+	def getExtension(String fileName) {
+		val lastIndex = fileName.lastIndexOf(".")
+		if (lastIndex < 0) {
+			return ""
+		}
+		return fileName.substring(lastIndex + 1)
+	}
+	
+	def isHiddenFile(String fileName) {
+		return fileName.startsWith(".")
+	}
+	
 	def toHiddenFileName(String fileName) {
 		return "." + fileName
 	}

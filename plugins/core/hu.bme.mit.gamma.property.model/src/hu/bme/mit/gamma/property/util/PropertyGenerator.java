@@ -58,7 +58,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 public class PropertyGenerator {
 	// Single component reference or the whole chain is needed
-	// That is we reference the model after or before the unfolding 
+	// That is, we reference the model AFTER or BEFORE the unfolding 
 	protected boolean isSimpleComponentReference;
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;

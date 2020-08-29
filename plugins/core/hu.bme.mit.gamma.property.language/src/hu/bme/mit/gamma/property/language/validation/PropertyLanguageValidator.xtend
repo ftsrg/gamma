@@ -14,9 +14,13 @@ import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
+import hu.bme.mit.gamma.util.FileUtil
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.validation.Check
 
 class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
+	
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	new() {
 		// Registering the ComponentInstanceExpression types
@@ -32,11 +36,20 @@ class PropertyLanguageValidator extends AbstractPropertyLanguageValidator {
 			val component = model.component
 			val containedComponents = component.eContents.filter(ComponentInstance)
 			val firstInstance = instances.head
-			if (!containedComponents.contains(firstInstance)) {
+			if (!containedComponents.contains(firstInstance) && !firstInstance.isUnfolded) {
 				error("The first component instance must be the component of " + component.name,
 					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)
 			}
 		}
+	}
+	
+	/**
+	 * In the case of unfolded systems, a single (leaf) component instance if sufficient.
+	 */
+	protected def isUnfolded(EObject object) {
+		val resource = object.eResource
+		val fileName = resource.URI.lastSegment
+		return fileName.isHiddenFile && fileName.extension == "gsm"
 	}
 	
 }

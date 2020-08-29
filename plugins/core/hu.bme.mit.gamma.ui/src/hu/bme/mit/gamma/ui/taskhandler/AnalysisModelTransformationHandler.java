@@ -162,8 +162,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					testedComponentsForTransitions, testedComponentsForInteractions);
 			statechartAnnotator.annotateModel();
 			ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
-			// We are after model unfolding, so the argument is false
-			PropertyGenerator propertyGenerator = new PropertyGenerator(false);
+			// We are after model unfolding, so the argument is true
+			PropertyGenerator propertyGenerator = new PropertyGenerator(true);
 			PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
 			propertyPackage.getFormulas().addAll(
 					propertyGenerator.createTransitionReachability(
