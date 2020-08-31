@@ -2,7 +2,7 @@ package TrafficLightpkg
 import "Interfaces/Interfaces.gcd"
 
 const TRANSITION_ID : integer := 10
-
+@TransitionPriority = order-based
 statechart TrafficLight(i : integer, bc : boolean) [
 	port Display : provides DisplayInterface
 	port in_default : provides in_default
@@ -23,7 +23,8 @@ statechart TrafficLight(i : integer, bc : boolean) [
 	transition from _hBekoKDdEeq3yKnF2LzTuw to Ok / counter := 0;
 	transition from Yellow to Red when in_default.Toggle
 	transition from Ok to Ok when in_default.Leave [counter > 0] / counter := counter - 1;
-	transition from Off to On when in_default.Tick [clk > 3] / clk := 0; _transition := TRANSITION_ID;
+	transition from Off to On when in_default.Tick [clk > 3] / clk := 0; _transition :=
+		TRANSITION_ID;
 	transition from Off to Off when in_default.Tick [clk <= 3] / clk := clk + 1;
 	transition from On to On when in_default.Tick [clk <= 3] / clk := clk + 1;
 	transition from Ok to Ok when in_default.Arrive [counter < 10] / counter := counter + 1;

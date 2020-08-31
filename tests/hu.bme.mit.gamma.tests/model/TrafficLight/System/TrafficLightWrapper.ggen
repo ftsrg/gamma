@@ -30,5 +30,6 @@ verification {
 	language : Theta
 	file : "TrafficLightWrapper.xsts"
 	query-file : "CustomQueries.prop"
+	query-file : "TrafficLightWrapper.prop"
 	test-language : java
 }
