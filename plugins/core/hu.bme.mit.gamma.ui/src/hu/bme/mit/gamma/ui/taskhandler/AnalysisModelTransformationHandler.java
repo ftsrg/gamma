@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.util.PropertyGenerator;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
@@ -158,30 +159,35 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
 					newTopComponent, interactionCoverage);
 			
-			GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
-					testedComponentsForTransitions, testedComponentsForInteractions);
-			statechartAnnotator.annotateModel();
-			ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
-			// We are after model unfolding, so the argument is true
-			PropertyGenerator propertyGenerator = new PropertyGenerator(true);
-			PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createTransitionReachability(
-							statechartAnnotator.getTransitionVariables()));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createInteractionReachability(
-							statechartAnnotator.getInteractions()));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createStateReachability(
-							testedComponentsForStates));
-			propertyPackage.getFormulas().addAll(
-					propertyGenerator.createOutEventReachability(newTopComponent,
-							testedComponentsForOutEvents));
-			// Saving the property package
-			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
-			PropertySerializer propertySerializer = getPropertySerializer();
-			String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
-			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
+			// Checking if we need to annotation and property generation
+			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
+					!testedComponentsForOutEvents.isEmpty() || !testedComponentsForInteractions.isEmpty()) {
+				GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
+						testedComponentsForTransitions, testedComponentsForInteractions);
+				statechartAnnotator.annotateModel();
+				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
+				// We are after model unfolding, so the argument is true
+				PropertyGenerator propertyGenerator = new PropertyGenerator(true);
+				PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
+				List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+				formulas.addAll(
+						propertyGenerator.createTransitionReachability(
+								statechartAnnotator.getTransitionVariables()));
+				formulas.addAll(
+						propertyGenerator.createInteractionReachability(
+								statechartAnnotator.getInteractions()));
+				formulas.addAll(
+						propertyGenerator.createStateReachability(
+								testedComponentsForStates));
+				formulas.addAll(
+						propertyGenerator.createOutEventReachability(newTopComponent,
+								testedComponentsForOutEvents));
+				// Saving the property package
+				saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
+				PropertySerializer propertySerializer = getPropertySerializer();
+				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(formulas);
+				fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
+			}
 		}
 		
 		protected abstract PropertySerializer getPropertySerializer();
