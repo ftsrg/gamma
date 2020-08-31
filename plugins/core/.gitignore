@@ -1,6 +1,8 @@
 */bin/
 */target/
 
+*/*.xml_gen
+
 *.tests/
 
 hu.bme.mit.gamma.framework
