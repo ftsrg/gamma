@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
@@ -53,6 +52,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaStatechartAnnotator;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
@@ -203,25 +203,22 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class Gamma2UppaalTransformer extends AnalysisModelTransformer {
 		
+		protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
+		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
 			// Unfolding the given system
 			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
 			Component component = componentReference.getComponent();
 			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
-			UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
 			Component newTopComponent = preprocessor.preprocess(gammaPackage, componentReference.getArguments(),
 				new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
-			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
-			// Top component arguments can now be contained by the Package
-			newPackage.getTopComponentArguments().addAll(
-					componentReference.getArguments().stream()
-					.map(it -> ecoreUtil.clone(it, true, true)).collect(Collectors.toList()));
+			// Top component arguments are now be contained by the Package (preprocess)
 			// Checking the model whether it contains forbidden elements
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
 			validator.checkModel();
-//			
+			// Annotate model for test generation
 			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
-//
+			// Normal transformation
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
@@ -302,10 +299,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class Gamma2XSTSTransformer extends AnalysisModelTransformer {
 		
-		protected StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
-		protected ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
+		protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE;
+		protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+		protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			// Unfolding the given system
 			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
@@ -315,8 +313,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true);
 			String fileName = analysisModelTransformation.getFileName().get(0);
 			File xStsFile = new File(targetFolderUri + File.separator + fileName + "." + XSTS_XTEXT_EXTENSION);
-			XSTS xSts = gammaToXSTSTransformer.preprocessAndExecute(gammaPackage,
+			// Preprocess
+			Component newComponent = modelPreprocessor.preprocess(gammaPackage,
 					componentReference.getArguments(), xStsFile);
+			Package newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newComponent);
+			// Property generation
+			annotateModelAndGenerateProperties(analysisModelTransformation, newComponent);
+			// Normal transformation
+			XSTS xSts = gammaToXSTSTransformer.execute(newGammaPackage);
 			// EMF
 			ecoreUtil.normalSave(xSts, targetFolderUri, fileName + "." + XSTS_EMF_EXTENSION);
 			// String
@@ -388,7 +392,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");
 			Gamma2XSTSTransformer thetaTransformer = new Gamma2XSTSTransformer();
 			thetaTransformer.execute(analysisModelTransformation);
@@ -402,7 +406,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return XSTSUppaalPropertySerializer.INSTANCE;
+			return XSTSUppaalPropertySerializer.INSTANCE; // Will not work, due to the thetaTransformer.execute call
 		}
 
 		@Override
