@@ -46,13 +46,12 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 
 class GlueCodeGenerator {
 	// Transformation-related extensions
-	extension BatchTransformation transformation 
-	extension BatchTransformationStatements statements	
+	protected extension BatchTransformation transformation
+	protected extension BatchTransformationStatements statements
 	// Transformation rule-related extensions
-	extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	protected final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Query engines and resources
 	protected final ViatraQueryEngine engine
-	protected final ResourceSet resSet
 	protected Component topComponent
 	// File URIs where the classes need to be saved
 	protected final String BASE_PACKAGE_URI
@@ -62,7 +61,6 @@ class GlueCodeGenerator {
 	protected final String BASE_PACKAGE_NAME
 	// The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
 	protected final String YAKINDU_PACKAGE_NAME
-	// Trace
 	// Auxiliary transformer objects
 	protected final extension TimingDeterminer timingDeterminer = TimingDeterminer.INSTANCE
 	protected final extension TypeDeclarationGenerator typeDeclarationGenerator
@@ -95,9 +93,8 @@ class GlueCodeGenerator {
 	new(ResourceSet resourceSet, String basePackageName, String srcGenFolderUri) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.YAKINDU_PACKAGE_NAME = basePackageName
-		this.resSet = resourceSet
-		this.resSet.loadModels
-		this.engine = ViatraQueryEngine.on(new EMFScope(resSet))
+		resourceSet.loadModels
+		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
 		this.BASE_PACKAGE_URI = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
 		this.CHANNEL_URI = this.BASE_PACKAGE_URI + File.separator + Namings.CHANNEL_PACKAGE_POSTFIX
 		this.INTERFACE_URI = this.BASE_PACKAGE_URI + File.separator + Namings.INTERFACE_PACKAGE_POSTFIX
