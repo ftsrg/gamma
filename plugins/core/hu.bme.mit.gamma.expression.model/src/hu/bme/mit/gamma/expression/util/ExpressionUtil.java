@@ -65,19 +65,7 @@ public class ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-
-	@SuppressWarnings("unchecked")
-	public <T extends EObject> T getContainer(EObject element, Class<T> _class) {
-		EObject container = element.eContainer();
-		if (container == null) {
-			return null;
-		}
-		if (_class.isInstance(container)) {
-			return (T) container;
-		}
-		return getContainer(container, _class);
-	}
-
+	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
 		Set<Boolean> booleanValues = new HashSet<Boolean>();

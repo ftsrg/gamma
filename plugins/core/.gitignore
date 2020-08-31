@@ -1,6 +1,7 @@
 */bin/
 */target/
 
+*/.antlr-generator*.jar
 */*.xml_gen
 
 *.tests/

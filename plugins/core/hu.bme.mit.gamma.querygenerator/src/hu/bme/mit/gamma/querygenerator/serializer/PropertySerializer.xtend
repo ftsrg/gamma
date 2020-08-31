@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.expression.model.Comment
+import hu.bme.mit.gamma.property.model.CommentableStateFormula
 import hu.bme.mit.gamma.property.model.StateFormula
 import java.util.Collection
 
@@ -22,13 +24,23 @@ abstract class PropertySerializer {
 	}
 	
 	abstract def String serialize(StateFormula formula)
+	abstract def String serialize(Comment comment)
 	
-	def String serialize(Collection<StateFormula> formulas) {
-		val builder = new StringBuilder
-		for (formula : formulas) {
-			builder.append(formula.serialize + System.lineSeparator)
-		}
-		return builder.toString
-	}
+	def String serialize(CommentableStateFormula formula) '''
+		«FOR comment : formula.comments SEPARATOR System.lineSeparator»«comment.serialize»«ENDFOR»
+		«formula.formula.serialize»
+	'''
+	
+	def String serializeCommentableStateFormulas(Collection<CommentableStateFormula> formulas) '''
+		«FOR formula : formulas»
+			«formula.serialize»
+		«ENDFOR»
+	'''
+	
+	def String serializeStateFormulas(Collection<StateFormula> formulas) '''
+		«FOR formula : formulas»
+			«formula.serialize»
+		«ENDFOR»
+	'''
 	
 }

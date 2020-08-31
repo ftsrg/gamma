@@ -27,8 +27,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
-import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -86,7 +86,7 @@ public class VerificationHandler extends TaskHandler {
 			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
 			File newFile = new File(file.getParentFile().toString() + File.separator + fileName);
 			StringBuilder formulas = new StringBuilder();
-			for (StateFormula formula : propertyPackage.getFormulas()) {
+			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
 				String serializedFormula = propertySerializer.serialize(formula);
 				formulas.append(serializedFormula + System.lineSeparator());
 			}

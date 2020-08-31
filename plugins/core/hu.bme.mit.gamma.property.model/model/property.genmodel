@@ -38,6 +38,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/component"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//PropertyPackage/formulas"/>
     </genClasses>
+    <genClasses ecoreClass="property.ecore#//CommentableStateFormula">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference property.ecore#//CommentableStateFormula/formula"/>
+    </genClasses>
     <genClasses ecoreClass="property.ecore#//PathFormula"/>
     <genClasses ecoreClass="property.ecore#//StateFormula"/>
     <genClasses ecoreClass="property.ecore#//UnaryOperandPathFormula">

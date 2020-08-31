@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
@@ -51,10 +53,13 @@ import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class PropertyGenerator {
 	// Single component reference or the whole chain is needed
@@ -63,9 +68,11 @@ public class PropertyGenerator {
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE;
 	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
+	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
 	public PropertyGenerator(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference;
@@ -82,9 +89,9 @@ public class PropertyGenerator {
 		return propertyPackage;
 	}
 	
-	public List<StateFormula> createStateReachability(
+	public List<CommentableStateFormula> createStateReachability(
 			Collection<SynchronousComponentInstance> instances) {
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
+		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		for (SynchronousComponentInstance instance : instances) {
 			Component type = instance.getType();
 			if (type instanceof StatechartDefinition) {
@@ -92,22 +99,27 @@ public class PropertyGenerator {
 				for (State state : StatechartModelDerivedFeatures.getAllStates(statechart)) {
 					ComponentInstanceStateConfigurationReference stateReference =
 							factory.createComponentInstanceStateConfigurationReference();
+					final Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(state);
 					stateReference.setInstance(createInstanceReference(instance));
-					stateReference.setRegion(StatechartModelDerivedFeatures.getParentRegion(state));
+					stateReference.setRegion(parentRegion);
 					stateReference.setState(state);
 					StateFormula stateFormula = propertyUtil.createEF(
 						propertyUtil.createAtomicFormula(stateReference));
-					formulas.add(stateFormula); 
+					
+					CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(instance.getName() + "." +
+							parentRegion.getName() + "." + state.getName(), stateFormula);
+					
+					formulas.add(commentableStateFormula); 
 				}
 			}
 		}
 		return formulas;
 	}
 	
-	public List<StateFormula> createOutEventReachability(Component component,
+	public List<CommentableStateFormula> createOutEventReachability(Component component,
 			Collection<SynchronousComponentInstance> instances) {
 		Collection<Port> simplePorts = StatechartModelDerivedFeatures.getAllConnectedSimplePorts(component);
-		List<StateFormula> formulas = new ArrayList<StateFormula>(); 
+		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>(); 
 		for (SynchronousComponentInstance instance : instances) {
 			Component type = instance.getType();
 			List<Port> ports = new ArrayList<Port>(type.getPorts());
@@ -121,7 +133,11 @@ public class PropertyGenerator {
 										port, outEvent);
 						StateFormula stateFormula = propertyUtil.createEF(
 								propertyUtil.createAtomicFormula(eventReference));
-						formulas.add(stateFormula); 
+						
+						CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+								instance.getName() + "." + port.getName() + "." + outEvent.getName(), stateFormula);
+						
+						formulas.add(commentableStateFormula); 
 					}
 					else {
 						for (ParameterDeclaration parameter : parameters) {
@@ -133,7 +149,11 @@ public class PropertyGenerator {
 												createInstanceReference(instance), port, outEvent);
 								StateFormula stateFormula = propertyUtil.createEF(
 										propertyUtil.createAtomicFormula(eventReference));
-								formulas.add(stateFormula); 
+								
+								CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+										instance.getName() + "." + port.getName() + "." + outEvent.getName(), stateFormula);
+								
+								formulas.add(commentableStateFormula); 
 							}
 							else {
 								for (Expression value : parameterValues) {
@@ -154,7 +174,13 @@ public class PropertyGenerator {
 									
 									StateFormula stateFormula = propertyUtil.createEF(
 											propertyUtil.createAtomicFormula(and));
-									formulas.add(stateFormula); 
+									
+									CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+											instance.getName() + "." + port.getName() + "." +
+											outEvent.getName() + "." + parameter.getName() + " == " +
+											expressionSerializer.serialize(value), stateFormula);
+									
+									formulas.add(commentableStateFormula); 
 								}
 							}
 						}
@@ -187,9 +213,9 @@ public class PropertyGenerator {
 		return Collections.emptySet();
 	}
 	
-	public List<StateFormula> createTransitionReachability(
+	public List<CommentableStateFormula> createTransitionReachability(
 			Map<Transition, VariableDeclaration> transitionVariables) {
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
+		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		if (transitionVariables.isEmpty()) {
 			return formulas;
 		}
@@ -202,15 +228,23 @@ public class PropertyGenerator {
 					propertyUtil.createVariableReference(createInstanceReference(instance), variable);
 			StateFormula stateFormula = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(reference));
-			formulas.add(stateFormula);
+			
+			// Comment
+			
+			Transition transition = entry.getKey();
+			
+			CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+					getId(transition), stateFormula);
+			
+			formulas.add(commentableStateFormula); 
 		}
 		
 		return formulas;
 	}
 	
-	public List<StateFormula> createInteractionReachability(
+	public List<CommentableStateFormula> createInteractionReachability(
 			Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> interactions) {
-		List<StateFormula> formulas = new ArrayList<StateFormula>();
+		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		if (interactions.isEmpty()) {
 			return formulas;
 		}
@@ -233,7 +267,17 @@ public class PropertyGenerator {
 			
 			StateFormula stateFormula = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(equalityExpression));
-			formulas.add(stateFormula);
+			
+			// Comment
+			
+			Entry<RaiseEventAction, Transition> interaction = entry.getKey();
+			RaiseEventAction source = interaction.getKey();
+			Transition target = interaction.getValue();
+			
+			CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+					getId(source) + " -i- " + getId(target), stateFormula);
+			
+			formulas.add(commentableStateFormula); 
 		}
 		return formulas;
 	}
@@ -247,6 +291,41 @@ public class PropertyGenerator {
 		else {
 			return statechartUtil.createInstanceReference(instance);
 		}
+	}
+	
+	// Comments
+	
+	protected String getInstanceId(EObject object) {
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(object);
+		try {
+			ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
+			return instance.getName();
+		} catch (IllegalArgumentException e) {
+			return "";
+		}
+	}
+	
+	protected String getId(RaiseEventAction action) {
+		Transition transition = ecoreUtil.getContainerOfType(action, Transition.class);
+		if (transition == null) {
+			State state = ecoreUtil.getContainerOfType(action, State.class);
+			if (state == null) {
+				throw new IllegalArgumentException("Not known raise event: " + action);
+			}
+			return getId(state);
+		}
+		return getId(transition);
+	}
+	
+	protected String getId(State state) {
+		return getInstanceId(state) + "." +
+			StatechartModelDerivedFeatures.getParentRegion(state).getName() + "." +
+				state.getName();
+	}
+	
+	protected String getId(Transition transition) {
+		return getInstanceId(transition) + "." + transition.getSourceState().getName() + " --> " +
+				getInstanceId(transition) + "." + transition.getTargetState().getName();
 	}
 	
 }

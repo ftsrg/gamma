@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.expression.model.Comment
 import hu.bme.mit.gamma.property.model.AtomicFormula
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula
@@ -165,5 +166,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 				throw new IllegalArgumentException("Not supported operator: " + operator)
 		}
 	}
+	
+	override serialize(Comment comment) '''/*«comment.comment»*/'''
 	
 }

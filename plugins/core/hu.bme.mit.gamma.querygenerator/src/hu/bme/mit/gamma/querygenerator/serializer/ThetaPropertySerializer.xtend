@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.serializer
 
+import hu.bme.mit.gamma.expression.model.Comment
 import hu.bme.mit.gamma.property.model.AtomicFormula
 import hu.bme.mit.gamma.property.model.PathQuantifier
 import hu.bme.mit.gamma.property.model.QuantifiedFormula
@@ -97,5 +98,7 @@ class ThetaPropertySerializer extends PropertySerializer {
 				throw new IllegalArgumentException("Not supported quantifier: " + quantifier)
 		}
 	}
+	
+	override serialize(Comment comment) ''''''
 	
 }

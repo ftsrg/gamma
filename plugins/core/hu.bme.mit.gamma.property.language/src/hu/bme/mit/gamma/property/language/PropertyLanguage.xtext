@@ -20,7 +20,18 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 PropertyPackage returns PropertyPackage:
 	'import' ^import+=[interface::Package| STRING]
 	'component' component=[interface::Component]
-	('formula' formulas+=StateFormula)*
+	(formulas+=CommentableStateFormula)*
+;
+
+// Comment
+
+Comment returns expression::Comment:
+	'@' '(' comment=STRING ')'
+;
+
+CommentableStateFormula returns CommentableStateFormula:
+	(comments+=Comment)*
+	formula=StateFormula
 ;
 
 // State formula

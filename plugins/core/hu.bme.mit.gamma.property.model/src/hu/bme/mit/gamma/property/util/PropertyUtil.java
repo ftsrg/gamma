@@ -10,13 +10,16 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.property.util;
 
+import hu.bme.mit.gamma.expression.model.Comment;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference;
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference;
@@ -39,6 +42,7 @@ public class PropertyUtil extends ExpressionUtil {
 	public static final PropertyUtil INSTANCE = new PropertyUtil();
 	protected PropertyUtil() {}
 	//
+	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE;
 	
 	public AtomicFormula createAtomicFormula(Expression expression) {
@@ -82,6 +86,18 @@ public class PropertyUtil extends ExpressionUtil {
 		imply.setRightOperand(AF);
 		StateFormula AG = createAG(imply);
 		return AG;
+	}
+	
+	// Comments
+	
+	public CommentableStateFormula createCommentableStateFormula(
+			String commentString, StateFormula formula) {
+		CommentableStateFormula commentableStateFormula = factory.createCommentableStateFormula();
+		commentableStateFormula.setFormula(formula);
+		Comment comment = expressionFactory.createComment();
+		comment.setComment(commentString);
+		commentableStateFormula.getComments().add(comment);
+		return commentableStateFormula;
 	}
 	
 	// Atomic expressions

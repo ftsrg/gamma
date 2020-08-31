@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
@@ -21,6 +20,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemOutEvents
 import hu.bme.mit.gamma.uppaal.composition.transformation.ModelModifierForTestGeneration.InteractionRepresentation
 import hu.bme.mit.gamma.uppaal.util.Namings
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.Set
 
@@ -35,7 +35,7 @@ class TestQueryGenerationHandler {
 	ModelModifierForTestGeneration modelModifier
 	InteractionRepresentation interactionRepresentation = InteractionRepresentation.UNDER_APPROXIMATION
 	// Auxiliary
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// State coverage
 	protected boolean STATE_COVERAGE
 	protected final Set<SynchronousComponentInstance> stateCoverableComponents = newHashSet
@@ -200,9 +200,9 @@ class TestQueryGenerationHandler {
 	// Transition coverage
 	
 	private def getSendingObjectName(RaiseEventAction action) {
-		val transition = action.getContainer(Transition)
+		val transition = action.getContainerOfType(Transition)
 		if (transition === null) {
-			val state = action.getContainer(State)
+			val state = action.getContainerOfType(State)
 			if (state === null) {
 				throw new IllegalArgumentException("Not known raise event: " + action)
 			}

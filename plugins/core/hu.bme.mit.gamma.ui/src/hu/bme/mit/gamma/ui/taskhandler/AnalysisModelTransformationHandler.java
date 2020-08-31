@@ -180,7 +180,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Saving the property package
 			saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
 			PropertySerializer propertySerializer = getPropertySerializer();
-			String serializedFormulas = propertySerializer.serialize(propertyPackage.getFormulas());
+			String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
 			fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
 		}
 		

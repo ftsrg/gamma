@@ -158,8 +158,13 @@ public class GeneratedTestVerifier implements Runnable {
 			return null;
 		}
 		if (line.contains(COMMENT_START)) {
-			while (!(line = reader.readLine()).contains(COMMENT_END)) {
+			if (line.contains(COMMENT_END)) {
 				comment += line;
+			}
+			else {
+				while (!(line = reader.readLine()).contains(COMMENT_END)) {
+					comment += line;
+				}
 			}
 			line = reader.readLine();
 		}

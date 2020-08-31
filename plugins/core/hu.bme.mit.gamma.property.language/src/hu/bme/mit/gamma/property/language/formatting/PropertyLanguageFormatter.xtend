@@ -32,6 +32,7 @@ class PropertyLanguageFormatter extends AbstractDeclarativeFormatter {
 		// Setting the maximum size of lines
 		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.importAssignment_1)
 		c.setLinewrap(1, 1, 2).after(f.propertyPackageAccess.componentAssignment_3)
-		c.setLinewrap(1, 1, 2).before(f.propertyPackageAccess.formulaKeyword_4_0)
+		c.setLinewrap(1, 1, 2).after(f.commentRule)
+		c.setLinewrap(1, 1, 2).after(f.commentableStateFormulaRule)
 	}
 }
