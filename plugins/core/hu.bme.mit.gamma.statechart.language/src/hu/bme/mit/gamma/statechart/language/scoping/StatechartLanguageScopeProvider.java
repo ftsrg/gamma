@@ -109,7 +109,8 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			// Transitions
 			if (context instanceof Transition && (reference == StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE
 					|| reference == StatechartModelPackage.Literals.TRANSITION__TARGET_STATE)) {
-				final Collection<StateNode> candidates = stateNodesForTransition((Transition) context);
+				Transition transition = (Transition) context;
+				Collection<StateNode> candidates = stateNodesForTransition(transition);
 				return Scopes.scopeFor(candidates);
 			}
 			if (context instanceof PortEventReference && reference == StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT) {
@@ -265,7 +266,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return super.getScope(context, reference);
 	}
 	
-	private List<TypeDeclaration> collectTypeDeclarations(Package _package) {
+	protected List<TypeDeclaration> collectTypeDeclarations(Package _package) {
 		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
 		for (Package _import :_package.getImports()) {
 			types.addAll(_import.getTypeDeclarations());
@@ -274,9 +275,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		return types;
 	}
 	
-	private static Collection<StateNode> stateNodesForTransition(final Transition transition) {
-		final StatechartDefinition rootElement = (StatechartDefinition) transition.eContainer();
-		final Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
+	protected Collection<StateNode> stateNodesForTransition(Transition transition) {
+		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+		Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
 	}
 
