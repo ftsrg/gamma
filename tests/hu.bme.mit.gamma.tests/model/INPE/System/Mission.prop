@@ -1,0 +1,17 @@
+E<> __testAnnotationOBC_Receive_0_OBC_IDLE___obc
+E<> __testAnnotationOBC_IDLE_1_OBC_SEND___obc
+E<> __testAnnotationOBC_IDLE_2_OBC_SEND___obc
+E<> __testAnnotationSLP_Receive_3_SLP_Send___slp
+E<> __testAnnotationOBC_Receive_4_OBC_Write___obc
+E<> __testAnnotationSLP_Receive_5_SLP_Send___slp
+E<> __testAnnotationSLP_Send_6_SLP_Read_Experiment___slp
+E<> __testAnnotationSLP_Send_7_SLP_Receive___slp
+E<> __testAnnotationSLP_Read_Experiment_8_SLP_Send___slp
+E<> __testAnnotationOBC_SEND_9_OBC_Receive___obc
+E<> __testAnnotationOBC_Write_10_OBC_Receive___obc
+E<> __testAnnotationSLP_ON_11_SLP_Receive___slp
+E<> __testAnnotationOBC_IDLE_12_OBC_SEND___obc
+E<> __testAnnotationSLP_Send_13_SLP_Acquisition_Experiment___slp
+E<> __testAnnotationSLP_Receive_14_SLP_Send___slp
+E<> __testAnnotationSLP_Acquisition_Experiment_15_SLP_Receive___slp
+E<> __testAnnotationOBC_Receive_16_OBC_IDLE___obc

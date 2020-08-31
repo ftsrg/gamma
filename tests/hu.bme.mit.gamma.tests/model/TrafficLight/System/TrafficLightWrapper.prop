@@ -1,0 +1,13 @@
+E<> __testAnnotationInterrupted_0_Normal___TrafficLight
+E<> __testAnnotationOff_1_On___TrafficLight
+E<> __testAnnotationOk_2_Threshold___TrafficLight
+E<> __testAnnotationRed_3_Green___TrafficLight
+E<> __testAnnotationYellow_4_Red___TrafficLight
+E<> __testAnnotationOk_5_Ok___TrafficLight
+E<> __testAnnotationThreshold_6_Interrupted___TrafficLight
+E<> __testAnnotationOk_7_Ok___TrafficLight
+E<> __testAnnotationNormal_8_Interrupted___TrafficLight
+E<> __testAnnotationOn_9_Off___TrafficLight
+E<> __testAnnotationOff_10_Off___TrafficLight
+E<> __testAnnotationGreen_11_Yellow___TrafficLight
+E<> __testAnnotationOn_12_On___TrafficLight
