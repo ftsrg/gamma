@@ -242,31 +242,52 @@ public class PropertyGenerator {
 		return formulas;
 	}
 	
-	public List<CommentableStateFormula> createInteractionReachability(
-			Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> interactions) {
+	public List<CommentableStateFormula> createInteractionReachability(Map<Entry<RaiseEventAction, Transition>,
+			Entry<Entry<VariableDeclaration, Long>, Entry<VariableDeclaration, Long>>> interactions) {
 		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
 		if (interactions.isEmpty()) {
 			return formulas;
 		}
 		
-		for (Entry<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> entry :
+		for (Entry<Entry<RaiseEventAction, Transition>, Entry<Entry<VariableDeclaration, Long>, Entry<VariableDeclaration, Long>>> entry :
 				interactions.entrySet()) {
-			Entry<VariableDeclaration, Long> value = entry.getValue();
-			VariableDeclaration variable = value.getKey();
-			Long id = value.getValue();
+			Entry<Entry<VariableDeclaration, Long>, Entry<VariableDeclaration, Long>> value = entry.getValue();
+			Entry<VariableDeclaration, Long> sending = value.getKey();
+			VariableDeclaration senderVariable = sending.getKey();
+			Long senderId = sending.getValue();
+			Entry<VariableDeclaration, Long> receiving = value.getValue();
+			VariableDeclaration receiverVariable = receiving.getKey();
+			Long receiverId = receiving.getValue();
 			
-			EqualityExpression equalityExpression = expressionFactory.createEqualityExpression();
-			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
-			ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
-			ComponentInstanceVariableReference reference =
-					propertyUtil.createVariableReference(createInstanceReference(instance), variable);
-			IntegerLiteralExpression literal = expressionFactory.createIntegerLiteralExpression();
-			literal.setValue(BigInteger.valueOf(id));
-			equalityExpression.setLeftOperand(reference);
-			equalityExpression.setRightOperand(literal);
+			// Sender - note that the sender statechart and instance are the same as the receiving one,
+			// the senderVariable and receiverVariable are stored in the same statechart (receiverStatechart)
+			// Duplicated this part to make it more resilient (if the variables in the future are stored somewhere else)
+			EqualityExpression senderEqualityExpression = expressionFactory.createEqualityExpression();
+			StatechartDefinition senderStatechart = StatechartModelDerivedFeatures.getContainingStatechart(senderVariable);
+			ComponentInstance senderInstance = StatechartModelDerivedFeatures.getReferencingComponentInstance(senderStatechart);
+			ComponentInstanceVariableReference senderReference =
+					propertyUtil.createVariableReference(createInstanceReference(senderInstance), senderVariable);
+			IntegerLiteralExpression senderLiteral = expressionFactory.createIntegerLiteralExpression();
+			senderLiteral.setValue(BigInteger.valueOf(senderId));
+			senderEqualityExpression.setLeftOperand(senderReference);
+			senderEqualityExpression.setRightOperand(senderLiteral);
+			// Receiver
+			EqualityExpression receiverEqualityExpression = expressionFactory.createEqualityExpression();
+			StatechartDefinition receiverStatechart = StatechartModelDerivedFeatures.getContainingStatechart(receiverVariable);
+			ComponentInstance receiverInstance = StatechartModelDerivedFeatures.getReferencingComponentInstance(receiverStatechart);
+			ComponentInstanceVariableReference receiverReference =
+					propertyUtil.createVariableReference(createInstanceReference(receiverInstance), receiverVariable);
+			IntegerLiteralExpression receiverLiteral = expressionFactory.createIntegerLiteralExpression();
+			receiverLiteral.setValue(BigInteger.valueOf(receiverId));
+			receiverEqualityExpression.setLeftOperand(receiverReference);
+			receiverEqualityExpression.setRightOperand(receiverLiteral);
+			
+			AndExpression andExpression = expressionFactory.createAndExpression();
+			andExpression.getOperands().add(senderEqualityExpression);
+			andExpression.getOperands().add(receiverEqualityExpression);
 			
 			StateFormula stateFormula = propertyUtil.createEF(
-					propertyUtil.createAtomicFormula(equalityExpression));
+					propertyUtil.createAtomicFormula(andExpression));
 			
 			// Comment
 			

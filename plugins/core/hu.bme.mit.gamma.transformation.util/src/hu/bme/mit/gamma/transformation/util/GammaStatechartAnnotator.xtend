@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
-import hu.bme.mit.gamma.util.SubsequentPrimeGenerator
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
@@ -39,13 +38,16 @@ class GammaStatechartAnnotator {
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
-	protected final SubsequentPrimeGenerator id = new SubsequentPrimeGenerator(0, true) // id for both the sender and receiver
+	protected long senderId = 0
+	protected long recevierId = 0
 	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
-	protected final Map<SynchronousComponentInstance, List<VariableDeclaration>> receivingVariables = newHashMap // Check: list must be unique
-	protected final Map<Transition, List<Entry<VariableDeclaration, Long>>> interactionIds = newHashMap // Check: list must be unique
-	protected final Map<Entry<RaiseEventAction, Transition>, Entry<VariableDeclaration, Long>> interactions = newHashMap // Long variables
+	protected final Map<SynchronousComponentInstance,
+		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> interactionVariables = newHashMap // Check: list must be unique
+	protected final Map<Entry<RaiseEventAction, Transition> /*interaction*/,
+		Entry<Entry<VariableDeclaration, Long> /*sender*/,
+		Entry<VariableDeclaration, Long> /*receier*/>> interactions = newHashMap
 	// Resetable variables
 	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
@@ -115,51 +117,50 @@ class GammaStatechartAnnotator {
 	
 	// Interaction coverage
 	
-	protected def createReceivingInteractionVariable(SynchronousComponentInstance instance) {
+	protected def createInteractionVariables(SynchronousComponentInstance instance) {
 		val statechart = instance.type as StatechartDefinition
-		val variable = createVariableDeclaration => [
+		val senderVariable = createVariableDeclaration => [
 			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getVariableName(instance)
+			it.name = annotationNamings.getSendingVariableName(instance)
 		]
-		statechart.variableDeclarations += variable
-		if (!receivingVariables.containsKey(instance)) {
-			receivingVariables.put(instance, newArrayList)
+		val receiverVariable = createVariableDeclaration => [
+			it.type = createIntegerTypeDefinition
+			it.name = annotationNamings.getReceivingVariableName(instance)
+		]
+		val variablePair = new Pair(senderVariable, receiverVariable)
+		statechart.variableDeclarations += senderVariable
+		statechart.variableDeclarations += receiverVariable
+		if (!interactionVariables.containsKey(instance)) {
+			interactionVariables.put(instance, newArrayList)
 		}
-		val receivingVariablesSet = receivingVariables.get(instance)
-		receivingVariablesSet += variable
-		resetableVariables += variable 
-		return variable
+		val interactionVariablesSet = interactionVariables.get(instance)
+		interactionVariablesSet += variablePair
+		resetableVariables += senderVariable
+		resetableVariables += receiverVariable
+		return variablePair
 	}
 	
-	protected def getReceivingInteractionVariable(Transition transition, Port port, Event event) {
+	protected def getInteractionVariables(Transition transition, Port port, Event event) {
 		val interactions = receivingInteractions.get(transition)
 		val index = interactions.indexOf(new SimpleEntry(port, event)) // The i. interaction is saved using the i. variable
 		val statechart = transition.containingStatechart
 		val instance = statechart.referencingComponentInstance
-		val variables = receivingVariables.get(instance)
+		val variables = interactionVariables.get(instance)
 		return variables.get(index)
 	}
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			sendingIds.put(action, id.nextPrime)
+			sendingIds.put(action, senderId++)
 		}
 		return sendingIds.get(action)
 	}
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			receivingIds.put(transition, id.nextPrime)
+			receivingIds.put(transition, recevierId++)
 		}
 		return receivingIds.get(transition)
-	}
-	
-	protected def putInteractionId(Transition transition, VariableDeclaration variable, long id) {
-		if (!interactionIds.containsKey(transition)) {
-			interactionIds.put(transition, newArrayList)
-		}
-		val synchronizations = interactionIds.get(transition)
-		synchronizations += new SimpleEntry(transition, id)
 	}
 	
 	protected def putReceivingInteraction(Transition transition, Port port, Event event) {
@@ -190,9 +191,9 @@ class GammaStatechartAnnotator {
 			event.parameterDeclarations += newParameter
 			newParameters += newParameter
 		}
-		// Creating in variables - at least one is needed for every component
+		// Creating interaction variables - at least one pair is needed for every instance
 		for (receivingComponent : receivingComponents) {
-			receivingComponent.createReceivingInteractionVariable
+			receivingComponent.createInteractionVariables
 		}
 		// Annotating transitions
 		for (match : interactionMatcher.allMatches
@@ -214,38 +215,47 @@ class GammaStatechartAnnotator {
 			if (!receivingInteractions.containsKey(receivingTransition)) {
 				receivingInteractions.put(receivingTransition, newArrayList)
 			}
-			val receivingVariables = receivingVariables.get(inInstance)
+			val interactionVariablesList = interactionVariables.get(inInstance)
 			val receivingInteractions = receivingInteractions.get(receivingTransition)
 			// We do not want to duplicate the same assignments
 			if (!receivingInteractions.contains(new SimpleEntry(inPort, event))) {
 				receivingTransition.putReceivingInteraction(inPort, event)
-				if (receivingVariables.size < receivingInteractions.size) {
+				if (interactionVariablesList.size < receivingInteractions.size) {
 					// The difference can be at most one due to the algorithm
-					inInstance.createReceivingInteractionVariable
+					inInstance.createInteractionVariables
 				}
-				val receivingVariable = receivingTransition.getReceivingInteractionVariable(inPort, event)
+				val interactionVariables = receivingTransition.getInteractionVariables(inPort, event)
+				val senderVariable = interactionVariables.key
+				val receiverVariable = interactionVariables.value
+				// Sender assignment
 				receivingTransition.effects += createAssignmentStatement => [
 					it.lhs = createReferenceExpression => [
-						it.declaration = receivingVariable
+						it.declaration = senderVariable
 					]
-					it.rhs = createMultiplyExpression => [ // interactionId = sendingId * receivingId
-						it.operands += createIntegerLiteralExpression => [
-							it.value = BigInteger.valueOf(receivingTransition.receivingId)
-						]
-						it.operands += createEventParameterReferenceExpression => [
-							it.port = inPort
-							it.event = event
-							it.parameter = inParameter
-						]
+					it.rhs = createEventParameterReferenceExpression => [
+						it.port = inPort
+						it.event = event
+						it.parameter = inParameter
+					]
+				]
+				// Receiver assignment
+				receivingTransition.effects += createAssignmentStatement => [
+					it.lhs = createReferenceExpression => [
+						it.declaration = receiverVariable
+					]
+					it.rhs = createIntegerLiteralExpression => [
+						it.value = BigInteger.valueOf(receivingTransition.receivingId)
 					]
 				]
 			}
-			// Conclusion interactionId = sendingId * receivingId
-			val interactionId = raiseEventAction.sendingId * receivingTransition.receivingId
-			val receivingVariable = receivingTransition.getReceivingInteractionVariable(inPort, event)
-			receivingTransition.putInteractionId(receivingVariable, interactionId)
+			val variables = receivingTransition.getInteractionVariables(inPort, event)
+			val senderVariable = variables.key
+			val receiverVariable = variables.value
 			interactions.put(new SimpleEntry(raiseEventAction, receivingTransition),
-				new SimpleEntry(receivingVariable, interactionId))
+				new SimpleEntry(new SimpleEntry(senderVariable, raiseEventAction.sendingId),
+					new SimpleEntry(receiverVariable, receivingTransition.receivingId)
+				)
+			)
 		}
 	}
 	
@@ -272,7 +282,8 @@ class AnnotationNamings {
 	int id = 0
 	
 	def String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»'''
-	def String getVariableName(SynchronousComponentInstance instance) '''«PREFIX»«instance.name»«id++»«POSTFIX»'''
+	def String getReceivingVariableName(SynchronousComponentInstance instance) '''«PREFIX»_rec_«instance.name»«id++»«POSTFIX»'''
+	def String getSendingVariableName(SynchronousComponentInstance instance) '''«PREFIX»_send_«instance.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }
