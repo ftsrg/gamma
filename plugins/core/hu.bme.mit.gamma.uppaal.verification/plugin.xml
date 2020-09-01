@@ -22,7 +22,6 @@
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.locations"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.variableDelcarations"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.isActiveVariables"/>
-      <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topSyncComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.topAsyncCompositeComponents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.distinctWrapperInEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.verification.patterns.wrapperInEvents"/>

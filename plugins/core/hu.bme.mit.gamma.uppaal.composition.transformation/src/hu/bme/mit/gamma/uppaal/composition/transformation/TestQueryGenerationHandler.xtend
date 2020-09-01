@@ -120,11 +120,14 @@ class TestQueryGenerationHandler {
 	}
 	
 	private def hasLocation(String templateName, String locationName) {
-		val templates = modelModifier.nta.template.filter[it.name == templateName]
-		checkState(templates.size == 1, templates + " " + templateName + " " + locationName)
-		val template = templates.head
-		if (template !== null) {
-			return template.location.exists[it.name == locationName]
+		if (modelModifier !== null) {
+			val nta = modelModifier.nta
+			val templates = nta.template.filter[it.name == templateName]
+			checkState(templates.size == 1, templates + " " + templateName + " " + locationName)
+			val template = templates.head
+			if (template !== null) {
+				return template.location.exists[it.name == locationName]
+			}
 		}
 		return false
 	}

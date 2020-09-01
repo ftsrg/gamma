@@ -125,8 +125,7 @@ private pattern portToInstancePort(systemPort : Port, instance : ComponentInstan
 	find portBindings(_, systemPort, instance, port);
 }
 
-private pattern syncSystemInEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
-	instance : SynchronousComponentInstance, port : Port, event : Event) {
+private pattern syncCompositeSystemInEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find inputInstanceEvents(instance, port, event);
 } or {
@@ -136,14 +135,18 @@ private pattern syncSystemInEvents(composite : AbstractSynchronousCompositeCompo
 	find inputInstanceEvents(instance, port, event);
 }
 
-pattern topSyncSystemInEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
-	instance : SynchronousComponentInstance, port : Port, event : Event) {
-	find topSyncComponents(composite);
-	find syncSystemInEvents(composite, systemPort, instance, port, event);
+pattern topSyncSystemInEvents(component : SynchronousComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
+	find topSyncComponents(component);
+	find syncCompositeSystemInEvents(component, systemPort, instance, port, event);
+}  or {
+	// Statechart wrapped by wrapper
+	find topSyncComponents(component);
+	SynchronousComponentInstance.type(instance, component);	
+	find inputInstanceEvents(instance, port, event);
+	systemPort == port;
 }
 
-private pattern syncSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
-	instance : SynchronousComponentInstance, port : Port, event : Event) {
+private pattern syncCompositeSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find outputInstanceEvents(instance, port, event);
 } or {
@@ -153,10 +156,16 @@ private pattern syncSystemOutEvents(composite : AbstractSynchronousCompositeComp
 	find outputInstanceEvents(instance, port, event);
 }
 
-pattern topSyncSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port,
-	instance : SynchronousComponentInstance, port : Port, event : Event) {
-	find topSyncComponents(composite);
-	find syncSystemOutEvents(composite, systemPort, instance, port, event);
+pattern topSyncSystemOutEvents(component : SynchronousComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
+	// Abstract synchronous composite
+	find topSyncComponents(component);
+	find syncCompositeSystemOutEvents(component, systemPort, instance, port, event);
+} or {
+	// Statechart wrapped by wrapper
+	find topSyncComponents(component);
+	SynchronousComponentInstance.type(instance, component);	
+	find outputInstanceEvents(instance, port, event);
+	systemPort == port;
 }
 
 pattern variableToSimpleEvent(event : Event, variableDeclaration : VariableDeclaration) {	
@@ -261,16 +270,18 @@ private pattern asynchronousInstances(instance : AsynchronousComponentInstance, 
 	AsynchronousComponentInstance.type(instance, type);
 }
  
-pattern topSyncComponents(syncComposite : AbstractSynchronousCompositeComponent) {
-	neg find synchronousInstances(_, syncComposite);
+private pattern wrappers(wrapper : AsynchronousAdapter, synchronousType : SynchronousComponent) {
+	AsynchronousAdapter.wrappedComponent.type(wrapper, synchronousType);
+}
+
+private pattern topSyncComponents(component : SynchronousComponent) {
+	neg find synchronousInstances(_, component);
+} or {
+	find wrappers(_, component);
 }
 
 pattern topAsyncCompositeComponents(asyncComposite : AsynchronousCompositeComponent) {
 	neg find asynchronousInstances(_, asyncComposite);
-}
-
-private pattern wrappers(wrapper : AsynchronousAdapter, sync : SynchronousComponent) {
-	AsynchronousAdapter.wrappedComponent.type(wrapper, sync);
 }
 
 // In/out events of wrappers
@@ -292,11 +303,7 @@ pattern distinctWrapperInEvents(wrapper : AsynchronousAdapter, port : Port, even
 pattern wrapperInEvents(wrapper : AsynchronousAdapter, port : Port, event : Event) {
 	// This is delegated down to the events and ports of sync instances
 	find wrappers(wrapper, composite);
-	find syncSystemInEvents(composite, port, _instance, _instancePort, event);
-} or {
-	// Now the explicit wrapping of statecharts is also supported
-	find wrappers(wrapper, statechart);
-	find statechartInEvents(statechart, port, event);
+	find topSyncSystemInEvents(composite, port, _instance, _instancePort, event);
 } or {
 	find distinctWrapperInEvents(wrapper, port, event);
 }
@@ -304,11 +311,7 @@ pattern wrapperInEvents(wrapper : AsynchronousAdapter, port : Port, event : Even
 pattern wrapperOutEvents(wrapper : AsynchronousAdapter, port : Port, event : Event) {
 	// This is delegated down to the events and ports of sync instances
 	find wrappers(wrapper, composite);
-	find syncSystemOutEvents(composite, port, _instance, _instancePort, event);
-} or {
-	// Now the explicit wrapping of statecharts is also supported
-	find wrappers(wrapper, statechart);
-	find statechartOutEvents(statechart, port, event);
+	find topSyncSystemOutEvents(composite, port, _instance, _instancePort, event);
 }
 
 pattern wrapperInstanceInEvents(instance : AsynchronousComponentInstance, port : Port, event : Event) {
