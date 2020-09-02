@@ -12,6 +12,7 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 	public static final ActionSerializer INSTANCE = new ActionSerializer();
 
 	protected ActionSerializer() {
+		super.expressionSerializer = ExpressionSerializer.INSTANCE;
 	}
 	//
 

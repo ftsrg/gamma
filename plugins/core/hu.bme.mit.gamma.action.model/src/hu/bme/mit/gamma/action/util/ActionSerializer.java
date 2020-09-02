@@ -34,10 +34,11 @@ public class ActionSerializer {
 	public static final ActionSerializer INSTANCE = new ActionSerializer();
 
 	protected ActionSerializer() {
+		this.expressionSerializer = ExpressionSerializer.INSTANCE;
 	}
 	//
 
-	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE;
+	protected ExpressionSerializer expressionSerializer;
 
 	protected String _serialize(final Block block) {
 		StringBuilder builder = new StringBuilder("{ ");
