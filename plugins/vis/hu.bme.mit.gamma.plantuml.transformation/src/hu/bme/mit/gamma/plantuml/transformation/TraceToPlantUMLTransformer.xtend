@@ -19,6 +19,7 @@ class TraceToPlantUMLTransformer {
 	}
 	
 	def String execute() '''
+		@startuml
 		hide footbox
 		skinparam shadowing false
 		skinparam ArrowColor #0b910b
@@ -94,6 +95,7 @@ class TraceToPlantUMLTransformer {
 			«ENDFOR»
 			end loop
 		«ENDIF»
+		@enduml
 	'''
 	
 }

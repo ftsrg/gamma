@@ -102,11 +102,11 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 		final String fileExtension = path.getFileExtension();
 		if (fileExtension.equals("gcd")) {
 			getComponentPlantUMLCode(getResource(path));
-			return "@startuml\r\n" + plantumlModel + "@enduml";
+			return plantumlModel;
 		}
 		if (fileExtension.equals("get")) {
 			getTracePlantUMLCode(getResource(path));
-			return "@startuml\r\n" + plantumlModel + "@enduml";
+			return plantumlModel;
 		}
 		return null; // "" would prevent other visualizations (Java class diagram)
 	}

@@ -30,6 +30,7 @@ class CompositeToPlantUMLTransformer {
 	}
 	
 	def String execute() '''
+		@startuml
 		skinparam shadowing false
 		
 		skinparam interface<<Invisible>> {
@@ -62,6 +63,7 @@ class CompositeToPlantUMLTransformer {
 				«binding.instancePortReference.instance.name» #- «binding.instancePortReference.instance.name»___«binding.instancePortReference.port.name»___«binding.instancePortReference.port.interfaceRealization.interface.name» : «binding.instancePortReference.port.name»
 			«ENDIF»
 		«ENDFOR»
+		@enduml
 	'''
 	
 }

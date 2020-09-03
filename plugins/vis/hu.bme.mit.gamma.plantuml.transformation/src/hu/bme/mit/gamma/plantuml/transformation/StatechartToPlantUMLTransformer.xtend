@@ -50,9 +50,11 @@ class StatechartToPlantUMLTransformer {
 		this.statechart = statechart
 	}
 
-	def execute() {
-		return statechart.mainRegionSearch
-	}
+	def String execute() '''
+		@startuml
+			«statechart.mainRegionSearch»
+		@enduml
+	'''
 	
 ///////////////////// TRIGGER DISPATCH /////////////////////	
 
