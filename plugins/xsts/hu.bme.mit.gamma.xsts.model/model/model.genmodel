@@ -69,5 +69,7 @@
     <genClasses ecoreClass="model.ecore#//OutEventParameterGroup"/>
     <genClasses ecoreClass="model.ecore#//InEventParameterGroup"/>
     <genClasses ecoreClass="model.ecore#//OrthogonalAction"/>
+    <genClasses ecoreClass="model.ecore#//SystemInEventGroup"/>
+    <genClasses ecoreClass="model.ecore#//SystemOutEventGroup"/>
   </genPackages>
 </genmodel:GenModel>

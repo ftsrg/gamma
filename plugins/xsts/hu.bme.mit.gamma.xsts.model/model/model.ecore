@@ -101,4 +101,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="OutEventParameterGroup" eSuperTypes="#//EventParameterGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="InEventParameterGroup" eSuperTypes="#//EventParameterGroup"/>
   <eClassifiers xsi:type="ecore:EClass" name="OrthogonalAction" eSuperTypes="#//CompositeAction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SystemInEventGroup" eSuperTypes="#//EventGroup"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SystemOutEventGroup" eSuperTypes="#//EventGroup"/>
 </ecore:EPackage>

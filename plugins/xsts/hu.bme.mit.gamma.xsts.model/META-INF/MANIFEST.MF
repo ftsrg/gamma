@@ -14,5 +14,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.xsts.derivedfeatures,
  hu.bme.mit.gamma.xsts.model,
  hu.bme.mit.gamma.xsts.model.impl,
+ hu.bme.mit.gamma.xsts.model.util,
  hu.bme.mit.gamma.xsts.util
 Automatic-Module-Name: hu.bme.mit.gamma.xsts.model

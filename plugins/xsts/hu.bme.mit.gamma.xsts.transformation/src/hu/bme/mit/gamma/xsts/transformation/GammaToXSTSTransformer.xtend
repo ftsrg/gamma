@@ -26,14 +26,19 @@ import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.RegionGroup
+import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
+import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
+import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.io.File
 import java.math.BigInteger
 import java.util.Collections
 import java.util.List
+import java.util.logging.Level
+import java.util.logging.Logger
 import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
@@ -41,8 +46,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
-import java.util.logging.Logger
-import java.util.logging.Level
 
 class GammaToXSTSTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -57,7 +60,8 @@ class GammaToXSTSTransformer {
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
-	protected final extension XSTSModelFactory xstsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
@@ -241,8 +245,11 @@ class GammaToXSTSTransformer {
 			}
 		}
 		xSts.mergedAction = mergedAction
+		// Creating system event groups for traceability purposes
+		logger.log(Level.INFO, "Creating system event groups for " + component.name)
+		xSts.createSystemEventGroups(component)
 		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
-		xSts.deleteUnusedPorts(component) // Event (variable setting) connecting across channels
+		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
@@ -337,6 +344,39 @@ class GammaToXSTSTransformer {
 			val typeName = type.name
 			if (duplications.contains(typeName)) {
 				type.name = typeName + id++
+			}
+		}
+	}
+	
+	protected def void createSystemEventGroups(XSTS xSts, Component component) {
+		xSts.variableGroups.filter[it.annotation instanceof SystemInEventGroup].forEach[it.remove]
+		xSts.variableGroups.filter[it.annotation instanceof SystemOutEventGroup].forEach[it.remove]
+		
+		val systemInEventGroup = createVariableGroup => [
+			it.annotation = createSystemInEventGroup
+		]
+		val systemOutEventGroup = createVariableGroup => [
+			it.annotation = createSystemOutEventGroup
+		]
+		xSts.variableGroups += systemInEventGroup
+		xSts.variableGroups += systemOutEventGroup
+		
+		for (port : component.allConnectedSimplePorts) {
+			val statechart = port.containingStatechart
+			val instance = statechart.referencingComponentInstance
+			for (inEvent : port.inputEvents) {
+				val inEventVariableName = customizeInputName(inEvent, port, instance)
+				val inEventVariable = xSts.getVariable(inEventVariableName)
+				if (inEventVariable !== null) {
+					systemInEventGroup.variables += inEventVariable
+				}
+			}
+			for (outEvent : port.outputEvents) {
+				val outEventVariableName = customizeOutputName(outEvent, port, instance)
+				val outEventVariable = xSts.getVariable(outEventVariableName)
+				if (outEventVariable !== null) {
+					systemOutEventGroup.variables += outEventVariable
+				}
 			}
 		}
 	}
