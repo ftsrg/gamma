@@ -218,8 +218,9 @@ class GammaEcoreUtil {
 			).location.toString
 		}
 		else {
-			// Deleting file:/ from the beginning
-			uri.toString.substring(("file:" + File.separator).length)
+			// Deleting file: from the beginning
+			// Not deleting the trailing '/', as Linux needs it and Windows accepts it
+			uri.toString.substring(("file:"/* + File.separator*/).length)
 		}
 		return new File(URI.decode(location))
 	}

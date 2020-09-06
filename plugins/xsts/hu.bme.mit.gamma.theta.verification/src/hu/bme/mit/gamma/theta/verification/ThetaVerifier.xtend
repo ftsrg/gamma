@@ -26,7 +26,7 @@ class ThetaVerifier extends AbstractVerifier {
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	
-	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta-xsts-cli.jar"
+	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta_xsts_cli"
 	
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
