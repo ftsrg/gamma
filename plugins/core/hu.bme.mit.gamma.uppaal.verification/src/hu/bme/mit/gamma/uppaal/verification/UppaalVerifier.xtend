@@ -29,8 +29,8 @@ class UppaalVerifier extends AbstractVerifier {
 		var Scanner traceReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
-			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = "verifyta " + parameters + " \"" + uppaalFile.toString + "\" \"" + uppaalQueryFile.canonicalPath + "\""
+			// verifyta -t0 -T TestOneComponent.xml asd.q
+			val command = String.format("verifyta %s %s %s", parameters, uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath)
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process =  Runtime.getRuntime().exec(command)
