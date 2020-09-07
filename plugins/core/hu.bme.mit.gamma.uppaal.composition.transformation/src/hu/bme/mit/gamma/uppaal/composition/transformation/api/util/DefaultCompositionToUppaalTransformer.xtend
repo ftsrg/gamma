@@ -8,13 +8,14 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTrans
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
+import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
-import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
+import org.eclipse.xtend.lib.annotations.Data
 
 class DefaultCompositionToUppaalTransformer {
 	
@@ -64,11 +65,11 @@ class DefaultCompositionToUppaalTransformer {
 		UppaalModelSerializer.saveString(parentFolder, queryFileName, testQueryGenerationHandler.getQueries(coverage))
 		transformer.dispose
 		modelPreprocessor.logger.log(Level.INFO, "The composite system transformation has been finished.")
-		return new SimpleEntry(trace,
-			new SimpleEntry(
-				new File(parentFolder + File.separator + xmlFileName),
-				new File(parentFolder + File.separator + queryFileName)
-			)
+		return new Result(
+			topComponent,
+			trace,
+			new File(parentFolder + File.separator + xmlFileName),
+			new File(parentFolder + File.separator + queryFileName)
 		)
 	}
 	
@@ -100,6 +101,14 @@ class DefaultCompositionToUppaalTransformer {
 			builder.append(testQueryGenerationHandler.generateInteractionCoverageExpressions)
 		}
 		return builder.toString
+	}
+	
+	@Data
+	static class Result {
+		Component topComponent
+		G2UTrace trace
+		File modelFile
+		File queryFile
 	}
 	
 }

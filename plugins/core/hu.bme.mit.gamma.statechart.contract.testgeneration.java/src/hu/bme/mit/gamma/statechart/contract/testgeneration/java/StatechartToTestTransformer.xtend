@@ -45,8 +45,8 @@ class StatechartToTestTransformer {
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
 			containingFile, #[ElementCoverage.TRANSITION_COVERAGE])
-		val uppaalTraceability = uppaalResult.key
-		val uppaalFile = uppaalResult.value.key
+		val uppaalTraceability = uppaalResult.trace
+		val uppaalFile = uppaalResult.modelFile
 		
 		// Getting traces from the simple states
 		val modelModifier = uppaalTransformer.testQueryGenerationHandler.modelModifier
