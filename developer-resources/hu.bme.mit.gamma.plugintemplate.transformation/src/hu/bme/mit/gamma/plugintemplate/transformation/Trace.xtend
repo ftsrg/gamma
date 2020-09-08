@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.plugintemplate.transformation
 
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ChoiceStateTraces
@@ -14,20 +24,20 @@ import hu.bme.mit.gamma.plugintemplate.transformation.patterns.StatechartTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.TransitionTraces
 import hu.bme.mit.gamma.plugintemplate.transformation.traceability.S2STrace
 import hu.bme.mit.gamma.plugintemplate.transformation.traceability.TraceabilityFactory
-import hu.bme.mit.gamma.statechart.model.ChoiceState
-import hu.bme.mit.gamma.statechart.model.CompositeElement
-import hu.bme.mit.gamma.statechart.model.DeepHistoryState
-import hu.bme.mit.gamma.statechart.model.ForkState
-import hu.bme.mit.gamma.statechart.model.InitialState
-import hu.bme.mit.gamma.statechart.model.JoinState
-import hu.bme.mit.gamma.statechart.model.MergeState
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.ShallowHistoryState
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StateNode
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.Transition
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
+import hu.bme.mit.gamma.statechart.statechart.ForkState
+import hu.bme.mit.gamma.statechart.statechart.InitialState
+import hu.bme.mit.gamma.statechart.statechart.JoinState
+import hu.bme.mit.gamma.statechart.statechart.MergeState
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 

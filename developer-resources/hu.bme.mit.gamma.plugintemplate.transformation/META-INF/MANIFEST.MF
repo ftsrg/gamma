@@ -14,6 +14,7 @@ Require-Bundle: hu.bme.mit.gamma.statechart.model,
  org.eclipse.viatra.query.runtime.rete,
  org.eclipse.viatra.query.runtime.localsearch,
  org.eclipse.xtext.xbase.lib,
+ org.eclipse.xtend.lib,
  hu.bme.mit.gamma.plugintemplate.transformation.traceability
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: hu.bme.mit.gamma.plugintemplate.transformation

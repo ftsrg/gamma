@@ -6,9 +6,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="traces" upperBound="-1"
         eType="#//AbstractTrace" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourcePackage" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetPackage" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AbstractTrace" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="RegionTrace" eSuperTypes="#//AbstractTrace">
@@ -24,16 +24,16 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//InitialState"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ShallowHistoryStateTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceShallowHistoryState" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="targetShallowHistoryState" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceShallowHistoryState"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetShallowHistoryState"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//ShallowHistoryState"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DeepHistoryStateTrace" eSuperTypes="#//AbstractTrace">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceDeepHistoryState" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="targetDeepHistoryState" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceDeepHistoryState"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetDeepHistoryState"
+        lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//DeepHistoryState"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ChoiceStateTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceChoiceState" lowerBound="1"
@@ -73,9 +73,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PackageTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourcePackage" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="targetPackage" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//Package"/>
+        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/interface.ecore#//Package"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourceStatechart" lowerBound="1"
