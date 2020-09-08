@@ -17,10 +17,10 @@ import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.querygenerator.UppaalQueryGenerator;
 import hu.bme.mit.gamma.querygenerator.application.View;
-import hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings;
-import hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettingsSerializer;
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
+import hu.bme.mit.gamma.uppaal.verification.settings.UppaalSettings;
+import hu.bme.mit.gamma.uppaal.verification.settings.UppaalSettingsSerializer;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
 
 public class UppaalController extends AbstractController {
