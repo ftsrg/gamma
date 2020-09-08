@@ -46,41 +46,41 @@ class UppaalSettings {
 
 		def Builder searchOrder(String value) {
 			instance.searchOrder = value
-			this
+			return this
 		}
 
 		def Builder stateSpaceRepresentation(String value) {
-			instance.stateSpaceReduction = value
-			this
+			instance.stateSpaceRepresentation = value
+			return this
 		}
 
 		def Builder trace(String value) {
 			instance.trace = value
-			this
+			return this
 		}
 
 		def Builder hashtableSize(int value) {
 			instance.hashtableSize = value
-			this
+			return this
 		}
 
 		def Builder stateSpaceReduction(String value) {
 			instance.stateSpaceReduction = value
-			this
+			return this
 		}
 
 		def Builder reuseStateSpace(boolean value) {
 			instance.reuseStateSpace = value
-			this
+			return this
 		}
 
 		def UppaalSettings build() {
-			instance
+			return instance
 		}
 	}
 
 	def private static UppaalSettings createDefault() {
-		(new Builder).searchOrder(SEARCH_ORDER_DEFAULT).stateSpaceRepresentation(STATE_SPACE_REPRESENTATION_DEFAULT).
+		return (new Builder).searchOrder(SEARCH_ORDER_DEFAULT).stateSpaceRepresentation(STATE_SPACE_REPRESENTATION_DEFAULT).
 			trace(TRACE_DEFAULT).hashtableSize(HASHTABLE_SIZE_DEFAULT).stateSpaceReduction(
 				STATE_SPACE_REDUCTION_DEFAULT).build
 	}
