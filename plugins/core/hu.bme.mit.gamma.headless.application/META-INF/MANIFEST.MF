@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Headless Gamma Application
+Bundle-SymbolicName: hu.bme.mit.gamma.headless.application;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: BME-FTSRG
+Automatic-Module-Name: hu.bme.mit.gamma.headless.application
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.google.guava,
+ org.eclipse.equinox.app,
+ org.eclipse.emf.ecore;bundle-version="2.21.0",
+ org.apache.log4j;bundle-version="1.2.15",
+ net.sourceforge.plantuml.lib;bundle-version="1.2019.11",
+ hu.bme.mit.gamma.uppaal.transformation;bundle-version="2.3.1",
+ hu.bme.mit.gamma.uppaal.transformation.traceability;bundle-version="2.3.1",
+ hu.bme.mit.gamma.uppaal.composition.transformation;bundle-version="2.3.1",
+ hu.bme.mit.gamma.trace.model;bundle-version="2.3.1",
+ hu.bme.mit.gamma.uppaal.verification;bundle-version="2.3.1",
+ hu.bme.mit.gamma.querygenerator;bundle-version="2.3.1",
+ hu.bme.mit.gamma.statechart.plantuml.transformation;bundle-version="2.3.1"

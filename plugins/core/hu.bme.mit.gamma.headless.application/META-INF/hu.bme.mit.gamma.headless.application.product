@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="hu.bme.mit.gamma.headless.application" uid="hu.bme.mit.gamma.headless.application.product" id="hu.bme.mit.gamma.headless.application.product" application="hu.bme.mit.gamma.headless.application.gammaRunner" version="0.1.0.qualifier" useFeatures="false" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>--launcher.suppressErrors
+      </programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher name="gamma-eclipse">
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+      <plugin id="com.google.guava" version="27.1.0.v20190517-1946"/>
+      <plugin id="de.uni_paderborn.uppaal"/>
+      <plugin id="hu.bme.mit.gamma.action.model"/>
+      <plugin id="hu.bme.mit.gamma.codegenerator.java.util"/>
+      <plugin id="hu.bme.mit.gamma.eventpriority.transformation"/>
+      <plugin id="hu.bme.mit.gamma.expression.model"/>
+      <plugin id="hu.bme.mit.gamma.headless.application"/>
+      <plugin id="hu.bme.mit.gamma.property.model"/>
+      <plugin id="hu.bme.mit.gamma.querygenerator"/>
+      <plugin id="hu.bme.mit.gamma.statechart.lowlevel.model"/>
+      <plugin id="hu.bme.mit.gamma.statechart.model"/>
+      <plugin id="hu.bme.mit.gamma.statechart.phase.transformation"/>
+      <plugin id="hu.bme.mit.gamma.statechart.plantuml.transformation"/>
+      <plugin id="hu.bme.mit.gamma.trace.model"/>
+      <plugin id="hu.bme.mit.gamma.transformation.util"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.composition.transformation"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.serializer"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.transformation"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.transformation.traceability"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.util"/>
+      <plugin id="hu.bme.mit.gamma.uppaal.verification"/>
+      <plugin id="hu.bme.mit.gamma.util"/>
+      <plugin id="hu.bme.mit.gamma.verification.util"/>
+      <plugin id="hu.bme.mit.gamma.xsts.model"/>
+      <plugin id="hu.bme.mit.gamma.xsts.transformation.util"/>
+      <plugin id="javax.xml"/>
+      <plugin id="net.sourceforge.plantuml.lib"/>
+      <plugin id="org.apache.log4j"/>
+      <plugin id="org.eclipse.collections"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.expressions"/>
+      <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.resources"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.emf.common"/>
+      <plugin id="org.eclipse.emf.ecore"/>
+      <plugin id="org.eclipse.emf.ecore.xmi"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
+      <plugin id="org.eclipse.viatra.query.runtime"/>
+      <plugin id="org.eclipse.viatra.query.runtime.base"/>
+      <plugin id="org.eclipse.viatra.query.runtime.base.itc"/>
+      <plugin id="org.eclipse.viatra.query.runtime.localsearch"/>
+      <plugin id="org.eclipse.viatra.query.runtime.matchers"/>
+      <plugin id="org.eclipse.viatra.query.runtime.rete"/>
+      <plugin id="org.eclipse.viatra.query.runtime.rete.recipes"/>
+      <plugin id="org.eclipse.viatra.transformation.evm"/>
+      <plugin id="org.eclipse.viatra.transformation.runtime.emf"/>
+      <plugin id="org.eclipse.xtend.lib"/>
+      <plugin id="org.eclipse.xtend.lib.macro"/>
+      <plugin id="org.eclipse.xtext.logging" fragment="true"/>
+      <plugin id="org.eclipse.xtext.xbase.lib"/>
+   </plugins>
+
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
+
+</product>

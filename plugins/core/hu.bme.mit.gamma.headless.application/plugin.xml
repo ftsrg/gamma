@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="gammaRunner"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="hu.bme.mit.gamma.headless.application.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="hu.bme.mit.gamma.headless.application.gammaRunner"
+            name="hu.bme.mit.gamma.headless.application.product">
+         <property
+               name="appName"
+               value="hu.bme.mit.gamma.headless.application.product">
+         </property>
+      </product>
+   </extension>
+
+</plugin>
