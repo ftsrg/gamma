@@ -10,6 +10,30 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.application;
 
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.HASHTABLE_SIZE_1024;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.HASHTABLE_SIZE_256;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.HASHTABLE_SIZE_512;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.HASHTABLE_SIZE_64;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.HASHTABLE_SIZE_DEFAULT;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_BF;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_DEFAULT;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_DF;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_OF;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_RDF;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.SEARCH_ORDER_RODF;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REDUCTION_AGGRESSIVE;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REDUCTION_CONSERVATIVE;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REDUCTION_DEFAULT;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REDUCTION_NONE;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REPRESENTATION_DBM;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REPRESENTATION_DEFAULT;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REPRESENTATION_OA;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.STATE_SPACE_REPRESENTATION_UA;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.TRACE_DEFAULT;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.TRACE_FASTEST;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.TRACE_SHORTEST;
+import static hu.bme.mit.gamma.querygenerator.uppaal.UppaalSettings.TRACE_SOME;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -212,11 +236,11 @@ public class View extends JFrame {
 		
 		// Setting the search order
 		traversalMenu = new JMenu("Search Order");
-		breadthFirst = new JRadioButtonMenuItem("Breadth First");
-		depthFirst = new JRadioButtonMenuItem("Depth First");
-		randomDepthFirst = new JRadioButtonMenuItem("Random Depth First");
-		optimalFirst = new JRadioButtonMenuItem("Optimal First");
-		randomOptimalDepthFirst = new JRadioButtonMenuItem("Random Optimal Depth First");
+		breadthFirst = new JRadioButtonMenuItem(SEARCH_ORDER_BF);
+		depthFirst = new JRadioButtonMenuItem(SEARCH_ORDER_DF);
+		randomDepthFirst = new JRadioButtonMenuItem(SEARCH_ORDER_RDF);
+		optimalFirst = new JRadioButtonMenuItem(SEARCH_ORDER_OF);
+		randomOptimalDepthFirst = new JRadioButtonMenuItem(SEARCH_ORDER_RODF);
 		breadthFirst.setSelected(true);
 		searchOrderGroup = new ButtonGroup();
 		searchOrderGroup.add(breadthFirst);
@@ -234,9 +258,9 @@ public class View extends JFrame {
 	    
 	    // Setting the diagnostic trace
 	 	traceMenu = new JMenu("Diagnostic Trace");
-	 	someTrace = new JRadioButtonMenuItem("Some");
-	 	shortestTrace = new JRadioButtonMenuItem("Shortest");
-	 	fastestTrace = new JRadioButtonMenuItem("Fastest");
+	 	someTrace = new JRadioButtonMenuItem(TRACE_SOME);
+	 	shortestTrace = new JRadioButtonMenuItem(TRACE_SHORTEST);
+	 	fastestTrace = new JRadioButtonMenuItem(TRACE_FASTEST);
 	 	someTrace.setSelected(true);
 	 	traceGroup = new ButtonGroup();
 	 	traceGroup.add(someTrace);
@@ -250,10 +274,10 @@ public class View extends JFrame {
 	 	
 	    // Setting the hashtable size
 	 	hashtableSizeMenu = new JMenu("Hash Table Size");
-	 	size64M = new JRadioButtonMenuItem("64 MB");
-	 	size256M = new JRadioButtonMenuItem("256 MB");
-	 	size512M = new JRadioButtonMenuItem("512 MB");
-	 	size1024M = new JRadioButtonMenuItem("1024 MB");
+	 	size64M = new JRadioButtonMenuItem(HASHTABLE_SIZE_64 + " MB");
+	 	size256M = new JRadioButtonMenuItem(HASHTABLE_SIZE_256 + " MB");
+	 	size512M = new JRadioButtonMenuItem(HASHTABLE_SIZE_512 + " MB");
+	 	size1024M = new JRadioButtonMenuItem(HASHTABLE_SIZE_1024 + " MB");
 	 	size512M.setSelected(true);
 	 	hashtableSizeGroup = new ButtonGroup();
 	 	hashtableSizeGroup.add(size64M);
@@ -319,9 +343,9 @@ public class View extends JFrame {
 	 	
 	    // Setting the state space representation
 	 	stateSpaceRepresentationMenu = new JMenu("State Space Representation");
-	 	dbm = new JRadioButtonMenuItem("DBM");
-	 	overApproximation = new JRadioButtonMenuItem("Over Approximation");
-	 	underApproximation = new JRadioButtonMenuItem("Under Approximation");
+	 	dbm = new JRadioButtonMenuItem(STATE_SPACE_REPRESENTATION_DBM);
+	 	overApproximation = new JRadioButtonMenuItem(STATE_SPACE_REPRESENTATION_OA);
+	 	underApproximation = new JRadioButtonMenuItem(STATE_SPACE_REPRESENTATION_UA);
 	 	dbm.setSelected(true);
 	 	stateSpaceRepresentationGroup = new ButtonGroup();
 	 	stateSpaceRepresentationGroup.add(dbm);
@@ -335,9 +359,9 @@ public class View extends JFrame {
 	 	
 	    // Setting the state space reduction
 	 	spaceStateReductionMenu = new JMenu("State Space Reduction");
-	 	noSpaceStateReduction = new JRadioButtonMenuItem("None");
-	 	conservativeSpaceStateReduction = new JRadioButtonMenuItem("Conservative");
-	 	aggressiveSpaceStateReduction = new JRadioButtonMenuItem("Aggressive");
+	 	noSpaceStateReduction = new JRadioButtonMenuItem(STATE_SPACE_REDUCTION_NONE);
+	 	conservativeSpaceStateReduction = new JRadioButtonMenuItem(STATE_SPACE_REDUCTION_CONSERVATIVE);
+	 	aggressiveSpaceStateReduction = new JRadioButtonMenuItem(STATE_SPACE_REDUCTION_AGGRESSIVE);
 	 	conservativeSpaceStateReduction.setSelected(true);
 	 	spaceStateReductionGroup = new ButtonGroup();
 	 	spaceStateReductionGroup.add(noSpaceStateReduction);
@@ -747,47 +771,44 @@ public class View extends JFrame {
 	
 	public String getSelectedSearchOrder() {
 		if (breadthFirst.isSelected()) {
-			return "Breadth First";
+			return SEARCH_ORDER_BF;
 		}
 		if (depthFirst.isSelected()) {
-			return "Depth First";
+			return SEARCH_ORDER_DF;
 		}
 		if (randomDepthFirst.isSelected()) {
-			return "Random Depth First";
+			return SEARCH_ORDER_RDF;
 		}
 		if (optimalFirst.isSelected()) {
-			return "Optimal First";
+			return SEARCH_ORDER_OF;
 		}
 		if (randomOptimalDepthFirst.isSelected()) {
-			return "Random Optimal Depth First";
+			return SEARCH_ORDER_RODF;
 		}
-		// BFS is default
-		return "Breadth First";
+		return SEARCH_ORDER_DEFAULT;
 	}
 	
 	public String getStateSpaceRepresentation() {
 		if (overApproximation.isSelected()) {
-			return "Over Approximation";
+			return STATE_SPACE_REPRESENTATION_OA;
 		}
 		if (underApproximation.isSelected()) {
-			return "Under Approximation";
+			return STATE_SPACE_REPRESENTATION_UA;
 		}
-		// DBM is default
-		return "DBM";
+		return STATE_SPACE_REPRESENTATION_DEFAULT;
 	}
 	
 	public String getSelectedTrace() {
 		if (someTrace.isSelected()) {
-			return "Some";
+			return TRACE_SOME;
 		}
 		if (shortestTrace.isSelected()) {
-			return "Shortest";
+			return TRACE_SHORTEST;
 		}
 		if (fastestTrace.isSelected()) {
-			return "Fastest";
+			return TRACE_FASTEST;
 		}
-		// Shortest is default
-		return "Shortest";
+		return TRACE_DEFAULT;
 	}
 	
 	public boolean isReuseStateSpace() {
@@ -800,16 +821,15 @@ public class View extends JFrame {
 	
 	public int getHashTableSize() {
 		if (size64M.isSelected()) {
-			return 64;
+			return HASHTABLE_SIZE_64;
 		}
 		if (size256M.isSelected()) {
-			return 256;
+			return HASHTABLE_SIZE_256;
 		}
 		if (size1024M.isSelected()) {
-			return 1024;
+			return HASHTABLE_SIZE_1024;
 		}
-		// 512 MB is default
-		return 512;
+		return HASHTABLE_SIZE_DEFAULT;
 	}
 	
 	public int getTestGenerationTmeout() {
@@ -834,13 +854,12 @@ public class View extends JFrame {
 	
 	public String getStateSpaceReduction() {
 		if (noSpaceStateReduction.isSelected()) {
-			return "None";
+			return STATE_SPACE_REDUCTION_NONE;
 		}
 		if (aggressiveSpaceStateReduction.isSelected()) {
-			return "Aggressive";
+			return STATE_SPACE_REDUCTION_AGGRESSIVE;
 		}
-		// Conservative is default
-		return "Conservative";
+		return STATE_SPACE_REDUCTION_DEFAULT;
 	}
 
 	private void setFrameSizeSmaller() {
