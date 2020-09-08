@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
+import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
-import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
 import java.io.File
@@ -30,7 +30,7 @@ class UppaalVerifier extends AbstractVerifier {
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = "verifyta " + parameters + " \"" + uppaalFile.toString + "\" \"" + uppaalQueryFile.canonicalPath + "\""
+			val command = "verifyta " + parameters + " " + uppaalFile.canonicalPath.escapePath + " " + uppaalQueryFile.canonicalPath.escapePath
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process =  Runtime.getRuntime().exec(command)
