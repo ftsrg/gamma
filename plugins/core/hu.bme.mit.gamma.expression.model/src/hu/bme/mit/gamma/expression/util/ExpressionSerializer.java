@@ -57,6 +57,7 @@ import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.XorExpression;
 
 public class ExpressionSerializer {
@@ -64,6 +65,8 @@ public class ExpressionSerializer {
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer();
 	protected ExpressionSerializer() {}
 	//
+	
+	
 
 	protected String _serialize(final ElseExpression expression) {
 		return "else";
@@ -348,8 +351,8 @@ public class ExpressionSerializer {
 		for (final Expression expression : _arguments) {
 			string = string.concat(this.serialize(expression).toString());
 		}
-		Expression _operand = arrayAccessExpression.getOperand();
-		String _plus = (_operand + "[");
+		Declaration _valueDeclaration = arrayAccessExpression.getDeclaration();
+		String _plus = (_valueDeclaration + "[");
 		String _plus_1 = (_plus + string);
 		return (_plus_1 + "]");
 	}
@@ -366,21 +369,21 @@ public class ExpressionSerializer {
 				string = string.concat(", ");
 			}
 		}
-		Expression _operand = functionAccessExpression.getOperand();
-		String _plus = (_operand + "(");
+		Declaration _valueDeclaration = functionAccessExpression.getDeclaration();
+		String _plus = (_valueDeclaration + "(");
 		String _plus_1 = (_plus + string);
 		return (_plus_1 + ")");
 	}
 
 	protected String _serialize(final RecordAccessExpression recordAccessExpression) {
-		String _serialize = this.serialize(recordAccessExpression.getOperand());
+		String _serialize = recordAccessExpression.getDeclaration().getName();
 		String _plus = (_serialize + ".");
 		String _field = recordAccessExpression.getField();
 		return (_plus + _field);
 	}
 
 	protected String _serialize(final SelectExpression selectExpression) {
-		String _serialize = this.serialize(selectExpression.getOperand());
+		String _serialize = selectExpression.getDeclaration().getName();
 		return (_serialize + ".select");
 	}
 

@@ -147,7 +147,7 @@ public class ExpressionTypeDeterminator {
 			return transform(arrayTypeDefinition.getElementType());
 		}
 		if (expression instanceof FunctionAccessExpression) {
-			return transform(((ReferenceExpression)((FunctionAccessExpression) expression).getOperand()).getDeclaration().getType());
+			return transform((((FunctionAccessExpression) expression)).getDeclaration().getType());
 			// What if it goes through a type reference / declaration?
 		}
 		if (expression instanceof RecordAccessExpression) {
@@ -174,7 +174,7 @@ public class ExpressionTypeDeterminator {
 				return ExpressionType.ENUMERATION;
 			}
 			else {
-				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + selectExpression.getOperand());
+				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + selectExpression.getDeclaration());
 			}
 		}
 		if (expression instanceof IfThenElseExpression) {

@@ -74,7 +74,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ArrayTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elementType" lowerBound="1"
         eType="#//Type" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="size" eType="#//Expression"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="size" eType="#//IntegerLiteralExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IntegerRangeTypeDefinition" eSuperTypes="#//EnumerableTypeDefinition"/>
@@ -124,10 +124,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="DefaultExpression" eSuperTypes="#//ElseExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="QuantifierExpression" abstract="true"
       eSuperTypes="#//UnaryExpression #//ParametricElement #//LogicExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AccessExpression" abstract="true" eSuperTypes="#//Expression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="operand" lowerBound="1"
-        eType="#//Expression" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LiteralExpression" abstract="true" eSuperTypes="#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerableExpression" abstract="true"
       eSuperTypes="#//Expression"/>
@@ -172,6 +168,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" lowerBound="1"
         eType="#//Declaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AccessExpression" abstract="true" eSuperTypes="#//ReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IfThenElseExpression" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
         eType="#//Expression" containment="true"/>

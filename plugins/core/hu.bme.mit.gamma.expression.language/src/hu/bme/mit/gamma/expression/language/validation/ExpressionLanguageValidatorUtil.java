@@ -45,12 +45,7 @@ public class ExpressionLanguageValidatorUtil {
 	}
 	
 	public static Declaration findAccessExpressionInstanceDeclaration(AccessExpression accessExpression)/* throws Exception*/ {
-		if (accessExpression.getOperand() instanceof ReferenceExpression) {
-			ReferenceExpression ref = (ReferenceExpression)accessExpression.getOperand();
-			return ref.getDeclaration();
-		}
-		// TODO implement for Literal Expressions (e.g. IntegerRange)
-		throw new IllegalArgumentException("Not implemented feature - the operand of the AccessExpression is: " + accessExpression.getOperand().toString() );
+		return accessExpression.getDeclaration();
 	}
 	
 	

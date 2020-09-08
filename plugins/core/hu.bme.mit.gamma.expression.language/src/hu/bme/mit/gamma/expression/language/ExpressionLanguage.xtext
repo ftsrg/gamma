@@ -105,7 +105,7 @@ RationalTypeDefinition returns RationalTypeDefinition:
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' elementType=Type '[' size=Expression ']'
+	'array' elementType=Type '[' size=IntegerLiteralExpression ']'
 ;
 
 IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
@@ -236,20 +236,10 @@ MultiplicativeExpression returns Expression:
 SignumExpression returns Expression:
 	{UnaryMinusExpression} => '-' operand=SignumExpression |
 	{UnaryPlusExpression} => '+' operand=SignumExpression |
-	AccessExpression
+	PrimaryExpression
 	
 	//non-associative
 	//{UnaryMinusExpression} => '-' expression=ValueAccessExpression | ValueAccessExpression
-;
-
-//binary (postfix unary), left-associative
-AccessExpression returns Expression:
-	PrimaryExpression (
-		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
-		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
-		{RecordAccessExpression.operand=current} '.' field=ID |
-		{SelectExpression.operand=current} '.' 'select'
-	)*
 ;
 
 ////postfix unary, non-associative
@@ -260,7 +250,35 @@ AccessExpression returns Expression:
 //;
 
 PrimaryExpression returns Expression:
-	LiteralExpression | ReferenceExpression | '(' Expression ')'
+	LiteralExpression | DeclarationAccess | '(' Expression ')'
+;
+
+DeclarationAccess returns ReferenceExpression:
+	AccessExpression |
+	ReferenceExpression
+;
+
+AccessExpression returns AccessExpression:
+	ArrayAccessExpression |
+	FunctionAccessExpression |
+	RecordAccessExpression |
+	SelectExpression
+;
+
+ArrayAccessExpression returns ArrayAccessExpression:
+	declaration=[ValueDeclaration]  '[' arguments+=(IntegerLiteralExpression | ReferenceExpression) ']'
+;
+
+FunctionAccessExpression returns FunctionAccessExpression:
+	declaration=[ValueDeclaration] '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')'
+;
+
+RecordAccessExpression returns RecordAccessExpression:
+	declaration=[ValueDeclaration] '.' field=ID
+;
+
+SelectExpression returns SelectExpression:
+	declaration=[ValueDeclaration] '.' 'select'
 ;
 
 ReferenceExpression returns ReferenceExpression:

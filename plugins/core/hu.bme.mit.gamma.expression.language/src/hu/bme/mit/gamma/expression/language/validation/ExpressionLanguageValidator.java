@@ -149,28 +149,25 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			return;
 		}
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		if (functionAccessExpression.getOperand() instanceof ReferenceExpression) {
-			ReferenceExpression ref = (ReferenceExpression) functionAccessExpression.getOperand();
-			if (ref.getDeclaration() instanceof FunctionDeclaration) {
-				final FunctionDeclaration functionDeclaration = (FunctionDeclaration) ref.getDeclaration();
-				List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
-				if (arguments.size() != parameters.size()) {
-					error("The number of arguments does not match the number of declared parameters for the function!", 
+		if (functionAccessExpression.getDeclaration() instanceof FunctionDeclaration) {
+			final FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionAccessExpression.getDeclaration();
+			List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
+			if (arguments.size() != parameters.size()) {
+				error("The number of arguments does not match the number of declared parameters for the function!", 
+						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			}
+			int i = 0;
+			for (Expression arg : arguments) {
+				ExpressionType argumentType = typeDeterminator.getType(arg);
+				if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
+					error("The types of the arguments and the types of the declared function parameters do not match!",
 							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 				}
-				int i = 0;
-				for (Expression arg : arguments) {
-					ExpressionType argumentType = typeDeterminator.getType(arg);
-					if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
-						error("The types of the arguments and the types of the declared function parameters do not match!",
-								ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-					}
-					++i;
-				}
+				++i;
 			}
-			else {
-				error("The referenced object is not a function declaration!", ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
-			}
+		}
+		else {
+			error("The referenced object is not a function declaration!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 		}
 	}
 	
@@ -183,10 +180,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
-		if (!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
-				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.ENUMERATION) ||
-				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.INTEGER_RANGE))) {
-			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.getType(expression.getOperand()).toString(), null);
+		typeDeterminator.transform(expression.getDeclaration().getType());
+		if (!((typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.ARRAY) ||
+				(typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.ENUMERATION) ||
+				(typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.INTEGER_RANGE))) {
+			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.transform(expression.getDeclaration().getType()).toString(), null);
 		}
 	}
 	
