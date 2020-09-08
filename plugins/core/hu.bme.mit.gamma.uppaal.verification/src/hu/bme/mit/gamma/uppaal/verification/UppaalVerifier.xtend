@@ -29,9 +29,19 @@ class UppaalVerifier extends AbstractVerifier {
 		var Scanner traceReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
-			// verifyta -t0 -T TestOneComponent.xml asd.q
-			val command = String.format("verifyta %s %s %s", parameters, uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath)
+			// parameter quotation and escape whitespace in paths
+			val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
+			var String command
+			if (isWindows) {
+				command = String.format("verifyta %s \"%s\" \"%s\"", parameters, uppaalFile.canonicalPath, uppaalQueryFile.canonicalPath)
+			} else {
+				val uppaalFilePath = uppaalFile.canonicalPath.replace(" ", "\\ ")
+				val queryFilePath = uppaalQueryFile.canonicalPath.replace(" ", "\\ ")
+				command = String.format("verifyta %s %s %s", parameters, uppaalFilePath, queryFilePath)
+			}
+			
 			// Executing the command
+			// verifyta -t0 -T TestOneComponent.xml asd.q
 			logger.log(Level.INFO, "Executing command: " + command)
 			process =  Runtime.getRuntime().exec(command)
 			val outputStream = process.inputStream
