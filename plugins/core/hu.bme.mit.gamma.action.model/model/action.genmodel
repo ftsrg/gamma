@@ -55,5 +55,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssignmentStatement/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssignmentStatement/rhs"/>
     </genClasses>
+    <genClasses ecoreClass="action.ecore#//AssertionStatement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference action.ecore#//AssertionStatement/assertion"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

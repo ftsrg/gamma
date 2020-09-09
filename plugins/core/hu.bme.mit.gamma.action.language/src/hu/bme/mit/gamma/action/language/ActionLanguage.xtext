@@ -48,8 +48,9 @@ InlineStatement returns ActionModel::Statement:
 	ReturnStatement |
 	BreakStatement |
 	
-	=>AssignmentStatement | 
-	
+	=>AssignmentStatement |
+	 
+	AssertionStatement |
 	ExpressionStatement 
 	)
 	
@@ -148,7 +149,12 @@ AssignmentStatement returns ActionModel::AssignmentStatement:
 	lhs=AssignableAccessExpression ':=' rhs=Expression
 ;
 
-//Lvalue rules based on the constraint model
+AssertionStatement returns ActionModel::AssertionStatement: 
+	'assert' '(' assertion=Expression ')'
+;
+
+
+//Lvalue expression rules based on the constraint model
 
 AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
 	AssignablePrimaryExpression(

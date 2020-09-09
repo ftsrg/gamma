@@ -525,12 +525,8 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 @Override 
 InlineStatement returns ActionModel::Statement:
-	(
-	
-	VariableDeclarationStatement |
+	(VariableDeclarationStatement |
 	ConstantDeclarationStatement |
-	
-	
 	
 	ReturnStatement |
 	BreakStatement |
@@ -541,6 +537,7 @@ InlineStatement returns ActionModel::Statement:
 	RaiseEventAction |
 	SetTimeoutAction |
 	
+	AssertionStatement |
 	ExpressionStatement
 	)
 	
