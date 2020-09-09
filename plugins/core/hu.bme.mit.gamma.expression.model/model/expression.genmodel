@@ -134,10 +134,21 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//FieldAssignment/reference"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/value"/>
     </genClasses>
-    <genClasses ecoreClass="expression.ecore#//ReferenceExpression">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//ReferenceExpression/declaration"/>
+    <genClasses ecoreClass="expression.ecore#//ReferenceExpression"/>
+    <genClasses ecoreClass="expression.ecore#//DirectReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//DirectReferenceExpression/declaration"/>
     </genClasses>
-    <genClasses image="false" ecoreClass="expression.ecore#//AccessExpression"/>
+    <genClasses image="false" ecoreClass="expression.ecore#//AccessExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//AccessExpression/operand"/>
+    </genClasses>
+    <genClasses ecoreClass="expression.ecore#//AssignableAccessExpression"/>
+    <genClasses ecoreClass="expression.ecore#//ArrayAccessExpression"/>
+    <genClasses ecoreClass="expression.ecore#//RecordAccessExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//RecordAccessExpression/field"/>
+    </genClasses>
+    <genClasses ecoreClass="expression.ecore#//NonAssignableAccessExpression"/>
+    <genClasses ecoreClass="expression.ecore#//FunctionAccessExpression"/>
+    <genClasses ecoreClass="expression.ecore#//SelectExpression"/>
     <genClasses ecoreClass="expression.ecore#//IfThenElseExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//IfThenElseExpression/condition"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//IfThenElseExpression/then"/>
@@ -166,11 +177,5 @@
     <genClasses ecoreClass="expression.ecore#//ModExpression"/>
     <genClasses ecoreClass="expression.ecore#//UnaryMinusExpression"/>
     <genClasses ecoreClass="expression.ecore#//UnaryPlusExpression"/>
-    <genClasses ecoreClass="expression.ecore#//FunctionAccessExpression"/>
-    <genClasses ecoreClass="expression.ecore#//ArrayAccessExpression"/>
-    <genClasses ecoreClass="expression.ecore#//RecordAccessExpression">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//RecordAccessExpression/field"/>
-    </genClasses>
-    <genClasses ecoreClass="expression.ecore#//SelectExpression"/>
   </genPackages>
 </genmodel:GenModel>

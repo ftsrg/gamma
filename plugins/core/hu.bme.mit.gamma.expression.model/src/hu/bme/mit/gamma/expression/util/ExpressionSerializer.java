@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -103,7 +104,7 @@ public class ExpressionSerializer {
 		return opaqueExpression.getExpression();
 	}
 
-	protected String _serialize(final ReferenceExpression expression) {
+	protected String _serialize(final DirectReferenceExpression expression) {
 		final Declaration declaration = expression.getDeclaration();
 		return declaration.getName();
 	}
@@ -351,8 +352,8 @@ public class ExpressionSerializer {
 		for (final Expression expression : _arguments) {
 			string = string.concat(this.serialize(expression).toString());
 		}
-		Declaration _valueDeclaration = arrayAccessExpression.getDeclaration();
-		String _plus = (_valueDeclaration + "[");
+		String serialize = this.serialize(arrayAccessExpression.getOperand());
+		String _plus = (serialize + "[");
 		String _plus_1 = (_plus + string);
 		return (_plus_1 + "]");
 	}
@@ -369,21 +370,21 @@ public class ExpressionSerializer {
 				string = string.concat(", ");
 			}
 		}
-		Declaration _valueDeclaration = functionAccessExpression.getDeclaration();
-		String _plus = (_valueDeclaration + "(");
+		String serialize = this.serialize(functionAccessExpression.getOperand());
+		String _plus = (serialize + "(");
 		String _plus_1 = (_plus + string);
 		return (_plus_1 + ")");
 	}
 
 	protected String _serialize(final RecordAccessExpression recordAccessExpression) {
-		String _serialize = recordAccessExpression.getDeclaration().getName();
+		String _serialize = this.serialize(recordAccessExpression.getOperand());
 		String _plus = (_serialize + ".");
 		String _field = recordAccessExpression.getField();
 		return (_plus + _field);
 	}
 
 	protected String _serialize(final SelectExpression selectExpression) {
-		String _serialize = selectExpression.getDeclaration().getName();
+		String _serialize = this.serialize(selectExpression.getOperand());
 		return (_serialize + ".select");
 	}
 
@@ -537,8 +538,8 @@ public class ExpressionSerializer {
 			return _serialize((EnumerationLiteralExpression) expression);
 		} else if (expression instanceof MultiplyExpression) {
 			return _serialize((MultiplyExpression) expression);
-		} else if (expression instanceof ReferenceExpression) {
-			return _serialize((ReferenceExpression) expression);
+		} else if (expression instanceof DirectReferenceExpression) {
+			return _serialize((DirectReferenceExpression) expression);
 		} else if (expression instanceof SubtractExpression) {
 			return _serialize((SubtractExpression) expression);
 		} else if (expression instanceof UnaryMinusExpression) {

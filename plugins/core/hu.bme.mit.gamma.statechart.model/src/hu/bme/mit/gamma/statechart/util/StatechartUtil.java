@@ -17,7 +17,9 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -67,9 +69,13 @@ public class StatechartUtil extends ExpressionUtil {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (AssignmentStatement assignmentStatement :
 				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
-			Declaration declaration = assignmentStatement.getLhs().getDeclaration();
-			if (declaration instanceof VariableDeclaration) {
-				variables.add((VariableDeclaration) declaration);
+			if(assignmentStatement.getLhs() instanceof DirectReferenceExpression) {
+				Declaration declaration = ((DirectReferenceExpression)assignmentStatement.getLhs()).getDeclaration();
+				if (declaration instanceof VariableDeclaration) {
+					variables.add((VariableDeclaration) declaration);
+				}
+			} else if (assignmentStatement.getLhs() instanceof AccessExpression) {
+				//TODO handle access expressions
 			}
 		}
 		return variables;
@@ -80,9 +86,13 @@ public class StatechartUtil extends ExpressionUtil {
 		for (ReferenceExpression referenceExpression :
 				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
 			if (!(referenceExpression.eContainer() instanceof AssignmentStatement)) {
-				Declaration declaration = referenceExpression.getDeclaration();
-				if (declaration instanceof VariableDeclaration) {
-					variables.add((VariableDeclaration) declaration);
+				if(referenceExpression instanceof DirectReferenceExpression) {
+					Declaration declaration = ((DirectReferenceExpression)referenceExpression).getDeclaration();
+					if (declaration instanceof VariableDeclaration) {
+						variables.add((VariableDeclaration) declaration);
+					}
+				} else if (referenceExpression instanceof AccessExpression) {
+					//TODO handle access expressions
 				}
 			}
 		}
@@ -174,7 +184,7 @@ public class StatechartUtil extends ExpressionUtil {
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
 			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration, true, true);
 			cascade.getParameterDeclarations().add(newParameter);
-			ReferenceExpression reference = factory.createReferenceExpression();
+			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 			reference.setDeclaration(newParameter);
 			instance.getArguments().add(reference);
 		}

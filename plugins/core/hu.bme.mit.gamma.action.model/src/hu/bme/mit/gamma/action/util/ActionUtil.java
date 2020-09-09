@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +19,8 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 public class ActionUtil {
@@ -58,8 +61,17 @@ public class ActionUtil {
 	
 	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentStatement> assignments) {
-		return assignments.stream().filter(it -> it.getLhs().getDeclaration() == variable)
-				.collect(Collectors.toList());
+		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
+		for(AssignmentStatement assignment : assignments) {
+			if(assignment.getLhs() instanceof DirectReferenceExpression) {
+				if(((DirectReferenceExpression)assignment.getLhs()).getDeclaration() == variable) {
+					assignmentsOfVariable.add(assignment);
+				}
+			} else if(assignment.getLhs() instanceof AccessExpression) {
+				//TODO handle access expressions
+			}
+		}
+		return assignmentsOfVariable;
 	}
 	
 }

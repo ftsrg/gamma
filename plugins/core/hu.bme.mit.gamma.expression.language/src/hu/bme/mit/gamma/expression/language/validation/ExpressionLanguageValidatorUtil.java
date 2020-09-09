@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -45,7 +46,14 @@ public class ExpressionLanguageValidatorUtil {
 	}
 	
 	public static Declaration findAccessExpressionInstanceDeclaration(AccessExpression accessExpression)/* throws Exception*/ {
-		return accessExpression.getDeclaration();
+		if (accessExpression.getOperand() instanceof DirectReferenceExpression) {
+			DirectReferenceExpression ref = (DirectReferenceExpression)accessExpression.getOperand();
+			return ref.getDeclaration();
+		} else if (accessExpression.getOperand() instanceof AccessExpression) {
+			return findAccessExpressionInstanceDeclaration((AccessExpression)accessExpression.getOperand());
+		}
+		// TODO implement for Literal Expressions (e.g. IntegerRange)
+		throw new IllegalArgumentException("Not implemented feature - the operand of the AccessExpression is: " + accessExpression.getOperand().toString() );
 	}
 	
 	

@@ -10,10 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
+import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -34,7 +36,6 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
@@ -84,13 +85,18 @@ class ExpressionSerializer {
 		return "false"
 	}
 	
-	def dispatch String serialize(ReferenceExpression expression) {		
+	def dispatch String serialize(DirectReferenceExpression expression
+	) {		
 		if (expression.declaration instanceof ConstantDeclaration) {
 			val constant = expression.declaration as ConstantDeclaration
 			return constant.expression.serialize	
 		}
 		return expression.declaration.name
 	}
+	
+	def dispatch String serialize(AccessExpression expression) {
+		//TODO handle access expressions
+	}		
 	
 	def dispatch String serialize(NotExpression expression) {
 		return '''!(«expression.operand.serialize»)'''

@@ -149,8 +149,8 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			return;
 		}
 		List<Expression> arguments = functionAccessExpression.getArguments();
-		if (functionAccessExpression.getDeclaration() instanceof FunctionDeclaration) {
-			final FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionAccessExpression.getDeclaration();
+		if (functionAccessExpression.getOperand() instanceof FunctionDeclaration) {
+			final FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionAccessExpression.getOperand();
 			List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
 			if (arguments.size() != parameters.size()) {
 				error("The number of arguments does not match the number of declared parameters for the function!", 
@@ -180,11 +180,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
-		typeDeterminator.transform(expression.getDeclaration().getType());
-		if (!((typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.ARRAY) ||
-				(typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.ENUMERATION) ||
-				(typeDeterminator.transform(expression.getDeclaration().getType()) == ExpressionType.INTEGER_RANGE))) {
-			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.transform(expression.getDeclaration().getType()).toString(), null);
+		if (!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
+				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.ENUMERATION) ||
+				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.INTEGER_RANGE))) {
+			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.getType(expression.getOperand()).toString(), null);
 		}
 	}
 	

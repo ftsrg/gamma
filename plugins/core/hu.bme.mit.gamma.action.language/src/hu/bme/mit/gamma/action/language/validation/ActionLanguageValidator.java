@@ -70,7 +70,8 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		}
 	}
 	
-	@Check
+	//FIXME commented so the project is runnable after modifications
+	/*@Check
 	public void checkAssignmentActions(AssignmentStatement assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
 		// Constant
@@ -87,7 +88,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
-	}
+	}*/
 
 	@Check
 	public void CheckReturnStatementType(ReturnStatement rs) {

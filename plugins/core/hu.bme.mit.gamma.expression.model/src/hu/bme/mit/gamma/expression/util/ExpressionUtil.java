@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
@@ -224,14 +225,14 @@ public class ExpressionUtil {
 		for (int i = 0; i < expressions.size() - 1; ++i) {
 			try {
 				EqualityExpression leftEqualityExpression = expressions.get(i);
-				ReferenceExpression leftReferenceExpression = (ReferenceExpression) leftEqualityExpression
+				DirectReferenceExpression leftReferenceExpression = (DirectReferenceExpression) leftEqualityExpression
 						.getLeftOperand();
 				Declaration leftDeclaration = leftReferenceExpression.getDeclaration();
 				int leftValue = evaluator.evaluate(leftEqualityExpression.getRightOperand());
 				for (int j = i + 1; j < expressions.size(); ++j) {
 					try {
 						EqualityExpression rightEqualityExpression = expressions.get(j);
-						ReferenceExpression rightReferenceExpression = (ReferenceExpression) rightEqualityExpression
+						DirectReferenceExpression rightReferenceExpression = (DirectReferenceExpression) rightEqualityExpression
 								.getLeftOperand();
 						Declaration rightDeclaration = rightReferenceExpression.getDeclaration();
 						int rightValue = evaluator.evaluate(rightEqualityExpression.getRightOperand());
@@ -288,8 +289,8 @@ public class ExpressionUtil {
 	
 	public Set<VariableDeclaration> getReferredVariables(EObject object) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
-		for (ReferenceExpression referenceExpression :
-				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
+		for (DirectReferenceExpression referenceExpression :
+				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof VariableDeclaration) {
 				variables.add((VariableDeclaration) declaration);
@@ -314,7 +315,7 @@ public class ExpressionUtil {
 		return variables;
 	}
 
-	protected Set<VariableDeclaration> _getReferredVariables(final ReferenceExpression expression) {
+	protected Set<VariableDeclaration> _getReferredVariables(final DirectReferenceExpression expression) {
 		Declaration declaration = expression.getDeclaration();
 		if ((declaration instanceof VariableDeclaration)) {
 			return Collections.singleton(((VariableDeclaration) declaration));

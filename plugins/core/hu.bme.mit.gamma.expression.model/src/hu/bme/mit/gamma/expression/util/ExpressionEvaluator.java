@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -39,7 +40,6 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -64,8 +64,8 @@ public class ExpressionEvaluator {
 
 	// Integers (and enums)
 	public int evaluateInteger(Expression expression) {
-		if (expression instanceof ReferenceExpression) {
-			final ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression) {
+			final DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof ConstantDeclaration) {
 				final ConstantDeclaration constantDeclaration = (ConstantDeclaration) declaration;
@@ -187,8 +187,8 @@ public class ExpressionEvaluator {
 			return evaluateBoolean(inequalityExpression.getLeftOperand()) != evaluateBoolean(
 					inequalityExpression.getRightOperand());
 		}
-		if (expression instanceof ReferenceExpression) {
-			final ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression) {
+			final DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
 			Declaration declaration = referenceExpression.getDeclaration();
 			if (declaration instanceof ConstantDeclaration) {
 				final ConstantDeclaration constantDeclaration = (ConstantDeclaration) declaration;

@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class PhaseStatechartTransformer {
 
@@ -113,7 +114,7 @@ class PhaseStatechartTransformer {
 		val parameters = inlineableStatechart.parameterDeclarations
 		for (var i = 0; i < parameters.size; i++) {
 			val parameter = parameters.get(i)
-			for (reference : inlineableStatechart.getAllContents(true).filter(ReferenceExpression)
+			for (reference : inlineableStatechart.getAllContents(true).filter(DirectReferenceExpression)
 					.filter[it.declaration === parameter].toList) {
 				val argument = instance.arguments.get(i)
 				reference.replace(argument)

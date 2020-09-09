@@ -236,7 +236,7 @@ MultiplicativeExpression returns Expression:
 SignumExpression returns Expression:
 	{UnaryMinusExpression} => '-' operand=SignumExpression |
 	{UnaryPlusExpression} => '+' operand=SignumExpression |
-	PrimaryExpression
+	AccessExpression
 	
 	//non-associative
 	//{UnaryMinusExpression} => '-' expression=ValueAccessExpression | ValueAccessExpression
@@ -249,40 +249,23 @@ SignumExpression returns Expression:
 //	//ValueAccessExpression ({PrimedExpression.expression=current} '^')*
 //;
 
-PrimaryExpression returns Expression:
-	LiteralExpression | DeclarationAccess | '(' Expression ')'
+AccessExpression returns Expression:
+	PrimaryExpression(
+		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
+		{RecordAccessExpression.operand=current} '.' field=ID |
+		{SelectExpression.operand=current} '.' 'select'
+	)* 
 ;
 
-DeclarationAccess returns ReferenceExpression:
-	AccessExpression |
-	ReferenceExpression
+PrimaryExpression returns Expression: 
+	  DirectReferenceExpression | 
+	 '(' Expression ')'
 ;
 
-AccessExpression returns AccessExpression:
-	ArrayAccessExpression |
-	FunctionAccessExpression |
-	RecordAccessExpression |
-	SelectExpression
-;
-
-ArrayAccessExpression returns ArrayAccessExpression:
-	declaration=[ValueDeclaration]  '[' arguments+=(IntegerLiteralExpression | ReferenceExpression) ']'
-;
-
-FunctionAccessExpression returns FunctionAccessExpression:
-	declaration=[ValueDeclaration] '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')'
-;
-
-RecordAccessExpression returns RecordAccessExpression:
-	declaration=[ValueDeclaration] '.' field=ID
-;
-
-SelectExpression returns SelectExpression:
-	declaration=[ValueDeclaration] '.' 'select'
-;
-
-ReferenceExpression returns ReferenceExpression:
-	declaration=[ValueDeclaration]	
+DirectReferenceExpression returns Expression:
+		{DirectReferenceExpression} declaration=[ValueDeclaration] | 
+		LiteralExpression
 ;
 
 LiteralExpression returns Expression:
@@ -342,11 +325,11 @@ ArrayLiteralExpression:
 	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
 ;
 
-//TODO leftoperand=Expression creates a left-recursive grammar (-> serious refactor) - this is lenient enough for now 
+//FIXME notation?
 IntegerRangeLiteralExpression:
 	{IntegerRangeLiteralExpression}
-	((leftInclusive?='[') | '(') (leftOperand=(IntegerLiteralExpression | ReferenceExpression)) 
-		'..' rightOperand=(IntegerLiteralExpression | ReferenceExpression) ((rightInclusive?=']') | ')')
+	((leftInclusive?='<+') | '<-') (leftOperand=(Expression)) 
+		'..' rightOperand=(Expression) ((rightInclusive?='+>') | '->')
 ; 
 
 

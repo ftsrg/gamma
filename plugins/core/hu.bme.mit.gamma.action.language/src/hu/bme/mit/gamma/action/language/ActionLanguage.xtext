@@ -45,12 +45,12 @@ InlineStatement returns ActionModel::Statement:
 	(VariableDeclarationStatement |
 	ConstantDeclarationStatement |
 	
-	ExpressionStatement |
-	
 	ReturnStatement |
 	BreakStatement |
 	
-	AssignmentStatement 
+	=>AssignmentStatement | 
+	
+	ExpressionStatement 
 	)
 	
 	';'
@@ -145,5 +145,23 @@ ChoiceStatement returns ActionModel::ChoiceStatement:
 ;
 
 AssignmentStatement returns ActionModel::AssignmentStatement:
-	lhs=ReferenceExpression ':=' rhs=Expression
+	lhs=AssignableAccessExpression ':=' rhs=Expression
+;
+
+//Lvalue rules based on the constraint model
+
+AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
+	AssignablePrimaryExpression(
+		{ConstraintModel::ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{ConstraintModel::RecordAccessExpression.operand=current} '.' field=ID 
+	)* 
+;
+
+AssignablePrimaryExpression returns ConstraintModel::ReferenceExpression: 
+	  AssignableDirectReferenceExpression | 
+	 '(' AssignableAccessExpression ')'
+;
+
+AssignableDirectReferenceExpression returns ConstraintModel::ReferenceExpression:
+		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration]
 ;

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -30,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -66,6 +68,7 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
+import hu.bme.mit.gamma.expression.language.validation.ExpressionLanguageValidatorUtil;
 
 public class ExpressionTypeDeterminator {
 	// Singleton
@@ -101,8 +104,8 @@ public class ExpressionTypeDeterminator {
 		if (expression instanceof ArrayLiteralExpression) {
 			return getType((ArrayLiteralExpression) expression);
 		}
-		if (expression instanceof ReferenceExpression) {
-			return getType((ReferenceExpression) expression);
+		if (expression instanceof DirectReferenceExpression) {
+			return getType((DirectReferenceExpression) expression);
 		}
 		if (expression instanceof ElseExpression) {
 			return getType((ElseExpression) expression);
@@ -147,7 +150,7 @@ public class ExpressionTypeDeterminator {
 			return transform(arrayTypeDefinition.getElementType());
 		}
 		if (expression instanceof FunctionAccessExpression) {
-			return transform((((FunctionAccessExpression) expression)).getDeclaration().getType());
+			return transform(ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(((FunctionAccessExpression) expression)).getType());
 			// What if it goes through a type reference / declaration?
 		}
 		if (expression instanceof RecordAccessExpression) {
@@ -174,7 +177,7 @@ public class ExpressionTypeDeterminator {
 				return ExpressionType.ENUMERATION;
 			}
 			else {
-				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + selectExpression.getDeclaration());
+				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(selectExpression));
 			}
 		}
 		if (expression instanceof IfThenElseExpression) {
@@ -238,7 +241,7 @@ public class ExpressionTypeDeterminator {
 	
 	// References
 	
-	private ExpressionType getType(ReferenceExpression expression) {
+	private ExpressionType getType(DirectReferenceExpression expression) {
 		Type declarationType = expression.getDeclaration().getType();
 		return transform(declarationType);
 	}
@@ -336,9 +339,13 @@ public class ExpressionTypeDeterminator {
 	// Easy determination of boolean and number types
 	
 	public boolean isBoolean(Expression	expression) {
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
 			Declaration declaration = referenceExpression.getDeclaration();
+			Type declarationType = declaration.getType();
+			return transform(declarationType) == ExpressionType.BOOLEAN;
+		} else if (expression instanceof AccessExpression) {
+			Declaration declaration = ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration((AccessExpression)expression);
 			Type declarationType = declaration.getType();
 			return transform(declarationType) == ExpressionType.BOOLEAN;
 		}
@@ -361,8 +368,8 @@ public class ExpressionTypeDeterminator {
 	}
 	
 	public boolean isNumber(Expression expression) {
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
 			Declaration declaration = referenceExpression.getDeclaration();
 			Type declarationType = declaration.getType();
 			return isNumber(transform(declarationType));
@@ -449,8 +456,8 @@ public class ExpressionTypeDeterminator {
 			EnumerationLiteralExpression literal = (EnumerationLiteralExpression) expression;
 			return (EnumerationTypeDefinition) literal.getReference().eContainer();
 		}
-		if (expression instanceof ReferenceExpression) {
-			ReferenceExpression reference = (ReferenceExpression) expression;
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
 			Type type = reference.getDeclaration().getType();
 			return getEnumerationType(type);
 		}
