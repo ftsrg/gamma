@@ -55,6 +55,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getOrthogonalRegionSchedulingOrderAssignment_0_1_2());
         c.setLinewrap(1).after(f.getStatechartDefinitionAccess().getTransitionPriorityAssignment_0_2_2());
         c.setLinewrap(1).before(f.getTransitionRule());
+        c.setLinewrap(1).after(f.getTransitionAnnotationRule());
         c.setLinewrap(1).after(f.getTransitionRule());
         c.setLinewrap(1).before(f.getRegionRule());
         c.setLinewrap(1).after(f.getRegionRule());
@@ -96,7 +97,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
             c.setLinewrap(1).before(p.getFirst());
         }
         // No space around guards 
-        c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_6_1_1());
+        c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
         // No space before parameters and arguments 
         c.setNoSpace().before(f.getStatechartDefinitionAccess().getGroup_3());
         c.setNoSpace().before(f.getSynchronousCompositeComponentAccess().getGroup_2());
@@ -112,7 +113,6 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
         	c.setSpace(" ").before(p.getFirst());
         }
-        c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_6_1_1());
         // Interface events
         c.setLinewrap(1).after(f.getEventDeclarationRule());
         // Comments

@@ -78,6 +78,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="effects" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//TransitionAnnotation" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RaiseEventAction" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="event" lowerBound="1" eType="ecore:EClass interface.ecore#//Event"/>
@@ -143,4 +145,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="OnCycleTrigger" eSuperTypes="interface.ecore#//SimpleTrigger"/>
   <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>

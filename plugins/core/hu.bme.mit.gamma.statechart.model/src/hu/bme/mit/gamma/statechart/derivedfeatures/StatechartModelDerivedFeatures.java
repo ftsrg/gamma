@@ -73,6 +73,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -805,6 +807,16 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static EventDeclaration getContainingEventDeclaration(Event event) {
 		return (EventDeclaration) event.eContainer();
+	}
+	
+	public static String getId(Transition transition) {
+		for (TransitionAnnotation annotation : transition.getAnnotations()) {
+			if (annotation instanceof TransitionIdAnnotation) {
+				TransitionIdAnnotation transitionIdAnnotation = (TransitionIdAnnotation) annotation;
+				return transitionIdAnnotation.getId();
+			}
+		}
+		return null;
 	}
 	
 	public static Collection<PortEventReference> getPortEventReferences(Transition transition) {

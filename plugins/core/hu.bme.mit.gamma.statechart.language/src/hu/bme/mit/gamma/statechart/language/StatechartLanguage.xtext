@@ -234,6 +234,7 @@ Region returns Region:
 ;
 
 Transition returns Transition:
+	(annotations+=TransitionAnnotation)*
 	'transition' ('(' priority=INTEGER ')')?
 	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
 	(
@@ -241,6 +242,14 @@ Transition returns Transition:
 		('[' guard=Expression ']')?
 		('/' ( => effects+=Action)* )?
 	)
+;
+
+TransitionAnnotation returns TransitionAnnotation:
+	TransitionIdAnnotation
+;
+
+TransitionIdAnnotation returns TransitionIdAnnotation:
+	'@''(' id=ID ')'
 ;
 
 StateNode returns StateNode:
