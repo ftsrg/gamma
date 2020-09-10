@@ -8,7 +8,11 @@ Furthermore, the plugins support the automatic generation of standalone Java sta
 
 First, you have to set up an Eclipse with the [core Gamma plugins](https://github.com/ftsrg/gamma/tree/theta-integration/plugins/core).
 
-Next, you have to set up [Theta](https://github.com/mondokm/theta/tree/xsts/subprojects/xsts-cli): make sure you put the the _lib_ folder (containing necessary libraries for Theta) onto your PATH. After building Theta, you have to create an environment variable with the name of `theta_xsts_cli`, which points to the generated _theta-xsts-cli-<VERSION>-all.jar_ in the _subprojects/xsts-cli/build/libs/_ folder.
+Next, you have to set up [Theta](https://github.com/ftsrg/theta), more specifically the [`theta-xsts-cli` tool](https://github.com/ftsrg/theta/tree/master/subprojects/xsts-cli).
+You can check out the [instructions](https://github.com/ftsrg/theta/tree/master/subprojects/xsts-cli) for various options for setting up Theta, but we suggest downloading a [binary release](https://github.com/ftsrg/theta/releases).
+For Gamma, only the `theta-xsts-cli.jar` is required in addition to the libraries in the [_lib_ folder](https://github.com/ftsrg/theta/tree/master/lib).
+Make sure to put the libraries onto your PATH. 
+Furthermore, you have to create an environment variable with the name of `THETA_XSTS_CLI_PATH`, which points to the `theta-xsts-cli.jar` binary.
 
 Then, you have to set up the plugins in this folder:
 1. Import all Eclipse projects from the the _xsts_ folder.
