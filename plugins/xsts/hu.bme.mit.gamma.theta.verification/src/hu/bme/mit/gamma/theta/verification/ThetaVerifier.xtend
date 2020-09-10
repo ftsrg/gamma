@@ -26,7 +26,7 @@ class ThetaVerifier extends AbstractVerifier {
 	protected final extension ThetaQueryAdapter thetaQueryAdapter = ThetaQueryAdapter.INSTANCE
 	protected final extension ThetaValidator thetaValidator = ThetaValidator.INSTANCE
 	
-	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "theta_xsts_cli"
+	final String ENVIRONMENT_VARIABLE_FOR_THETA_JAR = "THETA_XSTS_CLI_PATH"
 	
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
@@ -59,9 +59,9 @@ class ThetaVerifier extends AbstractVerifier {
 		var Scanner traceFileScanner = null
 		try {
 			ENVIRONMENT_VARIABLE_FOR_THETA_JAR.validate
-			// The 'theta_xsts_cli' environment variable has to be set to the respective file path
+			// The 'THETA_XSTS_CLI_PATH' environment variable has to be set to the respective file path
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
-			// java -jar %theta_xsts_cli% --model trafficlight.xsts --property red_green.prop
+			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one 
 			val command = "java -jar " + jar.escapePath + " " + parameters + " --model " + modelFile.canonicalPath.escapePath + " --property " + queryFile.canonicalPath.escapePath + " --cex " + traceFile.canonicalPath.escapePath
