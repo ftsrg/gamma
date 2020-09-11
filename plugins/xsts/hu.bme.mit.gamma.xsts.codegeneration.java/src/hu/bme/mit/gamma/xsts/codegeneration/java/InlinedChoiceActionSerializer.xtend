@@ -63,7 +63,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			«ENDFOR»
 			
 			private void changeState() {
-«««				// Initializing the temporary variables - Is it actually needed?
+				// Initializing the temporary variables - needed, as timings and clearing of in/out events come from the environment
 				«variableDeclarations.serializeInitializationAssignments»
 				«xSts.mergedAction.serialize»
 				// Finalizing the actions

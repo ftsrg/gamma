@@ -97,7 +97,7 @@ public class CommandHandler extends AbstractHandler {
 		// XSTS to Java serializer
 		hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = null;
 		// Set the following variable to specify the action priming setting
-		ActionPrimingSetting setting = ActionPrimingSetting.CHOICE_INLINER;
+		ActionPrimingSetting setting = ActionPrimingSetting.VARIABLE_COMMONIZER;
 		if (setting == ActionPrimingSetting.VARIABLE_COMMONIZER) {
 			ActionPrimer actionPrimer = new VariableCommonizer(); // Not necessary to use it for code generation
 			javaActionSerializer = new CommonizedVariableActionSerializer(); // Good for the original actions too
