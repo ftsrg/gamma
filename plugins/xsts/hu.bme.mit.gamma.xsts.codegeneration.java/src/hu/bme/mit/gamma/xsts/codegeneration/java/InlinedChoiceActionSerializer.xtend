@@ -45,8 +45,12 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) {
 		return '''
-			«xSts.initializingAction.serialize»
-			«xSts.initializingAction.writtenVariables.map[it.originalVariable].toSet.serializeFinalizationAssignments»
+			«xSts.variableInitializingAction.serialize»
+			«xSts.variableInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.configurationInitializingAction.serialize»
+			«xSts.configurationInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.entryEventAction.serialize»
+			«xSts.entryEventAction.originalWrittenVariables.serializeFinalizationAssignments»
 		'''
 	}
 	
@@ -59,7 +63,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			«ENDFOR»
 			
 			private void changeState() {
-				// Initializing the temporary variables
+«««				// Initializing the temporary variables - Is it actually needed?
 				«variableDeclarations.serializeInitializationAssignments»
 				«xSts.mergedAction.serialize»
 				// Finalizing the actions
@@ -210,6 +214,10 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		checkArgument(firstXStsSubaction instanceof AssumeAction)
 		val firstXStAssumeAction = firstXStsSubaction as AssumeAction
 		return firstXStAssumeAction.assumption
+	}
+	
+	private def getOriginalWrittenVariables(Action action) {
+		return action.writtenVariables.map[it.originalVariable].toSet
 	}
 	
 }
