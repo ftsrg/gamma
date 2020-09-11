@@ -36,7 +36,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration
+		Verification | TestReplayModelGeneration | Slicing
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -229,6 +229,17 @@ TestReplayModelGeneration returns TestReplayModelGeneration:
 		)*
 	'}'
 ;
+
+Slicing returns Slicing:
+	{Slicing} 'slicing' '{'
+		'property' ':' propertyPackage=[property::PropertyPackage | STRING]
+		(
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'folder' ':' targetFolder+=STRING
+		)*
+	'}'
+;
+
 
 InterfaceMapping returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'

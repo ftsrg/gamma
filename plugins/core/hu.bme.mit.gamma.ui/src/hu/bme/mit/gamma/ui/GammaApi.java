@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 Contributors to the Gamma project
+ * Copyright (c) 2018-2019 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -16,7 +16,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -38,6 +37,7 @@ import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.InterfaceCompilation;
 import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.Slicing;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
@@ -50,6 +50,7 @@ import hu.bme.mit.gamma.ui.taskhandler.CodeGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.EventPriorityTransformationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.InterfaceCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.PhaseGenerationHandler;
+import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler;
 import hu.bme.mit.gamma.ui.taskhandler.StatechartCompilationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestGenerationHandler;
 import hu.bme.mit.gamma.ui.taskhandler.TestReplayModelGenerationHandler;
@@ -75,7 +76,7 @@ public class GammaApi {
 		// Xtext errors can be removed by cleaning the project in case of YakinduCompilation and TestGeneration tasks
 		boolean needsCleaning = false;
 		// Multiple compilations due to the dependencies between models
-		final int MAX_ITERATION_COUNT = 5;
+		final int MAX_ITERATION_COUNT = 6;
 		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
 			ResourceSet resourceSet = new ResourceSetImpl();
 			Resource resource = resourceSet.getResource(fileURI, true);
@@ -83,9 +84,6 @@ public class GammaApi {
 			EObject content = resource.getContents().get(0);
 			if (content instanceof GenModel) {
 				GenModel genmodel = (GenModel) content;
-				IContainer parent = file.getParent();
-				// Decoding so spaces do not stir trouble
-				String parentFolderUri = URI.decode(parent.getLocation().toString());
 				// WARNING: workspace location and imported project locations are not to be confused
 				// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
 				List<Task> tasks = orderTasks(genmodel, i);
@@ -96,7 +94,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resourceSet);
 							InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
 							InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
-							handler.setTargetFolder(interfaceCompilation, parentFolderUri);
+							handler.setTargetFolder(interfaceCompilation);
 							handler.execute(interfaceCompilation);
 							logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
 						}
@@ -104,7 +102,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resourceSet);
 							StatechartCompilation statechartCompilation = (StatechartCompilation) task;
 							StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
-							handler.setTargetFolder(statechartCompilation, parentFolderUri);
+							handler.setTargetFolder(statechartCompilation);
 							handler.execute(statechartCompilation);
 							logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 						}
@@ -114,14 +112,14 @@ public class GammaApi {
 							CodeGeneration codeGeneration = (CodeGeneration) task;
 							logger.log(Level.INFO, "Resource set content for Java code generation: " + resourceSet);
 							CodeGenerationHandler handler = new CodeGenerationHandler(file);
-							handler.setTargetFolder(codeGeneration, parentFolderUri);
+							handler.setTargetFolder(codeGeneration);
 							handler.execute(codeGeneration, projectName);
 							logger.log(Level.INFO, "The Java code generation has been finished.");
 						}
 						else if (task instanceof AnalysisModelTransformation) {
 							AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
 							AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-							handler.setTargetFolder(analysisModelTransformation, parentFolderUri);
+							handler.setTargetFolder(analysisModelTransformation);
 							handler.execute(analysisModelTransformation);
 							logger.log(Level.INFO, "The composite system transformation has been finished.");
 						}
@@ -129,7 +127,7 @@ public class GammaApi {
 							needsCleaning = true;
 							TestGeneration testGeneration = (TestGeneration) task;
 							TestGenerationHandler handler = new TestGenerationHandler(file);
-							handler.setTargetFolder(testGeneration, parentFolderUri);
+							handler.setTargetFolder(testGeneration);
 							handler.execute(testGeneration, projectName);
 							logger.log(Level.INFO, "The test generation has been finished.");
 						}
@@ -137,21 +135,28 @@ public class GammaApi {
 							needsCleaning = true;
 							Verification verification = (Verification) task;
 							VerificationHandler handler = new VerificationHandler(file);
-							handler.setTargetFolder(verification, parentFolderUri);
+							handler.setTargetFolder(verification);
 							handler.execute(verification);
 							logger.log(Level.INFO, "The verification has been finished.");
+						}
+						else if (task instanceof Slicing) {
+							Slicing slicing = (Slicing) task;
+							SlicingHandler handler = new SlicingHandler(file);
+							// No target folder setting, that is done inside
+							handler.execute(slicing);
+							logger.log(Level.INFO, "The slicing has been finished.");
 						}
 						else if (task instanceof TestReplayModelGeneration) {
 							TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
 							TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
-							handler.setTargetFolder(testReplayModelGeneration, parentFolderUri);
+							handler.setTargetFolder(testReplayModelGeneration);
 							handler.execute(testReplayModelGeneration);
 							logger.log(Level.INFO, "The test replay model generation has been finished.");
 						}
 						else if (task instanceof AdaptiveContractTestGeneration) {
 							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
-							handler.setTargetFolder(testGeneration, parentFolderUri);
+							handler.setTargetFolder(testGeneration);
 							handler.execute(testGeneration, file.getLocation().toString(), projectName);
 							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
 						}
@@ -159,7 +164,7 @@ public class GammaApi {
 							needsCleaning = true;
 							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
 							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
-							handler.setTargetFolder(eventPriorityTransformation, parentFolderUri);
+							handler.setTargetFolder(eventPriorityTransformation);
 							handler.execute(eventPriorityTransformation);
 							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
@@ -167,7 +172,7 @@ public class GammaApi {
 							needsCleaning = true;
 							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
 							PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
-							handler.setTargetFolder(phaseStatechartGeneration, parentFolderUri);
+							handler.setTargetFolder(phaseStatechartGeneration);
 							handler.execute(phaseStatechartGeneration);
 							logger.log(Level.INFO, "The phase statechart transformation has been finished.");
 						}
@@ -213,6 +218,10 @@ public class GammaApi {
 								it instanceof CodeGeneration)
 						.collect(Collectors.toList());
 			case 4: 
+				return allTasks.stream()
+						.filter(it -> it instanceof Slicing)
+						.collect(Collectors.toList());
+			case 5: 
 				return allTasks.stream()
 						.filter(it -> it instanceof TestGeneration || it instanceof Verification ||
 								it instanceof AdaptiveContractTestGeneration ||

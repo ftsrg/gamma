@@ -11,10 +11,12 @@
 package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
+import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
 
 class WrittenOnlyVariableReducer implements Reducer {
@@ -37,7 +39,8 @@ class WrittenOnlyVariableReducer implements Reducer {
 	override execute() {
 		val assignments = root.getSelfAndAllContentsOfType(AssignmentStatement)
 		val writtenOnlyVariables = root.writtenOnlyVariables
-		val deletableVariables = newHashSet
+		val deletableVariables = <Declaration>newHashSet
+		deletableVariables += root.unusedVariables
 		for (assignment : assignments) {
 			val declaration = assignment.lhs.declaration
 			if (writtenOnlyVariables.contains(declaration) &&
@@ -48,6 +51,7 @@ class WrittenOnlyVariableReducer implements Reducer {
 		}
 		for (deletableVariable : deletableVariables) {
 			deletableVariable.delete
+			logger.log(Level.INFO, deletableVariable.name + " has been deleted")
 		}
 	}
 	

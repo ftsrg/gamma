@@ -63,6 +63,11 @@ public class StatechartUtil extends ExpressionUtil {
 		return instanceReference;
 	}
 	
+	public Set<VariableDeclaration> getVariables(EObject object) {
+		return new HashSet<VariableDeclaration>(
+				ecoreUtil.getSelfAndAllContentsOfType(object, VariableDeclaration.class));
+	}
+	
 	public Set<VariableDeclaration> getWrittenVariables(EObject object) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (AssignmentStatement assignmentStatement :
@@ -86,6 +91,13 @@ public class StatechartUtil extends ExpressionUtil {
 				}
 			}
 		}
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getUnusedVariables(EObject object) {
+		Set<VariableDeclaration> variables = getVariables(object);
+		variables.removeAll(getWrittenVariables(object));
+		variables.removeAll(getReadVariables(object));
 		return variables;
 	}
 	

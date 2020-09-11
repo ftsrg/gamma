@@ -5,7 +5,8 @@ Bundle-SymbolicName: hu.bme.mit.gamma.transformation.util;singleton:=true
 Bundle-Version: 2.3.1.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.transformation.util,
- hu.bme.mit.gamma.transformation.util.queries
+ hu.bme.mit.gamma.transformation.util.queries,
+ hu.bme.mit.gamma.transformation.util.reducer
 Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.viatra.query.runtime.rete,
  org.eclipse.viatra.query.runtime.localsearch,

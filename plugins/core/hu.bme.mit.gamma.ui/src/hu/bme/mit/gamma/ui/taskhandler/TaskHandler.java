@@ -51,7 +51,7 @@ public abstract class TaskHandler {
 		this.projectLocation = file.getProject().getLocation().toString(); 
 	}
 
-	public void setTargetFolder(Task task, String parentFolderUri) {
+	public void setTargetFolder(Task task) {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;

@@ -10,7 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util.reducer
 
+import java.util.logging.Logger
+
 interface Reducer {
+	
+	public static final Logger logger = Logger.getLogger("GammaLogger")
 	
 	def void execute()
 	

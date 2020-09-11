@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.genmodel.language.linking
 
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
+import hu.bme.mit.gamma.genmodel.model.Slicing
 import hu.bme.mit.gamma.genmodel.model.Verification
 import hu.bme.mit.gamma.genmodel.model.XSTSReference
 import hu.bme.mit.gamma.language.util.linking.GammaLanguageLinker
@@ -24,7 +25,8 @@ class GenModelLinker extends GammaLanguageLinker {
 		return newLinkedHashMap(GenModel -> #[pack.genModel_StatechartImports,
 				pack.genModel_PackageImports, pack.genModel_TraceImports, pack.genModel_GenmodelImports],
 			Verification -> #[pack.verification_PropertyPackages],
-			XSTSReference -> #[pack.XSTSReference_XSts])
+			XSTSReference -> #[pack.XSTSReference_XSts],
+			Slicing -> #[pack.slicing_PropertyPackage])
 	}
 	
 }
