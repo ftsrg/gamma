@@ -333,7 +333,8 @@ public class PropertyGenerator {
 			if (state == null) {
 				throw new IllegalArgumentException("Not known raise event: " + action);
 			}
-			return getId(state);
+			String containmentFeatureName = action.eContainmentFeature().getName();
+			return getId(state) + "-" + containmentFeatureName;
 		}
 		return getId(transition);
 	}

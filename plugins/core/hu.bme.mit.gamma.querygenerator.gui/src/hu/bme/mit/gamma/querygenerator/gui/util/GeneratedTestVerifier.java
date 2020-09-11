@@ -30,7 +30,7 @@ public class GeneratedTestVerifier implements Runnable {
 	
 	private final View view;
 	
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public GeneratedTestVerifier(View view, AbstractController controller) {
 		this.view = view;
@@ -104,7 +104,7 @@ public class GeneratedTestVerifier implements Runnable {
 									isReachableString = "reachable";
 								break;
 								case FALSE:
-									isReachableString = "not reachable";
+									isReachableString = "NOT reachable";
 								break;
 								case UNDEF:
     								// Theoretically unreachable because of !cancelled
