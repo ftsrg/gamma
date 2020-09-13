@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator.controller;
 
+import java.io.File;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 
@@ -43,7 +45,7 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public String getGeneratedQueryFile() {
-		return null;
+		return getParentFolder() + File.separator + getCompositeSystemName() + ".prop";
 	}
 
 	@Override
