@@ -85,6 +85,10 @@ class ThetaVerifier extends AbstractVerifier {
 			else if (line.contains(UNSAFE)) {
 				super.result = ThreeStateBoolean.FALSE
 			}
+			else {
+				// Some kind of error
+				throw new IllegalArgumentException(line)
+			}
 			// Adapting result
 			super.result = super.result.adaptResult
 			if (!traceFile.exists) {
