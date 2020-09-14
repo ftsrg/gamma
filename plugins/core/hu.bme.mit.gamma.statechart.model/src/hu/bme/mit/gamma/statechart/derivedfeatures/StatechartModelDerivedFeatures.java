@@ -443,18 +443,35 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static Port getConnectedTopComponentPort(Port port) {
 		Package _package = getContainingPackage(port);
-		TreeIterator<Object> contents = EcoreUtil.getAllContents(_package, true);
-		while (contents.hasNext()) {
-			Object next = contents.next();
-			if (next instanceof PortBinding) {
-				PortBinding portBinding = (PortBinding) next;
-				if (portBinding.getInstancePortReference().getPort() == port) {
-					Port systemPort = portBinding.getCompositeSystemPort();
-					return getConnectedTopComponentPort(systemPort);
-				}
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			if (portBinding.getInstancePortReference().getPort() == port) {
+				Port systemPort = portBinding.getCompositeSystemPort();
+				return getConnectedTopComponentPort(systemPort);
 			}
 		}
 		return port;
+	}
+	
+	public static boolean isInChannel(Port port) {
+		Package _package = getContainingPackage(port);
+		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		for (Channel channel : channels) {
+			if (channel.getProvidedPort().getPort() == port ||
+					getRequiredPorts(channel).stream().anyMatch(it -> it.getPort() == port)) {
+				return true;
+			}
+		}
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			if (portBinding.getInstancePortReference().getPort() == port) {
+				Port systemPort = portBinding.getCompositeSystemPort();
+				if (isInChannel(systemPort)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static List<InstancePortReference> getRequiredPorts(Channel channel) {
