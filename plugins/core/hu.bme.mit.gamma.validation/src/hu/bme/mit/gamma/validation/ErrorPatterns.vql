@@ -39,13 +39,13 @@ pattern unusedEvents(event : Event) {
 // 2. Unused variables and constants
 
 private pattern referencedVariables(variable : Declaration) {
-	ReferenceExpression.declaration(_, variable);
+	DirectReferenceExpression.declaration(_, variable);
 	VariableDeclaration(variable);
 } or {
-	ReferenceExpression.declaration(_, variable);
+	DirectReferenceExpression.declaration(_, variable);
 	ConstantDeclaration(variable);
 } or {
-	ReferenceExpression.declaration(_, variable);
+	DirectReferenceExpression.declaration(_, variable);
 	ParameterDeclaration(variable);
 }
 
@@ -321,7 +321,7 @@ private pattern guardedTimeTriggeredTransitions(source : State, transition : Tra
 
 private pattern guardToSimpleReference(transition : Transition, declaration : Declaration) {
 	Transition.guard(transition, guard);
-	ReferenceExpression.declaration(guard, declaration); 
+	DirectReferenceExpression.declaration(guard, declaration); 
 }
 
 @Constraint(targetEditorId = "hu.bme.mit.gamma.statechart.model.presentation.StatechartModelEditorID", 
@@ -363,7 +363,7 @@ private pattern guardedTriggeredTransitions(source : StateNode, transition : Tra
 private pattern declarationOfTriggeredGuardedTransitions(node : StateNode, transition : Transition, port : Port, event : Event, declaration : Declaration) {
 	find guardedTriggeredTransitions(node, transition, port, event, guard);
 	NotExpression.operand(guard, reference);
-	ReferenceExpression.declaration(reference, declaration);
+	DirectReferenceExpression.declaration(reference, declaration);
 	
 }
 
@@ -423,7 +423,7 @@ pattern sameTrigger(transition1 : Transition, transition2 : Transition) {
 private pattern transitionsWithAssignment(transition : Transition, variableDeclaration : Declaration) {	
 	Transition.effects(transition, assignmentAction);
 	AssignmentStatement.lhs(assignmentAction, reference);
-	ReferenceExpression.declaration(reference, variableDeclaration);
+	DirectReferenceExpression.declaration(reference, variableDeclaration);
 }
 
 private pattern guardlessTriggeredTransitionsWithAssignment(region : Region, transition : Transition, port : Port, event : Event, variableDeclaration : VariableDeclaration) {
@@ -666,7 +666,7 @@ private pattern eventParameter(transition : Transition, event : Event, valueOfPa
 pattern prohibitedEventParameterReferences(transition : Transition) {
     Transition.effects(transition, assignment);
     AssignmentStatement.rhs(assignment, reference);
-    ReferenceExpression.declaration(reference, valueOfParameter2);
+    DirectReferenceExpression.declaration(reference, valueOfParameter2);
     find eventParameter(transition, _event2, valueOfParameter);
     valueOfParameter != valueOfParameter2;
 }

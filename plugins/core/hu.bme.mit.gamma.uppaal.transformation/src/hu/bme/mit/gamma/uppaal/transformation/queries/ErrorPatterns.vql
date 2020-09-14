@@ -21,7 +21,7 @@ private pattern sourceAndTargetOfTransitions(transition : Transition, source : S
 }
 
 pattern inOutTransitions(transition : Transition, source : StateNode, target : StateNode) {
-	find sourceAndTargetOfTransitions(transition, source, target);	
+	find sourceAndTargetOfTransitions(transition, source, target);
 	neg find sameRegionTransitions(source, target, transition, _);
 	neg find toHigherTransitions(source, target, transition, _);
 	neg find toLowerTransitions(source, target, transition, _);

@@ -111,7 +111,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			return Scopes.scopeFor(states)
 		}
-		if (context instanceof InstanceVariableState && reference == ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION) {
+		if (context instanceof InstanceVariableState && reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val instanceVariableState = context as InstanceVariableState
 			val instance = instanceVariableState.instance
 			val instanceType = instance.type

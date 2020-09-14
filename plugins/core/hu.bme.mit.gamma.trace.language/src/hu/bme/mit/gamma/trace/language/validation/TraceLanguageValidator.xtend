@@ -111,7 +111,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 			val variables = type.variableDeclarations
 			if (!variables.contains(variable)) {
 				error("This is not a valid variable in the specified statechart.",
-					ExpressionModelPackage.Literals.REFERENCE_EXPRESSION__DECLARATION)
+					ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION)
 			}
 		}
 	}

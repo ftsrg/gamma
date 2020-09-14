@@ -102,7 +102,7 @@ class GammaStatechartAnnotator {
 		for (transition : coverableTransitions.filter[it.needsAnnotation]) {
 			val variable = transition.createTransitionVariable
 			val assignment = createAssignmentStatement => [
-				it.lhs = createReferenceExpression => [
+				it.lhs = createDirectReferenceExpression => [
 					it.declaration = variable
 				]
 				it.rhs = createTrueExpression
@@ -229,7 +229,7 @@ class GammaStatechartAnnotator {
 				val receiverVariable = interactionVariables.value
 				// Sender assignment
 				receivingTransition.effects += createAssignmentStatement => [
-					it.lhs = createReferenceExpression => [
+					it.lhs = createDirectReferenceExpression => [
 						it.declaration = senderVariable
 					]
 					it.rhs = createEventParameterReferenceExpression => [
@@ -240,7 +240,7 @@ class GammaStatechartAnnotator {
 				]
 				// Receiver assignment
 				receivingTransition.effects += createAssignmentStatement => [
-					it.lhs = createReferenceExpression => [
+					it.lhs = createDirectReferenceExpression => [
 						it.declaration = receiverVariable
 					]
 					it.rhs = createIntegerLiteralExpression => [

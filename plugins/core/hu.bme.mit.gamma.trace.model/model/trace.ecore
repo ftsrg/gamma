@@ -32,7 +32,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/composite.ecore#//AsynchronousComponentInstance"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ComponentSchedule" eSuperTypes="#//Schedule"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableState" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
+  <eClassifiers xsi:type="ecore:EClass" name="InstanceVariableState" eSuperTypes="#//InstanceState ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//DirectReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>

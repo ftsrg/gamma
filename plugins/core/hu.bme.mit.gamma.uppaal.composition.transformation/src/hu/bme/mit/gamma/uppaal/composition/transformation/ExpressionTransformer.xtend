@@ -68,6 +68,8 @@ import uppaal.expressions.PlusExpression
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.AccessExpression
 
 class ExpressionTransformer {
     // For model creation
@@ -159,7 +161,7 @@ class ExpressionTransformer {
 		addToTrace(expression, #{newExp}, expressionTrace)
 	}
 	
-	def dispatch void transform(EObject container, EReference reference, ReferenceExpression expression) {		
+	def dispatch void transform(EObject container, EReference reference, DirectReferenceExpression expression) {		
 		val originalDeclaration = expression.declaration
 		val dataDeclarations = originalDeclaration.allValuesOfTo.filter(DataVariableDeclaration)
 		checkState(dataDeclarations.size == 1, "Probably you do not use event parameters correctly: " + dataDeclarations.size)
@@ -169,6 +171,11 @@ class ExpressionTransformer {
 		val newExp = container.createChild(reference, identifierExpression) as IdentifierExpression 
 		newExp.identifier = declaration
 		addToTrace(expression, #{newExp}, expressionTrace)
+	}
+	
+	def dispatch void transform(EObject container, EReference reference, AccessExpression expression) {		
+		//TODO
+		throw new IllegalArgumentException("Access expressions are not yet transformed" + expression)
 	}
 	
 	def dispatch void transform(EObject container, EReference reference, EventParameterReferenceExpression expression) {		

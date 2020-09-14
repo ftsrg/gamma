@@ -116,6 +116,7 @@ import org.yakindu.sct.model.stext.stext.VariableDefinition
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -510,7 +511,7 @@ class YakinduToGammaTransformer {
     		// Creating and entry event of the Gamma final state that sets the "end" variable to false
     		val variableDeclaration = endVariable
     		gammaFinalState.createChild(state_EntryActions, assignmentStatement) as AssignmentStatement => [
-    			it.createChild(assignmentStatement_Lhs, referenceExpression) as ReferenceExpression => [
+    			it.createChild(assignmentStatement_Lhs, directReferenceExpression) as DirectReferenceExpression => [
     				it.declaration = variableDeclaration    					
     			]
     			it.createChild(assignmentStatement_Rhs, trueExpression)
@@ -573,7 +574,7 @@ class YakinduToGammaTransformer {
 		val endVariable = finalState.getAllValuesOfTo.filter(VariableDeclaration).head
 		for (transition : targetEngine.getMatcher(NonEntryNonChoiceTransitions.instance).allValuesOftransition) {
 			transition.createChild(transition_Guard, notExpression) as NotExpression => [
-				it.createChild(unaryExpression_Operand, referenceExpression) as ReferenceExpression => [
+				it.createChild(unaryExpression_Operand, directReferenceExpression) as DirectReferenceExpression => [
 					it.declaration = endVariable
 				]	
 			]							
@@ -620,7 +621,7 @@ class YakinduToGammaTransformer {
 		if (!(notExpression.operand instanceof ReferenceExpression)) {
 			return false
 		}
-		val referenceExpression = notExpression.operand as ReferenceExpression
+		val referenceExpression = notExpression.operand as DirectReferenceExpression
 		val endVar =  finalState.getAllValuesOfTo.filter(VariableDeclaration).head
 		if (referenceExpression.declaration != endVar) {
 			return false

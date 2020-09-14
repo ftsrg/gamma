@@ -34,6 +34,8 @@ import hu.bme.mit.gamma.transformation.util.queries.ParameterizedInstancesWithPa
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.AccessExpression
 
 // There is an expression evaluator in the Expression Model plugin, but that does not handle parameter declarations
 class ExpressionEvaluator {
@@ -56,7 +58,7 @@ class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not transformable expression: " + exp)
 	}
 	
-	def dispatch int evaluate(ReferenceExpression exp) {
+	def dispatch int evaluate(DirectReferenceExpression exp) {
 		val declaration = exp.declaration
 		if (declaration instanceof ConstantDeclaration) {
 			return declaration.expression.evaluate
@@ -67,6 +69,11 @@ class ExpressionEvaluator {
 		else {
 			throw new IllegalArgumentException("Not transformable expression: " + exp)
 		}
+	}
+	
+	def dispatch int evaluate(AccessExpression exp) {
+		//TODO
+		throw new IllegalArgumentException("Access expressions are not yet transformed" + exp)
 	}
 	
 	def dispatch int evaluate(IntegerLiteralExpression exp) {
@@ -156,7 +163,7 @@ class ExpressionEvaluator {
 		return expression.leftOperand.evaluateBoolean != expression.rightOperand.evaluateBoolean
 	}
 	
-	def dispatch boolean evaluateBoolean(ReferenceExpression exp) {
+	def dispatch boolean evaluateBoolean(DirectReferenceExpression exp) {
 		val declaration = exp.declaration
 		if (declaration instanceof ConstantDeclaration) {
 			return declaration.expression.evaluateBoolean
@@ -167,6 +174,11 @@ class ExpressionEvaluator {
 		else {
 			throw new IllegalArgumentException("Not transformable expression: " + exp)
 		}
+	}
+	
+	def dispatch boolean evaluateBoolean(AccessExpression exp) {
+		//TODO
+		throw new IllegalArgumentException("Access expressions are not yet transformed" + exp)
 	}
 	
 }

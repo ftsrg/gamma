@@ -22,7 +22,17 @@ pattern namedElements(element : NamedElement, name : java String) {
 
 pattern assignedVariables(variableDeclaration : VariableDeclaration) {
 	AssignmentStatement.lhs(_, referenceExpression);
-	ReferenceExpression.declaration(referenceExpression, variableDeclaration);
+	find isDeclarationOfReference(referenceExpression, variableDeclaration);
+}
+
+pattern isDeclarationOfReference(reference : ReferenceExpression, variableDeclaration : VariableDeclaration) {
+	DirectReferenceExpression(reference);
+	DirectReferenceExpression.declaration(reference, variableDeclaration);
+} or {
+	AccessExpression(reference);
+	AccessExpression.operand(reference, operand);
+	ReferenceExpression(operand);
+	find isDeclarationOfReference(operand, variableDeclaration);
 }
 
 pattern variableDeclarations(variable : VariableDeclaration, name : java String, type) {
@@ -147,11 +157,11 @@ private pattern referencesOfChoiceTransitions(choice : ChoiceState, choice2 : Ch
 	// Assignment action of input transition
 	Transition.effects(inTransition, assignmentStatement);
 	AssignmentStatement.lhs(assignmentStatement, referenceExpression);
-	ReferenceExpression.declaration(referenceExpression, variable);
+	DirectReferenceExpression.declaration(referenceExpression, variable);
 	// Guard of output transition refers to the updated variable
 	Transition.guard(outTransition, guard);
 	find expressionToExpression+(guard, referenceExpression2);
-	ReferenceExpression.declaration(referenceExpression2, variable);	
+	DirectReferenceExpression.declaration(referenceExpression2, variable);	
 }
 
 private pattern choiceToChoice(choice1 : ChoiceState, choice2 : ChoiceState) {

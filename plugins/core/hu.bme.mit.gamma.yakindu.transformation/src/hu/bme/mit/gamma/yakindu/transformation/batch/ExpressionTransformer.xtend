@@ -72,6 +72,7 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
 import hu.bme.mit.gamma.action.model.ActionModelPackage
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.
@@ -332,7 +333,7 @@ class ExpressionTransformer {
 				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
 					it.transform(assignmentStatement_Lhs, expression.operand)
 					it.createChild(assignmentStatement_Rhs, subtractExpression) as SubtractExpression => [
-						it.createChild(binaryExpression_LeftOperand, referenceExpression) as ReferenceExpression => [
+						it.createChild(binaryExpression_LeftOperand, directReferenceExpression) as DirectReferenceExpression => [
 							it.declaration = gammaVariable
 						]
 						it.createChild(binaryExpression_RightOperand, integerLiteralExpression) as IntegerLiteralExpression => [
@@ -345,7 +346,7 @@ class ExpressionTransformer {
 				container.createChild(reference, assignmentStatement) as AssignmentStatement => [
 					it.transform(assignmentStatement_Lhs, expression.operand)
 					it.createChild(assignmentStatement_Rhs, addExpression) as AddExpression => [
-						it.createChild(multiaryExpression_Operands, referenceExpression) as ReferenceExpression => [
+						it.createChild(multiaryExpression_Operands, directReferenceExpression) as DirectReferenceExpression => [
 							it.declaration = gammaVariable
 						]
 						it.createChild(multiaryExpression_Operands, integerLiteralExpression) as IntegerLiteralExpression => [
@@ -484,7 +485,7 @@ class ExpressionTransformer {
 	 */
 	def dispatch EObject transform(EObject container, EReference reference, VariableDefinition expression) {		
 		container.createChild(reference, referenceExpression) as ReferenceExpression => [
-			it.set(referenceExpression_Declaration, expression.getAllValuesOfTo.head)
+			it.set(directReferenceExpression_Declaration, expression.getAllValuesOfTo.head)
 		]
 		// Trace is created by the method that called this one, and VariableDefintions are traced in Traces
 	}

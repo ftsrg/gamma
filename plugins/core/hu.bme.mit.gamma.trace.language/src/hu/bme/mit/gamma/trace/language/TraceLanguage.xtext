@@ -15,7 +15,7 @@ import "http://www.mit.bme.hu/gamma/trace/Model"
 import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" as StatechartModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeModel
-import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel 
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel
 
 ExecutionTrace returns ExecutionTrace:
 	'import' ^import=[InterfaceModel::Package | STRING]

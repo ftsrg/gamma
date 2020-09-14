@@ -54,7 +54,7 @@ pattern instanceContainer(containerInstace : SynchronousComponentInstance, insta
 }
 
 pattern referencedDeclarations(declaration : NamedElement) {
-	ReferenceExpression.declaration(_, declaration);
+	DirectReferenceExpression.declaration(_, declaration);
 } or {
 	TimeoutEventReference.timeout(_, declaration);
 }

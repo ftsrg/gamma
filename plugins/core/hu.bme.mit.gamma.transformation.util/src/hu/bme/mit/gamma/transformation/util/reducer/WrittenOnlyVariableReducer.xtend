@@ -16,6 +16,8 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import org.eclipse.emf.ecore.EObject
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.AccessExpression
 
 class WrittenOnlyVariableReducer implements Reducer {
 	// Any object can be root, e.g., Package or Component...
@@ -39,12 +41,17 @@ class WrittenOnlyVariableReducer implements Reducer {
 		val writtenOnlyVariables = root.writtenOnlyVariables
 		val deletableVariables = newHashSet
 		for (assignment : assignments) {
-			val declaration = assignment.lhs.declaration
-			if (writtenOnlyVariables.contains(declaration) &&
+			if(assignment.lhs instanceof DirectReferenceExpression) {
+				val declaration = (assignment.lhs as DirectReferenceExpression).declaration
+				if (writtenOnlyVariables.contains(declaration) &&
 					!relevantVariables.contains(declaration)) {
-				deletableVariables += declaration
-				assignment.remove
+					deletableVariables += declaration
+					assignment.remove
+				}
+			} else if (assignment.lhs instanceof AccessExpression) {
+				//TODO
 			}
+			
 		}
 		for (deletableVariable : deletableVariables) {
 			deletableVariable.delete
