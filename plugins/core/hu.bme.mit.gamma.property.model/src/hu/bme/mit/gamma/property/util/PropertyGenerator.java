@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer;
@@ -222,23 +223,76 @@ public class PropertyGenerator {
 		
 		for (Entry<Transition, VariableDeclaration> entry : transitionVariables.entrySet()) {
 			VariableDeclaration variable = entry.getValue();
-			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
-			ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
-			ComponentInstanceVariableReference reference =
-					propertyUtil.createVariableReference(createInstanceReference(instance), variable);
+			ComponentInstanceVariableReference reference = createVariableReference(variable);
 			StateFormula stateFormula = propertyUtil.createEF(
 					propertyUtil.createAtomicFormula(reference));
 			
 			// Comment
 			
 			Transition transition = entry.getKey();
-			
 			CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
 					getId(transition), stateFormula);
 			
 			formulas.add(commentableStateFormula); 
 		}
 		
+		return formulas;
+	}
+
+	protected ComponentInstanceVariableReference createVariableReference(VariableDeclaration variable) {
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(variable);
+		ComponentInstance instance = StatechartModelDerivedFeatures.getReferencingComponentInstance(statechart);
+		ComponentInstanceVariableReference reference =
+				propertyUtil.createVariableReference(createInstanceReference(instance), variable);
+		return reference;
+	}
+	
+	public List<CommentableStateFormula> createTransitionPairReachability(
+			Map<Transition, VariableDeclaration> transitionVariables) {
+		List<CommentableStateFormula> formulas = new ArrayList<CommentableStateFormula>();
+		if (transitionVariables.isEmpty()) {
+			return formulas;
+		}
+		List<Entry<Transition, VariableDeclaration>> entries = 
+				new ArrayList<Entry<Transition, VariableDeclaration>>(transitionVariables.entrySet());
+		int size = entries.size();
+		
+		for (int i = 0; i < size - 1; ++i) {
+			Transition lhsTransition = entries.get(i).getKey();
+			VariableDeclaration lhsVariable = entries.get(i).getValue();
+			for (int j = i + 1; i < size; ++j) {
+				Transition rhsTransition = entries.get(j).getKey();
+				VariableDeclaration rhsVariable = entries.get(j).getValue();
+				
+				final StateNode lhsSource = lhsTransition.getSourceState();
+				final StateNode lhsTarget = lhsTransition.getTargetState();
+				final StateNode rhsSource = rhsTransition.getSourceState();
+				final StateNode rhsTarget = rhsTransition.getTargetState();
+				if (lhsTarget == rhsSource || rhsTarget == lhsSource) {
+					// In-out transition pair
+					AndExpression and = expressionFactory.createAndExpression();
+					and.getOperands().add(createVariableReference(lhsVariable));
+					and.getOperands().add(createVariableReference(rhsVariable));
+					
+					StateFormula stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and));
+					
+					// Comment
+					
+					String comment = null;
+					if (lhsTarget == rhsSource) {
+						comment = getId(lhsTransition) + " -p- " + getId(rhsTransition);
+					}
+					else {
+						comment = getId(rhsTransition) + " -p- " + getId(lhsTransition);
+					}
+					CommentableStateFormula commentableStateFormula = propertyUtil.createCommentableStateFormula(
+							 comment, stateFormula);
+					
+					formulas.add(commentableStateFormula); 
+				}
+				
+			}
+		}
 		return formulas;
 	}
 	
@@ -263,20 +317,14 @@ public class PropertyGenerator {
 			// the senderVariable and receiverVariable are stored in the same statechart (receiverStatechart)
 			// Duplicated this part to make it more resilient (if the variables in the future are stored somewhere else)
 			EqualityExpression senderEqualityExpression = expressionFactory.createEqualityExpression();
-			StatechartDefinition senderStatechart = StatechartModelDerivedFeatures.getContainingStatechart(senderVariable);
-			ComponentInstance senderInstance = StatechartModelDerivedFeatures.getReferencingComponentInstance(senderStatechart);
-			ComponentInstanceVariableReference senderReference =
-					propertyUtil.createVariableReference(createInstanceReference(senderInstance), senderVariable);
+			ComponentInstanceVariableReference senderReference = createVariableReference(senderVariable);
 			IntegerLiteralExpression senderLiteral = expressionFactory.createIntegerLiteralExpression();
 			senderLiteral.setValue(BigInteger.valueOf(senderId));
 			senderEqualityExpression.setLeftOperand(senderReference);
 			senderEqualityExpression.setRightOperand(senderLiteral);
 			// Receiver
 			EqualityExpression receiverEqualityExpression = expressionFactory.createEqualityExpression();
-			StatechartDefinition receiverStatechart = StatechartModelDerivedFeatures.getContainingStatechart(receiverVariable);
-			ComponentInstance receiverInstance = StatechartModelDerivedFeatures.getReferencingComponentInstance(receiverStatechart);
-			ComponentInstanceVariableReference receiverReference =
-					propertyUtil.createVariableReference(createInstanceReference(receiverInstance), receiverVariable);
+			ComponentInstanceVariableReference receiverReference = createVariableReference(receiverVariable);
 			IntegerLiteralExpression receiverLiteral = expressionFactory.createIntegerLiteralExpression();
 			receiverLiteral.setValue(BigInteger.valueOf(receiverId));
 			receiverEqualityExpression.setLeftOperand(receiverReference);
