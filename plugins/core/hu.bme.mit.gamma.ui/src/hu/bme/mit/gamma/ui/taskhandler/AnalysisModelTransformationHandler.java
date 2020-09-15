@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
+import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
@@ -148,6 +149,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 							.filter(it -> it instanceof TransitionCoverage).findFirst();
 			List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
 					newTopComponent, transitionCoverage);
+			// Transition pair coverage
+			Optional<Coverage> transitionPairCoverage = analysisModelTransformation.getCoverages().stream()
+							.filter(it -> it instanceof TransitionPairCoverage).findFirst();
+			List<SynchronousComponentInstance> testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
+					newTopComponent, transitionPairCoverage);
 			// Out event coverage
 			Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof OutEventCoverage).findFirst();
@@ -161,9 +167,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			// Checking if we need to annotation and property generation
 			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
-					!testedComponentsForOutEvents.isEmpty() || !testedComponentsForInteractions.isEmpty()) {
+					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
+					!testedComponentsForInteractions.isEmpty()) {
 				GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
-						testedComponentsForTransitions, testedComponentsForInteractions);
+						testedComponentsForTransitions, testedComponentsForTransitionPairs, testedComponentsForInteractions);
 				statechartAnnotator.annotateModel();
 				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
 				// We are after model unfolding, so the argument is true
@@ -173,6 +180,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				formulas.addAll(
 						propertyGenerator.createTransitionReachability(
 								statechartAnnotator.getTransitionVariables()));
+				formulas.addAll(
+						propertyGenerator.createTransitionPairReachability(
+								statechartAnnotator.getTransitionPairVariables()));
 				formulas.addAll(
 						propertyGenerator.createInteractionReachability(
 								statechartAnnotator.getInteractions()));

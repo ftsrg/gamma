@@ -34,6 +34,11 @@ class GammaStatechartAnnotator {
 	protected final Set<SynchronousComponentInstance> transitionCoverableComponents = newHashSet
 	protected final Set<Transition> coverableTransitions = newHashSet
 	protected final Map<Transition, VariableDeclaration> transitionVariables = newHashMap // Boolean variables
+	// Transition pair coverage (same as the normal transition coverage, the difference is that the values are reused in pairs)
+	protected boolean TRANSITION_PAIR_COVERAGE
+	protected final Set<SynchronousComponentInstance> transitionPairCoverableComponents = newHashSet
+	protected final Set<Transition> coverableTransitionPairs = newHashSet
+	protected final Map<Transition, VariableDeclaration> transitionPairVariables = newHashMap // Boolean variables
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
@@ -59,6 +64,7 @@ class GammaStatechartAnnotator {
 	
 	new(Package gammaPackage,
 			Collection<SynchronousComponentInstance> transitionCoverableComponents,
+			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<SynchronousComponentInstance> interactionCoverableComponents) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
@@ -66,6 +72,13 @@ class GammaStatechartAnnotator {
 			this.TRANSITION_COVERAGE = true
 			this.transitionCoverableComponents += transitionCoverableComponents
 			this.coverableTransitions += transitionCoverableComponents
+				.map[it.type].filter(StatechartDefinition)
+				.map[it.transitions].flatten
+		}
+		if (!transitionPairCoverableComponents.empty) {
+			this.TRANSITION_PAIR_COVERAGE = true
+			this.transitionPairCoverableComponents += transitionPairCoverableComponents
+			this.coverableTransitionPairs += transitionPairCoverableComponents
 				.map[it.type].filter(StatechartDefinition)
 				.map[it.transitions].flatten
 		}
@@ -78,41 +91,63 @@ class GammaStatechartAnnotator {
 	// Transition coverage
 	
 	protected def needsAnnotation(Transition transition) {
-		return !(transition.sourceState instanceof EntryState) &&
-			coverableTransitions.contains(transition)
+		return !(transition.sourceState instanceof EntryState)
 	}
 	
-	protected def createTransitionVariable(Transition transition) {
+	protected def createTransitionVariable(Transition transition,
+			Map<Transition, VariableDeclaration> variables) {
 		val statechart = transition.containingStatechart
 		val variable = createVariableDeclaration => [
 			it.type = createBooleanTypeDefinition
 			it.name = annotationNamings.getVariableName(transition)
 		]
+		// TODO optimization if a variable has been created for a transition
+		// Regarding both transition and transitionPair map
 		statechart.variableDeclarations += variable
-		transitionVariables.put(transition, variable)
+		variables.put(transition, variable)
 		resetableVariables += variable 
 		return variable
 	}
+	
+	protected def createAssignment(VariableDeclaration variable) {
+		return createAssignmentStatement => [
+			it.lhs = createReferenceExpression => [
+				it.declaration = variable
+			]
+			it.rhs = createTrueExpression
+		]
+	}
+	
+	//
 	
 	def annotateModelForTransitionCoverage() {
 		if (!TRANSITION_COVERAGE) {
 			return
 		}
-		// Annotating the transitions
 		for (transition : coverableTransitions.filter[it.needsAnnotation]) {
-			val variable = transition.createTransitionVariable
-			val assignment = createAssignmentStatement => [
-				it.lhs = createReferenceExpression => [
-					it.declaration = variable
-				]
-				it.rhs = createTrueExpression
-			]
-			transition.effects += assignment
+			val variable = transition.createTransitionVariable(transitionVariables)
+			transition.effects += variable.createAssignment
 		}
 	}
 	
 	def getTransitionVariables() {
 		return this.transitionVariables
+	}
+	
+	// Transition pair coverage
+	
+	def annotateModelForTransitionPairCoverage() {
+		if (!TRANSITION_PAIR_COVERAGE) {
+			return
+		}
+		for (transition : coverableTransitionPairs.filter[it.needsAnnotation]) {
+			val variable = transition.createTransitionVariable(transitionPairVariables)
+			transition.effects += variable.createAssignment
+		}
+	}
+	
+	def getTransitionPairVariables() {
+		return this.transitionPairVariables
 	}
 	
 	// Interaction coverage
@@ -269,6 +304,7 @@ class GammaStatechartAnnotator {
 	
 	def annotateModel() {
 		annotateModelForTransitionCoverage
+		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
 	}
 	

@@ -158,4 +158,5 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackage" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionPairCoverage" eSuperTypes="#//Coverage"/>
 </ecore:EPackage>

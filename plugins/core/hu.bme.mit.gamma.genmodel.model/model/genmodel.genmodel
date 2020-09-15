@@ -119,5 +119,6 @@
     <genClasses ecoreClass="genmodel.ecore#//Slicing">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Slicing/propertyPackage"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//TransitionPairCoverage"/>
   </genPackages>
 </genmodel:GenModel>

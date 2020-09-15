@@ -33,9 +33,11 @@ class PropertyExpressionTypeDeterminator extends ExpressionTypeDeterminator {
 	}
 	
 	override isBoolean(Expression expression) {
-		return expression instanceof ComponentInstanceStateConfigurationReference ||
-			expression instanceof ComponentInstanceEventReference ||
-			super.isBoolean(expression)
+		val type = expression.type
+		if (type == ExpressionType.BOOLEAN) {
+			return true
+		}
+		return super.isBoolean(expression)
 	}
 	
 }
