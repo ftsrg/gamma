@@ -260,7 +260,7 @@ public class PropertyGenerator {
 		for (int i = 0; i < size - 1; ++i) {
 			Transition lhsTransition = entries.get(i).getKey();
 			VariableDeclaration lhsVariable = entries.get(i).getValue();
-			for (int j = i + 1; j < size; ++j) {
+			for (int j = i /* This way loop edges are checked too */; j < size; ++j) {
 				Transition rhsTransition = entries.get(j).getKey();
 				VariableDeclaration rhsVariable = entries.get(j).getValue();
 				
