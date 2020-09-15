@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.transformation.util.reducer.SystemOutEventReducer;
 import hu.bme.mit.gamma.transformation.util.reducer.WrittenOnlyVariableReducer;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class SlicingHandler extends TaskHandler  {
 
@@ -40,43 +41,15 @@ public class SlicingHandler extends TaskHandler  {
 	public void execute(Slicing slicing) throws IOException {
 		setFileName(slicing);
 		setTargetFolder(slicing);
+		
 		PropertyPackage propertyPackage = slicing.getPropertyPackage();
-		Component component = propertyPackage.getComponent();
-		Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
-		final List<AtomicFormula> atomicFormulas = ecoreUtil.getAllContentsOfType(propertyPackage, AtomicFormula.class);
 		
-		// Variable removal
-		Collection<VariableDeclaration> relevantVariables = new HashSet<VariableDeclaration>();
-		for (AtomicFormula atomicFormula : atomicFormulas) {
-			List<ComponentInstanceVariableReference> variableReferences =
-					ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceVariableReference.class);
-			for (ComponentInstanceVariableReference variableReference : variableReferences) {
-				relevantVariables.add(variableReference.getVariable());
-			}
-		}
-		WrittenOnlyVariableReducer variableReducer = new WrittenOnlyVariableReducer(containingPackage, relevantVariables);
-		variableReducer.execute();
-		
-		// Out-event and out-event parameter raising removal
-		if (true) {
-			Collection<Entry<Port, Event>> relevantEvents = new HashSet<Entry<Port, Event>>();
-			for (AtomicFormula atomicFormula : atomicFormulas) {
-				List<ComponentInstanceEventReference> eventReferences =
-						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventReference.class);
-				for (ComponentInstanceEventReference eventReference : eventReferences) {
-					relevantEvents.add(new SimpleEntry<Port, Event>(eventReference.getPort(), eventReference.getEvent()));
-				}
-				List<ComponentInstanceEventParameterReference> parameterReferences =
-						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventParameterReference.class);
-				for (ComponentInstanceEventParameterReference parameterReference : parameterReferences) {
-					relevantEvents.add(new SimpleEntry<Port, Event>(parameterReference.getPort(), parameterReference.getEvent()));
-				}
-			}
-			SystemOutEventReducer systemOutEventReducer = new SystemOutEventReducer(component, relevantEvents);
-			systemOutEventReducer.execute();
-		}
+		Slicer slicer = new Slicer(propertyPackage, true);
+		slicer.execute();
 		
 		// Saving like an EMF model
+		Component component = propertyPackage.getComponent();
+		Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 		final String fileName = slicing.getFileName().get(0);
 		ecoreUtil.normalSave(containingPackage, targetFolderUri, fileName);
 	}
@@ -109,6 +82,62 @@ public class SlicingHandler extends TaskHandler  {
 			// Setting the attribute, the target folder is a RELATIVE path now from the project
 			targetFolderUri = URI.decode(projectLocation + File.separator + slicing.getTargetFolder().get(0));
 		}
+	}
+	
+	public static class Slicer {
+		
+		protected final PropertyPackage propertyPackage;
+		protected final boolean removeOutEventRaisings;
+		
+		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+		
+		public Slicer(PropertyPackage propertyPackage) {
+			this(propertyPackage, false);
+		}
+		
+		public Slicer(PropertyPackage propertyPackage, boolean removeOutEventRaisings) {
+			this.propertyPackage = propertyPackage;
+			this.removeOutEventRaisings = removeOutEventRaisings;
+		}
+		
+		public void execute() {
+			Component component = propertyPackage.getComponent();
+			Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
+			final List<AtomicFormula> atomicFormulas = ecoreUtil.getAllContentsOfType(propertyPackage, AtomicFormula.class);
+			
+			// Variable removal
+			Collection<VariableDeclaration> relevantVariables = new HashSet<VariableDeclaration>();
+			for (AtomicFormula atomicFormula : atomicFormulas) {
+				List<ComponentInstanceVariableReference> variableReferences =
+						ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceVariableReference.class);
+				for (ComponentInstanceVariableReference variableReference : variableReferences) {
+					relevantVariables.add(variableReference.getVariable());
+				}
+			}
+			WrittenOnlyVariableReducer variableReducer = new WrittenOnlyVariableReducer(containingPackage, relevantVariables);
+			variableReducer.execute();
+			
+			// Out-event and out-event parameter raising removal
+			if (removeOutEventRaisings) {
+				Collection<Entry<Port, Event>> relevantEvents = new HashSet<Entry<Port, Event>>();
+				for (AtomicFormula atomicFormula : atomicFormulas) {
+					List<ComponentInstanceEventReference> eventReferences =
+							ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventReference.class);
+					for (ComponentInstanceEventReference eventReference : eventReferences) {
+						relevantEvents.add(new SimpleEntry<Port, Event>(eventReference.getPort(), eventReference.getEvent()));
+					}
+					List<ComponentInstanceEventParameterReference> parameterReferences =
+							ecoreUtil.getAllContentsOfType(atomicFormula, ComponentInstanceEventParameterReference.class);
+					for (ComponentInstanceEventParameterReference parameterReference : parameterReferences) {
+						relevantEvents.add(
+								new SimpleEntry<Port, Event>(parameterReference.getPort(), parameterReference.getEvent()));
+					}
+				}
+				SystemOutEventReducer systemOutEventReducer = new SystemOutEventReducer(component, relevantEvents);
+				systemOutEventReducer.execute();
+			}
+		}
+		
 	}
 
 }

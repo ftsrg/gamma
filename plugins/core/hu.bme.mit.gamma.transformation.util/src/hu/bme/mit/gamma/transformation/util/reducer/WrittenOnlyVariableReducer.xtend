@@ -41,6 +41,7 @@ class WrittenOnlyVariableReducer implements Reducer {
 		val writtenOnlyVariables = root.writtenOnlyVariables
 		val deletableVariables = <Declaration>newHashSet
 		deletableVariables += root.unusedVariables
+		deletableVariables -= relevantVariables // An unused variable can still be relevant
 		for (assignment : assignments) {
 			val declaration = assignment.lhs.declaration
 			if (writtenOnlyVariables.contains(declaration) &&

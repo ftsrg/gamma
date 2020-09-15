@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.linking
 
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.Slicing
@@ -26,6 +27,7 @@ class GenModelLinker extends GammaLanguageLinker {
 				pack.genModel_PackageImports, pack.genModel_TraceImports, pack.genModel_GenmodelImports],
 			Verification -> #[pack.verification_PropertyPackages],
 			XSTSReference -> #[pack.XSTSReference_XSts],
+			AnalysisModelTransformation -> #[pack.analysisModelTransformation_PropertyPackage],
 			Slicing -> #[pack.slicing_PropertyPackage])
 	}
 	

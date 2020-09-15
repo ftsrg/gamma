@@ -48,6 +48,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AnalysisModelTransformation/minimalElementSet"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/constraint"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/model"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//AnalysisModelTransformation/propertyPackage"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//InterfaceMapping">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//InterfaceMapping/realizationMode"/>

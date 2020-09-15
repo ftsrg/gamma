@@ -43,6 +43,10 @@ class SimpleInstanceHandler {
 		return newInstances
 	}
 	
+	def getNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
+		return #[originalInstance].getNewSimpleInstances(newType).head
+	}
+	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> originalInstances, Component newType) {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList

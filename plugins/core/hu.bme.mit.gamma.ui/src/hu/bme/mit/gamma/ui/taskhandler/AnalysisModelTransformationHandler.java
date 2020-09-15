@@ -56,7 +56,9 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaStatechartAnnotator;
+import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
+import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler.Slicer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
@@ -134,11 +136,33 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
 	
+		protected void sliceModelAndAnnotateModelAndGenerateProperties(
+				AnalysisModelTransformation analysisModelTransformation, 
+				Component newTopComponent) throws IOException {
+			sliceModel(analysisModelTransformation, newTopComponent);
+			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+		}
+		
+		protected void sliceModel(AnalysisModelTransformation analysisModelTransformation, 
+				Component newTopComponent) {
+			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
+			
+			// Slicing the model with respect to the optional properties
+			PropertyPackage propertyPackage = analysisModelTransformation.getPropertyPackage();
+			if (propertyPackage != null) {
+				PropertyUnfolder propertyUnfolder = new PropertyUnfolder(propertyPackage, newTopComponent);
+				PropertyPackage unfoldedPropertyPackage = propertyUnfolder.execute();
+				Slicer slicer = new Slicer(unfoldedPropertyPackage, true);
+				slicer.execute();
+				ecoreUtil.save(newPackage);
+			}
+		}
+		
 		protected void annotateModelAndGenerateProperties(
 				AnalysisModelTransformation analysisModelTransformation, 
 				Component newTopComponent) throws IOException {
 			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
-
+			
 			// State coverage
 			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof StateCoverage).findFirst();
@@ -165,7 +189,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
 					newTopComponent, interactionCoverage);
 			
-			// Checking if we need to annotation and property generation
+			// Checking if we need annotation and property generation
 			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
 					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
 					!testedComponentsForInteractions.isEmpty()) {
@@ -175,8 +199,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
 				// We are after model unfolding, so the argument is true
 				PropertyGenerator propertyGenerator = new PropertyGenerator(true);
-				PropertyPackage propertyPackage = propertyGenerator.initializePackage(newTopComponent);
-				List<CommentableStateFormula> formulas = propertyPackage.getFormulas();
+				PropertyPackage generatedPropertyPackage = propertyGenerator.initializePackage(newTopComponent);
+				List<CommentableStateFormula> formulas = generatedPropertyPackage.getFormulas();
 				formulas.addAll(
 						propertyGenerator.createTransitionReachability(
 								statechartAnnotator.getTransitionVariables()));
@@ -192,8 +216,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				formulas.addAll(
 						propertyGenerator.createOutEventReachability(newTopComponent,
 								testedComponentsForOutEvents));
+				
 				// Saving the property package
-				saveModel(propertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
+				saveModel(generatedPropertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
 				PropertySerializer propertySerializer = getPropertySerializer();
 				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(formulas);
 				fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
@@ -233,7 +258,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
 			validator.checkModel();
 			// Annotate model for test generation
-			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+			sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 			// Normal transformation
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
@@ -334,7 +359,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					componentReference.getArguments(), xStsFile);
 			Package newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newComponent);
 			// Property generation
-			annotateModelAndGenerateProperties(analysisModelTransformation, newComponent);
+			sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newComponent);
 			// Normal transformation
 			XSTS xSts = gammaToXSTSTransformer.execute(newGammaPackage);
 			// EMF

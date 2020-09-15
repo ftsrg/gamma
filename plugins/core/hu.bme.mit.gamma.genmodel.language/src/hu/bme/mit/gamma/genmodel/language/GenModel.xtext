@@ -113,6 +113,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
 			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
