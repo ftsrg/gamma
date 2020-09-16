@@ -419,4 +419,25 @@ public class ExpressionUtil {
 		}
 	}
 	
+	public AndExpression connectThroughNegations(VariableDeclaration ponate,
+			Collection<VariableDeclaration> toBeNegated) {
+		AndExpression and = connectThroughNegations(toBeNegated);
+		ReferenceExpression ponateReference = factory.createReferenceExpression();
+		ponateReference.setDeclaration(ponate);
+		and.getOperands().add(ponateReference);
+		return and;
+	}
+	
+	public AndExpression connectThroughNegations(Collection<VariableDeclaration> toBeNegated) {
+		AndExpression and = factory.createAndExpression();
+		for (VariableDeclaration toBeNegatedVariable : toBeNegated) {
+			ReferenceExpression reference = factory.createReferenceExpression();
+			reference.setDeclaration(toBeNegatedVariable);
+			NotExpression not = factory.createNotExpression();
+			not.setOperand(reference);
+			and.getOperands().add(not);
+		}
+		return and;
+	}
+	
 }

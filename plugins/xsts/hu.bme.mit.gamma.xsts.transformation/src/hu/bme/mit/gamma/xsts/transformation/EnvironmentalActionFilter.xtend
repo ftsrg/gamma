@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Set
@@ -27,7 +28,6 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 
 class EnvironmentalActionFilter {
 	// Singleton
@@ -86,62 +86,101 @@ class EnvironmentalActionFilter {
 		return action.reset(necessaryNames)
 	}
 	
-	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
-		val xSts = action.containingXSTS
-		val xStsAssignmentActions = action.getAllContentsOfType(AssignmentAction)
+	def createEventAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
+		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
-			val connectedSimplePorts = systemPort.allConnectedSimplePorts
-			val size = connectedSimplePorts.size
-			if (size > 1) {
-				// More than one bound simple port
-				val orderedPorts = newHashMap
-				for (port : connectedSimplePorts) {
-					val statechart = port.containingStatechart
-					val instance = statechart.referencingComponentInstance
-					val index = instance.index
-					orderedPorts.put(index, port)
-				}
-				// Ports are ordered now, and the algorithm is based on the fact that the in-event actions of components are in ORDER 
-				val firstPort = orderedPorts.get(0)
-				val firstSatechart = firstPort.containingStatechart
-				val firstInstance = firstSatechart.referencingComponentInstance
-				val firstEvents = firstPort.allEvents
-				for (boundPort : orderedPorts.entrySet.reject[it.key == 0].map[it.value]) {
-					val boundSatechart = boundPort.containingStatechart
-					val boundInstance = boundSatechart.referencingComponentInstance
-					val boundEvents = boundPort.inputEvents
-					for (boundEvent : boundEvents) {
-						val i = boundEvent.containingEventDeclaration.index
-						val event = firstEvents.get(i)
-						val xStsEventName = customizeInputName(event, firstPort, firstInstance)
-						val xStsEventVariable = xSts.checkVariable(xStsEventName)
-						val parameters = event.parameterDeclarations
-						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
-						val xStsBoundEventVariable = xSts.checkVariable(xStsBoundEventName)
-						for (xStsAssignment : xStsAssignmentActions
-								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
-							// "Binding" the variable 
-							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
-						}
-						val boundParameters = boundEvent.parameterDeclarations
-						for (var j = 0; j < boundParameters.size; j++) {
-							val parameter = parameters.get(j)
-							val xStsParameterName = customizeInName(parameter, firstPort, firstInstance)
-							val xStsParameterVariable = xSts.checkVariable(xStsParameterName)
-							val boundParameter = boundParameters.get(j)
-							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
-							val xStsBoundParameterVariable = xSts.checkVariable(xStsBoundParameterName)
-							for (xStsAssignment : xStsAssignmentActions
-									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
-								// "Binding" the variable 
-								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
-							}
+			for (inEvent : systemPort.inputEvents) {
+				val xStsInEventVariables = inEvent.getInputEventVariables(systemPort)
+				if (xStsInEventVariables.size > 1) {
+					val firstXStsInEventVariable = xStsInEventVariables.head
+					for (otherXStsInEventVariable : xStsInEventVariables.reject[it === firstXStsInEventVariable]) {
+						xStsAssignments += createAssignmentAction => [
+							it.lhs = createReferenceExpression => [
+								it.declaration = otherXStsInEventVariable
+							]
+							it.rhs = createReferenceExpression => [
+								it.declaration = firstXStsInEventVariable
+							]
+						]
+					}
+					for (parameter : inEvent.parameterDeclarations) {
+						val xStsParameterVariables = parameter.getInputParameterVariables(systemPort)
+						val firstXStsParameterVariable = xStsParameterVariables.head
+						for (otherXStsParameterVariable : xStsParameterVariables.reject[it === firstXStsParameterVariable]) {
+							xStsAssignments += createAssignmentAction => [
+								it.lhs = createReferenceExpression => [
+									it.declaration = otherXStsParameterVariable
+								]
+								it.rhs = createReferenceExpression => [
+									it.declaration = firstXStsParameterVariable
+								]
+							]
 						}
 					}
 				}
 			}
 		}
+		return xStsAssignments
 	}
+	
+//	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {
+//		val xSts = action.containingXSTS
+//		val xStsAssignmentActions = action.getAllContentsOfType(AssignmentAction)
+//		for (systemPort : component.allPorts) {
+//			val connectedSimplePorts = systemPort.allConnectedSimplePorts
+//			val size = connectedSimplePorts.size
+//			if (size > 1) {
+//				// More than one bound simple port
+//				val orderedPorts = newHashMap
+//				for (port : connectedSimplePorts) {
+//					// TODO does this actually work if there are more than hierarchies?
+//					val statechart = port.containingStatechart
+//					val instance = statechart.referencingComponentInstance
+//					val index = instance.index
+//					orderedPorts.put(index /* There can be rewrites here */, port)
+//				}
+//				// Ports are ordered now, and the algorithm is based on the fact that the in-event actions of components are in ORDER 
+//				val firstPort = orderedPorts.get(0)
+//				val firstSatechart = firstPort.containingStatechart
+//				val firstInstance = firstSatechart.referencingComponentInstance
+//				val firstEvents = firstPort.allEvents
+//				for (boundPort : orderedPorts.entrySet.reject[it.key == 0].map[it.value]) {
+//					val boundSatechart = boundPort.containingStatechart
+//					val boundInstance = boundSatechart.referencingComponentInstance
+//					val boundEvents = boundPort.inputEvents
+//					for (boundEvent : boundEvents) {
+//						val i = boundEvent.containingEventDeclaration.index
+//						val event = firstEvents.get(i)
+//						val xStsEventName = customizeInputName(event, firstPort, firstInstance)
+//						val xStsEventVariable = xSts.checkVariable(xStsEventName)
+//						val parameters = event.parameterDeclarations
+//						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
+//						val xStsBoundEventVariable = xSts.checkVariable(xStsBoundEventName)
+//						for (xStsAssignment : xStsAssignmentActions
+//								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
+//							// "Binding" the variable 
+//							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
+//						}
+//						val boundParameters = boundEvent.parameterDeclarations
+//						for (var j = 0; j < boundParameters.size; j++) {
+//							val parameter = parameters.get(j)
+//							val xStsParameterName = customizeInName(parameter, firstPort, firstInstance)
+//							val xStsParameterVariable = xSts.checkVariable(xStsParameterName)
+//							val boundParameter = boundParameters.get(j)
+//							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
+//							val xStsBoundParameterVariable = xSts.checkVariable(xStsBoundParameterName)
+//							for (xStsAssignment : xStsAssignmentActions
+//									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
+//								// "Binding" the variable 
+//								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 	
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
