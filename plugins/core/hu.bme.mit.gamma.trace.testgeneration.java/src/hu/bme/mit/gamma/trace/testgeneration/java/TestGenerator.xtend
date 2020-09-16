@@ -307,7 +307,7 @@ class TestGenerator {
 			}
 			if (component instanceof AsynchronousAdapter) {
 				// This is the end
-				return '''getComponent("«component.wrappedComponent.name»").'''
+				return ''''''
 			}
 			if  (component instanceof AsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
