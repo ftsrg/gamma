@@ -16,15 +16,10 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
@@ -32,13 +27,13 @@ import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
-import java.util.Collection
-import java.util.Collections
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 /**
  * This class contains custom scoping description.
@@ -70,7 +65,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			if (raiseEventAct.port !== null) {
 				val port = raiseEventAct.port
 				try {
-					val events = port.interfaceRealization.interface.events.map[it.event]
+					val events = port.allEvents
 					return Scopes.scopeFor(events);
 				} catch (NullPointerException e) {
 					// For some reason dirty editor errors emerge
@@ -82,14 +77,14 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			if (component instanceof AsynchronousCompositeComponent) {
-				val instances = component.asynchronousInstances
+				val instances = component.allAsynchronousSimpleInstances
 				return Scopes.scopeFor(instances)
 			}
 		}
 		if (reference == TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE) {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
-			val simpleSyncInstances = component.synchronousInstances
+			val simpleSyncInstances = component.allSimpleInstances
 			return Scopes.scopeFor(simpleSyncInstances)	
 		}
 		if (context instanceof InstanceStateConfiguration &&
@@ -101,7 +96,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val states = new HashSet<State>
 			if (instanceType === null) {
 				val component = executionTrace.component
-				val simpleSyncInstances = component.synchronousInstances
+				val simpleSyncInstances = component.allSimpleInstances
 				for (simpleInstance : simpleSyncInstances) {
 					states += EcoreUtil2.getAllContentsOfType(simpleInstance.type, State)
 				}
@@ -122,7 +117,6 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			return Scopes.scopeFor(variables)
 		}
 		if (context instanceof EnumerationLiteralExpression) {
-			
 			var Type enumerationDefinition
 			val parent = context.eContainer
 			switch parent {
@@ -150,38 +144,6 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 		}
 		super.getScope(context, reference)
-	}
-
-	private def Collection<AsynchronousComponentInstance> getAsynchronousInstances(AsynchronousCompositeComponent component) {
-		val simpleInstances = component.components.filter[it.type instanceof AsynchronousAdapter].toSet
-		for (compositeComponent : component.components.filter[it.type instanceof AsynchronousCompositeComponent]) {
-			simpleInstances += (compositeComponent.type as AsynchronousCompositeComponent).asynchronousInstances
-		}
-		return simpleInstances
-	}
-	
-	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(Component component) {
-		return Collections.emptySet
-	}
-	
-	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(AsynchronousCompositeComponent component) {
-		val simpleInstances = new HashSet<SynchronousComponentInstance>
-		for (instance : component.components) {
-			simpleInstances += instance.type.synchronousInstances
-		}
-		return simpleInstances
-	}
-	
-	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(AsynchronousAdapter component) {
-		return #[component.wrappedComponent]
-	}
-	
-	private def dispatch Collection<SynchronousComponentInstance> getSynchronousInstances(AbstractSynchronousCompositeComponent component) {
-		val simpleInstances = component.components.filter[it.type instanceof StatechartDefinition].toSet
-		for (instance : component.components.filter[it.type instanceof AbstractSynchronousCompositeComponent]) {
-			simpleInstances += instance.type.synchronousInstances
-		}
-		return simpleInstances
 	}
 
 }
