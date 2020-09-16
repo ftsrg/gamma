@@ -15,12 +15,8 @@ import java.io.IOException;
 
 public abstract class FileUtil {
 
-	public static File createTempFile(String extension) throws IOException {
-		return createTempFile(extension, true);
-	}
-
-	public static File createTempFile(String extension, boolean isPersistent) throws IOException {
-		return createTempFile("uppaalverif", extension, isPersistent);
+	public static File createThetaTempFile(String extension) throws IOException {
+		return createTempFile("thetaverif", extension, true);
 	}
 
 	public static File createTempFile(String prefix, String extension, boolean isPersistent) throws IOException {

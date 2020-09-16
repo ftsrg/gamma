@@ -8,11 +8,8 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.headless.application.util;
+package hu.bme.mit.gamma.headless.application.io;
 
-public abstract class StringUtil {
-
-	public static String removeQuotes(String from) {
-		return from.replace("\"", "");
-	}
+public enum VerificationBackend {
+	UPPAAL, THETA
 }

@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.headless.application.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +31,14 @@ public class ModelPersistenceUtil {
 
 	private static final Logger LOGGER = LogManager.getLogger(ModelPersistenceUtil.class);
 
-	public static URI saveInOneResource(String resourceFilePrefix, String resourceFileExtension, List<EObject> objects) {
+	public static File saveInFile(String filePrefix, String fileExtension, List<EObject> objects) {
+		URI persistedResourcesUri = ModelPersistenceUtil.saveInOneResource(filePrefix, fileExtension, objects);
+		String persistedResourcesPath = persistedResourcesUri.toFileString();
+		return new File(persistedResourcesPath);
+	}
+
+	public static URI saveInOneResource(String resourceFilePrefix, String resourceFileExtension,
+			List<EObject> objects) {
 		URI uri = null;
 		if (objects.isEmpty()) {
 			return uri;
@@ -46,10 +54,6 @@ public class ModelPersistenceUtil {
 			LOGGER.error(ex.getMessage(), ex);
 		}
 		return uri;
-	}
-	
-	public static URI saveInOneResource(String resourceFilePrefix, List<EObject> objects) {
-		return saveInOneResource(resourceFilePrefix, "xml", objects);
 	}
 
 	public static String serializeIntoOneResource(List<EObject> objects) {
@@ -86,7 +90,7 @@ public class ModelPersistenceUtil {
 
 		return resource;
 	}
-	
+
 	private static URI createTempFileUri(String prefix, String extension) throws IOException {
 		String absolutePath = FileUtil.createTempFile(prefix, extension, true).getAbsolutePath();
 		return URI.createFileURI(absolutePath);

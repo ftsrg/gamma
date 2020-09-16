@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.headless.application.uppaal;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
@@ -20,6 +19,7 @@ import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.uppaal.verification.settings.UppaalSettings;
 import hu.bme.mit.gamma.uppaal.verification.settings.UppaalSettingsSerializer;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
 public class UppaalQueryRunner {
@@ -50,9 +50,7 @@ public class UppaalQueryRunner {
 
 	private void replaceQueryFileContent(Result uppaalTransformationResult, String ctlExpression) throws IOException {
 		File queryFile = uppaalTransformationResult.getQueryFile();
-		try (FileWriter fileWriter = new FileWriter(queryFile, false)) {
-			fileWriter.write(ctlExpression);
-		}
+		FileUtil.INSTANCE.saveString(queryFile, ctlExpression);
 	}
 
 }

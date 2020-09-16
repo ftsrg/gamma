@@ -17,4 +17,7 @@ Require-Bundle: com.google.guava,
  hu.bme.mit.gamma.trace.model;bundle-version="2.3.1",
  hu.bme.mit.gamma.uppaal.verification;bundle-version="2.3.1",
  hu.bme.mit.gamma.querygenerator;bundle-version="2.3.1",
- hu.bme.mit.gamma.statechart.plantuml.transformation;bundle-version="2.3.1"
+ hu.bme.mit.gamma.statechart.plantuml.transformation;bundle-version="2.3.1",
+ hu.bme.mit.gamma.xsts.transformation;bundle-version="2.3.1",
+ hu.bme.mit.gamma.theta.verification;bundle-version="2.3.1",
+ hu.bme.mit.gamma.property.model;bundle-version="2.1.3"

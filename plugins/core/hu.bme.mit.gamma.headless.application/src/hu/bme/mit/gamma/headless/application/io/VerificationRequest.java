@@ -21,9 +21,12 @@ public class VerificationRequest implements Serializable {
 
 	private String expression;
 
-	public VerificationRequest(String models, String expression) {
+	private VerificationBackend backend;
+
+	public VerificationRequest(String models, String expression, VerificationBackend backend) {
 		this.models = models;
 		this.expression = expression;
+		this.backend = backend;
 	}
 
 	public String getModels() {
@@ -34,9 +37,13 @@ public class VerificationRequest implements Serializable {
 		return expression;
 	}
 
+	public VerificationBackend getBackend() {
+		return backend;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(expression, models);
+		return Objects.hash(backend, expression, models);
 	}
 
 	@Override
@@ -48,7 +55,8 @@ public class VerificationRequest implements Serializable {
 			return false;
 		}
 		VerificationRequest other = (VerificationRequest) obj;
-		return Objects.equals(expression, other.expression) && Objects.equals(models, other.models);
+		return backend == other.backend && Objects.equals(expression, other.expression)
+				&& Objects.equals(models, other.models);
 	}
 
 }

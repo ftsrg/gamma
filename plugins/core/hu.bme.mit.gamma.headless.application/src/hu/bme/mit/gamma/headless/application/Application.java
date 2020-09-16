@@ -10,9 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.headless.application;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +24,16 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.varia.LevelRangeFilter;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-import hu.bme.mit.gamma.headless.application.modes.IExecutionMode;
-import hu.bme.mit.gamma.headless.application.modes.ModelWithCtlMode;
-import hu.bme.mit.gamma.headless.application.modes.SerializedRequestMode;
-import hu.bme.mit.gamma.headless.application.util.StringUtil;
+import hu.bme.mit.gamma.headless.application.io.VerificationBackend;
+import hu.bme.mit.gamma.headless.application.uppaal.UppaalVerification;
+import hu.bme.mit.gamma.headless.application.util.PlantUmlVisualizer;
+import hu.bme.mit.gamma.headless.application.xsts.XstsVerification;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
 public class Application implements IApplication {
 
@@ -55,9 +61,9 @@ public class Application implements IApplication {
 	/**
 	 *@formatter:off
 	 *
-	 * start: ./eclipse serializedRequest <path-of-serialized-request-file>
+	 * start: ./eclipse <path-of-serialized-request-file>
 	 * 
-	 * start: ./eclipse modelWithCtl <file-uri-of-models> <file-uri-of-ctl-expression-model>
+	 * @see serialized request is a persisted {VerificationRequest} object
 	 * 
 	 *@formatter:on
 	 */
@@ -69,28 +75,45 @@ public class Application implements IApplication {
 			LOGGER.debug(String.format("Eclipse stared at %s", dtf.format(now)));
 		}
 
-		IExecutionMode executionMode = null;
+		VerificationBridge bridge = null;
 		try {
-			executionMode = getExecutionMode(context);
+			bridge = new VerificationBridge(getRequestPath(context));
+			VerificationBackend backend = bridge.getBackend();
 
-			if (executionMode != null) {
-				Verification verification = new Verification(executionMode);
-				verification.verify();
-				executionMode.finish();
-				return 0;
+			IVerification verification = null;
+			switch (backend) {
+			case UPPAAL:
+				verification = new UppaalVerification(bridge);
+				break;
+			case THETA:
+				verification = new XstsVerification(bridge);
+				break;
+			default:
+				throw new IllegalArgumentException(String.format("Unsupported verification backend: %s", backend));
+			}
+
+			ThreeStateBoolean verificationResult = verification.verify();
+			ExecutionTrace trace = verification.getTrace();
+			if (trace != null) {
+				String visualization = PlantUmlVisualizer.toSvg(trace);
+				List<EObject> resultModels = verification.getResultModels();
+				bridge.setVerificationResult(verificationResult, resultModels, visualization);
 			} else {
-				String unknownStartParamsError = String.format(
-						"Unknown start parameters. Use either: \"%s <path-of-serialized-request-file>\" or \"%s <file-uri-of-models> <ctl-expression>\"",
-						IExecutionMode.SERIALIZED_REQUEST_MODE, IExecutionMode.MODEL_WITH_CTL_MODE);
-				LOGGER.error(unknownStartParamsError);
+				bridge.setVerificationResult(verificationResult, Collections.emptyList(), "");
+			}
+
+			bridge.submitResult();
+
+			return 0;
+		} catch (Exception ex) {
+			LOGGER.error(ex.getMessage(), ex);
+
+			if (bridge != null) {
+				bridge.handleError(ex);
+				return 2;
+			} else {
 				return 1;
 			}
-		} catch (Exception ex) {
-			if (executionMode != null) {
-				executionMode.handleError(ex);
-			}
-			LOGGER.error(ex.getMessage(), ex);
-			return 2;
 		}
 	}
 
@@ -98,22 +121,21 @@ public class Application implements IApplication {
 	public void stop() {
 	}
 
-	public IExecutionMode getExecutionMode(IApplicationContext context) {
+	public String getRequestPath(IApplicationContext context) throws IOException {
 		@SuppressWarnings("unchecked")
 		String[] args = (String[]) context.getArguments().getOrDefault(APPLICATION_ARGS, new String[0]);
-		List<String> arguments = Arrays.asList(args).stream().map(StringUtil::removeQuotes)
+		List<String> arguments = Arrays.asList(args).stream().map(it -> it.replace("\"", ""))
 				.collect(Collectors.toList());
 
-		if (arguments.size() > 1) {
-			String modeStr = arguments.get(0);
-			if (IExecutionMode.SERIALIZED_REQUEST_MODE.equals(modeStr) && arguments.size() == 2) {
-				return new SerializedRequestMode(arguments.get(1));
-			} else if (IExecutionMode.MODEL_WITH_CTL_MODE.equals(modeStr) && arguments.size() == 3) {
-				return new ModelWithCtlMode(arguments.get(1), arguments.get(2));
+		if (!arguments.isEmpty()) {
+			String pathParam = arguments.get(0);
+			File file = new File(pathParam);
+			if (file.exists()) {
+				return pathParam;
 			}
 		}
 
-		return null;
+		throw new IOException("First argument does not refer to a persisted verification request.");
 	}
 
 }

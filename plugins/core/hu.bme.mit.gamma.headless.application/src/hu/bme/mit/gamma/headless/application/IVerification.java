@@ -8,29 +8,22 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.headless.application.modes;
+package hu.bme.mit.gamma.headless.application;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
-import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
-public interface IExecutionMode {
+public interface IVerification {
 
-	String SERIALIZED_REQUEST_MODE = "serializedRequest";
-	String MODEL_WITH_CTL_MODE = "modelWithCtl";
+	ThreeStateBoolean verify() throws IOException;
 
-	Package getWrappedGammaStatechart();
+	List<EObject> getResultModels();
 
-	Package getNormalGammaStatechart();
+	ExecutionTrace getTrace();
 
-	PropertySpecification getPropertySpecification();
-
-	void setVerificationResult(ThreeStateBoolean result, List<EObject> models, String visualization);
-
-	void handleError(Exception ex);
-
-	void finish();
 }

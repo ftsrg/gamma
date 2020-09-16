@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.headless.application.util.gamma;
+package hu.bme.mit.gamma.headless.application.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

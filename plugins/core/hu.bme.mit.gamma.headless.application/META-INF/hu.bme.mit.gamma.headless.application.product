@@ -32,12 +32,16 @@
       <plugin id="hu.bme.mit.gamma.eventpriority.transformation"/>
       <plugin id="hu.bme.mit.gamma.expression.model"/>
       <plugin id="hu.bme.mit.gamma.headless.application"/>
+      <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation"/>
+      <plugin id="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability"/>
       <plugin id="hu.bme.mit.gamma.property.model"/>
       <plugin id="hu.bme.mit.gamma.querygenerator"/>
       <plugin id="hu.bme.mit.gamma.statechart.lowlevel.model"/>
+      <plugin id="hu.bme.mit.gamma.statechart.lowlevel.transformation"/>
       <plugin id="hu.bme.mit.gamma.statechart.model"/>
       <plugin id="hu.bme.mit.gamma.statechart.phase.transformation"/>
       <plugin id="hu.bme.mit.gamma.statechart.plantuml.transformation"/>
+      <plugin id="hu.bme.mit.gamma.theta.verification"/>
       <plugin id="hu.bme.mit.gamma.trace.model"/>
       <plugin id="hu.bme.mit.gamma.transformation.util"/>
       <plugin id="hu.bme.mit.gamma.uppaal.composition.transformation"/>
@@ -49,6 +53,7 @@
       <plugin id="hu.bme.mit.gamma.util"/>
       <plugin id="hu.bme.mit.gamma.verification.util"/>
       <plugin id="hu.bme.mit.gamma.xsts.model"/>
+      <plugin id="hu.bme.mit.gamma.xsts.transformation"/>
       <plugin id="hu.bme.mit.gamma.xsts.transformation.util"/>
       <plugin id="javax.xml"/>
       <plugin id="net.sourceforge.plantuml.lib"/>

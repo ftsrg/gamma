@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.headless.application.modes;
+package hu.bme.mit.gamma.headless.application;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,50 +27,53 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.headless.application.io.ErrorResult;
 import hu.bme.mit.gamma.headless.application.io.PropertyHoldsEnum;
+import hu.bme.mit.gamma.headless.application.io.VerificationBackend;
 import hu.bme.mit.gamma.headless.application.io.VerificationRequest;
 import hu.bme.mit.gamma.headless.application.io.VerificationResponse;
 import hu.bme.mit.gamma.headless.application.io.VerificationResult;
 import hu.bme.mit.gamma.headless.application.util.FileUtil;
 import hu.bme.mit.gamma.headless.application.util.ModelPersistenceUtil;
-import hu.bme.mit.gamma.headless.application.util.gamma.PropertySpecificationSerializationUtil;
+import hu.bme.mit.gamma.property.model.CommentableStateFormula;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 
-public class SerializedRequestMode implements IExecutionMode {
+public class VerificationBridge {
 
-	private static final Logger LOGGER = LogManager.getLogger(SerializedRequestMode.class);
+	private static final Logger LOGGER = LogManager.getLogger(VerificationBridge.class);
 
 	private String inputFilePath;
 
 	private Resource statechartModelsResource;
-	private PropertySpecification propertySpecification;
+	private PropertyPackage propertyPackage;
+	private VerificationBackend backend;
 
 	private ThreeStateBoolean verificationResult;
 	private List<EObject> resultModels;
 	private String visualization;
 
-	public SerializedRequestMode(String inputFilePath) {
+	public VerificationBridge(String inputFilePath) {
 		this.inputFilePath = inputFilePath;
 	}
 
 	private void load() {
-		if (statechartModelsResource == null && propertySpecification == null) {
+		if (statechartModelsResource == null && propertyPackage == null) {
 			LOGGER.info("Deserializing request.");
-			File inputFile = new File(inputFilePath);
-			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(inputFile))) {
+			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(inputFilePath))) {
 				VerificationRequest request = (VerificationRequest) ois.readObject();
+				backend = request.getBackend();
 				LOGGER.info("Deserialization finished.");
 
 				ResourceSet resourceSet = new ResourceSetImpl();
 				LOGGER.info("Loading statechart model from resource.");
-				statechartModelsResource = ModelPersistenceUtil.loadResourceWithSerializedUri(request.getModels(), resourceSet);
+				statechartModelsResource = ModelPersistenceUtil.loadResourceWithSerializedUri(request.getModels(),
+						resourceSet);
 				LOGGER.info("Statechart model loaded.");
 
 				LOGGER.info("Loading property specification from resource.");
-				Resource resource = ModelPersistenceUtil.loadResourceWithSerializedUri(request.getExpression(), resourceSet);
-				propertySpecification = (PropertySpecification) resource.getContents().get(0);
-				// do not remove this call, otherwise model will not be loaded
-				PropertySpecificationSerializationUtil.serialize(propertySpecification);
+				Resource resource = ModelPersistenceUtil.loadResourceWithSerializedUri(request.getExpression(),
+						resourceSet);
+				propertyPackage = (PropertyPackage) resource.getContents().get(0);
 				LOGGER.info("Property specification loaded.");
 			} catch (IOException | ClassNotFoundException e) {
 				throw new RuntimeException(e);
@@ -78,39 +81,38 @@ public class SerializedRequestMode implements IExecutionMode {
 		}
 	}
 
-	@Override
 	public Package getWrappedGammaStatechart() {
 		load();
 		return getPackage(0);
 	}
 
-	@Override
 	public Package getNormalGammaStatechart() {
 		load();
 		return getPackage(1);
 	}
 
-	@Override
-	public PropertySpecification getPropertySpecification() {
+	public List<CommentableStateFormula> getFormulas() {
 		load();
-		return propertySpecification;
+		return propertyPackage.getFormulas();
 	}
 
-	@Override
+	public VerificationBackend getBackend() {
+		load();
+		return backend;
+	}
+
 	public void setVerificationResult(ThreeStateBoolean result, List<EObject> models, String visualization) {
 		this.verificationResult = result;
 		this.resultModels = models;
 		this.visualization = visualization;
 	}
 
-	@Override
 	public void handleError(Exception ex) {
 		VerificationResponse result = new VerificationResponse(new ErrorResult(ex.getMessage(), ex.getStackTrace()));
 		printSerializedPath(result);
 	}
 
-	@Override
-	public void finish() {
+	public void submitResult() {
 		PropertyHoldsEnum checkedProperty = null;
 		switch (verificationResult) {
 		case TRUE:
@@ -126,7 +128,6 @@ public class SerializedRequestMode implements IExecutionMode {
 		LOGGER.info("Persisting result model into String.");
 		String resultModel = ModelPersistenceUtil.serializeIntoOneResource(resultModels);
 		LOGGER.info("Persisting finished.");
-		ModelPersistenceUtil.saveInOneResource("gammatrace", resultModels);
 
 		VerificationResult result = new VerificationResult(checkedProperty, resultModel, visualization);
 		VerificationResponse response = new VerificationResponse(result);
@@ -146,7 +147,7 @@ public class SerializedRequestMode implements IExecutionMode {
 	private File serialize(VerificationResponse response) {
 		try {
 			LOGGER.info("Serializing model into file.");
-			File outputFile = FileUtil.createTempFile("out", true);
+			File outputFile = FileUtil.createTempFile("verifresult", "out", true);
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(outputFile))) {
 				oos.writeObject(response);
 			}

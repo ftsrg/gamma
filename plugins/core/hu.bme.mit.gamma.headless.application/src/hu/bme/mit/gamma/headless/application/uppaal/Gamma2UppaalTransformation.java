@@ -15,7 +15,6 @@ import java.util.Arrays;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.headless.application.util.ModelPersistenceUtil;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
@@ -33,15 +32,11 @@ public class Gamma2UppaalTransformation {
 
 	private final SynchronousComponentInstance sci;
 
-	public Gamma2UppaalTransformation(Package normalGammaStatechart, Package wrappedGammaStatechart) {
-		this.interfacesPkg = normalGammaStatechart.getImports().get(0);
+	public Gamma2UppaalTransformation(Package interfacesPkg, Package wrappedGammaStatechart) {
+		this.interfacesPkg = interfacesPkg;
 		this.wrappedGammaStatechart = wrappedGammaStatechart;
 		this.sci = StatechartModelDerivedFeatures.getAllSimpleInstances(wrappedGammaStatechart.getComponents().get(0))
 				.get(0);
-	}
-
-	public Package getInterfacesPkg() {
-		return interfacesPkg;
 	}
 
 	public SynchronousComponentInstance getSynchronousComponentInstance() {
@@ -49,11 +44,9 @@ public class Gamma2UppaalTransformation {
 	}
 
 	public Result createUppaalModel() {
-		URI persistedResourcesUri = ModelPersistenceUtil.saveInOneResource("verificationPreprocessing", "gamma",
+		File persistedModels = ModelPersistenceUtil.saveInFile("uppaalVerifPreprocessing", "gamma",
 				Arrays.asList(interfacesPkg));
-		String persistedResourcesPath = persistedResourcesUri.toFileString();
-		File persistedModels = new File(persistedResourcesPath);
-		LOGGER.info(String.format("Persisted gamma models: %s", persistedResourcesPath));
+		LOGGER.info(String.format("Persisted Gamma models: %s", persistedModels));
 
 		DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
 		Result result = transformer.transformComponent(wrappedGammaStatechart, persistedModels);
