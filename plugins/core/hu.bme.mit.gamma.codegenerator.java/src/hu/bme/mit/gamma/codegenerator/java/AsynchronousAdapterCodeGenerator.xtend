@@ -88,7 +88,7 @@ class AsynchronousAdapterCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
@@ -297,7 +297,7 @@ class AsynchronousAdapterCodeGenerator {
 			}
 			
 			«IF component.needTimer»
-				public void setTimer(«YAKINDU_TIMER_INTERFACE» timer) {
+				public void setTimer(«UNIFIED_TIMER_INTERFACE» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
 					«IF component.wrappedComponent.type.needTimer»«component.generateWrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
