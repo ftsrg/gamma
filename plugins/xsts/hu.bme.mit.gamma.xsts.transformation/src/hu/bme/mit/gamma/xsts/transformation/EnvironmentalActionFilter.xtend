@@ -86,6 +86,13 @@ class EnvironmentalActionFilter {
 		return action.reset(necessaryNames)
 	}
 	
+	def createEventAndParameterAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
+		val xStsAssignments = newArrayList
+		xStsAssignments += xSts.createEventAssignmentsBoundToTheSameSystemPort(component)
+		xStsAssignments += xSts.createParameterAssignmentsBoundToTheSameSystemPort(component)
+		return xStsAssignments
+	}
+	
 	def createEventAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
 		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
 		val xStsAssignments = newArrayList
@@ -104,6 +111,19 @@ class EnvironmentalActionFilter {
 							]
 						]
 					}
+				}
+			}
+		}
+		return xStsAssignments
+	}
+	
+	def createParameterAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
+		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val xStsAssignments = newArrayList
+		for (systemPort : component.allPorts) {
+			for (inEvent : systemPort.inputEvents) {
+				val xStsInEventVariables = inEvent.getInputEventVariables(systemPort)
+				if (xStsInEventVariables.size > 1) {
 					for (parameter : inEvent.parameterDeclarations) {
 						val xStsParameterVariables = parameter.getInputParameterVariables(systemPort)
 						val firstXStsParameterVariable = xStsParameterVariables.head

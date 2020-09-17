@@ -176,10 +176,10 @@ class GammaToXSTSTransformer {
 		val xStsSynchronousInEventVariables = xSts.variableGroups
 			.filter[it.annotation instanceof InEventGroup].map[it.variables]
 			.flatten // There are be more than one
-		for (assignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
-			val declaration = assignment.lhs.declaration
-			if (xStsSynchronousInEventVariables.contains(declaration)) {
-				assignment.remove // Deleting in-event bool flags
+		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
+			val xStsDeclaration = xStsAssignment.lhs.declaration
+			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
+				xStsAssignment.remove // Deleting in-event bool flags
 			}
 		}
 		
@@ -219,9 +219,10 @@ class GammaToXSTSTransformer {
 		}
 		// Binding event variables that come from the same ports
 		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
+		 // Original parameter settings
 		newInEventAction.actions += inEventAction
-		// Binding event variables that come from the same ports
-		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
+		// Binding parameter variables that come from the same ports
+		newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
 		xSts.inEventAction = newInEventAction
 		
 		return xSts
@@ -344,7 +345,7 @@ class GammaToXSTSTransformer {
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
 		val oldInEventAction = xSts.inEventAction
-		val bindingAssignments = xSts.createEventAssignmentsBoundToTheSameSystemPort(component)
+		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
 		xSts.inEventAction = createSequentialAction => [
 			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port

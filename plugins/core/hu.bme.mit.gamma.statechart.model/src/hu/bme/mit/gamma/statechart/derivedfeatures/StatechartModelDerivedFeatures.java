@@ -340,7 +340,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getAllEvents(port.getInterfaceRealization().getInterface());
 	}
 	
-	public static Collection<Event> getInputEvents(Port port) {
+	public static List<Event> getInputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
@@ -360,7 +360,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return events;
 	}
 	
-	public static Collection<Event> getOutputEvents(Port port) {
+	public static List<Event> getOutputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
@@ -388,13 +388,13 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getOutputEvents(port).contains(event);
 	}
 	
-	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
-		Collection<Port> allPorts = new HashSet<Port>(wrapper.getPorts());
+	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {
+		List<Port> allPorts = new ArrayList<Port>(wrapper.getPorts());
 		allPorts.addAll(wrapper.getWrappedComponent().getType().getPorts());
 		return allPorts;
 	}
 	
-	public static Collection<Port> getAllPorts(Component component) {
+	public static List<Port> getAllPorts(Component component) {
 		if (component instanceof AsynchronousAdapter) {
 			return getAllPorts((AsynchronousAdapter)component);
 		}		
@@ -415,16 +415,17 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return portBindings;
 	}
 	
-	public static Collection<Port> getAllConnectedSimplePorts(Component component) {
-		Set<Port> simplePorts = new HashSet<Port>();
+	public static List<Port> getAllConnectedSimplePorts(Component component) {
+		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
 			simplePorts.addAll(getAllConnectedSimplePorts(port));
 		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	
-	public static Collection<Port> getAllConnectedSimplePorts(Port port) {
-		Set<Port> simplePorts = new HashSet<Port>();
+	public static List<Port> getAllConnectedSimplePorts(Port port) {
+		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
 			simplePorts.add(port);
@@ -438,6 +439,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 				}
 			}
 		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	

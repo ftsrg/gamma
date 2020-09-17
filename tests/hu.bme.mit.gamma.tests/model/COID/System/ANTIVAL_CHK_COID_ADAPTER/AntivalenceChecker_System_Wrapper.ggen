@@ -1,0 +1,22 @@
+import "AntivalenceChecker_System_Wrapper.gcd"
+
+code {
+	component : AntivalenceChecker_System_Wrapper
+	language : java
+}
+
+analysis {
+	component : AntivalenceChecker_System_Wrapper
+	language : Theta
+	transition-coverage {
+		include : [ system -> coid ]
+	}
+}
+
+verification {
+	language : Theta
+	file : "AntivalenceChecker_System_Wrapper.xsts"
+	query-file : "CustomQuery_ANTIVAL_CHK_COID_System.prop"
+	optimize : true
+	test-language : java
+}

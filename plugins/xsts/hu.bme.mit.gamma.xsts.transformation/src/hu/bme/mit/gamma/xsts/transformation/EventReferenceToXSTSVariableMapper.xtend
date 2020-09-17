@@ -45,7 +45,7 @@ class EventReferenceToXSTSVariableMapper {
 	
 	def getInputEventVariables(Event event, Port port) {
 		checkState(port.inputEvents.contains(event))
-		val xStsVariables = newHashSet
+		val xStsVariables = newArrayList
 		for (simplePort : port.allConnectedSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
@@ -58,7 +58,7 @@ class EventReferenceToXSTSVariableMapper {
 	
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
-		val xStsVariables = newHashSet
+		val xStsVariables = newArrayList
 		for (simplePort : port.allConnectedSimplePorts) {
 			// One system port can be connected to multiple in-ports (if it is broadcast)
 			val statechart = simplePort.containingComponent
