@@ -217,7 +217,8 @@ class GammaToXSTSTransformer {
 			branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
 			newInEventAction.actions += branch
 		}
-		
+		// Binding event variables that come from the same ports
+		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
 		newInEventAction.actions += inEventAction
 		// Binding event variables that come from the same ports
 		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)

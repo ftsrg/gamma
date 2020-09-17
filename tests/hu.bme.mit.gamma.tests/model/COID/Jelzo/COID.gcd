@@ -37,6 +37,7 @@ statechart bJbCOID_allapotgep(P_COID : boolean, P_COIDT : integer, PCOID_H : int
 		/= ::_0]
 	transition from choice_6_in_main_region_of_bJbCOID_allapotgep to Funkcio_kikapcsolva_6 [P_COID =
 		false]
+	@(Fut_NemFut)
 	transition from Celoldas_idozites_fut_8 to Celoldas_idozites_nem_fut_5 when cycle [I_CR.h ::hValue /=
 		::_1 or I_FT.h ::hValue /= ::_1]
 		// Normal region
