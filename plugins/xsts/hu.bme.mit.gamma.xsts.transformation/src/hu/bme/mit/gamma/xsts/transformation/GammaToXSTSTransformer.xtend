@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
@@ -160,7 +161,7 @@ class GammaToXSTSTransformer {
 	}
 	
 	protected def dispatch XSTS transform(AsynchronousAdapter component, Package lowlevelPackage) {
-		// TODO maybe isTop boolean variables should be introduced as now in-events are discarded
+		// TODO maybe isTop boolean variables should be introduced as now in event actions are created discarded
 		component.checkAdapter
 		val wrappedInstance = component.wrappedComponent
 		val wrappedType = wrappedInstance.type
@@ -170,24 +171,28 @@ class GammaToXSTSTransformer {
 		wrappedType.transformParameters(wrappedInstance.arguments) 
 		val xSts = wrappedType.transform(lowlevelPackage)
 		
-		val extension eventRef = new EventReferenceToXSTSVariableMapper(xSts)
-		
-		val xStsEventVariables = newHashSet
-		for (eventReference : messageQueue.eventReference) {
-			xStsEventVariables += eventReference.variables
-		}
-		
 		val inEventAction = xSts.inEventAction
+		// Deleting synchronous event assignments
+		val xStsSynchronousInEventVariables = xSts.variableGroups
+			.filter[it.annotation instanceof InEventGroup].map[it.variables]
+			.flatten // There are be more than one
 		for (assignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
 			val declaration = assignment.lhs.declaration
-			if (xStsEventVariables.contains(declaration)) {
+			if (xStsSynchronousInEventVariables.contains(declaration)) {
 				assignment.remove // Deleting in-event bool flags
 			}
 		}
 		
+		val extension eventRef = new EventReferenceToXSTSVariableMapper(xSts)
+		// Collecting the referenced event variables
+		val xStsReferencedEventVariables = newHashSet
+		for (eventReference : messageQueue.eventReference) {
+			xStsReferencedEventVariables += eventReference.variables
+		}
+		
 		val newInEventAction = createSequentialAction
-		// Setting the variables to false
-		for (xStsEventVariable : xStsEventVariables) {
+		// Setting the referenced event variables to false
+		for (xStsEventVariable : xStsReferencedEventVariables) {
 			newInEventAction.actions += createAssignmentAction => [
 				it.lhs = createReferenceExpression => [
 					it.declaration = xStsEventVariable
@@ -195,9 +200,10 @@ class GammaToXSTSTransformer {
 				it.rhs = createFalseExpression
 			]
 		}
-		for (xStsEventVariable : xStsEventVariables) {
+		// Enabling the setting of the referenced event variables to true if no other is set
+		for (xStsEventVariable : xStsReferencedEventVariables) {
 			val negatedVariables = newArrayList
-			negatedVariables += xStsEventVariables
+			negatedVariables += xStsReferencedEventVariables
 			negatedVariables -= xStsEventVariable
 			val branch = createIfActionBranch(
 				negatedVariables.connectThroughNegations,
