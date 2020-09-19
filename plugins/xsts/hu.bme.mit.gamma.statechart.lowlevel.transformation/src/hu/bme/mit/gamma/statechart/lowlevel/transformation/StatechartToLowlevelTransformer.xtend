@@ -61,12 +61,15 @@ class StatechartToLowlevelTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace object for storing the mappings
 	protected final Trace trace
+	// Transformation parameters
+	protected final boolean functionInlining = true
+	protected final int maxRecursionDepth = 10
 
 	new() {
 		this.trace = new Trace
-		this.expressionTransformer = new ExpressionTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace)
-		this.triggerTransformer = new TriggerTransformer(this.trace)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining, this.maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	

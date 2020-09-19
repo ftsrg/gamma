@@ -37,14 +37,17 @@ class EventReferenceTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
+	// Transformation parameters
+	protected final boolean functionInlining
 	
-	new(Trace trace) {
+	new(Trace trace, boolean functionInlining) {
 		this.trace = trace
-		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.functionInlining = functionInlining
+		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
 	}
 	
 	protected def transformToLowlevelGuard(EventDeclaration lowlevelEvent) {
-		val refExpr = createReferenceExpression => [
+		val refExpr = createDirectReferenceExpression => [
 			it.declaration = lowlevelEvent.isRaised
 		] 
 		return createEqualityExpression => [
@@ -100,7 +103,7 @@ class EventReferenceTransformer {
 			// [500 <= timeoutClock]
 			return createLessEqualExpression => [
 				it.leftOperand = value
-				it.rightOperand = createReferenceExpression => [
+				it.rightOperand = createDirectReferenceExpression => [
 					it.declaration = lowlevelTimeoutVar
 				]
 			]

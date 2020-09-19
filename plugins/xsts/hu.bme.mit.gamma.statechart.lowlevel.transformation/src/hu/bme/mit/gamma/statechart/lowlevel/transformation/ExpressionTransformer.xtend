@@ -14,17 +14,19 @@ import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.DefaultExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -46,13 +48,30 @@ class ExpressionTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
+	protected final boolean functionInlining
 	
-	new(Trace trace) {
+	new(Trace trace, boolean functionInlining) {
 		this.trace = trace
+		this.functionInlining = functionInlining
 	}
 	
 	def dispatch Expression transformExpression(NullaryExpression expression) {
 		return expression.clone(true, true)
+	}
+	
+	def dispatch Expression transformExpression(DefaultExpression expression) {
+		return createTrueExpression
+	}
+	
+	def dispatch Expression transformExpression(FunctionAccessExpression expression) {
+		if (functionInlining) {
+			return createDirectReferenceExpression => [
+				it.declaration = trace.get(expression)
+			]
+		} else {
+			//TODO
+			throw new IllegalArgumentException("No function inlining is currently not possible")
+		}
 	}
 	
 	def dispatch Expression transformExpression(UnaryExpression expression) {
@@ -70,7 +89,7 @@ class ExpressionTransformer {
 	}
 
 	// Key method
-	def dispatch Expression transformExpression(ReferenceExpression expression) {
+	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
 			// Constant type declarations have to be transformed as their right hand side is inlined
@@ -90,7 +109,7 @@ class ExpressionTransformer {
 		}
 		checkState(declaration instanceof VariableDeclaration || 
 			declaration instanceof ParameterDeclaration, declaration)
-		val referenceExpression = createReferenceExpression
+		val referenceExpression = createDirectReferenceExpression
 		if (declaration instanceof VariableDeclaration) {
 			checkState(trace.isMapped(declaration), declaration)
 			return referenceExpression => [
@@ -123,7 +142,7 @@ class ExpressionTransformer {
 		val port = expression.port
 		val event = expression.event
 		val parameter = expression.parameter
-		return createReferenceExpression => [
+		return createDirectReferenceExpression => [
 			it.declaration = trace.get(port, event, parameter).get(EventDirection.IN)
 		]
 	}

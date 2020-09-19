@@ -29,6 +29,7 @@ import java.util.Map
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 
 package class Trace {
 
@@ -50,6 +51,9 @@ package class Trace {
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = new HashMap<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition>
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
+	//
+	final Map<FunctionAccessExpression, VariableDeclaration> returnVariableMappings = new HashMap<FunctionAccessExpression, VariableDeclaration>
+	
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -431,6 +435,23 @@ package class Trace {
 	def getTimeout(Region gammaRegion) {
 		checkNotNull(gammaRegion)
 		regionTimeoutMappings.get(gammaRegion)
+	}
+	
+	// Function return variable
+	def put(FunctionAccessExpression functionAccessExpression, VariableDeclaration returnVariable) {
+		checkNotNull(functionAccessExpression)
+		checkNotNull(returnVariable)
+		returnVariableMappings.put(functionAccessExpression, returnVariable)
+	}
+
+	def isMapped(FunctionAccessExpression functionAccessExpression) {
+		checkNotNull(functionAccessExpression)
+		returnVariableMappings.containsKey(functionAccessExpression)
+	}
+
+	def get(FunctionAccessExpression functionAccessExpression) {
+		checkNotNull(functionAccessExpression)
+		returnVariableMappings.get(functionAccessExpression)
 	}
 	
 	private static class Triple<K, V, T> {
