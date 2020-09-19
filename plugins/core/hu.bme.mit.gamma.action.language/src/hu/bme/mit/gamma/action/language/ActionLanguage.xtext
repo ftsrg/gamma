@@ -111,7 +111,7 @@ DefaultExpression returns ConstraintModel::DefaultExpression:
 IfStatement returns ActionModel::IfStatement:
 	{ActionModel::IfStatement}
 	'if' conditionals+=IfBranch
-	(=> 'elsif' conditionals+=IfBranch)*
+	(=> 'elseif' conditionals+=IfBranch)*
 	(=> conditionals+=ElseBranch)?
 ;
 
