@@ -8,6 +8,8 @@ import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import java.util.logging.Level
+import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -18,6 +20,8 @@ class EventReferenceToXSTSVariableMapper {
 	
 	protected final XSTS xSts
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	// Logger
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new (XSTS xSts) {
 		this.xSts = xSts
@@ -51,7 +55,13 @@ class EventReferenceToXSTSVariableMapper {
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = event.customizeInputName(simplePort, instance)
-			xStsVariables += xSts.getVariable(xStsVariableName)
+			val xStsVariable = xSts.getVariable(xStsVariableName)
+			if (xStsVariable !== null) {
+				xStsVariables += xStsVariable
+			}
+			else {
+				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "." + event.name)
+			}
 		}
 		return xStsVariables
 	}
@@ -64,7 +74,13 @@ class EventReferenceToXSTSVariableMapper {
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = parameter.customizeInName(simplePort, instance)
-			xStsVariables += xSts.getVariable(xStsVariableName)
+			val xStsVariable = xSts.getVariable(xStsVariableName)
+			if (xStsVariable !== null) {
+				xStsVariables += xStsVariable
+			}
+			else {
+				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)
+			}
 		}
 		return xStsVariables
 	}

@@ -74,7 +74,7 @@ class GammaToXSTSTransformer {
 	protected boolean transformOrthogonalActions
 	protected boolean optimize
 	// Logger
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
 		this(null, false, true)
@@ -175,7 +175,7 @@ class GammaToXSTSTransformer {
 		// Deleting synchronous event assignments
 		val xStsSynchronousInEventVariables = xSts.variableGroups
 			.filter[it.annotation instanceof InEventGroup].map[it.variables]
-			.flatten // There are be more than one
+			.flatten // There are more than one
 		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
 			val xStsDeclaration = xStsAssignment.lhs.declaration
 			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
