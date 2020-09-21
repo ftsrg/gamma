@@ -15,11 +15,11 @@ function Download {
 }
 
 Write-Output "Downloading Theta binary"
-Download "https://github.com/ftsrg/theta/releases/download/v2.4.0/theta-xsts-cli.jar" "$currentPath\theta-xsts-cli.jar"
+Download "https://github.com/ftsrg/theta/releases/download/$thetaVersion/theta-xsts-cli.jar" "$currentPath\theta-xsts-cli.jar"
 
 Write-Output "Downloading Z3 solver binaries"
-Download "https://github.com/ftsrg/theta/raw/v2.4.0/lib/libz3.dll" "$currentPath\libz3.dll"
-Download "https://github.com/ftsrg/theta/raw/v2.4.0/lib/libz3java.dll" "$currentPath\libz3java.dll"
+Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3.dll" "$currentPath\libz3.dll"
+Download "https://github.com/ftsrg/theta/raw/$thetaVersion/lib/libz3java.dll" "$currentPath\libz3java.dll"
 
 Write-Output "Downloading MSVC++ binaries"
 $zipFilePath = "$currentPath\$z3version.zip"
