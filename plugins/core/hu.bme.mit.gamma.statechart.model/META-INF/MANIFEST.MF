@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Gamma Statechart Langauge Metamodel
 Bundle-SymbolicName: hu.bme.mit.gamma.statechart.model;singleton:=true
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.4.0.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: %providerName
+Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
