@@ -8,10 +8,9 @@ import hu.bme.mit.gamma.tutorial.extra.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.ITrafficLightCtrlStatemachine.*;
 import hu.bme.mit.gamma.tutorial.extra.*;
-import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine;
 import hu.bme.mit.gamma.tutorial.extra.trafficlightctrl.TrafficLightCtrlStatemachine.State;
 
-public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInterface {
+public class TrafficLightCtrl implements TrafficLightCtrlInterface {
 	// The wrapped Yakindu statemachine
 	private TrafficLightCtrlStatemachine trafficLightCtrlStatemachine;
 	// Port instances
@@ -25,7 +24,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	private Queue<Event> eventQueue1 = new LinkedList<Event>();
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
-	public TrafficLightCtrlStatechart() {
+	public TrafficLightCtrl() {
 		trafficLightCtrlStatemachine = new TrafficLightCtrlStatemachine();
 		lightCommands = new LightCommands();
 		control = new Control();
@@ -36,8 +35,15 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
+		// Clearing the in events
+		insertQueue = true;
+		processQueue = false;
+		eventQueue1.clear();
+		eventQueue2.clear();
+		//
 		trafficLightCtrlStatemachine.init();
 		trafficLightCtrlStatemachine.enter();
+		notifyListeners();
 	}
 	
 	/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -104,6 +110,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 				}
 		}
 		trafficLightCtrlStatemachine.runCycle();
+		notifyListeners();
 	}
 	
 	// Inner classes representing Ports
@@ -112,50 +119,53 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 
 
 		@Override
-		public boolean isRaisedDisplayRed() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
+		public boolean isRaisedDisplayNone() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
 		}
 		@Override
 		public boolean isRaisedDisplayYellow() {
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayYellow();
 		}
 		@Override
+		public boolean isRaisedDisplayRed() {
+			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayRed();
+		}
+		@Override
 		public boolean isRaisedDisplayGreen() {
 			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayGreen();
 		}
 		@Override
-		public boolean isRaisedDisplayNone() {
-			return trafficLightCtrlStatemachine.getSCILightCommands().isRaisedDisplayNone();
-		}
-		@Override
 		public void registerListener(final LightCommandsInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
-			trafficLightCtrlStatemachine.getSCILightCommands().getListeners().add(new SCILightCommandsListener() {
-				@Override
-				public void onDisplayRedRaised() {
-					listener.raiseDisplayRed();
-				}
-				
-				@Override
-				public void onDisplayYellowRaised() {
-					listener.raiseDisplayYellow();
-				}
-				
-				@Override
-				public void onDisplayGreenRaised() {
-					listener.raiseDisplayGreen();
-				}
-				
-				@Override
-				public void onDisplayNoneRaised() {
-					listener.raiseDisplayNone();
-				}
-			});
 		}
 		
 		@Override
 		public List<LightCommandsInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedDisplayNone()) {
+				for (LightCommandsInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseDisplayNone();
+				}
+			}
+			if (isRaisedDisplayYellow()) {
+				for (LightCommandsInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseDisplayYellow();
+				}
+			}
+			if (isRaisedDisplayRed()) {
+				for (LightCommandsInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseDisplayRed();
+				}
+			}
+			if (isRaisedDisplayGreen()) {
+				for (LightCommandsInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseDisplayGreen();
+				}
+			}
 		}
 
 	}
@@ -170,7 +180,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 
 		@Override
 		public void raiseToggle() {
-			getInsertQueue().add(new Event("Control.Toggle", null));
+			getInsertQueue().add(new Event("Control.Toggle"));
 		}
 
 		@Override
@@ -181,6 +191,10 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		@Override
 		public List<ControlInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
 		}
 
 	}
@@ -195,7 +209,7 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 
 		@Override
 		public void raisePolice() {
-			getInsertQueue().add(new Event("PoliceInterrupt.Police", null));
+			getInsertQueue().add(new Event("PoliceInterrupt.Police"));
 		}
 
 		@Override
@@ -207,6 +221,10 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		public List<PoliceInterruptInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
 		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+		}
 
 	}
 	
@@ -215,6 +233,17 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		return policeInterrupt;
 	}
 	
+	/** Interface method, needed for composite component initialization chain. */
+	public void notifyAllListeners() {
+		notifyListeners();
+	}
+	
+	/** Notifies all registered listeners in each contained port. */
+	public void notifyListeners() {
+		getLightCommands().notifyListeners();
+		getControl().notifyListeners();
+		getPoliceInterrupt().notifyListeners();
+	}
 	
 	
 	/** Checks whether the wrapped statemachine is in the given state. */
@@ -226,19 +255,12 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 		switch (region) {
 			case "normal":
 				switch (state) {
-					case "Yellow":
-						return isStateActive(State.main_region_Normal_normal_Yellow);
 					case "Green":
 						return isStateActive(State.main_region_Normal_normal_Green);
+					case "Yellow":
+						return isStateActive(State.main_region_Normal_normal_Yellow);
 					case "Red":
 						return isStateActive(State.main_region_Normal_normal_Red);
-				}
-			case "interrupted":
-				switch (state) {
-					case "BlinkingYellow":
-						return isStateActive(State.main_region_Interrupted_interrupted_BlinkingYellow);
-					case "Black":
-						return isStateActive(State.main_region_Interrupted_interrupted_Black);
 				}
 			case "main_region":
 				switch (state) {
@@ -247,14 +269,21 @@ public class TrafficLightCtrlStatechart implements TrafficLightCtrlStatechartInt
 					case "Interrupted":
 						return isStateActive(State.main_region_Interrupted);
 				}
+			case "interrupted":
+				switch (state) {
+					case "BlinkingYellow":
+						return isStateActive(State.main_region_Interrupted_interrupted_BlinkingYellow);
+					case "Black":
+						return isStateActive(State.main_region_Interrupted_interrupted_Black);
+				}
 		}
 		return false;
 	}
+
 	
 	
 	public void setTimer(ITimer timer) {
 		trafficLightCtrlStatemachine.setTimer(timer);
-		reset();
 	}
 	
 }

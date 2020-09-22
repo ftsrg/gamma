@@ -1,8 +1,9 @@
 package hu.bme.mit.gamma.tutorial.extra.interfaces;
 
+import hu.bme.mit.gamma.tutorial.extra.*;
 import java.util.List;
 
-public interface MonitorInterface {
+public interface ErrorInterface {
 	
 	interface Provided extends Listener.Required {
 		

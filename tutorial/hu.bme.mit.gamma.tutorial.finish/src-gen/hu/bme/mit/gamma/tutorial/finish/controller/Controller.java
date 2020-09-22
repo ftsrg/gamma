@@ -8,10 +8,9 @@ import hu.bme.mit.gamma.tutorial.finish.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.finish.controller.IControllerStatemachine.*;
 import hu.bme.mit.gamma.tutorial.finish.*;
-import hu.bme.mit.gamma.tutorial.finish.controller.ControllerStatemachine;
 import hu.bme.mit.gamma.tutorial.finish.controller.ControllerStatemachine.State;
 
-public class ControllerStatechart implements ControllerStatechartInterface {
+public class Controller implements ControllerInterface {
 	// The wrapped Yakindu statemachine
 	private ControllerStatemachine controllerStatemachine;
 	// Port instances
@@ -27,7 +26,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	private Queue<Event> eventQueue1 = new LinkedList<Event>();
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
-	public ControllerStatechart() {
+	public Controller() {
 		controllerStatemachine = new ControllerStatemachine();
 		policeInterrupt = new PoliceInterrupt();
 		priorityPolice = new PriorityPolice();
@@ -40,8 +39,15 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
+		// Clearing the in events
+		insertQueue = true;
+		processQueue = false;
+		eventQueue1.clear();
+		eventQueue2.clear();
+		//
 		controllerStatemachine.init();
 		controllerStatemachine.enter();
+		notifyListeners();
 	}
 	
 	/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -105,6 +111,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 				}
 		}
 		controllerStatemachine.runCycle();
+		notifyListeners();
 	}
 	
 	// Inner classes representing Ports
@@ -113,7 +120,7 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 
 		@Override
 		public void raisePolice() {
-			getInsertQueue().add(new Event("PoliceInterrupt.Police", null));
+			getInsertQueue().add(new Event("PoliceInterrupt.Police"));
 		}
 
 		@Override
@@ -124,6 +131,10 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		@Override
 		public List<PoliceInterruptInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
 		}
 
 	}
@@ -144,17 +155,20 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		@Override
 		public void registerListener(final PoliceInterruptInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
-			controllerStatemachine.getSCIPriorityPolice().getListeners().add(new SCIPriorityPoliceListener() {
-				@Override
-				public void onPoliceRaised() {
-					listener.raisePolice();
-				}
-			});
 		}
 		
 		@Override
 		public List<PoliceInterruptInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedPolice()) {
+				for (PoliceInterruptInterface.Listener.Provided listener : registeredListeners) {
+					listener.raisePolice();
+				}
+			}
 		}
 
 	}
@@ -175,17 +189,20 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		@Override
 		public void registerListener(final ControlInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
-			controllerStatemachine.getSCIPriorityControl().getListeners().add(new SCIPriorityControlListener() {
-				@Override
-				public void onToggleRaised() {
-					listener.raiseToggle();
-				}
-			});
 		}
 		
 		@Override
 		public List<ControlInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedToggle()) {
+				for (ControlInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseToggle();
+				}
+			}
 		}
 
 	}
@@ -206,17 +223,20 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		@Override
 		public void registerListener(final ControlInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
-			controllerStatemachine.getSCISecondaryControl().getListeners().add(new SCISecondaryControlListener() {
-				@Override
-				public void onToggleRaised() {
-					listener.raiseToggle();
-				}
-			});
 		}
 		
 		@Override
 		public List<ControlInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedToggle()) {
+				for (ControlInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseToggle();
+				}
+			}
 		}
 
 	}
@@ -237,17 +257,20 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		@Override
 		public void registerListener(final PoliceInterruptInterface.Listener.Provided listener) {
 			registeredListeners.add(listener);
-			controllerStatemachine.getSCISecondaryPolice().getListeners().add(new SCISecondaryPoliceListener() {
-				@Override
-				public void onPoliceRaised() {
-					listener.raisePolice();
-				}
-			});
 		}
 		
 		@Override
 		public List<PoliceInterruptInterface.Listener.Provided> getRegisteredListeners() {
 			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedPolice()) {
+				for (PoliceInterruptInterface.Listener.Provided listener : registeredListeners) {
+					listener.raisePolice();
+				}
+			}
 		}
 
 	}
@@ -257,6 +280,19 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 		return secondaryPolice;
 	}
 	
+	/** Interface method, needed for composite component initialization chain. */
+	public void notifyAllListeners() {
+		notifyListeners();
+	}
+	
+	/** Notifies all registered listeners in each contained port. */
+	public void notifyListeners() {
+		getPoliceInterrupt().notifyListeners();
+		getPriorityPolice().notifyListeners();
+		getPriorityControl().notifyListeners();
+		getSecondaryControl().notifyListeners();
+		getSecondaryPolice().notifyListeners();
+	}
 	
 	
 	/** Checks whether the wrapped statemachine is in the given state. */
@@ -266,19 +302,6 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 	
 	public boolean isStateActive(String region, String state) {
 		switch (region) {
-			case "operating":
-				switch (state) {
-					case "Priority":
-						return isStateActive(State.main_region_Operating_operating_Priority);
-					case "Secondary":
-						return isStateActive(State.main_region_Operating_operating_Secondary);
-					case "SecondaryPrepares":
-						return isStateActive(State.main_region_Operating_operating_SecondaryPrepares);
-					case "PriorityPrepares":
-						return isStateActive(State.main_region_Operating_operating_PriorityPrepares);
-					case "Init":
-						return isStateActive(State.main_region_Operating_operating_Init);
-				}
 			case "main_region":
 				switch (state) {
 					case "Operating":
@@ -286,14 +309,27 @@ public class ControllerStatechart implements ControllerStatechartInterface {
 					case "Interrupted":
 						return isStateActive(State.main_region_Interrupted);
 				}
+			case "operating":
+				switch (state) {
+					case "Priority":
+						return isStateActive(State.main_region_Operating_operating_Priority);
+					case "Init":
+						return isStateActive(State.main_region_Operating_operating_Init);
+					case "PriorityPrepares":
+						return isStateActive(State.main_region_Operating_operating_PriorityPrepares);
+					case "Secondary":
+						return isStateActive(State.main_region_Operating_operating_Secondary);
+					case "SecondaryPrepares":
+						return isStateActive(State.main_region_Operating_operating_SecondaryPrepares);
+				}
 		}
 		return false;
 	}
+
 	
 	
 	public void setTimer(ITimer timer) {
 		controllerStatemachine.setTimer(timer);
-		reset();
 	}
 	
 }

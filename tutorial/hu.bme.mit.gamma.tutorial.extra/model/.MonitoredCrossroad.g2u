@@ -1,386 +1,356 @@
 <?xml version="1.0" encoding="ASCII"?>
 <hu.bme.mit.gamma.uppaal.transformation:G2UTrace xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:declarations="http://www.uni-paderborn.de/uppaal/declarations/0.4.0" xmlns:hu.bme.mit.gamma.statechart.composite="http://www.mit.bme.hu/gamma/statechart/Model/Composite" xmlns:hu.bme.mit.gamma.uppaal.transformation="http://www.mit.bme.hu/gamma/uppaal/transformation/Traceability">
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.0/@components.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.1/@components.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.1/@components.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.1/@components.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.1"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
-    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.22"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.24"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.28"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.35"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.36"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.37"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.38"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@declarations/@declaration.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.45"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.49"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.50"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.52"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.56"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.3/@ports.1"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.2"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
-    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.21"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.23"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.29"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.30"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.33"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.34"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@declarations/@declaration.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.39"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.40"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.48"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.51"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.53"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.55"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.4/@ports.2"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.3/@ports.2"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
-    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.31"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.32"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.41"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.42"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.8"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.9"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.11"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.10"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.8"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.9"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.10"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.12"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.11"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.13"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.12"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.14"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.13"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.15"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.14"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.16"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.15"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.47"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.54"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.2/@ports.2"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.21"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
     <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.0/@components.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
     <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.13"/>
     <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.14"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
     <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.18"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.43"/>
-    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.44"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.0"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.1"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.2"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.3"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.5"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.6"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.7"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.8"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.9"/>
-    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.10"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.5/@ports.1"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.13"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.14"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.18"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.3/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.13"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.22"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.14"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.24"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
-    <port href=".MonitoredCrossroad.gsm#//@components.4/@ports.1"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.18"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.23"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.28"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.30"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.31"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.8"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.9"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.1/@edge.10"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
     <port href=".MonitoredCrossroad.gsm#//@components.5/@ports.0"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.13"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.14"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.18"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.3/@events.0/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.21"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.23"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@declarations/@declaration.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.38"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.39"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.40"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.41"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.42"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.43"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.55"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.54"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.57"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@location.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@location.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.61"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.62"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.63"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.65"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.4/@ports.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.3"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.0/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.1/@events.0/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.22"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.24"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.28"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.29"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@declarations/@declaration.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.32"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.33"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.36"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.37"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.51"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.52"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.53"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@location.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@location.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.0/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.4/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.2/@edge.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.58"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.59"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.66"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.67"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.3/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.7"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.3/@ports.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.9"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.4/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.11"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.12"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.2/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.13"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.14"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.22"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:InstanceTrace">
+    <owner xsi:type="hu.bme.mit.gamma.statechart.composite:SynchronousComponentInstance" href=".MonitoredCrossroad.gsm#//@components.1/@components.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@declarations/@declaration.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.34"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.35"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.44"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.45"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.47"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.48"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.49"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.50"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.56"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.9"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.8"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.10"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@location.11"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.0"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@location.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.5"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.6"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.7"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.8"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.9"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.8/@edge.3"/>
+    <element href=".MonitoredCrossroad.uppaal#//@template.3/@edge.10"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.60"/>
+    <element href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.64"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.2/@ports.2"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.15"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.16"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.0/@events.1/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.17"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.18"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.23"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.24"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
     <port href=".MonitoredCrossroad.gsm#//@components.4/@ports.0"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.19"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.20"/>
     <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.21"/>
     <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.23"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
     <port href=".MonitoredCrossroad.gsm#//@components.3/@ports.0"/>
     <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.22"/>
     <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.24"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
-    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.28"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.25"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.26"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0"/>
+    <from href="platform:/resource/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd#//@interfaces.2/@events.0/@event"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:PortTrace">
+    <port href=".MonitoredCrossroad.gsm#//@components.5/@ports.1"/>
+    <declarations xsi:type="declarations:DataVariableDeclaration" href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.27"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.uppaal#//@template.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.28"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.29"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.30"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.uppaal#//@template.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.31"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.32"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.uppaal#//@template.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.33"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.34"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.uppaal#//@template.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.35"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.36"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.uppaal#//@template.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.30"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.31"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@declarations/@declaration.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.uppaal#//@template.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.32"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.33"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@declarations/@declaration.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.uppaal#//@template.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.34"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.35"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0"/>
@@ -389,8 +359,8 @@
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.uppaal#//@template.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.36"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.37"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.38"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0"/>
@@ -399,54 +369,202 @@
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.uppaal#//@template.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.38"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.39"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.40"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.6"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.uppaal#//@template.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.40"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.41"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.42"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.uppaal#//@template.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.42"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.43"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.44"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.7"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@declarations/@declaration.0"/>
+    <from href=".MonitoredCrossroad.uppaal#//@template.8"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.44"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.45"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.8"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.uppaal#//@template.8"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.45"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.47"/>
     <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.0"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.48"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.0"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.49"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.50"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@timeoutDeclarations.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.51"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.52"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@timeoutDeclarations.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.53"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.51"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@timeoutDeclarations.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.55"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.54"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.46"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.56"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@timeoutDeclarations.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.57"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.54"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.0/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.1/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.2/@guard/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.2/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.2/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.3/@guard/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.3/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.3/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.4/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.5/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.6/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.7/@guard/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.7/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.7/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@firstExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value/@operands.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.8/@guard/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@secondExpr/@secondExpr/@secondExpr/@firstExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value/@operands.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.8/@guard/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@secondExpr/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@edge.8/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.9/@location.0/@invariant/@secondExpr/@secondExpr/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.2"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.1"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
@@ -455,13 +573,8 @@
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.0"/>
@@ -469,86 +582,32 @@
     <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.0"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.12"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.48"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.55"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.7"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.3"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.49"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.56"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.6"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.51"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.53"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.2"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.3"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.59"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.67"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.58"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.66"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
@@ -557,539 +616,546 @@
     <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.4"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.15"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.47"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.54"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.6"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.14"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.8"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.9"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.16"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.7"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.11"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.10"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.13"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.50"/>
-    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.52"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.6"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.7"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@location.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.61"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.65"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@location.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.3"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.9"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@location.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.62"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.63"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@location.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.10"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@location.11"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@location.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.60"/>
+    <to href=".MonitoredCrossroad.uppaal#//@globalDeclarations/@declaration.64"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.4"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.3"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.10"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.1"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.9"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.5"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.8"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.6"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.8"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.5"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.4"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.6"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.5"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.6"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.7"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.8"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.5"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.7"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.3"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.3"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.8"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.6"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.5"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.9"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.9"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.6"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.7"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.4"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.9"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.8"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.5"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.9"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.9"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.6"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.1"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.6"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.10"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.5"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.10"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.8"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.9"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.6"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.4"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.4/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.7"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.10/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.0/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.8"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.1/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.5/@guard/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.8"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.6/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.7/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.1/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.8"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.7"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.4"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.3"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.5"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.8"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.9"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.9"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.8"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.5"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.6"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.7"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.6"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.10"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.3/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.1/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.4/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.0/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.3/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.0/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.9/@guard"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.8/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.6/@guard"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.6/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.10/@guard"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.9/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.8/@guard"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.6/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2/@guard"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.9/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.6/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.9/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.0/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.4/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4/@guard"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.5/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.6/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3/@guard"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2/@guard"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.1/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.2/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.0/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.8/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.10/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.4/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.4/@guard"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.3/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.3/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.3/@trigger"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.2/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.8/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.1/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.7/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.4/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.2/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.7/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.4/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.0/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.3/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.9/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.3/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.7/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.1/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.6/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.4/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.2/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.6/@trigger"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.3/@guard"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.5/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.6/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.6/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.4/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.6/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.10/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.4/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.9/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.9/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.9/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.9/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.4/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.10/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.1/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.3/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.5/@guard/@secondExpr/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1/@guard"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.8/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.7/@guard/@secondExpr"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
     <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.2/@trigger"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.7/@guard"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.8/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2/@invariant/@secondExpr/@firstExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.11/@guard/@secondExpr/@secondExpr/@firstExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value/@operands.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2/@invariant/@secondExpr/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.11/@guard/@secondExpr/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.11/@guard/@secondExpr/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.1/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3/@guard"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.0/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.2/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.11/@guard/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.4/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.7/@edge.4/@guard"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.4"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value/@operands.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.10/@invariant/@secondExpr/@firstExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.12/@guard/@secondExpr/@secondExpr/@firstExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value/@operands.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.10/@invariant/@secondExpr/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.12/@guard/@secondExpr/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.10/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.12/@guard/@secondExpr/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.7/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.4/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.2/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.10/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.12/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@timeoutDeclarations.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.1"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.0/@trigger"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.5/@guard/@secondExpr"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.2/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.5/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.3/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.2/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.5/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@timeoutDeclarations.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.1"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.6/@effects.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.4/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.5/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.7/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.4/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.5/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.3"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.6/@effects.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.2/@update.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value/@operands.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.6/@invariant/@secondExpr/@firstExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.13/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7/@effects.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value/@operands.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.6/@invariant/@secondExpr/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.13/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.7/@effects.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.8/@edge.1/@update.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.6/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.13/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.1/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.6/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.13/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@timeoutDeclarations.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@declarations/@declaration.2"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.8/@effects.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.7/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.4/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.6/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@transitions.7/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@location.4/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.6/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.3"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.4"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.5/@transitions.1/@effects.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.1/@edge.3/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value/@operands.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4/@invariant/@secondExpr/@firstExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.14/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2/@update.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value/@operands.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4/@invariant/@secondExpr/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.14/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3/@update.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.14/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.4/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.4/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.14/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@timeoutDeclarations.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@declarations/@declaration.2"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.2/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.6/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@transitions.3/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@location.2/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.6/@guard/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@timeoutDeclarations.2"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@declarations/@declaration.5"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4/@update.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.8/@invariant/@secondExpr/@firstExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.15/@guard/@secondExpr/@secondExpr/@firstExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2/@update.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.2/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value/@operands.1"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.8/@invariant/@secondExpr/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.15/@guard/@secondExpr/@secondExpr/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1/@update.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.1/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0/@time/@value"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.8/@invariant/@secondExpr"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.15/@guard/@secondExpr/@secondExpr"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:Trace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@transitions.8/@trigger/@eventReference"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@location.8/@invariant"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.15/@guard/@secondExpr"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0/@update.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.2/@edge.0/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.1/@update.1"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1/@update.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1/@update.1"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0/@update.1"/>
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0/@update.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0/@update.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2/@update.1"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.2/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0/@update.0"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.5/@edge.1/@update.0"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
     <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.5/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.4/@update.1"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.2/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.4/@update.2"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
     <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1/@update.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0"/>
     <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0/@update.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.3/@update.2"/>
-  </traces>
-  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
-    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1/@update.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.0/@update.3"/>
   </traces>
   <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
     <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0"/>
-    <to href=".MonitoredCrossroad.uppaal#//@template.0/@edge.0/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.0/@update.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.0/@update.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.3/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3/@update.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.3/@update.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.4/@regions.0/@stateNodes.1/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.6/@edge.1/@update.2"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.2/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2/@update.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.2/@update.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.3/@regions.0/@stateNodes.1/@regions.0/@stateNodes.1/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1/@update.2"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.4/@edge.1/@update.3"/>
+  </traces>
+  <traces xsi:type="hu.bme.mit.gamma.uppaal.transformation:ExpressionTrace">
+    <from href=".MonitoredCrossroad.gsm#//@components.2/@regions.0/@stateNodes.0/@regions.0/@stateNodes.4/@entryActions.0"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1/@update.1"/>
+    <to href=".MonitoredCrossroad.uppaal#//@template.3/@edge.1/@update.2"/>
   </traces>
   <gammaPackage href=".MonitoredCrossroad.gsm#/"/>
   <nta href=".MonitoredCrossroad.uppaal#/"/>

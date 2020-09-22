@@ -2,21 +2,21 @@ package hu.bme.mit.gamma.tutorial.finish.controller;
 
 import hu.bme.mit.gamma.tutorial.finish.*;
 
-public class ReflectiveControllerStatechart implements ReflectiveComponentInterface {
+public class ReflectiveController implements ReflectiveComponentInterface {
 	
-	private ControllerStatechart wrappedComponent;
+	private Controller wrappedComponent;
 	// Wrapped contained components
 	
-	public ReflectiveControllerStatechart(UnifiedTimerInterface timer) {
+	public ReflectiveController(UnifiedTimerInterface timer) {
 		this();
 		wrappedComponent.setTimer(timer);
 	}
 	
-	public ReflectiveControllerStatechart() {
-		wrappedComponent = new ControllerStatechart();
+	public ReflectiveController() {
+		wrappedComponent = new Controller();
 	}
 	
-	public ReflectiveControllerStatechart(ControllerStatechart wrappedComponent) {
+	public ReflectiveController(Controller wrappedComponent) {
 		this.wrappedComponent = wrappedComponent;
 	}
 	
@@ -24,7 +24,7 @@ public class ReflectiveControllerStatechart implements ReflectiveComponentInterf
 		wrappedComponent.reset();
 	}
 	
-	public ControllerStatechart getWrappedComponent() {
+	public Controller getWrappedComponent() {
 		return wrappedComponent;
 	}
 	
@@ -94,15 +94,15 @@ public class ReflectiveControllerStatechart implements ReflectiveComponentInterf
 	}
 	
 	public String[] getRegions() {
-		return new String[] { "operating", "main_region" };
+		return new String[] { "main_region", "operating" };
 	}
 	
 	public String[] getStates(String region) {
 		switch (region) {
-			case "operating":
-				return new String[] { "Priority", "Secondary", "SecondaryPrepares", "PriorityPrepares", "Init" };
 			case "main_region":
 				return new String[] { "Operating", "Interrupted" };
+			case "operating":
+				return new String[] { "Priority", "Init", "PriorityPrepares", "Secondary", "SecondaryPrepares" };
 		}
 		throw new IllegalArgumentException("Not known region: " + region);
 	}
@@ -127,6 +127,9 @@ public class ReflectiveControllerStatechart implements ReflectiveComponentInterf
 	
 	public ReflectiveComponentInterface getComponent(String component) {
 		switch (component) {
+			// If the class name is given, then it will return itself
+			case "Controller":
+				return this;
 		}
 		throw new IllegalArgumentException("Not known component: " + component);
 	}

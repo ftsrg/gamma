@@ -1,15 +1,16 @@
 package hu.bme.mit.gamma.tutorial.extra.controller;
 
+import hu.bme.mit.gamma.tutorial.extra.*;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.PoliceInterruptInterface;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.ControlInterface;
 
-public interface ControllerStatechartInterface {
+public interface ControllerInterface {
 	
 	PoliceInterruptInterface.Provided getSecondaryPolice();
-	ControlInterface.Provided getPriorityControl();
+	PoliceInterruptInterface.Required getPoliceInterrupt();
 	PoliceInterruptInterface.Provided getPriorityPolice();
 	ControlInterface.Provided getSecondaryControl();
-	PoliceInterruptInterface.Required getPoliceInterrupt();
+	ControlInterface.Provided getPriorityControl();
 	
 	void reset();
 	

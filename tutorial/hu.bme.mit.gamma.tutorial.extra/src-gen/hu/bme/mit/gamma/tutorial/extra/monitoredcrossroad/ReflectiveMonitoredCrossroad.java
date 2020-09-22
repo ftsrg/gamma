@@ -65,8 +65,8 @@ public class ReflectiveMonitoredCrossroad implements ReflectiveComponentInterfac
 	public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "priorityOutput.displayRed":
-				if (wrappedComponent.getPriorityOutput().isRaisedDisplayRed()) {
+			case "priorityOutput.displayNone":
+				if (wrappedComponent.getPriorityOutput().isRaisedDisplayNone()) {
 					return true;
 				}
 				break;
@@ -75,18 +75,18 @@ public class ReflectiveMonitoredCrossroad implements ReflectiveComponentInterfac
 					return true;
 				}
 				break;
+			case "priorityOutput.displayRed":
+				if (wrappedComponent.getPriorityOutput().isRaisedDisplayRed()) {
+					return true;
+				}
+				break;
 			case "priorityOutput.displayGreen":
 				if (wrappedComponent.getPriorityOutput().isRaisedDisplayGreen()) {
 					return true;
 				}
 				break;
-			case "priorityOutput.displayNone":
-				if (wrappedComponent.getPriorityOutput().isRaisedDisplayNone()) {
-					return true;
-				}
-				break;
-			case "secondaryOutput.displayRed":
-				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayRed()) {
+			case "secondaryOutput.displayNone":
+				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayNone()) {
 					return true;
 				}
 				break;
@@ -95,13 +95,13 @@ public class ReflectiveMonitoredCrossroad implements ReflectiveComponentInterfac
 					return true;
 				}
 				break;
-			case "secondaryOutput.displayGreen":
-				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayGreen()) {
+			case "secondaryOutput.displayRed":
+				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayRed()) {
 					return true;
 				}
 				break;
-			case "secondaryOutput.displayNone":
-				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayNone()) {
+			case "secondaryOutput.displayGreen":
+				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayGreen()) {
 					return true;
 				}
 				break;
@@ -157,7 +157,7 @@ public class ReflectiveMonitoredCrossroad implements ReflectiveComponentInterfac
 				return crossroad;
 			case "monitor":
 				if (monitor == null) {
-					monitor = new ReflectiveMonitorStatechart(wrappedComponent.getMonitor());
+					monitor = new ReflectiveMonitor(wrappedComponent.getMonitor());
 				}
 				return monitor;
 		}

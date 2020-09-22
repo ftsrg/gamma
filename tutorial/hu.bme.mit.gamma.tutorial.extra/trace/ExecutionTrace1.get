@@ -1,17 +1,21 @@
-import "monitoredcrossroadView"
-trace MonitoredCrossroadTrace of MonitoredCrossroad
+import "/hu.bme.mit.gamma.tutorial.extra/model/.MonitoredCrossroad.gsm"
+trace MonitoredCrossroadTrace of
+MonitoredCrossroad
 step {
+	act {
+		reset
+	}
 	assert {
-		raise priorityOutput.displayRed
 		raise secondaryOutput.displayRed
+		raise priorityOutput.displayRed
 		states {
-			monitor.Other,
-			crossroad_prior.Normal,
 			crossroad_controller.Operating,
-			crossroad_secondary.Red,
-			crossroad_secondary.Normal,
+			crossroad_controller.Init,
+			crossroad_prior.Normal,
 			crossroad_prior.Red,
-			crossroad_controller.Init
+			crossroad_secondary.Normal,
+			crossroad_secondary.Red,
+			monitor.Other
 		}
 	}
 }
@@ -23,13 +27,13 @@ step {
 	assert {
 		raise priorityOutput.displayGreen
 		states {
-			crossroad_prior.Normal,
 			crossroad_controller.Operating,
-			crossroad_secondary.Red,
-			crossroad_secondary.Normal,
-			monitor.Red,
+			crossroad_controller.PriorityPrepares,
+			crossroad_prior.Normal,
 			crossroad_prior.Green,
-			crossroad_controller.PriorityPrepares
+			crossroad_secondary.Normal,
+			crossroad_secondary.Red,
+			monitor.Red
 		}
 	}
 }
@@ -41,12 +45,12 @@ step {
 	assert {
 		raise priorityOutput.displayYellow
 		states {
+			crossroad_controller.Operating,
+			crossroad_controller.Secondary,
 			crossroad_prior.Normal,
 			crossroad_prior.Yellow,
-			crossroad_controller.Secondary,
-			crossroad_controller.Operating,
-			crossroad_secondary.Red,
 			crossroad_secondary.Normal,
+			crossroad_secondary.Red,
 			monitor.Green
 		}
 	}
@@ -60,13 +64,13 @@ step {
 		raise secondaryOutput.displayGreen
 		raise priorityOutput.displayRed
 		states {
-			monitor.Other,
-			crossroad_prior.Normal,
 			crossroad_controller.Operating,
 			crossroad_controller.SecondaryPrepares,
-			crossroad_secondary.Normal,
+			crossroad_prior.Normal,
 			crossroad_prior.Red,
-			crossroad_secondary.Green
+			crossroad_secondary.Normal,
+			crossroad_secondary.Green,
+			monitor.Other
 		}
 	}
 }

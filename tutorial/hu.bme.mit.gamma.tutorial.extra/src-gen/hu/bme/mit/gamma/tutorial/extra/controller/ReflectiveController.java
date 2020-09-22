@@ -1,18 +1,22 @@
-package hu.bme.mit.gamma.tutorial.extra.monitor;
+package hu.bme.mit.gamma.tutorial.extra.controller;
 
 import hu.bme.mit.gamma.tutorial.extra.*;
 
-public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface {
+public class ReflectiveController implements ReflectiveComponentInterface {
 	
-	private MonitorStatechart wrappedComponent;
+	private Controller wrappedComponent;
 	// Wrapped contained components
 	
-	
-	public ReflectiveMonitorStatechart() {
-		wrappedComponent = new MonitorStatechart();
+	public ReflectiveController(UnifiedTimerInterface timer) {
+		this();
+		wrappedComponent.setTimer(timer);
 	}
 	
-	public ReflectiveMonitorStatechart(MonitorStatechart wrappedComponent) {
+	public ReflectiveController() {
+		wrappedComponent = new Controller();
+	}
+	
+	public ReflectiveController(Controller wrappedComponent) {
 		this.wrappedComponent = wrappedComponent;
 	}
 	
@@ -20,20 +24,26 @@ public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface
 		wrappedComponent.reset();
 	}
 	
-	public MonitorStatechart getWrappedComponent() {
+	public Controller getWrappedComponent() {
 		return wrappedComponent;
 	}
 	
 	public String[] getPorts() {
-		return new String[] { "Monitor", "LightInputs" };
+		return new String[] { "SecondaryControl", "PriorityControl", "PoliceInterrupt", "SecondaryPolice", "PriorityPolice" };
 	}
 	
 	public String[] getEvents(String port) {
 		switch (port) {
-			case "Monitor":
-				return new String[] { "error" };
-			case "LightInputs":
-				return new String[] { "displayNone", "displayYellow", "displayRed", "displayGreen" };
+			case "SecondaryControl":
+				return new String[] { "toggle" };
+			case "PriorityControl":
+				return new String[] { "toggle" };
+			case "PoliceInterrupt":
+				return new String[] { "police" };
+			case "SecondaryPolice":
+				return new String[] { "police" };
+			case "PriorityPolice":
+				return new String[] { "police" };
 			default:
 				throw new IllegalArgumentException("Not known port: " + port);
 		}
@@ -42,17 +52,8 @@ public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface
 	public void raiseEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "LightInputs.displayRed":
-				wrappedComponent.getLightInputs().raiseDisplayRed();
-				break;
-			case "LightInputs.displayYellow":
-				wrappedComponent.getLightInputs().raiseDisplayYellow();
-				break;
-			case "LightInputs.displayGreen":
-				wrappedComponent.getLightInputs().raiseDisplayGreen();
-				break;
-			case "LightInputs.displayNone":
-				wrappedComponent.getLightInputs().raiseDisplayNone();
+			case "PoliceInterrupt.police":
+				wrappedComponent.getPoliceInterrupt().raisePolice();
 				break;
 			default:
 				throw new IllegalArgumentException("Not known port-in event combination: " + portEvent);
@@ -62,8 +63,23 @@ public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface
 	public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "Monitor.error":
-				if (wrappedComponent.getMonitor().isRaisedError()) {
+			case "SecondaryControl.toggle":
+				if (wrappedComponent.getSecondaryControl().isRaisedToggle()) {
+					return true;
+				}
+				break;
+			case "PriorityControl.toggle":
+				if (wrappedComponent.getPriorityControl().isRaisedToggle()) {
+					return true;
+				}
+				break;
+			case "SecondaryPolice.police":
+				if (wrappedComponent.getSecondaryPolice().isRaisedPolice()) {
+					return true;
+				}
+				break;
+			case "PriorityPolice.police":
+				if (wrappedComponent.getPriorityPolice().isRaisedPolice()) {
 					return true;
 				}
 				break;
@@ -78,13 +94,15 @@ public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface
 	}
 	
 	public String[] getRegions() {
-		return new String[] { "main_region" };
+		return new String[] { "main_region", "operating" };
 	}
 	
 	public String[] getStates(String region) {
 		switch (region) {
 			case "main_region":
-				return new String[] { "Red", "Error", "Green", "Other" };
+				return new String[] { "Operating", "Interrupted" };
+			case "operating":
+				return new String[] { "SecondaryPrepares", "Priority", "Secondary", "Init", "PriorityPrepares" };
 		}
 		throw new IllegalArgumentException("Not known region: " + region);
 	}
@@ -109,6 +127,9 @@ public class ReflectiveMonitorStatechart implements ReflectiveComponentInterface
 	
 	public ReflectiveComponentInterface getComponent(String component) {
 		switch (component) {
+			// If the class name is given, then it will return itself
+			case "Controller":
+				return this;
 		}
 		throw new IllegalArgumentException("Not known component: " + component);
 	}

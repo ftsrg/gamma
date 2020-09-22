@@ -19,18 +19,18 @@ public interface IMonitorStatemachine extends IStatemachine {
 	
 	public SCILightInputs getSCILightInputs();
 	
-	public interface SCIMonitor {
+	public interface SCIError {
 	
 		public boolean isRaisedError();
 		
-	public List<SCIMonitorListener> getListeners();
+	public List<SCIErrorListener> getListeners();
 	}
 	
-	public interface SCIMonitorListener {
+	public interface SCIErrorListener {
 	
 		public void onErrorRaised();
 		}
 	
-	public SCIMonitor getSCIMonitor();
+	public SCIError getSCIError();
 	
 }

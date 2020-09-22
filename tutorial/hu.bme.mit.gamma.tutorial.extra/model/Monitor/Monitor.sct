@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:sgraph="http://www.yakindu.org/sct/sgraph/2.0.0">
-  <sgraph:Statechart xmi:id="_peOisF6QEeee0_nDeJNXNQ" specification="interface LightInputs:&#xA;  in event displayRed&#xA;  in event displayGreen&#xA;  in event displayYellow&#xA;  in event displayNone&#xA;  &#xA;interface Monitor:&#xA;  out event error" name="Monitor">
+  <sgraph:Statechart xmi:id="_peOisF6QEeee0_nDeJNXNQ" specification="interface LightInputs:&#xA;  in event displayRed&#xA;  in event displayGreen&#xA;  in event displayYellow&#xA;  in event displayNone&#xA;  &#xA;interface Error:&#xA;  out event error" name="Monitor">
     <regions xmi:id="_peS0Il6QEeee0_nDeJNXNQ" name="main region">
       <vertices xsi:type="sgraph:Entry" xmi:id="_peXsoF6QEeee0_nDeJNXNQ">
         <outgoingTransitions xmi:id="_pedMMF6QEeee0_nDeJNXNQ" target="_peZh1F6QEeee0_nDeJNXNQ"/>
@@ -10,7 +10,7 @@
         <outgoingTransitions xmi:id="_NxOasF6REeee0_nDeJNXNQ" specification="LightInputs.&#xD;&#xA;displayRed" target="_NxI7IF6REeee0_nDeJNXNQ"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_D7d2gF6REeee0_nDeJNXNQ" name="Green" incomingTransitions="_D7nAcF6REeee0_nDeJNXNQ _V1PUcF6REeee0_nDeJNXNQ">
-        <outgoingTransitions xmi:id="_5xsfQF6SEeee0_nDeJNXNQ" specification="LightInputs.displayGreen /&#xD;&#xA;raise Monitor.error" target="_GJQjwF6REeee0_nDeJNXNQ"/>
+        <outgoingTransitions xmi:id="_5xsfQF6SEeee0_nDeJNXNQ" specification="LightInputs.displayGreen /&#xD;&#xA;raise Error.error" target="_GJQjwF6REeee0_nDeJNXNQ"/>
         <outgoingTransitions xmi:id="_80UzIGCdEee7ELj1Pq16xg" specification="LightInputs.displayRed" target="_NxI7IF6REeee0_nDeJNXNQ"/>
         <outgoingTransitions xmi:id="_Fl9GEGI5EeeMqan5DllsWw" specification="LightInputs.&#xD;&#xA;displayNone" target="_peZh1F6QEeee0_nDeJNXNQ"/>
         <outgoingTransitions xmi:id="_H0KDAGI5EeeMqan5DllsWw" specification="LightInputs.&#xD;&#xA;displayYellow" target="_peZh1F6QEeee0_nDeJNXNQ"/>
@@ -18,7 +18,7 @@
       <vertices xsi:type="sgraph:State" xmi:id="_GJQjwF6REeee0_nDeJNXNQ" name="Error" incomingTransitions="_5xsfQF6SEeee0_nDeJNXNQ _C4Z1cGCeEee7ELj1Pq16xg"/>
       <vertices xsi:type="sgraph:State" xmi:id="_NxI7IF6REeee0_nDeJNXNQ" name="Red" incomingTransitions="_NxOasF6REeee0_nDeJNXNQ _80UzIGCdEee7ELj1Pq16xg">
         <outgoingTransitions xmi:id="_V1PUcF6REeee0_nDeJNXNQ" specification="LightInputs.displayGreen" target="_D7d2gF6REeee0_nDeJNXNQ"/>
-        <outgoingTransitions xmi:id="_C4Z1cGCeEee7ELj1Pq16xg" specification="LightInputs.displayRed /&#xD;&#xA;raise Monitor.error" target="_GJQjwF6REeee0_nDeJNXNQ"/>
+        <outgoingTransitions xmi:id="_C4Z1cGCeEee7ELj1Pq16xg" specification="LightInputs.displayRed /&#xD;&#xA;raise Error.error" target="_GJQjwF6REeee0_nDeJNXNQ"/>
         <outgoingTransitions xmi:id="_6XELwGI4EeeMqan5DllsWw" specification="LightInputs.&#xD;&#xA;displayNone" target="_peZh1F6QEeee0_nDeJNXNQ"/>
         <outgoingTransitions xmi:id="_879xcGI4EeeMqan5DllsWw" specification="LightInputs.&#xD;&#xA;displayYellow" target="_peZh1F6QEeee0_nDeJNXNQ"/>
       </vertices>

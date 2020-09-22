@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.tutorial.extra.interfaces;
 
+import hu.bme.mit.gamma.tutorial.extra.*;
 import java.util.List;
 
 public interface LightCommandsInterface {

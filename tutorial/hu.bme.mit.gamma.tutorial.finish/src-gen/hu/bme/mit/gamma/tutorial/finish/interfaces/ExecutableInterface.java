@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.tutorial.finish.interfaces;
 
+import hu.bme.mit.gamma.tutorial.finish.*;
 import java.util.List;
 
 public interface ExecutableInterface {

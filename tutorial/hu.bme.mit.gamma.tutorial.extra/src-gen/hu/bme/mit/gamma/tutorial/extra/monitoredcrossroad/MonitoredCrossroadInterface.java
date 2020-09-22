@@ -1,15 +1,16 @@
 package hu.bme.mit.gamma.tutorial.extra.monitoredcrossroad;
 
-import hu.bme.mit.gamma.tutorial.extra.interfaces.LightCommandsInterface;
-import hu.bme.mit.gamma.tutorial.extra.interfaces.MonitorInterface;
+import hu.bme.mit.gamma.tutorial.extra.*;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.PoliceInterruptInterface;
+import hu.bme.mit.gamma.tutorial.extra.interfaces.LightCommandsInterface;
+import hu.bme.mit.gamma.tutorial.extra.interfaces.ErrorInterface;
 
 public interface MonitoredCrossroadInterface {
 	
-	LightCommandsInterface.Provided getSecondaryOutput();
-	MonitorInterface.Provided getMonitorOutput();
-	LightCommandsInterface.Provided getPriorityOutput();
 	PoliceInterruptInterface.Required getPolice();
+	LightCommandsInterface.Provided getPriorityOutput();
+	ErrorInterface.Provided getMonitorOutput();
+	LightCommandsInterface.Provided getSecondaryOutput();
 	
 	void reset();
 	

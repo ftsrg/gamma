@@ -8,15 +8,14 @@ import hu.bme.mit.gamma.tutorial.extra.interfaces.*;
 // Yakindu listeners
 import hu.bme.mit.gamma.tutorial.extra.monitor.IMonitorStatemachine.*;
 import hu.bme.mit.gamma.tutorial.extra.*;
-import hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine;
 import hu.bme.mit.gamma.tutorial.extra.monitor.MonitorStatemachine.State;
 
-public class MonitorStatechart implements MonitorStatechartInterface {
+public class Monitor implements MonitorInterface {
 	// The wrapped Yakindu statemachine
 	private MonitorStatemachine monitorStatemachine;
 	// Port instances
-	private Monitor monitor;
 	private LightInputs lightInputs;
+	private Error error;
 	// Indicates which queue is active in a cycle
 	private boolean insertQueue = true;
 	private boolean processQueue = false;
@@ -24,17 +23,24 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 	private Queue<Event> eventQueue1 = new LinkedList<Event>();
 	private Queue<Event> eventQueue2 = new LinkedList<Event>();
 	
-	public MonitorStatechart() {
+	public Monitor() {
 		monitorStatemachine = new MonitorStatemachine();
-		monitor = new Monitor();
 		lightInputs = new LightInputs();
+		error = new Error();
 	}
 	
 	/** Resets the statemachine. Must be called to initialize the component. */
 	@Override
 	public void reset() {
+		// Clearing the in events
+		insertQueue = true;
+		processQueue = false;
+		eventQueue1.clear();
+		eventQueue2.clear();
+		//
 		monitorStatemachine.init();
 		monitorStatemachine.enter();
+		notifyListeners();
 	}
 	
 	/** Changes the event queues of the component instance. Should be used only be the container (composite system) class. */
@@ -90,78 +96,48 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		while (!eventQueue.isEmpty()) {
 				Event event = eventQueue.remove();
 				switch (event.getEvent()) {
-					case "LightInputs.DisplayRed": 
-						monitorStatemachine.getSCILightInputs().raiseDisplayRed();
+					case "LightInputs.DisplayNone": 
+						monitorStatemachine.getSCILightInputs().raiseDisplayNone();
 					break;
 					case "LightInputs.DisplayYellow": 
 						monitorStatemachine.getSCILightInputs().raiseDisplayYellow();
 					break;
+					case "LightInputs.DisplayRed": 
+						monitorStatemachine.getSCILightInputs().raiseDisplayRed();
+					break;
 					case "LightInputs.DisplayGreen": 
 						monitorStatemachine.getSCILightInputs().raiseDisplayGreen();
-					break;
-					case "LightInputs.DisplayNone": 
-						monitorStatemachine.getSCILightInputs().raiseDisplayNone();
 					break;
 					default:
 						throw new IllegalArgumentException("No such event!");
 				}
 		}
 		monitorStatemachine.runCycle();
+		notifyListeners();
 	}
 	
 	// Inner classes representing Ports
-	public class Monitor implements MonitorInterface.Provided {
-		private List<MonitorInterface.Listener.Provided> registeredListeners = new LinkedList<MonitorInterface.Listener.Provided>();
-
-
-		@Override
-		public boolean isRaisedError() {
-			return monitorStatemachine.getSCIMonitor().isRaisedError();
-		}
-		@Override
-		public void registerListener(final MonitorInterface.Listener.Provided listener) {
-			registeredListeners.add(listener);
-			monitorStatemachine.getSCIMonitor().getListeners().add(new SCIMonitorListener() {
-				@Override
-				public void onErrorRaised() {
-					listener.raiseError();
-				}
-			});
-		}
-		
-		@Override
-		public List<MonitorInterface.Listener.Provided> getRegisteredListeners() {
-			return registeredListeners;
-		}
-
-	}
-	
-	@Override
-	public Monitor getMonitor() {
-		return monitor;
-	}
-	
 	public class LightInputs implements LightCommandsInterface.Required {
 		private List<LightCommandsInterface.Listener.Required> registeredListeners = new LinkedList<LightCommandsInterface.Listener.Required>();
 
 		@Override
-		public void raiseDisplayRed() {
-			getInsertQueue().add(new Event("LightInputs.DisplayRed", null));
+		public void raiseDisplayNone() {
+			getInsertQueue().add(new Event("LightInputs.DisplayNone"));
 		}
 		
 		@Override
 		public void raiseDisplayYellow() {
-			getInsertQueue().add(new Event("LightInputs.DisplayYellow", null));
+			getInsertQueue().add(new Event("LightInputs.DisplayYellow"));
+		}
+		
+		@Override
+		public void raiseDisplayRed() {
+			getInsertQueue().add(new Event("LightInputs.DisplayRed"));
 		}
 		
 		@Override
 		public void raiseDisplayGreen() {
-			getInsertQueue().add(new Event("LightInputs.DisplayGreen", null));
-		}
-		
-		@Override
-		public void raiseDisplayNone() {
-			getInsertQueue().add(new Event("LightInputs.DisplayNone", null));
+			getInsertQueue().add(new Event("LightInputs.DisplayGreen"));
 		}
 
 		@Override
@@ -173,6 +149,10 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		public List<LightCommandsInterface.Listener.Required> getRegisteredListeners() {
 			return registeredListeners;
 		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+		}
 
 	}
 	
@@ -181,6 +161,50 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		return lightInputs;
 	}
 	
+	public class Error implements ErrorInterface.Provided {
+		private List<ErrorInterface.Listener.Provided> registeredListeners = new LinkedList<ErrorInterface.Listener.Provided>();
+
+
+		@Override
+		public boolean isRaisedError() {
+			return monitorStatemachine.getSCIError().isRaisedError();
+		}
+		@Override
+		public void registerListener(final ErrorInterface.Listener.Provided listener) {
+			registeredListeners.add(listener);
+		}
+		
+		@Override
+		public List<ErrorInterface.Listener.Provided> getRegisteredListeners() {
+			return registeredListeners;
+		}
+		
+		/** Notifying the registered listeners. */
+		public void notifyListeners() {
+			if (isRaisedError()) {
+				for (ErrorInterface.Listener.Provided listener : registeredListeners) {
+					listener.raiseError();
+				}
+			}
+		}
+
+	}
+	
+	@Override
+	public Error getError() {
+		return error;
+	}
+	
+	/** Interface method, needed for composite component initialization chain. */
+	public void notifyAllListeners() {
+		notifyListeners();
+	}
+	
+	/** Notifies all registered listeners in each contained port. */
+	public void notifyListeners() {
+		getLightInputs().notifyListeners();
+		getError().notifyListeners();
+	}
 	
 	
 	/** Checks whether the wrapped statemachine is in the given state. */
@@ -192,18 +216,19 @@ public class MonitorStatechart implements MonitorStatechartInterface {
 		switch (region) {
 			case "main_region":
 				switch (state) {
-					case "Red":
-						return isStateActive(State.main_region_Red);
-					case "Error":
-						return isStateActive(State.main_region_Error);
 					case "Green":
 						return isStateActive(State.main_region_Green);
+					case "Error":
+						return isStateActive(State.main_region_Error);
 					case "Other":
 						return isStateActive(State.main_region_Other);
+					case "Red":
+						return isStateActive(State.main_region_Red);
 				}
 		}
 		return false;
 	}
+
 	
 	
 	

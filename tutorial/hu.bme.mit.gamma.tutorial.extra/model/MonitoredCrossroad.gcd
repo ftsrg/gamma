@@ -9,7 +9,7 @@ sync MonitoredCrossroad [
 		port police : requires PoliceInterrupt,
 		port priorityOutput : provides LightCommands,
 		port secondaryOutput : provides LightCommands,
-		port monitorOutput : provides Monitor
+		port monitorOutput : provides Error
 ] {		
 	component crossroad : Crossroad
 	component monitor : Monitor
@@ -17,7 +17,7 @@ sync MonitoredCrossroad [
 	bind police -> crossroad.police
 	bind priorityOutput -> crossroad.priorityOutput
 	bind secondaryOutput -> crossroad.secondaryOutput
-	bind monitorOutput -> monitor.Monitor
+	bind monitorOutput -> monitor.Error
 	
 	channel	[crossroad.priorityOutput]-o)-[monitor.LightInputs]
 	

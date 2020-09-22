@@ -1,25 +1,26 @@
-package Monitor
-import "Interfaces"
+package monitor
+import "/hu.bme.mit.gamma.tutorial.extra/model/Interfaces/Interfaces.gcd"
+@TransitionPriority = order-based
 statechart Monitor [
-	port Monitor : provides Monitor,
 	port LightInputs : requires LightCommands
+	port Error : provides Error
 ] {
+	transition from Entry0 to Other
+	transition from Green to Error when LightInputs.displayGreen / raise Error.error;
+	transition from Green to Red when LightInputs.displayRed
 	transition from Green to Other when LightInputs.displayNone
-	transition from Other to Red when LightInputs.displayRed
 	transition from Green to Other when LightInputs.displayYellow
 	transition from Other to Green when LightInputs.displayGreen
-	transition from Red to Other when LightInputs.displayYellow
-	transition from Entry0 to Other
-	transition from Green to Red when LightInputs.displayRed
-	transition from Red to Error when LightInputs.displayRed / raise Monitor.error;
-	transition from Red to Other when LightInputs.displayNone
-	transition from Green to Error when LightInputs.displayGreen / raise Monitor.error;
+	transition from Other to Red when LightInputs.displayRed
 	transition from Red to Green when LightInputs.displayGreen
+	transition from Red to Error when LightInputs.displayRed / raise Error.error;
+	transition from Red to Other when LightInputs.displayNone
+	transition from Red to Other when LightInputs.displayYellow
 	region main_region {
 		initial Entry0
-		state Red
+		state Green
 		state Error
 		state Other
-		state Green
+		state Red
 	}
 }

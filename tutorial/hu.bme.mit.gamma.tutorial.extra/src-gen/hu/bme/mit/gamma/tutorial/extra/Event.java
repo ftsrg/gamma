@@ -2,13 +2,13 @@ package hu.bme.mit.gamma.tutorial.extra;
 
 public class Event {
 	private String event;
-	private Object value;
+	private Object[] value;
 	
 	public Event(String event) {
 		this.event = event;
 	}
 	
-	public Event(String event, Object value) {
+	public Event(String event, Object... value) {
 		this.event = event;
 		this.value = value;
 	}
@@ -17,7 +17,7 @@ public class Event {
 		return event;
 	}
 	
-	public Object getValue() {
+	public Object[] getValue() {
 		return value;
 	}
 }

@@ -2,21 +2,21 @@ package hu.bme.mit.gamma.tutorial.finish.trafficlightctrl;
 
 import hu.bme.mit.gamma.tutorial.finish.*;
 
-public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponentInterface {
+public class ReflectiveTrafficLightCtrl implements ReflectiveComponentInterface {
 	
-	private TrafficLightCtrlStatechart wrappedComponent;
+	private TrafficLightCtrl wrappedComponent;
 	// Wrapped contained components
 	
-	public ReflectiveTrafficLightCtrlStatechart(UnifiedTimerInterface timer) {
+	public ReflectiveTrafficLightCtrl(UnifiedTimerInterface timer) {
 		this();
 		wrappedComponent.setTimer(timer);
 	}
 	
-	public ReflectiveTrafficLightCtrlStatechart() {
-		wrappedComponent = new TrafficLightCtrlStatechart();
+	public ReflectiveTrafficLightCtrl() {
+		wrappedComponent = new TrafficLightCtrl();
 	}
 	
-	public ReflectiveTrafficLightCtrlStatechart(TrafficLightCtrlStatechart wrappedComponent) {
+	public ReflectiveTrafficLightCtrl(TrafficLightCtrl wrappedComponent) {
 		this.wrappedComponent = wrappedComponent;
 	}
 	
@@ -24,7 +24,7 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 		wrappedComponent.reset();
 	}
 	
-	public TrafficLightCtrlStatechart getWrappedComponent() {
+	public TrafficLightCtrl getWrappedComponent() {
 		return wrappedComponent;
 	}
 	
@@ -62,8 +62,8 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "LightCommands.displayNone":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayNone()) {
+			case "LightCommands.displayRed":
+				if (wrappedComponent.getLightCommands().isRaisedDisplayRed()) {
 					return true;
 				}
 				break;
@@ -77,8 +77,8 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 					return true;
 				}
 				break;
-			case "LightCommands.displayRed":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayRed()) {
+			case "LightCommands.displayNone":
+				if (wrappedComponent.getLightCommands().isRaisedDisplayNone()) {
 					return true;
 				}
 				break;
@@ -93,17 +93,17 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	}
 	
 	public String[] getRegions() {
-		return new String[] { "normal", "main_region", "interrupted" };
+		return new String[] { "normal", "interrupted", "main_region" };
 	}
 	
 	public String[] getStates(String region) {
 		switch (region) {
 			case "normal":
 				return new String[] { "Green", "Red", "Yellow" };
+			case "interrupted":
+				return new String[] { "Black", "BlinkingYellow" };
 			case "main_region":
 				return new String[] { "Normal", "Interrupted" };
-			case "interrupted":
-				return new String[] { "BlinkingYellow", "Black" };
 		}
 		throw new IllegalArgumentException("Not known region: " + region);
 	}
@@ -128,6 +128,9 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	
 	public ReflectiveComponentInterface getComponent(String component) {
 		switch (component) {
+			// If the class name is given, then it will return itself
+			case "TrafficLightCtrl":
+				return this;
 		}
 		throw new IllegalArgumentException("Not known component: " + component);
 	}

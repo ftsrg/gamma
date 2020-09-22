@@ -1,22 +1,18 @@
-package hu.bme.mit.gamma.tutorial.extra.trafficlightctrl;
+package hu.bme.mit.gamma.tutorial.extra.monitor;
 
 import hu.bme.mit.gamma.tutorial.extra.*;
 
-public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponentInterface {
+public class ReflectiveMonitor implements ReflectiveComponentInterface {
 	
-	private TrafficLightCtrlStatechart wrappedComponent;
+	private Monitor wrappedComponent;
 	// Wrapped contained components
 	
-	public ReflectiveTrafficLightCtrlStatechart(UnifiedTimerInterface timer) {
-		this();
-		wrappedComponent.setTimer(timer);
+	
+	public ReflectiveMonitor() {
+		wrappedComponent = new Monitor();
 	}
 	
-	public ReflectiveTrafficLightCtrlStatechart() {
-		wrappedComponent = new TrafficLightCtrlStatechart();
-	}
-	
-	public ReflectiveTrafficLightCtrlStatechart(TrafficLightCtrlStatechart wrappedComponent) {
+	public ReflectiveMonitor(Monitor wrappedComponent) {
 		this.wrappedComponent = wrappedComponent;
 	}
 	
@@ -24,22 +20,20 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 		wrappedComponent.reset();
 	}
 	
-	public TrafficLightCtrlStatechart getWrappedComponent() {
+	public Monitor getWrappedComponent() {
 		return wrappedComponent;
 	}
 	
 	public String[] getPorts() {
-		return new String[] { "LightCommands", "Control", "PoliceInterrupt" };
+		return new String[] { "LightInputs", "Error" };
 	}
 	
 	public String[] getEvents(String port) {
 		switch (port) {
-			case "LightCommands":
+			case "LightInputs":
 				return new String[] { "displayNone", "displayYellow", "displayRed", "displayGreen" };
-			case "Control":
-				return new String[] { "toggle" };
-			case "PoliceInterrupt":
-				return new String[] { "police" };
+			case "Error":
+				return new String[] { "error" };
 			default:
 				throw new IllegalArgumentException("Not known port: " + port);
 		}
@@ -48,11 +42,17 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	public void raiseEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "Control.toggle":
-				wrappedComponent.getControl().raiseToggle();
+			case "LightInputs.displayNone":
+				wrappedComponent.getLightInputs().raiseDisplayNone();
 				break;
-			case "PoliceInterrupt.police":
-				wrappedComponent.getPoliceInterrupt().raisePolice();
+			case "LightInputs.displayYellow":
+				wrappedComponent.getLightInputs().raiseDisplayYellow();
+				break;
+			case "LightInputs.displayRed":
+				wrappedComponent.getLightInputs().raiseDisplayRed();
+				break;
+			case "LightInputs.displayGreen":
+				wrappedComponent.getLightInputs().raiseDisplayGreen();
 				break;
 			default:
 				throw new IllegalArgumentException("Not known port-in event combination: " + portEvent);
@@ -62,23 +62,8 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "LightCommands.displayRed":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayRed()) {
-					return true;
-				}
-				break;
-			case "LightCommands.displayYellow":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayYellow()) {
-					return true;
-				}
-				break;
-			case "LightCommands.displayGreen":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayGreen()) {
-					return true;
-				}
-				break;
-			case "LightCommands.displayNone":
-				if (wrappedComponent.getLightCommands().isRaisedDisplayNone()) {
+			case "Error.error":
+				if (wrappedComponent.getError().isRaisedError()) {
 					return true;
 				}
 				break;
@@ -93,17 +78,13 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	}
 	
 	public String[] getRegions() {
-		return new String[] { "normal", "interrupted", "main_region" };
+		return new String[] { "main_region" };
 	}
 	
 	public String[] getStates(String region) {
 		switch (region) {
-			case "normal":
-				return new String[] { "Yellow", "Green", "Red" };
-			case "interrupted":
-				return new String[] { "BlinkingYellow", "Black" };
 			case "main_region":
-				return new String[] { "Normal", "Interrupted" };
+				return new String[] { "Green", "Error", "Other", "Red" };
 		}
 		throw new IllegalArgumentException("Not known region: " + region);
 	}
@@ -128,6 +109,9 @@ public class ReflectiveTrafficLightCtrlStatechart implements ReflectiveComponent
 	
 	public ReflectiveComponentInterface getComponent(String component) {
 		switch (component) {
+			// If the class name is given, then it will return itself
+			case "Monitor":
+				return this;
 		}
 		throw new IllegalArgumentException("Not known component: " + component);
 	}

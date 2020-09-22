@@ -5,6 +5,6 @@ statechart {
 	statechart : Monitor
 	mappings {
 		map LightInputs = LightCommands as required
-		map Monitor = Monitor as provided
+		map Error = Error as provided
 	}
 }

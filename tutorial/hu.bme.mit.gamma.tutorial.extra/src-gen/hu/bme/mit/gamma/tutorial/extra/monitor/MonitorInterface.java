@@ -1,11 +1,12 @@
 package hu.bme.mit.gamma.tutorial.extra.monitor;
 
-import hu.bme.mit.gamma.tutorial.extra.interfaces.MonitorInterface;
+import hu.bme.mit.gamma.tutorial.extra.*;
+import hu.bme.mit.gamma.tutorial.extra.interfaces.ErrorInterface;
 import hu.bme.mit.gamma.tutorial.extra.interfaces.LightCommandsInterface;
 
-public interface MonitorStatechartInterface {
+public interface MonitorInterface {
 	
-	MonitorInterface.Provided getMonitor();
+	ErrorInterface.Provided getError();
 	LightCommandsInterface.Required getLightInputs();
 	
 	void reset();
