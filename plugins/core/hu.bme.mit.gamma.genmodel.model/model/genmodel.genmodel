@@ -121,5 +121,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Slicing/propertyPackage"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TransitionPairCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//EventCoverage">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventCoverage/portInclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventCoverage/portExclude"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

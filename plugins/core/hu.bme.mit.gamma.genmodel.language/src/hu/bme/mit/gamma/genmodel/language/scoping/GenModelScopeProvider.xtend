@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.eclipse.emf.ecore.EObject
@@ -66,6 +67,12 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				val component = modelReference.component
 				return Scopes.scopeFor(component.allInstances)
 			}
+		}
+		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE__PORT) {
+			val componentInstanceReference = context as ComponentInstancePortReference
+			val componentInstance = componentInstanceReference.componentInstance.componentInstanceHierarchy.last
+			val ports = componentInstance.derivedType.ports
+			return Scopes.scopeFor(ports)
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
 				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {

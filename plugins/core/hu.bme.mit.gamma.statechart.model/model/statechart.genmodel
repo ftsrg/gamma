@@ -78,6 +78,10 @@
     <genClasses ecoreClass="composite.ecore#//ComponentInstanceReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstanceReference/componentInstanceHierarchy"/>
     </genClasses>
+    <genClasses ecoreClass="composite.ecore#//ComponentInstancePortReference">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstancePortReference/componentInstance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//ComponentInstancePortReference/port"/>
+    </genClasses>
   </genPackages>
   <genPackages prefix="ContractModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
       ecorePackage="contract.ecore#/">

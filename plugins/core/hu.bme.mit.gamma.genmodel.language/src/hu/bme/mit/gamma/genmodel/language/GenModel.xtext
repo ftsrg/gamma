@@ -146,6 +146,11 @@ ComponentInstanceReference returns composite::ComponentInstanceReference:
 	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
 ;
 
+ComponentInstancePortReference returns composite::ComponentInstancePortReference:
+	componentInstance=ComponentInstanceReference '.' port=[interface::Port]
+;
+
+
 AsynchronousInstanceConstraint returns AsynchronousInstanceConstraint:
 	(instance=ComponentInstanceReference | 'top') ':' '{'
 		orchestratingConstraint=OrchestratingConstraint
@@ -208,7 +213,9 @@ OutEventCoverage returns OutEventCoverage:
 InteractionCoverage returns InteractionCoverage:
 	{InteractionCoverage} 'interaction-coverage' ('{'
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
-		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		(('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')? &
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?)
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
 	'}')?
 ;
 
