@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
+import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
@@ -52,6 +53,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
@@ -128,8 +130,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	abstract class AnalysisModelTransformer {
-		protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-		protected FileUtil fileUtil = FileUtil.INSTANCE;
+		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+		protected final FileUtil fileUtil = FileUtil.INSTANCE;
+		protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
 		
 		protected final String XSTS_EMF_EXTENSION = "gsts";
 		protected final String XSTS_XTEXT_EXTENSION = "xsts";
@@ -167,34 +170,38 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof StateCoverage).findFirst();
 			List<SynchronousComponentInstance> testedComponentsForStates = getIncludedSynchronousInstances(
-					newTopComponent, stateCoverage);
+					newTopComponent, stateCoverage.orElse(null));
 			// Transition coverage
 			Optional<Coverage> transitionCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof TransitionCoverage).findFirst();
 			List<SynchronousComponentInstance> testedComponentsForTransitions = getIncludedSynchronousInstances(
-					newTopComponent, transitionCoverage);
+					newTopComponent, transitionCoverage.orElse(null));
 			// Transition pair coverage
 			Optional<Coverage> transitionPairCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof TransitionPairCoverage).findFirst();
 			List<SynchronousComponentInstance> testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
-					newTopComponent, transitionPairCoverage);
+					newTopComponent, transitionPairCoverage.orElse(null));
 			// Out event coverage
 			Optional<Coverage> outEventCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof OutEventCoverage).findFirst();
 			List<SynchronousComponentInstance> testedComponentsForOutEvents = getIncludedSynchronousInstances(
-					newTopComponent, outEventCoverage);
+					newTopComponent, outEventCoverage.orElse(null));
 			// Interaction coverage
-			Optional<Coverage> interactionCoverage = analysisModelTransformation.getCoverages().stream()
+			Optional<Coverage> optionalInteractionCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof InteractionCoverage).findFirst();
+			InteractionCoverage interactionCoverage = (InteractionCoverage) optionalInteractionCoverage.orElse(null);
 			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
 					newTopComponent, interactionCoverage);
+			List<Port> testedPortsForInteractions = getIncludedSynchronousInstancePorts(
+					newTopComponent, interactionCoverage); // Ports
 			
 			// Checking if we need annotation and property generation
 			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
 					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
 					!testedComponentsForInteractions.isEmpty()) {
 				GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
-						testedComponentsForTransitions, testedComponentsForTransitionPairs, testedComponentsForInteractions);
+						testedComponentsForTransitions, testedComponentsForTransitionPairs,
+						testedComponentsForInteractions, testedPortsForInteractions);
 				statechartAnnotator.annotateModel();
 				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
 				// We are after model unfolding, so the argument is true
@@ -229,13 +236,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		protected abstract String getQueryFileExtension();
 		
-		protected List<SynchronousComponentInstance> getIncludedSynchronousInstances(Component component,
-				Optional<Coverage> coverage) {
-			SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
-			if (coverage.isPresent()) {
-				Coverage presentCoverage = coverage.get();
-				return simpleInstanceHandler.getNewSimpleInstances(presentCoverage.getInclude(),
-					presentCoverage.getExclude(), component);
+		protected List<SynchronousComponentInstance> getIncludedSynchronousInstances(
+				Component component, Coverage coverage) {
+			if (coverage != null) {
+				return simpleInstanceHandler.getNewSimpleInstances(coverage.getInclude(),
+						coverage.getExclude(), component);
+			}
+			return Collections.emptyList();
+		}
+		
+		protected List<Port> getIncludedSynchronousInstancePorts(
+				Component component, EventCoverage coverage) {
+			if (coverage != null) {
+				return simpleInstanceHandler.getNewIncludedSimpleInstancePorts(
+						coverage.getPortInclude(), coverage.getPortExclude(), component);
 			}
 			return Collections.emptyList();
 		}

@@ -71,8 +71,10 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 		if (reference == CompositeModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE__PORT) {
 			val componentInstanceReference = context as ComponentInstancePortReference
 			val componentInstance = componentInstanceReference.componentInstance.componentInstanceHierarchy.last
-			val ports = componentInstance.derivedType.ports
-			return Scopes.scopeFor(ports)
+			if (componentInstance !== null) {
+				val ports = componentInstance.derivedType.ports
+				return Scopes.scopeFor(ports)
+			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 
 				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {

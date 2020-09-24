@@ -42,6 +42,7 @@ class GammaStatechartAnnotator {
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<SynchronousComponentInstance> interactionCoverableComponents = newHashSet
+	protected final Set<Port> interactionCoverablePorts= newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
 	protected long senderId = 0
 	protected long recevierId = 0
@@ -65,7 +66,8 @@ class GammaStatechartAnnotator {
 	new(Package gammaPackage,
 			Collection<SynchronousComponentInstance> transitionCoverableComponents,
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
-			Collection<SynchronousComponentInstance> interactionCoverableComponents) {
+			Collection<SynchronousComponentInstance> interactionCoverableComponents,
+			Collection<Port> interactionCoverablePorts) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
 		if (!transitionCoverableComponents.empty) {
@@ -82,9 +84,10 @@ class GammaStatechartAnnotator {
 				.map[it.type].filter(StatechartDefinition)
 				.map[it.transitions].flatten
 		}
-		if (!interactionCoverableComponents.empty) {
+		if (!interactionCoverableComponents.empty || !interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
 			this.interactionCoverableComponents += interactionCoverableComponents
+			this.interactionCoverablePorts += interactionCoverablePorts
 		}
 	}
 	
@@ -210,15 +213,19 @@ class GammaStatechartAnnotator {
 		if (!INTERACTION_COVERAGE) {
 			return
 		}
-		val sendingComponents = newHashSet
-		val receivingComponents = newHashSet
-		sendingComponents += interactionCoverableComponents
-		receivingComponents += interactionCoverableComponents
 		val interactionMatcher = RaiseInstanceEvents.Matcher.on(engine)
-		sendingComponents.retainAll(interactionMatcher.allValuesOfoutInstance)
-		receivingComponents.retainAll(interactionMatcher.allValuesOfinInstance)
+		val matches = interactionMatcher.allMatches
+		val relevantMatches = matches
+				.filter[ // If the instance OR the port is included, the interaction is covered
+					(interactionCoverableComponents.contains(it.outInstance) || 
+						interactionCoverablePorts.contains(it.outPort)) &&
+					(interactionCoverableComponents.contains(it.inInstance) ||
+						interactionCoverablePorts.contains(it.inPort))]
+		
+		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
+		val receivingComponents = relevantMatches.map[it.inInstance].toSet // Set, so one event is set only once
 		// Creating event parameters
-		for (event : interactionMatcher.allValuesOfraisedEvent) {
+		for (event : raisedEvents) {
 			val newParameter = createParameterDeclaration => [
 				it.type = createIntegerTypeDefinition
 				it.name = annotationNamings.getParameterName(event)
@@ -231,9 +238,7 @@ class GammaStatechartAnnotator {
 			receivingComponent.createInteractionVariables
 		}
 		// Annotating transitions
-		for (match : interactionMatcher.allMatches
-				.filter[interactionCoverableComponents.contains(it.outInstance) &&
-					interactionCoverableComponents.contains(it.inInstance)]) {
+		for (match : relevantMatches) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
 			if (!sendingIds.containsKey(raiseEventAction)) {

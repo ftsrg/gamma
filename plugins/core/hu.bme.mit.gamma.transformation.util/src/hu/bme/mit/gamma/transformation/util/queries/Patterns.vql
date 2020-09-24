@@ -725,17 +725,17 @@ private pattern transitionOrEventTrigger(transition : Transition, inPort : Port,
 	find eventTriggers(trigger, inPort, raisedEvent);
 }
 
-pattern raiseInstanceEvents(raiseEventAction : RaiseEventAction, outInstance : SynchronousComponentInstance, raisedEvent : Event,
+pattern raiseInstanceEvents(raiseEventAction : RaiseEventAction, outInstance : SynchronousComponentInstance, outPort : Port, raisedEvent : Event,
 		inInstance : SynchronousComponentInstance, inPort : Port, receivingTransition : Transition) {
 	// Entry event
-	find raiseInstanceEventStateEntryActions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find raiseInstanceEventStateEntryActions(_, raiseEventAction, outInstance, outPort, raisedEvent, inInstance, inPort);
 	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 } or {
 	// Exit event
-	find raiseInstanceEventStateExitActions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find raiseInstanceEventStateExitActions(_, raiseEventAction, outInstance, outPort, raisedEvent, inInstance, inPort);
 	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 } or {
 	// Transition event
-	find raiseInstanceEventOfTransitions(_, raiseEventAction, outInstance, _outPort, raisedEvent, inInstance, inPort);
+	find raiseInstanceEventOfTransitions(_, raiseEventAction, outInstance, outPort, raisedEvent, inInstance, inPort);
 	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 }

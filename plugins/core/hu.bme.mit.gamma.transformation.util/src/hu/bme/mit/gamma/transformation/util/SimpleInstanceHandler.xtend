@@ -11,12 +11,16 @@
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.Collection
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 
 class SimpleInstanceHandler {
 	// Singleton
@@ -24,8 +28,28 @@ class SimpleInstanceHandler {
 	protected new() {}
 	//
 	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	def getNewSimpleInstances(Component newType) {
 		return newType.allSimpleInstances
+	}
+	
+	def getNewIncludedSimpleInstancePorts(Collection<ComponentInstancePortReference> includedOriginalReferences,
+			Collection<ComponentInstancePortReference> excludedOriginalReferences, Component newType) {
+		val newPorts = newArrayList
+		for (includedOriginalReference : includedOriginalReferences) {
+			val originalInstance = includedOriginalReference.componentInstance
+			val originalPort = includedOriginalReference.port 
+			val newInstance = originalInstance.getNewSimpleInstance(newType)
+			newPorts += newInstance.getNewPort(originalPort) 
+		}
+		for (excludedOriginalReference : excludedOriginalReferences) {
+			val originalInstance = excludedOriginalReference.componentInstance
+			val originalPort = excludedOriginalReference.port 
+			val newInstance = originalInstance.getNewSimpleInstance(newType)
+			newPorts -= newInstance.getNewPort(originalPort) 
+		}
+		return newPorts
 	}
 	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> includedOriginalInstances,
@@ -70,6 +94,16 @@ class SimpleInstanceHandler {
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
+	}
+	
+	private def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
+		val newType = newInstance.type
+		for (port : newType.ports) {
+			if (port.helperEquals(originalPort)) {
+				return port
+			}
+		}
+		throw new IllegalStateException("Not found port: " + originalPort)
 	}
 	
 }
