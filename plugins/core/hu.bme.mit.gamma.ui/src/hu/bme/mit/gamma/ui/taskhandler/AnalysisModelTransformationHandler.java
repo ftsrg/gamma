@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
@@ -190,18 +191,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Optional<Coverage> optionalInteractionCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof InteractionCoverage).findFirst();
 			InteractionCoverage interactionCoverage = (InteractionCoverage) optionalInteractionCoverage.orElse(null);
-			List<SynchronousComponentInstance> testedComponentsForInteractions = getIncludedSynchronousInstances(
-					newTopComponent, interactionCoverage);
 			List<Port> testedPortsForInteractions = getIncludedSynchronousInstancePorts(
 					newTopComponent, interactionCoverage); // Ports
 			
 			// Checking if we need annotation and property generation
 			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
 					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
-					!testedComponentsForInteractions.isEmpty()) {
+					!testedPortsForInteractions.isEmpty()) {
 				GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
 						testedComponentsForTransitions, testedComponentsForTransitionPairs,
-						testedComponentsForInteractions, testedPortsForInteractions);
+						testedPortsForInteractions);
 				statechartAnnotator.annotateModel();
 				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
 				// We are after model unfolding, so the argument is true
@@ -238,20 +237,49 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		protected List<SynchronousComponentInstance> getIncludedSynchronousInstances(
 				Component component, Coverage coverage) {
-			if (coverage != null) {
-				return simpleInstanceHandler.getNewSimpleInstances(coverage.getInclude(),
-						coverage.getExclude(), component);
+			if (coverage == null) {
+				return Collections.emptyList();
 			}
-			return Collections.emptyList();
+			return simpleInstanceHandler.getNewSimpleInstances(coverage.getInclude(),
+					coverage.getExclude(), component);
 		}
 		
 		protected List<Port> getIncludedSynchronousInstancePorts(
 				Component component, EventCoverage coverage) {
-			if (coverage != null) {
-				return simpleInstanceHandler.getNewIncludedSimpleInstancePorts(
-						coverage.getPortInclude(), coverage.getPortExclude(), component);
+			if (coverage == null) {
+				return Collections.emptyList();
 			}
-			return Collections.emptyList();
+			List<SynchronousComponentInstance> includedInstances =
+				simpleInstanceHandler.getNewSimpleInstances(coverage.getInclude(), component);
+			List<SynchronousComponentInstance> excludedInstances =
+				simpleInstanceHandler.getNewSimpleInstances(coverage.getExclude(), component);
+			List<Port> includedPorts =
+				simpleInstanceHandler.getNewSimpleInstancePorts(coverage.getPortInclude(), component);
+			List<Port> excludedPorts =
+				simpleInstanceHandler.getNewSimpleInstancePorts(coverage.getPortExclude(), component);
+			
+			List<Port> ports = new ArrayList<Port>();
+			if (includedInstances.isEmpty() && includedPorts.isEmpty()) {
+				// If both includes are empty, then we include all the new instances
+				List<SynchronousComponentInstance> newSimpleInstances =
+						simpleInstanceHandler.getNewSimpleInstances(component);
+				ports.addAll(getPorts(newSimpleInstances));
+			}
+			// The semantics is defined here
+			ports.addAll(getPorts(includedInstances)); // + included instance
+			ports.removeAll(getPorts(excludedInstances)); // - excluded instance
+			ports.addAll(includedPorts); // + included port
+			ports.removeAll(excludedPorts); // - included port
+			return ports;
+		}
+		
+		protected List<Port> getPorts(List<SynchronousComponentInstance> instances) {
+			List<Port> ports = new ArrayList<Port>();
+			for (SynchronousComponentInstance instance : instances) {
+				SynchronousComponent type = instance.getType();
+				ports.addAll(type.getPorts());
+			}
+			return ports;
 		}
 		
 	}

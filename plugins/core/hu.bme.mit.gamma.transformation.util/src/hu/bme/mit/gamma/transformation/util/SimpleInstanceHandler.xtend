@@ -30,26 +30,42 @@ class SimpleInstanceHandler {
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	def getNewSimpleInstances(Component newType) {
-		return newType.allSimpleInstances
-	}
+	// Component instance port references
 	
 	def getNewIncludedSimpleInstancePorts(Collection<ComponentInstancePortReference> includedOriginalReferences,
 			Collection<ComponentInstancePortReference> excludedOriginalReferences, Component newType) {
 		val newPorts = newArrayList
-		for (includedOriginalReference : includedOriginalReferences) {
-			val originalInstance = includedOriginalReference.componentInstance
-			val originalPort = includedOriginalReference.port 
+		newPorts += includedOriginalReferences.getNewSimpleInstancePorts(newType)
+		newPorts -= excludedOriginalReferences.getNewSimpleInstancePorts(newType)
+		return newPorts
+	}
+	
+	def getNewSimpleInstancePorts(
+			Collection<ComponentInstancePortReference> originalReferences, Component newType) {
+		val newPorts = newArrayList
+		for (originalReference : originalReferences) {
+			val originalInstance = originalReference.componentInstance
+			val originalPort = originalReference.port 
 			val newInstance = originalInstance.getNewSimpleInstance(newType)
 			newPorts += newInstance.getNewPort(originalPort) 
 		}
-		for (excludedOriginalReference : excludedOriginalReferences) {
-			val originalInstance = excludedOriginalReference.componentInstance
-			val originalPort = excludedOriginalReference.port 
-			val newInstance = originalInstance.getNewSimpleInstance(newType)
-			newPorts -= newInstance.getNewPort(originalPort) 
-		}
 		return newPorts
+	}
+	
+	private def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
+		val newType = newInstance.type
+		for (port : newType.ports) {
+			if (port.helperEquals(originalPort)) {
+				return port
+			}
+		}
+		throw new IllegalStateException("Not found port: " + originalPort)
+	}
+	
+	// Component instance references
+	
+	def getNewSimpleInstances(Component newType) {
+		return newType.allSimpleInstances
 	}
 	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> includedOriginalInstances,
@@ -94,16 +110,6 @@ class SimpleInstanceHandler {
 		// Without originalInstances.head.name == copyInstances.head.name ambiguous naming situations could occur
 		return originalInstances.head.name == copyInstances.head.name &&
 			copy.name.startsWith(originalInstances.FQN)
-	}
-	
-	private def getNewPort(SynchronousComponentInstance newInstance, Port originalPort) {
-		val newType = newInstance.type
-		for (port : newType.ports) {
-			if (port.helperEquals(originalPort)) {
-				return port
-			}
-		}
-		throw new IllegalStateException("Not found port: " + originalPort)
 	}
 	
 }
