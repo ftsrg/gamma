@@ -842,6 +842,21 @@ class LinkedBlockingQueueSource {
 		            }
 		        }
 		
+		        public E poll() {
+		            Node<E> trail = head;
+		            Node<E> p = trail.next;
+		            if (p == null)
+		                return null;
+		            fullyLock();
+		            try {
+		                E item = p.item;
+		                unlink(p, trail);
+		                return item;
+		            } finally {
+		                fullyUnlock();
+		            }
+		        }
+		
 		        public boolean contains(Object o) {
 		            if (o == null)
 		                return false;
