@@ -731,6 +731,10 @@ class LinkedBlockingQueueSource {
 		        public boolean isEmpty() {
 		            return size() == 0;
 		        }
+		        
+		        public boolean isFull() {
+		            return remainingCapacity() == 0;
+		        }
 		
 		        public void put(E e) throws InterruptedException {
 		            if (e == null)
@@ -852,6 +856,20 @@ class LinkedBlockingQueueSource {
 		                E item = p.item;
 		                unlink(p, trail);
 		                return item;
+		            } finally {
+		                fullyUnlock();
+		            }
+		        }
+		
+		        public void push(E e) {
+		            if (e == null)
+		                throw new NullPointerException();
+		            fullyLock();
+		            try {
+		                if (isFull()) {
+		                    poll();
+		                }
+		                offer(e); // Offer or add, does not matter
 		            } finally {
 		                fullyUnlock();
 		            }
