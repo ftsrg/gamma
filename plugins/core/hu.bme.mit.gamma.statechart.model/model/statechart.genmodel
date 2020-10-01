@@ -18,6 +18,10 @@
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RUN_TO_COMPLETION"/>
       <genEnumLiterals ecoreEnumLiteral="composite.ecore#//ControlFunction/RESET"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="composite.ecore#//DiscardStrategy">
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//DiscardStrategy/INCOMING"/>
+      <genEnumLiterals ecoreEnumLiteral="composite.ecore#//DiscardStrategy/OLDEST"/>
+    </genEnums>
     <genClasses ecoreClass="composite.ecore#//PrioritizedElement">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//PrioritizedElement/priority"/>
     </genClasses>
@@ -50,6 +54,7 @@
     <genClasses ecoreClass="composite.ecore#//MessageQueue">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/capacity"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference composite.ecore#//MessageQueue/eventReference"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute composite.ecore#//MessageQueue/eventDiscardStrategy"/>
     </genClasses>
     <genClasses image="false" ecoreClass="composite.ecore#//SynchronousComponent"/>
     <genClasses image="false" ecoreClass="composite.ecore#//AsynchronousComponent"/>

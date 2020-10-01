@@ -447,9 +447,14 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
-	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression) ')' '{'
+	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
+			(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? ')' '{'
 	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
 	'}'
+;
+
+enum DiscardStrategy returns CompositeModel::DiscardStrategy:
+	INCOMING = 'incoming' |  OLDEST = 'oldest'
 ;
 
 PortBinding returns CompositeModel::PortBinding:
