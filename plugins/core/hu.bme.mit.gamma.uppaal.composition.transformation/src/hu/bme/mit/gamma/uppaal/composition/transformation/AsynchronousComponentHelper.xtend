@@ -111,7 +111,7 @@ class AsynchronousComponentHelper {
 	}
 	
 	def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression) {
 		// No addFunctionCall method as there are arguments
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function

@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.transformation.util.queries.DistinctWrapperInEvents
@@ -27,6 +26,7 @@ import hu.bme.mit.gamma.transformation.util.queries.TopAsyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopSyncSystemInEvents
 import hu.bme.mit.gamma.transformation.util.queries.TopUnwrappedSyncComponents
 import hu.bme.mit.gamma.transformation.util.queries.TopWrapperComponents
+import hu.bme.mit.gamma.transformation.util.queries.WrapperTopSyncSystemInEvents
 import hu.bme.mit.gamma.uppaal.transformation.queries.ValuesOfEventParameters
 import hu.bme.mit.gamma.uppaal.transformation.traceability.MessageQueueTrace
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
@@ -53,9 +53,9 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class EnvironmentCreator {
 	// Logger
-	protected extension Logger logger = Logger.getLogger("GammaLogger")
+	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	// Transformation rule-related extensions
-	protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	protected final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	protected final extension IModelManipulations manipulation
 	// Trace
 	protected final extension Trace modelTrace
@@ -209,42 +209,50 @@ class EnvironmentCreator {
 				// Creating the template
 				val initLoc = createTemplateWithInitLoc(it.wrapper.name + "Environment" + id++, "InitLoc")
 				val component = wrapper.wrappedComponent.type
-				for (match : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null, null, null)) {
+				for (match : WrapperTopSyncSystemInEvents.Matcher.on(engine).getAllMatches(component, null, null)) {
 					val queue = wrapper.getContainerMessageQueue(match.systemPort /*Wrapper port*/, match.event) // In what message queue this event is stored
 					val messageQueueTrace = queue.getTrace(null) // Getting the owner
 					// Creating the loop edge (or edges in case of parameterized events)
-					initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.systemPort, match.event, match.instance /*Sync owner*/)		
+					initLoc.createEnvironmentLoopEdges(messageQueueTrace,
+						match.systemPort /*The wrapper port is traced*/, match.event)
 				}
 				for (match : DistinctWrapperInEvents.Matcher.on(engine).getAllMatches(wrapper, null, null)) {
 					val queue = wrapper.getContainerMessageQueue(match.port, match.event) // In what message queue this event is stored
 					val messageQueueTrace = queue.getTrace(null) // Getting the owner
 					// Creating the loop edge (or edges in case of parameterized events)
-					initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event, null)		
+					initLoc.createEnvironmentLoopEdges(messageQueueTrace, match.port, match.event)
 				}
 			].build
 		}
 	}
 	
-	private def void createEnvironmentLoopEdges(Location initLoc, MessageQueueTrace messageQueueTrace,
-			Port port, Event event, SynchronousComponentInstance owner) {
+	private def void createEnvironmentLoopEdges(Location initLoc,
+			MessageQueueTrace messageQueueTrace, Port port, Event event) {
 		// Checking the parameters
 		val parameters = event.parameterDeclarations
 		if (!parameters.empty) {
 			checkState(parameters.size == 1)
 			for (parameter : parameters) {
-				val expressions = ValuesOfEventParameters.Matcher.on(engine).getAllValuesOfexpression(port, event, parameter)
+				val expressions = newArrayList
+				for (statechartPort : port.allConnectedSimplePorts) {
+					expressions += ValuesOfEventParameters.Matcher.on(engine)
+						.getAllValuesOfexpression(statechartPort /*Not port*/, event, parameter)
+				}
 				for (expression : expressions.removeDuplicatedExpressions) {
 					// New edge is needed in every iteration!
 					val loopEdge = initLoc.createEdge(initLoc)
-					loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), expression, owner)
+					loopEdge.extendEnvironmentEdge(messageQueueTrace,
+						event.getConstRepresentation(port) /*Not statechartPort*/, expression)
 					loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
 					loopEdge.addInitializedGuards
+					expression.removeGammaElementFromTrace // As the expression is not contained
 				}
 			}
 		}
 		else {
 			val loopEdge = initLoc.createEdge(initLoc)
-			loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port), createLiteralExpression => [it.text = "0"])
+			loopEdge.extendEnvironmentEdge(messageQueueTrace, event.getConstRepresentation(port),
+				createLiteralExpression => [it.text = "0"])
 			loopEdge.addGuard(isStableVar, LogicalOperator.AND) // For the cutting of the state space
 			loopEdge.addInitializedGuards
 		}
@@ -305,7 +313,7 @@ class EnvironmentCreator {
 										val wrapper = match.instance.type as AsynchronousAdapter
 										val queue = wrapper.getContainerMessageQueue(match.port /*Wrapper port, this is the instance port*/, match.event) // In what message queue this event is stored
 										val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
-										loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), expression, null)
+										loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), expression)
 									}
 								}
 							}
@@ -317,14 +325,14 @@ class EnvironmentCreator {
 	}
 	
 	private def void extendEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, Expression expression) {
 		// !isFull...
 		val isNotFull = createNegationExpression => [
 			it.addFunctionCall(negationExpression_NegatedExpression, messageQueueTrace.isFullFunction.function)
 		 ]
 		edge.addGuard(isNotFull, LogicalOperator.AND)
 		// push....
-		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression, instance)
+		edge.addPushFunctionUpdate(messageQueueTrace, representation, expression)
 	}
 	
 	private def void extendEnvironmentEdge(Edge edge, MessageQueueTrace messageQueueTrace,

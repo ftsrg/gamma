@@ -13,6 +13,7 @@
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.inputInstanceEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.parameteredEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topSyncSystemInEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.wrapperTopSyncSystemInEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.topSyncSystemOutEvents"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.instanceRegions"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.toLowerInstanceTransitions"/>

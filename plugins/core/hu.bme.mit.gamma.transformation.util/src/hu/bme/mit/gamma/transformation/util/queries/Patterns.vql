@@ -184,6 +184,10 @@ pattern topSyncSystemInEvents(component : SynchronousComponent, systemPort : Por
 	find relevantEvents(port, event);
 }
 
+pattern wrapperTopSyncSystemInEvents(component : SynchronousComponent, systemPort : Port, event : Event) {
+	find topSyncSystemInEvents(component, systemPort, _instance, _port, event);
+}
+
 private pattern syncCompositeSystemOutEvents(composite : AbstractSynchronousCompositeComponent, systemPort : Port, instance : SynchronousComponentInstance, port : Port, event : Event) {
 	find portBindings(composite, systemPort, instance, port);
 	find outputInstanceEvents(instance, port, event);
