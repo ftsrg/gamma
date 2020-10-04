@@ -526,7 +526,7 @@ class LowlevelToXSTSTransformer {
 			// variableInitializingAction as it must be set before setting the configuration
 			variableInitializingAction as SequentialAction => [
 				it.actions += createAssignmentAction => [
-					it.lhs = createReferenceExpression => [it.declaration = xStsVariable]
+					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
 					it.rhs = xStsVariable.initialValue
 				]
 			]
@@ -618,14 +618,14 @@ class LowlevelToXSTSTransformer {
 					lowlevelEnvironmentalAction.actions += createNonDeterministicAction => [
 						// Event is raised
 						it.actions += createAssignmentAction => [
-							it.lhs = createReferenceExpression => [
+							it.lhs = createDirectReferenceExpression => [
 								it.declaration = xStsEventVariable
 							]
 							it.rhs = createTrueExpression
 						]
 						// Event is not raised
 						it.actions += createAssignmentAction => [
-							it.lhs = createReferenceExpression => [
+							it.lhs = createDirectReferenceExpression => [
 								it.declaration = xStsEventVariable
 							]
 							it.rhs = createFalseExpression
@@ -655,7 +655,7 @@ class LowlevelToXSTSTransformer {
 						if (lowlevelEvent.persistency == Persistency.TRANSIENT) {
 							// Synchronous composite components do not reset transient parameters!
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createReferenceExpression => [
+								it.lhs = createDirectReferenceExpression => [
 									it.declaration = xStsParameterVariable
 								]
 								it.rhs = xStsParameterVariable.initialValue
@@ -664,7 +664,7 @@ class LowlevelToXSTSTransformer {
 						lowlevelEnvironmentalAction.actions += createIfAction(
 							// Only if the event is raised
 							createEqualityExpression => [
-								it.leftOperand = createReferenceExpression => [
+								it.leftOperand = createDirectReferenceExpression => [
 									it.declaration = xStsEventVariable
 								]
 								it.rightOperand = createTrueExpression
@@ -672,7 +672,7 @@ class LowlevelToXSTSTransformer {
 							createNonDeterministicAction => [
 								for (xStsPossibleParameterValue : xStsPossibleParameterValues) {
 									it.actions += createAssignmentAction => [
-										it.lhs = createReferenceExpression => [
+										it.lhs = createDirectReferenceExpression => [
 											it.declaration = xStsParameterVariable
 										]
 										it.rhs = xStsPossibleParameterValue
@@ -695,7 +695,7 @@ class LowlevelToXSTSTransformer {
 					val lowlevelEnvironmentalAction = outEventAction as SequentialAction
 					val xStsEventVariable = trace.getXStsVariable(lowlevelEvent)
 					lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-						it.lhs = createReferenceExpression => [
+						it.lhs = createDirectReferenceExpression => [
 							it.declaration = xStsEventVariable
 						]
 						it.rhs = createFalseExpression
@@ -705,7 +705,7 @@ class LowlevelToXSTSTransformer {
 						for (lowlevelParameterDeclaration : it.event.parameters) {
 							val xStsParameterVariable = trace.getXStsVariable(lowlevelParameterDeclaration)
 							lowlevelEnvironmentalAction.actions += createAssignmentAction => [
-								it.lhs = createReferenceExpression => [
+								it.lhs = createDirectReferenceExpression => [
 									it.declaration = xStsParameterVariable
 								]
 								it.rhs = xStsParameterVariable.initialValue

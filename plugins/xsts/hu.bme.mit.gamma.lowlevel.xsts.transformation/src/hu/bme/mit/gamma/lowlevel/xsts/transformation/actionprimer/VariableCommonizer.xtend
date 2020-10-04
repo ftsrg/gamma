@@ -27,6 +27,7 @@ import java.util.Map
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class VariableCommonizer extends ActionPrimer {
 	// Reader writer variable locator for optimization
@@ -167,7 +168,7 @@ class VariableCommonizer extends ActionPrimer {
 					}
 					else {
 						// No stored right hand side value in this branch, we refer to the original variable
-						createReferenceExpression => [it.declaration = variable]
+						createDirectReferenceExpression => [it.declaration = variable]
 					}
 				if (branchPrimeCount < maxPrimeCount) {
 					// Commonization action
@@ -182,7 +183,7 @@ class VariableCommonizer extends ActionPrimer {
 			val variable = index.key
 			val maxPrimeCount = index.value
 			val primedVariable = primedVariables.get(variable).get(maxPrimeCount)
-			maxValue.put(variable, createReferenceExpression => [it.declaration = primedVariable])
+			maxValue.put(variable, createDirectReferenceExpression => [it.declaration = primedVariable])
 		}
 		// Returning the maps as the following actions have to be transformed based on these data
 		return maxIndex -> maxValue
@@ -210,7 +211,7 @@ class VariableCommonizer extends ActionPrimer {
 			Map<VariableDeclaration, List<VariableDeclaration>> primedVariables,
 			int maxPrimeCount, int branchPrimeCount, Expression value) {
 		return createAssignmentAction => [
-			it.lhs = createReferenceExpression => [
+			it.lhs = createDirectReferenceExpression => [
 				it.declaration = primedVariables.get(variable).get(maxPrimeCount)
 			]
 			// Choice upon setting
@@ -221,7 +222,7 @@ class VariableCommonizer extends ActionPrimer {
 			}
 			else {
 				// We simply return a reference to the primed variable
-				it.rhs = createReferenceExpression => [
+				it.rhs = createDirectReferenceExpression => [
 					it.declaration = primedVariables.get(variable).get(branchPrimeCount)
 				]
 			}
@@ -314,7 +315,7 @@ class VariableCommonizer extends ActionPrimer {
 			val xStsSubaction = xStsSubactions.get(i)
 			if (xStsSubaction instanceof AssignmentAction) {
 				// Assignment, if it does not give value the highest prime variable, it has to be deleted
-				val declaration = xStsSubaction.lhs.declaration
+				val declaration = (xStsSubaction.lhs as DirectReferenceExpression).declaration
 				checkState(declaration instanceof VariableDeclaration)
 				val variable = declaration as VariableDeclaration
 				if (readVariables.contains(variable)) {

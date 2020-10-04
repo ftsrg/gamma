@@ -30,6 +30,8 @@ import java.util.Map
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import java.util.List
 
 package class Trace {
 
@@ -51,9 +53,10 @@ package class Trace {
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = new HashMap<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition>
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
-	//
+	// Function return variables
 	final Map<FunctionAccessExpression, VariableDeclaration> returnVariableMappings = new HashMap<FunctionAccessExpression, VariableDeclaration>
-	
+	// Record mappings
+	final Map<Pair<VariableDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordVarDeclMappings = new HashMap()
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -452,6 +455,40 @@ package class Trace {
 	def get(FunctionAccessExpression functionAccessExpression) {
 		checkNotNull(functionAccessExpression)
 		returnVariableMappings.get(functionAccessExpression)
+	}
+	
+	// Record variables
+	def put(Pair<VariableDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
+		checkNotNull(recordField)
+		checkNotNull(recordField.key)
+		checkNotNull(recordField.value)
+		checkNotNull(recordField.value.get(0))	//as least one element
+		checkNotNull(lowLevelVariable)
+		recordVarDeclMappings.put(recordField, lowLevelVariable)
+	} 
+
+	def isMapped(Pair<VariableDeclaration, FieldDeclaration> recordField) {
+		checkNotNull(recordField)
+		checkNotNull(recordField.key)
+		checkNotNull(recordField.value)
+		for (key : recordVarDeclMappings.keySet) {
+			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
+				return true
+			}
+		}
+		return false
+	}
+	
+	def get(Pair<VariableDeclaration, FieldDeclaration> recordField) {
+		checkNotNull(recordField)
+		checkNotNull(recordField.key)
+		checkNotNull(recordField.value)
+		for (key : recordVarDeclMappings.keySet) {
+			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
+				recordVarDeclMappings.get(key)
+			}
+		}
+		return null
 	}
 	
 	private static class Triple<K, V, T> {

@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -115,18 +116,18 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
 		Expression xStsLeftOperand = expression.getLeftOperand();
 		Expression xStsRightOperand = expression.getRightOperand();
-		Declaration xStsDeclaration = action.getLhs().getDeclaration();
+		Declaration xStsDeclaration = ((DirectReferenceExpression)action.getLhs()).getDeclaration();
 		Expression xStsAssignmentRhs = action.getRhs();
 		// region_name == state_name
 		if (xStsLeftOperand instanceof ReferenceExpression) {
-			if (((ReferenceExpression) xStsLeftOperand).getDeclaration() == xStsDeclaration
+			if (((DirectReferenceExpression) xStsLeftOperand).getDeclaration() == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsRightOperand, xStsAssignmentRhs)) {
 				return true;
 			}
 		}
 		// state_name == region_name
 		if (xStsRightOperand instanceof ReferenceExpression) {
-			if (((ReferenceExpression) xStsRightOperand).getDeclaration() == xStsDeclaration
+			if (((DirectReferenceExpression) xStsRightOperand).getDeclaration() == xStsDeclaration
 					&& ecoreUtil.helperEquals(xStsLeftOperand, xStsAssignmentRhs)) {
 				return true;
 			}

@@ -37,11 +37,13 @@ import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 abstract class ActionPrimer {
 	// Auxiliary objects
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintModelFactory = ExpressionModelFactory.eINSTANCE
@@ -61,7 +63,7 @@ abstract class ActionPrimer {
 	protected def primeVariable(AssignmentAction action,
 			Map<VariableDeclaration, List<VariableDeclaration>> primedVariables,
 			Map<VariableDeclaration, Integer> indexes, Map<VariableDeclaration, Expression> values) {
-		val declaration = action.lhs.declaration
+		val declaration = action.lhs.referredVariables.iterator.next
 		checkState(declaration instanceof VariableDeclaration)
 		val variable = declaration as VariableDeclaration
 		val originalVariable = variable.originalVariable
@@ -86,7 +88,7 @@ abstract class ActionPrimer {
 			// Primed variable with the given index already exists
 			val primedVariable = primedVariablesList.get(index)
 			action => [
-				it.lhs.declaration = primedVariable
+				(it.lhs as DirectReferenceExpression).declaration = primedVariable
 				it.rhs = rhs
 			]
 			return
@@ -105,7 +107,7 @@ abstract class ActionPrimer {
 		]
 		// Setting the assignment action with the new primed variable and right hand side
 		action => [
-			it.lhs.declaration = xStsPrimedVariable
+			(it.lhs as DirectReferenceExpression).declaration = xStsPrimedVariable
 			it.rhs = rhs
 		]
 	}
@@ -144,7 +146,7 @@ abstract class ActionPrimer {
 		]
 	}
 
-	protected def dispatch Expression primeExpression(ReferenceExpression expression,
+	protected def dispatch Expression primeExpression(DirectReferenceExpression expression,
 			Map<VariableDeclaration, List<VariableDeclaration>> primedVariables,
 			Map<VariableDeclaration, Integer> index, Map<VariableDeclaration, Expression> values) {
 		checkState(expression.declaration instanceof VariableDeclaration, expression.declaration)

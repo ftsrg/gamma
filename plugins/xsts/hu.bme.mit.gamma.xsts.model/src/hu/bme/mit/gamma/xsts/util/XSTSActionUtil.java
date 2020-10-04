@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -80,19 +81,19 @@ public class XSTSActionUtil {
 	
 	public List<AssignmentAction> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentAction> assignments) {
-		return assignments.stream().filter(it -> it.getLhs().getDeclaration() == variable)
+		return assignments.stream().filter(it -> ((DirectReferenceExpression)it.getLhs()).getDeclaration() == variable)
 				.collect(Collectors.toList());
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, VariableDeclaration rhs) {
-		ReferenceExpression rhsReference = expressionFactory.createReferenceExpression();
+		DirectReferenceExpression rhsReference = expressionFactory.createDirectReferenceExpression();
 		rhsReference.setDeclaration(rhs);
 		return createAssignmentAction(variable, rhsReference);
 	}
 	
 	public AssignmentAction createAssignmentAction(VariableDeclaration variable, Expression rhs) {
 		AssignmentAction assignmentAction = xStsFactory.createAssignmentAction();
-		ReferenceExpression lhsReference = expressionFactory.createReferenceExpression();
+		DirectReferenceExpression lhsReference = expressionFactory.createDirectReferenceExpression();
 		lhsReference.setDeclaration(variable);
 		assignmentAction.setLhs(lhsReference);
 		assignmentAction.setRhs(rhs);

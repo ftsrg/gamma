@@ -40,6 +40,14 @@ import static com.google.common.base.Preconditions.checkState
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeDefinition
+import java.util.List
+import java.util.ArrayList
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -186,6 +194,11 @@ class ExpressionTransformer {
 		return type.clone(true, true)
 	}
 	
+	//TODO maybe?
+	protected def dispatch Type transformType(ArrayTypeDefinition type) {
+		return type.clone(true, true)
+	}
+	
 	protected def dispatch Type transformType(TypeReference type) {
 		val typeDeclaration = type.reference
 		val typeDefinition = typeDeclaration.type
@@ -217,12 +230,147 @@ class ExpressionTransformer {
 		return newTypeDeclaration
 	}
 	
-	protected def VariableDeclaration transformVariable(VariableDeclaration variable) {
-		return createVariableDeclaration => [
-			it.name = variable.name
-			it.type = variable.type.transformType
-			it.expression = variable.expression?.transformExpression
-		]
+	protected def List<VariableDeclaration> transformVariable(VariableDeclaration variable) {
+		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
+		var TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
+		// Records are broken up into separate variables
+		if (variableType instanceof RecordTypeDefinition) {
+			var RecordTypeDefinition typeDef = getTypeDefinitionFromType(variable.type) as RecordTypeDefinition
+			for (field : typeDef.fieldDeclarations) {
+				var innerField = new ArrayList<FieldDeclaration>
+				innerField.add(field)
+				transformed.addAll(transformVariableField(variable, innerField, new ArrayList<ArrayTypeDefinition>))
+			}
+			return transformed
+		} else if (variableType instanceof ArrayTypeDefinition) {
+			var arrayStack = new ArrayList<ArrayTypeDefinition>
+			arrayStack.add(variableType)
+			transformed.addAll(transformVariableArray(variable, variableType, arrayStack))
+			return transformed
+		} else {	//Simple variables and arrays of simple types are simply transformed
+			transformed.add(createVariableDeclaration => [
+				it.name = variable.name
+				it.type = variable.type.transformType
+				it.expression = variable.expression?.transformExpression
+			])
+			trace.put(variable, transformed.head)
+			return transformed
+		}
 	}
+	
+	private def List<VariableDeclaration> transformVariableField(VariableDeclaration variable, List<FieldDeclaration> currentField, List<ArrayTypeDefinition> arrayStack) {
+		var List<VariableDeclaration> transformed = new ArrayList()
+		
+		if (getTypeDefinitionFromType(currentField.last.type) instanceof RecordTypeDefinition
+		) {			// if another record
+			var RecordTypeDefinition typeDef = getTypeDefinitionFromType(currentField.last.type) as RecordTypeDefinition
+			for (field : typeDef.fieldDeclarations) {
+				var innerField = new ArrayList<FieldDeclaration>
+				innerField.addAll(currentField)
+				innerField.add(field)
+				var innerStack = new ArrayList<ArrayTypeDefinition>
+				innerStack.addAll(arrayStack)
+				transformed.addAll(transformVariableField(variable, innerField, innerStack))
+			}
+		} else {	//if simple type
+			var transformedField = createVariableDeclaration => [
+				it.name = variable.name + "_" + currentField.last.name
+				
+				it.type = createTransformedRecordType(arrayStack, currentField.last.type)
+				if (variable.expression !== null) {
+					var Expression initial = variable.expression
+					if (initial instanceof RecordLiteralExpression) {
+						it.expression = getExpressionFromRecordLiteral(initial, currentField).transformExpression
+					} else if (initial instanceof ArrayLiteralExpression) {
+						it.expression = constraintFactory.createArrayLiteralExpression
+						for (op : initial.operands) {
+							if (op instanceof RecordLiteralExpression) {
+								(it.expression as ArrayLiteralExpression).operands.add(getExpressionFromRecordLiteral(op, currentField).transformExpression)
+							}
+						}
+					}
+				}
+			]
+			transformed.add(transformedField)
+			trace.put(new Pair<VariableDeclaration, List<FieldDeclaration>>(variable,currentField), transformedField)
+		}
+		
+		return transformed
+	}
+	
+	private def List<VariableDeclaration> transformVariableArray(VariableDeclaration variable, ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
+		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
+		
+		var TypeDefinition innerType = getTypeDefinitionFromType(currentType.elementType)
+		if (innerType instanceof ArrayTypeDefinition) {
+			var innerStack = new ArrayList<ArrayTypeDefinition>
+			innerStack.addAll(arrayStack)
+			innerStack.add(innerType)
+			transformed.addAll(transformVariableArray(variable, innerType, innerStack))
+		} else if (innerType instanceof RecordTypeDefinition) {
+			for (field : innerType.fieldDeclarations) {
+				var innerField = new ArrayList<FieldDeclaration>
+				innerField.add(field)
+				var innerStack = new ArrayList<ArrayTypeDefinition>
+				innerStack.addAll(arrayStack)
+				transformed.addAll(transformVariableField(variable, innerField, innerStack))
+			}
+			return transformed
+		} else {	// Simple
+			transformed.add(createVariableDeclaration => [
+				it.name = variable.name
+				it.type = variable.type.transformType
+				it.expression = variable.expression?.transformExpression
+			])
+			trace.put(variable, transformed.head)
+		}
+		
+		return transformed
+	}
+	
+	private def Expression getExpressionFromRecordLiteral(RecordLiteralExpression initial, List<FieldDeclaration> currentField) {
+		for (assignment : initial.fieldAssignments) {
+			if (currentField.head.name == assignment.reference) {
+				if (currentField.size == 1) {
+					return assignment.value
+				} else {
+					if (assignment.value instanceof RecordLiteralExpression) {
+						//System.out.println("CURRFIELD: " + currentField.size )
+						var innerField = new ArrayList<FieldDeclaration>
+						innerField.addAll(currentField.subList(1, currentField.size))
+						return getExpressionFromRecordLiteral(assignment.value as RecordLiteralExpression, innerField)
+					} else {
+						throw new IllegalArgumentException("Invalid expression!")
+					}
+				}
+			}
+		}
+	}
+	
+	private def Type createTransformedRecordType(List<ArrayTypeDefinition> arrayStack, Type innerType) {
+		if(arrayStack.size > 0) {
+			var stackCopy = new ArrayList<ArrayTypeDefinition>
+			stackCopy.addAll(arrayStack)
+			var stackTop = stackCopy.remove(0)
+			var arrayTypeDef = constraintFactory.createArrayTypeDefinition
+			arrayTypeDef.size = stackTop.size
+			arrayTypeDef.elementType = createTransformedRecordType(stackCopy, innerType)
+			return arrayTypeDef
+		} else {
+			return innerType.transformType
+		}
+	}
+	
+		
+	private def TypeDefinition getTypeDefinitionFromType(Type type) {
+		// Resolve type reference (may be chain) or return type definition
+		if (type instanceof TypeReference) {
+			var innerType = (type as TypeReference).reference.type
+			return getTypeDefinitionFromType(innerType)
+		} else {
+			return type as TypeDefinition
+		}
+	}
+	
 	
 }

@@ -26,6 +26,7 @@ import uppaal.templates.LocationKind
 
 import static extension hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class XSTSToUppaalTransformer {
 	
@@ -109,7 +110,7 @@ class XSTSToUppaalTransformer {
 	
 	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
 		val edge = source.createEdgeCommittedSource(nextCommittedLocationName)
-		val xStsDeclaration = action.lhs.declaration
+		val xStsDeclaration = (action.lhs as DirectReferenceExpression).declaration
 		val xStsVariable = xStsDeclaration as VariableDeclaration
 		val uppaalVariable = traceability.get(xStsVariable)
 		val uppaalRhs = action.rhs.transform

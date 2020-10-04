@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 /**
  * Works only if the assume actions are placed only in the first index of a sequential action.
@@ -122,9 +123,9 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	private def dispatch boolean isUnnecessaryAction(AssignmentAction action) {
-		val lhs = action.lhs.declaration
+		val lhs = (action.lhs as DirectReferenceExpression).declaration
 		val rhs = action.rhs
-		if (rhs instanceof ReferenceExpression) {
+		if (rhs instanceof DirectReferenceExpression) {
 			if (lhs.originalVariable == rhs.declaration.originalVariable) {
 				return true
 			}

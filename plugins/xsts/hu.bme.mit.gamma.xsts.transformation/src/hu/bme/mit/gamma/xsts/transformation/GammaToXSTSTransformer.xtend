@@ -284,11 +284,11 @@ class GammaToXSTSTransformer {
 			// Increasing the clock variables
 			for (xStsClockVariable : xSts.clockVariables) {
 				it.actions += createAssignmentAction => [
-					it.lhs = createReferenceExpression => [
+					it.lhs = createDirectReferenceExpression => [
 						it.declaration = xStsClockVariable
 					]
 					it.rhs = createAddExpression => [
-						it.operands += createReferenceExpression => [
+						it.operands += createDirectReferenceExpression => [
 							it.declaration = xStsClockVariable
 						]
 						it.operands += createIntegerLiteralExpression => [

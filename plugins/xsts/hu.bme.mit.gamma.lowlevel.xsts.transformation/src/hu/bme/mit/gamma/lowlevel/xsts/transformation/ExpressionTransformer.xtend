@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionTransformer {
 	// Trace needed for variable references
@@ -58,7 +59,7 @@ class ExpressionTransformer {
 	}
 
 	// Key method
-	def dispatch Expression transformExpression(ReferenceExpression expression) {
+	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
 		checkState(expression.declaration instanceof VariableDeclaration)
 		val declaration = expression.declaration as VariableDeclaration
 		return expression.clone => [

@@ -205,7 +205,7 @@ class RegionActivator {
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsEnumLiteral(lowlevelState)
 		return createAssignmentAction => [
-			it.lhs = createReferenceExpression => [
+			it.lhs = createDirectReferenceExpression => [
 				it.declaration = xStsParentRegionVariable
 			]
 			it.rhs = createEnumerationLiteralExpression => [
@@ -297,7 +297,7 @@ class RegionActivator {
 		val xStsParentRegionVariable = trace.getXStsVariable(lowlevelRegion)
 		val xStsEnumLiteral = trace.getXStsInactiveEnumLiteral(lowlevelRegion)
 		return createEqualityExpression => [
-			it.leftOperand = createReferenceExpression => [
+			it.leftOperand = createDirectReferenceExpression => [
 				it.declaration = xStsParentRegionVariable
 			]
 			it.rightOperand = createEnumerationLiteralExpression => [

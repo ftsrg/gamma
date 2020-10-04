@@ -164,7 +164,7 @@ class RegionDeactivator {
 		}
 		else {
 			return createAssignmentAction => [
-				it.lhs = createReferenceExpression => [
+				it.lhs = createDirectReferenceExpression => [
 					it.declaration = trace.getXStsVariable(lowlevelRegion)
 				]
 				it.rhs = createEnumerationLiteralExpression => [

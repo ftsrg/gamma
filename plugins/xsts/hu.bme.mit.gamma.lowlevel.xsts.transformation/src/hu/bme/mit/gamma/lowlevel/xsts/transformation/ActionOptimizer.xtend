@@ -30,6 +30,7 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ActionOptimizer {
 	// Singleton
@@ -398,12 +399,12 @@ class ActionOptimizer {
 		for (var i = 0; i < xStsActions.size; i++) {
 			val xStsFirstAction = xStsActions.get(i)
 			if (xStsFirstAction instanceof AssignmentAction) {
-				val variable = xStsFirstAction.lhs.declaration
+				val variable = (xStsFirstAction.lhs as DirectReferenceExpression).declaration
 				var foundAssignmentToTheSameVariable = false
 				for (var j = i + 1; j < xStsActions.size && !foundAssignmentToTheSameVariable; j++) {
 					val xStsSecondAction = xStsActions.get(j)
 					if (xStsSecondAction instanceof AssignmentAction) {
-						if (xStsSecondAction.lhs.declaration == variable) {
+						if ((xStsSecondAction.lhs as DirectReferenceExpression).declaration == variable) {
 							foundAssignmentToTheSameVariable = true
 							var isVariableRead = false
 							for (var k = i + 1; k <= j && !isVariableRead; k++) {

@@ -105,10 +105,9 @@ class StatechartToLowlevelTransformer {
 		return lowlevelVariable
 	}
 
-	protected def VariableDeclaration transform(VariableDeclaration variable) {
+	protected def List<VariableDeclaration> transform(VariableDeclaration variable) {
 		// Cloning the variable
 		val lowlevelVariable = variable.transformVariable
-		trace.put(variable, lowlevelVariable)
 		return lowlevelVariable
 	}
 

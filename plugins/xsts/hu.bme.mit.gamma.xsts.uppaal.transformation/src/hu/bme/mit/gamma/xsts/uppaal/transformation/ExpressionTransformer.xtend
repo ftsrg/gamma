@@ -46,6 +46,7 @@ import uppaal.expressions.LogicalOperator
 import hu.bme.mit.gamma.expression.util.ExpressionNegator
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionTransformer {
 	
@@ -79,7 +80,7 @@ class ExpressionTransformer {
 		]
 	}
 	
-	def dispatch Expression transform(ReferenceExpression expression) {
+	def dispatch Expression transform(DirectReferenceExpression expression) {
 		val xStsDeclaration = expression.declaration
 		if (xStsDeclaration instanceof ConstantDeclaration) {
 			return xStsDeclaration.expression.transform

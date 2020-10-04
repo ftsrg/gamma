@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
@@ -315,11 +316,16 @@ public class ExpressionUtil {
 		return variables;
 	}
 
-	protected Set<VariableDeclaration> _getReferredVariables(final DirectReferenceExpression expression) {
-		Declaration declaration = expression.getDeclaration();
+	protected Set<VariableDeclaration> _getReferredVariables(final ReferenceExpression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			return Collections.singleton((VariableDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+		} else if (expression instanceof AccessExpression) {
+			return getReferredVariables(((AccessExpression)expression).getOperand());
+		}
+		/*Declaration declaration = expression.getDeclaration();
 		if ((declaration instanceof VariableDeclaration)) {
 			return Collections.singleton(((VariableDeclaration) declaration));
-		}
+		}*/
 		return Collections.emptySet();
 	}
 

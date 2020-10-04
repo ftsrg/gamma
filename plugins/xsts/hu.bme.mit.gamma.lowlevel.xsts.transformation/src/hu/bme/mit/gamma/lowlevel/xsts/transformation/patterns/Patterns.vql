@@ -46,13 +46,13 @@ pattern eventParameterComparisons(parameter : VariableDeclaration, value : Expre
 	EventDeclaration.parameters(_, parameter);
 	PredicateExpression(predicate);
 	BinaryExpression.leftOperand(predicate, reference);
-	ReferenceExpression.declaration(reference, parameter);
+	DirectReferenceExpression.declaration(reference, parameter);
 	BinaryExpression.rightOperand(predicate, value);
 } or {
 	EventDeclaration.parameters(_, parameter);
 	PredicateExpression(predicate);
 	BinaryExpression.rightOperand(predicate, reference);
-	ReferenceExpression.declaration(reference, parameter);
+	DirectReferenceExpression.declaration(reference, parameter);
 	BinaryExpression.leftOperand(predicate, value);
 }
 
@@ -90,7 +90,7 @@ pattern timeouts(timeout : VariableDeclaration) {
 pattern timeoutInitializations(timeout : VariableDeclaration, state : State) {
 	StatechartDefinition.timeoutDeclarations(_, timeout);
 	AssignmentStatement.lhs(assignmentStatement, reference);
-	ReferenceExpression.declaration(reference, timeout);
+	DirectReferenceExpression.declaration(reference, timeout);
 	AssignmentStatement.rhs(assignmentStatement, _null);
 	State.entryAction(state, assignmentStatement);
 }
@@ -107,7 +107,12 @@ pattern variables(variable : VariableDeclaration) {
 }
 
 pattern referredVariables(variable : VariableDeclaration) {
-	ReferenceExpression.declaration(_, variable);
+	DirectReferenceExpression.declaration(_, variable);
+	find variables(variable);
+} or {
+	AccessExpression.operand(_, reference);
+	DirectReferenceExpression(reference);
+	DirectReferenceExpression.declaration(reference, variable);
 	find variables(variable);
 }
 

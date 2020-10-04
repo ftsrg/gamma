@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -33,7 +34,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
-	override String _serialize(ReferenceExpression expression) {
+	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
 		if (declaration instanceof PrimedVariable) {
 			return '''next(«declaration.originalVariable.name»)'''

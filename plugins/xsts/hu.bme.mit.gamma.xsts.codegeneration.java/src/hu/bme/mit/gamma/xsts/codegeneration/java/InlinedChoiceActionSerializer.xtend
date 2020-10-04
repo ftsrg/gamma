@@ -26,6 +26,7 @@ import java.util.Set
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class InlinedChoiceActionSerializer extends ActionSerializer {
 	
@@ -171,7 +172,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	}
 	
 	private def CharSequence serializeTemporaryAssignment(AssignmentAction action) {
-		val declaration = action.lhs.declaration
+		val declaration = (action.lhs as DirectReferenceExpression).declaration
 		checkArgument(declaration instanceof VariableDeclaration)
 		val variable = (declaration as VariableDeclaration).originalVariable
 		return '''

@@ -23,6 +23,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 class DeclarationSerializer {
 	// Singleton
@@ -70,6 +71,8 @@ class DeclarationSerializer {
 	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
 	
 	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}'''
+
+	def dispatch String serializeType(ArrayTypeDefinition type) '''array «type.elementType.serializeType» [«type.size.serialize»]'''
 
 	// Variable
 

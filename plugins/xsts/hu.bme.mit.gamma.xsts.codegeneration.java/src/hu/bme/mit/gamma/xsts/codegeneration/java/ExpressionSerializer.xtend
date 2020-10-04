@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
 	// Singleton
@@ -21,7 +22,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.Expr
 	protected new() {}
 	//
 	
-	override dispatch String serialize(ReferenceExpression expression) {
+	override dispatch String serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
 		if (declaration instanceof VariableDeclaration) {
 			// 'this' is important as without it, the reference would refer to the temporary variable

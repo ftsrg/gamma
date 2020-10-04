@@ -52,12 +52,15 @@ import java.util.Collection
 import java.util.LinkedList
 import java.util.List
 import java.util.Stack
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 
 class ActionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ExpressionPreconditionTransformer preconditionTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
@@ -92,6 +95,8 @@ class ActionTransformer {
 		 
 		if (block.actions.size == 1) {
 			return block.actions.head
+		} else if (block.actions.size == 0) {
+			return createEmptyStatement;
 		}
 		return block
 	}
@@ -138,12 +143,12 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action, LinkedList<Action> following) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
-		var lowlevelPrecondition = action.variableDeclaration.expression.transformPrecondition
+		var lowlevelPrecondition = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformPrecondition : new LinkedList<Action>
 		val variableDeclaration = createVariableDeclarationStatement => [
 			it.variableDeclaration = createVariableDeclaration => [
 				it.name = action.variableDeclaration.name
 				it.type = action.variableDeclaration.type.transformType
-				it.expression = action.variableDeclaration.expression.transformExpression
+				it.expression = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformExpression : null
 			]
 		]
 		trace.put(action.variableDeclaration, variableDeclaration.variableDeclaration)
@@ -171,8 +176,12 @@ class ActionTransformer {
 		var lowlevelPrecondition = action.expression.transformPrecondition
 		result += lowlevelPrecondition
 		// Transform expression if it has side-effects
-		if (!functionInlining) {
-			
+		if (!(action.expression instanceof FunctionAccessExpression)) {
+			result += createEmptyStatement;
+		} else if (functionInlining) {	//if function access
+			result += createEmptyStatement;
+		} else {	//if function access
+			//TODO!!!
 		}
 		// Create new following-context variable and transform the following-context
 		var newFollowing = new LinkedList<Action>
@@ -401,16 +410,17 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(AssignmentStatement action, LinkedList<Action> following) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
-		val referredDeclaration = findDeclarationOfReference(action.lhs)
+		//val referredDeclaration = findDeclarationOfReference(action.lhs) TODO remove if no errors
+		val referredDeclaration = action.lhs.referredVariables.iterator.next
 		if (referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration) {
 			// Transform lhs
 			var ReferenceExpression lowlevelLhs = null
 			if (!(referredDeclaration.type instanceof CompositeTypeDefinition)) {
 				lowlevelLhs = createDirectReferenceExpression => [
 					if(referredDeclaration instanceof VariableDeclaration)
-						it.declaration = trace.get(referredDeclaration)
+						it.declaration = trace.get(referredDeclaration as VariableDeclaration)
 					else if(referredDeclaration instanceof ParameterDeclaration)
-						it.declaration = trace.get(referredDeclaration)
+						it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
 				]
 			} else {
 				throw new IllegalArgumentException("Assignments to composite types are not yet supported: " + referredDeclaration.type.class)
@@ -512,8 +522,8 @@ class ActionTransformer {
 		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
 	}
 	
-	//TODO extract into util class
-	private def Declaration findDeclarationOfReference(Expression reference) {
+	//TODO extract into util class: ExpressionUtil already has similar
+	/*private def Declaration findDeclarationOfReference(Expression reference) {
 		if(reference instanceof DirectReferenceExpression) {
 			return reference.declaration
 		} else if (reference instanceof AccessExpression) {
@@ -521,7 +531,7 @@ class ActionTransformer {
 		} else {
 			throw new IllegalArgumentException("Not known reference type: " + reference.class)
 		}
-	}
+	}*/
 	
 	private def dispatch List<Expression> enumerateExpression(Expression expression) {
 		//if reference to enum

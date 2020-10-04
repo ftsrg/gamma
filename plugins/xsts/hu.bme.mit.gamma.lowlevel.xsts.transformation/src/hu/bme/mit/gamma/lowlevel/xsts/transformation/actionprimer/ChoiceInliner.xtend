@@ -24,6 +24,7 @@ import java.util.Map
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ChoiceInliner extends ActionPrimer {
 	
@@ -276,7 +277,7 @@ class ChoiceInliner extends ActionPrimer {
 		for (var i = xStsActions.size - 1; i >= 0; i--) {
 			val xStsSubaction = xStsActions.get(i)
 			if (xStsSubaction instanceof AssignmentAction) {
-				val variable = xStsSubaction.lhs.declaration as VariableDeclaration
+				val variable = (xStsSubaction.lhs as DirectReferenceExpression).declaration as VariableDeclaration
 				val originalVariable = variable.originalVariable
 				if (highestPrimeVariables.contains(originalVariable)) {
 					// An assignment to a variable with a higher prime is present later
