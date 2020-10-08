@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -97,7 +98,7 @@ class OrchestratorCreator {
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
-	protected final Collection<DataVariableDeclaration> resetableVariables
+	protected final Collection<VariableDeclaration> resetableVariables
 	// Orchestrating period for top sync components
 	protected TimeSpecification minimalOrchestratingPeriod
 	protected TimeSpecification maximalOrchestratingPeriod
@@ -118,7 +119,7 @@ class OrchestratorCreator {
 	new(NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
 			AssignmentExpressionCreator assignmentExpressionCreator,
 			CompareExpressionCreator compareExpressionCreator, OrchestratingConstraint constraint,
-			Trace modelTrace, Collection<DataVariableDeclaration> resetableVariables, DataVariableDeclaration isStableVar) {
+			Trace modelTrace, Collection<VariableDeclaration> resetableVariables, DataVariableDeclaration isStableVar) {
 		this.ntaBuilder = ntaBuilder
 		this.manipulation = manipulation
 		this.engine = engine
@@ -232,7 +233,11 @@ class OrchestratorCreator {
 	
 	private def resetResetableVariables(Edge edge) {
 		for (variable : resetableVariables) {
-			edge.createAssignmentExpression(edge_Update, variable, createLiteralExpression => [it.text = "0"])
+			val uppaalVariable = variable.dataVariable
+			if (uppaalVariable !== null ) {
+				// Could be null due to optimizations and reductions
+				edge.createAssignmentExpression(edge_Update, uppaalVariable, "0")
+			}
 		}
 	}
 	

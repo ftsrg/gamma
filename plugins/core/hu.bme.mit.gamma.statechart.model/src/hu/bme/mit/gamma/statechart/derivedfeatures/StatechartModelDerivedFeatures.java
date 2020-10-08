@@ -1079,6 +1079,11 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return instances.stream().findFirst().get();
 	}
 	
+	public static ComponentInstance getContainingComponentInstance(EObject object) {
+		StatechartDefinition statechart = getContainingStatechart(object);
+		return getReferencingComponentInstance(statechart);
+	}
+	
 	public static List<ComponentInstance> getParentComponentInstances(ComponentInstance instance) {
 		Component container = ecoreUtil.getContainerOfType(instance, Component.class);
 		try {

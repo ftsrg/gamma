@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.logging.Level;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -140,11 +142,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
 	
-		protected void sliceModelAndAnnotateModelAndGenerateProperties(
+		protected Collection<VariableDeclaration> sliceModelAndAnnotateModelAndGenerateProperties(
 				AnalysisModelTransformation analysisModelTransformation, 
 				Component newTopComponent) throws IOException {
 			sliceModel(analysisModelTransformation, newTopComponent);
-			annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+			return annotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 		}
 		
 		protected void sliceModel(AnalysisModelTransformation analysisModelTransformation, 
@@ -162,7 +164,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 		}
 		
-		protected void annotateModelAndGenerateProperties(
+		protected Collection<VariableDeclaration> annotateModelAndGenerateProperties(
 				AnalysisModelTransformation analysisModelTransformation, 
 				Component newTopComponent) throws IOException {
 			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
@@ -195,6 +197,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					newTopComponent, interactionCoverage); // Ports
 			
 			// Checking if we need annotation and property generation
+			Collection<VariableDeclaration> resetableVariables = new ArrayList<VariableDeclaration>();
 			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
 					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
 					!testedPortsForInteractions.isEmpty()) {
@@ -202,7 +205,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						testedComponentsForTransitions, testedComponentsForTransitionPairs,
 						testedPortsForInteractions);
 				statechartAnnotator.annotateModel();
+				resetableVariables.addAll(statechartAnnotator.getResetableVariables());
 				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
+				
 				// We are after model unfolding, so the argument is true
 				PropertyGenerator propertyGenerator = new PropertyGenerator(true);
 				PropertyPackage generatedPropertyPackage = propertyGenerator.initializePackage(newTopComponent);
@@ -229,6 +234,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(formulas);
 				fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
 			}
+			return resetableVariables;
 		}
 		
 		protected abstract PropertySerializer getPropertySerializer();
@@ -300,13 +306,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
 			validator.checkModel();
 			// Annotate model for test generation
-			sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
+			Collection<VariableDeclaration> resetableVariables =
+					sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newTopComponent);
 			// Normal transformation
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
 			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
 				newTopComponent, // newTopComponent
+				resetableVariables,
 				getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
 				constraint,
 				analysisModelTransformation.isMinimalElementSet()); 
@@ -391,9 +399,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Unfolding the given system
 			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
 			Component component = componentReference.getComponent();
-			Package gammaPackage = (Package) component.eContainer();
+			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true);
 			String fileName = analysisModelTransformation.getFileName().get(0);
 			File xStsFile = new File(targetFolderUri + File.separator + fileName + "." + XSTS_XTEXT_EXTENSION);
 			// Preprocess
@@ -401,7 +408,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					componentReference.getArguments(), xStsFile);
 			Package newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newComponent);
 			// Property generation
-			sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newComponent);
+			Collection<VariableDeclaration> resetableVariables =
+					sliceModelAndAnnotateModelAndGenerateProperties(analysisModelTransformation, newComponent);
+			GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer(
+					resetableVariables, schedulingConstraint, true, true);
 			// Normal transformation
 			XSTS xSts = gammaToXSTSTransformer.execute(newGammaPackage);
 			// EMF

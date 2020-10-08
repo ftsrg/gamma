@@ -95,7 +95,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def createTransitionVariable(Transition transition,
-			Map<Transition, VariableDeclaration> variables) {
+			Map<Transition, VariableDeclaration> variables, boolean isResetable) {
 		val statechart = transition.containingStatechart
 		val variable = createVariableDeclaration => [
 			it.type = createBooleanTypeDefinition
@@ -105,7 +105,9 @@ class GammaStatechartAnnotator {
 		// Regarding both transition and transitionPair map
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
-		resetableVariables += variable 
+		if (isResetable) {
+			resetableVariables += variable
+		}
 		return variable
 	}
 	
@@ -125,7 +127,7 @@ class GammaStatechartAnnotator {
 			return
 		}
 		for (transition : coverableTransitions.filter[it.needsAnnotation]) {
-			val variable = transition.createTransitionVariable(transitionVariables)
+			val variable = transition.createTransitionVariable(transitionVariables, true)
 			transition.effects += variable.createAssignment
 		}
 	}
@@ -141,7 +143,7 @@ class GammaStatechartAnnotator {
 			return
 		}
 		for (transition : coverableTransitionPairs.filter[it.needsAnnotation]) {
-			val variable = transition.createTransitionVariable(transitionPairVariables)
+			val variable = transition.createTransitionVariable(transitionPairVariables, false)
 			transition.effects += variable.createAssignment
 		}
 	}
@@ -306,6 +308,10 @@ class GammaStatechartAnnotator {
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
+	}
+	
+	def getResetableVariables() {
+		return this.resetableVariables
 	}
 	
 }
