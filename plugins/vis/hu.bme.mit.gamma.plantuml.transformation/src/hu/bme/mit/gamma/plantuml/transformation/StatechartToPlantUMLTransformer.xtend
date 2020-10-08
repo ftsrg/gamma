@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.ForkState
 import hu.bme.mit.gamma.statechart.statechart.InitialState
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -315,23 +317,31 @@ class StatechartToPlantUMLTransformer {
 	 * 
 	 */
 	protected def stateSearch(Transition transition) {
+		val trigger = transition.trigger
 		val guard = transition.guard
-		val transitions = '''
-			«IF transition.sourceState instanceof PseudoState»
-				«IF transition.sourceState instanceof EntryState»
-					«IF transition.sourceState instanceof InitialState»
-						[*] --> «transition.targetState.name»
-					«ELSE»
-						[H] --> «transition.targetState.name»
-					«ENDIF»
-				«ELSE»
-					«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
-				«ENDIF»
-			«ELSE»	
-				«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
-			«ENDIF»
+		val effects = transition.effects
+		val target = transition.targetState
+		return '''
+			«transition.sourceText» --> «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
-		return transitions
+	}
+	
+	protected def getSourceText(Transition transition) {
+		val source = transition.sourceState
+		switch (source) {
+			InitialState: {
+				return '''[*]'''
+			}
+			ShallowHistoryState: {
+				return '''[H]'''
+			}
+			DeepHistoryState: {
+				return '''[H]''' // PlantUML does not distinguish between the two history states
+			}
+			default: {
+				return source.name
+			}
+		}
 	}
 	
 }
