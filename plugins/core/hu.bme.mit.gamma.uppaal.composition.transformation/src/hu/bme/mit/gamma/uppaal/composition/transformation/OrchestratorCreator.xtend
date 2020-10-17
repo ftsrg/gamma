@@ -562,8 +562,8 @@ class OrchestratorCreator {
 		return regions
 	}
 	
-		/**
-	 * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
+	/**
+	 * Inserts a runCycle edge in the Orchestrator template for the template of the the given region,
 	 * between the given last runCycle edge and the init location.
 	 */
 	private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,

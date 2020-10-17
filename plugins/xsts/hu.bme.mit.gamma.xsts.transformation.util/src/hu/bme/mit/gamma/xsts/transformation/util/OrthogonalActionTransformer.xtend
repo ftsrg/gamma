@@ -73,7 +73,7 @@ class OrthogonalActionTransformer {
 				val writtenVariables = orthogonalBranch.writtenVariables
 				writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
 				for (writtenVariable : writtenVariables) {
-					val orthogonalVariable = writtenVariable.createOrthogonalVariable
+					val orthogonalVariable = writtenVariable.createOrthogonalVariable(consideredVariables)
 					// _var_ := var
 					setupAction.actions += orthogonalVariable.createAssignmentAction(writtenVariable)
 					// Each written var is changed to _var_
@@ -85,19 +85,23 @@ class OrthogonalActionTransformer {
 					commonizeAction.actions += orthogonalVariable.createAssignmentAction(orthogonalVariable.initialValue)
 				}
 			}
-			// If the orthogonal action is traced, this can cause trouble (the original action is not contained in a resource)
+			// If the orthogonal action is traced, this can cause trouble
+			// (the original action is not contained in a resource)
 			newAction.change(orthogonalAction, xSts)
 			newAction.replace(orthogonalAction)
 		}
 	}
 	
-	protected def createOrthogonalVariable(VariableDeclaration variable) {
+	protected def createOrthogonalVariable(VariableDeclaration variable,
+			Collection<VariableDeclaration> consideredVariables) {
 		val xSts = variable.root as XSTS
 		val orthogonalVariable = createVariableDeclaration => [
 			it.type = variable.type.clone(true, true)
-			it.name = variable.orthogonalName // If there are multiple ort variables with the same name, the model is faulty 
+			// If there are multiple ort variables with the same name, the model is faulty
+			it.name = variable.orthogonalName
 		]
 		xSts.variableDeclarations += orthogonalVariable
+		consideredVariables += orthogonalVariable // This is how orthogonality becomes hierarchical!
 		return orthogonalVariable
 	}
 	
