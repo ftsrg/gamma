@@ -22,6 +22,8 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Collection
+import java.util.Comparator
+import java.util.List
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -55,7 +57,8 @@ class OrthogonalActionTransformer {
 	def void transform(Action action, Collection<VariableDeclaration> consideredVariables) {
 		val xSts = action.root
 		val orthogonalActions = action.getSelfAndAllContentsOfType(OrthogonalAction)
-		val orthogonalBranchActions = newArrayList
+		orthogonalActions.sortAccordingToHierarchy // Enclosing ones must precede the enclosed ones
+		val orthogonalBranches = newArrayList
 		for (orthogonalAction : orthogonalActions) {
 			val newAction = createSequentialAction
 			val setupAction = createSequentialAction
@@ -67,9 +70,9 @@ class OrthogonalActionTransformer {
 				it.actions += commonizeAction
 			]
 			
-			orthogonalBranchActions.clear
-			orthogonalBranchActions += orthogonalAction.actions
-			for (orthogonalBranch : orthogonalBranchActions) {
+			orthogonalBranches.clear
+			orthogonalBranches += orthogonalAction.actions
+			for (orthogonalBranch : orthogonalBranches) {
 				val writtenVariables = orthogonalBranch.writtenVariables
 				writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
 				for (writtenVariable : writtenVariables) {
@@ -92,16 +95,31 @@ class OrthogonalActionTransformer {
 		}
 	}
 	
+	protected def sortAccordingToHierarchy(List<OrthogonalAction> orthogonalActions) {
+		// Orthogonal actions are sorted hierarchically: going from outside to inside,
+		//  that is, enclosing ones must precede enclosed ones (like in Gamma composition)
+		orthogonalActions.sort(
+			new Comparator<OrthogonalAction> {
+				override compare(OrthogonalAction lhs, OrthogonalAction rhs) {
+					val lhsContainerCount = lhs.allContainers.filter(OrthogonalAction).size
+					val rhsContainerCount = rhs.allContainers.filter(OrthogonalAction).size
+					return lhsContainerCount.compareTo(rhsContainerCount)
+				}
+			}
+		)
+	}
+	
 	protected def createOrthogonalVariable(VariableDeclaration variable,
 			Collection<VariableDeclaration> consideredVariables) {
 		val xSts = variable.root as XSTS
 		val orthogonalVariable = createVariableDeclaration => [
 			it.type = variable.type.clone(true, true)
-			// If there are multiple ort variables with the same name, the model is faulty
+			// If there are multiple ort variables with the same name
+			// (variables written in multiple branches), the model is faulty
 			it.name = variable.orthogonalName
 		]
 		xSts.variableDeclarations += orthogonalVariable
-		consideredVariables += orthogonalVariable // This is how orthogonality becomes hierarchical!
+		consideredVariables += orthogonalVariable // Orthogonality must be hierarchical!
 		return orthogonalVariable
 	}
 	
