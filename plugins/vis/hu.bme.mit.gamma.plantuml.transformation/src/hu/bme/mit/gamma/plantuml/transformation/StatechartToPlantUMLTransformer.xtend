@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement
@@ -36,6 +37,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 
@@ -79,22 +81,49 @@ class StatechartToPlantUMLTransformer {
 	}
 
 	protected def dispatch String transformTrigger(BinaryTrigger binaryTrigger) {
-		if (binaryTrigger.type.value == 0) {
-			return binaryTrigger.leftOperand.transformTrigger + " && " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 1) {
-			return binaryTrigger.leftOperand.transformTrigger + " || " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 2) {
-			return binaryTrigger.leftOperand.transformTrigger + " == " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 4) {
-			return binaryTrigger.leftOperand.transformTrigger + " ^ " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 5) {
-			return binaryTrigger.leftOperand.transformTrigger + " -> " + binaryTrigger.rightOperand.transformTrigger
+		val leftOperand = binaryTrigger.leftOperand
+		val rightOperand = binaryTrigger.rightOperand
+		val type = binaryTrigger.type
+		return '''(«leftOperand.transformTrigger» «type.transformOperator» «rightOperand.transformTrigger»)'''
+	}
+	
+	protected def transformOperator(BinaryType type) {
+		switch (type) {
+			case AND: {
+				return "&&"
+			}
+			case OR: {
+				return "||"
+			}
+			case XOR: {
+				return "^"
+			}
+			case IMPLY: {
+				return "->"
+			}
+			case EQUAL: {
+				return "=="
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported binary type: " + type)
+			}
 		}
 	}
 
 	protected def dispatch String transformTrigger(UnaryTrigger unaryTrigger) {
-		if (unaryTrigger.type.value == 0) {
-			return " !" + unaryTrigger.operand.transformTrigger
+		val type = unaryTrigger.type
+		val operand = unaryTrigger.operand
+		return '''«type.transformOperator»(«operand.transformTrigger»)'''
+	}
+	
+	protected def transformOperator(UnaryType type) {
+		switch (type) {
+			case NOT: {
+				return "!"
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported unary type: " + type)
+			}
 		}
 	}
 	
@@ -103,7 +132,7 @@ class StatechartToPlantUMLTransformer {
 	// Handling the different instances of event references
 
 	protected def dispatch transformEventReference(PortEventReference portEventReference) {
-		return (portEventReference.port.name + "." + portEventReference.event.name)
+		return portEventReference.port.name + "." + portEventReference.event.name
 	}
 
 	protected def dispatch transformEventReference(TimeoutEventReference timeoutEventReference) {
@@ -111,12 +140,13 @@ class StatechartToPlantUMLTransformer {
 	}
 
 	protected def dispatch transformEventReference(ClockTickReference clockTickReference) {
-		return (clockTickReference.clock.name + " : " + clockTickReference.clock.timeSpecification.value + " " +
-			clockTickReference.clock.timeSpecification.unit)
+		val clock = clockTickReference.clock
+		return clock.name + " : " + clock.timeSpecification.value + " " +
+			clock.timeSpecification.unit
 	}
 
 	protected def dispatch transformEventReference(AnyPortEventReference anyPortEventReference) {
-		return anyPortEventReference.port.name
+		return '''«anyPortEventReference.port.name».any'''
 	}
 	
 ///////////////////// FORK,JOIN,CHOICE,MERGE DISPATCH /////////////////////
