@@ -324,11 +324,13 @@ pattern triggersOfRegularLocalReactions(reaction : Reaction, trigger : RegularEv
 	FeatureCall.feature(featureCall, event);
 }
 
-pattern triggersOfTimedLocalReactions(reaction : Reaction, timeTrigger : TimeEventSpec, event : Expression, unit : TimeUnit) {
+pattern triggersOfTimedLocalReactions(reaction : Reaction, timeTrigger : TimeEventSpec,
+		event : Expression, unit : TimeUnit) {
 	find statesWithRegularLocalReactions(_, reaction); 
 	Reaction.trigger(reaction, reactionTrigger);
 	ReactionTrigger.triggers(reactionTrigger, timeTrigger);
-	TimeEventSpec.type(timeTrigger, ::every);
+	// Now the local reaction state creator supports "after" triggers too
+//  TimeEventSpec.type(timeTrigger, ::every);
 	TimeEventSpec.value(timeTrigger, event);
 	TimeEventSpec.unit(timeTrigger, unit);
 }
