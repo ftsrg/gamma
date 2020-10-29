@@ -11,6 +11,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
+import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
@@ -43,12 +44,12 @@ class GammaStatechartAnnotator {
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<Port> interactionCoverablePorts= newHashSet
 	protected final Set<ParameterDeclaration> newParameters = newHashSet
-	protected long senderId = 1 // As 0 is the initial
-	protected long recevierId = 1 // As 0 is the initial
+	protected long senderId = 1 // As 0 is the reset value
+	protected long recevierId = 1 // As 0 is the reset value
 	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
-	protected final Map<SynchronousComponentInstance,
+	protected final Map<Region,
 		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> interactionVariables = newHashMap // Check: list must be unique
 	protected final Map<Entry<RaiseEventAction, Transition> /*interaction*/,
 		Entry<Entry<VariableDeclaration, Long> /*sender*/,
@@ -154,38 +155,6 @@ class GammaStatechartAnnotator {
 	
 	// Interaction coverage
 	
-	protected def createInteractionVariables(SynchronousComponentInstance instance) {
-		val statechart = instance.type as StatechartDefinition
-		val senderVariable = createVariableDeclaration => [
-			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getSendingVariableName(instance)
-		]
-		val receiverVariable = createVariableDeclaration => [
-			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getReceivingVariableName(instance)
-		]
-		val variablePair = new Pair(senderVariable, receiverVariable)
-		statechart.variableDeclarations += senderVariable
-		statechart.variableDeclarations += receiverVariable
-		if (!interactionVariables.containsKey(instance)) {
-			interactionVariables.put(instance, newArrayList)
-		}
-		val interactionVariablesSet = interactionVariables.get(instance)
-		interactionVariablesSet += variablePair
-		resetableVariables += senderVariable
-		resetableVariables += receiverVariable
-		return variablePair
-	}
-	
-	protected def getInteractionVariables(Transition transition, Port port, Event event) {
-		val interactions = receivingInteractions.get(transition)
-		val index = interactions.indexOf(new SimpleEntry(port, event)) // The i. interaction is saved using the i. variable
-		val statechart = transition.containingStatechart
-		val instance = statechart.referencingComponentInstance
-		val variables = interactionVariables.get(instance)
-		return variables.get(index)
-	}
-	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
 			sendingIds.put(action, senderId++)
@@ -200,12 +169,71 @@ class GammaStatechartAnnotator {
 		return receivingIds.get(transition)
 	}
 	
+	protected def getInteractionVariables(Region region) {
+		if (!interactionVariables.containsKey(region)) {
+			interactionVariables.put(region, newArrayList)
+		}
+		return interactionVariables.get(region)
+	}
+	
+	protected def getReceivingInteractions(Transition transition) {
+		if (!receivingInteractions.containsKey(transition)) {
+			receivingInteractions.put(transition, newArrayList)
+		}
+		return receivingInteractions.get(transition)
+	}
+	
 	protected def putReceivingInteraction(Transition transition, Port port, Event event) {
 		if (!receivingInteractions.containsKey(transition)) {
 			receivingInteractions.put(transition, newArrayList)
 		}
 		val interactions = receivingInteractions.get(transition)
 		interactions += new SimpleEntry(port, event)
+	}
+	
+	protected def createInteractionVariables(Region region) {
+		val statechart = region.containingStatechart
+		val senderVariable = createVariableDeclaration => [
+			it.type = createIntegerTypeDefinition
+			it.name = annotationNamings.getSendingVariableName(region)
+		]
+		val receiverVariable = createVariableDeclaration => [
+			it.type = createIntegerTypeDefinition
+			it.name = annotationNamings.getReceivingVariableName(region)
+		]
+		val variablePair = new Pair(senderVariable, receiverVariable)
+		statechart.variableDeclarations += senderVariable
+		statechart.variableDeclarations += receiverVariable
+		
+		val interactionVariablesSet = region.interactionVariables
+		interactionVariablesSet += variablePair
+		resetableVariables += senderVariable
+		resetableVariables += receiverVariable
+		return variablePair
+	}
+	
+	protected def getInteractionVariables(Transition transition, Port port, Event event) {
+		val interactions = transition.receivingInteractions
+		val index = interactions.indexOf(new SimpleEntry(port, event)) // The i. interaction is saved using the i. variable
+		val inRegion = transition.correspondingRegion
+		val variables = inRegion.interactionVariables
+		return variables.get(index)
+	}
+	
+	protected def hasReceivingInteraction(Transition transition, Port port, Event event) {
+		val receivingInteractionsOfTransition = transition.receivingInteractions
+		return receivingInteractionsOfTransition.contains(new SimpleEntry(port, event))
+	}
+	
+	protected def isThereEnoughInteractionVariable(Transition transition) {
+		val region = transition.correspondingRegion
+		val interactionVariablesList = region.interactionVariables
+		val receivingInteractionsList = transition.receivingInteractions
+		return receivingInteractionsList.size <= interactionVariablesList.size
+	}
+	
+	protected def getCorrespondingRegion(Transition transition) {
+		return transition.sourceState.parentRegion
 	}
 	
 	def annotateModelForInteractionCoverage() {
@@ -220,7 +248,6 @@ class GammaStatechartAnnotator {
 						interactionCoverablePorts.contains(it.inPort)]
 		
 		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
-		val receivingComponents = relevantMatches.map[it.inInstance].toSet // Set, so one event is set only once
 		// Creating event parameters
 		for (event : raisedEvents) {
 			val newParameter = createParameterDeclaration => [
@@ -230,10 +257,7 @@ class GammaStatechartAnnotator {
 			event.parameterDeclarations += newParameter
 			newParameters += newParameter
 		}
-		// Creating interaction variables - at least one pair is needed for every instance
-		for (receivingComponent : receivingComponents) {
-			receivingComponent.createInteractionVariables
-		}
+		
 		// Annotating transitions
 		for (match : relevantMatches) {
 			// Sending
@@ -248,18 +272,16 @@ class GammaStatechartAnnotator {
 			val event = match.raisedEvent
 			val inParameter = event.parameterDeclarations.last // It is always the last
 			val receivingTransition = match.receivingTransition
-			val inInstance = match.inInstance
-			if (!receivingInteractions.containsKey(receivingTransition)) {
-				receivingInteractions.put(receivingTransition, newArrayList)
-			}
-			val interactionVariablesList = interactionVariables.get(inInstance)
-			val receivingInteractions = receivingInteractions.get(receivingTransition)
-			// We do not want to duplicate the same assignments
-			if (!receivingInteractions.contains(new SimpleEntry(inPort, event))) {
+			val inRegion = receivingTransition.correspondingRegion
+			
+			// We do not want to duplicate the same assignments to the same variable
+			if (!receivingTransition.hasReceivingInteraction(inPort, event)) {
 				receivingTransition.putReceivingInteraction(inPort, event)
-				if (interactionVariablesList.size < receivingInteractions.size) {
-					// The difference can be at most one due to the algorithm
-					inInstance.createInteractionVariables
+				if (!receivingTransition.isThereEnoughInteractionVariable) {
+					// Note: a new variable is needed since if there is only one variable,
+					// the subsequent assignments to the same variable overwrite each other
+					inRegion.createInteractionVariables
+					// The difference can be at most one due to the nature of the algorithm
 				}
 				val interactionVariables = receivingTransition.getInteractionVariables(inPort, event)
 				val senderVariable = interactionVariables.key
@@ -296,6 +318,8 @@ class GammaStatechartAnnotator {
 		}
 	}
 	
+	// 
+	
 	def getNewParameters() {
 		return this.newParameters
 	}
@@ -304,14 +328,14 @@ class GammaStatechartAnnotator {
 		return this.interactions
 	}
 	
+	def getResetableVariables() {
+		return this.resetableVariables
+	}
+	
 	def annotateModel() {
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
-	}
-	
-	def getResetableVariables() {
-		return this.resetableVariables
 	}
 	
 }
@@ -324,8 +348,8 @@ class AnnotationNamings {
 	int id = 0
 	
 	def String getVariableName(Transition transition) '''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getReceivingVariableName(SynchronousComponentInstance instance) '''«PREFIX»rec_«instance.name»«id++»«POSTFIX»'''
-	def String getSendingVariableName(SynchronousComponentInstance instance) '''«PREFIX»send_«instance.name»«id++»«POSTFIX»'''
+	def String getReceivingVariableName(Region region) '''«PREFIX»rec_«region.name»«id++»«POSTFIX»'''
+	def String getSendingVariableName(Region region) '''«PREFIX»send_«region.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }
