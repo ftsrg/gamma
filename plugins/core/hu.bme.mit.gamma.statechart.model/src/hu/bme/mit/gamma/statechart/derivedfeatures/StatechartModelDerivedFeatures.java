@@ -662,18 +662,27 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static boolean isTopRegion(Region region) {
-		return region.eContainer() instanceof StatechartDefinition;
+		return getContainingCompositeElement(region) instanceof StatechartDefinition;
 	}
 	
 	public static boolean isSubregion(Region region) {
 		return !isTopRegion(region);
 	}
 	
+	public static boolean isOrthogonal(Region region) {
+		CompositeElement compositeElement = getContainingCompositeElement(region);
+		return compositeElement.getRegions().size() >= 2;
+	}
+	
+	public static CompositeElement getContainingCompositeElement(Region region) {
+		return (CompositeElement) region.eContainer();
+	}
+
 	public static State getParentState(Region region) {
 		if (isTopRegion(region)) {
 			throw new IllegalArgumentException("This region has no parent state: " + region);
 		}
-		return (State) region.eContainer();
+		return (State) getContainingCompositeElement(region);
 	}
 	
 	public static State getParentState(StateNode node) {
@@ -685,7 +694,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		if (isTopRegion(region)) {
 			return null;
 		}
-		return getParentRegion((State) region.eContainer());
+		return getParentRegion((State) getContainingCompositeElement(region));
 	}
 	
 	public static List<Region> getParentRegions(Region region) {

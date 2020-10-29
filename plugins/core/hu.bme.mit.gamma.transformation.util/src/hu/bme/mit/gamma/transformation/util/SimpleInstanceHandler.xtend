@@ -13,14 +13,14 @@ package hu.bme.mit.gamma.transformation.util
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 
 class SimpleInstanceHandler {
 	// Singleton

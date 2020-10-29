@@ -25,6 +25,8 @@ import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
+import static com.google.common.base.Preconditions.checkArgument
+
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class GammaStatechartAnnotator {
@@ -50,7 +52,9 @@ class GammaStatechartAnnotator {
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
 	protected final Map<Region,
-		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> interactionVariables = newHashMap // Check: list must be unique
+		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> regionInteractionVariables = newHashMap // Check: list must be unique
+	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
+		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> statechartInteractionVariables = newHashMap // Check: list must be unique
 	protected final Map<Entry<RaiseEventAction, Transition> /*interaction*/,
 		Entry<Entry<VariableDeclaration, Long> /*sender*/,
 		Entry<VariableDeclaration, Long> /*receiver*/>> interactions = newHashMap
@@ -170,10 +174,17 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def getInteractionVariables(Region region) {
-		if (!interactionVariables.containsKey(region)) {
-			interactionVariables.put(region, newArrayList)
+		if (!regionInteractionVariables.containsKey(region)) {
+			regionInteractionVariables.put(region, newArrayList)
 		}
-		return interactionVariables.get(region)
+		return regionInteractionVariables.get(region)
+	}
+	
+	protected def getInteractionVariables(StatechartDefinition statechart) {
+		if (!statechartInteractionVariables.containsKey(statechart)) {
+			statechartInteractionVariables.put(statechart, newArrayList)
+		}
+		return statechartInteractionVariables.get(statechart)
 	}
 	
 	protected def getReceivingInteractions(Transition transition) {
@@ -191,7 +202,36 @@ class GammaStatechartAnnotator {
 		interactions += new SimpleEntry(port, event)
 	}
 	
-	protected def createInteractionVariables(Region region) {
+	protected def getOrCreateInteractionVariables(Transition transition) {
+		val region = transition.correspondingRegion
+		if (region.orthogonal) {
+			// A new variable is needed for orthogonal regions and it cannot be shared
+			return region.createInteractionVariables(false /*variables cannot be shared with other regions*/)
+		}
+		// Optimization, maybe a new one does not need to be created
+		return region.getOrCreateInteractionVariables
+	}
+	
+	protected def getOrCreateInteractionVariables(Region region) {
+		checkArgument(!region.orthogonal)
+		val statechart = region.containingStatechart
+		val statechartInteractionVariables = statechart.interactionVariables
+		val statechartInteractionVariablesSize = statechartInteractionVariables.size
+		val regionInteractionVariables = region.interactionVariables
+		val regionInteractionVariablesSize = regionInteractionVariables.size
+		if (regionInteractionVariablesSize < statechartInteractionVariablesSize) {
+			// Putting a variable to the region pool from the statechart pool
+			val newInteractionVariablePair =
+					statechartInteractionVariables.get(regionInteractionVariablesSize)
+			regionInteractionVariables += newInteractionVariablePair
+			return newInteractionVariablePair
+		}
+		else {
+			return region.createInteractionVariables(true /*variables can be shared with other regions*/)
+		}
+	}
+	
+	protected def createInteractionVariables(Region region, boolean storeInGlobalPool) {
 		val statechart = region.containingStatechart
 		val senderVariable = createVariableDeclaration => [
 			it.type = createIntegerTypeDefinition
@@ -205,19 +245,26 @@ class GammaStatechartAnnotator {
 		statechart.variableDeclarations += senderVariable
 		statechart.variableDeclarations += receiverVariable
 		
-		val interactionVariablesSet = region.interactionVariables
-		interactionVariablesSet += variablePair
+		region.interactionVariables += variablePair
+		if (storeInGlobalPool) {
+			// Storing in the global pool too
+			statechart.interactionVariables += variablePair
+		}
 		resetableVariables += senderVariable
 		resetableVariables += receiverVariable
 		return variablePair
 	}
 	
 	protected def getInteractionVariables(Transition transition, Port port, Event event) {
+		if (!transition.isThereEnoughInteractionVariable) {
+			transition.getOrCreateInteractionVariables
+		}
 		val interactions = transition.receivingInteractions
-		val index = interactions.indexOf(new SimpleEntry(port, event)) // The i. interaction is saved using the i. variable
-		val inRegion = transition.correspondingRegion
-		val variables = inRegion.interactionVariables
-		return variables.get(index)
+		// The i. interaction is saved using the i. variable
+		val index = interactions.indexOf(new SimpleEntry(port, event))
+		val region = transition.correspondingRegion
+		val regionVariables = region.interactionVariables
+		return regionVariables.get(index)
 	}
 	
 	protected def hasReceivingInteraction(Transition transition, Port port, Event event) {
@@ -272,18 +319,13 @@ class GammaStatechartAnnotator {
 			val event = match.raisedEvent
 			val inParameter = event.parameterDeclarations.last // It is always the last
 			val receivingTransition = match.receivingTransition
-			val inRegion = receivingTransition.correspondingRegion
 			
 			// We do not want to duplicate the same assignments to the same variable
 			if (!receivingTransition.hasReceivingInteraction(inPort, event)) {
 				receivingTransition.putReceivingInteraction(inPort, event)
-				if (!receivingTransition.isThereEnoughInteractionVariable) {
-					// Note: a new variable is needed since if there is only one variable,
-					// the subsequent assignments to the same variable overwrite each other
-					inRegion.createInteractionVariables
-					// The difference can be at most one due to the nature of the algorithm
-				}
-				val interactionVariables = receivingTransition.getInteractionVariables(inPort, event)
+
+				val interactionVariables = receivingTransition.getInteractionVariables(
+						inPort, event)
 				val senderVariable = interactionVariables.key
 				val receiverVariable = interactionVariables.value
 				// Sender assignment
