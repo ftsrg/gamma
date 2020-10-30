@@ -481,9 +481,9 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	protected def Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
+	/*protected def Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
 		if (expression instance)
-	}
+	}*/
 	
 	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList, List<String> currentAccessList) {
 		if (fieldsList.size < currentAccessList.size) {
