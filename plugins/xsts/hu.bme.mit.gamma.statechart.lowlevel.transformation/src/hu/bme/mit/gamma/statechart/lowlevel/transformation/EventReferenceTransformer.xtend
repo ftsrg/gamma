@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
+import static extension com.google.common.collect.Iterables.getOnlyElement
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -130,7 +131,7 @@ class EventReferenceTransformer {
 	}
 
 	protected def Expression transform(Expression timeValue, TimeUnit timeUnit) {
-		val plainValue = timeValue.transformExpression
+		val plainValue = timeValue.transformExpression.getOnlyElement
 		switch (timeUnit) {
 			case TimeUnit.SECOND: {
 				// S = 1000 MS

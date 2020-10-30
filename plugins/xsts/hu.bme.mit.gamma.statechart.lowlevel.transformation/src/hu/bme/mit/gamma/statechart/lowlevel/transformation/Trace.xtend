@@ -54,9 +54,11 @@ package class Trace {
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
 	// Function return variables
-	final Map<FunctionAccessExpression, VariableDeclaration> returnVariableMappings = new HashMap<FunctionAccessExpression, VariableDeclaration>
+	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = new HashMap<FunctionAccessExpression, List<VariableDeclaration>>
 	// Record mappings
 	final Map<Pair<VariableDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordVarDeclMappings = new HashMap()
+	// Assertion variables
+	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -441,7 +443,7 @@ package class Trace {
 	}
 	
 	// Function return variable
-	def put(FunctionAccessExpression functionAccessExpression, VariableDeclaration returnVariable) {
+	def put(FunctionAccessExpression functionAccessExpression, List<VariableDeclaration> returnVariable) {
 		checkNotNull(functionAccessExpression)
 		checkNotNull(returnVariable)
 		returnVariableMappings.put(functionAccessExpression, returnVariable)
@@ -457,17 +459,16 @@ package class Trace {
 		returnVariableMappings.get(functionAccessExpression)
 	}
 	
-	// Record variables
+	// Record
 	def put(Pair<VariableDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
-		checkNotNull(recordField.value.get(0))	//as least one element
 		checkNotNull(lowLevelVariable)
 		recordVarDeclMappings.put(recordField, lowLevelVariable)
 	} 
 
-	def isMapped(Pair<VariableDeclaration, FieldDeclaration> recordField) {
+	def isMapped(Pair<VariableDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
@@ -479,16 +480,33 @@ package class Trace {
 		return false
 	}
 	
-	def get(Pair<VariableDeclaration, FieldDeclaration> recordField) {
+	def get(Pair<VariableDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
 		for (key : recordVarDeclMappings.keySet) {
 			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
-				recordVarDeclMappings.get(key)
+				return recordVarDeclMappings.get(key)
 			}
 		}
 		return null
+	}
+	
+	// Assertion
+	def put(String name, VariableDeclaration assertionVariable) {
+		checkNotNull(name)
+		checkNotNull(assertionVariable)
+		assertionVariableMappings.put(name, assertionVariable)
+	}
+	
+	def isAssertionVariableMapped(String name) {
+		checkNotNull(name)
+		assertionVariableMappings.containsKey(name)
+	}
+	
+	def getAssertionVariable(String name) {
+		checkNotNull(name)
+		assertionVariableMappings.get(name)
 	}
 	
 	private static class Triple<K, V, T> {

@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
+import static extension com.google.common.collect.Iterables.getOnlyElement
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -48,6 +49,12 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.model.Declaration
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -63,43 +70,63 @@ class ExpressionTransformer {
 		this.functionInlining = functionInlining
 	}
 	
-	def dispatch Expression transformExpression(NullaryExpression expression) {
-		return expression.clone(true, true)
+	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
+		var result = new ArrayList<Expression>
+		result += expression.clone(true, true)
+		return result
 	}
 	
-	def dispatch Expression transformExpression(DefaultExpression expression) {
-		return createTrueExpression
+	def dispatch List<Expression> transformExpression(DefaultExpression expression) {
+		var result = new ArrayList<Expression>
+		result += createTrueExpression
+		return result
 	}
 	
-	def dispatch Expression transformExpression(FunctionAccessExpression expression) {
+	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
+		var result = new ArrayList<Expression>
 		if (functionInlining) {
-			return createDirectReferenceExpression => [
-				it.declaration = trace.get(expression)
-			]
+			for (elem : trace.get(expression)) {
+				result += createDirectReferenceExpression => [
+					it.declaration = elem
+				]
+			}
 		} else {
-			//TODO
-			throw new IllegalArgumentException("No function inlining is currently not possible")
+			//TODO no inlining
+			throw new IllegalArgumentException("Currently only function inlining is possible!")
 		}
+		return result
 	}
 	
-	def dispatch Expression transformExpression(UnaryExpression expression) {
-		return create(expression.eClass) as UnaryExpression => [
-			it.operand = expression.operand.transformExpression
-		]
+	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
+		throw new IllegalArgumentException("Currently only function inlining is possible!")
+		
+		
 	}
 	
-	def dispatch Expression transformExpression(IfThenElseExpression expression) {
-		return createIfThenElseExpression => [
-			it.condition = expression.condition.transformExpression
-			it.then = expression.then.transformExpression
-			it.^else = expression.^else.transformExpression
+	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
+		var result = new ArrayList<Expression>
+		result += create(expression.eClass) as UnaryExpression => [
+			it.operand = expression.operand.transformExpression.getOnlyElement
 		]
+		return result
+	}
+	
+	def dispatch List<Expression> transformExpression(IfThenElseExpression expression) {
+		var result = new ArrayList<Expression>
+		result += createIfThenElseExpression => [
+			it.condition = expression.condition.transformExpression.getOnlyElement
+			it.then = expression.then.transformExpression.getOnlyElement
+			it.^else = expression.^else.transformExpression.getOnlyElement
+		]
+		return result
 	}
 
 	// Key method
-	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
+	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
+		var result = new ArrayList<Expression>
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
+			// TODO complex types
 			// Constant type declarations have to be transformed as their right hand side is inlined
 			val constantType = declaration.type
 			if (constantType instanceof TypeReference) {
@@ -113,61 +140,89 @@ class ExpressionTransformer {
 					}
 				}
 			}
-			return declaration.expression.transformExpression
+			result += declaration.expression.transformExpression
+		} else {
+			checkState(declaration instanceof VariableDeclaration || 
+				declaration instanceof ParameterDeclaration, declaration)
+			if (declaration instanceof VariableDeclaration) {
+				if (trace.get(declaration) !== null) {	//try to get as simple
+					result += createDirectReferenceExpression => [
+						it.declaration = trace.get(declaration)
+					]	
+				} else {								//if no result as simple, try as complex
+					var mapKeys = exploreComplexType(declaration, declaration.type.typeDefinitionFromType, new ArrayList<FieldDeclaration>)
+					for (key : mapKeys) {
+						result += createDirectReferenceExpression => [
+							it.declaration = trace.get(key)
+						]
+					}
+				}
+			}
+			else if (declaration instanceof ParameterDeclaration) {
+				//TODO complex types
+				checkState(trace.isMapped(declaration), declaration)
+				result += createDirectReferenceExpression => [
+					it.declaration = trace.get(declaration)
+				]
+			}
 		}
-		checkState(declaration instanceof VariableDeclaration || 
-			declaration instanceof ParameterDeclaration, declaration)
-		val referenceExpression = createDirectReferenceExpression
-		if (declaration instanceof VariableDeclaration) {
-			checkState(trace.isMapped(declaration), declaration)
-			return referenceExpression => [
-				it.declaration = trace.get(declaration)
-			]
-		}
-		else if (declaration instanceof ParameterDeclaration) {
-			checkState(trace.isMapped(declaration), declaration)
-			return referenceExpression => [
-				it.declaration = trace.get(declaration)
-			]
-		}
+		return result
 	}
 	
 	// Key method
-	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {
+	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
+		var result = new ArrayList<Expression>
 		val gammaEnumLiteral = expression.reference
 		val index = gammaEnumLiteral.index
 		val gammaEnumTypeDeclaration = gammaEnumLiteral.getContainerOfType(TypeDeclaration)
 		checkState(trace.isMapped(gammaEnumTypeDeclaration))
 		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
 		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
-		return createEnumerationLiteralExpression => [
+		result += createEnumerationLiteralExpression => [
 			it.reference = lowlevelEnumTypeDefinition.literals.get(index)
 		]
+		return result
 	}
 	
 	// Key method
-	def dispatch Expression transformExpression(EventParameterReferenceExpression expression) {
+	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
+		//TODO currently the field assignment position has to match the field declaration position
+		var result = new ArrayList<Expression>
+		for (assignment : expression.fieldAssignments) {
+			result += assignment.value.transformExpression
+		}
+		return result
+	}
+	
+	// Key method
+	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
+		var result = new ArrayList<Expression>
 		val port = expression.port
 		val event = expression.event
 		val parameter = expression.parameter
-		return createDirectReferenceExpression => [
+		result +=  createDirectReferenceExpression => [
 			it.declaration = trace.get(port, event, parameter).get(EventDirection.IN)
 		]
+		return result
 	}
 	
-	def dispatch Expression transformExpression(BinaryExpression expression) {
-		return create(expression.eClass) as BinaryExpression => [
-			it.leftOperand = expression.leftOperand.transformExpression
-			it.rightOperand = expression.rightOperand.transformExpression
+	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
+		var result = new ArrayList<Expression>
+		result += create(expression.eClass) as BinaryExpression => [
+			it.leftOperand = expression.leftOperand.transformExpression.getOnlyElement
+			it.rightOperand = expression.rightOperand.transformExpression.getOnlyElement
 		]
+		return result
 	}
 	
-	def dispatch Expression transformExpression(MultiaryExpression expression) {
+	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
+		var result = new ArrayList<Expression>
 		val newExpression = create(expression.eClass) as MultiaryExpression
 		for (containedExpression : expression.operands) {
-			newExpression.operands += containedExpression.transformExpression
+			newExpression.operands += containedExpression.transformExpression.getOnlyElement
 		}
-		return newExpression
+		result += newExpression
+		return result
 	}
 	
 	protected def dispatch Type transformType(Type type) {
@@ -194,7 +249,7 @@ class ExpressionTransformer {
 		return type.clone(true, true)
 	}
 	
-	//TODO maybe?
+	//TODO check maybe?
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {
 		return type.clone(true, true)
 	}
@@ -251,7 +306,7 @@ class ExpressionTransformer {
 			transformed.add(createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
-				it.expression = variable.expression?.transformExpression
+				it.expression = variable.expression?.transformExpression?.getOnlyElement
 			])
 			trace.put(variable, transformed.head)
 			return transformed
@@ -280,12 +335,12 @@ class ExpressionTransformer {
 				if (variable.expression !== null) {
 					var Expression initial = variable.expression
 					if (initial instanceof RecordLiteralExpression) {
-						it.expression = getExpressionFromRecordLiteral(initial, currentField).transformExpression
+						it.expression = getExpressionFromRecordLiteral(initial, currentField).transformExpression.getOnlyElement
 					} else if (initial instanceof ArrayLiteralExpression) {
 						it.expression = constraintFactory.createArrayLiteralExpression
 						for (op : initial.operands) {
 							if (op instanceof RecordLiteralExpression) {
-								(it.expression as ArrayLiteralExpression).operands.add(getExpressionFromRecordLiteral(op, currentField).transformExpression)
+								(it.expression as ArrayLiteralExpression).operands.add(getExpressionFromRecordLiteral(op, currentField).transformExpression.getOnlyElement)
 							}
 						}
 					}
@@ -320,7 +375,7 @@ class ExpressionTransformer {
 			transformed.add(createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
-				it.expression = variable.expression?.transformExpression
+				it.expression = variable.expression?.transformExpression.getOnlyElement
 			])
 			trace.put(variable, transformed.head)
 		}
@@ -353,7 +408,7 @@ class ExpressionTransformer {
 			stackCopy.addAll(arrayStack)
 			var stackTop = stackCopy.remove(0)
 			var arrayTypeDef = constraintFactory.createArrayTypeDefinition
-			arrayTypeDef.size = stackTop.size
+			arrayTypeDef.size = stackTop.size.transformExpression.getOnlyElement as IntegerLiteralExpression
 			arrayTypeDef.elementType = createTransformedRecordType(stackCopy, innerType)
 			return arrayTypeDef
 		} else {
@@ -362,7 +417,7 @@ class ExpressionTransformer {
 	}
 	
 		
-	private def TypeDefinition getTypeDefinitionFromType(Type type) {
+	protected def TypeDefinition getTypeDefinitionFromType(Type type) {
 		// Resolve type reference (may be chain) or return type definition
 		if (type instanceof TypeReference) {
 			var innerType = (type as TypeReference).reference.type
@@ -372,5 +427,74 @@ class ExpressionTransformer {
 		}
 	}
 	
+	protected def List<Pair<VariableDeclaration, List<FieldDeclaration>>> exploreComplexType(VariableDeclaration original, TypeDefinition type, List<FieldDeclaration> currentField) {
+		var List<Pair<VariableDeclaration, List<FieldDeclaration>>> result = new ArrayList<Pair<VariableDeclaration, List<FieldDeclaration>>>
+		
+		if (type instanceof RecordTypeDefinition) {
+			// In case of records go into each field
+			for (field : type.fieldDeclarations) {
+				// Get current field by extending the previous (~current) with the one to explore
+				var newCurrent = new ArrayList<FieldDeclaration>
+				newCurrent.addAll(currentField)
+				newCurrent.add(field)
+				//Explore
+				result += exploreComplexType(original, getTypeDefinitionFromType(field.type), newCurrent)
+			}
+		} else if (type instanceof ArrayTypeDefinition) {
+			// In case of arrays jump to the inner type
+			result += exploreComplexType(original, getTypeDefinitionFromType(type.elementType), currentField)
+		} else {	//Simple
+			// In case of simple types create a result element
+			result += new Pair<VariableDeclaration, List<FieldDeclaration>>(original, currentField)
+		}
+		
+		return result
+	}
+	
+	protected def List<Object> collectAccessList(ReferenceExpression exp) {
+		var List<Object> result = new ArrayList<Object>
+		if (exp instanceof ArrayAccessExpression) {
+			// if possible, add inner
+			var inner = exp.operand
+			if(inner instanceof ReferenceExpression) {
+				result.addAll(collectAccessList(inner))
+			}
+			// add own
+			result.add(exp.arguments.getOnlyElement())
+		} else if (exp instanceof RecordAccessExpression) {
+			// if possible, add inner
+			var inner = exp.operand
+			if(inner instanceof ReferenceExpression) {
+				result.addAll(collectAccessList(inner))
+			}
+			// add own
+			result.add(exp.field)
+		} else if (exp instanceof SelectExpression){
+			// if possible, jump over (as it returns a value with the same access list)
+			var inner = exp.operand
+			if(inner instanceof ReferenceExpression) {
+				result.addAll(collectAccessList(inner))
+			}
+		} else {
+			// function access and direct reference signal the end of the chain: let return with empty
+		}
+		return result
+	}
+	
+	protected def Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
+		if (expression instance)
+	}
+	
+	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList, List<String> currentAccessList) {
+		if (fieldsList.size < currentAccessList.size) {
+			return false
+		}
+		for (var i = 0; i < currentAccessList.size; i++) {
+			if(currentAccessList.get(i) != fieldsList.get(i).name) {
+				return false
+			}
+		}
+		return true
+	}
 	
 }

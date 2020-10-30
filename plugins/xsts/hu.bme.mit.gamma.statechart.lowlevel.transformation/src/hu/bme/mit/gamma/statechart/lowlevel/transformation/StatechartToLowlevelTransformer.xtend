@@ -64,11 +64,12 @@ class StatechartToLowlevelTransformer {
 	// Transformation parameters
 	protected final boolean functionInlining = true
 	protected final int maxRecursionDepth = 10
+	protected final String assertionVariableName = "__assertionFailed"
 
 	new() {
 		this.trace = new Trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining, this.maxRecursionDepth)
+		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining, this.maxRecursionDepth, this.assertionVariableName)
 		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
@@ -233,6 +234,17 @@ class StatechartToLowlevelTransformer {
 			it.schedulingOrder = statechart.schedulingOrder.transform
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
+		
+		// Create assertion variable if not yet created
+		if (!trace.isAssertionVariableMapped(assertionVariableName)) {
+			var assertionVariable = createVariableDeclaration => [
+				it.name = assertionVariableName
+				it.type = createBooleanTypeDefinition
+				it.expression = createFalseExpression
+			]
+			lowlevelStatechart.variableDeclarations += assertionVariable
+			trace.put(assertionVariableName, assertionVariable)
+		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
 			val lowlevelParameterDeclaration = parameterDeclaration.transform

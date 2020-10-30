@@ -54,6 +54,15 @@ import java.util.List
 import java.util.Stack
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression
+
+import static extension com.google.common.collect.Iterables.getOnlyElement
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -73,12 +82,12 @@ class ActionTransformer {
 	// Etc
 	protected Stack<VariableDeclaration> returnStack = new Stack<VariableDeclaration>();
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth, String assertionVariableName) {
 		this.trace = trace
 		this.functionInlining = functionInlining
 		this.maxRecursionDepth = maxRecursionDepth
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.assertionVariableName = "assertionFailed"
+		this.assertionVariableName = assertionVariableName
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(this.trace, this.expressionTransformer, this, assertionVariableName, functionInlining, maxRecursionDepth)
 	}
 	
@@ -144,16 +153,14 @@ class ActionTransformer {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		var lowlevelPrecondition = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformPrecondition : new LinkedList<Action>
-		val variableDeclaration = createVariableDeclarationStatement => [
-			it.variableDeclaration = createVariableDeclaration => [
-				it.name = action.variableDeclaration.name
-				it.type = action.variableDeclaration.type.transformType
-				it.expression = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformExpression : null
-			]
-		]
-		trace.put(action.variableDeclaration, variableDeclaration.variableDeclaration)
+		
+		val variableDeclarations = action.variableDeclaration.transformVariable
 		result += lowlevelPrecondition
-		result += variableDeclaration
+		for (variableDeclaration : variableDeclarations) {
+			result += createVariableDeclarationStatement => [
+				it.variableDeclaration = variableDeclaration
+			]	
+		}
 		// Create new following-context variable and transform the following-context
 		var newFollowing = new LinkedList<Action>
 		newFollowing.addAll(following)
@@ -166,7 +173,7 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, LinkedList<Action> following) {
-		throw new IllegalArgumentException("Not known action: " + action)
+		throw new IllegalArgumentException("Constant declaration statements are not yet transformed: " + action)
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action, LinkedList<Action> following) {
@@ -180,8 +187,8 @@ class ActionTransformer {
 			result += createEmptyStatement;
 		} else if (functionInlining) {	//if function access
 			result += createEmptyStatement;
-		} else {	//if function access
-			//TODO!!!
+		} else {	//if function access without inlining
+			throw new IllegalArgumentException("Non-inlined functions currently not allowed: " + action)
 		}
 		// Create new following-context variable and transform the following-context
 		var newFollowing = new LinkedList<Action>
@@ -208,7 +215,7 @@ class ActionTransformer {
 					//it.declaration = returnStack.pop()
 					it.declaration = returnStack.peek()
 				]
-				it.rhs = action.expression.transformExpression
+				it.rhs = action.expression.transformExpression.getOnlyElement
 			]
 			result.addAll(precondition)
 			result.add(transformedAction)
@@ -226,7 +233,7 @@ class ActionTransformer {
 		val List<Action> guardPreconditions = new ArrayList<Action>
 		for (conditional : action.conditionals) {
 			guardPreconditions.addAll(conditional.guard.transformPrecondition)
-			guardExpressions += conditional.guard.transformExpression
+			guardExpressions += conditional.guard.transformExpression.getOnlyElement
 			if (conditional.guard instanceof ElseExpression) {
 				elseFlag = true
 			}
@@ -272,10 +279,10 @@ class ActionTransformer {
 		val List<Expression> guardExpressions = new ArrayList<Expression>
 		val List<Action> guardPreconditions = new ArrayList<Action>
 		guardPreconditions.addAll(action.controlExpression.transformPrecondition)
-		val controlExpression = action.controlExpression.transformExpression
+		val controlExpression = action.controlExpression.transformExpression.getOnlyElement
 		for (conditional : action.cases) {
 			guardPreconditions.addAll(conditional.guard.transformPrecondition)
-			guardExpressions += conditional.guard.transformExpression
+			guardExpressions += conditional.guard.transformExpression.getOnlyElement
 			if (conditional.guard instanceof DefaultExpression) {
 				defaultFlag = true
 			}
@@ -286,7 +293,7 @@ class ActionTransformer {
 			for (i : 0 .. action.cases.size - 1) {
 				it.conditionals += createBranch => [
 					it.guard = createEqualityExpression => [
-						it.leftOperand = controlExpression.transformExpression	//TODO not so nice: already transformed, just copying
+						it.leftOperand = controlExpression.transformExpression.getOnlyElement
 						it.rightOperand = guardExpressions.get(i)
 					]
 					it.action = createBlock => [
@@ -364,7 +371,7 @@ class ActionTransformer {
 		val List<Action> guardPreconditions = new ArrayList<Action>
 		for (conditional : action.branches) {
 			guardPreconditions.addAll(conditional.guard.transformPrecondition)
-			guardExpressions += conditional.guard.transformExpression
+			guardExpressions += conditional.guard.transformExpression.getOnlyElement
 		}
 		result += guardPreconditions
 		// Transform the statement itself (including the following-context)
@@ -372,7 +379,7 @@ class ActionTransformer {
 			it.conditionals += createBranch => [
 				it.guard = createOrExpression => [
 					for (guard : guardExpressions) {
-						it.operands += guard.transformExpression	//TODO not so nice: already transformed, just copy
+						it.operands += guard.transformExpression.getOnlyElement
 					}
 				]
 				it.action = createBlock => [
@@ -410,30 +417,65 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(AssignmentStatement action, LinkedList<Action> following) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
-		//val referredDeclaration = findDeclarationOfReference(action.lhs) TODO remove if no errors
+		//val referredDeclaration = findDeclarationOfReference(action.lhs) TODO remove if next line makes no errors
 		val referredDeclaration = action.lhs.referredVariables.iterator.next
 		if (referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration) {
 			// Transform lhs
-			var ReferenceExpression lowlevelLhs = null
-			if (!(referredDeclaration.type instanceof CompositeTypeDefinition)) {
-				lowlevelLhs = createDirectReferenceExpression => [
+			val List<ReferenceExpression> lowlevelLhs = new ArrayList<ReferenceExpression>
+			System.out.println("Assignment to type: " + referredDeclaration.type)	//TODO delete
+			var typeToAssign = referredDeclaration.type.typeDefinitionFromType;
+			if (!(typeToAssign instanceof CompositeTypeDefinition)) {
+				lowlevelLhs += createDirectReferenceExpression => [
 					if(referredDeclaration instanceof VariableDeclaration)
 						it.declaration = trace.get(referredDeclaration as VariableDeclaration)
 					else if(referredDeclaration instanceof ParameterDeclaration)
 						it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
 				]
 			} else {
-				throw new IllegalArgumentException("Assignments to composite types are not yet supported: " + referredDeclaration.type.class)
+				var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)
+				System.out.println("OriginalLhs: " + originalLhsVariables)	//TODO delete
+				
+				// access expressions:
+				var List<Object> accessList = action.lhs.collectAccessList
+				var List<String> recordAccessList = new ArrayList<String>
+				for (elem : accessList) {
+					if (elem instanceof String) {
+						recordAccessList.add(elem)
+					}
+				}
+				System.out.println("AccessList:" + recordAccessList + "---" + recordAccessList.size);
+				
+				var lowlevelLhsVariables = new ArrayList<VariableDeclaration>	//TODO delete
+				for (elem : originalLhsVariables) {	
+					if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
+						lowlevelLhsVariables += trace.get(elem)	//TODO delete
+						// Create lhs
+						lowlevelLhs += createDirectReferenceExpression => [
+							it.declaration = trace.get(elem)
+						]
+					}
+				}
+				System.out.println("LowlevelLhs: " + lowlevelLhsVariables)	//TODO delete
 			}
+			
 			// Get rhs precondition
-			var lowlevelPrecondition = action.rhs.transformPrecondition
-			// Transform rhs and create action
-			val lowlevelAction = createAssignmentStatement
-			lowlevelAction.lhs = lowlevelLhs
-			lowlevelAction.rhs = action.rhs.transformExpression
-			// Add the transformed actions in the correct order
+			val lowlevelPrecondition = action.rhs.transformPrecondition
 			result += lowlevelPrecondition
-			result += lowlevelAction
+			// Transform rhs and create action
+			val List<Expression> lowlevelRhs = new ArrayList<Expression>
+			lowlevelRhs += action.rhs.transformExpression
+			System.out.println("LowlevelRhs: " + lowlevelRhs)	//TODO delete
+			if (lowlevelLhs.size != lowlevelRhs.size) {	
+				throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
+			}
+			for (var i = 0; i < lowlevelLhs.size; i++) {
+				val lhs = lowlevelLhs.get(i)
+				val rhs = lowlevelRhs.get(i)
+				result += createAssignmentStatement => [
+					it.lhs = lhs
+					it.rhs = rhs
+				]
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Not assignable declaration: " + referredDeclaration)
@@ -449,13 +491,61 @@ class ActionTransformer {
 		return result
 	}
 	
+	
+	
 	protected def dispatch List<Action> transformAction(AssertionStatement action, LinkedList<Action> following) {
-		throw new IllegalArgumentException("Not known action: " + action)
+		// Create return variable and transform the current action
+		var result = new LinkedList<Action>
+		var lowlevelPrecondition = action.assertion.transformPrecondition
+		result.addAll(lowlevelPrecondition)
+		// If there is an assertion variable, branch and assign, otherwise discard
+		val lhsVariable = trace.getAssertionVariable(assertionVariableName)
+		if (lhsVariable !== null) {
+			result += createIfStatement => [
+				it.conditionals += createBranch => [
+					it.guard = action.assertion.transformExpression.getOnlyElement
+					it.action = createBlock => [
+						it.actions += createAssignmentStatement => [
+							it.lhs = createDirectReferenceExpression => [
+								it.declaration = lhsVariable
+							]
+							it.rhs = createTrueExpression
+						]
+						val newFollowing = new LinkedList<Action>
+						newFollowing.addAll(following)
+						val next = newFollowing.removeFirst
+						it.actions += next.transformAction(newFollowing)
+					]
+				]
+				it.conditionals += createBranch => [
+					it.guard = createElseExpression
+					it.action = createBlock => [
+						val newFollowing = new LinkedList<Action>
+						newFollowing.addAll(following)
+						val next = newFollowing.removeFirst
+						it.actions += next.transformAction(newFollowing)
+					]
+				]
+			]
+			
+		} else {
+			// Create new following-context variable and transform the following-context
+			var newFollowing = new LinkedList<Action>
+			newFollowing.addAll(following)
+			if(newFollowing.size > 0) {
+				var next = newFollowing.removeFirst()
+				result.addAll(transformAction(next, newFollowing))
+			}
+		}
+		
+		// Return the result
+		return result
 	}
 	
 	// Gamma statechart elements
 
 	protected def dispatch List<Action> transformAction(RaiseEventAction action, LinkedList<Action> following) {
+		// TODO complex parameter types if needed?
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		val port = action.port
@@ -465,7 +555,7 @@ class ActionTransformer {
 		// Parameter setting
 		for (exp : action.arguments) {
 			val parameterDeclaration = lowlevelEvent.parameters.get(i++) // Getting the i-th parameter
-			val parameterValue = exp.transformExpression
+			val parameterValue = exp.transformExpression.getOnlyElement
 			val parameterAssignment = createAssignmentStatement => [
 				it.lhs = createDirectReferenceExpression => [
 					it.declaration = parameterDeclaration
@@ -522,17 +612,6 @@ class ActionTransformer {
 		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
 	}
 	
-	//TODO extract into util class: ExpressionUtil already has similar
-	/*private def Declaration findDeclarationOfReference(Expression reference) {
-		if(reference instanceof DirectReferenceExpression) {
-			return reference.declaration
-		} else if (reference instanceof AccessExpression) {
-			return findDeclarationOfReference(reference.operand)
-		} else {
-			throw new IllegalArgumentException("Not known reference type: " + reference.class)
-		}
-	}*/
-	
 	private def dispatch List<Expression> enumerateExpression(Expression expression) {
 		//if reference to enum
 		//LITERALS
@@ -575,7 +654,7 @@ class ActionTransformer {
 		return result
 	}
 	
-	//TODO extract into separate class
+	//TODO remove (alternative found, see Assignment)
 	private def TypeDefinition findTypeDefinitionOfDeclaration(Declaration declaration) {
 		if (declaration.type instanceof TypeDefinition) {
 			return declaration.type as TypeDefinition
