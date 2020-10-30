@@ -271,11 +271,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 						simpleInstanceHandler.getNewSimpleInstances(component);
 				ports.addAll(getPorts(newSimpleInstances));
 			}
-			// The semantics is defined here
-			ports.addAll(getPorts(includedInstances)); // + included instance
+			// The semantics is defined here: including has priority over excluding
 			ports.removeAll(getPorts(excludedInstances)); // - excluded instance
-			ports.addAll(includedPorts); // + included port
+			ports.addAll(getPorts(includedInstances)); // + included instance
 			ports.removeAll(excludedPorts); // - included port
+			ports.addAll(includedPorts); // + included port
 			return ports;
 		}
 		

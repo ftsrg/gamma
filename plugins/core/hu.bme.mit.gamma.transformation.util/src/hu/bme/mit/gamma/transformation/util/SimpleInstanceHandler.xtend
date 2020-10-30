@@ -35,8 +35,9 @@ class SimpleInstanceHandler {
 	def getNewIncludedSimpleInstancePorts(Collection<ComponentInstancePortReference> includedOriginalReferences,
 			Collection<ComponentInstancePortReference> excludedOriginalReferences, Component newType) {
 		val newPorts = newArrayList
-		newPorts += includedOriginalReferences.getNewSimpleInstancePorts(newType)
+		// The semantics is defined here: including has priority over excluding
 		newPorts -= excludedOriginalReferences.getNewSimpleInstancePorts(newType)
+		newPorts += includedOriginalReferences.getNewSimpleInstancePorts(newType)
 		return newPorts
 	}
 	
@@ -70,16 +71,14 @@ class SimpleInstanceHandler {
 	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> includedOriginalInstances,
 			Collection<ComponentInstanceReference> excludedOriginalInstances, Component newType) {
-		// Include - exclude
 		val newInstances = newArrayList
 		if (includedOriginalInstances.empty) {
 			// If it is empty, it means all simple instances must be covered
 			newInstances += newType.getNewSimpleInstances
 		}
-		else {
-			newInstances += includedOriginalInstances.getNewSimpleInstances(newType)
-		}
+		// The semantics is defined here: including has priority over excluding
 		newInstances -= excludedOriginalInstances.getNewSimpleInstances(newType)
+		newInstances += includedOriginalInstances.getNewSimpleInstances(newType)
 		return newInstances
 	}
 	
