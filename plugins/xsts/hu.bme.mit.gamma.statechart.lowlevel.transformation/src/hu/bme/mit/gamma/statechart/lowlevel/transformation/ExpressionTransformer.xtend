@@ -98,8 +98,30 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		throw new IllegalArgumentException("Currently only function inlining is possible!")
+		var result = new ArrayList<Expression>
 		
+		var originalDeclaration = expression.findDeclarationOfReferenceExpression
+		//TODO not only variable
+		var originalLhsVariables = exploreComplexType(originalDeclaration as VariableDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
+		
+		var accessList = expression.collectAccessList
+		var List<String> recordAccessList = new ArrayList<String>
+		for (elem : accessList) {
+			if (elem instanceof String) { //TODO better ;)
+				recordAccessList.add(elem)
+			}
+		}
+
+		for (elem : originalLhsVariables) {	
+			if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
+				// Create references
+				result += createDirectReferenceExpression => [
+					it.declaration = trace.get(elem)
+				]
+			}
+		}
+		
+		return result		
 		
 	}
 	
@@ -481,9 +503,18 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	/*protected def Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
-		if (expression instance)
-	}*/
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(DirectReferenceExpression expression) {
+		return expression.declaration
+	}
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(RecordAccessExpression expression) {
+		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	//TODO without casting
+	}
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(ArrayAccessExpression expression) {
+		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	//TODO without casting
+	}
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
+		throw new IllegalArgumentException("Unhandled Reference Expression type!")
+	}
 	
 	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList, List<String> currentAccessList) {
 		if (fieldsList.size < currentAccessList.size) {

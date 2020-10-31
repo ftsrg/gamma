@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Collection
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ActionTransformer {
 	// Model factories
@@ -60,7 +61,7 @@ class ActionTransformer {
 	
 	def dispatch Action transformAction(AssignmentStatement action) {
 		return createAssignmentAction => [
-			it.lhs = action.lhs.transformExpression as ReferenceExpression
+			it.lhs = action.lhs.transformExpression as DirectReferenceExpression
 			it.rhs = action.rhs.transformExpression
 		]
 	}
