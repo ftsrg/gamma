@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.xsts.model.XSTS
 
 class LowlevelTransitionToActionTransformer {
 	// Auxiliary objects
@@ -43,26 +44,29 @@ class LowlevelTransitionToActionTransformer {
 	protected final ViatraQueryEngine engine
 	// Trace
 	protected final Trace trace
+	// xSts
+	protected final XSTS xSts
 	
-	new(ViatraQueryEngine engine, Trace trace) {
-		this(engine, trace, null)
+	new(ViatraQueryEngine engine, Trace trace, XSTS xSts) {
+		this(engine, trace, xSts, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+	new(ViatraQueryEngine engine, Trace trace, XSTS xSts, RegionActivator regionActivator) {
 		this.engine = engine
 		this.trace = trace
+		this.xSts = xSts
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
 		if (regionActivator === null) {
-			this.regionActivator = new RegionActivator(this.engine, this.trace)
+			this.regionActivator = new RegionActivator(this.engine, this.trace, this.xSts)
 		}
 		else {
 			this.regionActivator = regionActivator
 		}
 		this.regionDeactivator = new RegionDeactivator(this.trace)
-		this.entryActionRetriever = new EntryActionRetriever(this.trace)
-		this.exitActionRetriever = new ExitActionRetriever(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace)
+		this.entryActionRetriever = new EntryActionRetriever(this.trace, this.xSts)
+		this.exitActionRetriever = new ExitActionRetriever(this.trace, this.xSts)
+		this.actionTransformer = new ActionTransformer(this.trace, xSts)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 	}
 	

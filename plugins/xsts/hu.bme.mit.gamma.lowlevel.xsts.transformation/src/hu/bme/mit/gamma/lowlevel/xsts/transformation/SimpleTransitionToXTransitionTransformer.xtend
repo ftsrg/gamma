@@ -18,11 +18,12 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.XSTS
 
 class SimpleTransitionToXTransitionTransformer extends LowlevelTransitionToXTransitionTransformer {
 
-	new(ViatraQueryEngine engine, Trace trace) {
-		super(engine, trace)
+	new(ViatraQueryEngine engine, Trace trace, XSTS xSts) {
+		super(engine, trace, xSts)
 	}
 	
 	/**

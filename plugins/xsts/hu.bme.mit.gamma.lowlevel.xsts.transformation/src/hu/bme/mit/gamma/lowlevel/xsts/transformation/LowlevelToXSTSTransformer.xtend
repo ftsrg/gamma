@@ -144,18 +144,18 @@ class LowlevelToXSTSTransformer {
 		this.targetEngine = ViatraQueryEngine.on(new EMFScope(this.xSts))
 		this.trace = new Trace(_package, xSts)
 		// The transformers need the trace model for the variable mapping
-		this.regionActivator = new RegionActivator(this.engine, this.trace)
-		this.entryActionRetriever = new EntryActionRetriever(this.trace)
+		this.regionActivator = new RegionActivator(this.engine, this.trace, this.xSts)
+		this.entryActionRetriever = new EntryActionRetriever(this.trace, this.xSts)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
 		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
-			this.engine, this.trace)
+			this.engine, this.trace, this.xSts)
 		this.simpleTransitionToActionTransformer = new SimpleTransitionToXTransitionTransformer(
-			this.engine, this.trace)
+			this.engine, this.trace, this.xSts)
 		this.precursoryTransitionToXTransitionTransformer = new PrecursoryTransitionToXTransitionTransformer(
-			this.engine, this.trace)
+			this.engine, this.trace, this.xSts)
 		this.terminalTransitionToXTransitionTransformer = new TerminalTransitionToXTransitionTransformer(
-			this.engine, this.trace)
+			this.engine, this.trace, this.xSts)
 		this.transitionPreconditionCreator = new TransitionPreconditionCreator(this.trace)
 		this.transformation = BatchTransformation.forEngine(engine).build
 		this.statements = transformation.transformationStatements

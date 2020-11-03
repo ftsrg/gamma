@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.XSTS
 
 class EntryActionRetriever {
 	// Model factories
@@ -32,11 +33,15 @@ class EntryActionRetriever {
 	protected final extension ActionTransformer actionTransformer
 	// Trace
 	protected final Trace trace
+	// xSts
+	protected final XSTS xSts
 	
-	new(Trace trace) {
+	
+	new(Trace trace, XSTS xSts) {
 		this.trace = trace
+		this.xSts = xSts
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace)
+		this.actionTransformer = new ActionTransformer(this.trace, xSts)
 	}
 	
 	// Parent region handling
