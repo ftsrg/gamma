@@ -74,8 +74,7 @@ class PropertyGenerator {
 		for (SynchronousComponentInstance instance : instances) {
 			val Component type = instance.type
 			if (type instanceof StatechartDefinition) {
-				val statechart = type as StatechartDefinition
-				for (state : StatechartModelDerivedFeatures.getAllStates(statechart)) {
+				for (state : StatechartModelDerivedFeatures.getAllStates(type)) {
 					val stateReference = factory.createComponentInstanceStateConfigurationReference
 					val parentRegion = StatechartModelDerivedFeatures.getParentRegion(state)
 					stateReference.setInstance(createInstanceReference(instance))
@@ -202,32 +201,37 @@ class PropertyGenerator {
 		if (transitionAnnotations.empty) {
 			return formulas
 		}
-		val transitions = transitionAnnotations.transitions
+		val transitions = transitionAnnotations.transitions.toList
 		val size = transitions.size
 		for (var int i = 0; i < size - 1; i++) {
 			val lhsTransition = transitions.get(i)
-			val lhsVariable = transitionAnnotations.getVariable(lhsTransition)
 			for (var int j = i; /* This way loop edges are checked too */ j < size; j++) {
 				val rhsTransition = transitions.get(j)
-				val rhsVariable = transitionAnnotations.getVariable(rhsTransition)
 				val lhsSource = lhsTransition.sourceState
 				val lhsTarget = lhsTransition.targetState
 				val rhsSource = rhsTransition.sourceState
 				val rhsTarget = rhsTransition.targetState
 				if (lhsTarget === rhsSource || rhsTarget === lhsSource) {
-					// In-out transition pair
-					val and = expressionFactory.createAndExpression
-					and.operands += createVariableReference(lhsVariable)
-					and.operands += createVariableReference(rhsVariable)
-					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
-					// Comment
-					var String comment = null
+					var Transition firstTransition
+					var Transition secondTransition
+					// Order
 					if (lhsTarget === rhsSource) {
-						comment = '''«getId(lhsTransition)» -p- «getId(rhsTransition)»'''
+						firstTransition = lhsTransition
+						secondTransition = rhsTransition
 					}
 					else {
-						comment = '''«getId(rhsTransition)» -p- «getId(lhsTransition)»'''
+						firstTransition = rhsTransition
+						secondTransition = lhsTransition
 					}
+					val firstVariable = transitionAnnotations.getVariable(firstTransition)
+					val secondVariable = transitionAnnotations.getVariable(secondTransition)
+					// In-out transition pair
+					val and = expressionFactory.createAndExpression
+					and.operands += createVariableReference(firstVariable)
+					and.operands += createVariableReference(secondVariable)
+					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
+					// Comment
+					var String comment = '''«getId(firstTransition)» -p- «getId(secondTransition)»'''
 					val commentableStateFormula = propertyUtil.createCommentableStateFormula(comment, stateFormula)
 					formulas += commentableStateFormula
 				}
