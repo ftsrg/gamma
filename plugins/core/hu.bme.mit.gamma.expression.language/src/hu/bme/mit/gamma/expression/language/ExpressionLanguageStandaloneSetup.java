@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language;
 
-import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetupGenerated;
-
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */

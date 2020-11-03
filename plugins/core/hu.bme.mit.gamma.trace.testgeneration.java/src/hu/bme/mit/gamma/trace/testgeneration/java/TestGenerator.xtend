@@ -29,7 +29,7 @@ import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.transformation.util.AnnotationNamings
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
 import java.util.Collections

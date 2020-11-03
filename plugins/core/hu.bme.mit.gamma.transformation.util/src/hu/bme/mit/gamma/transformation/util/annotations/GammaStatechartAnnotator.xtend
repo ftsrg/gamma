@@ -1,4 +1,4 @@
-package hu.bme.mit.gamma.transformation.util
+package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -24,6 +24,7 @@ import java.util.Map.Entry
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
+import org.eclipse.xtend.lib.annotations.Data
 
 import static com.google.common.base.Preconditions.checkArgument
 
@@ -55,9 +56,7 @@ class GammaStatechartAnnotator {
 		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> regionInteractionVariables = newHashMap // Check: list must be unique
 	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
 		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> statechartInteractionVariables = newHashMap // Check: list must be unique
-	protected final Map<Entry<RaiseEventAction, Transition> /*interaction*/,
-		Entry<Entry<VariableDeclaration, Long> /*sender*/,
-		Entry<VariableDeclaration, Long> /*receiver*/>> interactions = newHashMap
+	protected final List<Interaction> interactions = newArrayList
 	// Resetable variables
 	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
@@ -138,7 +137,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	def getTransitionVariables() {
-		return this.transitionVariables
+		return new TransitionAnnotations(this.transitionVariables)
 	}
 	
 	// Transition pair coverage
@@ -154,7 +153,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	def getTransitionPairVariables() {
-		return this.transitionPairVariables
+		return new TransitionAnnotations(this.transitionPairVariables)
 	}
 	
 	// Interaction coverage
@@ -352,11 +351,9 @@ class GammaStatechartAnnotator {
 			val variables = receivingTransition.getInteractionVariables(inPort, event)
 			val senderVariable = variables.key
 			val receiverVariable = variables.value
-			interactions.put(new SimpleEntry(raiseEventAction, receivingTransition),
-				new SimpleEntry(new SimpleEntry(senderVariable, raiseEventAction.sendingId),
-					new SimpleEntry(receiverVariable, receivingTransition.receivingId)
-				)
-			)
+			interactions += new Interaction(raiseEventAction, receivingTransition,
+				senderVariable, raiseEventAction.sendingId,
+				receiverVariable, receivingTransition.receivingId)
 		}
 	}
 	
@@ -367,7 +364,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	def getInteractions() {
-		return this.interactions
+		return new InteractionAnnotations(this.interactions)
 	}
 	
 	def getResetableVariables() {
@@ -378,6 +375,62 @@ class GammaStatechartAnnotator {
 		annotateModelForTransitionCoverage
 		annotateModelForTransitionPairCoverage
 		annotateModelForInteractionCoverage
+	}
+	
+	// Auxiliary classes for the transition and interaction
+	
+	static class TransitionAnnotations {
+		
+		final Map<Transition, VariableDeclaration> transitionPairVariables
+		
+		new(Map<Transition, VariableDeclaration> transitionPairVariables) {
+			this.transitionPairVariables = transitionPairVariables
+		}
+		
+		def getTransitions() {
+			return transitionPairVariables.keySet
+		}
+		
+		def isAnnotated(Transition transition) {
+			return transitionPairVariables.containsKey(transition)
+		}
+		
+		def getVariable(Transition transition) {
+			return transitionPairVariables.get(transition)
+		}
+		
+		def isEmpty() {
+			return transitionPairVariables.empty
+		}
+		
+	}
+	
+	@Data
+	static class Interaction {
+		RaiseEventAction sender
+		Transition receiver
+		VariableDeclaration senderVariable
+		Long senderId
+		VariableDeclaration receiverVariable
+		Long receiverId
+	}
+	
+	static class InteractionAnnotations {
+		
+		final List<Interaction> interactions
+		
+		new(List<Interaction> interactions) {
+			this.interactions = interactions
+		}
+		
+		def getInteractions() {
+			return this.interactions
+		}
+		
+		def isEmpty() {
+			return this.interactions.isEmpty
+		}
+		
 	}
 	
 }

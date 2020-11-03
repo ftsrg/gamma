@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language.scoping;
 
-import hu.bme.mit.gamma.expression.language.scoping.AbstractExpressionLanguageScopeProvider;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
