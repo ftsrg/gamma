@@ -1,7 +1,6 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -16,6 +15,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
 import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
@@ -42,7 +42,10 @@ class GammaStatechartAnnotator {
 	protected boolean TRANSITION_PAIR_COVERAGE
 	protected final Set<SynchronousComponentInstance> transitionPairCoverableComponents = newHashSet
 	protected final Set<Transition> coverableTransitionPairs = newHashSet
-	protected final Map<Transition, VariableDeclaration> transitionPairVariables = newHashMap // Boolean variables
+	protected long transitionId = 1 // As 0 is the reset value
+	protected final Map<Transition, Long> transitionIds = newHashMap
+	protected final Map<State, VariablePair> transitionPairVariables = newHashMap
+	protected final List<TransitionPairAnnotation> transitionPairAnnotations = newArrayList
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<Port> interactionCoverablePorts= newHashSet
@@ -62,6 +65,7 @@ class GammaStatechartAnnotator {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Namings
 	protected final AnnotationNamings annotationNamings = new AnnotationNamings // Instance due to the id
 	
@@ -113,16 +117,7 @@ class GammaStatechartAnnotator {
 		}
 		return variable
 	}
-	
-	protected def createAssignment(VariableDeclaration variable, Expression expression) {
-		return createAssignmentStatement => [
-			it.lhs = createReferenceExpression => [
-				it.declaration = variable
-			]
-			it.rhs = expression
-		]
-	}
-	
+
 	//
 	
 	def annotateModelForTransitionCoverage() {
@@ -141,35 +136,83 @@ class GammaStatechartAnnotator {
 	
 	// Transition pair coverage
 	
+	protected def isIncomingTransition(Transition transition) {
+		return transition.targetState instanceof State
+	}
+	
+	protected def isOutgoingTransition(Transition transition) {
+		return transition.sourceState instanceof State
+	}
+	
+	protected def getTransitionId(Transition transition) {
+		if (!transitionIds.containsKey(transition)) {
+			transitionIds.put(transition, transitionId++)
+		}
+		return transitionIds.get(transition)
+	}
+	
+	protected def getOrCreateVariablePair(State state) {
+		// Now every time a new variable pair is created, this could be optimized later
+		// e.g., states, that are not reachable from each other, could use the same variable pair
+		if (!transitionPairVariables.containsKey(state)) {
+			val statechart = state.containingStatechart
+			val variablePair = statechart.createVariablePair(null, null,
+				false /*They are not resettable, as two cycles have to be considered*/)
+			transitionPairVariables.put(state, variablePair)
+		}
+		return transitionPairVariables.get(state)
+	}
+	
 	def annotateModelForTransitionPairCoverage() {
 		if (!TRANSITION_PAIR_COVERAGE) {
 			return
 		}
-		for (transition : coverableTransitionPairs.filter[it.needsAnnotation]) {
-			val variable = transition.createTransitionVariable(transitionPairVariables, false)
-			transition.effects += variable.createAssignment(createTrueExpression)
+		val incomingTransitions = coverableTransitionPairs.filter[it.incomingTransition]
+		val outgoingTransitions = coverableTransitionPairs.filter[it.outgoingTransition]
+		val incomingTransitionAnnotations = newArrayList
+		val outgoingTransitionAnnotations = newArrayList
+		// States with incoming and outgoing transitions
+		val states = incomingTransitions.map[it.targetState].filter(State).toSet
+		states.retainAll(outgoingTransitions.map[it.sourceState].toList)
+		for (state : states) {
+			val variablePair = state.getOrCreateVariablePair
+			val firstVariable = variablePair.first
+			val secondVariable = variablePair.second
+			state.exitActions += secondVariable.createAssignment(firstVariable.createReferenceExpression)
 		}
-		// Setting the variables of all sibling incoming transitions to false
-		val transitions = transitionPairVariables.keySet
-		for (transition : transitions) {
-			val source = transition.sourceState
-			val target = transition.targetState
-			if (target instanceof State) {
-				for (siblingIncomingTransition : transitions.filter[it !== transition && it.targetState === target]) {
-					val siblingTransitionVariable = transitionPairVariables.get(siblingIncomingTransition)
-					transition.effects += siblingTransitionVariable.createAssignment(createFalseExpression)
-				}
-				for (outgoingTransition : transitions.filter[it !== transition && it.sourceState === target &&
-						it.targetState !== source /*So loops between two states are not ignored*/]) {
-					val outgoingTransitionVariable = transitionPairVariables.get(outgoingTransition)
-					transition.effects += outgoingTransitionVariable.createAssignment(createFalseExpression)
-				}
+		for (incomingTransition : incomingTransitions) {
+			val incomingId =  incomingTransition.transitionId
+			val state = incomingTransition.targetState as State
+			val variablePair = state.getOrCreateVariablePair
+			val firstVariable = variablePair.first
+			val secondVariable = variablePair.second
+			incomingTransition.effects += firstVariable.createAssignment(incomingId.toIntegerLiteral) /*FirstVariable*/
+			incomingTransitionAnnotations += new TransitionAnnotation(incomingTransition,
+				secondVariable /*SecondVariable, as the exit action in the state will shift it here*/, incomingId)
+		}
+		for (outgoingTransition : outgoingTransitions) {
+			val outgoingId =  outgoingTransition.transitionId
+			val state = outgoingTransition.sourceState as State
+			val variablePair = state.getOrCreateVariablePair
+			val firstVariable = variablePair.first
+			outgoingTransition.effects += firstVariable.createAssignment(outgoingId.toIntegerLiteral)
+			outgoingTransitionAnnotations += new TransitionAnnotation(outgoingTransition,
+				firstVariable, outgoingId)
+		}
+		for (incomingTransitionAnnotation : incomingTransitionAnnotations) {
+			val incomingTransition = incomingTransitionAnnotation.getTransition
+			val state = incomingTransition.targetState as State
+			for (outgoingTransitionAnnotation : outgoingTransitionAnnotations
+					.filter[it.transition.sourceState === state]) {
+				// Annotation objects are NOT cloned
+				transitionPairAnnotations += new TransitionPairAnnotation(
+					incomingTransitionAnnotation, outgoingTransitionAnnotation)
 			}
 		}
 	}
 	
-	def getTransitionPairVariables() {
-		return new TransitionAnnotations(this.transitionPairVariables)
+	def getTransitionPairAnnotations() {
+		return transitionPairAnnotations
 	}
 	
 	// Interaction coverage
@@ -210,11 +253,24 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def putReceivingInteraction(Transition transition, Port port, Event event) {
-		if (!receivingInteractions.containsKey(transition)) {
-			receivingInteractions.put(transition, newArrayList)
-		}
-		val interactions = receivingInteractions.get(transition)
+		val interactions = transition.receivingInteractions
 		interactions += new SimpleEntry(port, event)
+	}
+	
+	protected def hasReceivingInteraction(Transition transition, Port port, Event event) {
+		val receivingInteractionsOfTransition = transition.receivingInteractions
+		return receivingInteractionsOfTransition.contains(new SimpleEntry(port, event))
+	}
+	
+	protected def isThereEnoughInteractionVariable(Transition transition) {
+		val region = transition.correspondingRegion
+		val interactionVariablesList = region.interactionVariables
+		val receivingInteractionsList = transition.receivingInteractions
+		return receivingInteractionsList.size <= interactionVariablesList.size
+	}
+	
+	protected def getCorrespondingRegion(Transition transition) {
+		return transition.sourceState.parentRegion
 	}
 	
 	protected def getOrCreateInteractionVariablePair(Transition transition) {
@@ -236,22 +292,6 @@ class GammaStatechartAnnotator {
 		val region = transition.correspondingRegion
 		val regionVariables = region.interactionVariables
 		return regionVariables.get(index)
-	}
-	
-	protected def hasReceivingInteraction(Transition transition, Port port, Event event) {
-		val receivingInteractionsOfTransition = transition.receivingInteractions
-		return receivingInteractionsOfTransition.contains(new SimpleEntry(port, event))
-	}
-	
-	protected def isThereEnoughInteractionVariable(Transition transition) {
-		val region = transition.correspondingRegion
-		val interactionVariablesList = region.interactionVariables
-		val receivingInteractionsList = transition.receivingInteractions
-		return receivingInteractionsList.size <= interactionVariablesList.size
-	}
-	
-	protected def getCorrespondingRegion(Transition transition) {
-		return transition.sourceState.parentRegion
 	}
 	
 	def annotateModelForInteractionCoverage() {
@@ -375,9 +415,10 @@ class GammaStatechartAnnotator {
 		statechart.variableDeclarations += senderVariable
 		statechart.variableDeclarations += receiverVariable
 		
-		localPool += variablePair
+		if (localPool !== null) {
+			localPool += variablePair
+		}
 		if (globalPool !== null) {
-			// Storing in the global pool too
 			globalPool += variablePair
 		}
 		if (resettable) {
@@ -442,6 +483,19 @@ class GammaStatechartAnnotator {
 	}
 	
 	@Data
+	static class TransitionAnnotation {
+		Transition transition
+		VariableDeclaration transitionVariable
+		Long transitionId
+	}
+	
+	@Data
+	static class TransitionPairAnnotation {
+		TransitionAnnotation incomingAnnotation
+		TransitionAnnotation outgoingAnnotation
+	}
+	
+	@Data
 	static class Interaction {
 		RaiseEventAction sender
 		Transition receiver
@@ -479,8 +533,8 @@ class AnnotationNamings {
 	int id = 0
 	
 	def String getVariableName(Transition transition) '''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»rec_«statechart.name»«id++»«POSTFIX»'''
-	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»send_«statechart.name»«id++»«POSTFIX»'''
+	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
+	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }

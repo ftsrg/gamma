@@ -18,15 +18,18 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
-public class ActionUtil {
+public class ActionUtil extends ExpressionUtil {
 	// Singleton
 	public static final ActionUtil INSTANCE = new ActionUtil();
 	protected ActionUtil() {}
 	//
 	
-	private ActionModelFactory factory = ActionModelFactory.eINSTANCE;
+	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
 	
 	public Action extend(Action originalAction, Action newAction) {
 		if (originalAction == null) {
@@ -41,7 +44,7 @@ public class ActionUtil {
 			return block;
 		}
 		else {
-			Block block = factory.createBlock();
+			Block block = actionFactory.createBlock();
 			block.getActions().add(originalAction);
 			block.getActions().add(newAction);
 			return block;
@@ -60,6 +63,16 @@ public class ActionUtil {
 			Collection<AssignmentStatement> assignments) {
 		return assignments.stream().filter(it -> it.getLhs().getDeclaration() == variable)
 				.collect(Collectors.toList());
+	}
+	
+	
+	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
+		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
+		ReferenceExpression reference = factory.createReferenceExpression();
+		reference.setDeclaration(variable);
+		assignmentStatement.setLhs(reference);
+		assignmentStatement.setRhs(expression);
+		return assignmentStatement;
 	}
 	
 }

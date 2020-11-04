@@ -440,4 +440,36 @@ public class ExpressionUtil {
 		return and;
 	}
 	
+	// Creators
+	
+	public BigInteger toBigInt(long value) {
+		return BigInteger.valueOf(value);
+	}
+	
+	public IntegerLiteralExpression toIntegerLiteral(long value) {
+		IntegerLiteralExpression integerLiteral = factory.createIntegerLiteralExpression();
+		integerLiteral.setValue(toBigInt(value));
+		return integerLiteral;
+	}
+	
+	public ReferenceExpression createReferenceExpression(VariableDeclaration variable) {
+		ReferenceExpression reference = factory.createReferenceExpression();
+		reference.setDeclaration(variable);
+		return reference;
+	}
+	
+	public EqualityExpression createEqualityExpression(VariableDeclaration variable, Expression expression) {
+		EqualityExpression equalityExpression = factory.createEqualityExpression();
+		equalityExpression.setLeftOperand(createReferenceExpression(variable));
+		equalityExpression.setRightOperand(expression);
+		return equalityExpression;
+	}
+	
+	public EqualityExpression createEqualityExpression(Expression lhs, Expression rhs) {
+		EqualityExpression equalityExpression = factory.createEqualityExpression();
+		equalityExpression.setLeftOperand(lhs);
+		equalityExpression.setRightOperand(rhs);
+		return equalityExpression;
+	}
+	
 }

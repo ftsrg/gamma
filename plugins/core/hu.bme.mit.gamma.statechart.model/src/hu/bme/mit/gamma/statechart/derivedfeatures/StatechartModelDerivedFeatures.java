@@ -940,6 +940,10 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			transition.getEffects().isEmpty();
 	}
 	
+	public static boolean isLoop(Transition transition) {
+		return transition.getSourceState() == transition.getTargetState();
+	}
+	
 	public static StateNode getSourceAncestor(Transition transition) {
 		return getSourceAncestor(transition.getSourceState(), transition.getTargetState());
 	}

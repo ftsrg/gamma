@@ -217,7 +217,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 								statechartAnnotator.getTransitionVariables()));
 				formulas.addAll(
 						propertyGenerator.createTransitionPairReachability(
-								statechartAnnotator.getTransitionPairVariables()));
+								statechartAnnotator.getTransitionPairAnnotations()));
 				formulas.addAll(
 						propertyGenerator.createInteractionReachability(
 								statechartAnnotator.getInteractions()));

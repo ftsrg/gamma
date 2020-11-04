@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
+import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.ArrayList
@@ -50,7 +51,7 @@ class PropertyGenerator {
 	protected boolean isSimpleComponentReference
 	//
 	protected final PropertyUtil propertyUtil = PropertyUtil.INSTANCE
-	protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
@@ -196,46 +197,35 @@ class PropertyGenerator {
 		return reference
 	}
 
-	def List<CommentableStateFormula> createTransitionPairReachability(TransitionAnnotations transitionAnnotations) {
+	def List<CommentableStateFormula> createTransitionPairReachability(
+			List<TransitionPairAnnotation> transitionPairAnnotations) {
 		val List<CommentableStateFormula> formulas = newArrayList
-		if (transitionAnnotations.empty) {
+		if (transitionPairAnnotations.empty) {
 			return formulas
 		}
-		val transitions = transitionAnnotations.transitions.toList
-		val size = transitions.size
-		for (var int i = 0; i < size - 1; i++) {
-			val lhsTransition = transitions.get(i)
-			for (var int j = i; /* This way loop edges are checked too */ j < size; j++) {
-				val rhsTransition = transitions.get(j)
-				val lhsSource = lhsTransition.sourceState
-				val lhsTarget = lhsTransition.targetState
-				val rhsSource = rhsTransition.sourceState
-				val rhsTarget = rhsTransition.targetState
-				if (lhsTarget === rhsSource || rhsTarget === lhsSource) {
-					var Transition firstTransition
-					var Transition secondTransition
-					// Order
-					if (lhsTarget === rhsSource) {
-						firstTransition = lhsTransition
-						secondTransition = rhsTransition
-					}
-					else {
-						firstTransition = rhsTransition
-						secondTransition = lhsTransition
-					}
-					val firstVariable = transitionAnnotations.getVariable(firstTransition)
-					val secondVariable = transitionAnnotations.getVariable(secondTransition)
-					// In-out transition pair
-					val and = expressionFactory.createAndExpression
-					and.operands += createVariableReference(firstVariable)
-					and.operands += createVariableReference(secondVariable)
-					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
-					// Comment
-					var String comment = '''«getId(firstTransition)» -p- «getId(secondTransition)»'''
-					val commentableStateFormula = propertyUtil.createCommentableStateFormula(comment, stateFormula)
-					formulas += commentableStateFormula
-				}
-			}
+		for (transitionPairAnnotation : transitionPairAnnotations) {
+			val incomingAnnotation = transitionPairAnnotation.incomingAnnotation
+			val outgoingAnnotation = transitionPairAnnotation.outgoingAnnotation
+			
+			val firstTransition = incomingAnnotation.transition
+			val secondTransition = outgoingAnnotation.transition
+			val firstVariable = incomingAnnotation.transitionVariable
+			val secondVariable = outgoingAnnotation.transitionVariable
+			val firstId = incomingAnnotation.transitionId
+			val secondId = outgoingAnnotation.transitionId
+			
+			// In-out transition pair
+			val firstVariableReference = firstVariable.createVariableReference
+			val secondVariableReference = secondVariable.createVariableReference
+			val and = expressionFactory.createAndExpression => [
+				it.operands += firstVariableReference.createEqualityExpression(firstId.toIntegerLiteral)
+				it.operands += secondVariableReference.createEqualityExpression(secondId.toIntegerLiteral)
+			]
+			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
+			// Comment
+			var String comment = '''«getId(firstTransition)» -p- «getId(secondTransition)»'''
+			val commentableStateFormula = propertyUtil.createCommentableStateFormula(comment, stateFormula)
+			formulas += commentableStateFormula
 		}
 		return formulas
 	}
