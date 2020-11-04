@@ -46,7 +46,7 @@ abstract class AbstractUppaalBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Scanner traceScanner, boolean sortTrace) {
 		this.traceScanner = traceScanner

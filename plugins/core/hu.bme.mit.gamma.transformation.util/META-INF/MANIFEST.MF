@@ -16,6 +16,7 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
  org.eclipse.viatra.query.runtime,
+ hu.bme.mit.gamma.trace.model,
  hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.eventpriority.transformation,
  hu.bme.mit.gamma.statechart.phase.transformation

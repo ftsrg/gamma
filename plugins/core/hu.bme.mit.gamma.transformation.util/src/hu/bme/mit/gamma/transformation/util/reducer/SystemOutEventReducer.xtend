@@ -23,7 +23,7 @@ class SystemOutEventReducer implements Reducer {
 	new(Component topComponent) {
 		this(topComponent, #[])
 	}
-	new (Component topComponent, Collection<Entry<Port, Event>> relevantEvents) {
+	new(Component topComponent, Collection<Entry<Port, Event>> relevantEvents) {
 		this.topComponent = topComponent
 		this.relevantEvents = relevantEvents
 	}
