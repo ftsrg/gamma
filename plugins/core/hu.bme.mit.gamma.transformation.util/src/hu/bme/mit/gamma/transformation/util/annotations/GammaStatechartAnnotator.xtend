@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -12,6 +13,7 @@ import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
@@ -25,8 +27,6 @@ import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.xtend.lib.annotations.Data
-
-import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -46,18 +46,17 @@ class GammaStatechartAnnotator {
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected final Set<Port> interactionCoverablePorts= newHashSet
-	protected final Set<ParameterDeclaration> newParameters = newHashSet
+	protected final Set<ParameterDeclaration> newEventParameters = newHashSet
 	protected long senderId = 1 // As 0 is the reset value
 	protected long recevierId = 1 // As 0 is the reset value
 	protected final Map<RaiseEventAction, Long> sendingIds = newHashMap
 	protected final Map<Transition, Long> receivingIds = newHashMap
 	protected final Map<Transition, List<Entry<Port, Event>>> receivingInteractions = newHashMap // Check: list must be unique
-	protected final Map<Region,
-		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> regionInteractionVariables = newHashMap // Check: list must be unique
+	protected final Map<Region, List<VariablePair>> regionInteractionVariables = newHashMap // Check: list must be unique
 	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
-		List<Pair<VariableDeclaration /*sender*/, VariableDeclaration /*receiver*/>>> statechartInteractionVariables = newHashMap // Check: list must be unique
+		List<VariablePair>> statechartInteractionVariables = newHashMap // Check: list must be unique
 	protected final List<Interaction> interactions = newArrayList
-	// Resetable variables
+	// Resettable variables
 	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
@@ -115,12 +114,12 @@ class GammaStatechartAnnotator {
 		return variable
 	}
 	
-	protected def createAssignment(VariableDeclaration variable) {
+	protected def createAssignment(VariableDeclaration variable, Expression expression) {
 		return createAssignmentStatement => [
 			it.lhs = createReferenceExpression => [
 				it.declaration = variable
 			]
-			it.rhs = createTrueExpression
+			it.rhs = expression
 		]
 	}
 	
@@ -132,7 +131,7 @@ class GammaStatechartAnnotator {
 		}
 		for (transition : coverableTransitions.filter[it.needsAnnotation]) {
 			val variable = transition.createTransitionVariable(transitionVariables, true)
-			transition.effects += variable.createAssignment
+			transition.effects += variable.createAssignment(createTrueExpression)
 		}
 	}
 	
@@ -148,7 +147,24 @@ class GammaStatechartAnnotator {
 		}
 		for (transition : coverableTransitionPairs.filter[it.needsAnnotation]) {
 			val variable = transition.createTransitionVariable(transitionPairVariables, false)
-			transition.effects += variable.createAssignment
+			transition.effects += variable.createAssignment(createTrueExpression)
+		}
+		// Setting the variables of all sibling incoming transitions to false
+		val transitions = transitionPairVariables.keySet
+		for (transition : transitions) {
+			val source = transition.sourceState
+			val target = transition.targetState
+			if (target instanceof State) {
+				for (siblingIncomingTransition : transitions.filter[it !== transition && it.targetState === target]) {
+					val siblingTransitionVariable = transitionPairVariables.get(siblingIncomingTransition)
+					transition.effects += siblingTransitionVariable.createAssignment(createFalseExpression)
+				}
+				for (outgoingTransition : transitions.filter[it !== transition && it.sourceState === target &&
+						it.targetState !== source /*So loops between two states are not ignored*/]) {
+					val outgoingTransitionVariable = transitionPairVariables.get(outgoingTransition)
+					transition.effects += outgoingTransitionVariable.createAssignment(createFalseExpression)
+				}
+			}
 		}
 	}
 	
@@ -201,62 +217,18 @@ class GammaStatechartAnnotator {
 		interactions += new SimpleEntry(port, event)
 	}
 	
-	protected def getOrCreateInteractionVariables(Transition transition) {
+	protected def getOrCreateInteractionVariablePair(Transition transition) {
 		val region = transition.correspondingRegion
-		if (region.orthogonal) {
-			// A new variable is needed for orthogonal regions and it cannot be shared
-			return region.createInteractionVariables(false /*variables cannot be shared with other regions*/)
-		}
-		// Optimization, maybe a new one does not need to be created
-		return region.getOrCreateInteractionVariables
-	}
-	
-	protected def getOrCreateInteractionVariables(Region region) {
-		checkArgument(!region.orthogonal)
 		val statechart = region.containingStatechart
-		val statechartInteractionVariables = statechart.interactionVariables
-		val statechartInteractionVariablesSize = statechartInteractionVariables.size
 		val regionInteractionVariables = region.interactionVariables
-		val regionInteractionVariablesSize = regionInteractionVariables.size
-		if (regionInteractionVariablesSize < statechartInteractionVariablesSize) {
-			// Putting a variable to the region pool from the statechart pool
-			val newInteractionVariablePair =
-					statechartInteractionVariables.get(regionInteractionVariablesSize)
-			regionInteractionVariables += newInteractionVariablePair
-			return newInteractionVariablePair
-		}
-		else {
-			return region.createInteractionVariables(true /*variables can be shared with other regions*/)
-		}
-	}
-	
-	protected def createInteractionVariables(Region region, boolean storeInGlobalPool) {
-		val statechart = region.containingStatechart
-		val senderVariable = createVariableDeclaration => [
-			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getSendingVariableName(region)
-		]
-		val receiverVariable = createVariableDeclaration => [
-			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getReceivingVariableName(region)
-		]
-		val variablePair = new Pair(senderVariable, receiverVariable)
-		statechart.variableDeclarations += senderVariable
-		statechart.variableDeclarations += receiverVariable
-		
-		region.interactionVariables += variablePair
-		if (storeInGlobalPool) {
-			// Storing in the global pool too
-			statechart.interactionVariables += variablePair
-		}
-		resetableVariables += senderVariable
-		resetableVariables += receiverVariable
-		return variablePair
+		val statechartInteractionVariables = statechart.interactionVariables
+		return region.getOrCreateVariablePair(regionInteractionVariables,
+			statechartInteractionVariables, true)
 	}
 	
 	protected def getInteractionVariables(Transition transition, Port port, Event event) {
 		if (!transition.isThereEnoughInteractionVariable) {
-			transition.getOrCreateInteractionVariables
+			transition.getOrCreateInteractionVariablePair
 		}
 		val interactions = transition.receivingInteractions
 		// The i. interaction is saved using the i. variable
@@ -301,7 +273,7 @@ class GammaStatechartAnnotator {
 				it.name = annotationNamings.getParameterName(event)
 			]
 			event.parameterDeclarations += newParameter
-			newParameters += newParameter
+			newEventParameters += newParameter
 		}
 		
 		// Annotating transitions
@@ -325,8 +297,8 @@ class GammaStatechartAnnotator {
 
 				val interactionVariables = receivingTransition.getInteractionVariables(
 						inPort, event)
-				val senderVariable = interactionVariables.key
-				val receiverVariable = interactionVariables.value
+				val senderVariable = interactionVariables.first
+				val receiverVariable = interactionVariables.second
 				// Sender assignment
 				receivingTransition.effects += createAssignmentStatement => [
 					it.lhs = createReferenceExpression => [
@@ -349,18 +321,76 @@ class GammaStatechartAnnotator {
 				]
 			}
 			val variables = receivingTransition.getInteractionVariables(inPort, event)
-			val senderVariable = variables.key
-			val receiverVariable = variables.value
+			val senderVariable = variables.first
+			val receiverVariable = variables.second
 			interactions += new Interaction(raiseEventAction, receivingTransition,
 				senderVariable, raiseEventAction.sendingId,
 				receiverVariable, receivingTransition.receivingId)
 		}
 	}
 	
-	// 
+	// Variable pair creators, used both by transition pair and interaction annotation
 	
-	def getNewParameters() {
-		return this.newParameters
+	protected def getOrCreateVariablePair(Region region,
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+		val statechart = region.containingStatechart
+		if (region.orthogonal) {
+			// A new variable is needed for orthogonal regions and it cannot be shared
+			return statechart.createVariablePair(localPool,
+				null /*Variables cannot be shared with other regions*/,
+				resettable)
+		}
+		// Optimization, maybe a new one does not need to be created
+		return statechart.getOrCreateVariablePair(localPool, globalPool, resettable)
+	}
+	
+	protected def getOrCreateVariablePair(StatechartDefinition statechart,
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+		val localPoolSize = localPool.size
+		val globalPoolSize = globalPool.size
+		if (localPoolSize < globalPoolSize) {
+			// Putting a variable to the local pool from the global pool
+			val retrievedVariablePair = globalPool.get(localPoolSize)
+			localPool += retrievedVariablePair
+			return retrievedVariablePair
+		}
+		else {
+			return statechart.createVariablePair(localPool,
+				globalPool /*Variables can be shared with other regions*/,
+				resettable)
+		}
+	}
+	
+	protected def createVariablePair(StatechartDefinition statechart,
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+		val senderVariable = createVariableDeclaration => [
+			it.type = createIntegerTypeDefinition
+			it.name = annotationNamings.getFirstVariableName(statechart)
+		]
+		val receiverVariable = createVariableDeclaration => [
+			it.type = createIntegerTypeDefinition
+			it.name = annotationNamings.getSecondVariableName(statechart)
+		]
+		val variablePair = new VariablePair(senderVariable, receiverVariable)
+		statechart.variableDeclarations += senderVariable
+		statechart.variableDeclarations += receiverVariable
+		
+		localPool += variablePair
+		if (globalPool !== null) {
+			// Storing in the global pool too
+			globalPool += variablePair
+		}
+		if (resettable) {
+			resetableVariables += senderVariable
+			resetableVariables += receiverVariable
+		}
+		return variablePair
+	}
+	
+	// Getters
+	
+	def getNewEventParameters() {
+		return this.newEventParameters
 	}
 	
 	def getInteractions() {
@@ -406,6 +436,12 @@ class GammaStatechartAnnotator {
 	}
 	
 	@Data
+	static class VariablePair {
+		VariableDeclaration first
+		VariableDeclaration second
+	}
+	
+	@Data
 	static class Interaction {
 		RaiseEventAction sender
 		Transition receiver
@@ -428,7 +464,7 @@ class GammaStatechartAnnotator {
 		}
 		
 		def isEmpty() {
-			return this.interactions.isEmpty
+			return this.interactions.empty
 		}
 		
 	}
@@ -443,8 +479,8 @@ class AnnotationNamings {
 	int id = 0
 	
 	def String getVariableName(Transition transition) '''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getReceivingVariableName(Region region) '''«PREFIX»rec_«region.name»«id++»«POSTFIX»'''
-	def String getSendingVariableName(Region region) '''«PREFIX»send_«region.name»«id++»«POSTFIX»'''
+	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»rec_«statechart.name»«id++»«POSTFIX»'''
+	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»send_«statechart.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
 }
