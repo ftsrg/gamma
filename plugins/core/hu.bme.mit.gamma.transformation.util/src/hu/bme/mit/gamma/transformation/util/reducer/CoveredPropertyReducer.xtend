@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.property.model.AtomicFormula
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
@@ -22,17 +23,18 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class CoveredPropertyReducer {
 	
 	protected final Collection<StateFormula> formulas
-	protected final ExecutionTrace trace
+	protected final Collection<ExecutionTrace> traces
 	
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	protected final extension PropertyUtil propertyUtil = PropertyUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
 	
-	new(Collection<StateFormula> formulas, ExecutionTrace trace) {
+	new(Collection<StateFormula> formulas, Collection<ExecutionTrace> traces) {
 		this.formulas = formulas
-		this.trace = trace
+		this.traces = traces
 	}
 	
 	def execute() {
@@ -41,19 +43,25 @@ class CoveredPropertyReducer {
 			val egLessFormula = formula.egLessFormula
 			if (egLessFormula !== null) {
 				if (egLessFormula instanceof AtomicFormula) {
-					val clonedFormula = egLessFormula.expression.clone
-					val steps = trace.steps
 					var isUnnecessary = false
-					for (var i = 0; i < steps.size && !isUnnecessary; i++) {
-						val step = steps.get(i)
-						for (instanceStateExpression : clonedFormula
-								.getAllContentsOfType(ComponentInstanceStateExpression)) {
-							val evaluation = instanceStateExpression.evaluate(step)
-							evaluation.replace(instanceStateExpression)
-						}
-						if (clonedFormula.definitelyTrueExpression) {
-							isUnnecessary = true
-							unnecessaryFormulas += formula
+					for (var i = 0; i < traces.size && !isUnnecessary; i++)  {
+						val trace = traces.get(i)
+						val steps = trace.steps
+						for (var j = 0; j < steps.size && !isUnnecessary; j++) {
+							// New formula is cloned for each step
+							val clonedFormula = egLessFormula.clone
+							val step = steps.get(j)
+							for (instanceStateExpression : clonedFormula
+									.getAllContentsOfType(ComponentInstanceStateExpression)) {
+								val evaluation = instanceStateExpression.evaluate(step)
+								evaluation.replace(instanceStateExpression)
+							}
+							val expression = clonedFormula.expression
+							val evaluation = expression.definitelyTrueExpression
+							if (evaluation) {
+								isUnnecessary = true
+								unnecessaryFormulas += formula
+							}
 						}
 					}
 				}

@@ -16,8 +16,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -29,6 +31,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
@@ -37,6 +40,7 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
+import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
@@ -76,54 +80,86 @@ public class VerificationHandler extends TaskHandler {
 		}
 		String filePath = verification.getFileName().get(0);
 		File modelFile = new File(filePath);
+		boolean isOptimize = verification.isOptimize();
+		String packageName = verification.getPackageName().get(0);
 		
 		List<String> queryFileLocations = new ArrayList<String>();
 		// String locations
 		queryFileLocations.addAll(verification.getQueryFiles());
-		// Serializing property models
+		// Retrieved traces
+		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
+		// Execution based on property models
+		Queue<StateFormula> stateFormulas = new LinkedList<StateFormula>();
 		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
-			File file = ecoreUtil.getFile(propertyPackage.eResource());
-			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
-			File newFile = new File(file.getParentFile().toString() + File.separator + fileName);
-			StringBuilder formulas = new StringBuilder();
 			for (CommentableStateFormula formula : propertyPackage.getFormulas()) {
-				String serializedFormula = propertySerializer.serialize(formula);
-				formulas.append(serializedFormula + System.lineSeparator());
+				stateFormulas.add(formula.getFormula());
 			}
-			fileUtil.saveString(newFile, formulas.toString());
-			newFile.deleteOnExit();
-			queryFileLocations.add(newFile.toString());
 		}
-		
+		while (!stateFormulas.isEmpty()) {
+			StateFormula formula = stateFormulas.poll();
+			String serializedFormula = propertySerializer.serialize(formula);
+			// Saving the string
+			File file = modelFile;
+			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
+			File queryFile = new File(file.getParentFile().toString() + File.separator + fileName);
+			fileUtil.saveString(queryFile, serializedFormula);
+			queryFile.deleteOnExit();
+			
+			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile, isOptimize, packageName);
+			
+			if (trace != null && isOptimize) {
+				retrievedTraces.add(trace);
+				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, retrievedTraces);
+				List<StateFormula> coveredProperties = reducer.execute();
+				if (coveredProperties.size() > 0) {
+					StringBuilder covered = new StringBuilder();
+					for (StateFormula coveredProperty : coveredProperties) {
+						covered.append(propertySerializer.serialize(coveredProperty) + System.lineSeparator());
+					}
+					logger.log(Level.INFO, "Some properties are already covered: " + covered);
+					stateFormulas.removeAll(coveredProperties);
+				}
+			}
+		}
+		// Execution based on string queries
 		for (String queryFileLocation : queryFileLocations) {
 			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
 			File queryFile = new File(queryFileLocation);
 			
-			ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
-			// Maybe there is no trace
-			if (trace != null) {
-				if (verification.isOptimize()) {
-					logger.log(Level.INFO, "Optimizing trace...");
-					traceUtil.removeCoveredSteps(trace);
-				}
-				
-				String basePackage = verification.getPackageName().get(0);
-				String traceFolder = targetFolderUri;
-				
-				Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
-				String fileName = fileNamePair.getKey();
-				Integer id = fileNamePair.getValue();
-				saveModel(trace, traceFolder, fileName);
-				
-				String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-				className += "Simulation" + id;
-				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-				String testCode = testGenerator.execute();
-				String testFolder = testFolderUri;
-				fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
-					File.separator + className + ".java", testCode);
-			}
+			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile,
+					isOptimize, packageName);
+
+			retrievedTraces.add(trace);
 		}
+	}
+
+	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
+			File queryFile, boolean isOptimize, String packageName) throws IOException {
+		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
+		// Maybe there is no trace
+		if (trace != null) {
+			if (isOptimize) {
+				logger.log(Level.INFO, "Optimizing trace...");
+				traceUtil.removeCoveredSteps(trace);
+			}
+			
+			String basePackage = packageName;
+			String traceFolder = targetFolderUri;
+			
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
+			String fileName = fileNamePair.getKey();
+			Integer id = fileNamePair.getValue();
+			saveModel(trace, traceFolder, fileName);
+			
+			String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+			className += "Simulation" + id;
+			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+			String testCode = testGenerator.execute();
+			String testFolder = testFolderUri;
+			fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
+				File.separator + className + ".java", testCode);
+		}
+		return trace;
 	}
 
 	private void setVerification(Verification verification) {

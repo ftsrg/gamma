@@ -148,6 +148,15 @@ public class ExpressionUtil {
 				}
 			}
 		}
+		if (expression instanceof AndExpression) {
+			AndExpression andExpression = (AndExpression) expression;
+			for (Expression subExpression : andExpression.getOperands()) {
+				if (!isDefinitelyTrueExpression(subExpression)) {
+					return false;
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 
@@ -197,6 +206,15 @@ public class ExpressionUtil {
 			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
 				return true;
 			}
+		}
+		if (expression instanceof OrExpression) {
+			OrExpression orExpression = (OrExpression) expression;
+			for (Expression subExpression : orExpression.getOperands()) {
+				if (!isDefinitelyFalseExpression(subExpression)) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
