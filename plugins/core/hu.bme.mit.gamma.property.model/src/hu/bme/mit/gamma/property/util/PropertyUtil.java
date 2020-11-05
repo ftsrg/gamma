@@ -138,4 +138,25 @@ public class PropertyUtil extends ExpressionUtil {
 		return reference;
 	}
 	
+	// Getter
+	
+	public PathFormula getEgLessFormula(StateFormula formula) {
+		if (formula instanceof QuantifiedFormula) {
+			QuantifiedFormula quantifiedFormula = (QuantifiedFormula) formula;
+			PathQuantifier quantifier = quantifiedFormula.getQuantifier();
+			if (quantifier == PathQuantifier.EXISTS) {
+				PathFormula pathFormula = quantifiedFormula.getFormula();
+				if (pathFormula instanceof UnaryOperandPathFormula) {
+					UnaryOperandPathFormula unaryOperandPathFormula = (UnaryOperandPathFormula) pathFormula;
+					UnaryPathOperator operator = unaryOperandPathFormula.getOperator();
+					if (operator == UnaryPathOperator.FUTURE) {
+						PathFormula egLessFormula = unaryOperandPathFormula.getOperand();
+						return egLessFormula;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 }

@@ -39,9 +39,9 @@ public abstract class TaskHandler {
 	
 	protected final IFile file;
 	
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected FileUtil fileUtil = FileUtil.INSTANCE;
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	protected final String projectLocation;
 	protected String targetFolderUri;
 	

@@ -101,7 +101,7 @@ class SimpleInstanceHandler {
 		return newType.allAsynchronousSimpleInstances.filter[original.contains(it)].toList
 	}
 	
-	private def contains(ComponentInstanceReference original, ComponentInstance copy) {
+	def contains(ComponentInstanceReference original, ComponentInstance copy) {
 		val originalInstances = original.componentInstanceHierarchy
 		val copyInstances = copy.parentComponentInstances
 		copyInstances += copy
