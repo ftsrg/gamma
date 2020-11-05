@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.property.model.AtomicFormula
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
@@ -39,13 +40,19 @@ class CoveredPropertyReducer {
 		for (formula : formulas) {
 			val egLessFormula = formula.egLessFormula
 			if (egLessFormula !== null) {
-				val clonedFormula = egLessFormula.clone
-				for (step : trace.steps) {
-					for (instanceStateExpression : clonedFormula
-							.getAllContentsOfType(ComponentInstanceStateExpression)) {
-						val evaluation = instanceStateExpression.evaluate(step)
-						evaluation.replace(instanceStateExpression)
-						if (evaluation.isDefinitelyTrueExpression) {
+				if (egLessFormula instanceof AtomicFormula) {
+					val clonedFormula = egLessFormula.expression.clone
+					val steps = trace.steps
+					var isUnnecessary = false
+					for (var i = 0; i < steps.size && !isUnnecessary; i++) {
+						val step = steps.get(i)
+						for (instanceStateExpression : clonedFormula
+								.getAllContentsOfType(ComponentInstanceStateExpression)) {
+							val evaluation = instanceStateExpression.evaluate(step)
+							evaluation.replace(instanceStateExpression)
+						}
+						if (clonedFormula.definitelyTrueExpression) {
+							isUnnecessary = true
 							unnecessaryFormulas += formula
 						}
 					}
