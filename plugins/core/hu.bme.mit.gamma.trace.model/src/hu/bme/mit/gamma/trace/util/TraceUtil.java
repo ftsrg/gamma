@@ -173,6 +173,15 @@ public class TraceUtil {
 		}
 	}
 	
+	public boolean isCovered(ExecutionTrace covered, List<ExecutionTrace> covering) {
+		for (ExecutionTrace coveringTrace : covering) {
+			if (isCovered(covered, coveringTrace)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isCovered(ExecutionTrace covered, ExecutionTrace covering) {
 		return isCovered(covered.getSteps(), covering.getSteps());
 	}

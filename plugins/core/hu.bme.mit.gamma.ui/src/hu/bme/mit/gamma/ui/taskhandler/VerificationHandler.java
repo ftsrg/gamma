@@ -88,6 +88,7 @@ public class VerificationHandler extends TaskHandler {
 		queryFileLocations.addAll(verification.getQueryFiles());
 		// Retrieved traces
 		List<ExecutionTrace> retrievedTraces = new ArrayList<ExecutionTrace>();
+		
 		// Execution based on property models
 		Queue<StateFormula> stateFormulas = new LinkedList<StateFormula>();
 		for (PropertyPackage propertyPackage : verification.getPropertyPackages()) {
@@ -105,10 +106,10 @@ public class VerificationHandler extends TaskHandler {
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();
 			
-			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile, isOptimize, packageName);
+			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile, retrievedTraces, isOptimize);
 			
+			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
-				retrievedTraces.add(trace);
 				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, retrievedTraces);
 				List<StateFormula> coveredProperties = reducer.execute();
 				if (coveredProperties.size() > 0) {
@@ -125,41 +126,56 @@ public class VerificationHandler extends TaskHandler {
 		for (String queryFileLocation : queryFileLocations) {
 			logger.log(Level.INFO, "Checking " + queryFileLocation + "...");
 			File queryFile = new File(queryFileLocation);
-			
-			ExecutionTrace trace = execute(verificationTask, modelFile, queryFile,
-					isOptimize, packageName);
-
-			retrievedTraces.add(trace);
+			execute(verificationTask, modelFile, queryFile,	retrievedTraces, isOptimize);
 		}
+		// Optimization again on the retrieved tests
+		if (isOptimize) {
+			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
+		}
+		// Serializing
+		for (ExecutionTrace trace : retrievedTraces) {
+			serializeTest(trace, packageName);
+		}
+		
 	}
 
 	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
-			File queryFile, boolean isOptimize, String packageName) throws IOException {
+			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
 		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {
 				logger.log(Level.INFO, "Optimizing trace...");
+				if (!retrievedTraces.isEmpty()) {
+					if (traceUtil.isCovered(trace, retrievedTraces)) {
+						return null; // We do not return a trace, as it is already covered
+					}
+				}
+				// Checking individual trace
 				traceUtil.removeCoveredSteps(trace);
 			}
-			
-			String basePackage = packageName;
-			String traceFolder = targetFolderUri;
-			
-			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
-			String fileName = fileNamePair.getKey();
-			Integer id = fileNamePair.getValue();
-			saveModel(trace, traceFolder, fileName);
-			
-			String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-			className += "Simulation" + id;
-			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-			String testCode = testGenerator.execute();
-			String testFolder = testFolderUri;
-			fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
-				File.separator + className + ".java", testCode);
+			if (!trace.getSteps().isEmpty()) {
+				retrievedTraces.add(trace);
+			}
 		}
 		return trace;
+	}
+	
+	protected void serializeTest(ExecutionTrace trace, String basePackage) throws IOException {
+		String traceFolder = targetFolderUri;
+		
+		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
+		String fileName = fileNamePair.getKey();
+		Integer id = fileNamePair.getValue();
+		saveModel(trace, traceFolder, fileName);
+		
+		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+		className += "Simulation" + id;
+		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+		String testCode = testGenerator.execute();
+		String testFolder = testFolderUri;
+		fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
+			File.separator + className + ".java", testCode);
 	}
 
 	private void setVerification(Verification verification) {
