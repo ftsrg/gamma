@@ -17,7 +17,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
-import java.math.BigInteger
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.List
@@ -48,6 +47,7 @@ class GammaStatechartAnnotator {
 	protected final List<TransitionPairAnnotation> transitionPairAnnotations = newArrayList
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
+	protected boolean RECEIVER_CONSIDERATION
 	protected final Set<Port> interactionCoverablePorts= newHashSet
 	protected final Set<ParameterDeclaration> newEventParameters = newHashSet
 	protected long senderId = 1 // As 0 is the reset value
@@ -91,6 +91,7 @@ class GammaStatechartAnnotator {
 		}
 		if (!interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
+			this.RECEIVER_CONSIDERATION = true
 			this.interactionCoverablePorts += interactionCoverablePorts
 		}
 	}
@@ -108,12 +109,10 @@ class GammaStatechartAnnotator {
 			it.type = createBooleanTypeDefinition
 			it.name = annotationNamings.getVariableName(transition)
 		]
-		// TODO optimization if a variable has been created for a transition
-		// Regarding both transition and transitionPair map
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
 		if (isResetable) {
-			resetableVariables += variable
+			variable.addToResetableVariables
 		}
 		return variable
 	}
@@ -217,6 +216,10 @@ class GammaStatechartAnnotator {
 	
 	// Interaction coverage
 	
+	protected def hasSendingId(RaiseEventAction action) {
+		return sendingIds.containsKey(action)
+	}
+	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
 			sendingIds.put(action, senderId++)
@@ -316,14 +319,14 @@ class GammaStatechartAnnotator {
 			newEventParameters += newParameter
 		}
 		
-		// Annotating transitions
+		// Annotating raise event actions and transitions
 		for (match : relevantMatches) {
 			// Sending
 			val raiseEventAction = match.raiseEventAction
-			if (!sendingIds.containsKey(raiseEventAction)) {
+			if (!raiseEventAction.hasSendingId) {
 				// One raise event action can synchronize to multiple transitions (broadcast channel)
-				raiseEventAction.arguments += createIntegerLiteralExpression => 
-					[it.value = BigInteger.valueOf(raiseEventAction.sendingId)]
+				val sendingId = raiseEventAction.sendingId // Must not be retrieved before the enclosing If
+				raiseEventAction.arguments += sendingId.toIntegerLiteral
 			}
 			// Receiving
 			val inPort = match.inPort
@@ -338,34 +341,25 @@ class GammaStatechartAnnotator {
 				val interactionVariables = receivingTransition.getInteractionVariables(
 						inPort, event)
 				val senderVariable = interactionVariables.first
-				val receiverVariable = interactionVariables.second
-				// Sender assignment
-				receivingTransition.effects += createAssignmentStatement => [
-					it.lhs = createReferenceExpression => [
-						it.declaration = senderVariable
-					]
-					it.rhs = createEventParameterReferenceExpression => [
+				// Sender assignment, necessary even when receiver is not
+				receivingTransition.effects += senderVariable.createAssignment(
+					createEventParameterReferenceExpression => [
 						it.port = inPort
 						it.event = event
 						it.parameter = inParameter
 					]
-				]
-				// Receiver assignment
-				receivingTransition.effects += createAssignmentStatement => [
-					it.lhs = createReferenceExpression => [
-						it.declaration = receiverVariable
-					]
-					it.rhs = createIntegerLiteralExpression => [
-						it.value = BigInteger.valueOf(receivingTransition.receivingId)
-					]
-				]
+				)
+				if (RECEIVER_CONSIDERATION) {
+					val receivingId = receivingTransition.receivingId
+					val receiverVariable = interactionVariables.second
+					// Receiver assignment
+					receivingTransition.effects += receiverVariable.createAssignment(
+						receivingId.toIntegerLiteral)
+				}
 			}
-			val variables = receivingTransition.getInteractionVariables(inPort, event)
-			val senderVariable = variables.first
-			val receiverVariable = variables.second
+			val variablePair = receivingTransition.getInteractionVariables(inPort, event)
 			interactions += new Interaction(raiseEventAction, receivingTransition,
-				senderVariable, raiseEventAction.sendingId,
-				receiverVariable, receivingTransition.receivingId)
+				variablePair, raiseEventAction.sendingId, receivingTransition.receivingId)
 		}
 	}
 	
@@ -407,13 +401,16 @@ class GammaStatechartAnnotator {
 			it.type = createIntegerTypeDefinition
 			it.name = annotationNamings.getFirstVariableName(statechart)
 		]
-		val receiverVariable = createVariableDeclaration => [
-			it.type = createIntegerTypeDefinition
-			it.name = annotationNamings.getSecondVariableName(statechart)
-		]
-		val variablePair = new VariablePair(senderVariable, receiverVariable)
 		statechart.variableDeclarations += senderVariable
-		statechart.variableDeclarations += receiverVariable
+		var VariableDeclaration receiverVariable = null
+		if (RECEIVER_CONSIDERATION) {
+			receiverVariable = createVariableDeclaration => [
+				it.type = createIntegerTypeDefinition
+				it.name = annotationNamings.getSecondVariableName(statechart)
+			]
+			statechart.variableDeclarations += receiverVariable
+		}
+		val variablePair = new VariablePair(senderVariable, receiverVariable)
 		
 		if (localPool !== null) {
 			localPool += variablePair
@@ -422,10 +419,18 @@ class GammaStatechartAnnotator {
 			globalPool += variablePair
 		}
 		if (resettable) {
-			resetableVariables += senderVariable
-			resetableVariables += receiverVariable
+			senderVariable.addToResetableVariables
+			receiverVariable.addToResetableVariables
 		}
 		return variablePair
+	}
+	
+	// Adder
+	
+	def addToResetableVariables(VariableDeclaration variable) {
+		if (variable !== null) {
+			resetableVariables += variable
+		}
 	}
 	
 	// Getters
@@ -441,6 +446,8 @@ class GammaStatechartAnnotator {
 	def getResetableVariables() {
 		return this.resetableVariables
 	}
+	
+	// Entry point
 	
 	def annotateModel() {
 		annotateModelForTransitionCoverage
@@ -480,6 +487,15 @@ class GammaStatechartAnnotator {
 	static class VariablePair {
 		VariableDeclaration first
 		VariableDeclaration second
+		
+		def hasFirst() {
+			return first !== null
+		}
+		
+		def hasSecond() {
+			return second !== null
+		}
+		
 	}
 	
 	@Data
@@ -499,22 +515,42 @@ class GammaStatechartAnnotator {
 	static class Interaction {
 		RaiseEventAction sender
 		Transition receiver
-		VariableDeclaration senderVariable
+		VariablePair variablePair
 		Long senderId
-		VariableDeclaration receiverVariable
 		Long receiverId
 	}
 	
 	static class InteractionAnnotations {
 		
-		final List<Interaction> interactions
+		final Collection<Interaction> interactions
+		Set<Interaction> interactionSet
 		
-		new(List<Interaction> interactions) {
+		new(Collection<Interaction> interactions) {
 			this.interactions = interactions
 		}
 		
 		def getInteractions() {
 			return this.interactions
+		}
+		
+		def getUniqueInteractions() {
+			if (interactionSet === null) {
+				interactionSet = newHashSet
+				// If the interaction has no second variable, duplication can occur
+				for (i : interactions) {
+					val sender = i.sender
+					var Transition receiver = null
+					val variablePair = i.variablePair
+					val senderId = i.senderId
+					var Long receiverId = null
+					if (variablePair.hasSecond) {
+						receiver = i.receiver
+						receiverId = i.receiverId
+					}
+					interactionSet += new Interaction(sender, receiver, variablePair, senderId, receiverId)
+				}
+			}
+			return interactionSet
 		}
 		
 		def isEmpty() {

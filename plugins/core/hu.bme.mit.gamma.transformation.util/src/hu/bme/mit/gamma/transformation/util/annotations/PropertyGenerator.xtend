@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 import java.util.ArrayList
 import java.util.Collection
 import java.util.Collections
@@ -63,7 +62,7 @@ class PropertyGenerator {
 	}
 
 	def PropertyPackage initializePackage(Component component) {
-		val PropertyPackage propertyPackage = factory.createPropertyPackage()
+		val PropertyPackage propertyPackage = factory.createPropertyPackage
 		val Package _package = StatechartModelDerivedFeatures.getContainingPackage(component)
 		propertyPackage.getImport() += _package
 		propertyPackage.setComponent(component)
@@ -235,36 +234,39 @@ class PropertyGenerator {
 		if (interactionAnnotations.empty) {
 			return formulas
 		}
-		for (interaction : interactionAnnotations.interactions) {
-			val senderVariable = interaction.senderVariable
+		for (interaction : interactionAnnotations.uniqueInteractions) {
+			val sender = interaction.sender
+			val receiver = interaction.receiver
+			val variablePair = interaction.variablePair
+			val senderVariable = variablePair.first
 			val senderId = interaction.senderId
-			val receiverVariable = interaction.receiverVariable
+			val receiverVariable = variablePair.second
 			val receiverId = interaction.receiverId
-			// Sender - note that the sender statechart and instance are the same as the receiving one,
-			// the senderVariable and receiverVariable are stored in the same statechart (receiverStatechart)
-			// Duplicated this part to make it more resilient (if the variables in the future are stored somewhere else)
-			val senderEqualityExpression = expressionFactory.createEqualityExpression
-			val senderReference = createVariableReference(senderVariable)
-			val senderLiteral = expressionFactory.createIntegerLiteralExpression
-			senderLiteral.setValue(BigInteger.valueOf(senderId))
-			senderEqualityExpression.setLeftOperand(senderReference)
-			senderEqualityExpression.setRightOperand(senderLiteral)
+			//
+			val senderComment = sender.id
+			var receiverComment = "<any>"
+			var Expression finalExpression = null
+			// Sender
+			val senderReference = senderVariable.createVariableReference
+			val senderLiteral = senderId.toIntegerLiteral
+			val senderEqualityExpression = senderReference.createEqualityExpression(senderLiteral)
+			finalExpression = senderEqualityExpression
 			// Receiver
-			val receiverEqualityExpression = expressionFactory.createEqualityExpression
-			val receiverReference = createVariableReference(receiverVariable)
-			val receiverLiteral = expressionFactory.createIntegerLiteralExpression
-			receiverLiteral.setValue(BigInteger.valueOf(receiverId))
-			receiverEqualityExpression.setLeftOperand(receiverReference)
-			receiverEqualityExpression.setRightOperand(receiverLiteral)
-			val andExpression = expressionFactory.createAndExpression
-			andExpression.operands += senderEqualityExpression
-			andExpression.operands += receiverEqualityExpression
-			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(andExpression))
+			if (variablePair.hasSecond) {
+				val receiverReference = receiverVariable.createVariableReference
+				val receiverLiteral = receiverId.toIntegerLiteral
+				val receiverEqualityExpression = receiverReference.createEqualityExpression(receiverLiteral)
+				finalExpression = expressionFactory.createAndExpression => [
+					it.operands += senderEqualityExpression
+					it.operands += receiverEqualityExpression
+				]
+				receiverComment = receiver.id
+			}
+			//
+			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))
 			// Comment
-			val source = interaction.sender
-			val target = interaction.receiver
 			val commentableStateFormula = propertyUtil.
-				createCommentableStateFormula('''«getId(source)» -i- «getId(target)»''', stateFormula)
+				createCommentableStateFormula('''«senderComment» -i- «receiverComment»''', stateFormula)
 			formulas += commentableStateFormula
 		}
 		return formulas
