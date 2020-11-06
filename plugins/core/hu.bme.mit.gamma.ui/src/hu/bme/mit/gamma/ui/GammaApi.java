@@ -73,7 +73,7 @@ public class GammaApi {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
 		IProject project = file.getProject();
-		// Xtext errors can be removed by cleaning the project in case of YakinduCompilation and TestGeneration tasks
+		// Xtext errors can be removed by cleaning the project, but the new import mechanism solved this problem
 		boolean needsCleaning = false;
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
@@ -89,7 +89,7 @@ public class GammaApi {
 				List<Task> tasks = orderTasks(genmodel, i);
 				for (Task task : tasks) {
 					if (task instanceof YakinduCompilation) {
-						needsCleaning = true;
+//						needsCleaning = true;
 						if (task instanceof InterfaceCompilation) {
 							logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resourceSet);
 							InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
@@ -124,7 +124,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "The composite system transformation has been finished.");
 						}
 						else if (task instanceof TestGeneration) {
-							needsCleaning = true;
+//							needsCleaning = true;
 							TestGeneration testGeneration = (TestGeneration) task;
 							TestGenerationHandler handler = new TestGenerationHandler(file);
 							handler.setTargetFolder(testGeneration);
@@ -132,7 +132,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "The test generation has been finished.");
 						}
 						else if (task instanceof Verification) {
-							needsCleaning = true;
+//							needsCleaning = true;
 							Verification verification = (Verification) task;
 							VerificationHandler handler = new VerificationHandler(file);
 							handler.setTargetFolder(verification);
@@ -161,7 +161,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {
-							needsCleaning = true;
+//							needsCleaning = true;
 							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
 							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
 							handler.setTargetFolder(eventPriorityTransformation);
@@ -169,7 +169,7 @@ public class GammaApi {
 							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
 						else if (task instanceof PhaseStatechartGeneration) {
-							needsCleaning = true;
+//							needsCleaning = true;
 							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
 							PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
 							handler.setTargetFolder(phaseStatechartGeneration);
@@ -185,7 +185,7 @@ public class GammaApi {
 		}
 		if (needsCleaning) {
 			logger.log(Level.INFO, "Cleaning project...");
-			// To reload imports
+			// It was necessary to reload imports, but the new import mechanism solved this problem
 			project.build(IncrementalProjectBuilder.CLEAN_BUILD, null);
 			logger.log(Level.INFO, "Cleaning project finished.");
 		}
