@@ -110,7 +110,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Checking if some of the unchecked properties are already covered
 			if (trace != null && isOptimize) {
-				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, retrievedTraces);
+				CoveredPropertyReducer reducer = new CoveredPropertyReducer(stateFormulas, trace);
 				List<StateFormula> coveredProperties = reducer.execute();
 				if (coveredProperties.size() > 0) {
 					StringBuilder covered = new StringBuilder();

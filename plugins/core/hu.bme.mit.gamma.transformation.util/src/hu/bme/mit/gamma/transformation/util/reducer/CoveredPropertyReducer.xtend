@@ -32,6 +32,10 @@ class CoveredPropertyReducer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler instanceHandler = SimpleInstanceHandler.INSTANCE
 	
+	new(Collection<StateFormula> formulas, ExecutionTrace trace) {
+		this(formulas, #[trace])
+	}
+	
 	new(Collection<StateFormula> formulas, Collection<ExecutionTrace> traces) {
 		this.formulas = formulas
 		this.traces = traces
