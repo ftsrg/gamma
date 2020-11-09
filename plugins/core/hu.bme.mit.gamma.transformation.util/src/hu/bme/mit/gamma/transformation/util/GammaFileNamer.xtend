@@ -29,36 +29,20 @@ class GammaFileNamer {
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	
 	
-	def String getUnfoldedPackageFileName(String extensionlessName) '''
-		«extensionlessName.toHiddenFileName».«PACKAGE_EMF_EXTENSION»
-	'''
+	def String getUnfoldedPackageFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PACKAGE_EMF_EXTENSION»'''
 	
-	def String getEmfUppaalFileName(String extensionlessName) '''
-		«extensionlessName».«UPPAAL_EMF_EXTENSION»
-	'''
+	def String getEmfUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_EMF_EXTENSION»'''
 	
-	def String getGammaUppaalTraceabilityFileName(String extensionlessName) '''
-		«extensionlessName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»
-	'''
+	def String getGammaUppaalTraceabilityFileName(String extensionlessName) '''«extensionlessName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
 	
-	def String getPropertyFileName(String extensionlessName) '''
-		«extensionlessName».«PROPERTY_XTEXT_EXTENSION»
-	'''
+	def String getPropertyFileName(String extensionlessName) '''«extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
 	
-	def String getXmlUppaalFileName(String extensionlessName) '''
-		«extensionlessName».«UPPAAL_MODEL_EXTENSION»
-	'''
+	def String getXmlUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
 	
-	def String getUppaalQueryFileName(String extensionlessName) '''
-		«extensionlessName».«UPPAAL_QUERY_EXTENSION»
-	'''
+	def String getUppaalQueryFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_QUERY_EXTENSION»'''
 	
-	def String getXtextXStsFileName(String extensionlessName) '''
-		«extensionlessName».«XSTS_XTEXT_EXTENSION»
-	'''
+	def String getXtextXStsFileName(String extensionlessName) '''«extensionlessName».«XSTS_XTEXT_EXTENSION»'''
 	
-	def String getEmfXStsFileName(String extensionlessName) '''
-		«extensionlessName».«XSTS_EMF_EXTENSION»
-	'''
+	def String getEmfXStsFileName(String extensionlessName) '''«extensionlessName».«XSTS_EMF_EXTENSION»'''
 	
 }
