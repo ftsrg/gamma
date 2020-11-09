@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 Contributors to the Gamma project
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -41,7 +41,6 @@ import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.TransitionPairCoverage;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
-import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
@@ -59,11 +58,10 @@ import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
-import hu.bme.mit.gamma.transformation.util.PropertyUnfolder;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.transformation.util.PropertyUnfolderModelSlicer;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
-import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator;
-import hu.bme.mit.gamma.transformation.util.annotations.PropertyGenerator;
-import hu.bme.mit.gamma.ui.taskhandler.SlicingHandler.Slicer;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer;
@@ -133,12 +131,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	abstract class AnalysisModelTransformer {
+		
 		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 		protected final FileUtil fileUtil = FileUtil.INSTANCE;
 		protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
-		
-		protected final String XSTS_EMF_EXTENSION = "gsts";
-		protected final String XSTS_XTEXT_EXTENSION = "xsts";
+		protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 		
 		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
 	
@@ -151,24 +148,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		protected void sliceModel(AnalysisModelTransformation analysisModelTransformation, 
 				Component newTopComponent) {
-			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
-			
 			// Slicing the model with respect to the optional properties
 			PropertyPackage propertyPackage = analysisModelTransformation.getPropertyPackage();
-			if (propertyPackage != null) {
-				PropertyUnfolder propertyUnfolder = new PropertyUnfolder(propertyPackage, newTopComponent);
-				PropertyPackage unfoldedPropertyPackage = propertyUnfolder.execute();
-				Slicer slicer = new Slicer(unfoldedPropertyPackage, true);
-				slicer.execute();
-				ecoreUtil.save(newPackage);
-			}
+			PropertyUnfolderModelSlicer slicer = new PropertyUnfolderModelSlicer(newTopComponent,
+					propertyPackage, false);
+			slicer.execute();
 		}
 		
 		protected Collection<VariableDeclaration> annotateModelAndGenerateProperties(
 				AnalysisModelTransformation analysisModelTransformation, 
 				Component newTopComponent) throws IOException {
-			Package newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent);
-			
 			// State coverage
 			Optional<Coverage> stateCoverage = analysisModelTransformation.getCoverages().stream()
 							.filter(it -> it instanceof StateCoverage).findFirst();
@@ -197,42 +186,23 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					newTopComponent, interactionCoverage); // Ports
 			
 			// Checking if we need annotation and property generation
-			Collection<VariableDeclaration> resetableVariables = new ArrayList<VariableDeclaration>();
-			if (!testedComponentsForStates.isEmpty() || !testedComponentsForTransitions.isEmpty() ||
-					!testedComponentsForTransitionPairs.isEmpty() || !testedComponentsForOutEvents.isEmpty() ||
-					!testedPortsForInteractions.isEmpty()) {
-				GammaStatechartAnnotator statechartAnnotator = new GammaStatechartAnnotator(newPackage,
-						testedComponentsForTransitions, testedComponentsForTransitionPairs,
-						testedPortsForInteractions);
-				statechartAnnotator.annotateModel();
-				resetableVariables.addAll(statechartAnnotator.getResetableVariables());
-				ecoreUtil.save(newPackage); // It must be saved so the property package can be serialized
-				
-				// We are after model unfolding, so the argument is true
-				PropertyGenerator propertyGenerator = new PropertyGenerator(true);
-				PropertyPackage generatedPropertyPackage = propertyGenerator.initializePackage(newTopComponent);
-				List<CommentableStateFormula> formulas = generatedPropertyPackage.getFormulas();
-				formulas.addAll(
-						propertyGenerator.createTransitionReachability(
-								statechartAnnotator.getTransitionVariables()));
-				formulas.addAll(
-						propertyGenerator.createTransitionPairReachability(
-								statechartAnnotator.getTransitionPairAnnotations()));
-				formulas.addAll(
-						propertyGenerator.createInteractionReachability(
-								statechartAnnotator.getInteractions()));
-				formulas.addAll(
-						propertyGenerator.createStateReachability(
-								testedComponentsForStates));
-				formulas.addAll(
-						propertyGenerator.createOutEventReachability(newTopComponent,
-								testedComponentsForOutEvents));
-				
-				// Saving the property package
-				saveModel(generatedPropertyPackage, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".gpd");
+			ModelAnnotatorPropertyGenerator annotatorAndPropertyGenerator =
+				new ModelAnnotatorPropertyGenerator(newTopComponent,
+					testedComponentsForStates, testedComponentsForTransitions,
+					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+					testedPortsForInteractions);
+			ModelAnnotatorPropertyGenerator.Result result = annotatorAndPropertyGenerator.execute();
+			PropertyPackage propertyPackage = result.getGeneratedPropertyPackage();
+			Collection<VariableDeclaration> resetableVariables = result.getResetableVariables();
+			// Saving the property package
+			if (propertyPackage != null) {
+				String fileName = analysisModelTransformation.getFileName().get(0);
+				saveModel(propertyPackage, targetFolderUri,
+						fileUtil.toHiddenFileName(fileNamer.getPropertyFileName(fileName)));
 				PropertySerializer propertySerializer = getPropertySerializer();
-				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(formulas);
-				fileUtil.saveString(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + "." + getQueryFileExtension(), serializedFormulas);
+				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
+				fileUtil.saveString(targetFolderUri + File.separator +
+						fileName + "." + getQueryFileExtension(), serializedFormulas);
 			}
 			return resetableVariables;
 		}
@@ -383,7 +353,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return "q";
+			return GammaFileNamer.UPPAAL_QUERY_EXTENSION;
 		}
 		
 	}
@@ -402,7 +372,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
 			String fileName = analysisModelTransformation.getFileName().get(0);
-			File xStsFile = new File(targetFolderUri + File.separator + fileName + "." + XSTS_XTEXT_EXTENSION);
+			File xStsFile = new File(targetFolderUri + File.separator + fileNamer.getXtextXStsFileName(fileName));
 			// Preprocess
 			Component newComponent = modelPreprocessor.preprocess(gammaPackage,
 					componentReference.getArguments(), xStsFile);
@@ -415,7 +385,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			// Normal transformation
 			XSTS xSts = gammaToXSTSTransformer.execute(newGammaPackage);
 			// EMF
-			ecoreUtil.normalSave(xSts, targetFolderUri, fileName + "." + XSTS_EMF_EXTENSION);
+			ecoreUtil.normalSave(xSts, targetFolderUri, fileNamer.getEmfXStsFileName(fileName));
 			// String
 			String xStsString = actionSerializer.serializeXSTS(xSts);
 			fileUtil.saveString(xStsFile, xStsString);
@@ -447,7 +417,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return "prop";
+			return GammaFileNamer.THETA_QUERY_EXTENSION;
 		}
 	
 	}
@@ -478,7 +448,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return "q";
+			return GammaFileNamer.UPPAAL_QUERY_EXTENSION;
 		}
 		
 	}
@@ -490,7 +460,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			Gamma2XSTSTransformer thetaTransformer = new Gamma2XSTSTransformer();
 			thetaTransformer.execute(analysisModelTransformation);
 			String fileName = analysisModelTransformation.getFileName().get(0);
-			XSTS xSts = (XSTS) ecoreUtil.normalLoad(targetFolderUri, fileName + "." + XSTS_EMF_EXTENSION);
+			XSTS xSts = (XSTS) ecoreUtil.normalLoad(targetFolderUri, fileNamer.getEmfXStsFileName(fileName));
 			XSTS2UppaalTransformer xSts2UppaalTransformer = new XSTS2UppaalTransformer();
 			xSts2UppaalTransformer.execute(xSts, fileName);
 			// Creating a new query file
@@ -504,7 +474,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 
 		@Override
 		protected String getQueryFileExtension() {
-			return "q";
+			return GammaFileNamer.UPPAAL_QUERY_EXTENSION;
 		}
 		
 	}
