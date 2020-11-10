@@ -170,6 +170,10 @@ class GammaEcoreUtil {
 		return resource.getContents().get(0)
 	}
 
+	def EObject normalLoad(File file) {
+		return normalLoad(file.parent, file.name)
+	}
+
 	def EObject normalLoad(String parentFolder, String fileName) {
 		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName))
 	}
@@ -200,11 +204,11 @@ class GammaEcoreUtil {
 		resource.save(Collections.EMPTY_MAP)
 	}
 	
-	def void deleteFile(Resource resource) {
+	def void delete(Resource resource) {
 		resource.delete(Collections.EMPTY_MAP)
 	}
 	
-	def void deleteFile(EObject object) {
+	def void deleteResource(EObject object) {
 		object.eResource.delete(Collections.EMPTY_MAP)
 	}
 
