@@ -28,14 +28,17 @@ class GammaFileNamer {
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	
+	def String getPackageFileName(String extensionlessName) '''«extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
 	
 	def String getUnfoldedPackageFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PACKAGE_EMF_EXTENSION»'''
 	
-	def String getEmfUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_EMF_EXTENSION»'''
+	def String getEmfUppaalFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«UPPAAL_EMF_EXTENSION»'''
 	
-	def String getGammaUppaalTraceabilityFileName(String extensionlessName) '''«extensionlessName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
+	def String getGammaUppaalTraceabilityFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
 	
 	def String getPropertyFileName(String extensionlessName) '''«extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
+	
+	def String getHiddenPropertyFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
 	
 	def String getXmlUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
 	

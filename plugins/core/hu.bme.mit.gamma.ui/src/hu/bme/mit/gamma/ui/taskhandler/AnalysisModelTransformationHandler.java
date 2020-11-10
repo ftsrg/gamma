@@ -195,16 +195,26 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			PropertyPackage propertyPackage = result.getGeneratedPropertyPackage();
 			Collection<VariableDeclaration> resetableVariables = result.getResetableVariables();
 			// Saving the property package
+			String fileName = analysisModelTransformation.getFileName().get(0);
+			serializeProperties(propertyPackage, fileName);
+			return resetableVariables;
+		}
+
+		protected void serializeProperties(PropertyPackage propertyPackage, String fileName)
+				throws IOException {
 			if (propertyPackage != null) {
-				String fileName = analysisModelTransformation.getFileName().get(0);
-				saveModel(propertyPackage, targetFolderUri,
-						fileUtil.toHiddenFileName(fileNamer.getPropertyFileName(fileName)));
+				saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
+				serializeStringProperties(propertyPackage, fileName);
+			}
+		}
+
+		protected void serializeStringProperties(PropertyPackage propertyPackage, String fileName) {
+			if (propertyPackage != null) {
 				PropertySerializer propertySerializer = getPropertySerializer();
 				String serializedFormulas = propertySerializer.serializeCommentableStateFormulas(propertyPackage.getFormulas());
 				fileUtil.saveString(targetFolderUri + File.separator +
 						fileName + "." + getQueryFileExtension(), serializedFormulas);
 			}
-			return resetableVariables;
 		}
 		
 		protected abstract PropertySerializer getPropertySerializer();
@@ -265,12 +275,13 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
 		
 		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
+			String fileName = analysisModelTransformation.getFileName().get(0);
 			// Unfolding the given system
 			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
 			Component component = componentReference.getComponent();
 			Package gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
 			Component newTopComponent = preprocessor.preprocess(gammaPackage, componentReference.getArguments(),
-				new File(targetFolderUri + File.separator + analysisModelTransformation.getFileName().get(0) + ".gcd"));
+				new File(targetFolderUri + File.separator + fileNamer.getPackageFileName(fileName)));
 			// Top component arguments are now be contained by the Package (preprocess)
 			// Checking the model whether it contains forbidden elements
 			ModelValidator validator = new ModelValidator(newTopComponent, false);
@@ -282,19 +293,21 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
 					newTopComponent.eResource().getResourceSet());
 			Constraint constraint = transformConstraint(analysisModelTransformation.getConstraint(), newTopComponent);
+			Scheduler scheduler = getGammaScheduler(analysisModelTransformation.getScheduler().get(0));
 			CompositeToUppaalTransformer transformer = new CompositeToUppaalTransformer(
 				newTopComponent, // newTopComponent
 				resetableVariables,
-				getGammaScheduler(analysisModelTransformation.getScheduler().get(0)),
+				scheduler,
 				constraint,
 				analysisModelTransformation.isMinimalElementSet()); 
 			SimpleEntry<NTA, G2UTrace> resultModels = transformer.execute();
 			NTA nta = resultModels.getKey();
+			G2UTrace trace = resultModels.getValue();
 			// Saving the generated models
-			ecoreUtil.normalSave(nta, targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".uppaal");
-			ecoreUtil.normalSave(resultModels.getValue(), targetFolderUri, "." + analysisModelTransformation.getFileName().get(0) + ".g2u");
+			ecoreUtil.normalSave(nta, targetFolderUri, fileNamer.getEmfUppaalFileName(fileName));
+			ecoreUtil.normalSave(trace, targetFolderUri, fileNamer.getGammaUppaalTraceabilityFileName(fileName));
 			// Serializing the NTA model to XML
-			UppaalModelSerializer.saveToXML(nta, targetFolderUri, analysisModelTransformation.getFileName().get(0) + ".xml");
+			UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileNamer.getXmlUppaalFileName(fileName));
 			logger.log(Level.INFO, "The UPPAAL transformation has been finished.");
 		}
 		
@@ -434,9 +447,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		public void execute(XSTS xSts, String fileName) {
 			XSTSToUppaalTransformer xStsToUppaalTransformer = new XSTSToUppaalTransformer(xSts);
 			NTA nta = xStsToUppaalTransformer.execute();
-			ecoreUtil.normalSave(nta, targetFolderUri, "." + fileName + ".uppaal");
+			ecoreUtil.normalSave(nta, targetFolderUri, fileNamer.getEmfUppaalFileName(fileName));
 			// Serializing the NTA model to XML
-			UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileName + ".xml");
+			UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileNamer.getXmlUppaalFileName(fileName));
 			// Creating a new query file
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}
@@ -464,12 +477,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			XSTS2UppaalTransformer xSts2UppaalTransformer = new XSTS2UppaalTransformer();
 			xSts2UppaalTransformer.execute(xSts, fileName);
 			// Creating a new query file
+			PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(targetFolderUri,
+					fileNamer.getHiddenPropertyFileName(fileName));
+			serializeStringProperties(propertyPackage, fileName);
 			logger.log(Level.INFO, "The transformation has been finished.");
 		}
 		
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return XSTSUppaalPropertySerializer.INSTANCE; // Will not work, due to the thetaTransformer.execute call
+			return XSTSUppaalPropertySerializer.INSTANCE;
 		}
 
 		@Override
