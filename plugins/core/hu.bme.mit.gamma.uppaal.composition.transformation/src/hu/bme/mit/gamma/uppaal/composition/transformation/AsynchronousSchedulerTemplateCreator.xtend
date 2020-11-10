@@ -34,10 +34,13 @@ import uppaal.templates.SynchronizationKind
 import uppaal.templates.TemplatesPackage
 
 import static hu.bme.mit.gamma.uppaal.util.Namings.*
+import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
+import hu.bme.mit.gamma.statechart.interface_.Component
 
 class AsynchronousSchedulerTemplateCreator {
 	// NTA
 	final NTA nta
+	final Component topComponent
 	// Transformation rule-related extensions
 	protected extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	protected final extension IModelManipulations manipulation
@@ -58,21 +61,25 @@ class AsynchronousSchedulerTemplateCreator {
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
 	// Auxiliary objects
-    protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer = new InPlaceExpressionTransformer
 	protected final extension NtaBuilder ntaBuilder
 	protected final extension CompareExpressionCreator compareExpressionCreator
 	protected final extension AsynchronousComponentHelper asynchronousComponentHelper
 	protected final extension ExpressionEvaluator expressionEvaluator
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
+	
+    protected final extension InPlaceExpressionTransformer inPlaceExpressionTransformer
+    	= InPlaceExpressionTransformer.INSTANCE
+	protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
 	// Rules
 	protected BatchTransformationRule<TopWrapperComponents.Match, TopWrapperComponents.Matcher> topWrapperSchedulerRule
 	protected BatchTransformationRule<TopAsyncCompositeComponents.Match, TopAsyncCompositeComponents.Matcher> instanceWrapperSchedulerRule
 	
-	new(NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
+	new(Component topComponent, NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
 			CompareExpressionCreator compareExpressionCreator, Trace modelTrace,
 			DataVariableDeclaration isStableVar, AsynchronousComponentHelper asynchronousComponentHelper,
 			ExpressionEvaluator expressionEvaluator, AssignmentExpressionCreator assignmentExpressionCreator,
 			SchedulingConstraint constraint, Scheduler asyncScheduler) {
+		this.topComponent = topComponent
 		this.ntaBuilder = ntaBuilder
 		this.nta = ntaBuilder.nta
 		this.manipulation = manipulation
@@ -149,7 +156,10 @@ class AsynchronousSchedulerTemplateCreator {
 	}
 	
 	private def getInstanceConstraint(AsynchronousComponentInstance instance) {
-		return schedulingConstraint.instanceConstraints.filter[it.instance == instance].head
+		return schedulingConstraint.instanceConstraints.filter[
+			// The scheduling constraints still contain references to the old instances 
+			simpleInstanceHandler.getNewAsynchronousSimpleInstances(it.instance, topComponent).contains(instance)
+		].head
 	}
 	
 	private def setTimingConstraints(Edge lastEdge, AsynchronousComponentInstance instance) {

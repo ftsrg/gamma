@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.reducer.SystemReducer
+import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collections
@@ -40,6 +41,7 @@ class AnalysisModelPreprocessor {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
 	def preprocess(Package gammaPackage, File containingFile) {
@@ -49,7 +51,7 @@ class AnalysisModelPreprocessor {
 	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
 		val parentFolder = containingFile.parent
 		val fileName = containingFile.name
-		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
+		val fileNameExtensionless = fileName.extensionlessName
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
 		val trace = modelUnfolder.unfold

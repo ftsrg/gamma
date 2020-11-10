@@ -270,7 +270,8 @@ class CompositeToUppaalTransformer {
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
-		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation,
+		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.component,
+			this.ntaBuilder, this.engine, this.manipulation,
 			this.compareExpressionCreator, this.traceModel, this.isStableVar, this.asynchronousComponentHelper,
 			this.expressionEvaluator, this.assignmentExpressionCreator,	if (constraint instanceof SchedulingConstraint) constraint else null, asyncScheduler)
 		this.asynchronousConnectorTemplateCreator = new AsynchronousConnectorTemplateCreator(this.ntaBuilder, this.manipulation, this.assignmentExpressionCreator,

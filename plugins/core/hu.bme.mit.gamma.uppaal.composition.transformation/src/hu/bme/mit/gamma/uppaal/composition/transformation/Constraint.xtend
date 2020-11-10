@@ -10,11 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import java.util.List
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
-
-import  org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtend.lib.annotations.Data
 
 abstract class Constraint {}
 
@@ -26,11 +25,12 @@ class OrchestratingConstraint extends Constraint {
 
 @Data
 class SchedulingConstraint extends Constraint {
-	List<AsynchronousInstanceConstraint> instanceConstraints = newArrayList
+	List<AsynchronousInstanceConstraint > instanceConstraints = newArrayList
 }
 
 @Data
 class AsynchronousInstanceConstraint {
-	AsynchronousComponentInstance instance
+	// This is not transformed to a concrete instance, has to be done manually in the scheduler
+	ComponentInstanceReference instance 
 	OrchestratingConstraint orchestratingConstraint
 }

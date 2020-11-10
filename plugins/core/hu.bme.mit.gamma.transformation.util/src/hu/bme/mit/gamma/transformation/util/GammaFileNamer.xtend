@@ -14,6 +14,7 @@ class GammaFileNamer {
 	public static final String PACKAGE_XTEXT_EXTENSION = "gcd";
 	
 	public static final String PROPERTY_XTEXT_EXTENSION = "gpd";
+	public static final String PROPERTY_EMF_EXTENSION = "gpm";
 	
 	public static final String EXECUTION_XTEXT_EXTENSION = "get";
 	
@@ -39,6 +40,8 @@ class GammaFileNamer {
 	def String getPropertyFileName(String extensionlessName) '''«extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
 	
 	def String getHiddenPropertyFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
+	
+	def String getHiddenEmfPropertyFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PROPERTY_EMF_EXTENSION»'''
 	
 	def String getXmlUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
 	
