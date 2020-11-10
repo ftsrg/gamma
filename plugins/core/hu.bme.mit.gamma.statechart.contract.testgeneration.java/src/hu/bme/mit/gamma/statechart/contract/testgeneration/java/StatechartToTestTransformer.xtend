@@ -44,7 +44,7 @@ class StatechartToTestTransformer {
 		// Transforming the statechart to UPPAAL
 		val uppaalTransformer = new DefaultCompositionToUppaalTransformer
 		val uppaalResult = uppaalTransformer.transformComponent(statechart.containingPackage, arguments,
-			containingFile, #[ElementCoverage.TRANSITION_COVERAGE])
+			containingFile.parent, containingFile.name, #[ElementCoverage.TRANSITION_COVERAGE])
 		val uppaalTraceability = uppaalResult.trace
 		val uppaalFile = uppaalResult.modelFile
 		

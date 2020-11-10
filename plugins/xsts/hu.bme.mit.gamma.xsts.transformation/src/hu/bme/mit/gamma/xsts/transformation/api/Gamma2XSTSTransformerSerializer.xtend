@@ -75,10 +75,8 @@ class Gamma2XSTSTransformerSerializer {
 	
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
-		// Unfolding the given system
-		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
 		// Preprocess
-		val newTopComponent = modelPreprocessor.preprocess(gammaPackage, arguments, xStsFile)
+		val newTopComponent = modelPreprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
 		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Slicing and Property generation
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
@@ -97,6 +95,7 @@ class Gamma2XSTSTransformerSerializer {
 		// EMF
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String
+		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
 		val xStsString = actionSerializer.serializeXSTS(xSts)
 		fileUtil.saveString(xStsFile, xStsString)
 		logger.log(Level.INFO, "The XSTS transformation has been finished.")

@@ -78,10 +78,10 @@ class DeclarationSerializer {
 	'''
 	
 	private def serializeModifier(VariableDeclaration variable) {
-//		val xSts = variable.eContainer as XSTS
-//		if (xSts.controlVariables.contains(variable)) {
-//			return "ctrl "
-//		}
+		val xSts = variable.eContainer as XSTS
+		if (xSts.controlVariables.contains(variable)) {
+			return "ctrl "
+		}
 //		if (xSts.clockVariables.contains(variable)) {
 //			return "clk "
 //		}

@@ -28,6 +28,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.querygenerator.application.AppMain;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
@@ -38,6 +39,7 @@ public class CommandHandler extends AbstractHandler {
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	protected ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 	protected FileUtil fileUtil = FileUtil.INSTANCE;
+	protected GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -75,16 +77,16 @@ public class CommandHandler extends AbstractHandler {
 							resource = resourceSet.getResource(originalFileUri, true);
 							Package gammaPackage = (Package) resource.getContents().get(0);
 							DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
-							final File containingFile = new File(file.getLocation().toString());
-							transformer.transformComponent(gammaPackage, containingFile);
+							String targetFolderUri = file.getParent().getLocation().toString();
+							transformer.transformComponent(gammaPackage, targetFolderUri, file.getName());
 							logger.log(Level.INFO, "UPPAAL transformation has been finished.");
 							resourceSet.getResources().clear(); // Has to be done, otherwise the resource content is null
 							resource = resourceSet.getResource(flattenedFileUri, true);
 							logger.log(Level.INFO, "Starting XSTS transformation.");
 							Package _package = (Package) resource.getContents().get(0);
 							GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
-							File xStsFile = new File(absoluteParentFolder + File.separator + fileName + ".xsts");
-							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, xStsFile);
+							File xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(fileName));
+							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder, fileName);
 							fileUtil.saveString(xStsFile, xStsString);
 							logger.log(Level.INFO, "XSTS transformation has been finished.");
 						}

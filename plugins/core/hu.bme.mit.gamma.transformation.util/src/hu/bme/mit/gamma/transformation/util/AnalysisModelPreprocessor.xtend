@@ -42,15 +42,15 @@ class AnalysisModelPreprocessor {
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	
-	def preprocess(Package gammaPackage, File containingFile) {
-		return gammaPackage.preprocess(#[], containingFile)
+	def preprocess(Package gammaPackage, String targetFolderUri, String fileName) {
+		return gammaPackage.preprocess(#[], targetFolderUri, fileName)
 	}
 	
-	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
-		val parentFolder = containingFile.parent
-		val fileName = containingFile.name
+	def preprocess(Package gammaPackage, List<Expression> topComponentArguments,
+			String targetFolderUri, String fileName) {
 		val fileNameExtensionless = fileName.extensionlessName
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
@@ -65,9 +65,9 @@ class AnalysisModelPreprocessor {
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
-		val flattenedModelFileName = "." + fileNameExtensionless + ".gsm"
-		val flattenedModelUri = URI.createFileURI(parentFolder + File.separator + flattenedModelFileName)
-		normalSave(_package, flattenedModelUri)
+		val flattenedModelUri = URI.createFileURI(targetFolderUri +
+				File.separator + fileNameExtensionless.unfoldedPackageFileName)
+		_package.normalSave(flattenedModelUri)
 		// Reading the model from disk as this is the easy way of reloading the necessary ResourceSet
 		_package = flattenedModelUri.normalLoad as Package
 		val resource = _package.eResource

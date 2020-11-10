@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.io.File
 import java.util.List
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -85,7 +84,7 @@ class Gamma2UppaalTransformerSerializer {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
 		
 		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments,
-			new File(targetFolderUri + File.separator + fileName))
+			targetFolderUri, fileName)
 		// Top component arguments are now be contained by the Package (preprocess)
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(newTopComponent, false)

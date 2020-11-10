@@ -199,6 +199,14 @@ class GammaEcoreUtil {
 		checkState(resource !== null)
 		resource.save(Collections.EMPTY_MAP)
 	}
+	
+	def void deleteFile(Resource resource) {
+		resource.delete(Collections.EMPTY_MAP)
+	}
+	
+	def void deleteFile(EObject object) {
+		object.eResource.delete(Collections.EMPTY_MAP)
+	}
 
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper

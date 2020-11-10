@@ -40,7 +40,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
-import java.io.File
 import java.math.BigInteger
 import java.util.Collection
 import java.util.Collections
@@ -95,25 +94,26 @@ class GammaToXSTSTransformer {
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			File containingFile) {
-		return _package.preprocessAndExecute(Collections.emptyList, containingFile).serializeXSTS
+			String targetFolderUri, String fileName) {
+		return _package.preprocessAndExecute(#[], targetFolderUri, fileName).serializeXSTS
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			List<Expression> topComponentArguments, File containingFile) {
-		return _package.preprocessAndExecute(topComponentArguments, containingFile).serializeXSTS
+			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
+		return _package.preprocessAndExecute(topComponentArguments, targetFolderUri, fileName).serializeXSTS
 	}
 
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			File containingFile) {
-		val component = modelPreprocessor.preprocess(_package, Collections.emptyList, containingFile)
+			String targetFolderUri, String fileName) {
+		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			List<Expression> topComponentArguments, File containingFile) {
-		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
+			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
+		val component = modelPreprocessor.preprocess(_package, topComponentArguments,
+			targetFolderUri, fileName)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}

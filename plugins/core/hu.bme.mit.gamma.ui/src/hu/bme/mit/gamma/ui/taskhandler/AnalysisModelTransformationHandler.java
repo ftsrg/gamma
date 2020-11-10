@@ -132,6 +132,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(targetFolderUri,
 					fileNamer.getHiddenEmfPropertyFileName(fileName));
 				serializeProperties(propertyPackage, fileName);
+				// Deleting the EMF file as it has been serialized
+				ecoreUtil.deleteFile(propertyPackage);
 			} catch (Exception e) {
 				// Property was not serialized
 			}
