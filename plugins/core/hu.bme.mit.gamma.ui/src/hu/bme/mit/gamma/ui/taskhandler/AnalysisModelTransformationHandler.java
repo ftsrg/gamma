@@ -73,10 +73,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
-		ModelReference modelReference = analysisModelTransformation.getModel();
-		setAnalysisModelTransformation(analysisModelTransformation);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(analysisModelTransformation.getLanguages());
+	public void execute(AnalysisModelTransformation transformation) throws IOException {
+		ModelReference modelReference = transformation.getModel();
+		setAnalysisModelTransformation(transformation);
+		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(
+				transformation.getLanguages());
 		for (AnalysisLanguage analysisLanguage : languagesSet) {
 			AnalysisModelTransformer transformer;
 			switch (analysisLanguage) {
@@ -98,9 +99,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformer = new Gamma2XSTSUppaalTransformer();
 					break;
 				default:
-					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
+					throw new IllegalArgumentException("Only UPPAAL and Theta are supported.");
 			}
-			transformer.execute(analysisModelTransformation);
+			transformer.execute(transformation);
 		}
 	}
 	
@@ -125,7 +126,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE;
 		protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
 		
-		public abstract void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException;
+		public abstract void execute(AnalysisModelTransformation transformation) throws IOException;
 
 		protected void serializeProperties(String fileName) throws IOException {
 			try {
@@ -168,7 +169,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				return null;
 			}
 			Coverage notNullCoverage = coverage.get();
-			return new ComponentInstanceReferences(notNullCoverage.getInclude(), notNullCoverage.getExclude());
+			return new ComponentInstanceReferences(notNullCoverage.getInclude(),
+					notNullCoverage.getExclude());
 		}
 		
 		protected ComponentInstanceAndPortReferences getCoveragePorts(Collection<Coverage> coverages,
@@ -180,8 +182,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			}
 			EventCoverage eventCoverage = (EventCoverage) optionalInteractionCoverage.get();
 			return new ComponentInstanceAndPortReferences(
-				new ComponentInstanceReferences(eventCoverage.getInclude(), eventCoverage.getExclude()),
-				new ComponentInstancePortReferences(eventCoverage.getPortInclude(), eventCoverage.getPortExclude())
+				new ComponentInstanceReferences(eventCoverage.getInclude(),
+						eventCoverage.getExclude()),
+				new ComponentInstancePortReferences(eventCoverage.getPortInclude(),
+						eventCoverage.getPortExclude())
 			);
 		}
 		
@@ -209,13 +213,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE;
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
-			String fileName = analysisModelTransformation.getFileName().get(0);
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			logger.log(Level.INFO, "Starting UPPAAL transformation.");
+			String fileName = transformation.getFileName().get(0);
 			// Unfolding the given system
-			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
-			Component component = componentReference.getComponent();
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
 			// Coverages
-			List<Coverage> coverages = analysisModelTransformation.getCoverages();
+			List<Coverage> coverages = transformation.getCoverages();
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
@@ -228,13 +233,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
 					coverages, InteractionCoverage.class);
 			
-			Constraint constraint = transformSchedulingConstraint(analysisModelTransformation.getConstraint());
-			Scheduler scheduler = getGammaScheduler(analysisModelTransformation.getScheduler().get(0));
-			boolean isMinimalSet = analysisModelTransformation.isMinimalElementSet();
-			Gamma2UppaalTransformerSerializer transformer = new Gamma2UppaalTransformerSerializer(component,
-					componentReference.getArguments(), targetFolderUri, fileName,
+			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
+			Scheduler scheduler = getGammaScheduler(transformation.getScheduler().get(0));
+			boolean isMinimalSet = transformation.isMinimalElementSet();
+			Gamma2UppaalTransformerSerializer transformer = new Gamma2UppaalTransformerSerializer(
+					component,
+					reference.getArguments(), targetFolderUri, fileName,
 					constraint, scheduler, isMinimalSet,
-					analysisModelTransformation.getPropertyPackage(),
+					transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedPortsForInteractions);
@@ -266,7 +272,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		private AsynchronousInstanceConstraint transformAsynchronousInstanceConstraint(
 				hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint asynchronousInstanceConstraint) {
 			ComponentInstanceReference reference = asynchronousInstanceConstraint.getInstance();
-				return new AsynchronousInstanceConstraint(reference /* null in teh case of AA */,
+				return new AsynchronousInstanceConstraint(reference /* null in the case of AA */,
 					(OrchestratingConstraint) transformSchedulingConstraint(asynchronousInstanceConstraint.getOrchestratingConstraint()));
 		}
 		
@@ -296,14 +302,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE;
 		protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE;
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
-			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
-			Component component = componentReference.getComponent();
-			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			String fileName = analysisModelTransformation.getFileName().get(0);
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
+			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			String fileName = transformation.getFileName().get(0);
 			// Coverages
-			List<Coverage> coverages = analysisModelTransformation.getCoverages();
+			List<Coverage> coverages = transformation.getCoverages();
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
@@ -316,9 +322,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
 					coverages, InteractionCoverage.class);
 			
-			Gamma2XSTSTransformerSerializer transformer = new Gamma2XSTSTransformerSerializer(component,
-					componentReference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, analysisModelTransformation.getPropertyPackage(),
+			Gamma2XSTSTransformerSerializer transformer = new Gamma2XSTSTransformerSerializer(
+					component,
+					reference.getArguments(), targetFolderUri, fileName,
+					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedPortsForInteractions);
@@ -342,10 +349,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class XSTS2UppaalTransformer extends AnalysisModelTransformer {
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) {
+		public void execute(AnalysisModelTransformation transformation) {
 			logger.log(Level.INFO, "Starting XSTS-UPPAAL transformation.");
-			XSTS xSts = (XSTS) GenmodelDerivedFeatures.getModel(analysisModelTransformation);
-			String fileName = analysisModelTransformation.getFileName().get(0);
+			XSTS xSts = (XSTS) GenmodelDerivedFeatures.getModel(transformation);
+			String fileName = transformation.getFileName().get(0);
 			execute(xSts, fileName);
 		}
 
@@ -353,7 +360,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			XSTS2UppaalTransformerSerializer xStsToUppaalTransformer =
 					new XSTS2UppaalTransformerSerializer(xSts, targetFolderUri, fileName);
 			xStsToUppaalTransformer.execute();
-			logger.log(Level.INFO, "The transformation has been finished.");
+			logger.log(Level.INFO, "The XSTS-UPPAAL transformation has been finished.");
 		}
 		
 		@Override
@@ -370,14 +377,14 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	
 	class Gamma2XSTSUppaalTransformer extends AnalysisModelTransformer {
 		
-		public void execute(AnalysisModelTransformation analysisModelTransformation) throws IOException {
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
 			logger.log(Level.INFO, "Starting Gamma -> XSTS-UPPAAL transformation.");
-			ComponentReference componentReference = (ComponentReference) analysisModelTransformation.getModel();
-			Component component = componentReference.getComponent();
-			Integer schedulingConstraint = transformConstraint(analysisModelTransformation.getConstraint());
-			String fileName = analysisModelTransformation.getFileName().get(0);
+			ComponentReference reference = (ComponentReference) transformation.getModel();
+			Component component = reference.getComponent();
+			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			String fileName = transformation.getFileName().get(0);
 			// Coverages
-			List<Coverage> coverages = analysisModelTransformation.getCoverages();
+			List<Coverage> coverages = transformation.getCoverages();
 			
 			ComponentInstanceReferences testedComponentsForStates = getCoverageInstances(
 					coverages, StateCoverage.class);
@@ -390,16 +397,17 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
 					coverages, InteractionCoverage.class);
 			
-			Gamma2XSTSUppaalTransformerSerializer transformer = new Gamma2XSTSUppaalTransformerSerializer(component,
-					componentReference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, analysisModelTransformation.getPropertyPackage(),
+			Gamma2XSTSUppaalTransformerSerializer transformer = new Gamma2XSTSUppaalTransformerSerializer(
+					component,
+					reference.getArguments(), targetFolderUri, fileName,
+					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedPortsForInteractions);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
-			logger.log(Level.INFO, "The transformation has been finished.");
+			logger.log(Level.INFO, "The Gamma -> XSTS-UPPAAL transformation has been finished.");
 		}
 		
 		@Override

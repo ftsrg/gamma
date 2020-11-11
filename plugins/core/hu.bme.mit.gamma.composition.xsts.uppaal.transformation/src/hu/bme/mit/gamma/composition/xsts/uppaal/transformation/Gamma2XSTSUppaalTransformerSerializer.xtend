@@ -6,7 +6,6 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceAndPortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
-import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XSTSTransformerSerializer
@@ -32,9 +31,17 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
-	protected final FileUtil fileUtil = FileUtil.INSTANCE
 	
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
+
+	new(Component component, String targetFolderUri, String fileName) {
+		this(component, #[], targetFolderUri, fileName)
+	}
+
+	new(Component component, List<Expression> arguments,
+			String targetFolderUri, String fileName) {
+		this(component, arguments, targetFolderUri, fileName, null)
+	}
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
@@ -68,17 +75,17 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	}
 	
 	def execute() {
-		val thetaTransformer = new Gamma2XSTSTransformerSerializer(component,
+		val xStsTransformer = new Gamma2XSTSTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
 			propertyPackage,
 			testedComponentsForStates, testedComponentsForTransitions,
 			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 			testedPortsForInteractions)
-		thetaTransformer.execute
-		val xSts = ecoreUtil.normalLoad(targetFolderUri, fileName.emfXStsFileName) as XSTS
-		val xSts2UppaalTransformer = new XSTS2UppaalTransformerSerializer(xSts, targetFolderUri, fileName)
-		xSts2UppaalTransformer.execute
+		xStsTransformer.execute
+		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
+		val uppaalTransformer = new XSTS2UppaalTransformerSerializer(xSts, targetFolderUri, fileName)
+		uppaalTransformer.execute
 	}
 	
 }

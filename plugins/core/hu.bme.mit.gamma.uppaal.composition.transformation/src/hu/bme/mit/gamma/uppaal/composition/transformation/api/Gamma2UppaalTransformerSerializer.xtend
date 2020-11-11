@@ -45,6 +45,15 @@ class Gamma2UppaalTransformerSerializer {
 	
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	
+	new(Component component, String targetFolderUri, String fileName) {
+		this(component, #[], targetFolderUri, fileName)
+	}
+	
+	new(Component component, List<Expression> arguments,
+			String targetFolderUri, String fileName) {
+		this(component, arguments, targetFolderUri, fileName, null, null, false)
+	}
+	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Constraint constraint, Scheduler scheduler,

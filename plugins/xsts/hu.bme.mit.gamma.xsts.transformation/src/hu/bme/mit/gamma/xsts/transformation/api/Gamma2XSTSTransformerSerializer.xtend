@@ -37,10 +37,19 @@ class Gamma2XSTSTransformerSerializer {
 	protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
-	protected final ActionSerializer actionSerializer = ActionSerializer.INSTANCE
-	protected final FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
+	
+	new(Component component, String targetFolderUri, String fileName) {
+		this(component, #[], targetFolderUri, fileName)
+	}
+	
+	new(Component component, List<Expression> arguments,
+			String targetFolderUri, String fileName) {
+		this(component, arguments, targetFolderUri, fileName, null)
+	}
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
@@ -75,7 +84,7 @@ class Gamma2XSTSTransformerSerializer {
 	
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
-		// Preprocess
+		// Preprocessing
 		val newTopComponent = modelPreprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
 		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Slicing and Property generation
@@ -96,8 +105,8 @@ class Gamma2XSTSTransformerSerializer {
 		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
 		// String
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
-		val xStsString = actionSerializer.serializeXSTS(xSts)
-		fileUtil.saveString(xStsFile, xStsString)
+		val xStsString = xSts.serializeXSTS
+		xStsFile.saveString(xStsString)
 		logger.log(Level.INFO, "The XSTS transformation has been finished.")
 	}
 	
