@@ -41,7 +41,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="ValueDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//Declaration"/>
-  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//VariableDeclarationAnnotation" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="FieldDeclaration" eSuperTypes="#//ValueDeclaration"/>
@@ -211,4 +214,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="field" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//AccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ResetableVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

@@ -39,7 +39,9 @@
     <genClasses ecoreClass="expression.ecore#//ValueDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//FunctionDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//TypeDeclaration"/>
-    <genClasses ecoreClass="expression.ecore#//VariableDeclaration"/>
+    <genClasses ecoreClass="expression.ecore#//VariableDeclaration">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//VariableDeclaration/annotations"/>
+    </genClasses>
     <genClasses ecoreClass="expression.ecore#//ConstantDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//ParameterDeclaration"/>
     <genClasses ecoreClass="expression.ecore#//FieldDeclaration"/>
@@ -174,5 +176,8 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//RecordAccessExpression/field"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//SelectExpression"/>
+    <genClasses image="false" ecoreClass="expression.ecore#//VariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//TransientVariableDeclarationAnnotation"/>
+    <genClasses ecoreClass="expression.ecore#//ResetableVariableDeclarationAnnotation"/>
   </genPackages>
 </genmodel:GenModel>
