@@ -251,6 +251,8 @@ class ThetaVerification extends AbstractVerification {
 		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 		ThetaVerifier verifier = new ThetaVerifier();
 		String queries = fileUtil.loadString(queryFile);
+		// --domain PRED_CART --refinement SEQ_ITP // default
+		// --domain EXPL --refinement SEQ_ITP --maxenum 250
 		return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
 	}
 	
