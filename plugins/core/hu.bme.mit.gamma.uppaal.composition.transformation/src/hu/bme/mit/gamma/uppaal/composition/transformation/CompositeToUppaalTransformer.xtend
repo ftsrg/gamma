@@ -180,8 +180,6 @@ class CompositeToUppaalTransformer {
 	protected DataVariableDeclaration isStableVar
 	// Minimal element set: no functions
 	protected boolean isMinimalElementSet = false
-	// Variables reset in every orchestration turn
-	protected final Collection<hu.bme.mit.gamma.expression.model.VariableDeclaration> resetableVariables
 	// For the generation of pseudo locations
 	protected int id = 0
 	// Trace
@@ -210,14 +208,11 @@ class CompositeToUppaalTransformer {
 	protected AsynchronousConnectorTemplateCreator asynchronousConnectorTemplateCreator
 	
 	new(Component component) {
-		this(component, #[], Scheduler.RANDOM, null, false)
+		this(component, Scheduler.RANDOM, null, false)
 	}
 	
-	new(Component component,
-			Collection<hu.bme.mit.gamma.expression.model.VariableDeclaration> resetableVariables,
-			Scheduler asyncScheduler, Constraint constraint, boolean isMinimalElementSet) {
-		this.resetableVariables = newArrayList
-		this.resetableVariables += resetableVariables
+	new(Component component, Scheduler asyncScheduler,
+			Constraint constraint, boolean isMinimalElementSet) {
 		this.isMinimalElementSet = isMinimalElementSet
 		// The above parameters have to be set before calling initialize
 		this.initialize(component, asyncScheduler, constraint)
@@ -265,7 +260,7 @@ class CompositeToUppaalTransformer {
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
 			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null,
-			this.traceModel, this.resetableVariables, this.isStableVar)
+			this.traceModel, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,

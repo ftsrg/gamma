@@ -100,12 +100,10 @@ class Gamma2UppaalTransformerSerializer {
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 				testedPortsForInteractions,
 				targetFolderUri, fileName);
-		val result = slicerAnnotatorAndPropertyGenerator.execute
-		val resetableVariables = result.resetableVariables
+		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation
 		val transformer = new CompositeToUppaalTransformer(
 			newTopComponent,
-			resetableVariables,
 			scheduler,
 			constraint,
 			isMinimalElementSet) 
