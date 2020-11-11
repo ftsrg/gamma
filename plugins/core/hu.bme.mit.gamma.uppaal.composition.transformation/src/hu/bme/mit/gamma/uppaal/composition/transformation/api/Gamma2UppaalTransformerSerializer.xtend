@@ -6,7 +6,6 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
-import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceAndPortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
@@ -17,8 +16,6 @@ import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class Gamma2UppaalTransformerSerializer {
 	
@@ -41,9 +38,6 @@ class Gamma2UppaalTransformerSerializer {
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
-	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
-	
-	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Component component, String targetFolderUri, String fileName) {
 		this(component, #[], targetFolderUri, fileName)
@@ -109,8 +103,6 @@ class Gamma2UppaalTransformerSerializer {
 		val result = slicerAnnotatorAndPropertyGenerator.execute
 		val resetableVariables = result.resetableVariables
 		// Normal transformation
-		logger.log(Level.INFO, "Resource set content for flattened Gamma to UPPAAL transformation: " +
-				newTopComponent.eResource.resourceSet)
 		val transformer = new CompositeToUppaalTransformer(
 			newTopComponent,
 			resetableVariables,
@@ -125,7 +117,6 @@ class Gamma2UppaalTransformerSerializer {
 		trace.normalSave(targetFolderUri, fileName.gammaUppaalTraceabilityFileName)
 		// Serializing the NTA model to XML
 		UppaalModelSerializer.saveToXML(nta, targetFolderUri, fileName.getXmlUppaalFileName)
-		logger.log(Level.INFO, "The UPPAAL transformation has been finished.")
 	}
 	
 }

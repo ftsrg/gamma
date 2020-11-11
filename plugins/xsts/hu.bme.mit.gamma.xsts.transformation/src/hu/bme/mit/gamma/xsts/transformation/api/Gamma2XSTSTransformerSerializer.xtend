@@ -15,8 +15,6 @@ import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import java.io.File
 import java.util.List
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class Gamma2XSTSTransformerSerializer {
 	
@@ -34,13 +32,11 @@ class Gamma2XSTSTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForOutEvents
 	protected final ComponentInstanceAndPortReferences testedPortsForInteractions
 	
-	protected final AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
+	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	
-	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Component component, String targetFolderUri, String fileName) {
 		this(component, #[], targetFolderUri, fileName)
@@ -85,7 +81,7 @@ class Gamma2XSTSTransformerSerializer {
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
 		// Preprocessing
-		val newTopComponent = modelPreprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
+		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
 		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Slicing and Property generation
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
@@ -107,7 +103,6 @@ class Gamma2XSTSTransformerSerializer {
 		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
 		val xStsString = xSts.serializeXSTS
 		xStsFile.saveString(xStsString)
-		logger.log(Level.INFO, "The XSTS transformation has been finished.")
 	}
 	
 }

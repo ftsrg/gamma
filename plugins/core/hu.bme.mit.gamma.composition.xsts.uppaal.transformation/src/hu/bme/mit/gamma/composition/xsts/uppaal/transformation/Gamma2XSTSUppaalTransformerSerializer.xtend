@@ -11,7 +11,6 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XSTSTransformerSerializer
 import hu.bme.mit.gamma.xsts.uppaal.transformation.api.XSTS2UppaalTransformerSerializer
 import java.util.List
-import java.util.logging.Logger
 
 class Gamma2XSTSUppaalTransformerSerializer {
 
@@ -32,8 +31,6 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	
-	protected final extension Logger logger = Logger.getLogger("GammaLogger")
-
 	new(Component component, String targetFolderUri, String fileName) {
 		this(component, #[], targetFolderUri, fileName)
 	}
