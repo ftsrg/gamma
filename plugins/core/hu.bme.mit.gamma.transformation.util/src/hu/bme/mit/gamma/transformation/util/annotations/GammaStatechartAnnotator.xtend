@@ -112,7 +112,7 @@ class GammaStatechartAnnotator {
 		statechart.variableDeclarations += variable
 		variables.put(transition, variable)
 		if (isResetable) {
-			variable.addToResetableVariables
+			variable.designateVariableResetable
 		}
 		return variable
 	}
@@ -419,19 +419,18 @@ class GammaStatechartAnnotator {
 			globalPool += variablePair
 		}
 		if (resettable) {
-			senderVariable.addToResetableVariables
-			senderVariable.annotations += createResetableVariableDeclarationAnnotation
-			receiverVariable.addToResetableVariables
-			receiverVariable.annotations += createResetableVariableDeclarationAnnotation
+			senderVariable.designateVariableResetable
+			receiverVariable.designateVariableResetable
 		}
 		return variablePair
 	}
 	
 	// Adder
 	
-	def addToResetableVariables(VariableDeclaration variable) {
+	def designateVariableResetable(VariableDeclaration variable) {
 		if (variable !== null) {
 			resetableVariables += variable
+			variable.annotations += createResetableVariableDeclarationAnnotation
 		}
 	}
 	

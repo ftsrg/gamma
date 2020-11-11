@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.xsts.transformation
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
@@ -41,7 +40,6 @@ import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.math.BigInteger
-import java.util.Collection
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
@@ -71,7 +69,6 @@ class GammaToXSTSTransformer {
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Transformation settings
-	protected final Collection<VariableDeclaration> resetableVariables
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
 	protected boolean optimize
@@ -79,15 +76,11 @@ class GammaToXSTSTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(#[], null, false, true)
+		this(null, false, true)
 	}
 	
-	new(Collection<VariableDeclaration> resetableVariables, Integer schedulingConstraint,
+	new(Integer schedulingConstraint,
 			boolean transformOrthogonalActions, boolean optimize) {
-		this.resetableVariables = newArrayList
-		// Question: when should these variables be reset? After each component run (current option)? 
-		// Or after the run of the component in which they are declared (different in async components)?
-		this.resetableVariables += resetableVariables
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
@@ -139,10 +132,6 @@ class GammaToXSTSTransformer {
 		if (optimize) {
 			// Optimizing: system in events (but not PERSISTENT parameters) can be reset after the merged transition
 			xSts.resetInEventsAfterMergedAction(gammaComponent)
-		}
-		if (!resetableVariables.empty) {
-			// E.g., variables for test generation
-			xSts.resetResetableVariables
 		}
 		// Optimizing
 		xSts.optimize
@@ -499,25 +488,6 @@ class GammaToXSTSTransformer {
 				it.actions += resetAction
 			]
 		}
-	}
-	
-	protected def void resetResetableVariables(XSTS xSts) {
-		val xStsResetActions = newArrayList
-		for (resetableVariable : resetableVariables) {
-			val instance = resetableVariable.containingComponentInstance
-			val xStsVariableName = customizeName(resetableVariable, instance)
-			val xStsVariable = xSts.getVariable(xStsVariableName)
-			if (xStsVariable !== null) {
-				// Can be null due to optimizations
-				val xStsType = xStsVariable.type
-				xStsResetActions += xStsVariable.createAssignmentAction(xStsType.initialValueOfType)
-			}
-		}
-		// It could be in-event action too
-		xSts.mergedAction = createSequentialAction => [
-			it.actions += xStsResetActions
-			it.actions += xSts.mergedAction
-		]
 	}
 	
 	protected def optimize(XSTS xSts) {

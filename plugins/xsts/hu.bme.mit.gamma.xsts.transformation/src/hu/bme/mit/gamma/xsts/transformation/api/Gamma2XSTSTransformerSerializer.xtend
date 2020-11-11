@@ -91,10 +91,8 @@ class Gamma2XSTSTransformerSerializer {
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 				testedPortsForInteractions,
 				targetFolderUri, fileName)
-		val result = slicerAnnotatorAndPropertyGenerator.execute
-		val resetableVariables = result.resetableVariables
-		val gammaToXSTSTransformer = new GammaToXSTSTransformer(resetableVariables,
-			schedulingConstraint, true, true)
+		slicerAnnotatorAndPropertyGenerator.execute
+		val gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF
