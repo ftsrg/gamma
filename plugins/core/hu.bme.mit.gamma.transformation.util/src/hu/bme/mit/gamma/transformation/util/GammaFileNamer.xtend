@@ -29,26 +29,26 @@ class GammaFileNamer {
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
 	
-	def String getPackageFileName(String extensionlessName) '''«extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
+	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
 	
-	def String getUnfoldedPackageFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PACKAGE_EMF_EXTENSION»'''
+	def String getUnfoldedPackageFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PACKAGE_EMF_EXTENSION»'''
 	
-	def String getEmfUppaalFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«UPPAAL_EMF_EXTENSION»'''
+	def String getEmfUppaalFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«UPPAAL_EMF_EXTENSION»'''
 	
-	def String getGammaUppaalTraceabilityFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
+	def String getGammaUppaalTraceabilityFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«GAMMA_UPPAAL_TRACEABILITY_EXTENSION»'''
 	
-	def String getPropertyFileName(String extensionlessName) '''«extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
+	def String getPropertyFileName(String fileName) '''«fileName.extensionlessName».«PROPERTY_XTEXT_EXTENSION»'''
 	
-	def String getHiddenPropertyFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
+	def String getHiddenPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
 	
-	def String getHiddenEmfPropertyFileName(String extensionlessName) '''«extensionlessName.toHiddenFileName».«PROPERTY_EMF_EXTENSION»'''
+	def String getHiddenEmfPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_EMF_EXTENSION»'''
 	
-	def String getXmlUppaalFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
+	def String getXmlUppaalFileName(String fileName) '''«fileName.extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
 	
-	def String getUppaalQueryFileName(String extensionlessName) '''«extensionlessName».«UPPAAL_QUERY_EXTENSION»'''
+	def String getUppaalQueryFileName(String fileName) '''«fileName.extensionlessName».«UPPAAL_QUERY_EXTENSION»'''
 	
-	def String getXtextXStsFileName(String extensionlessName) '''«extensionlessName».«XSTS_XTEXT_EXTENSION»'''
+	def String getXtextXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_XTEXT_EXTENSION»'''
 	
-	def String getEmfXStsFileName(String extensionlessName) '''«extensionlessName».«XSTS_EMF_EXTENSION»'''
+	def String getEmfXStsFileName(String fileName) '''«fileName.extensionlessName».«XSTS_EMF_EXTENSION»'''
 	
 }

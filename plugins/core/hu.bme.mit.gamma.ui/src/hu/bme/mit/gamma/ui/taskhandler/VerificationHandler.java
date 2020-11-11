@@ -40,6 +40,7 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.util.FileUtil;
@@ -198,8 +199,10 @@ public class VerificationHandler extends TaskHandler {
 
 abstract class AbstractVerification {
 
-	protected FileUtil fileUtil = FileUtil.INSTANCE;
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
+	
 	public abstract ExecutionTrace execute(File modelFile, File queryFile);
 	
 }
@@ -211,8 +214,8 @@ class UppaalVerification extends AbstractVerification {
 	//
 	@Override
 	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String packageFileName =
-				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "g2u"));
+		String fileName = modelFile.getName();
+		String packageFileName = fileNamer.getGammaUppaalTraceabilityFileName(fileName);
 		EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 		UppaalVerifier verifier = new UppaalVerifier();
 		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
@@ -227,8 +230,8 @@ class XSTSUppaalVerification extends AbstractVerification {
 	//
 	@Override
 	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String packageFileName =
-				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
+		String fileName = modelFile.getName();
+		String packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
 		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 		UppaalVerifier verifier = new UppaalVerifier();
 		return verifier.verifyQuery(gammaPackage, "-C -T -t0", modelFile, queryFile, true, true);
@@ -243,8 +246,8 @@ class ThetaVerification extends AbstractVerification {
 	//
 	@Override
 	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String packageFileName =
-				fileUtil.toHiddenFileName(fileUtil.changeExtension(modelFile.getName(), "gsm"));
+		String fileName = modelFile.getName();
+		String packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
 		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 		ThetaVerifier verifier = new ThetaVerifier();
 		String queries = fileUtil.loadString(queryFile);
