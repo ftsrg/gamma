@@ -420,7 +420,9 @@ class GammaStatechartAnnotator {
 		}
 		if (resettable) {
 			senderVariable.addToResetableVariables
+			senderVariable.annotations += createResetableVariableDeclarationAnnotation
 			receiverVariable.addToResetableVariables
+			receiverVariable.annotations += createResetableVariableDeclarationAnnotation
 		}
 		return variablePair
 	}

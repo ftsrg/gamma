@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -198,12 +199,20 @@ class ExpressionTransformer {
 		return newTypeDeclaration
 	}
 	
+	protected def transformAnnotation(VariableDeclarationAnnotation annotation) {
+		return annotation.clone
+	}
+	
 	protected def VariableDeclaration transformVariable(VariableDeclaration variable) {
-		return createVariableDeclaration => [
+		val newVariable = createVariableDeclaration => [
 			it.name = variable.name
 			it.type = variable.type.transformType
 			it.expression = variable.expression?.transformExpression
 		]
+		for (annotation : variable.annotations) {
+			newVariable.annotations += annotation.transformAnnotation
+		}
+		return newVariable
 	}
 	
 }
