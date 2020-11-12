@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.uppaal.util.NtaOptimizer
 import hu.bme.mit.gamma.uppaal.util.TypeTransformer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -105,6 +106,10 @@ class XSTSToUppaalTransformer {
 		}
 		val uppaalVariable = uppaalType.createVariable(variable.uppaalId)
 		return uppaalVariable
+	}
+	
+	protected def dispatch Location transformAction(EmptyAction action, Location source) {
+		return source
 	}
 	
 	protected def dispatch Location transformAction(AssignmentAction action, Location source) {
