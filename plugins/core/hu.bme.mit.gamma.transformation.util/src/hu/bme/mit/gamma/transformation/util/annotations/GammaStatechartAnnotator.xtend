@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.RaiseInstanceEvents
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Collection
 import java.util.List
@@ -48,6 +49,7 @@ class GammaStatechartAnnotator {
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
 	protected boolean RECEIVER_CONSIDERATION
+	protected InteractionTuple RECEIVER_INTERACTION_TUPLE
 	protected final Set<Port> interactionCoverablePorts= newHashSet
 	protected final Set<ParameterDeclaration> newEventParameters = newHashSet
 	protected long senderId = 1 // As 0 is the reset value
@@ -59,13 +61,12 @@ class GammaStatechartAnnotator {
 	protected final Map<StatechartDefinition, // Optimization: stores the variable pairs of other regions for reuse
 		List<VariablePair>> statechartInteractionVariables = newHashMap // Check: list must be unique
 	protected final List<Interaction> interactions = newArrayList
-	// Resettable variables
-	protected final Set<VariableDeclaration> resetableVariables = newHashSet
 	// Factories
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Namings
 	protected final AnnotationNamings annotationNamings = new AnnotationNamings // Instance due to the id
 	
@@ -92,6 +93,7 @@ class GammaStatechartAnnotator {
 		if (!interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
 			this.RECEIVER_CONSIDERATION = true
+			this.RECEIVER_INTERACTION_TUPLE = InteractionTuple.ALL
 			this.interactionCoverablePorts += interactionCoverablePorts
 		}
 	}
@@ -156,7 +158,7 @@ class GammaStatechartAnnotator {
 		if (!transitionPairVariables.containsKey(state)) {
 			val statechart = state.containingStatechart
 			val variablePair = statechart.createVariablePair(null, null,
-				false /*They are not resettable, as two cycles have to be considered*/)
+				false /*They are not resettable, as two consecutive cycles have to be considered*/)
 			transitionPairVariables.put(state, variablePair)
 		}
 		return transitionPairVariables.get(state)
@@ -229,9 +231,45 @@ class GammaStatechartAnnotator {
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			receivingIds.put(transition, recevierId++)
+			switch (RECEIVER_INTERACTION_TUPLE) {
+				case ALL: {
+					receivingIds.put(transition, recevierId++)
+				}
+				default: {
+					val transitions = receivingIds.keySet
+					var found = false
+					for (var i = 0; i < transitions.size && !found; i++) {
+						val transitionWithId = transitions.get(i)
+						if (transition.needSameId(transitionWithId)) {
+							val originalId = receivingIds.get(transitionWithId)
+							receivingIds.put(transition, originalId)
+							found = true
+						}
+					}
+					if (!found) {
+						receivingIds.put(transition, recevierId++)
+					}
+				}
+			}
 		}
 		return receivingIds.get(transition)
+	}
+	
+	protected def needSameId(Transition lhs, Transition rhs) {
+		if (lhs.containingStatechart !== rhs.containingStatechart) {
+			// The algorithm would be correct without this too
+			// This way, the transitions in different statecharts get different ids 
+			return false 
+		}
+		val lhsSource = lhs.sourceState
+		val lhsTrigger = lhs.trigger
+		val rhsSource = rhs.sourceState
+		val rhsTrigger = rhs.trigger
+		// Composite triggers and their possible relations are NOT considered now
+		return RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES_TRIGGERS &&
+				lhsSource === rhsSource && lhsTrigger.helperEquals(rhsTrigger) ||
+			RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES && lhsSource === rhsSource ||
+			RECEIVER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS && lhsTrigger.helperEquals(rhsTrigger)
 	}
 	
 	protected def getInteractionVariables(Region region) {
@@ -429,7 +467,6 @@ class GammaStatechartAnnotator {
 	
 	def designateVariableResetable(VariableDeclaration variable) {
 		if (variable !== null) {
-			resetableVariables += variable
 			variable.annotations += createResetableVariableDeclarationAnnotation
 		}
 	}
@@ -442,10 +479,6 @@ class GammaStatechartAnnotator {
 	
 	def getInteractions() {
 		return new InteractionAnnotations(this.interactions)
-	}
-	
-	def getResetableVariables() {
-		return this.resetableVariables
 	}
 	
 	// Entry point
@@ -574,4 +607,8 @@ class AnnotationNamings {
 	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
 	
+}
+
+enum InteractionTuple {
+	ALL, STATES_TRIGGERS, STATES, TRIGGERS
 }

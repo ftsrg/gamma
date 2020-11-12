@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
@@ -44,23 +43,22 @@ class ModelAnnotatorPropertyGenerator {
 		val newPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Checking if we need annotation and property generation
 		var PropertyPackage generatedPropertyPackage
-		val Collection<VariableDeclaration> resetableVariables = newArrayList
 		
-			// State coverage
-			val testedComponentsForStates = getIncludedSynchronousInstances(
-					testedComponentsForStates, newTopComponent);
-			// Transition coverage
-			val testedComponentsForTransitions = getIncludedSynchronousInstances(
-					testedComponentsForTransitions, newTopComponent);
-			// Transition pair coverage
-			val testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
-					testedComponentsForTransitionPairs, newTopComponent);
-			// Out event coverage
-			val testedComponentsForOutEvents = getIncludedSynchronousInstances(
-					testedComponentsForOutEvents, newTopComponent);
-			// Interaction coverage
-			val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
-					testedPortsForInteractions, newTopComponent);
+		// State coverage
+		val testedComponentsForStates = getIncludedSynchronousInstances(
+				testedComponentsForStates, newTopComponent)
+		// Transition coverage
+		val testedComponentsForTransitions = getIncludedSynchronousInstances(
+				testedComponentsForTransitions, newTopComponent)
+		// Transition pair coverage
+		val testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
+				testedComponentsForTransitionPairs, newTopComponent)
+		// Out event coverage
+		val testedComponentsForOutEvents = getIncludedSynchronousInstances(
+				testedComponentsForOutEvents, newTopComponent)
+		// Interaction coverage
+		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
+				testedPortsForInteractions, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedComponentsForOutEvents.nullOrEmpty ||
@@ -69,7 +67,6 @@ class ModelAnnotatorPropertyGenerator {
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions)
 			statechartAnnotator.annotateModel
-			resetableVariables += statechartAnnotator.resetableVariables
 			newPackage.save // It must be saved so the property package can be serialized
 			
 			// We are after model unfolding, so the argument is true
@@ -86,7 +83,7 @@ class ModelAnnotatorPropertyGenerator {
 							testedComponentsForOutEvents)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
-		return new Result(generatedPropertyPackage, resetableVariables)
+		return new Result(generatedPropertyPackage)
 	}
 	
 	protected def List<SynchronousComponentInstance> getIncludedSynchronousInstances(
@@ -157,7 +154,6 @@ class ModelAnnotatorPropertyGenerator {
 	@Data
 	static class Result {
 		PropertyPackage generatedPropertyPackage
-		Collection<VariableDeclaration> resetableVariables
 	}
 	
 }
