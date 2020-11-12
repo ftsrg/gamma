@@ -67,14 +67,15 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {//TODO prefix variable with scope
-		var xStsVariable = expressionFactory.createVariableDeclaration => [
+		// The commented solution would transform every action-declared variable twice
+		/*var xStsVariable = expressionFactory.createVariableDeclaration => [
 			it.name = action.variableDeclaration.name;
 			it.type = action.variableDeclaration.type.transformType;
 			if (action.variableDeclaration.expression !== null) {
 				it.expression = action.variableDeclaration.expression.transformExpression;
 			}
 		]
-		xSts.variableDeclarations += xStsVariable;
+		xSts.variableDeclarations += xStsVariable;*/
 		return createEmptyAction;
 	}
 	
