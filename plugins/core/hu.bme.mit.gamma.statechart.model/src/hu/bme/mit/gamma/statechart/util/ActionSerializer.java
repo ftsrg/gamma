@@ -18,7 +18,7 @@ public class ActionSerializer extends hu.bme.mit.gamma.action.util.ActionSeriali
 
 	protected String _serialize(SetTimeoutAction action) {
 		final TimeSpecification time = action.getTime();
-		return "timeout " + action.getTimeoutDeclaration().getName() + " "
+		return action.getTimeoutDeclaration().getName() + " := "
 				+ expressionSerializer.serialize(time.getValue()) + " " + serialize(time.getUnit());
 	}
 
