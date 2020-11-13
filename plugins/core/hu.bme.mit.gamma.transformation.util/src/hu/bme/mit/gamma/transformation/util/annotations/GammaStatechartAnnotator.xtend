@@ -48,8 +48,9 @@ class GammaStatechartAnnotator {
 	protected final List<TransitionPairAnnotation> transitionPairAnnotations = newArrayList
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
-	protected boolean RECEIVER_CONSIDERATION
+	protected InteractionTuple SENDER_INTERACTION_TUPLE
 	protected InteractionTuple RECEIVER_INTERACTION_TUPLE
+	protected boolean RECEIVER_CONSIDERATION // Derived feature: RECEIVER_INTERACTION_TUPLE == RECEIVER_INTERACTION_TUPLE.TRIGGERS
 	protected final Set<Port> interactionCoverablePorts= newHashSet
 	protected final Set<ParameterDeclaration> newEventParameters = newHashSet
 	protected long senderId = 1 // As 0 is the reset value
@@ -74,6 +75,15 @@ class GammaStatechartAnnotator {
 			Collection<SynchronousComponentInstance> transitionCoverableComponents,
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<Port> interactionCoverablePorts) {
+		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
+			interactionCoverablePorts, InteractionTuple.ALL, InteractionTuple.ALL)
+	}
+	
+	new(Package gammaPackage,
+			Collection<SynchronousComponentInstance> transitionCoverableComponents,
+			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
+			Collection<Port> interactionCoverablePorts,
+			InteractionTuple senderInteractionTuple, InteractionTuple receiverInteractionTuple) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
 		if (!transitionCoverableComponents.empty) {
@@ -92,8 +102,10 @@ class GammaStatechartAnnotator {
 		}
 		if (!interactionCoverablePorts.isEmpty) {
 			this.INTERACTION_COVERAGE = true
-			this.RECEIVER_CONSIDERATION = true
-			this.RECEIVER_INTERACTION_TUPLE = InteractionTuple.ALL
+			this.SENDER_INTERACTION_TUPLE = senderInteractionTuple
+			this.RECEIVER_INTERACTION_TUPLE = receiverInteractionTuple
+			this.RECEIVER_CONSIDERATION =
+				RECEIVER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS
 			this.interactionCoverablePorts += interactionCoverablePorts
 		}
 	}
@@ -224,31 +236,71 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			sendingIds.put(action, senderId++)
+			if (SENDER_INTERACTION_TUPLE == InteractionTuple.ALL) {
+				sendingIds.put(action, senderId++)
+			}
+			else {
+				val actions = sendingIds.keySet
+				var found = false
+				for (var i = 0; i < actions.size && !found; i++) {
+					val actionWithId = actions.get(i)
+					if (action.needSameId(actionWithId)) {
+						val originalId = sendingIds.get(actionWithId)
+						sendingIds.put(action, originalId)
+						found = true
+					}
+				}
+				if (!found) {
+					sendingIds.put(action, senderId++)
+				}
+			}
 		}
 		return sendingIds.get(action)
 	}
 	
+	protected def needSameId(RaiseEventAction lhs, RaiseEventAction rhs) {
+		if (SENDER_INTERACTION_TUPLE == InteractionTuple.ALL ||
+				lhs.containingStatechart !== rhs.containingStatechart) {
+			// The algorithm would be correct without this too
+			// This way, the raise event actions in different statecharts get different ids 
+			return false 
+		}
+		val lhsState = lhs.correspondingStateNode
+		val rhsState = rhs.correspondingStateNode
+		// This way, arguments have to be equal
+		return SENDER_INTERACTION_TUPLE == InteractionTuple.STATES_TRIGGERS &&
+				lhsState === rhsState && lhs.helperEquals(rhs) ||
+			SENDER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS && lhs.helperEquals(rhs)
+	}
+	
+	protected def getCorrespondingStateNode(RaiseEventAction action) {
+		val containingTransition = action.getContainerOfType(Transition)
+		if (containingTransition !== null) {
+			// Container is a transition
+			return containingTransition.sourceState
+		}
+		// Container is a state
+		return action.getContainerOfType(State)
+	}
+	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			switch (RECEIVER_INTERACTION_TUPLE) {
-				case ALL: {
-					receivingIds.put(transition, recevierId++)
+			if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.ALL) {
+				receivingIds.put(transition, recevierId++)
+			}
+			else {
+				val transitions = receivingIds.keySet
+				var found = false
+				for (var i = 0; i < transitions.size && !found; i++) {
+					val transitionWithId = transitions.get(i)
+					if (transition.needSameId(transitionWithId)) {
+						val originalId = receivingIds.get(transitionWithId)
+						receivingIds.put(transition, originalId)
+						found = true
+					}
 				}
-				default: {
-					val transitions = receivingIds.keySet
-					var found = false
-					for (var i = 0; i < transitions.size && !found; i++) {
-						val transitionWithId = transitions.get(i)
-						if (transition.needSameId(transitionWithId)) {
-							val originalId = receivingIds.get(transitionWithId)
-							receivingIds.put(transition, originalId)
-							found = true
-						}
-					}
-					if (!found) {
-						receivingIds.put(transition, recevierId++)
-					}
+				if (!found) {
+					receivingIds.put(transition, recevierId++)
 				}
 			}
 		}
@@ -256,7 +308,8 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def needSameId(Transition lhs, Transition rhs) {
-		if (lhs.containingStatechart !== rhs.containingStatechart) {
+		if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.ALL ||
+				lhs.containingStatechart !== rhs.containingStatechart) {
 			// The algorithm would be correct without this too
 			// This way, the transitions in different statecharts get different ids 
 			return false 
@@ -268,7 +321,6 @@ class GammaStatechartAnnotator {
 		// Composite triggers and their possible relations are NOT considered now
 		return RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES_TRIGGERS &&
 				lhsSource === rhsSource && lhsTrigger.helperEquals(rhsTrigger) ||
-			RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES && lhsSource === rhsSource ||
 			RECEIVER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS && lhsTrigger.helperEquals(rhsTrigger)
 	}
 	
@@ -610,5 +662,5 @@ class AnnotationNamings {
 }
 
 enum InteractionTuple {
-	ALL, STATES_TRIGGERS, STATES, TRIGGERS
+	ALL, STATES_TRIGGERS, TRIGGERS
 }
