@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import hu.bme.mit.gamma.xsts.model.XSTS
 
 abstract class LowlevelTransitionToXTransitionTransformer {
 	// Auxiliary object
@@ -37,18 +36,15 @@ abstract class LowlevelTransitionToXTransitionTransformer {
 	protected final ViatraQueryEngine engine
 	// Trace
 	protected final Trace trace
-	// xSts
-	protected final XSTS xSts
 	
-	new(ViatraQueryEngine engine, Trace trace, XSTS xSts) {
-		this(engine, trace, xSts, null)
+	new(ViatraQueryEngine engine, Trace trace) {
+		this(engine, trace, null)
 	}
 	
-	new(ViatraQueryEngine engine, Trace trace, XSTS xSts, RegionActivator regionActivator) {
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
 		this.engine = engine
 		this.trace = trace
-		this.xSts = xSts
-		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(engine, trace, xSts, regionActivator)
+		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(engine, trace, regionActivator)
 		// Delegating the contained objects to the subclasses too
 		this.actionFactory = this.lowlevelTransitionToActionTransformer.actionFactory
 		this.stateAssumptionCreator = this.lowlevelTransitionToActionTransformer.stateAssumptionCreator

@@ -30,15 +30,14 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.model.XSTS
 
 class PrecursoryTransitionToXTransitionTransformer extends LowlevelTransitionToXTransitionTransformer {
 	
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToActionTransformer
 	
-	new(ViatraQueryEngine engine, Trace trace, XSTS xSts) {
-		super(engine, trace, xSts)
-		this.terminalTransitionToActionTransformer = new TerminalTransitionToXTransitionTransformer(this.engine, this.trace, this.xSts)
+	new(ViatraQueryEngine engine, Trace trace) {
+		super(engine, trace)
+		this.terminalTransitionToActionTransformer = new TerminalTransitionToXTransitionTransformer(this.engine, this.trace)
 	}
 	
 	def transform(JoinState lowlevelLastJoinState) {

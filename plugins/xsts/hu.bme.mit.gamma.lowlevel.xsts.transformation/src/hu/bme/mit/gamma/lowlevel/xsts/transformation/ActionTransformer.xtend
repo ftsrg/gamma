@@ -26,13 +26,10 @@ import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Collection
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.xsts.model.XSTS
 
 class ActionTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
-	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// Action utility
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
@@ -40,12 +37,9 @@ class ActionTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	// Trace
 	protected final Trace trace
-	// xSts
-	protected final XSTS xSts
 	
-	new(Trace trace, XSTS xSts) {
+	new(Trace trace) {
 		this.trace = trace
-		this.xSts = xSts
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 	}
 
@@ -66,16 +60,8 @@ class ActionTransformer {
 		return createEmptyAction
 	}
 	
-	def dispatch Action transformAction(VariableDeclarationStatement action) {//TODO prefix variable with scope
-		// The commented solution would transform every action-declared variable twice
-		/*var xStsVariable = expressionFactory.createVariableDeclaration => [
-			it.name = action.variableDeclaration.name;
-			it.type = action.variableDeclaration.type.transformType;
-			if (action.variableDeclaration.expression !== null) {
-				it.expression = action.variableDeclaration.expression.transformExpression;
-			}
-		]
-		xSts.variableDeclarations += xStsVariable;*/
+	def dispatch Action transformAction(VariableDeclarationStatement action) {
+		
 		return createEmptyAction;
 	}
 	

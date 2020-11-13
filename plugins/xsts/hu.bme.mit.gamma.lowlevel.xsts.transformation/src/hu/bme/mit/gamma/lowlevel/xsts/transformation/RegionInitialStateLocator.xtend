@@ -18,16 +18,15 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import hu.bme.mit.gamma.xsts.model.XSTS
 
 class RegionInitialStateLocator {
 	// Auxiliary objects: derived classes of TerminalTransitionToXTransitionTransformer
 	protected final extension SingleInitialStateLocator singleInitialStateLocator
 	protected final extension RecursiveInitialStateLocator recursiveInitialStateLocator
 	
-	new(ViatraQueryEngine engine, Trace trace, XSTS xSts, RegionActivator regionActivator) {
-		this.singleInitialStateLocator = new SingleInitialStateLocator(engine, trace, xSts, regionActivator)
-		this.recursiveInitialStateLocator = new RecursiveInitialStateLocator(engine, trace, xSts, regionActivator)
+	new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+		this.singleInitialStateLocator = new SingleInitialStateLocator(engine, trace, regionActivator)
+		this.recursiveInitialStateLocator = new RecursiveInitialStateLocator(engine, trace, regionActivator)
 	}
 		
 	protected def createSingleXStsInitialStateSettingAction(EntryState lowlevelEntry) {
@@ -40,8 +39,8 @@ class RegionInitialStateLocator {
 	
 	static class SingleInitialStateLocator extends TerminalTransitionToXTransitionTransformer {
 	
-		new(ViatraQueryEngine engine, Trace trace, XSTS xSts, RegionActivator regionActivator) {
-			super(engine, trace, xSts, regionActivator)
+		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+			super(engine, trace, regionActivator)
 		}
 		
 		// Only single region activation, no entry actions, no orthogonality
@@ -73,8 +72,8 @@ class RegionInitialStateLocator {
 	
 	static class RecursiveInitialStateLocator extends TerminalTransitionToXTransitionTransformer {
 	
-		new(ViatraQueryEngine engine, Trace trace, XSTS xSts, RegionActivator regionActivator) {
-			super(engine, trace, xSts, regionActivator)  
+		new(ViatraQueryEngine engine, Trace trace, RegionActivator regionActivator) {
+			super(engine, trace, regionActivator)  
 		}
 		
 		// Only recursive region activation, no entry actions, no orthogonality

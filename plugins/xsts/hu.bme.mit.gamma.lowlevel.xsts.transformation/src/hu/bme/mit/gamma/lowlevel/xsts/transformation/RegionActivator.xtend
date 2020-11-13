@@ -31,7 +31,6 @@ import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.model.XSTS
 
 class RegionActivator {
 	// Model factories
@@ -45,10 +44,10 @@ class RegionActivator {
 	protected final ViatraQueryEngine engine
 	protected final Trace trace
 		
-	new(ViatraQueryEngine engine, Trace trace, XSTS xSts) {
+	new(ViatraQueryEngine engine, Trace trace) {
 		this.engine = engine
 		this.trace = trace
-		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, xSts, this)
+		this.regionInitialStateLocator = new RegionInitialStateLocator(this.engine, this.trace, this)
 		this.stateAssumptionCreator = new StateAssumptionCreator(this.trace)
 	}
 	
