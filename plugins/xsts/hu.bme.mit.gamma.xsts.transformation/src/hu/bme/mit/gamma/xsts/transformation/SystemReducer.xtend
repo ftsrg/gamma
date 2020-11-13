@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -24,13 +26,15 @@ class SystemReducer {
 	public static final SystemReducer INSTANCE =  new SystemReducer
 	protected new() {}
 	// Auxiliary objects
-	protected extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
-	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching
-		val xStsDeletableAssignmentActions = newHashSet
+		val xStsFalseVariables = newHashSet
 		val xStsDeletableVariables = newHashSet
+		val xStsDeletableAssignmentActions = newHashSet
 		for (instance : component.derivedComponents) {
 			for (instancePort : instance.unusedPorts) {
 				// In events on required port
@@ -38,9 +42,10 @@ class SystemReducer {
 					val inEventName = inputEvent.customizeInputName(instancePort, instance)
 					val xStsInEventVariable = xSts.getVariable(inEventName)
 					if (xStsInEventVariable !== null) {
+						xStsFalseVariables += xStsInEventVariable
 						xStsDeletableVariables += xStsInEventVariable
 						xStsDeletableAssignmentActions += xStsInEventVariable.getAssignments(xStsAssignmentActions)
-						// In-parameters - they can ba placed on transitions without trigger, so we do not delete them
+						// In-parameters - they can be placed on transitions without trigger, so we do not delete them
 //						for (parameter : inputEvent.parameterDeclarations) {
 //							val inParamaterName = parameter.customizeInName(instancePort, instance)
 //							val xStsInParameterVariable = xSts.getVariable(inParamaterName)
@@ -70,8 +75,21 @@ class SystemReducer {
 				}
 			}
 		}
+		// Assignment removal is before falsification, as ReferenceExpressions
+		// can be placed inside assignment actions, and the other way around,
+		// cast exceptions are thrown!
 		for (xStsDeletableAssignmentAction : xStsDeletableAssignmentActions) {
 			xStsDeletableAssignmentAction.remove // To speed up the process
+		}
+		// Deleting references to the input event variables in guards
+		// before variable removal as references must be present here
+		for (xStsFalseVariable : xStsFalseVariables) {
+			val references = xSts.getAllContentsOfType(ReferenceExpression)
+				.filter[it.declaration === xStsFalseVariable]
+			for (reference : references) {
+				val falseExpression = createFalseExpression
+				falseExpression.replace(reference)
+			}
 		}
 		for (xStsDeletableVariable : xStsDeletableVariables) {
 			xStsDeletableVariable.delete // Delete needed due to e.g., transientVariables list
