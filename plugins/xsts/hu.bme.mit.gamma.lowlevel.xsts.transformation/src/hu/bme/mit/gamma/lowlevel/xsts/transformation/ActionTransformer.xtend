@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.action.model.EmptyStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -26,13 +25,18 @@ import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Collection
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+
 
 class ActionTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
+	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// Action utility
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	// Trace
@@ -61,11 +65,20 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {
-		
-		return createEmptyAction;
+		// Create variable reset assignment (variable already transformed, global)
+		return createAssignmentAction => [
+			it.lhs = createDirectReferenceExpression => [
+				it.declaration = trace.getXStsVariable(action.variableDeclaration)
+			]
+			if (action.variableDeclaration.expression !== null) {
+				it.rhs = action.variableDeclaration.expression.transformExpression
+			} else {
+				it.rhs = action.variableDeclaration.initialValue.transformExpression
+			}
+		]
 	}
 	
-	def dispatch Action transformAction(AssignmentStatement action) {
+	def dispatch Action transformAction(AssignmentStatement action) {	//TODO array?
 		return createAssignmentAction => [
 			it.lhs = action.lhs.transformExpression as DirectReferenceExpression
 			it.rhs = action.rhs.transformExpression
