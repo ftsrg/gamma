@@ -25,22 +25,24 @@ import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DefaultExpression
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.TypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -51,18 +53,12 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.LinkedList
 import java.util.List
+import java.util.Set
 import java.util.Stack
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.RecordAccessExpression
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.SelectExpression
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -270,8 +266,8 @@ class ActionTransformer {
 		return result
 	}
 	
-	// No fallthrough functionality
 	protected def dispatch List<Action> transformAction(SwitchStatement action, LinkedList<Action> following) {
+		// No fallthrough functionality!
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Transform the guards (and their preconditions)
@@ -417,69 +413,77 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(AssignmentStatement action, LinkedList<Action> following) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
-		//val referredDeclaration = findDeclarationOfReference(action.lhs) TODO remove if next line makes no errors
-		val referredDeclaration = action.lhs.referredVariables.iterator.next
-		if (referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration) {
-			// Transform lhs
-			val List<ReferenceExpression> lowlevelLhs = new ArrayList<ReferenceExpression>
-			System.out.println("Assignment to type: " + referredDeclaration.type)	//TODO delete
-			var typeToAssign = referredDeclaration.type.typeDefinitionFromType;
-			if (!(typeToAssign instanceof CompositeTypeDefinition)) {
-				lowlevelLhs += createDirectReferenceExpression => [
-					if(referredDeclaration instanceof VariableDeclaration)
-						it.declaration = trace.get(referredDeclaration as VariableDeclaration)
-					else if(referredDeclaration instanceof ParameterDeclaration)
-						it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
-				]
-			} else {
-				var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)
-				System.out.println("OriginalLhs: " + originalLhsVariables)	//TODO delete
-				
-				// access expressions:
-				var List<Object> accessList = action.lhs.collectAccessList
-				var List<String> recordAccessList = new ArrayList<String>
-				for (elem : accessList) {
-					if (elem instanceof String) {
-						recordAccessList.add(elem)
-					}
-				}
-				System.out.println("AccessList:" + recordAccessList + "---" + recordAccessList.size);
-				
-				var lowlevelLhsVariables = new ArrayList<VariableDeclaration>	//TODO delete
-				for (elem : originalLhsVariables) {	
-					if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
-						lowlevelLhsVariables += trace.get(elem)	//TODO delete
-						// Create lhs
-						lowlevelLhs += createDirectReferenceExpression => [
-							it.declaration = trace.get(elem)
-						]
-					}
-				}
-				System.out.println("LowlevelLhs: " + lowlevelLhsVariables)	//TODO delete
-			}
+		//Get the referred high-level declaration (assuming a single, assignable element)
+		val Set<ValueDeclaration> referredDeclarations = newHashSet
+		referredDeclarations.addAll(action.lhs.referredVariables)
+		referredDeclarations.addAll(action.lhs.referredParameters)
+		val referredDeclaration = referredDeclarations.getOnlyElement
+		checkState(referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration)	//transformed to assignable type (=variable)
+		// Transform lhs
+		val List<ReferenceExpression> lowlevelLhs = new ArrayList<ReferenceExpression>
+		System.out.println("Assignment to type: " + referredDeclaration.type)	//TODO delete
+		var typeToAssign = referredDeclaration.type.typeDefinitionFromType;
+		if (!(typeToAssign instanceof CompositeTypeDefinition)) {
+			lowlevelLhs += createDirectReferenceExpression => [
+				if(referredDeclaration instanceof VariableDeclaration)
+					it.declaration = trace.get(referredDeclaration as VariableDeclaration)
+				else if(referredDeclaration instanceof ParameterDeclaration)
+					it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
+			]
+		} else {
+			var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)
+			System.out.println("OriginalLhs: " + originalLhsVariables)	//TODO delete
 			
-			// Get rhs precondition
-			val lowlevelPrecondition = action.rhs.transformPrecondition
-			result += lowlevelPrecondition
-			// Transform rhs and create action
-			val List<Expression> lowlevelRhs = new ArrayList<Expression>
-			lowlevelRhs += action.rhs.transformExpression
-			System.out.println("LowlevelRhs: " + lowlevelRhs)	//TODO delete
-			if (lowlevelLhs.size != lowlevelRhs.size) {	
-				throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
+			// access expressions:
+			var List<Object> accessList = action.lhs.collectAccessList
+			var List<String> recordAccessList = new ArrayList<String>
+			for (elem : accessList) {
+				if (elem instanceof String) {
+					recordAccessList.add(elem)
+				}
 			}
-			for (var i = 0; i < lowlevelLhs.size; i++) {
-				val lhs = lowlevelLhs.get(i)
-				val rhs = lowlevelRhs.get(i)
-				result += createAssignmentStatement => [
-					it.lhs = lhs
-					it.rhs = rhs
-				]
+			System.out.println("AccessList:" + recordAccessList + " --- size:" + recordAccessList.size);
+			
+			for (elem : originalLhsVariables) {	
+				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
+					// Create lhs
+					lowlevelLhs += createDirectReferenceExpression => [
+						if (trace.isMapped(elem)) {	//mapped as complex type
+							it.declaration = trace.get(elem)
+						} else if ((elem.key instanceof VariableDeclaration && trace.isMapped(elem.key as VariableDeclaration)) || 
+							(elem.key instanceof ParameterDeclaration && trace.isMapped(elem.key as ParameterDeclaration))
+						) {	//simple arrays are mapped as a simple type (either var or par)
+							if (elem.key instanceof VariableDeclaration)
+								it.declaration = trace.get(elem.key as VariableDeclaration)
+							else if (elem.key instanceof ParameterDeclaration)
+								it.declaration = trace.get(elem.key as ParameterDeclaration)
+						} else {
+							throw new IllegalArgumentException("Transformed variable declaration not found!")
+						}
+					]
+				}
 			}
 		}
-		else {
-			throw new IllegalArgumentException("Not assignable declaration: " + referredDeclaration)
+		
+		// Get rhs precondition
+		val lowlevelPrecondition = action.rhs.transformPrecondition
+		result += lowlevelPrecondition
+		// Transform rhs and create action
+		val List<Expression> lowlevelRhs = new ArrayList<Expression>
+		lowlevelRhs += action.rhs.transformExpression
+		System.out.println("LowlevelRhs: " + lowlevelRhs)	//TODO delete
+		if (lowlevelLhs.size != lowlevelRhs.size) {	
+			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
 		}
+		for (var i = 0; i < lowlevelLhs.size; i++) {
+			val lhs = lowlevelLhs.get(i)
+			val rhs = lowlevelRhs.get(i)
+			result += createAssignmentStatement => [
+				it.lhs = lhs
+				it.rhs = rhs
+			]
+		}
+
 		// Create new following-context variable and transform the following-context
 		var newFollowing = new LinkedList<Action>
 		newFollowing.addAll(following)

@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -369,7 +370,7 @@ class ExpressionTransformer {
 				}
 			]
 			transformed.add(transformedField)
-			trace.put(new Pair<VariableDeclaration, List<FieldDeclaration>>(variable,currentField), transformedField)
+			trace.put(new Pair<ValueDeclaration, List<FieldDeclaration>>(variable,currentField), transformedField)
 		}
 		
 		return transformed
@@ -397,7 +398,7 @@ class ExpressionTransformer {
 			transformed.add(createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
-				it.expression = variable.expression?.transformExpression.getOnlyElement
+				it.expression = variable.expression?.transformExpression?.getOnlyElement
 			])
 			trace.put(variable, transformed.head)
 		}
@@ -449,8 +450,8 @@ class ExpressionTransformer {
 		}
 	}
 	
-	protected def List<Pair<VariableDeclaration, List<FieldDeclaration>>> exploreComplexType(VariableDeclaration original, TypeDefinition type, List<FieldDeclaration> currentField) {
-		var List<Pair<VariableDeclaration, List<FieldDeclaration>>> result = new ArrayList<Pair<VariableDeclaration, List<FieldDeclaration>>>
+	protected def List<Pair<ValueDeclaration, List<FieldDeclaration>>> exploreComplexType(ValueDeclaration original, TypeDefinition type, List<FieldDeclaration> currentField) {
+		var List<Pair<ValueDeclaration, List<FieldDeclaration>>> result = newArrayList
 		
 		if (type instanceof RecordTypeDefinition) {
 			// In case of records go into each field
@@ -467,7 +468,7 @@ class ExpressionTransformer {
 			result += exploreComplexType(original, getTypeDefinitionFromType(type.elementType), currentField)
 		} else {	//Simple
 			// In case of simple types create a result element
-			result += new Pair<VariableDeclaration, List<FieldDeclaration>>(original, currentField)
+			result += new Pair<ValueDeclaration, List<FieldDeclaration>>(original, currentField)
 		}
 		
 		return result

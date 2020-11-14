@@ -32,6 +32,7 @@ import static com.google.common.base.Preconditions.checkState
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import java.util.List
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 
 package class Trace {
 
@@ -56,7 +57,9 @@ package class Trace {
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = new HashMap<FunctionAccessExpression, List<VariableDeclaration>>
 	// Record mappings
-	final Map<Pair<VariableDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordVarDeclMappings = new HashMap()
+	final Map<Pair<ValueDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordValDeclMappings = new HashMap()
+	
+	
 	// Assertion variables
 	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
@@ -460,37 +463,39 @@ package class Trace {
 	}
 	
 	// Record
-	def put(Pair<VariableDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
+	def put(Pair<ValueDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
 		checkNotNull(lowLevelVariable)
-		recordVarDeclMappings.put(recordField, lowLevelVariable)
+		recordValDeclMappings.put(recordField, lowLevelVariable)
 	} 
 
-	def isMapped(Pair<VariableDeclaration, List<FieldDeclaration>> recordField) {
+	def isMapped(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
-		for (key : recordVarDeclMappings.keySet) {
+		for (key : recordValDeclMappings.keySet) {
 			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
 				return true
 			}
 		}
 		return false
 	}
-	
-	def get(Pair<VariableDeclaration, List<FieldDeclaration>> recordField) {
+
+	def get(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
-		for (key : recordVarDeclMappings.keySet) {
+		for (key : recordValDeclMappings.keySet) {
 			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
-				return recordVarDeclMappings.get(key)
+				return recordValDeclMappings.get(key)
 			}
 		}
 		return null
 	}
+	
+	
 	
 	// Assertion
 	def put(String name, VariableDeclaration assertionVariable) {

@@ -26,6 +26,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
@@ -48,6 +50,7 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -287,7 +290,7 @@ public class ExpressionUtil {
 	}
 
 	// Declaration references
-	
+	// Variables
 	public Set<VariableDeclaration> getReferredVariables(EObject object) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (DirectReferenceExpression referenceExpression :
@@ -318,14 +321,12 @@ public class ExpressionUtil {
 
 	protected Set<VariableDeclaration> _getReferredVariables(final ReferenceExpression expression) {
 		if (expression instanceof DirectReferenceExpression) {
-			return Collections.singleton((VariableDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			if (((DirectReferenceExpression)expression).getDeclaration() instanceof VariableDeclaration) {
+				return Collections.singleton((VariableDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			}
 		} else if (expression instanceof AccessExpression) {
 			return getReferredVariables(((AccessExpression)expression).getOperand());
 		}
-		/*Declaration declaration = expression.getDeclaration();
-		if ((declaration instanceof VariableDeclaration)) {
-			return Collections.singleton(((VariableDeclaration) declaration));
-		}*/
 		return Collections.emptySet();
 	}
 
@@ -359,8 +360,80 @@ public class ExpressionUtil {
 		} else if (expression instanceof UnaryExpression) {
 			return _getReferredVariables((UnaryExpression) expression);
 		} else {
-			throw new IllegalArgumentException(
-					"Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+		}
+	}
+	// Parameters
+	public Set<ParameterDeclaration> getReferredParameters(EObject object) {
+		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
+		for (DirectReferenceExpression referenceExpression :
+				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
+			Declaration declaration = referenceExpression.getDeclaration();
+			if (declaration instanceof VariableDeclaration) {
+				parameters.add((ParameterDeclaration) declaration);
+			}
+		}
+		return parameters;
+	}
+	
+	protected Set<ParameterDeclaration> _getReferredParameters(final NullaryExpression expression) {
+		return Collections.emptySet();
+	}
+
+	protected Set<ParameterDeclaration> _getReferredParameters(final UnaryExpression expression) {
+		return getReferredParameters(expression.getOperand());
+	}
+
+	protected Set<ParameterDeclaration> _getReferredParameters(final IfThenElseExpression expression) {
+		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
+		parameters.addAll(getReferredParameters(expression.getCondition()));
+		parameters.addAll(getReferredParameters(expression.getThen()));
+		parameters.addAll(getReferredParameters(expression.getElse()));
+		return parameters;
+	}
+
+	protected Set<ParameterDeclaration> _getReferredParameters(final ReferenceExpression expression) {
+		if (expression instanceof DirectReferenceExpression ) {
+			if (((DirectReferenceExpression)expression).getDeclaration() instanceof ParameterDeclaration) {
+				return Collections.singleton((ParameterDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			}
+		} else if (expression instanceof AccessExpression) {
+			return getReferredParameters(((AccessExpression)expression).getOperand());
+		}
+		return Collections.emptySet();
+	}
+
+	protected Set<ParameterDeclaration> _getReferredParameters(final BinaryExpression expression) {
+		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
+		parameters.addAll(getReferredParameters(expression.getLeftOperand()));
+		parameters.addAll(getReferredParameters(expression.getRightOperand()));
+		return parameters;
+	}
+
+	protected Set<ParameterDeclaration> _getReferredParameters(final MultiaryExpression expression) {
+		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
+		EList<Expression> _operands = expression.getOperands();
+		for (Expression operand : _operands) {
+			parameters.addAll(getReferredParameters(operand));
+		}
+		return parameters;
+	}
+
+	public Set<ParameterDeclaration> getReferredParameters(final Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			return _getReferredParameters((ReferenceExpression) expression);
+		} else if (expression instanceof BinaryExpression) {
+			return _getReferredParameters((BinaryExpression) expression);
+		} else if (expression instanceof IfThenElseExpression) {
+			return _getReferredParameters((IfThenElseExpression) expression);
+		} else if (expression instanceof MultiaryExpression) {
+			return _getReferredParameters((MultiaryExpression) expression);
+		} else if (expression instanceof NullaryExpression) {
+			return _getReferredParameters((NullaryExpression) expression);
+		} else if (expression instanceof UnaryExpression) {
+			return _getReferredParameters((UnaryExpression) expression);
+		} else {
+			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
 
@@ -407,6 +480,16 @@ public class ExpressionUtil {
 		enumerationLiteralExpression.setReference(type.getLiterals().get(0));
 		return enumerationLiteralExpression;
 	}
+	
+	protected Expression _getInitialValueOfType(final ArrayTypeDefinition type) {
+		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
+		int arraySize = type.getSize().getValue().intValue();
+		for (int i = 0; i < arraySize; ++i) {
+			Expression elementDefaultValue = getInitialValueOfType(type.getElementType());
+			arrayLiteralExpression.getOperands().add(elementDefaultValue);
+		}
+		return arrayLiteralExpression;
+	}
 
 	public Expression getInitialValueOfType(final Type type) {
 		if (type instanceof EnumerationTypeDefinition) {
@@ -421,6 +504,8 @@ public class ExpressionUtil {
 			return _getInitialValueOfType((BooleanTypeDefinition) type);
 		} else if (type instanceof TypeReference) {
 			return _getInitialValueOfType((TypeReference) type);
+		} else if (type instanceof ArrayTypeDefinition) {
+			return _getInitialValueOfType((ArrayTypeDefinition) type);
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}
