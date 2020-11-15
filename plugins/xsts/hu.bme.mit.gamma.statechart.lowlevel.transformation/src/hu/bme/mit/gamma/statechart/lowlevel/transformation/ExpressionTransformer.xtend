@@ -281,7 +281,6 @@ class ExpressionTransformer {
 		return type.clone(true, true)
 	}
 	
-	
 	protected def dispatch Type transformType(TypeReference type) {
 		val typeDeclaration = type.reference
 		val typeDefinition = typeDeclaration.type

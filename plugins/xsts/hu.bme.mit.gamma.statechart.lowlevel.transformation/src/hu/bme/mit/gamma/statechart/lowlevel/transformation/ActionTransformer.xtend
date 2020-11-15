@@ -63,6 +63,9 @@ import hu.bme.mit.gamma.action.model.TypeReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.AccessExpression
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -425,10 +428,7 @@ class ActionTransformer {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		//Get the referred high-level declaration (assuming a single, assignable element)
-		val Set<ValueDeclaration> referredDeclarations = newHashSet
-		referredDeclarations.addAll(action.lhs.referredVariables)
-		referredDeclarations.addAll(action.lhs.referredParameters)
-		val referredDeclaration = referredDeclarations.getOnlyElement
+		val referredDeclaration = action.lhs.referredValues.getOnlyElement
 		checkState(referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration)	//transformed to assignable type (=variable)
 		// Transform lhs
 		val List<ReferenceExpression> lowlevelLhs = new ArrayList<ReferenceExpression>
@@ -449,9 +449,7 @@ class ActionTransformer {
 				if (elem instanceof String) {
 					recordAccessList.add(elem)
 				}
-			}
-			System.out.println("AccessList:" + recordAccessList + " --- size:" + recordAccessList.size);
-			
+			}			
 			for (elem : originalLhsVariables) {	
 				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
 					// Create lhs
@@ -625,7 +623,6 @@ class ActionTransformer {
 	
 	private def dispatch List<Expression> enumerateExpression(Expression expression) {
 		//REFERENCES
-		//else if direct ref (to array) -> ref to each element
 		//else if access to array
 		//else if access to function (todo complex function)
 		//else if access to record
@@ -651,6 +648,41 @@ class ActionTransformer {
 			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
 		}
 		return result
+	}
+	
+	private def dispatch List<Expression> enumerateExpression(AccessExpression expression) {
+		var List<Expression> result = newArrayList
+		
+		val referredDeclaration = expression.referredValues.getOnlyElement
+		val typeToAssign = referredDeclaration.type.typeDefinitionFromType
+		var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
+	
+		// if array type
+		var randomElem = originalLhsVariables.get(0)
+		var randomElemKey = originalLhsVariables.get(0).key
+		var int i = 0
+		if(trace.isMapped(randomElem) && trace.get(randomElem).type.findTypeDefinitionOfType instanceof ArrayTypeDefinition) {
+			i = (trace.get(randomElem).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
+		} else if (randomElemKey instanceof VariableDeclaration && trace.isMapped(randomElemKey as VariableDeclaration) && trace.get(randomElemKey as VariableDeclaration).type.findTypeDefinitionOfType instanceof ArrayTypeDefinition){
+			i = (trace.get(randomElemKey as VariableDeclaration).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
+		} else if (randomElemKey instanceof ParameterDeclaration && trace.isMapped(randomElemKey as ParameterDeclaration) && trace.get(randomElemKey as ParameterDeclaration).type.findTypeDefinitionOfType instanceof ArrayTypeDefinition){
+			i = (trace.get(randomElemKey as ParameterDeclaration).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
+		} else {
+			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+			//TODO const?
+		}
+		
+		for(var j = 0; j < i; j++) {
+			val temp = j	//to use inside a lambda
+			result += createArrayAccessExpression => [
+				it.operand = expression.clone(true, true)
+				it.arguments += createIntegerLiteralExpression => [
+					it.value = BigInteger.valueOf(temp)
+				]
+			]
+		}
+
+		return result	
 	}
 	
 	private def dispatch List<Expression> enumerateExpression(ArrayLiteralExpression expression) {

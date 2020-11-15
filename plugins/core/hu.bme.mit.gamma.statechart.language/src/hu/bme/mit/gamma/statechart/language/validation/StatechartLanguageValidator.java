@@ -34,20 +34,29 @@ import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
+import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -120,6 +129,8 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 	
+	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	
 	// Some elements can have the same name
 	
 	@Check
@@ -151,9 +162,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
+	public void checkUnsupportedVariableTypes(VariableDeclaration variable) {
+		Type type = expressionUtil.findTypeDefinitionOfType(variable.getType());
+		if (!(type instanceof IntegerTypeDefinition ||
+			  type instanceof BooleanTypeDefinition || 
+			  type instanceof RationalTypeDefinition ||
+			  type instanceof DecimalTypeDefinition ||
+			  type instanceof EnumerationTypeDefinition ||
+			  type instanceof ArrayTypeDefinition ||
+			  type instanceof RecordTypeDefinition
+				)) {
+			error("This type is not supported in the GSL.", ExpressionModelPackage.Literals.DECLARATION__TYPE);
+		}
+	}
+	/*@Check
 	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
 		error("Expression statements are not supported in the GSL.", ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION);
-	}
+	}*/
 	
 	// Expressions
 	
