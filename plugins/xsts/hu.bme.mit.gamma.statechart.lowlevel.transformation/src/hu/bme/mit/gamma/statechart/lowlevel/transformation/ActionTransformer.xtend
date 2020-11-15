@@ -60,8 +60,9 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression
-import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -111,7 +112,7 @@ class ActionTransformer {
 	
 	// Gamma action language
 	
-	// action (trivially) must not be null
+	// action (trivially) must not be nullf
 	// following (by definition) must not be null (but may be empty)
 	protected def dispatch List<Action> transformAction(Action action, LinkedList<Action> following) {
 		throw new IllegalArgumentException("Not known action: " + action)
@@ -153,7 +154,7 @@ class ActionTransformer {
 		var result = new LinkedList<Action>
 		var lowlevelPrecondition = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformPrecondition : new LinkedList<Action>
 		
-		val variableDeclarations = action.variableDeclaration.transformVariable
+		val variableDeclarations = action.variableDeclaration.transformValue
 		result += lowlevelPrecondition
 		for (variableDeclaration : variableDeclarations) {
 			result += createVariableDeclarationStatement => [
@@ -172,7 +173,18 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, LinkedList<Action> following) {
-		throw new IllegalArgumentException("Constant declaration statements are not yet transformed: " + action)
+		// Create return variable
+		var result = new LinkedList<Action>
+		// Constants are not transformed: their references are inlined
+		// Create new following-context variable and transform the following-context
+		var newFollowing = new LinkedList<Action>
+		newFollowing.addAll(following)
+		if(newFollowing.size > 0) {
+			var next = newFollowing.removeFirst()
+			result.addAll(transformAction(next, newFollowing))
+		}
+		// Return the result
+		return result
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action, LinkedList<Action> following) {
@@ -326,16 +338,12 @@ class ActionTransformer {
 		var result = new LinkedList<Action>
 		// enumerate parameter values
 		val parameterValues = action.range.enumerateExpression
-		// transform parameter variable and add to the result
-		val parameterVariableDeclaration = createVariableDeclarationStatement => [
-			it.variableDeclaration = createVariableDeclaration => [
-				it.name = action.parameter.name
-				it.type = action.parameter.type.transformType
-			]
-		]
-		trace.put(action.parameter, parameterVariableDeclaration.variableDeclaration)
-		result += parameterVariableDeclaration
-		// create 'unrolled for' (to be transformed)
+		// TRANSFORM parameter variable and add to the result
+		val parameterVariableDeclarations = action.parameter.transformValue
+		result.addAll(parameterVariableDeclarations.map[vari | createVariableDeclarationStatement => [
+			it.variableDeclaration = vari
+		]])
+		// create 'unrolled for' (TO BE TRANSFORMED)
 		val unrolledFor = new LinkedList<Action>
 		for(parameterValue : parameterValues) {
 			unrolledFor += createAssignmentStatement => [
@@ -348,7 +356,7 @@ class ActionTransformer {
 		}
 		if(action.then !== null)
 			unrolledFor += action.then
-		// call transform on the 'unrolled for' and add to the transformed for
+		// call TRANSFORM on the 'unrolled for' and add to the transformed for
 		val first = unrolledFor.removeFirst
 		result += first.transformAction(unrolledFor)
 		// Create new following-context variable and transform the following-context
@@ -424,7 +432,6 @@ class ActionTransformer {
 		checkState(referredDeclaration instanceof VariableDeclaration || referredDeclaration instanceof ParameterDeclaration)	//transformed to assignable type (=variable)
 		// Transform lhs
 		val List<ReferenceExpression> lowlevelLhs = new ArrayList<ReferenceExpression>
-		System.out.println("Assignment to type: " + referredDeclaration.type)	//TODO delete
 		var typeToAssign = referredDeclaration.type.typeDefinitionFromType;
 		if (!(typeToAssign instanceof CompositeTypeDefinition)) {
 			lowlevelLhs += createDirectReferenceExpression => [
@@ -434,9 +441,7 @@ class ActionTransformer {
 					it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
 			]
 		} else {
-			var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)
-			System.out.println("OriginalLhs: " + originalLhsVariables)	//TODO delete
-			
+			var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
 			// access expressions:
 			var List<Object> accessList = action.lhs.collectAccessList
 			var List<String> recordAccessList = new ArrayList<String>
@@ -474,7 +479,6 @@ class ActionTransformer {
 		// Transform rhs and create action
 		val List<Expression> lowlevelRhs = new ArrayList<Expression>
 		lowlevelRhs += action.rhs.transformExpression
-		System.out.println("LowlevelRhs: " + lowlevelRhs)	//TODO delete
 		if (lowlevelLhs.size != lowlevelRhs.size) {	
 			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
 		}
@@ -621,12 +625,32 @@ class ActionTransformer {
 	
 	private def dispatch List<Expression> enumerateExpression(Expression expression) {
 		//REFERENCES
-		//else if direct ref (to array)
+		//else if direct ref (to array) -> ref to each element
 		//else if access to array
-		//else if direct ref (to ir)
-		//else if access to function
+		//else if access to function (todo complex function)
 		//else if access to record
-		throw new IllegalArgumentException("Cannot evaluate expression: " + expression)
+		throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+	}
+	
+	private def dispatch List<Expression> enumerateExpression(DirectReferenceExpression expression) {
+		var List<Expression> result = newArrayList
+		var type = expression.declaration.type
+		if (type instanceof ArrayTypeDefinition) {
+			for(var i = 0; i < type.size.value.intValue; i++) {
+				val temp = i	//to use inside a lambda
+				result += createArrayAccessExpression => [
+					it.operand = createDirectReferenceExpression => [
+						it.declaration = expression.declaration
+					]
+					it.arguments += createIntegerLiteralExpression => [
+						it.value = BigInteger.valueOf(temp)
+					]
+				]
+			}
+		} else {
+			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+		}
+		return result
 	}
 	
 	private def dispatch List<Expression> enumerateExpression(ArrayLiteralExpression expression) {

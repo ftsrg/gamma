@@ -56,6 +56,8 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
+import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
+import hu.bme.mit.gamma.expression.model.InitializableElement
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -103,8 +105,9 @@ class ExpressionTransformer {
 		
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
 		//TODO not only variable
-		var originalLhsVariables = exploreComplexType(originalDeclaration as VariableDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
-		
+		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
+			exploreComplexType(originalDeclaration as ValueDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
+		} else { throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration);}
 		var accessList = expression.collectAccessList
 		var List<String> recordAccessList = new ArrayList<String>
 		for (elem : accessList) {
@@ -144,18 +147,16 @@ class ExpressionTransformer {
 		return result
 	}
 
-	// Key method
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
 		var result = new ArrayList<Expression>
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
-			// TODO complex types
 			// Constant type declarations have to be transformed as their right hand side is inlined
 			val constantType = declaration.type
 			if (constantType instanceof TypeReference) {
 				val constantTypeDeclaration = constantType.reference
 				val typeDefinition = constantTypeDeclaration.type
-				if (!typeDefinition.isPrimitive) {
+				if (!typeDefinition.isPrimitive && !(typeDefinition instanceof CompositeTypeDefinition)) {	//TODO handle composite?
 					if (!trace.isMapped(constantTypeDeclaration)) {
 						val transformedTypeDeclaration = constantTypeDeclaration.transformTypeDeclaration
 						val lowlevelPackage = trace.lowlevelPackage
@@ -163,6 +164,7 @@ class ExpressionTransformer {
 					}
 				}
 			}
+			// Inlining the referred constant
 			result += declaration.expression.transformExpression
 		} else {
 			checkState(declaration instanceof VariableDeclaration || 
@@ -192,7 +194,6 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	// Key method
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
 		var result = new ArrayList<Expression>
 		val gammaEnumLiteral = expression.reference
@@ -207,7 +208,6 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	// Key method
 	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
 		//TODO currently the field assignment position has to match the field declaration position
 		var result = new ArrayList<Expression>
@@ -217,7 +217,6 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	// Key method
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		var result = new ArrayList<Expression>
 		val port = expression.port
@@ -272,10 +271,16 @@ class ExpressionTransformer {
 		return type.clone(true, true)
 	}
 	
-	//TODO check maybe?
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {
+		//FIXME this only copies
 		return type.clone(true, true)
 	}
+	
+	protected def dispatch Type transformType(RecordTypeDefinition type) {
+		//FIXME this only copies
+		return type.clone(true, true)
+	}
+	
 	
 	protected def dispatch Type transformType(TypeReference type) {
 		val typeDeclaration = type.reference
@@ -308,7 +313,7 @@ class ExpressionTransformer {
 		return newTypeDeclaration
 	}
 	
-	protected def List<VariableDeclaration> transformVariable(VariableDeclaration variable) {
+	protected def List<VariableDeclaration> transformValue(ValueDeclaration variable) {
 		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
 		var TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
 		// Records are broken up into separate variables
@@ -317,26 +322,28 @@ class ExpressionTransformer {
 			for (field : typeDef.fieldDeclarations) {
 				var innerField = new ArrayList<FieldDeclaration>
 				innerField.add(field)
-				transformed.addAll(transformVariableField(variable, innerField, new ArrayList<ArrayTypeDefinition>))
+				transformed.addAll(transformValueField(variable, innerField, new ArrayList<ArrayTypeDefinition>))
 			}
 			return transformed
 		} else if (variableType instanceof ArrayTypeDefinition) {
 			var arrayStack = new ArrayList<ArrayTypeDefinition>
 			arrayStack.add(variableType)
-			transformed.addAll(transformVariableArray(variable, variableType, arrayStack))
+			transformed.addAll(transformValueArray(variable, variableType, arrayStack))
 			return transformed
 		} else {	//Simple variables and arrays of simple types are simply transformed
 			transformed.add(createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
-				it.expression = variable.expression?.transformExpression?.getOnlyElement
+				if (variable instanceof InitializableElement)
+					it.expression = variable.expression?.transformExpression?.getOnlyElement
 			])
-			trace.put(variable, transformed.head)
+			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
+			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)
 			return transformed
 		}
 	}
 	
-	private def List<VariableDeclaration> transformVariableField(VariableDeclaration variable, List<FieldDeclaration> currentField, List<ArrayTypeDefinition> arrayStack) {
+	private def List<VariableDeclaration> transformValueField(ValueDeclaration variable, List<FieldDeclaration> currentField, List<ArrayTypeDefinition> arrayStack) {
 		var List<VariableDeclaration> transformed = new ArrayList()
 		
 		if (getTypeDefinitionFromType(currentField.last.type) instanceof RecordTypeDefinition
@@ -348,15 +355,15 @@ class ExpressionTransformer {
 				innerField.add(field)
 				var innerStack = new ArrayList<ArrayTypeDefinition>
 				innerStack.addAll(arrayStack)
-				transformed.addAll(transformVariableField(variable, innerField, innerStack))
+				transformed.addAll(transformValueField(variable, innerField, innerStack))
 			}
 		} else {	//if simple type
 			var transformedField = createVariableDeclaration => [
 				it.name = variable.name + "_" + currentField.last.name
 				
 				it.type = createTransformedRecordType(arrayStack, currentField.last.type)
-				if (variable.expression !== null) {
-					var Expression initial = variable.expression
+				if (variable instanceof InitializableElement && (variable as InitializableElement).expression !== null) {
+					var Expression initial = (variable as InitializableElement).expression
 					if (initial instanceof RecordLiteralExpression) {
 						it.expression = getExpressionFromRecordLiteral(initial, currentField).transformExpression.getOnlyElement
 					} else if (initial instanceof ArrayLiteralExpression) {
@@ -376,7 +383,7 @@ class ExpressionTransformer {
 		return transformed
 	}
 	
-	private def List<VariableDeclaration> transformVariableArray(VariableDeclaration variable, ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
+	private def List<VariableDeclaration> transformValueArray(ValueDeclaration variable, ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
 		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
 		
 		var TypeDefinition innerType = getTypeDefinitionFromType(currentType.elementType)
@@ -384,23 +391,25 @@ class ExpressionTransformer {
 			var innerStack = new ArrayList<ArrayTypeDefinition>
 			innerStack.addAll(arrayStack)
 			innerStack.add(innerType)
-			transformed.addAll(transformVariableArray(variable, innerType, innerStack))
+			transformed.addAll(transformValueArray(variable, innerType, innerStack))
 		} else if (innerType instanceof RecordTypeDefinition) {
 			for (field : innerType.fieldDeclarations) {
 				var innerField = new ArrayList<FieldDeclaration>
 				innerField.add(field)
 				var innerStack = new ArrayList<ArrayTypeDefinition>
 				innerStack.addAll(arrayStack)
-				transformed.addAll(transformVariableField(variable, innerField, innerStack))
+				transformed.addAll(transformValueField(variable, innerField, innerStack))
 			}
 			return transformed
 		} else {	// Simple
 			transformed.add(createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
-				it.expression = variable.expression?.transformExpression?.getOnlyElement
+				if (variable instanceof InitializableElement)
+					it.expression = variable.expression?.transformExpression?.getOnlyElement
 			])
-			trace.put(variable, transformed.head)
+			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
+			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)
 		}
 		
 		return transformed
@@ -445,6 +454,8 @@ class ExpressionTransformer {
 		if (type instanceof TypeReference) {
 			var innerType = (type as TypeReference).reference.type
 			return getTypeDefinitionFromType(innerType)
+		} else if (type instanceof TypeDeclaration) {
+			return getTypeDefinitionFromType(type);
 		} else {
 			return type as TypeDefinition
 		}

@@ -51,7 +51,8 @@ class ExpressionPreconditionTransformer {
 		return new LinkedList<Action>
 	}
 	
-	// TODO return variable assignment may be faulty
+	//TODO select expression
+	
 	// TODO complex parameters and return types
 	protected def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val result = new LinkedList<Action>

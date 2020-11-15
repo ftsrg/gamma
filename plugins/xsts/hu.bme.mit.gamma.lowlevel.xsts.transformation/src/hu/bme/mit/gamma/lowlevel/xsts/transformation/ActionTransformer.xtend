@@ -27,7 +27,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-
+import org.eclipse.emf.ecore.EObject
 
 class ActionTransformer {
 	// Model factories
@@ -78,7 +78,7 @@ class ActionTransformer {
 		]
 	}
 	
-	def dispatch Action transformAction(AssignmentStatement action) {	//TODO array?
+	def dispatch Action transformAction(AssignmentStatement action) {
 		return createAssignmentAction => [
 			it.lhs = action.lhs.transformExpression as DirectReferenceExpression
 			it.rhs = action.rhs.transformExpression
