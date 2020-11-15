@@ -68,6 +68,7 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionLanguageValidatorUtil;
 
 public class ExpressionTypeDeterminator {
@@ -75,6 +76,7 @@ public class ExpressionTypeDeterminator {
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
 	protected ExpressionTypeDeterminator() {}
 	//
+	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	/**
 	 * Collector of extension methods.
@@ -144,10 +146,36 @@ public class ExpressionTypeDeterminator {
 			return getArithmeticMultiaryType((MultiplyExpression) expression);
 		}
 		if (expression instanceof ArrayAccessExpression) {
-			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
-			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(arrayAccessExpression);
-			ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
-			return transform(arrayTypeDefinition.getElementType());
+			//TODO extract
+			int depth = 0;
+			List<String> fields = new ArrayList<String>();
+			ReferenceExpression ref = (ArrayAccessExpression)expression;
+			TypeDefinition type;
+			while (true) {
+				if(ref instanceof ArrayAccessExpression) {
+					depth++;
+					ref = (ReferenceExpression)((ArrayAccessExpression)ref).getOperand();
+				} else if (ref instanceof RecordAccessExpression) {
+					fields.add(0, ((RecordAccessExpression) ref).getField());
+					ref = (ReferenceExpression)((RecordAccessExpression)ref).getOperand();
+				} else if (ref instanceof DirectReferenceExpression) {
+					type = expressionUtil.findTypeDefinitionOfType(((DirectReferenceExpression)ref).getDeclaration().getType());
+					break;
+				} else {
+					throw new IllegalArgumentException("Array access expression contains forbidden elements: " + ref.getClass());
+				}
+			}
+			while (depth >= 0 || !fields.isEmpty()) {
+				if (type instanceof ArrayTypeDefinition) {
+					type = expressionUtil.findTypeDefinitionOfType(((ArrayTypeDefinition)type).getElementType());
+					depth--;
+				} else if (type instanceof RecordTypeDefinition) {
+					type = expressionUtil.findTypeDefinitionOfType(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.getName().equals(fields.remove(0))).findFirst().get().getType());
+				} else {
+					throw new IllegalArgumentException("Type contains forbidden elements: " + type.getClass());
+				}
+			}
+			return transform(expressionUtil.findTypeDefinitionOfType(type));
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			return transform(ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(((FunctionAccessExpression) expression)).getType());
