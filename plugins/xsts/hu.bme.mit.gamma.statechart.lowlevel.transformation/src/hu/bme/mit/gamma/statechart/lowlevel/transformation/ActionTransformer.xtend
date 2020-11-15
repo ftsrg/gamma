@@ -59,6 +59,9 @@ import java.util.Stack
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import hu.bme.mit.gamma.action.model.TypeReferenceExpression
+import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -617,14 +620,10 @@ class ActionTransformer {
 	}
 	
 	private def dispatch List<Expression> enumerateExpression(Expression expression) {
-		//if reference to enum
-		//LITERALS
-		//else if array literal
-		//else if ir literal
 		//REFERENCES
 		//else if direct ref (to array)
-		//else if direct ref (to ir)
 		//else if access to array
+		//else if direct ref (to ir)
 		//else if access to function
 		//else if access to record
 		throw new IllegalArgumentException("Cannot evaluate expression: " + expression)
@@ -639,9 +638,8 @@ class ActionTransformer {
 	private def dispatch List<Expression> enumerateExpression(IntegerRangeLiteralExpression expression) {
 		val result = new ArrayList<Expression>()
 		
-		//check evaluability (TODO)
 		if (!(expression.leftOperand instanceof IntegerLiteralExpression && expression.rightOperand instanceof IntegerLiteralExpression)) {
-			throw new IllegalArgumentException("Cannot evaluate integer literal expression: " + expression)
+			throw new IllegalArgumentException("For statements over non-literal ranges are currently not supported!: " + expression)
 		}
 		
 		//evaluate if possible
@@ -657,16 +655,25 @@ class ActionTransformer {
 		
 		return result
 	}
-	
-	//TODO remove (alternative found, see Assignment)
-	private def TypeDefinition findTypeDefinitionOfDeclaration(Declaration declaration) {
-		if (declaration.type instanceof TypeDefinition) {
-			return declaration.type as TypeDefinition
-		} else if (declaration.type instanceof TypeReference) {
-			return findTypeDefinitionOfDeclaration((declaration.type as TypeReference).reference)
-		} else {
-			throw new IllegalArgumentException("Not known type: " + declaration.type)
+
+	private def dispatch List<Expression> enumerateExpression(TypeReferenceExpression expression) {
+		val result = new ArrayList<Expression>()
+		
+		// only enums are enumerable
+		var typeDefinition = expression.declaration.type.typeDefinitionFromType
+		if (!(typeDefinition instanceof EnumerationTypeDefinition)) {
+			throw new IllegalArgumentException("Referred type is not enumerable: " + typeDefinition)
 		}
-	}
+		// enumerate
+		for (literalDefinition : (typeDefinition as EnumerationTypeDefinition).literals) {
+			result += createEnumerationLiteralExpression => [
+				it.reference = literalDefinition
+			]
+		}
+		
+		return result
+	}	
+	
+
 	
 }

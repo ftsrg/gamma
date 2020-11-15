@@ -24,6 +24,7 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
+import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -255,6 +256,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
 				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
 				return Scopes.scopeFor(normalDeclarations);
+			}
+			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
+				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
+				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+				return Scopes.scopeFor(typeDeclarations);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty
