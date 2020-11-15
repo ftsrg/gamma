@@ -37,8 +37,7 @@ public class ExpressionLanguageValidatorUtil {
 	public static TypeDefinition findTypeDefinitionOfType(Type t) {
 		if (t instanceof TypeDefinition) {
 			return (TypeDefinition) t;
-		}
-		else {	// t instanceof TypeReference
+		} else {	// t instanceof TypeReference
 			TypeReference tr = (TypeReference) t;
 			TypeDeclaration td = tr.getReference();
 			return findTypeDefinitionOfType(td.getType());

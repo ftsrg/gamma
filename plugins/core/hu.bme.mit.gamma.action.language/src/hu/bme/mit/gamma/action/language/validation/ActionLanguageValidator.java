@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.validation;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -32,9 +34,14 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+
+import static com.google.common.collect.Iterables.getOnlyElement;
+
 
 /**
  * This class contains custom validation rules. 
@@ -42,6 +49,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
+	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	@Check
 	public void checkUnsupportedActions(Action action) {
@@ -70,17 +78,21 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		}
 	}
 	
-	//FIXME commented so the project is runnable after modifications
-	/*@Check
+	@Check
 	public void checkAssignmentActions(AssignmentStatement assignment) {
 		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
+		Set<Declaration> declarations = new HashSet<>();
+		declarations.addAll(expressionUtil.getReferredVariables(reference));
+		declarations.addAll(expressionUtil.getReferredParameters(reference));
+		declarations.addAll(expressionUtil.getReferredConstants(reference));
 		// Constant
-		if (!(reference.getDeclaration() instanceof VariableDeclaration)) {
+		Declaration declaration = getOnlyElement(declarations);
+		if (!(declaration instanceof VariableDeclaration)) {
 			error("Values can be assigned only to variables.", ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS);
 		}
 		// Other assignment type checking
-		if (reference.getDeclaration() instanceof VariableDeclaration) {
-			VariableDeclaration variableDeclaration = (VariableDeclaration) reference.getDeclaration();
+		if (declaration instanceof VariableDeclaration) {
+			VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
 			try {
 				Type variableDeclarationType = variableDeclaration.getType();
 				checkTypeAndExpressionConformance(variableDeclarationType, assignment.getRhs(), ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
@@ -88,7 +100,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
-	}*/
+	}
 
 	@Check
 	public void CheckReturnStatementType(ReturnStatement rs) {

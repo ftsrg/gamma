@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -41,6 +42,8 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -53,11 +56,16 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -369,7 +377,7 @@ public class ExpressionUtil {
 		for (DirectReferenceExpression referenceExpression :
 				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
 			Declaration declaration = referenceExpression.getDeclaration();
-			if (declaration instanceof VariableDeclaration) {
+			if (declaration instanceof ParameterDeclaration) {
 				parameters.add((ParameterDeclaration) declaration);
 			}
 		}
@@ -436,7 +444,107 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
+	//Constants
+	public Set<ConstantDeclaration> getReferredConstants(EObject object) {
+		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
+		for (DirectReferenceExpression referenceExpression :
+				ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)) {
+			Declaration declaration = referenceExpression.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				constants.add((ConstantDeclaration) declaration);
+			}
+		}
+		return constants;
+	}
+	
+	protected Set<ConstantDeclaration> _getReferredConstants(final NullaryExpression expression) {
+		return Collections.emptySet();
+	}
 
+	protected Set<ConstantDeclaration> _getReferredConstants(final UnaryExpression expression) {
+		return getReferredConstants(expression.getOperand());
+	}
+
+	protected Set<ConstantDeclaration> _getReferredConstants(final IfThenElseExpression expression) {
+		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
+		constants.addAll(getReferredConstants(expression.getCondition()));
+		constants.addAll(getReferredConstants(expression.getThen()));
+		constants.addAll(getReferredConstants(expression.getElse()));
+		return constants;
+	}
+
+	protected Set<ConstantDeclaration> _getReferredConstants(final ReferenceExpression expression) {
+		if (expression instanceof DirectReferenceExpression ) {
+			if (((DirectReferenceExpression)expression).getDeclaration() instanceof ConstantDeclaration) {
+				return Collections.singleton((ConstantDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			}
+		} else if (expression instanceof AccessExpression) {
+			return getReferredConstants(((AccessExpression)expression).getOperand());
+		}
+		return Collections.emptySet();
+	}
+
+	protected Set<ConstantDeclaration> _getReferredConstants(final BinaryExpression expression) {
+		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
+		constants.addAll(getReferredConstants(expression.getLeftOperand()));
+		constants.addAll(getReferredConstants(expression.getRightOperand()));
+		return constants;
+	}
+
+	protected Set<ConstantDeclaration> _getReferredConstants(final MultiaryExpression expression) {
+		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
+		EList<Expression> _operands = expression.getOperands();
+		for (Expression operand : _operands) {
+			constants.addAll(getReferredConstants(operand));
+		}
+		return constants;
+	}
+
+	public Set<ConstantDeclaration> _getReferredConstants(final Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			return _getReferredConstants((ReferenceExpression) expression);
+		} else if (expression instanceof BinaryExpression) {
+			return _getReferredConstants((BinaryExpression) expression);
+		} else if (expression instanceof IfThenElseExpression) {
+			return _getReferredConstants((IfThenElseExpression) expression);
+		} else if (expression instanceof MultiaryExpression) {
+			return _getReferredConstants((MultiaryExpression) expression);
+		} else if (expression instanceof NullaryExpression) {
+			return _getReferredConstants((NullaryExpression) expression);
+		} else if (expression instanceof UnaryExpression) {
+			return _getReferredConstants((UnaryExpression) expression);
+		} else {
+			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+		}
+	}
+	
+	public Set<ConstantDeclaration> getReferredConstants(final Expression expression) {
+		if (expression instanceof ReferenceExpression) {
+			return _getReferredConstants((ReferenceExpression) expression);
+		} else if (expression instanceof BinaryExpression) {
+			return _getReferredConstants((BinaryExpression) expression);
+		} else if (expression instanceof IfThenElseExpression) {
+			return _getReferredConstants((IfThenElseExpression) expression);
+		} else if (expression instanceof MultiaryExpression) {
+			return _getReferredConstants((MultiaryExpression) expression);
+		} else if (expression instanceof NullaryExpression) {
+			return _getReferredConstants((NullaryExpression) expression);
+		} else if (expression instanceof UnaryExpression) {
+			return _getReferredConstants((UnaryExpression) expression);
+		} else {
+			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
+		}
+	}
+	// Values (variables, parameters and constants)	
+	public Set<ValueDeclaration> getReferredValues(final Expression expression) {
+		Set<ValueDeclaration> referred = new HashSet<>();
+		referred.addAll(getReferredVariables(expression));
+		referred.addAll(getReferredParameters(expression));
+		referred.addAll(getReferredConstants(expression));
+		return referred;
+	}
+
+	
 	// Initial values of types
 
 	public Expression getInitialValue(final VariableDeclaration variableDeclaration) {
@@ -490,6 +598,17 @@ public class ExpressionUtil {
 		}
 		return arrayLiteralExpression;
 	}
+	
+	protected Expression _getInitialValueOfType(final RecordTypeDefinition type) {
+		RecordLiteralExpression recordLiteralExpression = factory.createRecordLiteralExpression();
+		for (FieldDeclaration field : type.getFieldDeclarations()) {
+			FieldAssignment assignment = factory.createFieldAssignment();
+			assignment.setReference(field.getName());
+			assignment.setValue(getInitialValueOfType(field.getType()));
+			recordLiteralExpression.getFieldAssignments().add(assignment);
+		}
+		return recordLiteralExpression;
+	}
 
 	public Expression getInitialValueOfType(final Type type) {
 		if (type instanceof EnumerationTypeDefinition) {
@@ -508,6 +627,17 @@ public class ExpressionUtil {
 			return _getInitialValueOfType((ArrayTypeDefinition) type);
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
+		}
+	}
+	
+	// Types
+	public TypeDefinition findTypeDefinitionOfType(Type t) {
+		if (t instanceof TypeDefinition) {
+			return (TypeDefinition) t;
+		} else {	// t instanceof TypeReference
+			TypeReference tr = (TypeReference) t;
+			TypeDeclaration td = tr.getReference();
+			return findTypeDefinitionOfType(td.getType());
 		}
 	}
 	
