@@ -93,9 +93,6 @@
     <genClasses ecoreClass="contract.ecore#//AdaptiveContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//AdaptiveContractAnnotation/monitoredComponent"/>
     </genClasses>
-    <genClasses ecoreClass="contract.ecore#//ScenarioContractAnnotation">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//ScenarioContractAnnotation/monitoredComponent"/>
-    </genClasses>
     <genClasses ecoreClass="contract.ecore#//StateContractAnnotation">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference contract.ecore#//StateContractAnnotation/contractStatecharts"/>
     </genClasses>

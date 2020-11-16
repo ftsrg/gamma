@@ -214,7 +214,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="field" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//AccessExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParenthesesExpression" eSuperTypes="#//UnaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>

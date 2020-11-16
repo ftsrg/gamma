@@ -9,10 +9,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="monitoredComponent" lowerBound="1"
         eType="ecore:EClass interface.ecore#//Component"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ScenarioContractAnnotation" eSuperTypes="statechart.ecore#//StatechartAnnotation">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="monitoredComponent" lowerBound="1"
-        eType="ecore:EClass interface.ecore#//Component"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StateContractAnnotation" eSuperTypes="statechart.ecore#//StateAnnotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="contractStatecharts" upperBound="-1"
         eType="ecore:EClass statechart.ecore#//StatechartDefinition"/>

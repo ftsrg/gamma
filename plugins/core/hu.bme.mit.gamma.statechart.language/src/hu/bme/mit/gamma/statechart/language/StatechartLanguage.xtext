@@ -211,11 +211,7 @@ enum TransitionPriority returns TransitionPriority:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
-;
-
-ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
-	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
+	AdaptiveContractAnnotation | MissionPhaseAnnotation
 ;
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:

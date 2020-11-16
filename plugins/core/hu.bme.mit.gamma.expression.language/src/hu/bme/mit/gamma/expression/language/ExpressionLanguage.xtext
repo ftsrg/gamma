@@ -181,7 +181,7 @@ UnaryLogicExpression returns Expression:
 ;
 
 NotExpression returns Expression:
-	{NotExpression} => ('not' | '!') operand=AccessExpression
+	{NotExpression} => ('not' | '!') operand=UnaryLogicExpression
 ;
 
 ForallExpression returns Expression:
@@ -260,11 +260,7 @@ AccessExpression returns Expression:
 //;
 
 PrimaryExpression returns Expression:
-	LiteralExpression | ReferenceExpression | ParenthesesExpression
-;
-
-ParenthesesExpression returns ParenthesesExpression:
-	'(' operand=Expression ')'
+	LiteralExpression | ReferenceExpression | '(' Expression ')'
 ;
 
 ReferenceExpression returns ReferenceExpression:

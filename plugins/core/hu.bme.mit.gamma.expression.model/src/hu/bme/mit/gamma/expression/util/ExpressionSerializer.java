@@ -48,7 +48,6 @@ import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OpaqueExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.ParenthesesExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
@@ -96,10 +95,6 @@ public class ExpressionSerializer {
 		BigInteger _denominator = rationalLiteralExpression.getDenominator();
 		return (_plus + _denominator);
 	}
-	
-	protected String _serialize(final ParenthesesExpression parenthesesExpression) {
-		return "(" + serialize(parenthesesExpression.getOperand()) + ")";
-	}
 
 	protected String _serialize(final OpaqueExpression opaqueExpression) {
 		return opaqueExpression.getExpression();
@@ -121,6 +116,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final OrExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		EList<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
@@ -132,11 +128,13 @@ public class ExpressionSerializer {
 			String serialize = this.serialize(operand);
 			builder.append(serialize);
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final XorExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		EList<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
@@ -148,11 +146,13 @@ public class ExpressionSerializer {
 			String serialize = this.serialize(operand);
 			builder.append(serialize);
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final AndExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		EList<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
@@ -164,71 +164,85 @@ public class ExpressionSerializer {
 			String serialize = this.serialize(operand);
 			builder.append(serialize);
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final EqualityExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" == ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final InequalityExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" != ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final GreaterExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" > ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final GreaterEqualExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" >= ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final LessExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" < ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final LessEqualExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" <= ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final AddExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		EList<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
@@ -240,21 +254,25 @@ public class ExpressionSerializer {
 			String serialize = this.serialize(operand);
 			builder.append(serialize);
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final SubtractExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" - ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final MultiplyExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		EList<Expression> operands = expression.getOperands();
 		boolean hasElements = false;
 		for (final Expression operand : operands) {
@@ -266,52 +284,61 @@ public class ExpressionSerializer {
 			String serialize = this.serialize(operand);
 			builder.append(serialize);
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final DivideExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" / ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final ModExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" mod ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final DivExpression expression) {
 		StringBuilder builder = new StringBuilder();
+		builder.append("(");
 		String serialize = this.serialize(expression.getLeftOperand());
 		builder.append(serialize);
 		builder.append(" div ");
 		String serialize1 = this.serialize(expression.getRightOperand());
 		builder.append(serialize1);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final UnaryPlusExpression expression) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("+");
+		builder.append("+(");
 		String serialize = this.serialize(expression.getOperand());
 		builder.append(serialize);
+		builder.append(")");
 		return builder.toString();
 	}
 
 	protected String _serialize(final UnaryMinusExpression expression) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("-");
+		builder.append("-(");
 		String serialize = this.serialize(expression.getOperand());
 		builder.append(serialize);
+		builder.append(")");
 		return builder.toString();
 	}
 
@@ -469,10 +496,6 @@ public class ExpressionSerializer {
 			return _serialize((EqualityExpression) expression);
 		} else if (expression instanceof FalseExpression) {
 			return _serialize((FalseExpression) expression);
-		} else if (expression instanceof TrueExpression) {
-			return _serialize((TrueExpression) expression);
-		} else if (expression instanceof ParenthesesExpression) {
-			return _serialize((ParenthesesExpression) expression);
 		} else if (expression instanceof GreaterEqualExpression) {
 			return _serialize((GreaterEqualExpression) expression);
 		} else if (expression instanceof GreaterExpression) {
@@ -483,6 +506,8 @@ public class ExpressionSerializer {
 			return _serialize((LessEqualExpression) expression);
 		} else if (expression instanceof LessExpression) {
 			return _serialize((LessExpression) expression);
+		} else if (expression instanceof TrueExpression) {
+			return _serialize((TrueExpression) expression);
 		} else if (expression instanceof AndExpression) {
 			return _serialize((AndExpression) expression);
 		} else if (expression instanceof IntegerLiteralExpression) {
