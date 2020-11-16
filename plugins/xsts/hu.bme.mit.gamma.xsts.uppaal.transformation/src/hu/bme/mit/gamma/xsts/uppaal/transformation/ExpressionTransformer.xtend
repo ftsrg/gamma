@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.ParenthesesExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
@@ -36,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.util.ExpressionNegator
 import hu.bme.mit.gamma.uppaal.util.MultiaryExpressionCreator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import uppaal.expressions.ArithmeticOperator
@@ -43,7 +45,6 @@ import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
 import uppaal.expressions.LogicalOperator
-import hu.bme.mit.gamma.expression.util.ExpressionNegator
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -70,6 +71,10 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(FalseExpression expression) {
 		return createLiteralExpression => [it.text = false.toString]
+	}
+	
+	def dispatch Expression transform(ParenthesesExpression expression) {
+		return expression.operand.transform
 	}
 	
 	def dispatch Expression transform(EnumerationLiteralExpression expression) {

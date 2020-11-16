@@ -176,6 +176,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//RecordAccessExpression/field"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//SelectExpression"/>
+    <genClasses ecoreClass="expression.ecore#//ParenthesesExpression"/>
     <genClasses image="false" ecoreClass="expression.ecore#//VariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//TransientVariableDeclarationAnnotation"/>
     <genClasses ecoreClass="expression.ecore#//ResetableVariableDeclarationAnnotation"/>

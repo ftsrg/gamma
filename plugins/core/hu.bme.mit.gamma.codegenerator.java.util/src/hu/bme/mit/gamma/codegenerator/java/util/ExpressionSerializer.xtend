@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
+import hu.bme.mit.gamma.expression.model.ParenthesesExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
@@ -84,6 +85,10 @@ class ExpressionSerializer {
 		return "false"
 	}
 	
+	def dispatch String serialize(ParenthesesExpression expression) {
+		return "(" + expression.operand.serialize + ")"
+	}
+	
 	def dispatch String serialize(ReferenceExpression expression) {		
 		if (expression.declaration instanceof ConstantDeclaration) {
 			val constant = expression.declaration as ConstantDeclaration
@@ -93,23 +98,23 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(NotExpression expression) {
-		return '''!(«expression.operand.serialize»)'''
+		return '''!«expression.operand.serialize»'''
 	}
 	
 	def dispatch String serialize(OrExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " || "»«operand.serialize»«ENDFOR»)'''
+		return '''«FOR operand : expression.operands SEPARATOR " || "»«operand.serialize»«ENDFOR»'''
 	}
 	
 	def dispatch String serialize(XorExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " ^ "»«operand.serialize»«ENDFOR»)'''
+		return '''«FOR operand : expression.operands SEPARATOR " ^ "»«operand.serialize»«ENDFOR»'''
 	}
 	
 	def dispatch String serialize(AndExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " && "»(«operand.serialize»)«ENDFOR»)'''
+		return '''«FOR operand : expression.operands SEPARATOR " && "»«operand.serialize»«ENDFOR»'''
 	}
 	
 	def dispatch String serialize(ImplyExpression expression) {
-		return '''(!(«expression.leftOperand.serialize») || «expression.rightOperand.serialize»)'''
+		return '''(!«expression.leftOperand.serialize» || «expression.rightOperand.serialize»)'''
 	}
 	
 	def dispatch String serialize(IfThenElseExpression expression) {
@@ -117,47 +122,47 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(EqualityExpression expression) {
-		return "(" + expression.leftOperand.serialize + " == " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " == " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(InequalityExpression expression) {
-		return "(" + expression.leftOperand.serialize + " != " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " != " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(GreaterExpression expression) {
-		return "(" + expression.leftOperand.serialize + " > " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " > " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(GreaterEqualExpression expression) {
-		return "(" + expression.leftOperand.serialize + " >= " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " >= " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(LessExpression expression) {
-		return "(" + expression.leftOperand.serialize + " < " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " < " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(LessEqualExpression expression) {
-		return "(" + expression.leftOperand.serialize + " <= " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " <= " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(AddExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " + "»«operand.serialize»«ENDFOR»)'''
+		return '''«FOR operand : expression.operands SEPARATOR " + "»«operand.serialize»«ENDFOR»'''
 	}
 	
 	def dispatch String serialize(SubtractExpression expression) {
-		return "(" + expression.leftOperand.serialize + " - " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " - " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(MultiplyExpression expression) {
-		return '''(«FOR operand : expression.operands SEPARATOR " * "»«operand.serialize»«ENDFOR»)'''
+		return '''«FOR operand : expression.operands SEPARATOR " * "»«operand.serialize»«ENDFOR»'''
 	}
 	
 	def dispatch String serialize(DivideExpression expression) {
-		return "(" + expression.leftOperand.serialize + " / " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " / " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(ModExpression expression) {
-		return "(" + expression.leftOperand.serialize + " % " + expression.rightOperand.serialize + ")"
+		return expression.leftOperand.serialize + " % " + expression.rightOperand.serialize
 	}
 	
 	def dispatch String serialize(UnaryPlusExpression expression) {
