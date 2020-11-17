@@ -67,9 +67,9 @@ class ModelAnnotatorPropertyGenerator {
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
 				testedInteractions, newTopComponent)
 		val testedStatesForInteractions = getIncludedSynchronousInstanceStates(
-				testedInteractions.getStates, newTopComponent)
+				testedInteractions, newTopComponent)
 		val testedTransitionsForInteractions = getIncludedSynchronousInstanceTransitions(
-				testedInteractions.getTransitions, newTopComponent)
+				testedInteractions, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedComponentsForOutEvents.nullOrEmpty ||
@@ -147,35 +147,37 @@ class ModelAnnotatorPropertyGenerator {
 	}
 	
 	protected def List<State> getIncludedSynchronousInstanceStates(
-			ComponentInstanceStateReferences references, Component component) {
+			ComponentInstancePortStateTransitionReferences references, Component component) {
 		if (references === null) {
 			return #[]
 		}
+		val stateReferences = references.getStates
 		var includedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
-			references.include, component).toList
+			stateReferences.include, component).toList
 		if (includedStates.empty) {
 			includedStates = component.allSimpleInstances.map[it.type]
 				.filter(StatechartDefinition).map[it.allStates].flatten.toList
 		}
 		val excludedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
-			references.exclude, component)
+			stateReferences.exclude, component)
 		includedStates -= excludedStates
 		return includedStates
 	}
 	
 	protected def List<Transition> getIncludedSynchronousInstanceTransitions(
-			ComponentInstanceTransitionReferences references, Component component) {
+			ComponentInstancePortStateTransitionReferences references, Component component) {
 		if (references === null) {
 			return #[]
 		}
+		val transitionReferences = references.transitions
 		var includedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
-			references.include, component).toList
+			transitionReferences.include, component).toList
 		if (includedTransitions.empty) {
 			includedTransitions = component.allSimpleInstances.map[it.type]
 				.filter(StatechartDefinition).map[it.transitions].flatten.toList
 		}
 		val excludedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
-			references.exclude, component)
+			transitionReferences.exclude, component)
 		includedTransitions -= excludedTransitions
 		return includedTransitions
 	}
