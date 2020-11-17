@@ -7,6 +7,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.util.FileUtil
@@ -29,7 +30,7 @@ class Gamma2XSTSTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForStates
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstanceReferences testedComponentsForOutEvents
+	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
@@ -61,7 +62,7 @@ class Gamma2XSTSTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstanceReferences testedComponentsForOutEvents,
+			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.component = component
 		this.arguments = arguments

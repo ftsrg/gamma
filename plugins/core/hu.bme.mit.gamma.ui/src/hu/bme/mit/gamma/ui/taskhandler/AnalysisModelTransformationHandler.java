@@ -30,6 +30,7 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
+import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
@@ -52,8 +53,9 @@ import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceStateReferences;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceTransitionReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentPortReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentStateReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentTransitionReferences;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -174,6 +176,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					notNullCoverage.getExclude());
 		}
 		
+		protected ComponentInstancePortReferences getCoveragePorts(
+				Collection<Coverage> coverages, Class<? extends EventCoverage> clazz) {
+			Optional<Coverage> coverage = coverages.stream().filter(it -> clazz.isInstance(it)).findFirst();
+			if (coverage.isEmpty()) {
+				return null;
+			}
+			EventCoverage notNullCoverage = (EventCoverage) coverage.get();
+			return new ComponentInstancePortReferences(
+				new ComponentInstanceReferences(notNullCoverage.getInclude(),
+					notNullCoverage.getExclude()),
+				new ComponentPortReferences(notNullCoverage.getPortInclude(),
+					notNullCoverage.getPortExclude()));
+		}
+		
 		protected ComponentInstancePortStateTransitionReferences getCoverageInteractions(
 				Collection<Coverage> coverages, Class<? extends InteractionCoverage> clazz) {
 			Optional<Coverage> optionalInteractionCoverage = coverages.stream()
@@ -185,11 +201,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return new ComponentInstancePortStateTransitionReferences(
 				new ComponentInstanceReferences(coverage.getInclude(),
 						coverage.getExclude()),
-				new ComponentInstancePortReferences(coverage.getPortInclude(),
+				new ComponentPortReferences(coverage.getPortInclude(),
 						coverage.getPortExclude()),
-				new ComponentInstanceStateReferences(coverage.getStateInclude(),
+				new ComponentStateReferences(coverage.getStateInclude(),
 						coverage.getStateExclude()),
-				new ComponentInstanceTransitionReferences(coverage.getTransitionInclude(),
+				new ComponentTransitionReferences(coverage.getTransitionInclude(),
 						coverage.getTransitionExclude())
 			);
 		}
@@ -233,7 +249,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
 					coverages, TransitionPairCoverage.class);
-			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
@@ -322,7 +338,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
 					coverages, TransitionPairCoverage.class);
-			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
@@ -397,7 +413,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionCoverage.class);
 			ComponentInstanceReferences testedComponentsForTransitionPairs = getCoverageInstances(
 					coverages, TransitionPairCoverage.class);
-			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
+			ComponentInstancePortReferences testedComponentsForOutEvents = getCoveragePorts(
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);

@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
@@ -37,12 +38,13 @@ import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.ArrayList
 import java.util.Collection
 import java.util.Collections
 import java.util.List
 import java.util.Set
 import org.eclipse.emf.ecore.EObject
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PropertyGenerator {
 	// Single component reference or the whole chain is needed
@@ -91,16 +93,11 @@ class PropertyGenerator {
 		return formulas
 	}
 
-	def List<CommentableStateFormula> createOutEventReachability(Component component,
-			Collection<SynchronousComponentInstance> instances) {
-		val Collection<Port> simplePorts = StatechartModelDerivedFeatures.getAllConnectedSimplePorts(component)
+	def List<CommentableStateFormula> createOutEventReachability(Collection<Port> ports) {
 		val List<CommentableStateFormula> formulas = newArrayList
-		for (instance : instances) {
-			val Component type = instance.type
-			val List<Port> ports = new ArrayList<Port>(type.ports)
-			ports.retainAll(simplePorts)
-			// Only that are led out to the system port
-			for (port : ports) {
+		for (notNecessarilySimplePort : ports) {
+			for (port : notNecessarilySimplePort.allConnectedSimplePorts) {
+				val instance = port.containingComponentInstance
 				for (outEvent : StatechartModelDerivedFeatures.getOutputEvents(port)) {
 					val parameters = outEvent.parameterDeclarations
 					if (parameters.empty) {
@@ -306,11 +303,11 @@ class PropertyGenerator {
 		return getId(transition)
 	}
 
-	def protected String getId(State state) {
-		return '''«getInstanceId(state)».«StatechartModelDerivedFeatures.getParentRegion(state).name».«state.name»'''
+	def protected String getId(StateNode state) {
+		return '''«getInstanceId(state)».«state.parentRegion.name».«state.name»'''
 	}
 
 	def protected String getId(Transition transition) {
-		return '''«getInstanceId(transition)».«transition.sourceState.name» --> «getInstanceId(transition)».«transition.targetState.name»'''
+		return '''«getInstanceId(transition)».«transition.sourceState.id» --> «getInstanceId(transition)».«transition.targetState.id»'''
 	}
 }

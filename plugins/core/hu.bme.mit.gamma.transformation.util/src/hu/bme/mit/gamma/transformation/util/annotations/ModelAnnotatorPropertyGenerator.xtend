@@ -26,7 +26,7 @@ class ModelAnnotatorPropertyGenerator {
 	protected final ComponentInstanceReferences testedComponentsForStates
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstanceReferences testedComponentsForOutEvents
+	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -36,7 +36,7 @@ class ModelAnnotatorPropertyGenerator {
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstanceReferences testedComponentsForOutEvents,
+			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
@@ -57,12 +57,16 @@ class ModelAnnotatorPropertyGenerator {
 		// Transition coverage
 		val testedComponentsForTransitions = getIncludedSynchronousInstances(
 				testedComponentsForTransitions, newTopComponent)
-		// Transition pair coverage
+		// Transition-pair coverage
 		val testedComponentsForTransitionPairs = getIncludedSynchronousInstances(
 				testedComponentsForTransitionPairs, newTopComponent)
 		// Out event coverage
-		val testedComponentsForOutEvents = getIncludedSynchronousInstances(
+		val testedPortsForOutEvents = getIncludedSynchronousInstancePorts(
 				testedComponentsForOutEvents, newTopComponent)
+		if (!testedPortsForOutEvents.nullOrEmpty) {
+			// Only system out events are covered as other internal events might be removed
+			testedPortsForOutEvents.retainAll(newTopComponent.allConnectedSimplePorts)
+		}
 		// Interaction coverage
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
 				testedInteractions, newTopComponent)
@@ -72,7 +76,7 @@ class ModelAnnotatorPropertyGenerator {
 				testedInteractions, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
-				!testedComponentsForTransitionPairs.nullOrEmpty || !testedComponentsForOutEvents.nullOrEmpty ||
+				!testedComponentsForTransitionPairs.nullOrEmpty || !testedPortsForOutEvents.nullOrEmpty ||
 				!testedPortsForInteractions.nullOrEmpty || !testedStatesForInteractions.nullOrEmpty ||
 				!testedTransitionsForInteractions.nullOrEmpty ) {
 			val statechartAnnotator = new GammaStatechartAnnotator(newPackage,
@@ -90,10 +94,11 @@ class ModelAnnotatorPropertyGenerator {
 							statechartAnnotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
 							statechartAnnotator.transitionPairAnnotations)
-			formulas += propertyGenerator.createInteractionReachability(statechartAnnotator.getInteractions)
+			formulas += propertyGenerator.createInteractionReachability(
+							statechartAnnotator.getInteractions	)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
-			formulas += propertyGenerator.createOutEventReachability(newTopComponent,
-							testedComponentsForOutEvents)
+			formulas += propertyGenerator.createOutEventReachability(
+							testedPortsForOutEvents)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)
@@ -108,8 +113,27 @@ class ModelAnnotatorPropertyGenerator {
 			references.exclude, component)
 	}
 	
+//	protected def List<Port> getIncludedSynchronousInstancePorts(
+//			ComponentPortReferences references, Component component) {
+//		if (references === null) {
+//			return #[]
+//		}
+//		val includedPorts =
+//			simpleInstanceHandler.getNewSimpleInstancePorts(references.include, component)
+//		if (includedPorts.empty) {
+//			// If both includes are empty, then we include all the new instances
+//			val List<SynchronousComponentInstance> newSimpleInstances =
+//					simpleInstanceHandler.getNewSimpleInstances(component)
+//			includedPorts += newSimpleInstances.ports
+//		}
+//		val excludedPorts =
+//			simpleInstanceHandler.getNewSimpleInstancePorts(references.exclude, component)
+//		includedPorts -= excludedPorts
+//		return includedPorts;
+//	}
+	
 	protected def List<Port> getIncludedSynchronousInstancePorts(
-			ComponentInstancePortStateTransitionReferences references, Component component) {
+			ComponentInstancePortReferences references, Component component) {
 		if (references === null) {
 			return #[]
 		}
@@ -134,7 +158,7 @@ class ModelAnnotatorPropertyGenerator {
 		ports += includedInstances.ports // + included instance
 		ports -= excludedPorts // - included port
 		ports += includedPorts // + included port
-		return ports;
+		return ports
 	}
 	
 	protected def List<Port> getPorts(List<SynchronousComponentInstance> instances) {
@@ -189,29 +213,33 @@ class ModelAnnotatorPropertyGenerator {
 	}
 	
 	@Data
-	static class ComponentInstancePortReferences {
+	static class ComponentPortReferences {
 		Collection<ComponentInstancePortReference> include
 		Collection<ComponentInstancePortReference> exclude
 	}
 	
 	@Data
-	static class ComponentInstanceStateReferences {
+	static class ComponentStateReferences {
 		Collection<ComponentInstanceStateConfigurationReference> include
 		Collection<ComponentInstanceStateConfigurationReference> exclude
 	}
 	
 	@Data
-	static class ComponentInstanceTransitionReferences {
+	static class ComponentTransitionReferences {
 		Collection<ComponentInstanceTransitionReference> include
 		Collection<ComponentInstanceTransitionReference> exclude
 	}
 	
 	@Data
-	static class ComponentInstancePortStateTransitionReferences {
+	static class ComponentInstancePortReferences {
 		ComponentInstanceReferences instances
-		ComponentInstancePortReferences ports
-		ComponentInstanceStateReferences states
-		ComponentInstanceTransitionReferences transitions
+		ComponentPortReferences ports
+	}
+	
+	@Data
+	static class ComponentInstancePortStateTransitionReferences extends ComponentInstancePortReferences {
+		ComponentStateReferences states
+		ComponentTransitionReferences transitions
 	}
 	
 	@Data

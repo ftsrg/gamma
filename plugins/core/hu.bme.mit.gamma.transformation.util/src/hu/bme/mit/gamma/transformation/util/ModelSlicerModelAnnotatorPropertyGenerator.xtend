@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.transformation.util
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -18,7 +19,7 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 	protected final ComponentInstanceReferences testedComponentsForStates
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstanceReferences testedComponentsForOutEvents
+	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -28,7 +29,7 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstanceReferences testedComponentsForOutEvents,
+			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions,
 			String targetFolderUri, String fileName) {
 		this.newTopComponent = newTopComponent

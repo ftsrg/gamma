@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -25,7 +26,7 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForStates
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstanceReferences testedComponentsForOutEvents
+	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -54,7 +55,7 @@ class Gamma2XSTSUppaalTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstanceReferences testedComponentsForOutEvents,
+			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.component = component
 		this.arguments = arguments

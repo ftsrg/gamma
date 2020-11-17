@@ -214,6 +214,8 @@ OutEventCoverage returns OutEventCoverage:
 	{OutEventCoverage} 'out-event-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
 	'}')?
 ;
 

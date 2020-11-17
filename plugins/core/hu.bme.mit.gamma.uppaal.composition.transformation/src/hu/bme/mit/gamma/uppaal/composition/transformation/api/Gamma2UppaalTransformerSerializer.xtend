@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
@@ -32,7 +33,7 @@ class Gamma2UppaalTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForStates
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
-	protected final ComponentInstanceReferences testedComponentsForOutEvents
+	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 		
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
@@ -64,7 +65,7 @@ class Gamma2UppaalTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
-			ComponentInstanceReferences testedComponentsForOutEvents,
+			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.component = component
 		this.arguments = arguments
