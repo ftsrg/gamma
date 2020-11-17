@@ -66,6 +66,8 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import com.sun.org.apache.bcel.internal.classfile.Constant
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -441,7 +443,7 @@ class ActionTransformer {
 					it.declaration = trace.get(referredDeclaration as ParameterDeclaration)
 			]
 		} else {
-			var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
+			var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
 			// access expressions:
 			var List<Object> accessList = action.lhs.collectAccessList
 			var List<String> recordAccessList = new ArrayList<String>
@@ -450,7 +452,7 @@ class ActionTransformer {
 					recordAccessList.add(elem)
 				}
 			}			
-			for (elem : originalLhsVariables) {	
+			for (elem : originalLhsFields) {	
 				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
 					// Create lhs
 					lowlevelLhs += createDirectReferenceExpression => [
@@ -554,7 +556,6 @@ class ActionTransformer {
 	// Gamma statechart elements
 
 	protected def dispatch List<Action> transformAction(RaiseEventAction action, LinkedList<Action> following) {
-		// TODO complex parameter types if needed?
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		val port = action.port
@@ -655,11 +656,11 @@ class ActionTransformer {
 		
 		val referredDeclaration = expression.referredValues.getOnlyElement
 		val typeToAssign = referredDeclaration.type.typeDefinitionFromType
-		var originalLhsVariables = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
+		var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
 	
 		// if array type
-		var randomElem = originalLhsVariables.get(0)
-		var randomElemKey = originalLhsVariables.get(0).key
+		var randomElem = originalLhsFields.get(0)
+		var randomElemKey = originalLhsFields.get(0).key
 		var int i = 0
 		if(trace.isMapped(randomElem) && trace.get(randomElem).type.findTypeDefinitionOfType instanceof ArrayTypeDefinition) {
 			i = (trace.get(randomElem).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
@@ -667,9 +668,11 @@ class ActionTransformer {
 			i = (trace.get(randomElemKey as VariableDeclaration).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
 		} else if (randomElemKey instanceof ParameterDeclaration && trace.isMapped(randomElemKey as ParameterDeclaration) && trace.get(randomElemKey as ParameterDeclaration).type.findTypeDefinitionOfType instanceof ArrayTypeDefinition){
 			i = (trace.get(randomElemKey as ParameterDeclaration).type.findTypeDefinitionOfType as ArrayTypeDefinition).size.value.intValue
+		} else if (randomElemKey instanceof ConstantDeclaration) {
+			//TODO
+			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
 		} else {
 			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
-			//TODO const?
 		}
 		
 		for(var j = 0; j < i; j++) {

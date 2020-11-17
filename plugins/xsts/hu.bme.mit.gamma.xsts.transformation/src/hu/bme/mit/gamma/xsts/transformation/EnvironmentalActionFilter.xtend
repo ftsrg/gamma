@@ -28,6 +28,7 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class EnvironmentalActionFilter {
 	// Singleton
@@ -119,9 +120,9 @@ class EnvironmentalActionFilter {
 						val xStsBoundEventName = customizeInputName(boundEvent, boundPort, boundInstance)
 						val xStsBoundEventVariable = xSts.checkVariable(xStsBoundEventName)
 						for (xStsAssignment : xStsAssignmentActions
-								.filter[it.lhs.declaration === xStsBoundEventVariable]) {
+								.filter[(it.lhs as DirectReferenceExpression).declaration === xStsBoundEventVariable]) {
 							// "Binding" the variable 
-							xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsEventVariable]
+							xStsAssignment.rhs = createDirectReferenceExpression => [it.declaration = xStsEventVariable]
 						}
 						val boundParameters = boundEvent.parameterDeclarations
 						for (var j = 0; j < boundParameters.size; j++) {
@@ -132,9 +133,9 @@ class EnvironmentalActionFilter {
 							val xStsBoundParameterName = customizeInName(boundParameter, boundPort, boundInstance)
 							val xStsBoundParameterVariable = xSts.checkVariable(xStsBoundParameterName)
 							for (xStsAssignment : xStsAssignmentActions
-									.filter[it.lhs.declaration === xStsBoundParameterVariable]) {
+									.filter[(it.lhs as DirectReferenceExpression).declaration === xStsBoundParameterVariable]) {
 								// "Binding" the variable 
-								xStsAssignment.rhs = createReferenceExpression => [it.declaration = xStsParameterVariable]
+								xStsAssignment.rhs = createDirectReferenceExpression => [it.declaration = xStsParameterVariable]
 							}
 						}
 					}
@@ -146,7 +147,7 @@ class EnvironmentalActionFilter {
 	private def Action reset(CompositeAction action, Set<String> necessaryNames) {
 		val xStsAssignments = newHashSet
 		for (xStsAssignment : action.getAllContentsOfType(AssignmentAction)) {
-			val declaration = xStsAssignment.lhs.declaration
+			val declaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
 			val name = declaration.name
 			if (!necessaryNames.contains(name)) {
 				// Resetting the variable if it is not led out to the system port
@@ -166,7 +167,7 @@ class EnvironmentalActionFilter {
 		copyXStsSubactions += xStsSubactions
 		for (xStsSubaction : copyXStsSubactions) {
 			if (xStsSubaction instanceof AssignmentAction) {
-				val name = xStsSubaction.lhs.declaration.name
+				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting
 					xStsSubactions -= xStsSubaction

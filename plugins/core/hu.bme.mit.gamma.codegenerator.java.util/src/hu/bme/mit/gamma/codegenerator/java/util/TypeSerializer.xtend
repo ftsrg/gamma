@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 class TypeSerializer {
 	// Singleton
@@ -39,6 +40,8 @@ class TypeSerializer {
 	def dispatch String serialize(DecimalTypeDefinition type) '''double'''
 	
 	def dispatch String serialize(RationalTypeDefinition type) '''double'''
+	
+	def dispatch String serialize(ArrayTypeDefinition type) '''«type.elementType.serialize»[]'''
 	
 	def dispatch String serialize(EnumerationTypeDefinition type) {
 		throw new IllegalArgumentException("Anonymous enumeration types are not supported: " + type)

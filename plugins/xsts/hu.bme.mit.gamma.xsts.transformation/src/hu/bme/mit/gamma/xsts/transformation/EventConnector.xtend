@@ -25,6 +25,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class EventConnector {
 	// Singleton
@@ -125,10 +126,10 @@ class EventConnector {
 			VariableDeclaration xStsInVariable, List<AssignmentAction> xStsAssignmentActions) {
 		val xStsDeletableAssignmentActions = newHashSet
 		for (xStsAssignmentAction : xStsAssignmentActions) {
-			val xStsDeclaration = xStsAssignmentAction.lhs.declaration
+			val xStsDeclaration = (xStsAssignmentAction.lhs as DirectReferenceExpression).declaration
 			if (xStsDeclaration === xStsOutVariable) {
 				val xStsNewAssignmentAction = xStsAssignmentAction.clone => [
-					it.lhs.declaration = xStsInVariable
+					(it.lhs as DirectReferenceExpression).declaration = xStsInVariable
 				]
 				xStsAssignmentAction.appendToAction(xStsNewAssignmentAction)
 				xStsDeletableAssignmentActions += xStsAssignmentAction

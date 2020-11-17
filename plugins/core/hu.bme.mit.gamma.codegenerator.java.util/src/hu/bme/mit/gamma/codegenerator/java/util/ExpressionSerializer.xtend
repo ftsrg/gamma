@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 
 class ExpressionSerializer {
 	// Singleton
@@ -63,6 +64,16 @@ class ExpressionSerializer {
 		val enumerationType = definition.eContainer as EnumerationTypeDefinition
 		val typeDeclaration = enumerationType.eContainer as TypeDeclaration
 		return typeDeclaration.name + "." + definition.name
+	}
+	
+	def dispatch String serialize(ArrayLiteralExpression expression) {
+		var result = "{"
+		for (var i = 0; i < expression.operands.size ; i++) {
+			result += expression.operands.get(i).serialize
+			if (i != expression.operands.size - 1) result += ", "
+		}
+		result += "}"
+		return result
 	}
 	
 	def dispatch String serialize(IntegerLiteralExpression expression) {

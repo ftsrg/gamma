@@ -104,7 +104,6 @@ class ExpressionTransformer {
 		var result = new ArrayList<Expression>
 		
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
-		//TODO not only variable
 		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
 			exploreComplexType(originalDeclaration as ValueDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
 		} else { throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration);}
