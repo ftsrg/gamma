@@ -146,7 +146,5 @@
   <eClassifiers xsi:type="ecore:EClass" name="StatechartAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="StateAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransitionAnnotation" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TransitionIdAnnotation" eSuperTypes="#//TransitionAnnotation ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
 </ecore:EPackage>

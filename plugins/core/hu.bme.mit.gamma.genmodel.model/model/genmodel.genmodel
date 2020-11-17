@@ -77,7 +77,12 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventPriorityTransformation/statechart"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//OutEventCoverage"/>
-    <genClasses ecoreClass="genmodel.ecore#//InteractionCoverage"/>
+    <genClasses ecoreClass="genmodel.ecore#//InteractionCoverage">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//InteractionCoverage/stateInclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//InteractionCoverage/stateExclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//InteractionCoverage/transitionInclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//InteractionCoverage/transitionExclude"/>
+    </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//Constraint"/>
     <genClasses ecoreClass="genmodel.ecore#//SchedulingConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//SchedulingConstraint/instanceConstraint"/>

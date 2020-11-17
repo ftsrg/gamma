@@ -1,7 +1,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
+import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures

@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.ComponentInstancePortReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
@@ -45,7 +45,7 @@ class SimpleInstanceHandler {
 			Collection<ComponentInstancePortReference> originalReferences, Component newType) {
 		val newPorts = newArrayList
 		for (originalReference : originalReferences) {
-			val originalInstance = originalReference.componentInstance
+			val originalInstance = originalReference.instance
 			val originalPort = originalReference.port 
 			val newInstance = originalInstance.getNewSimpleInstance(newType)
 			newPorts += newInstance.getNewPort(originalPort) 

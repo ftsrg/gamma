@@ -96,11 +96,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstanceHierarchy"
         lowerBound="1" upperBound="-1" eType="#//ComponentInstance"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ComponentInstancePortReference">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstance" lowerBound="1"
-        eType="#//ComponentInstanceReference" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="port" lowerBound="1" eType="ecore:EClass interface.ecore#//Port"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DiscardStrategy">
     <eLiterals name="INCOMING"/>
     <eLiterals name="OLDEST" value="1"/>

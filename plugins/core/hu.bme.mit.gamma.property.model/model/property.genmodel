@@ -69,6 +69,9 @@
     <genClasses ecoreClass="property.ecore#//ComponentInstanceVariableReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceVariableReference/variable"/>
     </genClasses>
+    <genClasses ecoreClass="property.ecore#//ComponentInstancePortReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstancePortReference/port"/>
+    </genClasses>
     <genClasses ecoreClass="property.ecore#//ComponentInstanceEventReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventReference/port"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventReference/event"/>
@@ -77,6 +80,9 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/port"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/event"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceEventParameterReference/parameter"/>
+    </genClasses>
+    <genClasses ecoreClass="property.ecore#//ComponentInstanceTransitionReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference property.ecore#//ComponentInstanceTransitionReference/transition"/>
     </genClasses>
     <genClasses ecoreClass="property.ecore#//UnaryOperandLogicalPathFormula">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute property.ecore#//UnaryOperandLogicalPathFormula/operator"/>

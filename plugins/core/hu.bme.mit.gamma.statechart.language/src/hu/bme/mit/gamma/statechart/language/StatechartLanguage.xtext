@@ -253,7 +253,7 @@ TransitionAnnotation returns TransitionAnnotation:
 ;
 
 TransitionIdAnnotation returns TransitionIdAnnotation:
-	'@''(' id=ID ')'
+	'@''(' name=ID ')'
 ;
 
 StateNode returns StateNode:

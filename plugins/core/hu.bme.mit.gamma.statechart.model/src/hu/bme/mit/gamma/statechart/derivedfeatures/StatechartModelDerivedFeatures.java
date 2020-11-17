@@ -841,7 +841,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		for (TransitionAnnotation annotation : transition.getAnnotations()) {
 			if (annotation instanceof TransitionIdAnnotation) {
 				TransitionIdAnnotation transitionIdAnnotation = (TransitionIdAnnotation) annotation;
-				return transitionIdAnnotation.getId();
+				return transitionIdAnnotation.getName();
 			}
 		}
 		return null;
