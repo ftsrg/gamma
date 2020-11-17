@@ -81,7 +81,8 @@ class GammaStatechartAnnotator {
 			Collection<Transition> interactionCoverableTransitions) {
 		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
 			interactionCoverablePorts, interactionCoverableStates,
-			interactionCoverableTransitions, InteractionTuple.ALL, InteractionTuple.ALL)
+			interactionCoverableTransitions, InteractionTuple.EVERY_INTERACTION,
+				InteractionTuple.EVERY_INTERACTION)
 	}
 	
 	new(Package gammaPackage,
@@ -111,7 +112,7 @@ class GammaStatechartAnnotator {
 			this.SENDER_INTERACTION_TUPLE = senderInteractionTuple
 			this.RECEIVER_INTERACTION_TUPLE = receiverInteractionTuple
 			this.RECEIVER_CONSIDERATION =
-				RECEIVER_INTERACTION_TUPLE != InteractionTuple.TRIGGERS
+				RECEIVER_INTERACTION_TUPLE != InteractionTuple.EVENTS
 			this.interactionCoverablePorts += interactionCoverablePorts
 			this.interactionCoverableStates += interactionCoverableStates
 			this.interactionCoverableTransitions += interactionCoverableTransitions
@@ -244,7 +245,7 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			if (SENDER_INTERACTION_TUPLE == InteractionTuple.ALL) {
+			if (SENDER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION) {
 				sendingIds.put(action, senderId++)
 			}
 			else {
@@ -269,7 +270,7 @@ class GammaStatechartAnnotator {
 	protected def needSameId(RaiseEventAction lhs, RaiseEventAction rhs) {
 		val lhsContainer = lhs.containingTransitionOrState
 		val rhsContainer = rhs.containingTransitionOrState
-		if (SENDER_INTERACTION_TUPLE == InteractionTuple.ALL ||
+		if (SENDER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart ||
 				/*The algorithm would be correct without this too
 				  This way, the raise event actions in different statecharts get different ids*/ 
@@ -279,9 +280,9 @@ class GammaStatechartAnnotator {
 		val lhsState = lhs.correspondingStateNode
 		val rhsState = rhs.correspondingStateNode
 		// This way, arguments have to be equal
-		return SENDER_INTERACTION_TUPLE == InteractionTuple.STATES_TRIGGERS &&
+		return SENDER_INTERACTION_TUPLE == InteractionTuple.STATES_AND_EVENTS &&
 				lhsState === rhsState && lhs.helperEquals(rhs) ||
-			SENDER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS && lhs.helperEquals(rhs)
+			SENDER_INTERACTION_TUPLE == InteractionTuple.EVENTS && lhs.helperEquals(rhs)
 	}
 	
 	protected def getCorrespondingStateNode(RaiseEventAction action) {
@@ -295,7 +296,7 @@ class GammaStatechartAnnotator {
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.ALL) {
+			if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION) {
 				receivingIds.put(transition, recevierId++)
 			}
 			else {
@@ -318,7 +319,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def needSameId(Transition lhs, Transition rhs) {
-		if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.ALL ||
+		if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart) {
 			// The algorithm would be correct without this too
 			// This way, the transitions in different statecharts get different ids 
@@ -329,9 +330,9 @@ class GammaStatechartAnnotator {
 		val rhsSource = rhs.sourceState
 		val rhsTrigger = rhs.trigger
 		// Composite triggers and their possible relations are NOT considered now
-		return RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES_TRIGGERS &&
+		return RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES_AND_EVENTS &&
 				lhsSource === rhsSource && lhsTrigger.helperEquals(rhsTrigger) ||
-			RECEIVER_INTERACTION_TUPLE == InteractionTuple.TRIGGERS && lhsTrigger.helperEquals(rhsTrigger)
+			RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVENTS && lhsTrigger.helperEquals(rhsTrigger)
 	}
 	
 	protected def getInteractionVariables(Region region) {
@@ -678,5 +679,5 @@ class AnnotationNamings {
 }
 
 enum InteractionTuple {
-	ALL, STATES_TRIGGERS, TRIGGERS
+	EVERY_INTERACTION, STATES_AND_EVENTS, EVENTS
 }

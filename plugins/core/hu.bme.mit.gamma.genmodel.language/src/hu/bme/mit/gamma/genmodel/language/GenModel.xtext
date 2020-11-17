@@ -221,6 +221,8 @@ OutEventCoverage returns OutEventCoverage:
 
 InteractionCoverage returns InteractionCoverage:
 	{InteractionCoverage} 'interaction-coverage' ('{'
+		('sender-coverage-criterion' ':' senderCoverageCriterion=InteractionCoverageCriterion)?
+		('receiver-coverage-criterion' ':' receiverCoverageCriterion=InteractionCoverageCriterion)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
@@ -230,6 +232,10 @@ InteractionCoverage returns InteractionCoverage:
 		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionReference (',' transitionInclude+=ComponentInstanceTransitionReference)* ']')?
 		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionReference (',' transitionExclude+=ComponentInstanceTransitionReference)* ']')?
 	'}')?
+;
+
+enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
+	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
 ;
 
 Verification returns Verification:

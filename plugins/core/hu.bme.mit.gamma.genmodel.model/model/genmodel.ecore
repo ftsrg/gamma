@@ -100,6 +100,10 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OutEventCoverage" eSuperTypes="#//EventCoverage"/>
   <eClassifiers xsi:type="ecore:EClass" name="InteractionCoverage" eSuperTypes="#//EventCoverage">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="senderCoverageCriterion"
+        eType="#//InteractionCoverageCriterion"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="receiverCoverageCriterion"
+        eType="#//InteractionCoverageCriterion"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="stateInclude" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceStateConfigurationReference"
         containment="true"/>
@@ -112,6 +116,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="transitionExclude" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceTransitionReference"
         containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="InteractionCoverageCriterion">
+    <eLiterals name="EVERY_INTERACTION"/>
+    <eLiterals name="STATES_AND_EVENTS" value="1"/>
+    <eLiterals name="EVENTS" value="2"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Constraint" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="SchedulingConstraint" eSuperTypes="#//Constraint">
