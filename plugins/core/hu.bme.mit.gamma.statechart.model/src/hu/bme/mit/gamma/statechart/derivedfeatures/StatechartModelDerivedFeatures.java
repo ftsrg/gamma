@@ -987,6 +987,17 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return !state.getRegions().isEmpty();
 	}
 	
+	public static EObject getContainingTransitionOrState(RaiseEventAction action) {
+		Transition containingTransition = ecoreUtil.getContainerOfType(
+				action, Transition.class);
+		if (containingTransition != null) {
+			// Container is a transition
+			return containingTransition;
+		}
+		// Container is a state
+		return ecoreUtil.getContainerOfType(action, State.class);
+	}
+	
 	public static int getLiteralIndex(State state) {
 		Region parent = getParentRegion(state);
 		List<State> states = getStates(parent);

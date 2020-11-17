@@ -7,7 +7,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceAndPortReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -30,7 +30,7 @@ class Gamma2XSTSTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstanceReferences testedComponentsForOutEvents
-	protected final ComponentInstanceAndPortReferences testedPortsForInteractions
+	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -62,7 +62,7 @@ class Gamma2XSTSTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstanceReferences testedComponentsForOutEvents,
-			ComponentInstanceAndPortReferences testedPortsForInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -75,7 +75,7 @@ class Gamma2XSTSTransformerSerializer {
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
-		this.testedPortsForInteractions = testedPortsForInteractions
+		this.testedInteractions = testedInteractions
 	}
 	
 	def void execute() {
@@ -89,7 +89,7 @@ class Gamma2XSTSTransformerSerializer {
 				propertyPackage,
 				testedComponentsForStates, testedComponentsForTransitions,
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-				testedPortsForInteractions,
+				testedInteractions,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
 		val gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true)

@@ -78,6 +78,10 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_2());
         c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_3());
         c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_4());
+        c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_5());
+        c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_6());
+        c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_7());
+        c.setLinewrap(1).after(f.getInteractionCoverageAccess().getGroup_2_8());
         // Test generation
         c.setLinewrap(1).after(f.getTestGenerationAccess().getExecutionTraceAssignment_4());
         c.setLinewrap(1).after(f.getTestGenerationAccess().getTargetFolderAssignment_5_0_2());

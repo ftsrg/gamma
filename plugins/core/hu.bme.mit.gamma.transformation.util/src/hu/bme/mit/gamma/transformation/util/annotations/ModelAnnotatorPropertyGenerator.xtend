@@ -1,17 +1,24 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.List
 import org.eclipse.xtend.lib.annotations.Data
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class ModelAnnotatorPropertyGenerator {
 	
@@ -20,7 +27,7 @@ class ModelAnnotatorPropertyGenerator {
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstanceReferences testedComponentsForOutEvents
-	protected final ComponentInstanceAndPortReferences testedPortsForInteractions
+	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
@@ -30,13 +37,13 @@ class ModelAnnotatorPropertyGenerator {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstanceReferences testedComponentsForOutEvents,
-			ComponentInstanceAndPortReferences testedPortsForInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
-		this.testedPortsForInteractions = testedPortsForInteractions
+		this.testedInteractions = testedInteractions
 	}
 	
 	def execute() {
@@ -58,14 +65,20 @@ class ModelAnnotatorPropertyGenerator {
 				testedComponentsForOutEvents, newTopComponent)
 		// Interaction coverage
 		val testedPortsForInteractions = getIncludedSynchronousInstancePorts(
-				testedPortsForInteractions, newTopComponent)
+				testedInteractions, newTopComponent)
+		val testedStatesForInteractions = getIncludedSynchronousInstanceStates(
+				testedInteractions.getStates, newTopComponent)
+		val testedTransitionsForInteractions = getIncludedSynchronousInstanceTransitions(
+				testedInteractions.getTransitions, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedComponentsForOutEvents.nullOrEmpty ||
-				!testedPortsForInteractions.nullOrEmpty) {
+				!testedPortsForInteractions.nullOrEmpty || !testedStatesForInteractions.nullOrEmpty ||
+				!testedTransitionsForInteractions.nullOrEmpty ) {
 			val statechartAnnotator = new GammaStatechartAnnotator(newPackage,
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
-					testedPortsForInteractions)
+					testedPortsForInteractions, testedStatesForInteractions,
+					testedTransitionsForInteractions)
 			statechartAnnotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
@@ -96,18 +109,18 @@ class ModelAnnotatorPropertyGenerator {
 	}
 	
 	protected def List<Port> getIncludedSynchronousInstancePorts(
-			ComponentInstanceAndPortReferences references, Component component) {
+			ComponentInstancePortStateTransitionReferences references, Component component) {
 		if (references === null) {
 			return #[]
 		}
 		val includedInstances =
-			simpleInstanceHandler.getNewSimpleInstances(references.getInstance.include, component)
+			simpleInstanceHandler.getNewSimpleInstances(references.instances.include, component)
 		val excludedInstances =
-			simpleInstanceHandler.getNewSimpleInstances(references.getInstance.exclude, component)
+			simpleInstanceHandler.getNewSimpleInstances(references.instances.exclude, component)
 		val includedPorts =
-			simpleInstanceHandler.getNewSimpleInstancePorts(references.getPort.include, component)
+			simpleInstanceHandler.getNewSimpleInstancePorts(references.ports.include, component)
 		val excludedPorts =
-			simpleInstanceHandler.getNewSimpleInstancePorts(references.getPort.exclude, component)
+			simpleInstanceHandler.getNewSimpleInstancePorts(references.ports.exclude, component)
 		
 		val ports = newArrayList
 		if (includedInstances.empty && includedPorts.empty) {
@@ -128,9 +141,43 @@ class ModelAnnotatorPropertyGenerator {
 		val ports = newArrayList
 		for (instance : instances) {
 			val type = instance.getType
-			ports += type.ports
+			ports += type.allPorts
 		}
 		return ports
+	}
+	
+	protected def List<State> getIncludedSynchronousInstanceStates(
+			ComponentInstanceStateReferences references, Component component) {
+		if (references === null) {
+			return #[]
+		}
+		var includedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
+			references.include, component).toList
+		if (includedStates.empty) {
+			includedStates = component.allSimpleInstances.map[it.type]
+				.filter(StatechartDefinition).map[it.allStates].flatten.toList
+		}
+		val excludedStates = simpleInstanceHandler.getNewSimpleInstanceStates(
+			references.exclude, component)
+		includedStates -= excludedStates
+		return includedStates
+	}
+	
+	protected def List<Transition> getIncludedSynchronousInstanceTransitions(
+			ComponentInstanceTransitionReferences references, Component component) {
+		if (references === null) {
+			return #[]
+		}
+		var includedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
+			references.include, component).toList
+		if (includedTransitions.empty) {
+			includedTransitions = component.allSimpleInstances.map[it.type]
+				.filter(StatechartDefinition).map[it.transitions].flatten.toList
+		}
+		val excludedTransitions = simpleInstanceHandler.getNewSimpleInstanceTransitions(
+			references.exclude, component)
+		includedTransitions -= excludedTransitions
+		return includedTransitions
 	}
 	
 	@Data
@@ -146,9 +193,23 @@ class ModelAnnotatorPropertyGenerator {
 	}
 	
 	@Data
-	static class ComponentInstanceAndPortReferences {
-		ComponentInstanceReferences instance
-		ComponentInstancePortReferences port
+	static class ComponentInstanceStateReferences {
+		Collection<ComponentInstanceStateConfigurationReference> include
+		Collection<ComponentInstanceStateConfigurationReference> exclude
+	}
+	
+	@Data
+	static class ComponentInstanceTransitionReferences {
+		Collection<ComponentInstanceTransitionReference> include
+		Collection<ComponentInstanceTransitionReference> exclude
+	}
+	
+	@Data
+	static class ComponentInstancePortStateTransitionReferences {
+		ComponentInstanceReferences instances
+		ComponentInstancePortReferences ports
+		ComponentInstanceStateReferences states
+		ComponentInstanceTransitionReferences transitions
 	}
 	
 	@Data

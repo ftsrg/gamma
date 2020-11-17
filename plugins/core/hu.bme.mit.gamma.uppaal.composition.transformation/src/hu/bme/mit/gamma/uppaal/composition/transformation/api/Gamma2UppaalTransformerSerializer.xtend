@@ -6,7 +6,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceAndPortReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
@@ -33,7 +33,7 @@ class Gamma2UppaalTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForTransitions
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstanceReferences testedComponentsForOutEvents
-	protected final ComponentInstanceAndPortReferences testedPortsForInteractions
+	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 		
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -65,7 +65,7 @@ class Gamma2UppaalTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstanceReferences testedComponentsForOutEvents,
-			ComponentInstanceAndPortReferences testedPortsForInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -80,7 +80,7 @@ class Gamma2UppaalTransformerSerializer {
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
-		this.testedPortsForInteractions = testedPortsForInteractions
+		this.testedInteractions = testedInteractions
 	}
 	
 	def void execute() {
@@ -98,7 +98,7 @@ class Gamma2UppaalTransformerSerializer {
 				propertyPackage,
 				testedComponentsForStates, testedComponentsForTransitions,
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-				testedPortsForInteractions,
+				testedInteractions,
 				targetFolderUri, fileName);
 		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation

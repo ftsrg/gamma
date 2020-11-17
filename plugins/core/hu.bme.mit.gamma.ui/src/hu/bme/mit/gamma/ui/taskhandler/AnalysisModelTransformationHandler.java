@@ -30,7 +30,6 @@ import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.Coverage;
-import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
@@ -50,9 +49,11 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
-import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceAndPortReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceStateReferences;
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceTransitionReferences;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler;
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint;
@@ -162,8 +163,8 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		protected abstract String getQueryFileExtension();
 		
-		protected ComponentInstanceReferences getCoverageInstances(Collection<Coverage> coverages,
-				Class<? extends Coverage> clazz) {
+		protected ComponentInstanceReferences getCoverageInstances(
+				Collection<Coverage> coverages, Class<? extends Coverage> clazz) {
 			Optional<Coverage> coverage = coverages.stream().filter(it -> clazz.isInstance(it)).findFirst();
 			if (coverage.isEmpty()) {
 				return null;
@@ -173,19 +174,23 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					notNullCoverage.getExclude());
 		}
 		
-		protected ComponentInstanceAndPortReferences getCoveragePorts(Collection<Coverage> coverages,
-				Class<? extends EventCoverage> clazz) {
+		protected ComponentInstancePortStateTransitionReferences getCoverageInteractions(
+				Collection<Coverage> coverages, Class<? extends InteractionCoverage> clazz) {
 			Optional<Coverage> optionalInteractionCoverage = coverages.stream()
 					.filter(it -> clazz.isInstance(it)).findFirst();
 			if (optionalInteractionCoverage.isEmpty()) {
 				return null;
 			}
-			EventCoverage eventCoverage = (EventCoverage) optionalInteractionCoverage.get();
-			return new ComponentInstanceAndPortReferences(
-				new ComponentInstanceReferences(eventCoverage.getInclude(),
-						eventCoverage.getExclude()),
-				new ComponentInstancePortReferences(eventCoverage.getPortInclude(),
-						eventCoverage.getPortExclude())
+			InteractionCoverage coverage = (InteractionCoverage) optionalInteractionCoverage.get();
+			return new ComponentInstancePortStateTransitionReferences(
+				new ComponentInstanceReferences(coverage.getInclude(),
+						coverage.getExclude()),
+				new ComponentInstancePortReferences(coverage.getPortInclude(),
+						coverage.getPortExclude()),
+				new ComponentInstanceStateReferences(coverage.getStateInclude(),
+						coverage.getStateExclude()),
+				new ComponentInstanceTransitionReferences(coverage.getTransitionInclude(),
+						coverage.getTransitionExclude())
 			);
 		}
 		
@@ -230,7 +235,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionPairCoverage.class);
 			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
 					coverages, OutEventCoverage.class);
-			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
 			
 			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
@@ -243,7 +248,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedPortsForInteractions);
+					testedInteractions);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -319,7 +324,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionPairCoverage.class);
 			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
 					coverages, OutEventCoverage.class);
-			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
 			
 			Gamma2XSTSTransformerSerializer transformer = new Gamma2XSTSTransformerSerializer(
@@ -328,7 +333,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedPortsForInteractions);
+					testedInteractions);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -394,7 +399,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, TransitionPairCoverage.class);
 			ComponentInstanceReferences testedComponentsForOutEvents = getCoverageInstances(
 					coverages, OutEventCoverage.class);
-			ComponentInstanceAndPortReferences testedPortsForInteractions = getCoveragePorts(
+			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
 			
 			Gamma2XSTSUppaalTransformerSerializer transformer = new Gamma2XSTSUppaalTransformerSerializer(
@@ -403,7 +408,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedPortsForInteractions);
+					testedInteractions);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);

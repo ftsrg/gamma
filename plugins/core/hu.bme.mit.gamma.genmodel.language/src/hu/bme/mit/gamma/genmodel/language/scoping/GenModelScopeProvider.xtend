@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -97,7 +98,7 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			}
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE__TRANSITION) {
-			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
+			val componentInstanceReference = context as ComponentInstanceTransitionReference
 			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
 			if (componentInstance !== null) {
 				val component = componentInstance.derivedType
