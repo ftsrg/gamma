@@ -308,6 +308,6 @@ class PropertyGenerator {
 	}
 
 	def protected String getId(Transition transition) {
-		return '''«getInstanceId(transition)».«transition.sourceState.id» --> «getInstanceId(transition)».«transition.targetState.id»'''
+		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
 	}
 }

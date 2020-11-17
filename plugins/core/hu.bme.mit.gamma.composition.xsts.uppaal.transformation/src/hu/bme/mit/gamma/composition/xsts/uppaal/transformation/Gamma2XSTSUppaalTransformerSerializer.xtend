@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
+import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
@@ -28,6 +29,8 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
+	protected final InteractionCoverageCriterion senderCoverageCriterion
+	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -45,7 +48,8 @@ class Gamma2XSTSUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			null, null, null, null, null, null)
+			null, null, null, null, null, null, InteractionCoverageCriterion.EVERY_INTERACTION,
+			InteractionCoverageCriterion.EVERY_INTERACTION)
 	}
 	
 	new(Component component, List<Expression> arguments,
@@ -56,7 +60,9 @@ class Gamma2XSTSUppaalTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstancePortReferences testedComponentsForOutEvents,
-			ComponentInstancePortStateTransitionReferences testedInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions,
+			InteractionCoverageCriterion senderCoverageCriterion,
+			InteractionCoverageCriterion receiverCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -70,6 +76,8 @@ class Gamma2XSTSUppaalTransformerSerializer {
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
 		this.testedInteractions = testedInteractions
+		this.senderCoverageCriterion = senderCoverageCriterion
+		this.receiverCoverageCriterion = receiverCoverageCriterion
 	}
 	
 	def execute() {
@@ -79,7 +87,7 @@ class Gamma2XSTSUppaalTransformerSerializer {
 			propertyPackage,
 			testedComponentsForStates, testedComponentsForTransitions,
 			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-			testedInteractions)
+			testedInteractions, senderCoverageCriterion, receiverCoverageCriterion)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		val uppaalTransformer = new XSTS2UppaalTransformerSerializer(xSts,

@@ -17,12 +17,15 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
+
+import com.google.common.collect.Maps;
 
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XSTSUppaalTransformerSerializer;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
@@ -50,6 +53,7 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler;
+import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences;
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences;
@@ -210,6 +214,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			);
 		}
 		
+		protected Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> getInteractionCoverageCriteria(
+				Collection<Coverage> coverages) {
+			Optional<Coverage> optionalInteractionCoverage = coverages.stream()
+					.filter(it -> it instanceof InteractionCoverage).findFirst();
+			if (optionalInteractionCoverage.isEmpty()) {
+				return Maps.immutableEntry(InteractionCoverageCriterion.EVERY_INTERACTION, 
+					InteractionCoverageCriterion.EVERY_INTERACTION);
+			}
+			InteractionCoverage coverage = (InteractionCoverage) optionalInteractionCoverage.get();
+			return Maps.immutableEntry(
+					transformCoverageCriterion(coverage.getSenderCoverageCriterion()), 
+					transformCoverageCriterion(coverage.getReceiverCoverageCriterion()));
+		}
+		
 		protected Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
@@ -226,6 +244,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				}
 			}
 			throw new IllegalArgumentException("Not known constraint: " + constraint);
+		}
+		
+		protected InteractionCoverageCriterion transformCoverageCriterion(
+				hu.bme.mit.gamma.genmodel.model.InteractionCoverageCriterion criterion) {
+			switch (criterion) {
+				case EVERY_INTERACTION:
+					return InteractionCoverageCriterion.EVERY_INTERACTION;
+				case STATES_AND_EVENTS:
+					return InteractionCoverageCriterion.STATES_AND_EVENTS;
+				case EVENTS:
+					return InteractionCoverageCriterion.EVENTS;
+				default:
+					throw new IllegalArgumentException("Not known criterion: " + criterion);
+			}
 		}
 		
 	}
@@ -253,6 +285,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
+
 			
 			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
 			Scheduler scheduler = getGammaScheduler(transformation.getScheduler().get(0));
@@ -264,7 +300,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions);
+					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -342,6 +378,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
 			
 			Gamma2XSTSTransformerSerializer transformer = new Gamma2XSTSTransformerSerializer(
 					component,
@@ -349,7 +388,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions);
+					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -417,6 +456,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, OutEventCoverage.class);
 			ComponentInstancePortStateTransitionReferences testedInteractions = getCoverageInteractions(
 					coverages, InteractionCoverage.class);
+			Entry<InteractionCoverageCriterion, InteractionCoverageCriterion> criterion = getInteractionCoverageCriteria(coverages);
+			InteractionCoverageCriterion senderCoverageCriterion = criterion.getKey();
+			InteractionCoverageCriterion receiverCoverageCriterion = criterion.getValue();
 			
 			Gamma2XSTSUppaalTransformerSerializer transformer = new Gamma2XSTSUppaalTransformerSerializer(
 					component,
@@ -424,7 +466,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					schedulingConstraint, transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions);
+					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);

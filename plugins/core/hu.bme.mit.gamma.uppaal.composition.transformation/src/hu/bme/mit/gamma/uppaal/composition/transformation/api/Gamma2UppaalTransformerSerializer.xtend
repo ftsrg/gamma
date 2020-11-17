@@ -6,6 +6,7 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
@@ -35,6 +36,8 @@ class Gamma2UppaalTransformerSerializer {
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
+	protected final InteractionCoverageCriterion senderCoverageCriterion
+	protected final InteractionCoverageCriterion receiverCoverageCriterion
 		
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -54,7 +57,8 @@ class Gamma2UppaalTransformerSerializer {
 			Constraint constraint, Scheduler scheduler,
 			boolean isMinimalElementSet) {
 		this(component, arguments, targetFolderUri, fileName, constraint,
-			scheduler, isMinimalElementSet, null, null, null, null, null, null)
+			scheduler, isMinimalElementSet, null, null, null, null, null, null,
+			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION)
 	}
 	
 	new(Component component, List<Expression> arguments,
@@ -66,7 +70,9 @@ class Gamma2UppaalTransformerSerializer {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstancePortReferences testedComponentsForOutEvents,
-			ComponentInstancePortStateTransitionReferences testedInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions,
+			InteractionCoverageCriterion senderCoverageCriterion,
+			InteractionCoverageCriterion receiverCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -82,6 +88,8 @@ class Gamma2UppaalTransformerSerializer {
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
 		this.testedInteractions = testedInteractions
+		this.senderCoverageCriterion = senderCoverageCriterion
+		this.receiverCoverageCriterion = receiverCoverageCriterion
 	}
 	
 	def void execute() {
@@ -99,7 +107,7 @@ class Gamma2UppaalTransformerSerializer {
 				propertyPackage,
 				testedComponentsForStates, testedComponentsForTransitions,
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-				testedInteractions,
+				testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 				targetFolderUri, fileName);
 		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation

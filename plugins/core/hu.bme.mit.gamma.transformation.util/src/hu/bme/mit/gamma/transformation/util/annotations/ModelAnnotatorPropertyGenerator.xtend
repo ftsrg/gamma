@@ -28,6 +28,8 @@ class ModelAnnotatorPropertyGenerator {
 	protected final ComponentInstanceReferences testedComponentsForTransitionPairs
 	protected final ComponentInstancePortReferences testedComponentsForOutEvents
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
+	protected final InteractionCoverageCriterion senderCoverageCriterion
+	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
@@ -37,13 +39,17 @@ class ModelAnnotatorPropertyGenerator {
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
 			ComponentInstancePortReferences testedComponentsForOutEvents,
-			ComponentInstancePortStateTransitionReferences testedInteractions) {
+			ComponentInstancePortStateTransitionReferences testedInteractions,
+			InteractionCoverageCriterion senderCoverageCriterion,
+			InteractionCoverageCriterion receiverCoverageCriterion) {
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForTransitions = testedComponentsForTransitions
 		this.testedComponentsForTransitionPairs = testedComponentsForTransitionPairs
 		this.testedComponentsForOutEvents = testedComponentsForOutEvents
 		this.testedInteractions = testedInteractions
+		this.senderCoverageCriterion = senderCoverageCriterion
+		this.receiverCoverageCriterion = receiverCoverageCriterion
 	}
 	
 	def execute() {
@@ -82,7 +88,8 @@ class ModelAnnotatorPropertyGenerator {
 			val statechartAnnotator = new GammaStatechartAnnotator(newPackage,
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,
-					testedTransitionsForInteractions)
+					testedTransitionsForInteractions,
+					senderCoverageCriterion, receiverCoverageCriterion)
 			statechartAnnotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			

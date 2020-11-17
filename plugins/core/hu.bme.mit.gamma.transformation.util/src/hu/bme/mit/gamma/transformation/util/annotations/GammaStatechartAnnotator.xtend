@@ -49,9 +49,9 @@ class GammaStatechartAnnotator {
 	protected final List<TransitionPairAnnotation> transitionPairAnnotations = newArrayList
 	// Interaction coverage
 	protected boolean INTERACTION_COVERAGE
-	protected InteractionTuple SENDER_INTERACTION_TUPLE
-	protected InteractionTuple RECEIVER_INTERACTION_TUPLE
-	protected boolean RECEIVER_CONSIDERATION // Derived feature: RECEIVER_INTERACTION_TUPLE == RECEIVER_INTERACTION_TUPLE.TRIGGERS
+	protected InteractionCoverageCriterion SENDER_INTERACTION_TUPLE
+	protected InteractionCoverageCriterion RECEIVER_INTERACTION_TUPLE
+	protected boolean RECEIVER_CONSIDERATION // Derived feature: RECEIVER_INTERACTION_TUPLE == RECEIVER_INTERACTION_TUPLE.EVENTS
 	protected final Set<Port> interactionCoverablePorts = newHashSet
 	protected final Set<State> interactionCoverableStates = newHashSet
 	protected final Set<Transition> interactionCoverableTransitions = newHashSet
@@ -81,8 +81,8 @@ class GammaStatechartAnnotator {
 			Collection<Transition> interactionCoverableTransitions) {
 		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
 			interactionCoverablePorts, interactionCoverableStates,
-			interactionCoverableTransitions, InteractionTuple.EVERY_INTERACTION,
-				InteractionTuple.EVERY_INTERACTION)
+			interactionCoverableTransitions, InteractionCoverageCriterion.EVERY_INTERACTION,
+				InteractionCoverageCriterion.EVERY_INTERACTION)
 	}
 	
 	new(Package gammaPackage,
@@ -90,7 +90,7 @@ class GammaStatechartAnnotator {
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
 			Collection<Transition> interactionCoverableTransitions,
-			InteractionTuple senderInteractionTuple, InteractionTuple receiverInteractionTuple) {
+			InteractionCoverageCriterion senderInteractionTuple, InteractionCoverageCriterion receiverInteractionTuple) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
 		if (!transitionCoverableComponents.empty) {
@@ -112,7 +112,7 @@ class GammaStatechartAnnotator {
 			this.SENDER_INTERACTION_TUPLE = senderInteractionTuple
 			this.RECEIVER_INTERACTION_TUPLE = receiverInteractionTuple
 			this.RECEIVER_CONSIDERATION =
-				RECEIVER_INTERACTION_TUPLE != InteractionTuple.EVENTS
+				RECEIVER_INTERACTION_TUPLE != InteractionCoverageCriterion.EVENTS
 			this.interactionCoverablePorts += interactionCoverablePorts
 			this.interactionCoverableStates += interactionCoverableStates
 			this.interactionCoverableTransitions += interactionCoverableTransitions
@@ -245,7 +245,7 @@ class GammaStatechartAnnotator {
 	
 	protected def getSendingId(RaiseEventAction action) {
 		if (!sendingIds.containsKey(action)) {
-			if (SENDER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION) {
+			if (SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION) {
 				sendingIds.put(action, senderId++)
 			}
 			else {
@@ -270,7 +270,7 @@ class GammaStatechartAnnotator {
 	protected def needSameId(RaiseEventAction lhs, RaiseEventAction rhs) {
 		val lhsContainer = lhs.containingTransitionOrState
 		val rhsContainer = rhs.containingTransitionOrState
-		if (SENDER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION ||
+		if (SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart ||
 				/*The algorithm would be correct without this too
 				  This way, the raise event actions in different statecharts get different ids*/ 
@@ -280,9 +280,9 @@ class GammaStatechartAnnotator {
 		val lhsState = lhs.correspondingStateNode
 		val rhsState = rhs.correspondingStateNode
 		// This way, arguments have to be equal
-		return SENDER_INTERACTION_TUPLE == InteractionTuple.STATES_AND_EVENTS &&
+		return SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.STATES_AND_EVENTS &&
 				lhsState === rhsState && lhs.helperEquals(rhs) ||
-			SENDER_INTERACTION_TUPLE == InteractionTuple.EVENTS && lhs.helperEquals(rhs)
+			SENDER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && lhs.helperEquals(rhs)
 	}
 	
 	protected def getCorrespondingStateNode(RaiseEventAction action) {
@@ -296,7 +296,7 @@ class GammaStatechartAnnotator {
 	
 	protected def getReceivingId(Transition transition) {
 		if (!receivingIds.containsKey(transition)) {
-			if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION) {
+			if (RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION) {
 				receivingIds.put(transition, recevierId++)
 			}
 			else {
@@ -319,7 +319,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def needSameId(Transition lhs, Transition rhs) {
-		if (RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVERY_INTERACTION ||
+		if (RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVERY_INTERACTION ||
 				lhs.containingStatechart !== rhs.containingStatechart) {
 			// The algorithm would be correct without this too
 			// This way, the transitions in different statecharts get different ids 
@@ -330,9 +330,9 @@ class GammaStatechartAnnotator {
 		val rhsSource = rhs.sourceState
 		val rhsTrigger = rhs.trigger
 		// Composite triggers and their possible relations are NOT considered now
-		return RECEIVER_INTERACTION_TUPLE == InteractionTuple.STATES_AND_EVENTS &&
+		return RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.STATES_AND_EVENTS &&
 				lhsSource === rhsSource && lhsTrigger.helperEquals(rhsTrigger) ||
-			RECEIVER_INTERACTION_TUPLE == InteractionTuple.EVENTS && lhsTrigger.helperEquals(rhsTrigger)
+			RECEIVER_INTERACTION_TUPLE == InteractionCoverageCriterion.EVENTS && lhsTrigger.helperEquals(rhsTrigger)
 	}
 	
 	protected def getInteractionVariables(Region region) {
@@ -678,6 +678,6 @@ class AnnotationNamings {
 	
 }
 
-enum InteractionTuple {
+enum InteractionCoverageCriterion {
 	EVERY_INTERACTION, STATES_AND_EVENTS, EVENTS
 }
