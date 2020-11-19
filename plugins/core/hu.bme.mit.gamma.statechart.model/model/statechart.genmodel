@@ -144,6 +144,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Package/components"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Package/interfaces"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Package/topComponentArguments"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Package/annotations"/>
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//Component">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Component/ports"/>
@@ -162,6 +163,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute interface.ecore#//TimeSpecification/unit"/>
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//SimpleTrigger"/>
+    <genClasses image="false" ecoreClass="interface.ecore#//PackageAnnotation"/>
+    <genClasses ecoreClass="interface.ecore#//TopComponentArgumentsAnnotation"/>
+    <genClasses ecoreClass="interface.ecore#//UnfoldedPackageAnnotation"/>
   </genPackages>
   <genPackages prefix="PhaseModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
       ecorePackage="phase.ecore#/">
