@@ -1,0 +1,4 @@
+include "Antivalence/MO_ANTIVAL_CHK.ggen"
+include "Jelzo/COID.ggen"
+//include "System/Cascade/ANTIVAL_CHK_COID_System.ggen"
+//include "System/Synchronous/ANTIVAL_CHK_COID_System.ggen"

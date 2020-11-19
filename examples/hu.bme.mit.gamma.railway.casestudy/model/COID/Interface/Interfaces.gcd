@@ -1,0 +1,20 @@
+package interfaces
+import "Types/Types.gcd"
+interface StateMachine_Interface_For_VALTO_OAK {
+	in event RP_OAKKI
+	in event RP_OAKBE
+	out event POS_NYUGTA
+	out event NEG_NYUGTA
+}
+interface COIDOutSignalInterface {
+	out persistent event O_COID(O_COIDValue : Activeness)
+}
+interface P_N_Interface {
+	out persistent event p(pValue : MyBool)
+	out persistent event n(nValue : MyBool)
+}
+interface E_I_H_Interface {
+	out persistent event e(eValue : MyBool)
+	out persistent event i(iValue : MyBool)
+	out persistent event h(hValue : MyBool)
+}

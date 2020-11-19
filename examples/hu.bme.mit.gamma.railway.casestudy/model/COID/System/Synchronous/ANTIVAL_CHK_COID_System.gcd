@@ -1,0 +1,25 @@
+package antivalchk_coid_sync
+import "Interface/Interfaces.gcd"
+import "Antivalence/MO_ANTIVAL_CHK.gcd"
+import "Jelzo/COID.gcd"
+
+sync AntivalenceChecker_System [
+// System port for receiving the n an p values
+	port Antivalence_Input : requires P_N_Interface
+	// System port to transmit the Coid signals to the environment
+	port Coid_Output : provides COIDOutSignalInterface
+] {
+	// CR and FT antivalence checkers (random timeout parameters in ms)
+	component antival_chk_I_CR : AntivalenceChecker(503, true)
+	component antival_chk_I_FT : AntivalenceChecker(501, true)
+	// Coid components (random timeout parameters in ms)
+	component coid : bJbCOID_allapotgep(true, 497, 499)
+	// Transmitting the n and p inputs to the signaller
+	bind Antivalence_Input -> antival_chk_I_CR.Signals
+	bind Antivalence_Input -> antival_chk_I_FT.Signals
+	// Transmitting the Coid signals to the output
+	bind Coid_Output -> coid.StateMachine_OutPort
+	// 	Connecting the outputs of the antivalence checkers to the inputs of the Coid
+	channel [ antival_chk_I_CR.OutSignals ] -o)- [ coid.I_CR ]
+	channel [ antival_chk_I_FT.OutSignals ] -o)- [ coid.I_FT ]
+}

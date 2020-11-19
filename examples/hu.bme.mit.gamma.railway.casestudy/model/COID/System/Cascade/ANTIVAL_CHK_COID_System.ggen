@@ -1,0 +1,26 @@
+import "ANTIVAL_CHK_COID_System.gcd"
+
+code {
+	component : AntivalenceChecker_System
+	language : java
+}
+
+analysis {
+	component : AntivalenceChecker_System
+	language : UPPAAL
+	language : Theta
+	interaction-coverage
+	constraint : {
+		minimum-orchestrating-period : 495 ms
+		maximum-orchestrating-period : 495 ms
+	}
+}
+
+verification {
+	language : UPPAAL
+	file : "ANTIVAL_CHK_COID_System.xml"
+	property-file : ".ANTIVAL_CHK_COID_System.gpd"
+//	query-file : "ANTIVAL_CHK_COID_System.q"
+	optimize : true
+	test-language : java
+}
