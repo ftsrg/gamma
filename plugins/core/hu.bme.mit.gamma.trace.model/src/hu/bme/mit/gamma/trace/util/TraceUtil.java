@@ -183,7 +183,14 @@ public class TraceUtil {
 	}
 	
 	public boolean isCovered(ExecutionTrace covered, ExecutionTrace covering) {
-		return isCovered(covered.getSteps(), covering.getSteps());
+		List<Step> coveredTrace = covered.getSteps();
+		List<List<Step>> coveringTraces = identifySeparateTracesByReset(covering);
+		for (List<Step> coveringTrace : coveringTraces) {
+			if (isCovered(coveredTrace, coveringTrace)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean isCovered(List<Step> covered, List<Step> covering) {
