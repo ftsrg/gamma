@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -52,9 +53,12 @@ import hu.bme.mit.gamma.statechart.interface_.EventSource;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -132,6 +136,24 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			default:
 				throw new IllegalArgumentException("Not known event direction: " + eventDirection);
 		}
+	}
+	
+	public static List<Expression> getTopComponentArguments(Package unfoldedPackage) {
+		List<Expression> topComponentArguments = new ArrayList<Expression>();
+		for (PackageAnnotation annotation : unfoldedPackage.getAnnotations()) {
+			if (annotation instanceof TopComponentArgumentsAnnotation) {
+				TopComponentArgumentsAnnotation argumentsAnnotation =
+						(TopComponentArgumentsAnnotation) annotation;
+				topComponentArguments.addAll(argumentsAnnotation.getArguments());
+				return topComponentArguments; // There must be only one annotation
+			}
+		}
+		return topComponentArguments;
+	}
+	
+	public static boolean isUnfolded(Package gammaPackage) {
+		return gammaPackage.getAnnotations().stream().anyMatch(
+				it -> it instanceof UnfoldedPackageAnnotation);
 	}
 	
 	public static Set<Component> getAllComponents(Package parentPackage) {

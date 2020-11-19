@@ -57,6 +57,7 @@ class ModelUnfolder {
 			// would also be necessary to retarget. Therefore, the definition of interfaces and
 			// type declarations is possible only in packages different from the component package
 			it.name = it.name + "View"
+			it.annotations += createUnfoldedPackageAnnotation // Denoting that the package is unfolded
 		]
 		val originalComponent = gammaPackage.topComponent
 		// Clearing other components to prevent potential duplication of components

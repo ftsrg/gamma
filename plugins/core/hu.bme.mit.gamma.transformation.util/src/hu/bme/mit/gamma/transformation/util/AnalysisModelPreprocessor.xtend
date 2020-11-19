@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -44,6 +45,8 @@ class AnalysisModelPreprocessor {
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
+	
 	
 	def preprocess(Package gammaPackage, String targetFolderUri, String fileName) {
 		return gammaPackage.preprocess(#[], targetFolderUri, fileName)
@@ -58,7 +61,7 @@ class AnalysisModelPreprocessor {
 		var _package = trace.package
 		val component = trace.topComponent
 		// Transforming parameters if there are any
-		component.transformParameters(topComponentArguments)
+		component.transformTopComponentParameters(topComponentArguments)
 		// If it is a single statechart, we wrap it
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + component)
@@ -80,21 +83,27 @@ class AnalysisModelPreprocessor {
 		return _package.components.head
 	}
 	
-	def transformParameters(Component component, List<Expression> topComponentArguments) {
+	protected def transformTopComponentParameters(Component component,
+			List<Expression> topComponentArguments) {
+		if (topComponentArguments.nullOrEmpty) {
+			return
+		}
 		val _package = component.containingPackage
 		val parameters = component.parameterDeclarations
 		logger.log(Level.INFO, "Argument size: " + topComponentArguments.size + " - parameter size: " + parameters.size)
 		checkState(topComponentArguments.size <= parameters.size)
+		val annotation = createTopComponentArgumentsAnnotation
+		_package.annotations += annotation
 		// For code generation, not all (actually zero) parameters have to be bound
 		for (var i = 0; i < topComponentArguments.size; i++) {
 			val parameter = parameters.get(i)
-			val argument = topComponentArguments.get(i).clone(true, true)
+			val argument = topComponentArguments.get(i).clone
 			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
-			_package.topComponentArguments += argument // Saving top component expression
+			annotation.arguments += argument // Saving top component expression
 			val parameterConstant =  createConstantDeclaration => [
 				it.type = parameter.type
 				it.name = "__" + parameter.name + "__"
-				it.expression = argument.clone(true, true)
+				it.expression = argument.clone
 			]
 			_package.constantDeclarations += parameterConstant
 			// Changing the parameter references to constant references
