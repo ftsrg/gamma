@@ -96,6 +96,10 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("]", "{")) {
             c.setLinewrap(1).before(p.getFirst());
         }
+        // No space after @
+		for (Keyword at : f.findKeywords("@")) {
+            c.setNoSpace().after(at);
+        }
         // No space around guards 
         c.setNoSpace().around(f.getTransitionAccess().getGuardAssignment_7_1_1());
         // No space before parameters and arguments 
