@@ -12,6 +12,8 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import org.eclipse.emf.ecore.EObject
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class PropertyUnfolder {
 	
 	protected final PropertyPackage propertyPackage
@@ -29,6 +31,7 @@ class PropertyUnfolder {
 	
 	def execute() {
 		val newPropertyPackage = propertyPackage.unfold as PropertyPackage
+		newPropertyPackage.import += newTopComponent.containingPackage
 		newPropertyPackage.component = newTopComponent
 		return newPropertyPackage
 	}
@@ -47,10 +50,12 @@ class PropertyUnfolder {
 	
 	def dispatch EObject unfold(ComponentInstanceStateConfigurationReference reference) {
 		val instance = reference.instance
-		val newInstance = instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+		val newInstance = instance.newSimpleInstance
 		val region = reference.region
+		// TODO is this  getNewObject method correct, when the new region has fewer states due to reduction?
 		val newRegion = instance.getNewObject(region, newTopComponent)
 		val state = reference.state
+		// TODO is this getNewObject method correct, when the new states has fewer actions due to reduction?
 		val newState = instance.getNewObject(state, newTopComponent)
 		return reference.clone	=> [
 			it.instance = newInstance
@@ -61,7 +66,7 @@ class PropertyUnfolder {
 	
 	def dispatch EObject unfold(ComponentInstanceVariableReference reference) {
 		val instance = reference.instance
-		val newInstance = instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+		val newInstance = instance.newSimpleInstance
 		val variable = reference.variable
 		val newVariable = instance.getNewObject(variable, newTopComponent)
 		return reference.clone	=> [
@@ -72,7 +77,7 @@ class PropertyUnfolder {
 	
 	def dispatch EObject unfold(ComponentInstanceEventReference reference) {
 		val instance = reference.instance
-		val newInstance = instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+		val newInstance = instance.newSimpleInstance
 		val port = reference.port
 		val newPort = instance.getNewObject(port, newTopComponent)
 		return reference.clone	=> [
@@ -84,7 +89,7 @@ class PropertyUnfolder {
 	
 	def dispatch EObject unfold(ComponentInstanceEventParameterReference reference) {
 		val instance = reference.instance
-		val newInstance = instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+		val newInstance = instance.newSimpleInstance
 		val port = reference.port
 		val newPort = instance.getNewObject(port, newTopComponent)
 		return reference.clone	=> [
@@ -92,6 +97,21 @@ class PropertyUnfolder {
 			it.port = newPort
 			// Event and parameter are the same
 		]
+	}
+	
+	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
+//		val oldPackage = propertyPackage.component.containingPackage
+//		if (oldPackage.unfolded) {
+//			val statechartInstance = instance.componentInstanceHierarchy.last
+//			val newPackage = newTopComponent.containingPackage
+//			val newInstances = newPackage.allStatechartComponents.map[it.referencingComponentInstance]
+//			val equalInstances = newInstances.filter[it.helperEquals(statechartInstance)]
+//			val equalInstance = equalInstances.head
+//			return equalInstance.createInstanceReference
+//		}
+//		else {
+			return instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+//		}
 	}
 	
 	protected def ComponentInstanceReference createInstanceReference(ComponentInstance instance) {

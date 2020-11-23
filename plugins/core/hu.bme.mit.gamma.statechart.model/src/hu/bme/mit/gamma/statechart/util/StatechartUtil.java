@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -84,7 +85,15 @@ public class StatechartUtil extends ActionUtil {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (ReferenceExpression referenceExpression :
 				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
-			if (!(referenceExpression.eContainer() instanceof AssignmentStatement)) {
+			boolean isWritten = false;
+			EObject container = referenceExpression.eContainer();
+			if (container instanceof AssignmentStatement) {
+				AssignmentStatement assignment = (AssignmentStatement) container;
+				if (assignment.getLhs() == referenceExpression) {
+					isWritten = true;
+				}
+			}
+			if (!isWritten) {
 				Declaration declaration = referenceExpression.getDeclaration();
 				if (declaration instanceof VariableDeclaration) {
 					variables.add((VariableDeclaration) declaration);
@@ -98,6 +107,26 @@ public class StatechartUtil extends ActionUtil {
 		Set<VariableDeclaration> variables = getVariables(object);
 		variables.removeAll(getWrittenVariables(object));
 		variables.removeAll(getReadVariables(object));
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getOnlyIncrementedVariables(EObject object) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		for (AssignmentStatement assignmentStatement :
+				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
+			ReferenceExpression lhs = assignmentStatement.getLhs();
+			Expression rhs = assignmentStatement.getRhs();
+			Declaration lhsVariable = lhs.getDeclaration();
+			if (ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)
+					.stream().filter(it -> it != lhs && it.getDeclaration() == lhsVariable)
+					.count() ==
+				ecoreUtil.getSelfAndAllContentsOfType(rhs, ReferenceExpression.class)
+					.stream().filter(it -> it.getDeclaration() == lhsVariable)
+					.count()) {
+				// Every reference is from the rhs
+				variables.add((VariableDeclaration) lhsVariable);
+			}
+		}
 		return variables;
 	}
 	

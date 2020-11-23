@@ -39,6 +39,7 @@ class WrittenOnlyVariableReducer implements Reducer {
 	override execute() {
 		val assignments = root.getSelfAndAllContentsOfType(AssignmentStatement)
 		val writtenOnlyVariables = root.writtenOnlyVariables
+		writtenOnlyVariables += root.onlyIncrementedVariables // a := a + 1 can be deleted too
 		val deletableVariables = <Declaration>newHashSet
 		deletableVariables += root.unusedVariables
 		deletableVariables -= relevantVariables // An unused variable can still be relevant
