@@ -79,8 +79,9 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 
 		try {
 			// Adaptive
-			if (context instanceof AdaptiveContractAnnotation &&
-					reference == ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT) {
+			if (context instanceof AdaptiveContractAnnotation && (
+					reference == ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT ||
+					reference == ContractModelPackage.Literals.SCENARIO_CONTRACT_ANNOTATION__MONITORED_COMPONENT)) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
 				StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
 				Set<Component> allComponents = StatechartModelDerivedFeatures.getAllComponents(parentPackage);
