@@ -30,6 +30,11 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
+
+import static extension  hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
+
 
 /**
  * This class contains custom validation rules. 
@@ -48,10 +53,10 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
 	@Check
 	def checkRaiseEventAct(RaiseEventAct raiseEventAct) {
-		val step = raiseEventAct.eContainer as Step
+		val step = ecoreUtil.getContainerOfType(raiseEventAct, Step)
 		val realizationMode = raiseEventAct.port.interfaceRealization.realizationMode
 		val event = raiseEventAct.event
-		val eventDirection = (event.eContainer as EventDeclaration).direction
+		val eventDirection = ecoreUtil.getContainerOfType(event, EventDeclaration).direction
 		if (step.actions.contains(raiseEventAct)) {
 			// It should be an in event
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.OUT ||
@@ -59,7 +64,7 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 				error("This event is an out-event of the component.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 			}			
 		}
-		if (step.outEvents.contains(raiseEventAct)) {
+		else {
 			// It should be an out event
 			if (realizationMode == RealizationMode.PROVIDED && eventDirection == EventDirection.IN ||
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.OUT) {
@@ -76,15 +81,10 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
 	@Check
 	def checkInstanceState(InstanceState instanceState) {
-		val container = instanceState.eContainer
-		if (container instanceof Step) {
-			if (container.instanceStates.contains(instanceState)) {
-				val instance = instanceState.instance
-				val type = instance.type
-				if (!(type instanceof StatechartDefinition)) {
-					error("This is not a statechart instance.", TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE)
-				}
-			}
+		val instance = instanceState.instance
+		val type = instance.type
+		if (!(type instanceof StatechartDefinition)) {
+			error("This is not a statechart instance.", TraceModelPackage.Literals.INSTANCE_STATE__INSTANCE)
 		}
 	}
 	

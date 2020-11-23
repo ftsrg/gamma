@@ -17,9 +17,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//ExecutionTrace/cycle"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Step">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/outEvents"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/actions"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/instanceStates"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Step/asserts"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Act"/>
     <genClasses ecoreClass="trace.ecore#//InstanceStateConfiguration">
@@ -44,5 +43,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//Cycle/steps"/>
     </genClasses>
     <genClasses ecoreClass="trace.ecore#//Reset"/>
+    <genClasses ecoreClass="trace.ecore#//Assert"/>
+    <genClasses ecoreClass="trace.ecore#//NegatedAssert">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//NegatedAssert/negatedAssert"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

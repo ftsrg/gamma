@@ -11,14 +11,13 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.StateFormula
 import hu.bme.mit.gamma.property.util.PropertyUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
-import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class CoveredPropertyReducer {
 	
@@ -110,7 +109,7 @@ class CoveredPropertyReducer {
 		val instance = expression.instance
 		val state = expression.state
 		
-		for (stateConfiguration : step.instanceStates.filter(InstanceStateConfiguration)) {
+		for (stateConfiguration : step.instanceStateConfigurations) {
 			val stateInstance = stateConfiguration.instance
 			val stateVariable = stateConfiguration.state
 			if (instance.contains(stateInstance) && state.helperEquals(stateVariable)) {
@@ -124,7 +123,7 @@ class CoveredPropertyReducer {
 		val instance = expression.instance
 		val variable = expression.variable
 		
-		for (variableState : step.instanceStates.filter(InstanceVariableState)) {
+		for (variableState : step.instanceVariableStates) {
 			val stateInstance = variableState.instance
 			val stateVariable = variableState.declaration
 			if (instance.contains(stateInstance) && variable.helperEquals(stateVariable)) {

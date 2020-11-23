@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
@@ -35,6 +34,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceBackAnnotator {
 	
@@ -217,13 +217,13 @@ class TraceBackAnnotator {
 	
 	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
 			Set<State> activatedStates) {
-		val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
+		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {
 			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
 				EcoreUtil.delete(raiseEventAct)
 			}
 		}
-		val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
+		val instanceStates = step.instanceStateConfigurations
 		for (instanceState : instanceStates) {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors

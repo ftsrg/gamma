@@ -8,15 +8,13 @@ step {
 	assert {
 		raise secondaryOutput.displayRed
 		raise priorityOutput.displayRed
-		states {
-			crossroad_controller.Operating,
-			crossroad_controller.Init,
-			crossroad_prior.Normal,
-			crossroad_prior.Red,
-			crossroad_secondary.Normal,
-			crossroad_secondary.Red,
-			monitor.Other
-		}
+		crossroad_controller.Operating
+		crossroad_controller.Init
+		crossroad_prior.Normal
+		crossroad_prior.Red
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Other
 	}
 }
 step {
@@ -26,15 +24,13 @@ step {
 	}
 	assert {
 		raise priorityOutput.displayGreen
-		states {
-			crossroad_controller.Operating,
-			crossroad_controller.PriorityPrepares,
-			crossroad_prior.Normal,
-			crossroad_prior.Green,
-			crossroad_secondary.Normal,
-			crossroad_secondary.Red,
-			monitor.Red
-		}
+		crossroad_controller.Operating
+		crossroad_controller.PriorityPrepares
+		crossroad_prior.Normal
+		crossroad_prior.Green
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Red
 	}
 }
 step {
@@ -44,15 +40,13 @@ step {
 	}
 	assert {
 		raise priorityOutput.displayYellow
-		states {
-			crossroad_controller.Operating,
-			crossroad_controller.Secondary,
-			crossroad_prior.Normal,
-			crossroad_prior.Yellow,
-			crossroad_secondary.Normal,
-			crossroad_secondary.Red,
-			monitor.Green
-		}
+		crossroad_controller.Operating
+		crossroad_controller.Secondary
+		crossroad_prior.Normal
+		crossroad_prior.Yellow
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Green
 	}
 }
 step {
@@ -63,14 +57,12 @@ step {
 	assert {
 		raise secondaryOutput.displayGreen
 		raise priorityOutput.displayRed
-		states {
-			crossroad_controller.Operating,
-			crossroad_controller.SecondaryPrepares,
-			crossroad_prior.Normal,
-			crossroad_prior.Red,
-			crossroad_secondary.Normal,
-			crossroad_secondary.Green,
-			monitor.Other
-		}
+		crossroad_controller.Operating
+		crossroad_controller.SecondaryPrepares
+		crossroad_prior.Normal
+		crossroad_prior.Red
+		crossroad_secondary.Normal
+		crossroad_secondary.Green
+		monitor.Other
 	}
 }

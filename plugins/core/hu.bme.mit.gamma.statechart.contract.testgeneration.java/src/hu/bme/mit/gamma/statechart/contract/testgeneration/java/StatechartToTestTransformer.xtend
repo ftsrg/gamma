@@ -11,21 +11,23 @@
 package hu.bme.mit.gamma.statechart.contract.testgeneration.java
 
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.tracegeneration.StatechartContractToTraceTransformer
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
-import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
+import hu.bme.mit.gamma.trace.model.InstanceState
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.ElementCoverage
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class StatechartToTestTransformer {
 	
@@ -69,8 +71,16 @@ class StatechartToTestTransformer {
 				it.import = adaptiveContractAnnotation.monitoredComponent.containingPackage
 				it.component = adaptiveContractAnnotation.monitoredComponent
 				// No arguments supported yet
-				it.steps.forEach[it.instanceStates.clear] // Clearing instance state checks
 			]
+			// Clearing instance state checks
+			for (step : simpleStateExecutionTrace.steps) {
+				for (assertion : step.asserts) {
+					val lowermostAssertion = assertion.lowermostAssert
+					if (lowermostAssertion instanceof InstanceState) {
+						assertion.remove
+					}
+				}
+			}
 			
 			// Transforming traces from the referenced statecharts
 			val contractStates = newArrayList(simpleState)

@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class StatechartContractToTraceTransformer {
 	

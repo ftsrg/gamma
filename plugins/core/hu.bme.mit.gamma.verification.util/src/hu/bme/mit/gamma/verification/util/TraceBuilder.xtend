@@ -126,10 +126,11 @@ class TraceBuilder {
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = createRaiseEventAct(port, event, parameter, value)
-		val originalRaise = step.outEvents.findFirst[it.isOverWritten(eventRaise)]
+		val outEventRaises = step.asserts.filter(RaiseEventAct)
+		val originalRaise = outEventRaises.findFirst[it.isOverWritten(eventRaise)]
 		if (originalRaise === null) {
 			// This is the first raise
-			step.outEvents += eventRaise
+			step.asserts += eventRaise
 		}
 		else if (parameter !== null) {
 			// Already a raise has been done, setting this parameter too
@@ -143,7 +144,7 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
 		val type = variable.type.typeDefinition
-		step.instanceStates += createInstanceVariableState => [
+		step.asserts += createInstanceVariableState => [
 			it.instance = instance
 			it.declaration = variable
 			it.value = type.createLiteral(value)
@@ -152,7 +153,7 @@ class TraceBuilder {
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, Expression value) {
-		step.instanceStates += createInstanceVariableState => [
+		step.asserts += createInstanceVariableState => [
 			it.instance = instance
 			it.declaration = variable
 			it.value = value
@@ -162,7 +163,7 @@ class TraceBuilder {
 	// Instance states
 	
 	def addInstanceState(Step step, SynchronousComponentInstance instance, State state) {
-		step.instanceStates += createInstanceStateConfiguration => [
+		step.asserts += createInstanceStateConfiguration => [
 			it.instance = instance
 			it.state = state
 		]
