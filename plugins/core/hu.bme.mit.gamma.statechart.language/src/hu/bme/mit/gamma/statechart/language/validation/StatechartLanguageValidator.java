@@ -66,6 +66,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
+import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
@@ -312,6 +313,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			}
 		}
 		EcoreUtil2.getAllContentsOfType(_package, AdaptiveContractAnnotation.class).stream()
+			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
+		EcoreUtil2.getAllContentsOfType(_package, ScenarioContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
 		EcoreUtil2.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
