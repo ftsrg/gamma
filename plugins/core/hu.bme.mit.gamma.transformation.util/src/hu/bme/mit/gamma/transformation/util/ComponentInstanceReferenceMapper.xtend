@@ -1,9 +1,9 @@
 package hu.bme.mit.gamma.transformation.util
 
+import hu.bme.mit.gamma.expression.model.NamedElement
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import org.eclipse.emf.ecore.EObject
 
 class ComponentInstanceReferenceMapper {
 	// Singleton
@@ -17,17 +17,21 @@ class ComponentInstanceReferenceMapper {
 		return simpleInstanceHandler.getNewSimpleInstance(originalInstance, newTopComponent)
 	}
 	
-	def <T extends EObject> getNewObject(ComponentInstanceReference originalInstance,
+	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
 			T originalObject, Component newTopComponent) {
+		val originalName = originalObject.name
 		val newInstance = originalInstance.getNewSimpleInstance(newTopComponent)
 		val newComponent = newInstance.type
 		val contents = newComponent.getAllContentsOfType(originalObject.class)
 		for (content : contents) {
-			if (originalObject.helperEquals(content)) {
+			val name = content.name
+			// Structural properties during reduction change, names do not change
+			if (originalName == name) {
 				return content as T
 			}
 		}
-		throw new IllegalStateException("New object not found: " + originalObject)
+		throw new IllegalStateException("New object not found: " + originalObject + 
+			"Known Xtext bug: for generated gdp, the variables references are not resolved.")
 	}
 	
 }

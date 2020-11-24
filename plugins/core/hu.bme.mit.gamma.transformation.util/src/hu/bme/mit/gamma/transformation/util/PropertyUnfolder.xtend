@@ -2,7 +2,10 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
+import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateExpression
+import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -20,8 +23,9 @@ class PropertyUnfolder {
 	protected final Component newTopComponent
 	
 	protected final extension ComponentInstanceReferenceMapper componentInstanceReferenceMapper =
-		ComponentInstanceReferenceMapper.INSTANCE
-	protected final extension CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
+			ComponentInstanceReferenceMapper.INSTANCE
+	protected final extension CompositeModelFactory compositeFactory =
+			CompositeModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(PropertyPackage propertyPackage, Component newTopComponent) {
@@ -30,32 +34,30 @@ class PropertyUnfolder {
 	}
 	
 	def execute() {
-		val newPropertyPackage = propertyPackage.unfold as PropertyPackage
+		val newPropertyPackage = propertyPackage.unfoldPackage
 		newPropertyPackage.import += newTopComponent.containingPackage
 		newPropertyPackage.component = newTopComponent
 		return newPropertyPackage
 	}
 	
-	def dispatch EObject unfold(EObject object) {
-		val newObject = object.clone
-		val contents = newObject.eContents
+	def PropertyPackage unfoldPackage(PropertyPackage propertyPackage) {
+		val newPackage = propertyPackage.clone
+		val contents = newPackage.getAllContentsOfType(ComponentInstanceStateExpression)
 		val size = contents.size
 		for (var i = 0; i < size; i++) {
 			val content = contents.get(i)
 			val newContent = content.unfold
 			newContent.replace(content)
 		}
-		return newObject
+		return newPackage
 	}
 	
 	def dispatch EObject unfold(ComponentInstanceStateConfigurationReference reference) {
 		val instance = reference.instance
 		val newInstance = instance.newSimpleInstance
 		val region = reference.region
-		// TODO is this  getNewObject method correct, when the new region has fewer states due to reduction?
 		val newRegion = instance.getNewObject(region, newTopComponent)
 		val state = reference.state
-		// TODO is this getNewObject method correct, when the new states has fewer actions due to reduction?
 		val newState = instance.getNewObject(state, newTopComponent)
 		return reference.clone	=> [
 			it.instance = newInstance
@@ -99,19 +101,30 @@ class PropertyUnfolder {
 		]
 	}
 	
+	def dispatch EObject unfold(ComponentInstancePortReference reference) {
+		val instance = reference.instance
+		val newInstance = instance.newSimpleInstance
+		val port = reference.port
+		val newPort = instance.getNewObject(port, newTopComponent)
+		return reference.clone	=> [
+			it.instance = newInstance
+			it.port = newPort
+		]
+	}
+	
+	def dispatch EObject unfold(ComponentInstanceTransitionReference reference) {
+		val instance = reference.instance
+		val newInstance = instance.newSimpleInstance
+		val transitionId = reference.transition
+		val newTransitionId = instance.getNewObject(transitionId, newTopComponent)
+		return reference.clone	=> [
+			it.instance = newInstance
+			it.transition = newTransitionId
+		]
+	}
+	
 	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
-//		val oldPackage = propertyPackage.component.containingPackage
-//		if (oldPackage.unfolded) {
-//			val statechartInstance = instance.componentInstanceHierarchy.last
-//			val newPackage = newTopComponent.containingPackage
-//			val newInstances = newPackage.allStatechartComponents.map[it.referencingComponentInstance]
-//			val equalInstances = newInstances.filter[it.helperEquals(statechartInstance)]
-//			val equalInstance = equalInstances.head
-//			return equalInstance.createInstanceReference
-//		}
-//		else {
-			return instance.getNewSimpleInstance(newTopComponent).createInstanceReference
-//		}
+		return instance.getNewSimpleInstance(newTopComponent).createInstanceReference
 	}
 	
 	protected def ComponentInstanceReference createInstanceReference(ComponentInstance instance) {

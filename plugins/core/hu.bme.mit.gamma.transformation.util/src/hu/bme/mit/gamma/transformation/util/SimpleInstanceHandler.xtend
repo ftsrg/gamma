@@ -24,6 +24,8 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 
+import static com.google.common.base.Preconditions.checkState
+
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
 
@@ -174,20 +176,35 @@ class SimpleInstanceHandler {
 		return newInstances
 	}
 	
-	def getNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
-		return #[originalInstance].getNewSimpleInstances(newType).head
-	}
-	
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> originalInstances, Component newType) {
-		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
-		for (newInstance : newInstances) {
-			if (originalInstances.exists[it.contains(newInstance)]) {
-				accpedtedNewInstances += newInstance
-			}
+		for (originalInstance : originalInstances) {
+			accpedtedNewInstances += originalInstance.getNewSimpleInstance(newType)
 		}
 		return accpedtedNewInstances
 	}
+	
+	def getNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
+		val newInstances = newType.allSimpleInstances
+		val accpedtedNewInstances = newArrayList
+		val lastInstance = originalInstance.componentInstanceHierarchy.last
+		val oldPackage = lastInstance.containingPackage
+		val isUnfolded = oldPackage.isUnfolded
+		if (isUnfolded) {
+			val name = lastInstance.name
+			accpedtedNewInstances += newInstances.filter[it.name == name]
+		}
+		else {
+			for (newInstance : newInstances) {
+				if (originalInstance.contains(newInstance)) {
+					accpedtedNewInstances += newInstance
+				}
+			}
+		}
+		checkState(accpedtedNewInstances.size == 1)
+		return accpedtedNewInstances.head
+	}
+	
 	
 	def getNewAsynchronousSimpleInstances(ComponentInstanceReference original, Component newType) {
 		return newType.allAsynchronousSimpleInstances.filter[original.contains(it)].toList
