@@ -11,6 +11,8 @@
 package hu.bme.mit.gamma.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Persistency
@@ -19,9 +21,11 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import java.util.Collection
 import java.util.Set
 
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -127,7 +131,8 @@ class EnvironmentalActionFilter {
 					for (parameter : inEvent.parameterDeclarations) {
 						val xStsParameterVariables = parameter.getInputParameterVariables(systemPort)
 						val firstXStsParameterVariable = xStsParameterVariables.head
-						for (otherXStsParameterVariable : xStsParameterVariables.reject[it === firstXStsParameterVariable]) {
+						for (otherXStsParameterVariable : xStsParameterVariables
+								.reject[it === firstXStsParameterVariable]) {
 							xStsAssignments += createAssignmentAction => [
 								it.lhs = createReferenceExpression => [
 									it.declaration = otherXStsParameterVariable
@@ -142,6 +147,23 @@ class EnvironmentalActionFilter {
 			}
 		}
 		return xStsAssignments
+	}
+	
+	def void removeNonDeterministicActionsReferencingAssignedVariables(
+			Collection<AssignmentAction> variables, Action root) {
+		val assignedVariables = variables.map[it.lhs.declaration]
+			.filter(VariableDeclaration).toSet
+		assignedVariables.removeNonDeterministicActionsReferencingVariables(root)
+	}
+	
+	def void removeNonDeterministicActionsReferencingVariables(
+			Collection<VariableDeclaration> variables, Action root) {
+		val references = root.getAllContentsOfType(ReferenceExpression).filter[
+				variables.contains(it.declaration)]
+		val choices = references.map[it.getContainerOfType(NonDeterministicAction)].toSet
+		for (choice : choices) {
+			choice.remove
+		}
 	}
 	
 //	def bindEventsBoundToTheSameSystemPort(Action action, Component component) {

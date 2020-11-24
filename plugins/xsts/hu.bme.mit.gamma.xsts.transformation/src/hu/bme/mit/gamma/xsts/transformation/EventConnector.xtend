@@ -31,9 +31,9 @@ class EventConnector {
 	public static final EventConnector INSTANCE =  new EventConnector
 	protected new() {}
 	// Auxiliary objects
-	protected extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
-	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
-	protected extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
+	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
+	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	
 	def void connectEventsThroughChannels(XSTS xSts, CompositeComponent component) {
 		val xStsAssignmentActions = xSts.getAllContentsOfType(AssignmentAction) // Caching

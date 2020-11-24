@@ -347,6 +347,8 @@ class GammaToXSTSTransformer {
 		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
 		val oldInEventAction = xSts.inEventAction
 		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
+		// Optimization: removing old NonDeterministicActions 
+		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
 		xSts.inEventAction = createSequentialAction => [
 			it.actions += oldInEventAction
 			// Bind together ports connected to the same system port
