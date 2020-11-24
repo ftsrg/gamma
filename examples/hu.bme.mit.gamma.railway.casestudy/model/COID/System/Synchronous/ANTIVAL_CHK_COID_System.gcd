@@ -13,7 +13,7 @@ sync AntivalenceChecker_System [
 	component antival_chk_I_CR : AntivalenceChecker(503, true)
 	component antival_chk_I_FT : AntivalenceChecker(501, true)
 	// Coid components (random timeout parameters in ms)
-	component coid : bJbCOID_allapotgep(true, 497, 499)
+	component coid : bJbCOID_allapotgep(497, 499, 495)
 	// Transmitting the n and p inputs to the signaller
 	bind Antivalence_Input -> antival_chk_I_CR.Signals
 	bind Antivalence_Input -> antival_chk_I_FT.Signals
