@@ -4,20 +4,15 @@ import "Types/Types.gcd"
 import "Interface/Interfaces.gcd"
 
 @TransitionPriority = order-based
-statechart AntivalenceChecker(P_AVE : integer, P_TAROLAS : boolean) [
+statechart AntivalenceChecker(P_TAROLAS : boolean) [
+	port T : requires I_Timeout
 	port Signals : requires P_N_Interface
-	port OutSignals : provides E_I_H_Interface
+	port OutSignals : provides E_T_F_Interface
 ] {
-	timeout _0_rol_1_re_6Timeout
-	timeout _1_rol_0_ra_4Timoeut
-	timeout Hibatarolassal_0_rol_1_re_3Timeout
-	timeout Hibatarolassal_1_rol_0_ra_7Timeout
-	transition from _0_rol_1_re_6 to Hibaallapot_8 when timeout _0_rol_1_re_6Timeout
-	transition from _1_rol_0_ra_4 to Hibaallapot_8 when timeout _1_rol_0_ra_4Timoeut
-	transition from Hibatarolassal_1_rol_0_ra_7 to Hibaallapot_8 when timeout
-		Hibatarolassal_1_rol_0_ra_7Timeout
-	transition from Hibatarolassal_0_rol_1_re_3 to Hibaallapot_8 when timeout
-		Hibatarolassal_0_rol_1_re_3Timeout
+	transition from _0_rol_1_re_6 to Hibaallapot_8 when T.^timeout
+	transition from _1_rol_0_ra_4 to Hibaallapot_8 when T.^timeout
+	transition from Hibatarolassal_1_rol_0_ra_7 to Hibaallapot_8 when T.^timeout
+	transition from Hibatarolassal_0_rol_1_re_3 to Hibaallapot_8 when T.^timeout
 	transition from choice_16_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
 		Signals.n ::nValue = ::_1]
 	transition from choice_14_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [Signals.p
@@ -99,38 +94,36 @@ statechart AntivalenceChecker(P_AVE : integer, P_TAROLAS : boolean) [
 		// Original	
 	region main_region_of_mo_antivalchk {
 		state _1_0 {
-			entry / raise OutSignals.e(::_1); raise OutSignals.i(::_1); raise OutSignals.h(::_1);
+			entry / raise OutSignals.e(::_1); raise OutSignals.t(::_1); raise OutSignals.f(::_1);
 		}
 		state Hibatarolassal_0_1 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.i(::ERVENYTELEN); raise
-				OutSignals.h(::ERVENYTELEN);
+			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
+				OutSignals.f(::ERVENYTELEN);
 		}
 		state Hibatarolassal_1_2 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.i(::ERVENYTELEN); raise
-				OutSignals.h(::ERVENYTELEN);
+			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
+				OutSignals.f(::ERVENYTELEN);
 		}
 		state Hibatarolassal_0_rol_1_re_3 {
-			entry / set Hibatarolassal_0_rol_1_re_3Timeout := P_AVE ms; raise OutSignals.e(::ERVENYTELEN);
-				raise OutSignals.i(::ERVENYTELEN); raise OutSignals.h(::ERVENYTELEN);
+			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
+				OutSignals.f(::ERVENYTELEN);
 		}
 		state _1_rol_0_ra_4 {
-			entry / set _1_rol_0_ra_4Timoeut := P_AVE ms; raise OutSignals.e(::_1); raise
-				OutSignals.i(::_1); raise OutSignals.h(::_0);
+			entry / raise OutSignals.e(::_1); raise OutSignals.t(::_1); raise OutSignals.f(::_0);
 		}
 		state _0_5 {
-			entry / raise OutSignals.e(::_0); raise OutSignals.i(::_0); raise OutSignals.h(::_0);
+			entry / raise OutSignals.e(::_0); raise OutSignals.t(::_0); raise OutSignals.f(::_0);
 		}
 		state _0_rol_1_re_6 {
-			entry / set _0_rol_1_re_6Timeout := P_AVE ms; raise OutSignals.e(::_0); raise
-				OutSignals.i(::_1); raise OutSignals.h(::_0);
+			entry / raise OutSignals.e(::_0); raise OutSignals.t(::_1); raise OutSignals.f(::_0);
 		}
 		state Hibatarolassal_1_rol_0_ra_7 {
-			entry / set Hibatarolassal_1_rol_0_ra_7Timeout := P_AVE ms; raise OutSignals.e(::ERVENYTELEN);
-				raise OutSignals.i(::ERVENYTELEN); raise OutSignals.h(::ERVENYTELEN);
+			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
+				OutSignals.f(::ERVENYTELEN);
 		}
 		state Hibaallapot_8 {
-			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.i(::ERVENYTELEN); raise
-				OutSignals.h(::ERVENYTELEN);
+			entry / raise OutSignals.e(::ERVENYTELEN); raise OutSignals.t(::ERVENYTELEN); raise
+				OutSignals.f(::ERVENYTELEN);
 		}
 		choice choice_10_in_main_region_of_mo_antivalchk
 		choice choice_11_in_main_region_of_mo_antivalchk

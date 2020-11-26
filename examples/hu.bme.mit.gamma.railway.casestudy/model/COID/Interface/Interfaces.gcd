@@ -13,11 +13,14 @@ interface P_N_Interface {
 	out persistent event p(pValue : MyBool)
 	out persistent event n(nValue : MyBool)
 }
-interface E_I_H_Interface {
-	out persistent event e(eValue : MyBool)
-	out persistent event i(iValue : MyBool)
-	out persistent event h(hValue : MyBool)
+interface E_T_F_Interface {
+	out event e(eValue : MyBool)
+	out event t(tValue : MyBool)
+	out event f(fValue : MyBool)
 }
 interface I_Toggle {
 	out event toggle
+}
+interface I_Timeout {
+	out event ^timeout
 }

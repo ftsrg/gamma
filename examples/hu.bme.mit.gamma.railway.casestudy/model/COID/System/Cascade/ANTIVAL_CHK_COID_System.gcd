@@ -6,17 +6,25 @@ import "Jelzo/COID.gcd"
 cascade AntivalenceChecker_System [
 // System port for receiving the n an p values
 	port Antivalence_Input : requires P_N_Interface
+	// Timeouts for the components
+	port I_CR_Timeout : requires I_Timeout
+	port I_FT_Timeout : requires I_Timeout
+	port I_Coid_Timeout : requires I_Timeout
 	// System port to transmit the Coid signals to the environment
 	port Coid_Output : provides COIDOutSignalInterface
 ] {
-	// CR and FT antivalence checkers (random timeout parameters in ms)
-	component antival_chk_I_CR : AntivalenceChecker(503, true)
-	component antival_chk_I_FT : AntivalenceChecker(501, true)
+// CR and FT antivalence checkers (random timeout parameters in ms)
+	component antival_chk_I_CR : AntivalenceChecker(true)
+	component antival_chk_I_FT : AntivalenceChecker(true)
 	// Coid components (random timeout parameters in ms)
-	component coid : bJbCOID_allapotgep(497, 499, 495)
+	component coid : bJbCOID_allapotgep
 	// Transmitting the n and p inputs to the signaller
 	bind Antivalence_Input -> antival_chk_I_CR.Signals
 	bind Antivalence_Input -> antival_chk_I_FT.Signals
+	// Timeouts
+	bind I_CR_Timeout -> antival_chk_I_CR.T
+	bind I_FT_Timeout -> antival_chk_I_FT.T
+	bind I_Coid_Timeout -> coid.T
 	// Transmitting the Coid signals to the output
 	bind Coid_Output -> coid.StateMachine_OutPort
 	// 	Connecting the outputs of the antivalence checkers to the inputs of the Coid

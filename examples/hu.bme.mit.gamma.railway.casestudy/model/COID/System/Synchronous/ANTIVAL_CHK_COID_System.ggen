@@ -8,12 +8,9 @@ code {
 analysis {
 	component : AntivalenceChecker_System
 	language : UPPAAL
+	language : XSTS-UPPAAL
 	language : Theta
 	interaction-coverage
-	constraint : {
-		minimum-orchestrating-period : 495 ms
-		maximum-orchestrating-period : 495 ms
-	}
 	property-file : "ANTIVAL_CHK_COID_System.gpd"
 }
 

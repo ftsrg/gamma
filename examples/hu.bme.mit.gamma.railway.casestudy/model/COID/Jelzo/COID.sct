@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:sgraph="http://www.yakindu.org/sct/sgraph/2.0.0">
-  <sgraph:Statechart xmi:id="_S0ZU4CnXEeuKBqMCNN91kg" specification="interface I:&#xA;&#x9;in event toggle&#xA;interface I_CR:&#xA;&#x9;in event e : string&#xA;&#x9;in event i: string&#xA;&#x9;in event h : string&#xA;interface I_FT:&#xA;&#x9;in event e : string&#xA;&#x9;in event i: string&#xA;&#x9;in event h : string&#xA;interface O:&#xA;&#x9;out event COID : string&#xA;interface:&#xA;&#x9;var P_COID : boolean&#xA;&#x9;var P_COIDT : integer&#xA;&#x9;var P_COIDH : integer&#xA;&#x9;var P_COIDO : integer&#xA;&#x9;var RS_COID : string&#xA;&#x9;var offCount : integer&#xA;&#x9;var toggleCount : integer&#xA;&#x9;var released : boolean&#xA;&#x9;var timerSet : boolean&#xA;&#x9;&#xA;&#xA;" name="COID">
+  <sgraph:Statechart xmi:id="_S0ZU4CnXEeuKBqMCNN91kg" specification="interface I:&#xA;&#x9;in event toggle&#xA;interface I_CR:&#xA;&#x9;in event e : string&#xA;&#x9;in event t: string&#xA;&#x9;in event f : string&#xA;interface I_FT:&#xA;&#x9;in event e : string&#xA;&#x9;in event t: string&#xA;&#x9;in event f : string&#xA;interface O:&#xA;&#x9;out event COID : string&#xA;interface:&#xA;&#x9;var P_COID : boolean&#xA;&#x9;var P_COIDT : integer&#xA;&#x9;var P_COIDH : integer&#xA;&#x9;var P_COIDO : integer&#xA;&#x9;var RS_COID : string&#xA;&#x9;var offCount : integer&#xA;&#x9;var toggleCount : integer&#xA;&#x9;var released : boolean&#xA;&#x9;var timerSet : boolean&#xA;&#x9;&#xA;&#xA;" name="COID">
     <regions xmi:id="_S0bxIynXEeuKBqMCNN91kg" name="(J)COID Signaller">
       <vertices xsi:type="sgraph:Entry" xmi:id="_S032ACnXEeuKBqMCNN91kg">
         <outgoingTransitions xmi:id="_S06SQynXEeuKBqMCNN91kg" target="_qp_RACnXEeuKBqMCNN91kg"/>
@@ -9,7 +9,7 @@
         <outgoingTransitions xmi:id="_AufgUC3FEeuLAtaFID1oCA" specification="after P_COIDO ms" target="_qp_RACnXEeuKBqMCNN91kg"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_qp_RACnXEeuKBqMCNN91kg" specification="entry / raise O.COID : &quot;PASSIVE&quot;" name="TargetReleaseTimerNotRunning" incomingTransitions="_oaisACnZEeuKBqMCNN91kg _q3RNICnZEeuKBqMCNN91kg _AufgUC3FEeuLAtaFID1oCA _S06SQynXEeuKBqMCNN91kg">
-        <outgoingTransitions xmi:id="_nxVW8CnZEeuKBqMCNN91kg" specification="I_CR.h, I_FT.e [&#xD;&#xA;&#x9;valueof(I_CR.h) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.h) == &quot;1&quot;]" target="_jcvVQCnZEeuKBqMCNN91kg"/>
+        <outgoingTransitions xmi:id="_nxVW8CnZEeuKBqMCNN91kg" specification="I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.f) == &quot;1&quot;]" target="_jcvVQCnZEeuKBqMCNN91kg"/>
         <outgoingTransitions xmi:id="_qMmxcCnXEeuKBqMCNN91kg" specification="I.toggle" target="_S04dFynXEeuKBqMCNN91kg"/>
         <regions xmi:id="_1W3qcCnXEeuKBqMCNN91kg" name="TargetReleaseTimerNotRunningRegion">
           <vertices xsi:type="sgraph:State" xmi:id="_J-AtkCnYEeuKBqMCNN91kg" specification="entry / RS_COID = &quot;OFF&quot;" name="Transient" incomingTransitions="_V8bAUCnYEeuKBqMCNN91kg">
@@ -31,11 +31,11 @@
         </regions>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_jcvVQCnZEeuKBqMCNN91kg" specification="entry / raise O.COID : &quot;ACTIVE&quot;;&#xD;&#xA; RS_COID = &quot;ON&quot;; timerSet = true" name="TargetReleaseTimerRunning" incomingTransitions="_nxVW8CnZEeuKBqMCNN91kg">
-        <outgoingTransitions xmi:id="_oaisACnZEeuKBqMCNN91kg" specification="I_CR.h, I_FT.e [&#xD;&#xA;&#x9;valueof(I_CR.h) != &quot;'1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.h) != &quot;1&quot;]" target="_qp_RACnXEeuKBqMCNN91kg"/>
-        <outgoingTransitions xmi:id="_pizUkCnZEeuKBqMCNN91kg" specification="after P_COIDH ms [&#xD;&#xA;&#x9;valueof(I_CR.h) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.h) == &quot;1&quot;]" target="_mBE6QCnZEeuKBqMCNN91kg"/>
+        <outgoingTransitions xmi:id="_oaisACnZEeuKBqMCNN91kg" specification="I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) != &quot;'1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.f) != &quot;1&quot;]" target="_qp_RACnXEeuKBqMCNN91kg"/>
+        <outgoingTransitions xmi:id="_pizUkCnZEeuKBqMCNN91kg" specification="after P_COIDH ms [&#xD;&#xA;&#x9;valueof(I_CR.f) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.f) == &quot;1&quot;]" target="_mBE6QCnZEeuKBqMCNN91kg"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_mBE6QCnZEeuKBqMCNN91kg" specification="entry / raise O.COID : &quot;ACTIVE&quot;;&#xD;&#xA; RS_COID = &quot;ON&quot;" name="Release" incomingTransitions="_pizUkCnZEeuKBqMCNN91kg">
-        <outgoingTransitions xmi:id="_q3RNICnZEeuKBqMCNN91kg" specification="I_CR.h, I_FT.e [&#xD;&#xA;&#x9;valueof(I_CR.h) != &quot;1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.h) != &quot;1&quot;] / &#xD;&#xA;&#x9;released = true" target="_qp_RACnXEeuKBqMCNN91kg"/>
+        <outgoingTransitions xmi:id="_q3RNICnZEeuKBqMCNN91kg" specification="I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) != &quot;1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.f) != &quot;1&quot;] / &#xD;&#xA;&#x9;released = true" target="_qp_RACnXEeuKBqMCNN91kg"/>
       </vertices>
     </regions>
   </sgraph:Statechart>
