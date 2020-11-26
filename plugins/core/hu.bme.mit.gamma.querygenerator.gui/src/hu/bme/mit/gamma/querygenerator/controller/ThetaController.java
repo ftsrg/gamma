@@ -35,7 +35,8 @@ public class ThetaController extends AbstractController {
 
 	@Override
 	public String getParameters() {
-		return "";//"--domain EXPL";
+		// --domain EXPL --refinement SEQ_ITP --maxenum 250
+		return "";
 	}
 
 	@Override
