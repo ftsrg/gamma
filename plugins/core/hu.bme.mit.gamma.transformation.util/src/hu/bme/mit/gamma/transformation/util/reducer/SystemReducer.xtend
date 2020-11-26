@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
 import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
@@ -33,14 +34,13 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 
 class SystemReducer implements Reducer {
 	
 	protected final ViatraQueryEngine engine
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 
 	new(ResourceSet resourceSet) {
@@ -165,7 +165,7 @@ class SystemReducer implements Reducer {
 		for (transition : transitions) {
 			try {
 				val guard = transition.guard
-				if (!guard.evaluateBoolean) {
+				if (guard.definitelyFalseExpression) {
 					falseGuardedTransitions += transition
 				}
 			} catch (IllegalArgumentException e) {
