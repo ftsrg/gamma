@@ -58,7 +58,6 @@ class EventConnector {
 							val providedOutEventName = event.customizeOutputName(providedSimplePort, providedInstance)
 							val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == providedOutEventName]
 							if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
-//								xStsDeletableVariables += xStsOutEventVariable
 								xStsOutEventVariable.connectEvents(xStsInEventVariable, xStsAssignmentActions)
 								// In-parameters
 								for (parameter : event.parameterDeclarations) {
@@ -68,7 +67,6 @@ class EventConnector {
 										val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
 										val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
 										if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-//											xStsDeletableVariables += xStsOutParameterVariable
 											xStsOutParameterVariable.connectEvents(xStsInParameterVariable, xStsAssignmentActions)
 										}
 									}
@@ -81,7 +79,6 @@ class EventConnector {
 						val requiredOutEventName = event.customizeOutputName(requiredSimplePort, requiredInstance)
 						val xStsOutEventVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutEventName]
 						if (xStsOutEventVariable !== null) { // Can be null due to XSTS optimization
-//							xStsDeletableVariables += xStsOutEventVariable
 							val providedInEventName = event.customizeInputName(providedSimplePort, providedInstance)
 							val xStsInEventVariable = xSts.variableDeclarations.findFirst[it.name == providedInEventName]
 							if (xStsInEventVariable !== null) { // Can be null due to XSTS optimization
@@ -91,7 +88,6 @@ class EventConnector {
 									val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
 									val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
 									if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-//										xStsDeletableVariables += xStsOutParameterVariable
 										val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
 										val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
 										if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization

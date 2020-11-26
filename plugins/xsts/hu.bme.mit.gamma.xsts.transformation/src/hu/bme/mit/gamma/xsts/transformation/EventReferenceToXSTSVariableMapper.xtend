@@ -47,6 +47,18 @@ class EventReferenceToXSTSVariableMapper {
 		return xStsVariables
 	}
 	
+	def checkInputEventVariable(Event event, Port port) {
+		val inputEventVariable = event.getInputEventVariable(port)
+		checkState(inputEventVariable !== null)
+		return inputEventVariable
+	}
+	
+	def getInputEventVariable(Event event, Port port) {
+		val inputEventVariables = event.getInputEventVariables(port)
+		checkState(inputEventVariables.size <= 1)
+		return inputEventVariables.head
+	}
+	
 	def getInputEventVariables(Event event, Port port) {
 		checkState(port.inputEvents.contains(event))
 		val xStsVariables = newArrayList
@@ -66,6 +78,18 @@ class EventReferenceToXSTSVariableMapper {
 		return xStsVariables
 	}
 	
+	def checkInputParameterVariable(ParameterDeclaration parameter, Port port) {
+		val inputParameterVariable = parameter.getInputParameterVariable(port)
+		checkState(inputParameterVariable !== null)
+		return inputParameterVariable
+	}
+	
+	def getInputParameterVariable(ParameterDeclaration parameter, Port port) {
+		val inputParameterVariables = parameter.getInputParameterVariables(port)
+		checkState(inputParameterVariables.size <= 1)
+		return inputParameterVariables.head
+	}
+	
 	def getInputParameterVariables(ParameterDeclaration parameter, Port port) {
 		checkState(port.inputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
 		val xStsVariables = newArrayList
@@ -74,6 +98,68 @@ class EventReferenceToXSTSVariableMapper {
 			val statechart = simplePort.containingComponent
 			val instance = statechart.referencingComponentInstance
 			val xStsVariableName = parameter.customizeInName(simplePort, instance)
+			val xStsVariable = xSts.getVariable(xStsVariableName)
+			if (xStsVariable !== null) {
+				xStsVariables += xStsVariable
+			}
+			else {
+				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "::" + parameter.name)
+			}
+		}
+		return xStsVariables
+	}
+	
+	def checkOutputEventVariable(Event event, Port port) {
+		val outputEventVariable = event.getOutputEventVariables(port)
+		checkState(outputEventVariable !== null)
+		return outputEventVariable
+	}
+	
+	def getOutputEventVariable(Event event, Port port) {
+		val outputEventVariables = event.getOutputEventVariables(port)
+		checkState(outputEventVariables.size <= 1)
+		return outputEventVariables.head
+	}
+	
+	def getOutputEventVariables(Event event, Port port) {
+		checkState(port.outputEvents.contains(event))
+		val xStsVariables = newArrayList
+		for (simplePort : port.allConnectedSimplePorts) {
+			// One system port can be connected to multiple in-ports (if it is broadcast)
+			val statechart = simplePort.containingComponent
+			val instance = statechart.referencingComponentInstance
+			val xStsVariableName = event.customizeOutputName(simplePort, instance)
+			val xStsVariable = xSts.getVariable(xStsVariableName)
+			if (xStsVariable !== null) {
+				xStsVariables += xStsVariable
+			}
+			else {
+				logger.log(Level.INFO, "Not found XSTS variable for " + port.name + "." + event.name)
+			}
+		}
+		return xStsVariables
+	}
+	
+	def checkOutputParameterVariable(ParameterDeclaration parameter, Port port) {
+		val outputParameterVariable = parameter.getOutputParameterVariable(port)
+		checkState(outputParameterVariable !== null)
+		return outputParameterVariable
+	}
+	
+	def getOutputParameterVariable(ParameterDeclaration parameter, Port port) {
+		val outputParameterVariables = parameter.getOutputParameterVariables(port)
+		checkState(outputParameterVariables.size <= 1)
+		return outputParameterVariables.head
+	}
+	
+	def getOutputParameterVariables(ParameterDeclaration parameter, Port port) {
+		checkState(port.outputEvents.map[it.parameterDeclarations].flatten.contains(parameter))
+		val xStsVariables = newArrayList
+		for (simplePort : port.allConnectedSimplePorts) {
+			// One system port can be connected to multiple in-ports (if it is broadcast)
+			val statechart = simplePort.containingComponent
+			val instance = statechart.referencingComponentInstance
+			val xStsVariableName = parameter.customizeOutName(simplePort, instance)
 			val xStsVariable = xSts.getVariable(xStsVariableName)
 			if (xStsVariable !== null) {
 				xStsVariables += xStsVariable
