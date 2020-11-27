@@ -1,0 +1,3 @@
+direct-UPPAAL, sync, reduction/slicing-yes,
+
+

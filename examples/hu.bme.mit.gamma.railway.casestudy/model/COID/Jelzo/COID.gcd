@@ -15,8 +15,8 @@ statechart bJbCOID_allapotgep() [
 	var offCount : integer
 	var toggleCount : integer
 	var timerSet : boolean
-	transition from Celoldas_idozites_fut_8 to Oldas_4 when T.^timeout [I_CR.f ::fValue = ::_1 and
-		I_FT.f ::fValue = ::_1]
+	transition from Celoldas_idozites_fut_8 to Oldas_4 when T.^timeout && I_CR.f && I_FT.f [I_CR.f
+		::fValue = ::_1 and I_FT.f ::fValue = ::_1]
 	transition from Tranziens_2 to choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 when
 		T.^timeout
 	transition from Idozites_nem_fut_1 to Ervenytelen_0 when I_FT.e [I_FT.e ::eValue /= ::_0]
@@ -25,7 +25,7 @@ statechart bJbCOID_allapotgep() [
 	transition from Oldas_4 to Celoldas_idozites_nem_fut_5 when I_CR.f || I_FT.f [I_CR.f ::fValue /=
 		::_1 or I_FT.f ::fValue /= ::_1] / Release := true;
 	transition from init_5_in_main_region_of_bJbCOID_allapotgep to Celoldas_idozites_nem_fut_5
-	transition from Celoldas_idozites_nem_fut_5 to Celoldas_idozites_fut_8 when I_CR.f ||
+	transition from Celoldas_idozites_nem_fut_5 to Celoldas_idozites_fut_8 when I_CR.f &&
 		I_FT.f [I_CR.f ::fValue = ::_1 and I_FT.f ::fValue = ::_1]
 	transition from choice_6_in_region_1_in_Celoldas_idozites_nem_fut_5 to Idozites_nem_fut_1 when
 		I_FT.e [I_FT.e ::eValue = ::_0]

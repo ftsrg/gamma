@@ -32,7 +32,7 @@
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_jcvVQCnZEeuKBqMCNN91kg" specification="entry / raise O.COID : &quot;ACTIVE&quot;;&#xD;&#xA; RS_COID = &quot;ON&quot;; timerSet = true" name="TargetReleaseTimerRunning" incomingTransitions="_nxVW8CnZEeuKBqMCNN91kg">
         <outgoingTransitions xmi:id="_oaisACnZEeuKBqMCNN91kg" specification="I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) != &quot;'1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.f) != &quot;1&quot;]" target="_qp_RACnXEeuKBqMCNN91kg"/>
-        <outgoingTransitions xmi:id="_pizUkCnZEeuKBqMCNN91kg" specification="T.timeout [&#xD;&#xA;&#x9;valueof(I_CR.f) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.f) == &quot;1&quot;]" target="_mBE6QCnZEeuKBqMCNN91kg"/>
+        <outgoingTransitions xmi:id="_pizUkCnZEeuKBqMCNN91kg" specification="T.timeout, I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) == &quot;1&quot; &amp;&amp;&#xD;&#xA;&#x9;valueof(I_FT.f) == &quot;1&quot;]" target="_mBE6QCnZEeuKBqMCNN91kg"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_mBE6QCnZEeuKBqMCNN91kg" specification="entry / raise O.COID : &quot;ACTIVE&quot;;&#xD;&#xA; RS_COID = &quot;ON&quot;" name="Release" incomingTransitions="_pizUkCnZEeuKBqMCNN91kg">
         <outgoingTransitions xmi:id="_q3RNICnZEeuKBqMCNN91kg" specification="I_CR.f, I_FT.f [&#xD;&#xA;&#x9;valueof(I_CR.f) != &quot;1&quot; ||&#xD;&#xA;&#x9;valueof(I_FT.f) != &quot;1&quot;] / &#xD;&#xA;&#x9;released = true" target="_qp_RACnXEeuKBqMCNN91kg"/>
