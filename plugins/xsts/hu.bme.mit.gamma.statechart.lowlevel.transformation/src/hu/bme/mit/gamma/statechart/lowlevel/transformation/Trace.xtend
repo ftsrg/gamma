@@ -33,6 +33,8 @@ import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import java.util.List
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.SelectExpression
 
 package class Trace {
 
@@ -48,6 +50,7 @@ package class Trace {
 	final Map<TimeoutDeclaration, VariableDeclaration> timeoutDeclMappings = new HashMap<TimeoutDeclaration, VariableDeclaration>
 	final Map<ParameterDeclaration, VariableDeclaration> parDeclMappings = new HashMap<ParameterDeclaration, VariableDeclaration>
 	final Map<VariableDeclaration, VariableDeclaration> varDeclMappings = new HashMap<VariableDeclaration, VariableDeclaration>
+	final Map<ConstantDeclaration, VariableDeclaration> constDeclMappings = new HashMap<ConstantDeclaration, VariableDeclaration>
 	final Map<Region, hu.bme.mit.gamma.statechart.lowlevel.model.Region> regionMappings = new HashMap<Region, hu.bme.mit.gamma.statechart.lowlevel.model.Region>
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = new HashMap<State, hu.bme.mit.gamma.statechart.lowlevel.model.State>
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = new HashMap<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState>
@@ -56,7 +59,9 @@ package class Trace {
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = new HashMap<FunctionAccessExpression, List<VariableDeclaration>>
-	// Record mappings
+	// Select temporary variables
+	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = new HashMap<SelectExpression, List<VariableDeclaration>>
+	// Record mappings (handled simply as 'values', as Java generics cannot differentiate)
 	final Map<Pair<ValueDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordValDeclMappings = new HashMap()
 	
 	
@@ -326,6 +331,23 @@ package class Trace {
 		varDeclMappings.get(gammaVariable)
 	}
 	
+	// Constant declaration
+	def put(ConstantDeclaration gammaConstant, VariableDeclaration lowlevelVariable) {
+		checkNotNull(gammaConstant)
+		checkNotNull(lowlevelVariable)
+		constDeclMappings.put(gammaConstant, lowlevelVariable)
+	}
+
+	def isMapped(ConstantDeclaration gammaConstant) {
+		checkNotNull(gammaConstant)
+		constDeclMappings.containsKey(gammaConstant)
+	}
+
+	def get(ConstantDeclaration gammaConstant) {
+		checkNotNull(gammaConstant)
+		constDeclMappings.get(gammaConstant)
+	}
+	
 	// Timeout declaration
 	def put(TimeoutDeclaration gammaTimeout, VariableDeclaration lowlevelTimeout) {
 		checkNotNull(gammaTimeout)
@@ -461,6 +483,24 @@ package class Trace {
 		checkNotNull(functionAccessExpression)
 		returnVariableMappings.get(functionAccessExpression)
 	}
+	
+	// Select temporary variable
+	def put(SelectExpression selectExpression, List<VariableDeclaration> selectVariable) {
+		checkNotNull(selectExpression)
+		checkNotNull(selectVariable)
+		selectVariableMappings.put(selectExpression, selectVariable)
+	}
+
+	def isMapped(SelectExpression selectExpression) {
+		checkNotNull(selectExpression)
+		selectVariableMappings.containsKey(selectExpression)
+	}
+
+	def get(SelectExpression selectExpression) {
+		checkNotNull(selectExpression)
+		selectVariableMappings.get(selectExpression)
+	}
+	
 	
 	// Record
 	def put(Pair<ValueDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {

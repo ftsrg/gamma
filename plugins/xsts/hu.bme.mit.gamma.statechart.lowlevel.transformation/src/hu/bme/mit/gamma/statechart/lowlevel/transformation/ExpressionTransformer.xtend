@@ -10,58 +10,64 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
+import hu.bme.mit.gamma.action.model.TypeReferenceExpression
+import hu.bme.mit.gamma.expression.model.AccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.TypeDefinition
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.math.BigInteger
+import java.util.ArrayList
+import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
-import static extension com.google.common.collect.Iterables.getOnlyElement
 import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
+import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeDefinition
-import java.util.List
-import java.util.ArrayList
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
-import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.expression.model.RecordAccessExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.SelectExpression
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.ValueDeclaration
-import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
-import hu.bme.mit.gamma.expression.model.InitializableElement
 
 class ExpressionTransformer {
 	// Auxiliary object
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
@@ -88,14 +94,32 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		var result = new ArrayList<Expression>
 		if (functionInlining) {
+			if (trace.isMapped(expression)) {
+				for (elem : trace.get(expression)) {
+					result += createDirectReferenceExpression => [
+						it.declaration = elem
+					]
+				}
+			} else {
+				throw new IllegalArgumentException("Error transforming function access expression: element not found in trace!")
+			}
+		} else {
+			//TODO no inlining
+			throw new IllegalArgumentException("Currently only function inlining is possible!")
+		}
+		return result
+	}
+	
+	def dispatch List<Expression> transformExpression(SelectExpression expression) {
+		var result = new ArrayList<Expression>
+		if (trace.isMapped(expression)) {
 			for (elem : trace.get(expression)) {
 				result += createDirectReferenceExpression => [
 					it.declaration = elem
 				]
 			}
 		} else {
-			//TODO no inlining
-			throw new IllegalArgumentException("Currently only function inlining is possible!")
+			throw new IllegalArgumentException("Error transforming select expression: element not found in trace!")
 		}
 		return result
 	}
@@ -151,7 +175,8 @@ class ExpressionTransformer {
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
 			// Constant type declarations have to be transformed as their right hand side is inlined
-			val constantType = declaration.type
+			// TODO uncomment if inlining is chosen
+			/*val constantType = declaration.type
 			if (constantType instanceof TypeReference) {
 				val constantTypeDeclaration = constantType.reference
 				val typeDefinition = constantTypeDeclaration.type
@@ -164,7 +189,13 @@ class ExpressionTransformer {
 				}
 			}
 			// Inlining the referred constant
-			result += declaration.expression.transformExpression
+			result += declaration.expression.transformExpression*/
+			//////Uncomment up to this point and delete after if inlining is chosen
+			//TODO complex types
+			checkState(trace.isMapped(declaration), declaration)
+			result += createDirectReferenceExpression => [
+				it.declaration = trace.get(declaration)
+			]
 		} else {
 			checkState(declaration instanceof VariableDeclaration || 
 				declaration instanceof ParameterDeclaration, declaration)
@@ -316,7 +347,7 @@ class ExpressionTransformer {
 		var TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
-			var RecordTypeDefinition typeDef = getTypeDefinitionFromType(variable.type) as RecordTypeDefinition
+			var RecordTypeDefinition typeDef = variableType as RecordTypeDefinition
 			for (field : typeDef.fieldDeclarations) {
 				var innerField = new ArrayList<FieldDeclaration>
 				innerField.add(field)
@@ -337,6 +368,7 @@ class ExpressionTransformer {
 			])
 			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
 			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)
+			else if (variable instanceof ConstantDeclaration) trace.put(variable, transformed.head)
 			return transformed
 		}
 	}
@@ -408,6 +440,7 @@ class ExpressionTransformer {
 			])
 			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
 			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)
+			else if (variable instanceof ConstantDeclaration) trace.put(variable, transformed.head)
 		}
 		
 		return transformed
@@ -446,7 +479,7 @@ class ExpressionTransformer {
 		}
 	}
 	
-		
+	//TODO move to expressionUtil or use that of expressionUtil (maybe fix?)	
 	protected def TypeDefinition getTypeDefinitionFromType(Type type) {
 		// Resolve type reference (may be chain) or return type definition
 		if (type instanceof TypeReference) {
@@ -460,6 +493,8 @@ class ExpressionTransformer {
 	}
 	
 	protected def List<Pair<ValueDeclaration, List<FieldDeclaration>>> exploreComplexType(ValueDeclaration original, TypeDefinition type, List<FieldDeclaration> currentField) {
+		// Returns each possible valid(!) variable_field(_field...) combinations: the resulting decomposed variables
+		// e.g. rec_r1_rr1, rec_r1_rr2, rec_r2 (so rec_r1 not returned, as it is not the end of the list)
 		var List<Pair<ValueDeclaration, List<FieldDeclaration>>> result = newArrayList
 		
 		if (type instanceof RecordTypeDefinition) {
@@ -484,6 +519,8 @@ class ExpressionTransformer {
 	}
 	
 	protected def List<Object> collectAccessList(ReferenceExpression exp) {
+		// Returns the operands of (chained) access expression(s)
+		// e.g. a.r1[2].r2 returns [r1, 2, r2]
 		var List<Object> result = new ArrayList<Object>
 		if (exp instanceof ArrayAccessExpression) {
 			// if possible, add inner
@@ -537,5 +574,138 @@ class ExpressionTransformer {
 		}
 		return true
 	}
+	
+	protected def dispatch List<Expression> enumerateExpression(Expression expression) {
+		//REFERENCES
+		//else if access to array
+		//else if access to function (todo complex function)
+		//else if access to record
+		throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+	}
+	
+	protected def dispatch List<Expression> enumerateExpression(DirectReferenceExpression expression) {
+		var List<Expression> result = newArrayList
+		var type = expression.declaration.type
+		// Only array reference enumeration is supported
+		if (type instanceof ArrayTypeDefinition) {
+			// Create an access expression for each of the array elements (based on its size)
+			for(var i = 0; i < type.size.value.intValue; i++) {
+				val temp = i	//(constant to use inside a lambda)
+				result += createArrayAccessExpression => [
+					it.operand = createDirectReferenceExpression => [
+						it.declaration = expression.declaration
+					]
+					it.arguments += createIntegerLiteralExpression => [
+						it.value = BigInteger.valueOf(temp)
+					]
+				]
+			}
+		} else {
+			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+		}
+		return result
+	}
+	
+	protected def dispatch List<Expression> enumerateExpression(AccessExpression expression) {
+		// array-in-array, array-in-record, (array-from-function, array-from-select TODO) 
+		var List<Expression> result = newArrayList
+		
+		val referredDeclaration = expression.referredValues.getOnlyElement
+		val typeToAssign = referredDeclaration.type.typeDefinitionFromType
+		var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
+	
+		// if array type
+		var randomElem = originalLhsFields.get(0)			//equals a random accessible element
+		var randomElemKey = originalLhsFields.get(0).key	//equals referredDeclaration
+		var int i = 0
+		// if mapped as complex and is an array
+		if(trace.isMapped(randomElem) && 
+			trace.get(randomElem).type.typeDefinitionFromType instanceof ArrayTypeDefinition
+		) {
+			i = (trace.get(randomElem).type.typeDefinitionFromType as ArrayTypeDefinition).size.value.intValue
+		} 
+		// if mapped as simple variable and is an array
+		else if (randomElemKey instanceof VariableDeclaration && 
+					trace.isMapped(randomElemKey as VariableDeclaration) && 
+					trace.get(randomElemKey as VariableDeclaration).type.typeDefinitionFromType instanceof ArrayTypeDefinition
+		){
+			i = (trace.get(randomElemKey as VariableDeclaration).type.typeDefinitionFromType as ArrayTypeDefinition).size.value.intValue
+		} 
+		// if mapped as simple parameter and is an array
+		else if (randomElemKey instanceof ParameterDeclaration && 
+					trace.isMapped(randomElemKey as ParameterDeclaration) && 
+					trace.get(randomElemKey as ParameterDeclaration).type.typeDefinitionFromType instanceof ArrayTypeDefinition
+		){
+			i = (trace.get(randomElemKey as ParameterDeclaration).type.typeDefinitionFromType as ArrayTypeDefinition).size.value.intValue
+		} 
+		// if mapped as simple constant and is an array
+		else if (randomElemKey instanceof ConstantDeclaration && 
+					trace.isMapped(randomElemKey as ConstantDeclaration) && 
+					trace.get(randomElemKey as ConstantDeclaration).type.typeDefinitionFromType instanceof ArrayTypeDefinition
+		) {
+			i = (trace.get(randomElemKey as ConstantDeclaration).type.typeDefinitionFromType as ArrayTypeDefinition).size.value.intValue
+		} 
+		else {
+			throw new IllegalArgumentException("Cannot enumerate expression: " + expression)
+		}
+		
+		for(var j = 0; j < i; j++) {
+			val temp = j	//to use inside a lambda
+			result += createArrayAccessExpression => [
+				it.operand = expression.clone(true, true)
+				it.arguments += createIntegerLiteralExpression => [
+					it.value = BigInteger.valueOf(temp)
+				]
+			]
+		}
+
+		return result	
+	}
+	
+	protected def dispatch List<Expression> enumerateExpression(ArrayLiteralExpression expression) {
+		var result = new ArrayList<Expression>
+		result.addAll(expression.operands)
+		return result
+	}
+	
+	protected def dispatch List<Expression> enumerateExpression(IntegerRangeLiteralExpression expression) {
+		val result = new ArrayList<Expression>()
+		
+		if (!(expression.leftOperand instanceof IntegerLiteralExpression && expression.rightOperand instanceof IntegerLiteralExpression)) {
+			throw new IllegalArgumentException("For statements over non-literal ranges are currently not supported!: " + expression)
+		}
+		
+		//evaluate if possible
+		val left = expression.leftOperand as IntegerLiteralExpression
+		val start = expression.leftInclusive ? left.value.intValue : left.value.intValue + 1
+		val right = expression.rightOperand as IntegerLiteralExpression
+		val end = expression.rightInclusive ? right.value.intValue : right.value.intValue - 1
+		for (var i = start; i <= end; i++) {
+			val newLiteral = createIntegerLiteralExpression
+			newLiteral.value = BigInteger.valueOf(i)
+			result.add(newLiteral)
+		}
+		
+		return result
+	}
+
+	protected def dispatch List<Expression> enumerateExpression(TypeReferenceExpression expression) {
+		val result = new ArrayList<Expression>()
+		
+		// only enums are enumerable
+		var typeDefinition = expression.declaration.type.typeDefinitionFromType
+		if (!(typeDefinition instanceof EnumerationTypeDefinition)) {
+			throw new IllegalArgumentException("Referred type is not enumerable: " + typeDefinition)
+		}
+		// enumerate
+		for (literalDefinition : (typeDefinition as EnumerationTypeDefinition).literals) {
+			result += createEnumerationLiteralExpression => [
+				it.reference = literalDefinition
+			]
+		}
+		
+		return result
+	}	
+	
 	
 }

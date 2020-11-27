@@ -20,10 +20,19 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
+import hu.bme.mit.gamma.expression.model.TypeDefinition
 
 class ExpressionPreconditionTransformer {
 	// Auxiliary object
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
@@ -51,7 +60,83 @@ class ExpressionPreconditionTransformer {
 		return new LinkedList<Action>
 	}
 	
-	//TODO select expression
+	protected def dispatch List<Action> transformPrecondition(SelectExpression expression) {
+		//TODO integer range literal (maybe array literal / enum type?)
+		val result = new LinkedList<Action>
+		
+		// get the possible values
+		val innerExpression = expression.operand
+		val possibleValues = innerExpression.enumerateExpression
+		
+		if (innerExpression instanceof ReferenceExpression) {
+			// type:
+			var originalType = innerExpression.referredValues.onlyElement.type.typeDefinitionFromType
+			var List<String> recordAccessList = new ArrayList<String>	//TODO better (extract?) (and also AssignmentStatement, isSameAccessTree)
+			var accessList = innerExpression.collectAccessList
+			
+			var currentType = originalType
+			var currentList = accessList
+			while (currentList.size > 0) {
+				var currentElem = currentList.remove(0)
+				// record access
+				if (currentElem instanceof String && currentType instanceof RecordTypeDefinition) {
+					var fieldDeclarations = (currentType as RecordTypeDefinition).fieldDeclarations
+					for (field : fieldDeclarations) {
+						if (field.name == currentElem) {
+							currentType = field.type.typeDefinitionFromType
+						}
+					}
+				}
+				// array access
+				else if (currentElem instanceof Expression && currentType instanceof ArrayTypeDefinition) {
+					currentType = (currentType as ArrayTypeDefinition).elementType.typeDefinitionFromType
+				}
+				else {
+					throw new IllegalArgumentException("Access list and type hierarchy do not match!")
+				}
+			}
+			
+			//TODO complex type here (multiple variables, types)
+			var TypeDefinition tempVariableOriginalType = null
+			if (currentType instanceof ArrayTypeDefinition) {
+				tempVariableOriginalType = currentType.elementType.typeDefinitionFromType
+			} else {
+				throw new IllegalArgumentException("Cannot select from expression of type: " + tempVariableOriginalType)
+			}
+			
+			// create 'temporary' variable
+			val tempTemp = tempVariableOriginalType		// const to be used inside a lambda
+			val tempVariable = createVariableDeclarationStatement => [
+				it.variableDeclaration = createVariableDeclaration => [
+					it.name = "selectVariable" + expression.hashCode	//TODO name provider
+					it.type = tempTemp.transformType
+				]
+			]
+			var tempList = new ArrayList<VariableDeclaration>
+			tempList.add(tempVariable.variableDeclaration)
+			trace.put(expression, tempList)
+			result += tempVariable
+			
+			// create choice statement
+			result += createChoiceStatement => [
+				for (exp : possibleValues) {
+					it.branches += createBranch => [
+						it.guard = createTrueExpression
+						it.action = createAssignmentStatement => [
+							it.lhs = createDirectReferenceExpression => [
+								it.declaration = tempVariable.variableDeclaration
+							]
+							it.rhs = exp.clone(true, true)	//TODO is clone needed?
+						]
+					]
+				}
+			]
+		
+		} else {
+			throw new IllegalArgumentException("Cannot select from expression: " + innerExpression)
+		}
+		return result
+	}
 	
 	// TODO complex parameters and return types
 	protected def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
@@ -66,8 +151,7 @@ class ExpressionPreconditionTransformer {
 			}
 			// check recursion depth
 			if (currentRecursionDepth.get(function) > maxRecursionDepth) {
-				//TODO handle better
-				throw new IllegalArgumentException("Max recursion depth reached!")
+				throw new IllegalArgumentException("Cannot inline function access: max recursion depth reached!")
 			}
 			// create parameter variables
 			if (function.parameterDeclarations.size > 0) {
@@ -88,12 +172,12 @@ class ExpressionPreconditionTransformer {
 				result.addAll(precondition)
 				result.addAll(parameterVariables)
 			}
-			// create return variable if needed
+			// create return variable(s) if needed TODO complex here
 			var VariableDeclarationStatement returnVariable = null
 			if (!(function.type instanceof VoidTypeDefinition)) {
 				returnVariable = createVariableDeclarationStatement => [
 					it.variableDeclaration = createVariableDeclaration => [
-						it.name = function.name + function.hashCode
+						it.name = function.name + function.hashCode	//TODO name provider
 						it.type = function.type
 					]
 				]
@@ -105,7 +189,7 @@ class ExpressionPreconditionTransformer {
 			}
 			// transform the actions according to the type of the function
 			if (function instanceof LambdaDeclaration) {
-				//transform the expression (TODO needed? per def cannot have side effects)
+				//transform the expression (TODO is this needed? per def cannot have side effects)
 				result.addAll(function.expression.transformPrecondition)
 				if (returnVariable !== null) {
 					val assignment = createAssignmentStatement => [
@@ -115,11 +199,13 @@ class ExpressionPreconditionTransformer {
 					(assignment.lhs as DirectReferenceExpression).declaration = returnVariable.variableDeclaration
 					result += assignment
 				}
-			} else if (function instanceof ProcedureDeclaration) {
+			} 
+			else if (function instanceof ProcedureDeclaration) {
 				result.addAll(function.body.transformAction(new LinkedList<Action>))
-				actionTransformer.returnStack.pop()
+				actionTransformer.returnStack.pop()	//TODO pop in case of lambdas too?
 				
-			} else {
+			} 
+			else {
 				throw new IllegalArgumentException("Unknown function type: " + function.class)
 			}
 			// decrease recursion depth
