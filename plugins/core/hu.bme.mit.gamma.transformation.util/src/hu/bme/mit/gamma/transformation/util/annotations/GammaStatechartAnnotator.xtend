@@ -414,6 +414,9 @@ class GammaStatechartAnnotator {
 						interactionCoverableTransitions.contains(
 							it.raiseEventAction.containingTransitionOrState)) && 
 					interactionCoverableTransitions.contains(it.receivingTransition)]
+				// Filtering definitely bad arguments
+				.reject[it.receivingTransition.guard.areDefinitelyFalseArguments(
+					it.inPort, it.raisedEvent, it.raiseEventAction.arguments)]
 		
 		val raisedEvents = relevantMatches.map[it.raisedEvent].toSet // Set, so one event is set only once
 		// Creating event parameters

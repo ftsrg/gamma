@@ -693,6 +693,10 @@ private pattern triggerToTriggerThroughAndTriggers(parentTrigger : Trigger, trig
 	find andTriggerToTrigger+(parentTrigger, trigger);
 }
 
+private pattern anyBinaryTriggerToTrigger(binaryTrigger : BinaryTrigger, trigger : Trigger) {
+	find binaryTriggerToTrigger(binaryTrigger, trigger, _);
+}
+
 private pattern binaryTriggerToTrigger(binaryTrigger : BinaryTrigger, trigger : Trigger, binaryType : BinaryType) {
 	BinaryTrigger.type(binaryTrigger, binaryType);
 	BinaryTrigger.leftOperand(binaryTrigger, trigger);
@@ -713,19 +717,15 @@ private pattern eventTriggers(trigger : EventTrigger, port : Port, event : Event
 
 // Interaction coverage
 
-private pattern triggerToTriggerThroughOrTriggers(parentTrigger : Trigger, trigger : Trigger) {
+private pattern triggerToTrigger(parentTrigger : Trigger, trigger : Trigger) {
 	parentTrigger == trigger;
 } or {
-	find orTriggerToTrigger+(parentTrigger, trigger);
-}
-
-private pattern orTriggerToTrigger(orTrigger : BinaryTrigger, trigger : Trigger) {
-	find binaryTriggerToTrigger(orTrigger, trigger, BinaryType::OR);
+	find anyBinaryTriggerToTrigger+(parentTrigger, trigger);
 }
 
 private pattern transitionOrEventTrigger(transition : Transition, inPort : Port, raisedEvent : Event) {
 	Transition.trigger(transition, parentTrigger);
-	find triggerToTriggerThroughOrTriggers(parentTrigger, trigger);
+	find triggerToTrigger(parentTrigger, trigger);
 	find eventTriggers(trigger, inPort, raisedEvent);
 }
 

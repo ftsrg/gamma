@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.statechart.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -35,6 +36,8 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
@@ -160,6 +163,26 @@ public class StatechartUtil extends ActionUtil {
 		binaryTrigger.setLeftOperand(oldTrigger);
 		binaryTrigger.setRightOperand(newTrigger);
 		return binaryTrigger;
+	}
+	
+	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
+			List<Expression> arguments) {
+		Expression clonedGuard = ecoreUtil.clone(guard);
+		List<EventParameterReferenceExpression> parameterReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(clonedGuard,
+						EventParameterReferenceExpression.class);
+		for (EventParameterReferenceExpression parameterReference : parameterReferences) {
+			Port referredPort = parameterReference.getPort();
+			Event referredEvent = parameterReference.getEvent();
+			if (port == referredPort && event == referredEvent) {
+				ParameterDeclaration referredParameter = parameterReference.getParameter();
+				int index = ecoreUtil.getIndex(referredParameter);
+				Expression argument = arguments.get(index);
+				Expression clonedArgument = ecoreUtil.clone(argument);
+				ecoreUtil.replace(clonedArgument, parameterReference);
+			}
+		}
+		return isDefinitelyFalseExpression(clonedGuard);
 	}
 	
 	public int evaluateMilliseconds(TimeSpecification time) {
