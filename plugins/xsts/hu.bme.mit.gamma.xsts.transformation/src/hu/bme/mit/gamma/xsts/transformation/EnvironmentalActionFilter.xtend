@@ -160,7 +160,9 @@ class EnvironmentalActionFilter {
 			Collection<VariableDeclaration> variables, Action root) {
 		val references = root.getAllContentsOfType(ReferenceExpression).filter[
 				variables.contains(it.declaration)]
-		val choices = references.map[it.getContainerOfType(NonDeterministicAction)].toSet
+		val choices = references.map[it.getContainerOfType(NonDeterministicAction)]
+				.filterNull // If something is not contained by NonDeterministicAction
+				.toSet
 		for (choice : choices) {
 			choice.remove
 		}
