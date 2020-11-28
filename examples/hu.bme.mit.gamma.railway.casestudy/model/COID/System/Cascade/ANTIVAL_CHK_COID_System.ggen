@@ -1,14 +1,14 @@
 import "ANTIVAL_CHK_COID_System.gcd"
 
-code {
-	component : AntivalenceChecker_System
-	language : java
-}
+//code {
+//	component : AntivalenceChecker_System
+//	language : java
+//}
 
 analysis {
 	component : AntivalenceChecker_System
-	language : UPPAAL
-	language : XSTS-UPPAAL
+//	language : UPPAAL
+//	language : XSTS-UPPAAL
 	language : Theta
 	interaction-coverage
 	property-file : "ANTIVAL_CHK_COID_System.gpd"

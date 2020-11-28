@@ -3,7 +3,7 @@ package mo_antivalchk
 import "Types/Types.gcd"
 import "Interface/Interfaces.gcd"
 
-@TransitionPriority = order-based
+//@TransitionPriority = order-based
 statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	port T : requires I_Timeout
 	port Signals : requires P_N_Interface
@@ -49,6 +49,10 @@ statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	transition from choice_15_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
 		Signals.n ::nValue = ::_0]
 	transition from Hibatarolassal_0_1 to choice_11_in_main_region_of_mo_antivalchk when cycle
+	transition from choice_11_in_main_region_of_mo_antivalchk to
+		Hibatarolassal_0_rol_1_re_3 [Signals.p ::pValue = ::_0 and Signals.n ::nValue = ::_0 or
+		Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or Signals.p ::pValue = ::ERVENYTELEN or
+		Signals.n ::nValue = ::ERVENYTELEN]
 	transition from choice_11_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1 [else] // Added else branch
 	transition from Hibatarolassal_1_rol_0_ra_7 to choice_14_in_main_region_of_mo_antivalchk when
 		cycle [Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and
@@ -71,26 +75,22 @@ statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	transition from choice_18_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
 		Signals.n ::nValue = ::_0]
 	transition from _1_0 to choice_10_in_main_region_of_mo_antivalchk when cycle
-	transition from choice_10_in_main_region_of_mo_antivalchk to _1_0 [else] // Added else branch
 	transition from choice_10_in_main_region_of_mo_antivalchk to _0_5 [Signals.p ::pValue = ::_0 and
 		Signals.n ::nValue = ::_1]
+	transition from choice_10_in_main_region_of_mo_antivalchk to _1_0 [else] // Added else branch
 	transition from Hibatarolassal_1_2 to choice_16_in_main_region_of_mo_antivalchk when cycle
 	transition from choice_16_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [else] // Added else branch
 	transition from choice_17_in_main_region_of_mo_antivalchk to Hibatarolassal_1_2 [Signals.p ::pValue
 		= ::_1 and Signals.n ::nValue = ::_0 and P_TAROLAS = true]
 	transition from _0_5 to choice_12_in_main_region_of_mo_antivalchk when cycle
-	transition from choice_12_in_main_region_of_mo_antivalchk to _0_5 [else] // Added else branch
 	transition from choice_12_in_main_region_of_mo_antivalchk to _1_0 [Signals.p ::pValue = ::_1 and
 		Signals.n ::nValue = ::_0]
+	transition from choice_12_in_main_region_of_mo_antivalchk to _0_5 [else] // Added else branch
 	transition from _0_rol_1_re_6 to choice_15_in_main_region_of_mo_antivalchk when cycle [Signals.p
 		::pValue = ::_1 and Signals.n ::nValue = ::_0 or Signals.p ::pValue = ::_0 and Signals.n
 		::nValue = ::_1]
 	transition from choice_18_in_main_region_of_mo_antivalchk to Hibatarolassal_0_1 [Signals.p
 		::pValue = ::_0 and Signals.n ::nValue = ::_1]
-	transition from choice_11_in_main_region_of_mo_antivalchk to
-		Hibatarolassal_0_rol_1_re_3 [Signals.p ::pValue = ::_0 and Signals.n ::nValue = ::_0 or
-		Signals.p ::pValue = ::_1 and Signals.n ::nValue = ::_1 or Signals.p ::pValue = ::ERVENYTELEN or
-		Signals.n ::nValue = ::ERVENYTELEN]
 		// Original	
 	region main_region_of_mo_antivalchk {
 		state _1_0 {

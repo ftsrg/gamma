@@ -7,11 +7,11 @@ interface StateMachine_Interface_For_VALTO_OAK {
 	out event NEG_NYUGTA
 }
 interface COIDOutSignalInterface {
-	out persistent event O_COID(O_COIDValue : Activeness)
+	out /*persistent*/ event O_COID(O_COIDValue : Activeness)
 }
 interface P_N_Interface {
-	out persistent event p(pValue : MyBool)
-	out persistent event n(nValue : MyBool)
+	out /*persistent*/ event p(pValue : MyBool)
+	out /*persistent*/ event n(nValue : MyBool)
 }
 interface E_T_F_Interface {
 	out event e(eValue : MyBool)
