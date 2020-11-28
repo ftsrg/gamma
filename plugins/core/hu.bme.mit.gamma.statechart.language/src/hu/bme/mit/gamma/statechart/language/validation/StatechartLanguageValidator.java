@@ -432,6 +432,24 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 	
+	@Check
+	public void checkElseTransitionPriority(Transition transition) {
+		if (StatechartModelDerivedFeatures.isElse(transition)) {
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+			TransitionPriority priority = statechart.getTransitionPriority();
+			if (priority == TransitionPriority.ORDER_BASED) {
+				StateNode source = transition.getSourceState();
+				List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+				int size = outgoingTransitions.size();
+				if (outgoingTransitions.get(size - 1) != transition) {
+					warning("This is an else transition, and its priority is bigger than some other transitions " +
+						"going out of the same state, as the transition priority is set to " + TransitionPriority.ORDER_BASED,
+						CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+				}
+			}
+		}
+	}
+	
 	public boolean needsTrigger(Transition transition) {
 		return !(transition.getSourceState() instanceof EntryState || transition.getSourceState() instanceof ChoiceState ||
 				transition.getSourceState() instanceof MergeState || transition.getSourceState() instanceof ForkState ||

@@ -167,6 +167,9 @@ public class StatechartUtil extends ActionUtil {
 	
 	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
 			List<Expression> arguments) {
+		if (guard == null) {
+			return false;
+		}
 		Expression clonedGuard = ecoreUtil.clone(guard);
 		List<EventParameterReferenceExpression> parameterReferences =
 				ecoreUtil.getSelfAndAllContentsOfType(clonedGuard,

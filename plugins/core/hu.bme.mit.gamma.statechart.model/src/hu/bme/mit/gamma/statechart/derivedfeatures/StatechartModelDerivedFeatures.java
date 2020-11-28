@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
@@ -960,6 +961,10 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	public static boolean isEmpty(Transition transition) {
 		return transition.getTrigger() == null && transition.getGuard() == null &&
 			transition.getEffects().isEmpty();
+	}
+	
+	public static boolean isElse(Transition transition) {
+		return transition.getGuard() instanceof ElseExpression;
 	}
 	
 	public static boolean isLoop(Transition transition) {
