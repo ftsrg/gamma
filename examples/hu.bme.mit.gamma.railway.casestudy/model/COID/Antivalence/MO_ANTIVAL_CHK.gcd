@@ -3,7 +3,7 @@ package mo_antivalchk
 import "Types/Types.gcd"
 import "Interface/Interfaces.gcd"
 
-//@TransitionPriority = order-based
+@TransitionPriority = order-based
 statechart AntivalenceChecker(P_TAROLAS : boolean) [
 	port T : requires I_Timeout
 	port Signals : requires P_N_Interface
