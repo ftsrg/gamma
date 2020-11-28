@@ -78,7 +78,7 @@ class ActionTransformer {
 	protected final boolean functionInlining
 	protected final int maxRecursionDepth
 	// Etc
-	protected Stack<VariableDeclaration> returnStack = new Stack<VariableDeclaration>();
+	protected Stack<List<VariableDeclaration>> returnStack = new Stack<List<VariableDeclaration>>();
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth, String assertionVariableName) {
 		this.trace = trace
@@ -230,17 +230,25 @@ class ActionTransformer {
 		var result = new LinkedList<Action>
 		if (action.expression !== null) {
 			val precondition = action.expression.transformPrecondition
-			val transformedAction = createAssignmentStatement => [
-				it.lhs = createDirectReferenceExpression => [
-					//it.declaration = returnStack.pop()
-					it.declaration = returnStack.peek()
-				]
-				it.rhs = action.expression.transformExpression.getOnlyElement
-			]
 			result.addAll(precondition)
-			result.add(transformedAction)
+			
+			val transformExpression = action.expression.transformExpression
+			val returnVariableDeclarations = returnStack.peek()
+			println("RetVarSize:" + returnVariableDeclarations.size)
+			for (var i = 0; i < returnVariableDeclarations.size; i++) {
+				val index = i
+				val transformedAction = createAssignmentStatement => [
+					it.lhs = createDirectReferenceExpression => [
+						it.declaration = returnVariableDeclarations.get(index)
+					]
+					it.rhs = transformExpression.get(index)
+				]
+				println("LHS:" + transformedAction.lhs)
+				println("RHS:" + transformedAction.rhs)
+				result += transformedAction
+			}
 		}
-		// Return the result
+		// Return the result (branch terminates, so following discarded)
 		return result
 	}
 	
@@ -483,7 +491,8 @@ class ActionTransformer {
 		// Transform rhs and create action
 		val List<Expression> lowlevelRhs = new ArrayList<Expression>
 		lowlevelRhs += action.rhs.transformExpression
-		if (lowlevelLhs.size != lowlevelRhs.size) {	
+		if (lowlevelLhs.size != lowlevelRhs.size) {
+			println("llrhs:" + lowlevelRhs)	
 			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
 		}
 		for (var i = 0; i < lowlevelLhs.size; i++) {
@@ -515,7 +524,7 @@ class ActionTransformer {
 		result.addAll(lowlevelPrecondition)
 		// If there is an assertion variable, branch and assign, otherwise discard
 		val lhsVariable = trace.getAssertionVariable(assertionVariableName)
-		if (lhsVariable !== null) {
+		if (lhsVariable !== null) {	// if there is an assertion variable
 			result += createIfStatement => [
 				it.conditionals += createBranch => [
 					it.guard = action.assertion.transformExpression.getOnlyElement
@@ -543,7 +552,7 @@ class ActionTransformer {
 				]
 			]
 			
-		} else {
+		} else {	// ignore assertion and continue
 			// Create new following-context variable and transform the following-context
 			var newFollowing = new LinkedList<Action>
 			newFollowing.addAll(following)
