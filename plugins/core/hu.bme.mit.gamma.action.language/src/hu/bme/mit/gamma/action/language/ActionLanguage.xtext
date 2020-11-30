@@ -173,21 +173,17 @@ AssignableDirectReferenceExpression returns ConstraintModel::ReferenceExpression
 		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration]
 ;
 
-// Type reference expression (~enum in ForStatement)
-/*@Override
-PrimaryExpression returns ConstraintModel::Expression: 
-	  TypeReferenceExpression |
-	  DirectReferenceExpression |
-	 '(' Expression ')'
-;*/
-
-
-/* @Override 
-DirectReferenceExpression returns ConstraintModel::Expression:
-	{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::Declaration] | 
-	LiteralExpression
-;*/
-
 TypeReferenceExpression returns ConstraintModel::Expression: 
-	  'type' {ActionModel::TypeReferenceExpression} declaration=[ConstraintModel::TypeDeclaration]
+	  '«' {ActionModel::TypeReferenceExpression} declaration=[ConstraintModel::TypeDeclaration] '»'
+;
+
+@Override
+DirectReferenceExpression returns ConstraintModel::Expression:
+		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration] | 
+		 TypeSelectExpression |
+		LiteralExpression
+;
+
+TypeSelectExpression returns ConstraintModel::Expression: 
+	{ConstraintModel::SelectExpression} operand=TypeReferenceExpression '.' 'select'
 ;

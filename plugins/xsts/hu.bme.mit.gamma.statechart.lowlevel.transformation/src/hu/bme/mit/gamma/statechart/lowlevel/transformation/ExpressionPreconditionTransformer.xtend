@@ -32,6 +32,9 @@ import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import java.util.stream.Collectors
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
+import hu.bme.mit.gamma.action.model.TypeReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 
 class ExpressionPreconditionTransformer {
 	// Auxiliary object
@@ -67,22 +70,39 @@ class ExpressionPreconditionTransformer {
 	
 	protected def dispatch List<Action> transformPrecondition(SelectExpression expression) {
 		val result = new LinkedList<Action>
-		
-		// get the possible values
+		// get the possible values (enumerate & transform)
 		val innerExpression = expression.operand
-		val possibleValues = innerExpression.enumerateExpression
-		
-		if (innerExpression instanceof ReferenceExpression) {
+		// 'temporary' variable(s)
+		val List<VariableDeclaration> tempVariableDeclarations = newArrayList
+		val List<VariableDeclarationStatement> tempVariables = newArrayList 
+		// set temporary variable(s)
+		if (innerExpression instanceof TypeReferenceExpression) {
+			var originalType = innerExpression.declaration.type.findTypeDefinitionOfType
+			if (originalType instanceof EnumerationTypeDefinition) {
+				// pseudo-high-level type reference needed to transform the type declaration too (if not yet transformed)
+				val otr = createTypeReference => [
+					it.reference = innerExpression.declaration
+				]
+				tempVariableDeclarations += createVariableDeclaration => [
+					it.name = new NameProvider(expression).name
+					it.type = otr.transformType
+				]
+				trace.put(expression, tempVariableDeclarations)
+				tempVariables += tempVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
+			} else {
+				throw new IllegalArgumentException("Cannot select from expression of type: " + originalType)
+			}
+		}
+		else if (innerExpression instanceof ReferenceExpression) {
 			// get variable type
 			var originalType = innerExpression.referredValues.onlyElement.type.typeDefinitionFromType
-			var List<String> recordAccessList = new ArrayList<String>	//TODO better (extract?) (and also AssignmentStatement / isSameAccessTree)
 			var accessList = innerExpression.collectAccessList
 			
-			var currentType = originalType
+			var currentType = originalType	//TODO extract this (~with other sameAccessTree code blocks)
 			var currentList = accessList
 			while (currentList.size > 0) {
 				var currentElem = currentList.remove(0)
-				// record access
+				// if record access
 				if (currentElem instanceof String && currentType instanceof RecordTypeDefinition) {
 					var fieldDeclarations = (currentType as RecordTypeDefinition).fieldDeclarations
 					for (field : fieldDeclarations) {
@@ -91,7 +111,7 @@ class ExpressionPreconditionTransformer {
 						}
 					}
 				}
-				// array access
+				// if array access
 				else if (currentElem instanceof Expression && currentType instanceof ArrayTypeDefinition) {
 					currentType = (currentType as ArrayTypeDefinition).elementType.typeDefinitionFromType
 				}
@@ -107,14 +127,12 @@ class ExpressionPreconditionTransformer {
 				throw new IllegalArgumentException("Cannot select from expression of type: " + tempVariableOriginalType)
 			}
 			
-			// create 'temporary' variable(s)exp
-			val List<VariableDeclaration> tempVariableDeclarations = newArrayList
-			val List<VariableDeclarationStatement> tempVariables = newArrayList 
+			// set temporary variables
 			val tempVariableOriginalTypeConst = tempVariableOriginalType		// const to be used inside a lambda
 			
-			if (!(tempVariableOriginalType instanceof CompositeTypeDefinition)) {
+			if (!(tempVariableOriginalType instanceof CompositeTypeDefinition)) {	//TODO simplify this and the following 2 branches
 				val tempVariable = createVariableDeclaration => [
-					it.name = "selectVariable" + expression.hashCode			//TODO name provider
+					it.name = new NameProvider(expression).name
 					it.type = tempVariableOriginalTypeConst.transformType
 				]
 				tempVariableDeclarations += tempVariable
@@ -123,47 +141,50 @@ class ExpressionPreconditionTransformer {
 					it.variableDeclaration = tempVariable
 				]
 			} else {
-				tempVariableDeclarations += tempVariableOriginalType.createFunctionReturn(new NameProvider(expression))
+				tempVariableDeclarations += tempVariableOriginalType.createVariablesFromType(new NameProvider(expression))
 				trace.put(expression, tempVariableDeclarations)
 				tempVariables += tempVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
-			}
-			result += tempVariables
-			
-			// create choice statement
-			val List<Expression> possibleLowLevelValues = newArrayList
-			for(vali : possibleValues){
-				possibleLowLevelValues += vali.transformExpression
-			}
-			var chs = createChoiceStatement => [
-				for (var i = 0; i < possibleLowLevelValues.size / tempVariables.size; i++) {
-					val iConst = i
-					it.branches += createBranch => [
-						it.guard = createTrueExpression
-						it.action = createBlock => [
-							for (var j = 0; j < tempVariableDeclarations.size; j++) {
-								val jConst = j
-								var act = createAssignmentStatement => [
-									it.lhs = createDirectReferenceExpression => [
-										it.declaration = tempVariableDeclarations.get(jConst)
-									]
-									it.rhs = possibleLowLevelValues.get(iConst * tempVariables.size + jConst)
-								]
-								it.actions += act//.transformAction(newLinkedList)
-							}		
-						]
-					]
-				}
-			]
-			result += chs
-			println("chs:::" + chs.branches.size)
-			println(possibleLowLevelValues.size % tempVariables.size)
-			println(possibleLowLevelValues.size)
-			println(tempVariables.size)
-			
-		} else {
+			}		
+		} 
+		else if (innerExpression instanceof IntegerRangeLiteralExpression) {
+			tempVariableDeclarations += createIntegerTypeDefinition.createVariablesFromType(new NameProvider(expression))
+			trace.put(expression, tempVariableDeclarations)
+			tempVariables += tempVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
+		}
+		else {
 			//TODO integer range literal (maybe array literal / enum type?)
 			throw new IllegalArgumentException("Cannot select from expression: " + innerExpression)
 		}
+		result += tempVariables
+		// get the possible values
+		val possibleValues = innerExpression.enumerateExpression
+		
+		val List<Expression> possibleLowLevelValues = newArrayList
+		for(vali : possibleValues){
+			possibleLowLevelValues += vali.transformExpression
+		}
+		// create choice statement
+		var chs = createChoiceStatement => [
+			for (var i = 0; i < possibleLowLevelValues.size / tempVariables.size; i++) {
+				val iConst = i
+				it.branches += createBranch => [
+					it.guard = createTrueExpression
+					it.action = createBlock => [
+						for (var j = 0; j < tempVariableDeclarations.size; j++) {
+							val jConst = j
+							var act = createAssignmentStatement => [
+								it.lhs = createDirectReferenceExpression => [
+									it.declaration = tempVariableDeclarations.get(jConst)
+								]
+								it.rhs = possibleLowLevelValues.get(iConst * tempVariables.size + jConst)
+							]
+							it.actions += act//.transformAction(newLinkedList)
+						}		
+					]
+				]
+			}
+		]
+		result += chs
 		return result
 	}
 	
@@ -230,7 +251,7 @@ class ExpressionPreconditionTransformer {
 					]
 				} 
 				else {
-					returnVariableDeclarations += functionType.createFunctionReturn(new NameProvider(expression))
+					returnVariableDeclarations += functionType.createVariablesFromType(new NameProvider(expression))
 					trace.put(expression, returnVariableDeclarations)
 					returnVariables += returnVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
 				}
@@ -270,8 +291,9 @@ class ExpressionPreconditionTransformer {
 		}
 		return result
 	}
+	
 	//TODO rename variable to sth relevant
-	protected def List<VariableDeclaration> createFunctionReturn(Type variable, NameProvider nameProvider) {
+	protected def List<VariableDeclaration> createVariablesFromType(Type variable, NameProvider nameProvider) {
 		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
 		var TypeDefinition variableType = getTypeDefinitionFromType(variable)
 		// Records are broken up into separate variables
@@ -289,8 +311,9 @@ class ExpressionPreconditionTransformer {
 			transformed.addAll(createFunctionReturnArray(variable, nameProvider, variableType, arrayStack))//TODO new name provider
 			return transformed
 		} else {	//Simple variables and arrays of simple types are simply transformed
+		println("AAAAAAAAAA")
 			transformed.add(createVariableDeclaration => [
-				it.name = nameProvider.name						//TODO name provider
+				it.name = nameProvider.name						
 				it.type = variable.transformType
 			])
 			return transformed

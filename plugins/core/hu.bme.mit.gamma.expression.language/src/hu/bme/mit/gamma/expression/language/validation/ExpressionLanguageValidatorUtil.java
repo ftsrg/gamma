@@ -50,9 +50,9 @@ public class ExpressionLanguageValidatorUtil {
 			return ref.getDeclaration();
 		} else if (accessExpression.getOperand() instanceof AccessExpression) {
 			return findAccessExpressionInstanceDeclaration((AccessExpression)accessExpression.getOperand());
+		} else {
+			return null;
 		}
-		// TODO implement for Literal Expressions (e.g. IntegerRange)
-		throw new IllegalArgumentException("Not implemented feature - the operand of the AccessExpression is: " + accessExpression.getOperand().toString() );
 	}
 	
 	

@@ -20,5 +20,6 @@ public enum ExpressionType {
 	INTEGER_RANGE,
 	RECORD,
 	VOID, 
-	ERROR
+	ERROR,
+	UNKNOWN
 }

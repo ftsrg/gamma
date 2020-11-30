@@ -146,7 +146,6 @@ public class ExpressionTypeDeterminator {
 			return getArithmeticMultiaryType((MultiplyExpression) expression);
 		}
 		if (expression instanceof ArrayAccessExpression) {
-			//TODO extract
 			int depth = 0;
 			List<String> fields = new ArrayList<String>();
 			ReferenceExpression ref = (ArrayAccessExpression)expression;
@@ -224,7 +223,7 @@ public class ExpressionTypeDeterminator {
 			Type declarationType = parameterDeclaration.getType();
 			return transform(declarationType);
 		}
-		throw new IllegalArgumentException("Not known expression: " + expression);
+		return ExpressionType.UNKNOWN;
 	}
 
 	protected Optional<EObject> getParameter(Expression expression) {

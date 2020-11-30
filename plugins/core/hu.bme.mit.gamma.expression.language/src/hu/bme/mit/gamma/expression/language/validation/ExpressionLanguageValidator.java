@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.language.validation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
@@ -39,6 +41,7 @@ import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -52,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
@@ -125,65 +129,93 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		if (true) {
-			// Blocked as it throws exceptions
-			return;
-		}
 		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageValidatorUtil.
 				findAccessExpressionTypeDefinition(recordAccessExpression);
-		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
-		List<String> fieldDeclarationNames = new ArrayList<String>();
-		for (FieldDeclaration fd : fieldDeclarations) {
-			fieldDeclarationNames.add(fd.getName());
+		// check if the referred declaration is accessible
+		Declaration referredDeclaration = 
+				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
+		if (!(referredDeclaration instanceof ValueDeclaration)) {
+			error("The referred declaration is not accessible as a record!",
+					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
 		}
+		// check if the referred field exists
+		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
+		List<String> fieldDeclarationNames = fieldDeclarations.stream().map(fd -> fd.getName()).collect(Collectors.toList());
 		if (!fieldDeclarationNames.contains(recordAccessExpression.getField())){
 			error("The record type does not contain any fields with the given name.",
 					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD);
+			return;
 		}
 	}
 	
 	@Check
 	public void checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
-		if (true) {
-			// Blocked as it throws exceptions
+		List<Expression> arguments = functionAccessExpression.getArguments();
+		Expression operand = functionAccessExpression.getOperand();
+		// check if the referred object is a function
+		if (!(operand instanceof DirectReferenceExpression)) {
+			error("The referenced object is not a valid function declaration!", ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 			return;
 		}
-		List<Expression> arguments = functionAccessExpression.getArguments();
-		if (functionAccessExpression.getOperand() instanceof FunctionDeclaration) {
-			final FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionAccessExpression.getOperand();
-			List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
-			if (arguments.size() != parameters.size()) {
-				error("The number of arguments does not match the number of declared parameters for the function!", 
-						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-			}
-			int i = 0;
-			for (Expression arg : arguments) {
-				ExpressionType argumentType = typeDeterminator.getType(arg);
-				if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
-					error("The types of the arguments and the types of the declared function parameters do not match!",
-							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-				}
-				++i;
-			}
+		DirectReferenceExpression operandAsReference = (DirectReferenceExpression) operand;
+		if (!(operandAsReference.getDeclaration() instanceof FunctionDeclaration)) {
+			error("The referenced object is not a valid function declaration!", ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
 		}
-		else {
-			error("The referenced object is not a function declaration!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+		// check if the number of arguments equals the number of parameters
+		final FunctionDeclaration functionDeclaration = (FunctionDeclaration) operandAsReference.getDeclaration();
+		List<ParameterDeclaration> parameters = functionDeclaration.getParameterDeclarations();
+		if (arguments.size() != parameters.size()) {
+			error("The number of arguments does not match the number of declared parameters for the function!", 
+					ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			return;
+		}
+		// check if the types of the arguments are the types of the parameters
+		int i = 0;
+		for (Expression arg : arguments) {
+			ExpressionType argumentType = typeDeterminator.getType(arg);
+			if (!typeDeterminator.equals(parameters.get(i).getType(), argumentType)) {
+				error("The types of the arguments and the types of the declared function parameters do not match!",
+						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+				return;
+			}
+			++i;
 		}
 	}
 	
 	@Check
 	public void checkArrayAccessExpression(ArrayAccessExpression expression) {
+		// check if the referred declaration is accessible
+		Declaration referredDeclaration = 
+				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+		if (!(referredDeclaration instanceof ValueDeclaration)) {
+			error("The referred declaration is not accessible as an array!",
+					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
+		}
+		// check if the argument expression can be evaluated as integer
 		if (!typeDeterminator.isInteger(expression.getArguments().get(0))) {
 			error("The index of the accessed element must be of type integer!", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			return;
 		}
 	}
 	
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
-		if (!((typeDeterminator.getType(expression.getOperand()) == ExpressionType.ARRAY) ||
-				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.ENUMERATION) ||
-				(typeDeterminator.getType(expression.getOperand()) == ExpressionType.INTEGER_RANGE))) {
-			error("Select expression can only be applied to enumerable expressions (array, integer range and enumeration)!" + typeDeterminator.getType(expression.getOperand()).toString(), null);
+		// check if the referred object
+		Declaration referredDeclaration = 
+				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
+			// TODO check if array type
+			error("The specified object is not selectable!",
+					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
+		}
+		if (!(expression.getOperand() instanceof IntegerLiteralExpression || expression.getOperand() instanceof ReferenceExpression)) {
+			error("The specified object is not selectable!",
+					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
 		}
 	}
 	
@@ -284,7 +316,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		ExpressionType lhsExpressionType = typeDeterminator.transform(type);
 		ExpressionType rhsExpressionType = typeDeterminator.getType(rhs);
 		if (!lhsExpressionType.equals(rhsExpressionType)) {
-			error("The types of the variable declaration and the right hand side expression are not the same: " +
+			error("The types of the declaration and the assigned expression are not the same: " +
 					lhsExpressionType.toString().toLowerCase() + " and " +
 					rhsExpressionType.toString().toLowerCase() + ".", feature);
 			return;

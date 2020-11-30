@@ -27,6 +27,9 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -85,6 +88,12 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		if (element instanceof ComponentInstance) {
 			ComponentInstance instance = (ComponentInstance) element;
 			return getDerivedType(instance).getParameterDeclarations();
+		}
+		if (element instanceof FunctionAccessExpression) {
+			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
+			DirectReferenceExpression functionDeclarationReference = (DirectReferenceExpression) functionAccess.getOperand();
+			FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionDeclarationReference.getDeclaration();
+			return functionDeclaration.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
 	}

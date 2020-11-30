@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.validation;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,15 +34,19 @@ import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
+import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.expression.language.validation.ExpressionLanguageValidatorUtil;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-
-import static com.google.common.collect.Iterables.getOnlyElement;
 
 
 /**
@@ -51,6 +57,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
+	//TODO ???
 	@Check
 	public void checkUnsupportedActions(Action action) {
 		if (action instanceof Block ||
@@ -100,6 +107,28 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
 		}
+	}
+	
+	@Check
+	public void checkSelectExpression(SelectExpression expression){
+		// check if the referred object is a value declaration
+		Declaration referredDeclaration = 
+				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+		System.out.println(referredDeclaration);
+		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
+			return;
+		}
+		// or an IR literal expression
+		if ((expression.getOperand() instanceof IntegerRangeLiteralExpression)) {
+			return;
+		}
+		// or a type reference expression
+		if ((expression.getOperand() instanceof ReferenceExpression) && (expression.getOperand() instanceof TypeReferenceExpression)) {
+			return;
+		}
+		// otherwise throw error
+		error("The specified object is not selectable: " + expression.getOperand().getClass(),
+				ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 	}
 
 	@Check

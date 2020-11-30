@@ -63,6 +63,7 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import java.util.stream.Collectors
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -130,26 +131,40 @@ class ExpressionTransformer {
 		var result = new ArrayList<Expression>
 		
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
-		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
-			exploreComplexType(originalDeclaration as ValueDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
-		} else { throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration);}
-		var accessList = expression.collectAccessList
-		var List<String> recordAccessList = new ArrayList<String>
-		for (elem : accessList) {
-			if (elem instanceof String) { //TODO better ;)
-				recordAccessList.add(elem)
+		if (originalDeclaration instanceof ValueDeclaration) {
+			var originalLhsVariables = exploreComplexType(originalDeclaration as ValueDeclaration, getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
+			var accessList = expression.collectAccessList
+			var List<String> recordAccessList = new ArrayList<String>
+			for (elem : accessList) {
+				if (elem instanceof String) { //TODO better ;)
+					recordAccessList.add(elem)
+				}
+			}
+	
+			for (elem : originalLhsVariables) {	
+				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
+					// Create references
+					result += createDirectReferenceExpression => [
+						it.declaration = trace.get(elem)
+					]
+				}
 			}
 		}
-
-		for (elem : originalLhsVariables) {	
-			if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
-				// Create references
-				result += createDirectReferenceExpression => [
-					it.declaration = trace.get(elem)
-				]
+		// Function return variables do not exist on the high-level
+		else if (originalDeclaration instanceof FunctionDeclaration) {
+			var currentAccess = expression.operand as AccessExpression
+			while (!(currentAccess instanceof FunctionAccessExpression)) {
+				currentAccess = currentAccess.operand as AccessExpression
 			}
+			var functionAccess = currentAccess as FunctionAccessExpression
+			var functionReturnVariables = if (trace.isMapped(functionAccess)) {
+				trace.get(functionAccess)
+			} else {newArrayList}
+			val returnVariable = functionReturnVariables.filter[vari | vari.name.contains(expression.field)].onlyElement
+			result += createDirectReferenceExpression => [
+				it.declaration = returnVariable
+			]
 		}
-		
 		return result		
 		
 	}
@@ -571,14 +586,12 @@ class ExpressionTransformer {
 		}
 	}
 	
-	//TODO move to expressionUtil or use that of expressionUtil (maybe fix that?)	
+	//TODO move to expressionUtil or use that of expressionUtil
 	protected def TypeDefinition getTypeDefinitionFromType(Type type) {
 		// Resolve type reference (may be chain) or return type definition
 		if (type instanceof TypeReference) {
-			var innerType = (type as TypeReference).reference.type
+			var innerType = type.reference.type
 			return getTypeDefinitionFromType(innerType)
-		} else if (type instanceof TypeDeclaration) {
-			return getTypeDefinitionFromType(type);
 		} else {
 			return type as TypeDefinition
 		}
@@ -671,13 +684,16 @@ class ExpressionTransformer {
 		return expression.declaration
 	}
 	protected def dispatch Declaration findDeclarationOfReferenceExpression(RecordAccessExpression expression) {
-		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	//TODO without casting
+		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	
 	}
 	protected def dispatch Declaration findDeclarationOfReferenceExpression(ArrayAccessExpression expression) {
-		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	//TODO without casting
+		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression
+	}
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(FunctionAccessExpression expression) {
+		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	
 	}
 	protected def dispatch Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
-		throw new IllegalArgumentException("Unhandled Reference Expression type!")
+		throw new IllegalArgumentException("Unhandled Reference Expression type: " + expression.class)
 	}
 	
 	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList, List<String> currentAccessList) {
