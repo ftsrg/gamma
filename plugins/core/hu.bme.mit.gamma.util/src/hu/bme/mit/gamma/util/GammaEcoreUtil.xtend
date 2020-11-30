@@ -249,7 +249,8 @@ class GammaEcoreUtil {
 			}
 			else {
 				// It is not platform URI, and still does not start with file: - how?
-				uriString
+				ResourcesPlugin.getWorkspace().getRoot().getFile(
+					new Path(uriString)).location.toString
 			}
 		}
 		return new File(URI.decode(location))
