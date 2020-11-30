@@ -240,9 +240,17 @@ class GammaEcoreUtil {
 			).location.toString
 		}
 		else {
+			val FILE_STRING = "file:"
 			// Deleting file: from the beginning
 			// Not deleting the trailing '/', as Linux needs it and Windows accepts it
-			uri.toString.substring(("file:"/* + File.separator*/).length)
+			val uriString = uri.toString
+			if (uriString.startsWith(FILE_STRING)) {
+				uriString.substring((FILE_STRING/* + File.separator*/).length)
+			}
+			else {
+				// It is not platform URI, and still does not start with file: - how?
+				uriString
+			}
 		}
 		return new File(URI.decode(location))
 	}
