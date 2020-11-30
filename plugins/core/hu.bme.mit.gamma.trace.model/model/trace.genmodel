@@ -47,5 +47,11 @@
     <genClasses ecoreClass="trace.ecore#//NegatedAssert">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//NegatedAssert/negatedAssert"/>
     </genClasses>
+    <genClasses ecoreClass="trace.ecore#//MultiaryAssert">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference trace.ecore#//MultiaryAssert/asserts"/>
+    </genClasses>
+    <genClasses ecoreClass="trace.ecore#//AndAssert"/>
+    <genClasses ecoreClass="trace.ecore#//XorAssert"/>
+    <genClasses ecoreClass="trace.ecore#//OrAssert"/>
   </genPackages>
 </genmodel:GenModel>

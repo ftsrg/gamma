@@ -21,16 +21,19 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.trace.model.AndAssert
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.NegatedAssert
+import hu.bme.mit.gamma.trace.model.OrAssert
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
+import hu.bme.mit.gamma.trace.model.XorAssert
 import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
@@ -265,7 +268,13 @@ class TestGenerator {
 		return asserts
 	}
 	
-	protected def dispatch String serializeAssert(NegatedAssert assert) '''!«assert.negatedAssert.serializeAssert»'''
+	protected def dispatch String serializeAssert(OrAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " || "»«operand.serializeAssert»«ENDFOR»)'''
+	
+	protected def dispatch String serializeAssert(XorAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " ^ "»«operand.serializeAssert»«ENDFOR»)'''
+
+	protected def dispatch String serializeAssert(AndAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " && "»«operand.serializeAssert»«ENDFOR»)'''
+	
+	protected def dispatch String serializeAssert(NegatedAssert assert) '''!(«assert.negatedAssert.serializeAssert»)'''
 	
 	protected def dispatch String serializeAssert(RaiseEventAct assert) '''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
 	
