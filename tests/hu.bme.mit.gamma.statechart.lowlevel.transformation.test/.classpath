@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="/hu.bme.mit.gamma.statechart.model"/>
+	<classpathentry kind="src" path="/hu.bme.mit.gamma.action.model"/>
+	<classpathentry kind="src" path="/hu.bme.mit.gamma.expression.model"/>
+	<classpathentry kind="src" path="/hu.bme.mit.gamma.statechart.lowlevel.transformation"/>
+	<classpathentry kind="src" path="/hu.bme.mit.gamma.statechart.lowlevel.model"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="C:/Program Files/Eclipse/GammaEclipse202006/plugins/org.eclipse.emf.ecore_2.22.0.v20200519-1135.jar" sourcepath="C:/Program Files/Eclipse/GammaEclipse202006/plugins/org.eclipse.emf.ecore.source_2.22.0.v20200519-1135.jar">
+		<accessrules>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/impl/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/plugin/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/resource/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/resource/impl/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/util/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/namespace/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/namespace/impl/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/namespace/util/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/type/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/type/impl/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/type/internal/*"/>
+			<accessrule kind="accessible" pattern="org/eclipse/emf/ecore/xml/type/util/*"/>
+			<accessrule ignoreifbetter="true" kind="nonaccessible" pattern="**/*"/>
+		</accessrules>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Eclipse/GammaEclipse202006/plugins/org.eclipse.core.commands_3.9.700.v20191217-1850.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Eclipse/GammaEclipse202006/plugins/org.eclipse.emf.common_2.19.0.v20200324-0932.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Eclipse/GammaEclipse202006/plugins/org.eclipse.core.resources_3.13.700.v20200209-1624.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
