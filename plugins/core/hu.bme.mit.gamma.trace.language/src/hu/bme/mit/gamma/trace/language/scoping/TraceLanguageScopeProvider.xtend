@@ -16,11 +16,11 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
+import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
@@ -53,11 +53,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__PORT) {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
-			val ports = new HashSet<Port>(component.ports)
-			if (component instanceof AsynchronousAdapter) {
-				// Wrappers need the wrapped components as well
-				ports += component.wrappedComponent.type.ports
-			}
+			val ports = new HashSet<Port>(component.allPorts)
 			return Scopes.scopeFor(ports)
 		}
 		if (context instanceof RaiseEventAct && reference == StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT) {
@@ -118,7 +114,7 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 		}
 		if (context instanceof EnumerationLiteralExpression) {
 			var Type enumerationDefinition
-			val parent = context.eContainer
+			val parent = ecoreUtil.getContainerOfType(context, Assert) // First assert container
 			switch parent {
 				InstanceVariableState: {
 					enumerationDefinition = parent.declaration.type

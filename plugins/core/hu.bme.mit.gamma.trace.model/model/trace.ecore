@@ -48,4 +48,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="negatedAssert" lowerBound="1"
         eType="#//Assert" containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MultiaryAssert" abstract="true" eSuperTypes="#//Assert">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="asserts" lowerBound="1"
+        upperBound="-1" eType="#//Assert" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AndAssert" eSuperTypes="#//MultiaryAssert"/>
+  <eClassifiers xsi:type="ecore:EClass" name="XorAssert" eSuperTypes="#//MultiaryAssert"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrAssert" eSuperTypes="#//MultiaryAssert"/>
 </ecore:EPackage>

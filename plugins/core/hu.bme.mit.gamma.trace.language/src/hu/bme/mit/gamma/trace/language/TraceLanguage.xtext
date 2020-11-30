@@ -68,11 +68,27 @@ ComponentSchedule returns ComponentSchedule:
 ;
 
 Assert returns Assert:
-	RaiseEventAct | InstanceState | NegatedAssert
+	OrAssert
+;
+
+OrAssert returns Assert:
+	XorAssert ({OrAssert.asserts+=current} ( ('||' | '|') asserts+=XorAssert)+)?
+;
+
+XorAssert returns Assert:
+	AndAssert ({XorAssert.asserts+=current} ('^' asserts+=AndAssert)+)?
+;
+
+AndAssert returns Assert:
+	PrimaryAssert ({AndAssert.asserts+=current} ( ('&&' | '&') asserts+=PrimaryAssert)+)?
+;
+
+PrimaryAssert returns Assert:
+	RaiseEventAct  | InstanceState | NegatedAssert | '{' Assert '}'
 ;
 
 NegatedAssert returns NegatedAssert:
-	'not' negatedAssert=Assert
+	'not' negatedAssert=PrimaryAssert
 ;
 
 InstanceState returns InstanceState:
@@ -82,7 +98,6 @@ InstanceState returns InstanceState:
 InstanceStateConfiguration returns InstanceStateConfiguration:
 	instance=[CompositeModel::SynchronousComponentInstance] '.' state=[StatechartModel::State]
 ;
-
 
 InstanceVariableState returns InstanceVariableState:
 	instance=[CompositeModel::SynchronousComponentInstance] '.' declaration=[ConstraintModel::VariableDeclaration] '=' value=Expression
