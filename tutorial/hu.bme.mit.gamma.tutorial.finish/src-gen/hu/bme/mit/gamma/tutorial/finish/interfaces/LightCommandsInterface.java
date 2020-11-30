@@ -1,14 +1,15 @@
 package hu.bme.mit.gamma.tutorial.finish.interfaces;
 
+import hu.bme.mit.gamma.tutorial.finish.*;
 import java.util.List;
 
 public interface LightCommandsInterface {
 	
 	interface Provided extends Listener.Required {
 		
-		public boolean isRaisedDisplayRed();
-		public boolean isRaisedDisplayYellow();
 		public boolean isRaisedDisplayGreen();
+		public boolean isRaisedDisplayYellow();
+		public boolean isRaisedDisplayRed();
 		public boolean isRaisedDisplayNone();
 		
 		void registerListener(Listener.Provided listener);
@@ -25,9 +26,9 @@ public interface LightCommandsInterface {
 	interface Listener {
 		
 		interface Provided  {
-			void raiseDisplayRed();
-			void raiseDisplayYellow();
 			void raiseDisplayGreen();
+			void raiseDisplayYellow();
+			void raiseDisplayRed();
 			void raiseDisplayNone();
 		}
 		

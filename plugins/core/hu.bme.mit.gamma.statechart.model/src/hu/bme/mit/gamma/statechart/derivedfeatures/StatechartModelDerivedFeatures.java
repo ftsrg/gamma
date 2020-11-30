@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.ElseExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -55,9 +57,12 @@ import hu.bme.mit.gamma.statechart.interface_.EventSource;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
+import hu.bme.mit.gamma.statechart.interface_.PackageAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.interface_.TopComponentArgumentsAnnotation;
+import hu.bme.mit.gamma.statechart.interface_.UnfoldedPackageAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement;
@@ -76,6 +81,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -139,6 +146,24 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			default:
 				throw new IllegalArgumentException("Not known event direction: " + eventDirection);
 		}
+	}
+	
+	public static List<Expression> getTopComponentArguments(Package unfoldedPackage) {
+		List<Expression> topComponentArguments = new ArrayList<Expression>();
+		for (PackageAnnotation annotation : unfoldedPackage.getAnnotations()) {
+			if (annotation instanceof TopComponentArgumentsAnnotation) {
+				TopComponentArgumentsAnnotation argumentsAnnotation =
+						(TopComponentArgumentsAnnotation) annotation;
+				topComponentArguments.addAll(argumentsAnnotation.getArguments());
+				return topComponentArguments; // There must be only one annotation
+			}
+		}
+		return topComponentArguments;
+	}
+	
+	public static boolean isUnfolded(Package gammaPackage) {
+		return gammaPackage.getAnnotations().stream().anyMatch(
+				it -> it instanceof UnfoldedPackageAnnotation);
 	}
 	
 	public static Set<Component> getAllComponents(Package parentPackage) {
@@ -347,7 +372,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getAllEvents(port.getInterfaceRealization().getInterface());
 	}
 	
-	public static Collection<Event> getInputEvents(Port port) {
+	public static List<Event> getInputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
@@ -367,7 +392,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return events;
 	}
 	
-	public static Collection<Event> getOutputEvents(Port port) {
+	public static List<Event> getOutputEvents(Port port) {
 		List<Event> events = new ArrayList<Event>();
 		InterfaceRealization interfaceRealization = port.getInterfaceRealization();
 		Interface _interface = interfaceRealization.getInterface();
@@ -395,13 +420,13 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return getOutputEvents(port).contains(event);
 	}
 	
-	public static Collection<Port> getAllPorts(AsynchronousAdapter wrapper) {
-		Collection<Port> allPorts = new HashSet<Port>(wrapper.getPorts());
+	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {
+		List<Port> allPorts = new ArrayList<Port>(wrapper.getPorts());
 		allPorts.addAll(wrapper.getWrappedComponent().getType().getPorts());
 		return allPorts;
 	}
 	
-	public static Collection<Port> getAllPorts(Component component) {
+	public static List<Port> getAllPorts(Component component) {
 		if (component instanceof AsynchronousAdapter) {
 			return getAllPorts((AsynchronousAdapter)component);
 		}		
@@ -422,16 +447,17 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return portBindings;
 	}
 	
-	public static Collection<Port> getAllConnectedSimplePorts(Component component) {
-		Set<Port> simplePorts = new HashSet<Port>();
+	public static List<Port> getAllConnectedSimplePorts(Component component) {
+		List<Port> simplePorts = new ArrayList<Port>();
 		for (Port port : getAllPorts(component)) {
 			simplePorts.addAll(getAllConnectedSimplePorts(port));
 		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	
-	public static Collection<Port> getAllConnectedSimplePorts(Port port) {
-		Set<Port> simplePorts = new HashSet<Port>();
+	public static List<Port> getAllConnectedSimplePorts(Port port) {
+		List<Port> simplePorts = new ArrayList<Port>();
 		Component component = getContainingComponent(port);
 		if (component instanceof StatechartDefinition) {
 			simplePorts.add(port);
@@ -445,23 +471,41 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 				}
 			}
 		}
+		// Note that one port can be in the list multiple times iff the component is NOT unfolded
 		return simplePorts;
 	}
 	
 	public static Port getConnectedTopComponentPort(Port port) {
 		Package _package = getContainingPackage(port);
-		TreeIterator<Object> contents = EcoreUtil.getAllContents(_package, true);
-		while (contents.hasNext()) {
-			Object next = contents.next();
-			if (next instanceof PortBinding) {
-				PortBinding portBinding = (PortBinding) next;
-				if (portBinding.getInstancePortReference().getPort() == port) {
-					Port systemPort = portBinding.getCompositeSystemPort();
-					return getConnectedTopComponentPort(systemPort);
-				}
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			if (portBinding.getInstancePortReference().getPort() == port) {
+				Port systemPort = portBinding.getCompositeSystemPort();
+				return getConnectedTopComponentPort(systemPort);
 			}
 		}
 		return port;
+	}
+	
+	public static boolean isInChannel(Port port) {
+		Package _package = getContainingPackage(port);
+		List<Channel> channels = ecoreUtil.getAllContentsOfType(_package, Channel.class);
+		for (Channel channel : channels) {
+			if (channel.getProvidedPort().getPort() == port ||
+					getRequiredPorts(channel).stream().anyMatch(it -> it.getPort() == port)) {
+				return true;
+			}
+		}
+		List<PortBinding> portBindings = ecoreUtil.getAllContentsOfType(_package, PortBinding.class);
+		for (PortBinding portBinding : portBindings) {
+			if (portBinding.getInstancePortReference().getPort() == port) {
+				Port systemPort = portBinding.getCompositeSystemPort();
+				if (isInChannel(systemPort)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static List<InstancePortReference> getRequiredPorts(Channel channel) {
@@ -480,7 +524,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		Component container = getContainingComponent(instance);
 		Set<Port> usedPorts = ecoreUtil.getAllContentsOfType(container, InstancePortReference.class).stream()
 				.filter(it -> it.getInstance() == instance).map(it -> it.getPort()).collect(Collectors.toSet());
-		Set<Port> unusedPorts = new HashSet<Port>(StatechartModelDerivedFeatures.getDerivedType(instance).getPorts());
+		Set<Port> unusedPorts = new HashSet<Port>(getAllPorts(StatechartModelDerivedFeatures.getDerivedType(instance)));
 		unusedPorts.removeAll(usedPorts);
 		return unusedPorts;
 	}
@@ -650,18 +694,27 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	}
 	
 	public static boolean isTopRegion(Region region) {
-		return region.eContainer() instanceof StatechartDefinition;
+		return getContainingCompositeElement(region) instanceof StatechartDefinition;
 	}
 	
 	public static boolean isSubregion(Region region) {
 		return !isTopRegion(region);
 	}
 	
+	public static boolean isOrthogonal(Region region) {
+		CompositeElement compositeElement = getContainingCompositeElement(region);
+		return compositeElement.getRegions().size() >= 2;
+	}
+	
+	public static CompositeElement getContainingCompositeElement(Region region) {
+		return (CompositeElement) region.eContainer();
+	}
+
 	public static State getParentState(Region region) {
 		if (isTopRegion(region)) {
 			throw new IllegalArgumentException("This region has no parent state: " + region);
 		}
-		return (State) region.eContainer();
+		return (State) getContainingCompositeElement(region);
 	}
 	
 	public static State getParentState(StateNode node) {
@@ -673,7 +726,7 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		if (isTopRegion(region)) {
 			return null;
 		}
-		return getParentRegion((State) region.eContainer());
+		return getParentRegion((State) getContainingCompositeElement(region));
 	}
 	
 	public static List<Region> getParentRegions(Region region) {
@@ -816,6 +869,16 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return (EventDeclaration) event.eContainer();
 	}
 	
+	public static String getId(Transition transition) {
+		for (TransitionAnnotation annotation : transition.getAnnotations()) {
+			if (annotation instanceof TransitionIdAnnotation) {
+				TransitionIdAnnotation transitionIdAnnotation = (TransitionIdAnnotation) annotation;
+				return transitionIdAnnotation.getName();
+			}
+		}
+		return null;
+	}
+	
 	public static Collection<PortEventReference> getPortEventReferences(Transition transition) {
 		return ecoreUtil.getAllContentsOfType(transition.getTrigger(),
 				PortEventReference.class);
@@ -909,6 +972,14 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			transition.getEffects().isEmpty();
 	}
 	
+	public static boolean isElse(Transition transition) {
+		return transition.getGuard() instanceof ElseExpression;
+	}
+	
+	public static boolean isLoop(Transition transition) {
+		return transition.getSourceState() == transition.getTargetState();
+	}
+	
 	public static StateNode getSourceAncestor(Transition transition) {
 		return getSourceAncestor(transition.getSourceState(), transition.getTargetState());
 	}
@@ -950,6 +1021,17 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 	
 	public static boolean isComposite(State state) {
 		return !state.getRegions().isEmpty();
+	}
+	
+	public static EObject getContainingTransitionOrState(RaiseEventAction action) {
+		Transition containingTransition = ecoreUtil.getContainerOfType(
+				action, Transition.class);
+		if (containingTransition != null) {
+			// Container is a transition
+			return containingTransition;
+		}
+		// Container is a state
+		return ecoreUtil.getContainerOfType(action, State.class);
 	}
 	
 	public static int getLiteralIndex(State state) {
@@ -1055,6 +1137,11 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			throw new IllegalArgumentException("Not one referencing instance: " + instances);
 		}
 		return instances.stream().findFirst().get();
+	}
+	
+	public static ComponentInstance getContainingComponentInstance(EObject object) {
+		StatechartDefinition statechart = getContainingStatechart(object);
+		return getReferencingComponentInstance(statechart);
 	}
 	
 	public static List<ComponentInstance> getParentComponentInstances(ComponentInstance instance) {

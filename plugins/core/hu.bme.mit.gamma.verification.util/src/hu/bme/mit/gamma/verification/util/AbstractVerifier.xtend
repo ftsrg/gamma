@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.verification.util
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.util.PathEscaper
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
 import java.util.logging.Logger
@@ -26,6 +27,7 @@ abstract class AbstractVerifier {
 	protected Logger logger = Logger.getLogger("GammaLogger")
 	
 	protected extension FileUtil codeGeneratorUtil = FileUtil.INSTANCE
+	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	def ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,

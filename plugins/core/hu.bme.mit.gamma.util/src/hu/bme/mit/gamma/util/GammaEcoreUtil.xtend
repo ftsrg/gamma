@@ -112,6 +112,16 @@ class GammaEcoreUtil {
 		list.add(index, object)
 	}
 	
+	def List<EObject> getAllContainers(EObject object) {
+		val container = object.eContainer
+		if (container === null) {
+			return newArrayList
+		}
+		val allContainers = container.allContainers
+		allContainers += object
+		return allContainers
+	}
+	
 	def <T extends EObject> T getSelfOrContainerOfType(EObject object, Class<T> type) {
 		if (type.isInstance(object)) {
 			return object as T
@@ -160,6 +170,10 @@ class GammaEcoreUtil {
 		return resource.getContents().get(0)
 	}
 
+	def EObject normalLoad(File file) {
+		return normalLoad(file.parent, file.name)
+	}
+
 	def EObject normalLoad(String parentFolder, String fileName) {
 		return normalLoad(URI.createFileURI(parentFolder + File.separator + fileName))
 	}
@@ -188,6 +202,14 @@ class GammaEcoreUtil {
 		val resource = rootElem.eResource
 		checkState(resource !== null)
 		resource.save(Collections.EMPTY_MAP)
+	}
+	
+	def void delete(Resource resource) {
+		resource.delete(Collections.EMPTY_MAP)
+	}
+	
+	def void deleteResource(EObject object) {
+		object.eResource.delete(Collections.EMPTY_MAP)
 	}
 
 	def boolean helperEquals(EObject lhs, EObject rhs) {

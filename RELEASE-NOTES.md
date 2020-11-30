@@ -157,3 +157,19 @@
 * Parameter handling bug in the UPPAAL transformation has been fixed.
 * Listener notification bug in the generated Java code has been fixed.
 * New validation rules in the Gamma text editors have been introduced.
+
+## 2020.09.22. - Version 2.4.0
+
+### What is New
+
+* Theta has been integrated as a new verification back-end.
+* A property langauge for defining CTL* expressions has been introduced.
+* Visualization for traces and composite systems has been introduced.
+* A test project for verifying the correctness of Gamma transformations has been introduced.
+* A test replayer functionality, which transforms the trace models into statechart models has been introduced.
+
+### Improvements
+
+* The statechart.ecore file has been split into multiple ecore files.
+* Test generation for covering transitions and interactions in composite models has been redesigned.
+* Bugs in system optimization algorithms during the transformation to verification back-ends have been fixed.

@@ -167,7 +167,7 @@ class GlueCodeGenerator {
 		if (hasSynchronousWrapper) {
 			generateLinkedBlockingMultiQueueClasses
 		}
-		getSynchronousComponentWrapperRule.fireAllCurrent
+		getAsynchronousAdapterRule.fireAllCurrent
 		if (hasAsynchronousComposite) {
 			getChannelsRule.fireAllCurrent
 		}
@@ -323,7 +323,7 @@ class GlueCodeGenerator {
 		LinkedBlockingQueueSource.Pollable.saveCode(compositeSystemUri + File.separator + "Pollable.java")
 	}
 	
-	protected def getSynchronousComponentWrapperRule() {
+	protected def getAsynchronousAdapterRule() {
 		if (synchronousComponentWrapperRule === null) {
 			 synchronousComponentWrapperRule = createRule(SynchronousComponentWrappers.instance).action [
 				val compositeSystemUri = BASE_PACKAGE_URI + File.separator + it.synchronousComponentWrapper.containingPackage.name.toLowerCase
@@ -331,6 +331,9 @@ class GlueCodeGenerator {
 				code.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generateComponentClassName + ".java")
 				val interfaceCode = it.synchronousComponentWrapper.generateComponentInterface
 				interfaceCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.generatePortOwnerInterfaceName + ".java")
+				// Generating the reflective class
+				val reflectiveCode = it.synchronousComponentWrapper.generateReflectiveClass
+				reflectiveCode.saveCode(compositeSystemUri + File.separator + it.synchronousComponentWrapper.reflectiveClassName + ".java")
 			].build		
 		}
 		return synchronousComponentWrapperRule

@@ -16,9 +16,11 @@ import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.BinaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.BinaryType
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState
 import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.ForkState
 import hu.bme.mit.gamma.statechart.statechart.InitialState
@@ -28,12 +30,14 @@ import hu.bme.mit.gamma.statechart.statechart.OnCycleTrigger
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
+import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.UnaryTrigger
+import hu.bme.mit.gamma.statechart.statechart.UnaryType
 import hu.bme.mit.gamma.statechart.util.ActionSerializer
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 
@@ -77,22 +81,49 @@ class StatechartToPlantUMLTransformer {
 	}
 
 	protected def dispatch String transformTrigger(BinaryTrigger binaryTrigger) {
-		if (binaryTrigger.type.value == 0) {
-			return binaryTrigger.leftOperand.transformTrigger + " && " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 1) {
-			return binaryTrigger.leftOperand.transformTrigger + " || " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 2) {
-			return binaryTrigger.leftOperand.transformTrigger + " == " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 4) {
-			return binaryTrigger.leftOperand.transformTrigger + " ^ " + binaryTrigger.rightOperand.transformTrigger
-		} else if (binaryTrigger.type.value == 5) {
-			return binaryTrigger.leftOperand.transformTrigger + " -> " + binaryTrigger.rightOperand.transformTrigger
+		val leftOperand = binaryTrigger.leftOperand
+		val rightOperand = binaryTrigger.rightOperand
+		val type = binaryTrigger.type
+		return '''(«leftOperand.transformTrigger» «type.transformOperator» «rightOperand.transformTrigger»)'''
+	}
+	
+	protected def transformOperator(BinaryType type) {
+		switch (type) {
+			case AND: {
+				return "&&"
+			}
+			case OR: {
+				return "||"
+			}
+			case XOR: {
+				return "^"
+			}
+			case IMPLY: {
+				return "->"
+			}
+			case EQUAL: {
+				return "=="
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported binary type: " + type)
+			}
 		}
 	}
 
 	protected def dispatch String transformTrigger(UnaryTrigger unaryTrigger) {
-		if (unaryTrigger.type.value == 0) {
-			return " !" + unaryTrigger.operand.transformTrigger
+		val type = unaryTrigger.type
+		val operand = unaryTrigger.operand
+		return '''«type.transformOperator»(«operand.transformTrigger»)'''
+	}
+	
+	protected def transformOperator(UnaryType type) {
+		switch (type) {
+			case NOT: {
+				return "!"
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported unary type: " + type)
+			}
 		}
 	}
 	
@@ -101,7 +132,7 @@ class StatechartToPlantUMLTransformer {
 	// Handling the different instances of event references
 
 	protected def dispatch transformEventReference(PortEventReference portEventReference) {
-		return (portEventReference.port.name + "." + portEventReference.event.name)
+		return portEventReference.port.name + "." + portEventReference.event.name
 	}
 
 	protected def dispatch transformEventReference(TimeoutEventReference timeoutEventReference) {
@@ -109,12 +140,13 @@ class StatechartToPlantUMLTransformer {
 	}
 
 	protected def dispatch transformEventReference(ClockTickReference clockTickReference) {
-		return (clockTickReference.clock.name + " : " + clockTickReference.clock.timeSpecification.value + " " +
-			clockTickReference.clock.timeSpecification.unit)
+		val clock = clockTickReference.clock
+		return clock.name + " : " + clock.timeSpecification.value + " " +
+			clock.timeSpecification.unit
 	}
 
 	protected def dispatch transformEventReference(AnyPortEventReference anyPortEventReference) {
-		return anyPortEventReference.port.name
+		return '''«anyPortEventReference.port.name».any'''
 	}
 	
 ///////////////////// FORK,JOIN,CHOICE,MERGE DISPATCH /////////////////////
@@ -315,23 +347,31 @@ class StatechartToPlantUMLTransformer {
 	 * 
 	 */
 	protected def stateSearch(Transition transition) {
+		val trigger = transition.trigger
 		val guard = transition.guard
-		val transitions = '''
-			«IF transition.sourceState instanceof PseudoState»
-				«IF transition.sourceState instanceof EntryState»
-					«IF transition.sourceState instanceof InitialState»
-						[*] --> «transition.targetState.name»
-					«ELSE»
-						[H] --> «transition.targetState.name»
-					«ENDIF»
-				«ELSE»
-					«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
-				«ENDIF»
-			«ELSE»	
-				«transition.sourceState.name» --> «transition.targetState.name»«IF !transition.empty» : «ENDIF»«IF transition.trigger !== null»«transition.trigger.transformTrigger»«ENDIF» «IF transition.guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : transition.effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
-			«ENDIF»
+		val effects = transition.effects
+		val target = transition.targetState
+		return '''
+			«transition.sourceText» --> «target.name»«IF !transition.empty» : «ENDIF»«IF trigger !== null»«trigger.transformTrigger»«ENDIF» «IF guard !== null»[«guard.serialize»]«ENDIF»«FOR effect : effects BEFORE ' /\\n' SEPARATOR '\\n'»«effect.transformAction»«ENDFOR»
 		'''
-		return transitions
+	}
+	
+	protected def getSourceText(Transition transition) {
+		val source = transition.sourceState
+		switch (source) {
+			InitialState: {
+				return '''[*]'''
+			}
+			ShallowHistoryState: {
+				return '''[H]'''
+			}
+			DeepHistoryState: {
+				return '''[H]''' // PlantUML does not distinguish between the two history states
+			}
+			default: {
+				return source.name
+			}
+		}
 	}
 	
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -17,8 +17,13 @@ import hu.bme.mit.gamma.genmodel.model.GenModel
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
+import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
+import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
@@ -27,12 +32,6 @@ import org.yakindu.sct.model.stext.stext.InterfaceScope
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 
 	override getScope(EObject context, EReference reference) {
@@ -65,6 +64,49 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			if (modelReference instanceof ComponentReference) {
 				val component = modelReference.component
 				return Scopes.scopeFor(component.allInstances)
+			}
+		}
+		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_PORT_REFERENCE__PORT) {
+			val componentInstanceReference = context as ComponentInstancePortReference
+			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			if (componentInstance !== null) {
+				val ports = componentInstance.derivedType.allPorts
+				return Scopes.scopeFor(ports)
+			}
+		}
+		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {
+			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
+			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			if (componentInstance !== null) {
+				val component = componentInstance.derivedType
+				if (component instanceof StatechartDefinition) {
+					return Scopes.scopeFor(component.allRegions)
+				}
+			}
+		}
+		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__STATE) {
+			val componentInstanceReference = context as ComponentInstanceStateConfigurationReference
+			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			if (componentInstance !== null) {
+				val component = componentInstance.derivedType
+				if (component instanceof StatechartDefinition) {
+					val region = componentInstanceReference.region
+					if (region !== null) {
+						return Scopes.scopeFor(region.states)
+					}
+				}
+			}
+		}
+		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_TRANSITION_REFERENCE__TRANSITION) {
+			val componentInstanceReference = context as ComponentInstanceTransitionReference
+			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			if (componentInstance !== null) {
+				val component = componentInstance.derivedType
+				if (component instanceof StatechartDefinition) {
+					val transitions = component.transitions
+					val annotations = transitions.map[it.annotations].flatten.filter(TransitionIdAnnotation)
+					return Scopes.scopeFor(annotations)
+				}
 			}
 		}
 		if (reference == GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE || 

@@ -211,7 +211,11 @@ enum TransitionPriority returns TransitionPriority:
 ;
 
 StatechartContractAnnotation returns StatechartAnnotation:
-	AdaptiveContractAnnotation | MissionPhaseAnnotation
+	ScenarioContractAnnotation | AdaptiveContractAnnotation | MissionPhaseAnnotation
+;
+
+ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
+	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
 ;
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
@@ -234,6 +238,7 @@ Region returns Region:
 ;
 
 Transition returns Transition:
+	(annotations+=TransitionAnnotation)*
 	'transition' ('(' priority=INTEGER ')')?
 	'from' sourceState=[StateNode] 'to' targetState=[StateNode]
 	(
@@ -241,6 +246,14 @@ Transition returns Transition:
 		('[' guard=Expression ']')?
 		('/' ( => effects+=Action)* )?
 	)
+;
+
+TransitionAnnotation returns TransitionAnnotation:
+	TransitionIdAnnotation
+;
+
+TransitionIdAnnotation returns TransitionIdAnnotation:
+	'@''(' name=ID ')'
 ;
 
 StateNode returns StateNode:
@@ -438,9 +451,14 @@ enum ControlFunction returns CompositeModel::ControlFunction:
 ;
 
 MessageQueue returns CompositeModel::MessageQueue:
-	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression) ')' '{'
+	'queue' name=ID '('('priority' '=' priority=INTEGER) (',' 'capacity' '=' capacity=Expression)
+			(',' 'discard' '=' eventDiscardStrategy=DiscardStrategy)? ')' '{'
 	 	(eventReference+=EventReference)(',' eventReference+=EventReference)*
 	'}'
+;
+
+enum DiscardStrategy returns CompositeModel::DiscardStrategy:
+	INCOMING = 'incoming' |  OLDEST = 'oldest'
 ;
 
 PortBinding returns CompositeModel::PortBinding:

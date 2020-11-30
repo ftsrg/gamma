@@ -77,9 +77,7 @@ class Namings {
 	static def String customizeOutputName(Event event, Port port, ComponentInstance instance) '''«customizeOutputName(event, port, instance.name)»'''
 	static def String customizeOutputName(Event event, Port port, ComponentInstanceReference instance) '''«customizeOutputName(event, port, instance.FQN)»'''
 	static def String customizeOutputName(Event event, Port port, String instance) '''«event.getOutputName(port).eventName»_«instance»'''
-	
-	// Regions
-	
+	// Region customization	
 	static def String customizeRegionTypeName(TypeDeclaration type, Component component) '''«getName(type).typeName»_«component.name»'''
 	
 	static def String customizeName(State state) '''«state.stateName.stateEnumLiteralName»''' // They are enum literals

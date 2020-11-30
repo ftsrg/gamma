@@ -44,11 +44,11 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 	}
 	
 	
-	protected class SCIMonitorImpl implements SCIMonitor {
+	protected class SCIErrorImpl implements SCIError {
 	
-		private List<SCIMonitorListener> listeners = new LinkedList<SCIMonitorListener>();
+		private List<SCIErrorListener> listeners = new LinkedList<SCIErrorListener>();
 		
-		public List<SCIMonitorListener> getListeners() {
+		public List<SCIErrorListener> getListeners() {
 			return listeners;
 		}
 		private boolean error;
@@ -60,7 +60,7 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 		
 		protected void raiseError() {
 			error = true;
-			for (SCIMonitorListener listener : listeners) {
+			for (SCIErrorListener listener : listeners) {
 				listener.onErrorRaised();
 			}
 		}
@@ -77,7 +77,7 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 	
 	protected SCILightInputsImpl sCILightInputs;
 	
-	protected SCIMonitorImpl sCIMonitor;
+	protected SCIErrorImpl sCIError;
 	
 	private boolean initialized = false;
 	
@@ -95,7 +95,7 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 	
 	public MonitorStatemachine() {
 		sCILightInputs = new SCILightInputsImpl();
-		sCIMonitor = new SCIMonitorImpl();
+		sCIError = new SCIErrorImpl();
 	}
 	
 	public void init() {
@@ -165,14 +165,14 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 	*/
 	protected void clearEvents() {
 		sCILightInputs.clearEvents();
-		sCIMonitor.clearEvents();
+		sCIError.clearEvents();
 	}
 	
 	/**
 	* This method resets the outgoing events.
 	*/
 	protected void clearOutEvents() {
-		sCIMonitor.clearOutEvents();
+		sCIError.clearOutEvents();
 	}
 	
 	/**
@@ -198,8 +198,8 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 		return sCILightInputs;
 	}
 	
-	public SCIMonitor getSCIMonitor() {
-		return sCIMonitor;
+	public SCIError getSCIError() {
+		return sCIError;
 	}
 	
 	/* 'default' enter sequence for state Other */
@@ -312,7 +312,7 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 			if (react()==false) {
 				if (sCILightInputs.displayGreen) {
 					exitSequence_main_region_Green();
-					sCIMonitor.raiseError();
+					sCIError.raiseError();
 					
 					enterSequence_main_region_Error_default();
 				} else {
@@ -360,7 +360,7 @@ public class MonitorStatemachine implements IMonitorStatemachine {
 				} else {
 					if (sCILightInputs.displayRed) {
 						exitSequence_main_region_Red();
-						sCIMonitor.raiseError();
+						sCIError.raiseError();
 						
 						enterSequence_main_region_Error_default();
 					} else {

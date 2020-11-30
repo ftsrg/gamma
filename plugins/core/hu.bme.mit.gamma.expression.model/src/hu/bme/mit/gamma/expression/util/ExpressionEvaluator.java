@@ -73,7 +73,8 @@ public class ExpressionEvaluator {
 			}
 			if (declaration instanceof ParameterDeclaration) {
 				final ParameterDeclaration parameterDeclaration = (ParameterDeclaration) declaration;
-				return evaluateInteger(parameterDeclaration);
+				final Expression argument = evaluateParameter(parameterDeclaration);
+				return evaluateInteger(argument);
 			}
 			else {
 				throw new IllegalArgumentException("Not transformable expression: " + expression.toString());
@@ -110,7 +111,7 @@ public class ExpressionEvaluator {
 		throw new IllegalArgumentException("Not transformable expression: " + expression);
 	}
 
-	public int evaluateInteger(ParameterDeclaration parameter) {
+	public Expression evaluateParameter(ParameterDeclaration parameter) {
 		EObject component = parameter.eContainer(); // Component
 		EObject root = EcoreUtil.getRootContainer(parameter); // Package
 		TreeIterator<Object> contents = EcoreUtil.getAllContents(root, true);
@@ -121,15 +122,11 @@ public class ExpressionEvaluator {
 				if (element.eCrossReferences().contains(component)) { // If the component is referenced
 					int index = ExpressionModelDerivedFeatures.getIndex(parameter);
 					Expression expression = element.getArguments().get(index);
-					return evaluateInteger(expression);
+					return expression;
 				}
 			}
 		}
 		throw new IllegalArgumentException("Not found expression for parameter: " + parameter);
-	}
-	
-	public boolean evaluateBoolean(ParameterDeclaration parameter) {
-		return evaluateInteger(parameter) == 0 ? false : true;
 	}
 	
 	// Booleans
@@ -196,7 +193,8 @@ public class ExpressionEvaluator {
 			}
 			if (declaration instanceof ParameterDeclaration) {
 				final ParameterDeclaration parameterDeclaration = (ParameterDeclaration) declaration;
-				return evaluateBoolean(parameterDeclaration);
+				final Expression argument = evaluateParameter(parameterDeclaration);
+				return evaluateBoolean(argument);
 			}
 			else {
 				throw new IllegalArgumentException("Not transformable expression: " + expression);

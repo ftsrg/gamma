@@ -10,11 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.formatting
 
+import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil
 import hu.bme.mit.gamma.trace.language.services.TraceLanguageGrammarAccess
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter
 import org.eclipse.xtext.formatting.impl.FormattingConfig
-import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil
-import org.eclipse.xtext.Keyword
 
 class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 	
@@ -24,9 +23,6 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 		val f = grammarAccess as TraceLanguageGrammarAccess
 		// Using the basic expression language formatting
 		expressionLanguageFormatterUtil.format(c, f)
-		for (Keyword comma: f.findKeywords(",")) {
-			c.setNoSpace().before(comma);
-		}
 		// Setting the maximum size of lines
         c.setAutoLinewrap(110)
         // Line break between import and component keywords
@@ -35,8 +31,7 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
   		c.setLinewrap(1).after(f.executionTraceAccess.group_5)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
-        c.setLinewrap(1).before(f.instanceStateRule)
-        c.setNoSpace.before(f.getRaiseEventActAccess.group_4)
+        c.setLinewrap(1).after(f.instanceStateRule)
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule()) 
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule()) 

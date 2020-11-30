@@ -15,10 +15,12 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.reducer.SystemReducer
+import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collections
@@ -40,32 +42,35 @@ class AnalysisModelPreprocessor {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	
-	def preprocess(Package gammaPackage, File containingFile) {
-		return gammaPackage.preprocess(#[], containingFile)
+	
+	def preprocess(Package gammaPackage, String targetFolderUri, String fileName) {
+		return gammaPackage.preprocess(#[], targetFolderUri, fileName)
 	}
 	
-	def preprocess(Package gammaPackage, List<Expression> topComponentArguments, File containingFile) {
-		val parentFolder = containingFile.parent
-		val fileName = containingFile.name
-		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
+	def preprocess(Package gammaPackage, List<Expression> topComponentArguments,
+			String targetFolderUri, String fileName) {
+		val fileNameExtensionless = fileName.extensionlessName
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
 		val trace = modelUnfolder.unfold
 		var _package = trace.package
 		val component = trace.topComponent
 		// Transforming parameters if there are any
-		component.transformParameters(topComponentArguments)
+		component.transformTopComponentParameters(topComponentArguments)
 		// If it is a single statechart, we wrap it
 		if (component instanceof StatechartDefinition) {
 			logger.log(Level.INFO, "Wrapping statechart " + component)
 			_package.components.add(0, component.wrapSynchronousComponent)
 		}
 		// Saving the package, because VIATRA will NOT return matches if the models are not in the same ResourceSet
-		val flattenedModelFileName = "." + fileNameExtensionless + ".gsm"
-		val flattenedModelUri = URI.createFileURI(parentFolder + File.separator + flattenedModelFileName)
-		normalSave(_package, flattenedModelUri)
+		val flattenedModelUri = URI.createFileURI(targetFolderUri +
+				File.separator + fileNameExtensionless.unfoldedPackageFileName)
+		_package.normalSave(flattenedModelUri)
 		// Reading the model from disk as this is the easy way of reloading the necessary ResourceSet
 		_package = flattenedModelUri.normalLoad as Package
 		val resource = _package.eResource
@@ -78,21 +83,27 @@ class AnalysisModelPreprocessor {
 		return _package.components.head
 	}
 	
-	def transformParameters(Component component, List<Expression> topComponentArguments) {
+	protected def transformTopComponentParameters(Component component,
+			List<Expression> topComponentArguments) {
+		if (topComponentArguments.nullOrEmpty) {
+			return
+		}
 		val _package = component.containingPackage
 		val parameters = component.parameterDeclarations
 		logger.log(Level.INFO, "Argument size: " + topComponentArguments.size + " - parameter size: " + parameters.size)
 		checkState(topComponentArguments.size <= parameters.size)
+		val annotation = createTopComponentArgumentsAnnotation
+		_package.annotations += annotation
 		// For code generation, not all (actually zero) parameters have to be bound
 		for (var i = 0; i < topComponentArguments.size; i++) {
 			val parameter = parameters.get(i)
-			val argument = topComponentArguments.get(i).clone(true, true)
+			val argument = topComponentArguments.get(i).clone
 			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
-			_package.topComponentArguments += argument // Saving top component expression
+			annotation.arguments += argument // Saving top component expression
 			val parameterConstant =  createConstantDeclaration => [
 				it.type = parameter.type
 				it.name = "__" + parameter.name + "__"
-				it.expression = argument.clone(true, true)
+				it.expression = argument.clone
 			]
 			_package.constantDeclarations += parameterConstant
 			// Changing the parameter references to constant references

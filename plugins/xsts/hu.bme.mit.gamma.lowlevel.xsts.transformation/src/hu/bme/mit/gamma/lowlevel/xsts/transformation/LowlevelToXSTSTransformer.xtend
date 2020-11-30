@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
@@ -83,6 +85,7 @@ class LowlevelToXSTSTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension AnnotationTransformer annotationTransformer = AnnotationTransformer.INSTANCE
 	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
@@ -194,6 +197,7 @@ class LowlevelToXSTSTransformer {
 		mergeTransitions
 		optimizeActions
 		eliminateNullActions
+		handleVariableAnnotations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -462,6 +466,9 @@ class LowlevelToXSTSTransformer {
 						it.name = lowlevelVariable.name.variableName
 						it.type = lowlevelVariable.type.transformType
 					]
+					for (lowlevelAnnotation : lowlevelVariable.annotations) {
+						xStsVariable.annotations += lowlevelAnnotation.transform
+					}
 					xSts.variableDeclarations += xStsVariable // Target model modification
 					trace.put(lowlevelVariable, xStsVariable) // Tracing
 					xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
@@ -821,6 +828,22 @@ class LowlevelToXSTSTransformer {
 		if (xSts.outEventAction === null) {
 			xSts.outEventAction = createEmptyAction
 		}
+	}
+	
+	protected def handleVariableAnnotations() {
+		val resetableVariables = xSts.variableDeclarations.filter[
+			!it.annotations.filter(ResetableVariableDeclarationAnnotation).empty]
+		val transientVariables = xSts.variableDeclarations.filter[
+			!it.annotations.filter(TransientVariableDeclarationAnnotation).empty]
+		val newMergedAction = createSequentialAction
+		for (resetableVariable : resetableVariables) {
+			newMergedAction.actions += resetableVariable.createAssignmentAction(resetableVariable.initialValue)
+		}
+		newMergedAction.actions += xSts.mergedAction
+		for (transientVariable : transientVariables) {
+			newMergedAction.actions += transientVariable.createAssignmentAction(transientVariable.initialValue)
+		}
+		xSts.mergedAction = newMergedAction
 	}
 	
 	def dispose() {

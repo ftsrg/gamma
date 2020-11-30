@@ -26,10 +26,12 @@ import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
+import hu.bme.mit.gamma.trace.model.NegatedAssert
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Reset
+import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.transformation.util.AnnotationNamings
+import hu.bme.mit.gamma.transformation.util.annotations.AnnotationNamings
 import hu.bme.mit.gamma.uppaal.verification.patterns.InstanceContainer
 import hu.bme.mit.gamma.uppaal.verification.patterns.WrapperInstanceContainer
 import java.util.Collections
@@ -42,6 +44,7 @@ import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TestGenerator {
 	// Constant strings
@@ -73,7 +76,7 @@ class TestGenerator {
 	protected final List<ExecutionTrace> traces // Traces in OR logical relation
 	
 	// Auxiliary objects
-	protected final extension ExpressionSerializer expressionSerializer = new ExpressionSerializer
+	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
 	/**
 	 * Note that the lists of traces represents a set of behaviors the component must conform to.
@@ -202,17 +205,9 @@ class TestGenerator {
 						«FOR act : step.actions»
 							«act.serialize»
 						«ENDFOR»
-						// Checking out events
-						«FOR outEvent : step.outEvents»
-							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».isRaisedEvent("«outEvent.port.name»", "«outEvent.event.name»", new Object[] {«FOR parameter : outEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»}));
-						«ENDFOR»
-						// Checking variables
-						«FOR variableState : step.instanceStates.filter(InstanceVariableState).filter[it.declaration.isHandled]»
-							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«variableState.instance.getFullContainmentHierarchy(null)».checkVariableValue("«variableState.declaration.name»", «variableState.value.serialize»));
-						«ENDFOR»
-						// Checking of states
-						«FOR instanceState : step.instanceStates.filter(InstanceStateConfiguration).filter[it.state.handled].sortBy[it.instance.name + it.state.name]»
-							«ASSERT_TRUE»(«TEST_INSTANCE_NAME».«instanceState.instance.getFullContainmentHierarchy(null)».isStateActive("«instanceState.state.parentRegion.name»", "«instanceState.state.name»"));
+						// Assert
+						«FOR assertion : step.filterAsserts»
+							«ASSERT_TRUE»(«assertion.serializeAssert»);
 						«ENDFOR»
 					}
 					
@@ -246,6 +241,39 @@ class TestGenerator {
 «««		In theory only asynchronous adapters and synchronous adapters are used
 		«TEST_INSTANCE_NAME».schedule(null);
 	'''
+	
+	// Assert serialization
+	
+	protected def filterAsserts(Step step) {
+		val asserts = newArrayList
+		for (assertion : step.asserts) {
+			val lowermostAssert = assertion.lowermostAssert
+			if (lowermostAssert instanceof InstanceStateConfiguration) {
+				if (lowermostAssert.state.handled) {
+					asserts += assertion
+				}
+			}
+			else if (lowermostAssert instanceof InstanceVariableState) {
+				if (lowermostAssert.declaration.handled) {
+					asserts += assertion
+				}
+			}
+			else {
+				asserts += assertion
+			}
+		}
+		return asserts
+	}
+	
+	protected def dispatch String serializeAssert(NegatedAssert assert) '''!«assert.negatedAssert.serializeAssert»'''
+	
+	protected def dispatch String serializeAssert(RaiseEventAct assert) '''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
+	
+	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+	
+	protected def dispatch String serializeAssert(InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+	
+	//
 	
 	protected def getParent(ComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
@@ -307,7 +335,7 @@ class TestGenerator {
 			}
 			if (component instanceof AsynchronousAdapter) {
 				// This is the end
-				return '''getComponent("«component.wrappedComponent.name»").'''
+				return ''''''
 			}
 			if  (component instanceof AsynchronousCompositeComponent) {
 				if (child instanceof SynchronousComponentInstance) {
@@ -349,7 +377,9 @@ class TestGenerator {
 		// Not perfect as other variables can be named liked this, but works 99,99% of the time
 		val name = declaration.name
 		if (name.startsWith(AnnotationNamings.PREFIX) &&
-				name.endsWith(AnnotationNamings.POSTFIX)) {
+				name.endsWith(AnnotationNamings.POSTFIX) ||
+				component.allSimpleInstances.map[it.type].filter(StatechartDefinition)
+					.map[it.transitions].flatten.exists[it.id == name] /*Transition id*/) {
 			return false
 		}
 		return true

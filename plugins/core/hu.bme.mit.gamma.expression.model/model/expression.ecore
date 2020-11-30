@@ -38,10 +38,13 @@
   <eClassifiers xsi:type="ecore:EClass" name="Declaration" abstract="true" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ValueDeclaration" eSuperTypes="#//Declaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ValueDeclaration" eSuperTypes="#//Declaration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//VariableDeclarationAnnotation" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//Declaration"/>
-  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ParameterDeclaration" eSuperTypes="#//ValueDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="FieldDeclaration" eSuperTypes="#//ValueDeclaration"/>
@@ -178,7 +181,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="field" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//ArgumentedElement #//NonAssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IfThenElseExpression" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
@@ -213,4 +215,10 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModExpression" eSuperTypes="#//ArithmeticExpression #//BinaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryMinusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryPlusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ResetableVariableDeclarationAnnotation"
+      eSuperTypes="#//VariableDeclarationAnnotation"/>
 </ecore:EPackage>

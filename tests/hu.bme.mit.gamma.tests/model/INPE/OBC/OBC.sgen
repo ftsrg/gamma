@@ -3,7 +3,7 @@ GeneratorModel for yakindu::java {
 	statechart OBC {
 
 		feature Outlet {
-			targetProject = "hu.bme.mit.inpe.casestudy"
+			targetProject = "hu.bme.mit.gamma.tests"
 			targetFolder = "src-gen"
 			libraryTargetFolder = "src"
 		}

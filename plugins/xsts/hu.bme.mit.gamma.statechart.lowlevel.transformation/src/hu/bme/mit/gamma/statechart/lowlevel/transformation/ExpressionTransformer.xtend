@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
@@ -49,6 +50,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -62,8 +64,6 @@ import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import java.util.stream.Collectors
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -79,6 +79,10 @@ class ExpressionTransformer {
 	new(Trace trace, boolean functionInlining) {
 		this.trace = trace
 		this.functionInlining = functionInlining
+	}
+	
+	protected def transformAnnotation(VariableDeclarationAnnotation annotation) {
+		return annotation.clone
 	}
 	
 	def dispatch List<Expression> transformExpression(NullaryExpression expression) {
@@ -442,12 +446,16 @@ class ExpressionTransformer {
 			transformed.addAll(transformValueArray(variable, variableType, arrayStack))
 			return transformed
 		} else {	//Simple variables and arrays of simple types are simply transformed
-			transformed.add(createVariableDeclaration => [
+			var newVariable = createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
 				if (variable instanceof InitializableElement)
 					it.expression = variable.expression?.transformExpression?.getOnlyElement
-			])
+				for (annotation : variable.annotations) {
+					it.annotations += annotation.transformAnnotation
+				}
+			]
+			transformed.add(newVariable)
 			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
 			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)
 			else if (variable instanceof ConstantDeclaration) trace.put(variable, transformed.head)
@@ -470,14 +478,11 @@ class ExpressionTransformer {
 				transformed.addAll(transformValueField(variable, innerField, innerStack))
 			}
 		} else {	//if simple type
-			println("Transforming record field")
 			var transformedField = createVariableDeclaration => [
 				it.name = variable.name + "_" + currentField.last.name	//TODO name provider
-				
 				it.type = createTransformedRecordType(arrayStack, currentField.last.type)
 				if (variable instanceof InitializableElement && (variable as InitializableElement).expression !== null) {
 					var Expression initial = (variable as InitializableElement).expression
-					println("Initial:" + initial)
 					if (initial instanceof RecordLiteralExpression) {
 						it.expression = getExpressionFromRecordLiteral(initial, currentField).transformExpression.getOnlyElement
 					} 
@@ -512,12 +517,15 @@ class ExpressionTransformer {
 						throw new IllegalArgumentException("Cannot transform initial value: " + initial)
 					}
 				}
+				for (annotation : variable.annotations) {
+					it.annotations += annotation.transformAnnotation
+				}
 			]
 			transformed.add(transformedField)
 			trace.put(new Pair<ValueDeclaration, List<FieldDeclaration>>(variable,currentField), transformedField)
 		}
 		
-		return transformed
+		return transformed	
 	}
 	
 	private def List<VariableDeclaration> transformValueArray(ValueDeclaration variable, ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
@@ -544,6 +552,9 @@ class ExpressionTransformer {
 				it.type = variable.type.transformType
 				if (variable instanceof InitializableElement)
 					it.expression = variable.expression?.transformExpression?.getOnlyElement
+				for (annotation : variable.annotations) {
+					it.annotations += annotation.transformAnnotation
+				}
 			])
 			if (variable instanceof VariableDeclaration) trace.put(variable, transformed.head)
 			else if (variable instanceof ParameterDeclaration) trace.put(variable, transformed.head)

@@ -45,7 +45,7 @@ public class CommandHandler extends AbstractHandler {
 
 	protected Logger logger = Logger.getLogger("GammaLogger");
 	
-	private final String folderName = "src-gen";	
+	protected final String folderName = "src-gen";
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -102,7 +102,7 @@ public class CommandHandler extends AbstractHandler {
 	/**
 	 * Checks whether all statecharts have unique names.
 	 */
-	private void checkStatechartNameUniqueness(IContainer container, Set<String> fileNames) throws CoreException {
+	protected void checkStatechartNameUniqueness(IContainer container, Set<String> fileNames) throws CoreException {
 		for (IResource iResource : container.members()) {
 			if (iResource instanceof IFile) {
 				IFile file = (IFile) iResource;
@@ -125,7 +125,7 @@ public class CommandHandler extends AbstractHandler {
 	/**
 	 * Returns the names of the imported statecharts recursively starting from the given project.
 	 */
-	private Collection<String> getSimpleStatechartFileNames(Package gammaPackage) {
+	protected Collection<String> getSimpleStatechartFileNames(Package gammaPackage) {
 		Set<String> simpleStatechartNameList = new HashSet<String>();
 		for (Package importedPackage : gammaPackage.getImports()) {
 			if (hasOnlyStatecharts(importedPackage)) {
@@ -142,13 +142,13 @@ public class CommandHandler extends AbstractHandler {
 		return simpleStatechartNameList;
 	}
 	
-	private boolean hasOnlyStatecharts(Package gammaPackage) {
+	protected boolean hasOnlyStatecharts(Package gammaPackage) {
 		// Only statecharts (theoretically single statechart) are contained
 		Collection<Component> components = gammaPackage.getComponents();
 		return !components.isEmpty() && components.stream().allMatch(it -> it instanceof StatechartDefinition);
 	}
 	
-	private String getPackageFileName(Package _package) {
+	protected String getPackageFileName(Package _package) {
 		URI uri = _package.eResource().getURI();
 		// /hu.bme.mit.gamma.tutorial.extra/model/Monitor/Monitor.gcd
 		String packageFileName = uri.lastSegment();
@@ -160,7 +160,7 @@ public class CommandHandler extends AbstractHandler {
 	/**
 	 * Puts the URIs of the Yakindu-Gamma trace files into the URIList if the trace file has a name contained in importList.
 	 */
-	private void obtainTraceURIs(IContainer container, Collection<String> importList, List<URI> URIList) throws CoreException {
+	protected void obtainTraceURIs(IContainer container, Collection<String> importList, List<URI> URIList) throws CoreException {
 		for (IResource iResource : container.members()) {
 			if (iResource instanceof IFile) {
 				IFile file = (IFile) iResource;
@@ -176,7 +176,7 @@ public class CommandHandler extends AbstractHandler {
 		}
 	}
 
-	private Resource loadResource(ResourceSet resSet, URI uri) throws IllegalArgumentException {
+	protected Resource loadResource(ResourceSet resSet, URI uri) throws IllegalArgumentException {
 		Resource resource = resSet.getResource(uri, true);
 		EObject object = resource.getContents().get(0);
 		if (!(object instanceof Package || object instanceof Y2GTrace)) {

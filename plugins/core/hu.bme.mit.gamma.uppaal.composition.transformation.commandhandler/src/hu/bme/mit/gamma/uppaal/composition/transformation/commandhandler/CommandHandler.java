@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Gamma project
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation.commandhandler;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,12 +44,12 @@ public class CommandHandler extends AbstractHandler {
 					if (selection.getFirstElement() instanceof IFile) {
 						ResourceSet resourceSet = new ResourceSetImpl();
 						IFile selectedFile = (IFile) selection.getFirstElement();
-						String fileURISubstring = URI.decode(selectedFile.getLocationURI().toString().substring(5));
+						String targetFolderUri = selectedFile.getParent().getLocation().toString();
 						URI packageUri = URI.createPlatformResourceURI(selectedFile.getFullPath().toString(), true);
 						// Loading the model
 						Package gammaPackage = this.loadResource(resourceSet, packageUri);
 						DefaultCompositionToUppaalTransformer transformer = new DefaultCompositionToUppaalTransformer();
-						transformer.transformComponent(gammaPackage, new File(fileURISubstring));
+						transformer.transformComponent(gammaPackage, targetFolderUri, selectedFile.getName());
 						return null;
 					}
 				}

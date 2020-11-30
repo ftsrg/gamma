@@ -8,7 +8,7 @@ interface LightCommands {
 interface Control {
 	out event toggle
 }
-interface Monitor {
+interface Error {
 	out event error
 }
 interface PoliceInterrupt {

@@ -11,15 +11,18 @@
 package hu.bme.mit.gamma.statechart.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -36,6 +39,8 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
@@ -47,7 +52,7 @@ import hu.bme.mit.gamma.statechart.statechart.BinaryType;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 
-public class StatechartUtil extends ExpressionUtil {
+public class StatechartUtil extends ActionUtil {
 	// Singleton
 	public static final StatechartUtil INSTANCE = new StatechartUtil();
 	protected StatechartUtil() {}
@@ -57,12 +62,18 @@ public class StatechartUtil extends ExpressionUtil {
 	protected StatechartModelFactory statechartFactory = StatechartModelFactory.eINSTANCE;
 	protected CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE;
 	
+	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 
 	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		ComponentInstanceReference instanceReference = compositeFactory.createComponentInstanceReference();
 		instanceReference.getComponentInstanceHierarchy().addAll(
 				StatechartModelDerivedFeatures.getComponentInstanceChain(instance));
 		return instanceReference;
+	}
+	
+	public Set<VariableDeclaration> getVariables(EObject object) {
+		return new HashSet<VariableDeclaration>(
+				ecoreUtil.getSelfAndAllContentsOfType(object, VariableDeclaration.class));
 	}
 	
 	public Set<VariableDeclaration> getWrittenVariables(EObject object) {
@@ -85,15 +96,51 @@ public class StatechartUtil extends ExpressionUtil {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (ReferenceExpression referenceExpression :
 				ecoreUtil.getSelfAndAllContentsOfType(object, ReferenceExpression.class)) {
-			if (!(referenceExpression.eContainer() instanceof AssignmentStatement)) {
+			boolean isWritten = false;
+			EObject container = referenceExpression.eContainer();
+			if (container instanceof AssignmentStatement) {
+				AssignmentStatement assignment = (AssignmentStatement) container;
+				if (assignment.getLhs() == referenceExpression) {
+					isWritten = true;
+				}
+			}
+			if (!isWritten) {
 				if(referenceExpression instanceof DirectReferenceExpression) {
 					Declaration declaration = ((DirectReferenceExpression)referenceExpression).getDeclaration();
 					if (declaration instanceof VariableDeclaration) {
 						variables.add((VariableDeclaration) declaration);
 					}
-				} else if (referenceExpression instanceof AccessExpression) {
+				}
+				else {
 					//TODO handle access expressions
 				}
+			}
+		}
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getUnusedVariables(EObject object) {
+		Set<VariableDeclaration> variables = getVariables(object);
+		variables.removeAll(getWrittenVariables(object));
+		variables.removeAll(getReadVariables(object));
+		return variables;
+	}
+	
+	public Set<VariableDeclaration> getOnlyIncrementedVariables(EObject object) {
+		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
+		for (AssignmentStatement assignmentStatement :
+				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
+			ReferenceExpression lhs = assignmentStatement.getLhs();
+			Expression rhs = assignmentStatement.getRhs();
+			Declaration lhsVariable = expressionUtil.getReferredValues(lhs).iterator().next();
+			if (ecoreUtil.getSelfAndAllContentsOfType(object, DirectReferenceExpression.class)
+					.stream().filter(it -> it != lhs && it.getDeclaration() == lhsVariable)
+					.count() ==
+				ecoreUtil.getSelfAndAllContentsOfType(rhs, DirectReferenceExpression.class)
+					.stream().filter(it -> it.getDeclaration() == lhsVariable)
+					.count()) {
+				// Every reference is from the rhs
+				variables.add((VariableDeclaration) lhsVariable);
 			}
 		}
 		return variables;
@@ -129,6 +176,29 @@ public class StatechartUtil extends ExpressionUtil {
 		binaryTrigger.setLeftOperand(oldTrigger);
 		binaryTrigger.setRightOperand(newTrigger);
 		return binaryTrigger;
+	}
+	
+	public boolean areDefinitelyFalseArguments(Expression guard, Port port, Event event,
+			List<Expression> arguments) {
+		if (guard == null) {
+			return false;
+		}
+		Expression clonedGuard = ecoreUtil.clone(guard);
+		List<EventParameterReferenceExpression> parameterReferences =
+				ecoreUtil.getSelfAndAllContentsOfType(clonedGuard,
+						EventParameterReferenceExpression.class);
+		for (EventParameterReferenceExpression parameterReference : parameterReferences) {
+			Port referredPort = parameterReference.getPort();
+			Event referredEvent = parameterReference.getEvent();
+			if (port == referredPort && event == referredEvent) {
+				ParameterDeclaration referredParameter = parameterReference.getParameter();
+				int index = ecoreUtil.getIndex(referredParameter);
+				Expression argument = arguments.get(index);
+				Expression clonedArgument = ecoreUtil.clone(argument);
+				ecoreUtil.replace(clonedArgument, parameterReference);
+			}
+		}
+		return isDefinitelyFalseExpression(clonedGuard);
 	}
 	
 	public int evaluateMilliseconds(TimeSpecification time) {

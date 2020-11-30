@@ -14,6 +14,10 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
+	// Singleton
+	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
+	protected new() {}
+	//
 	
 	override dispatch String serialize(EnumerationLiteralExpression expression) {
 		return  "\"" + expression.reference.name + "\"";

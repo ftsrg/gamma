@@ -30,7 +30,7 @@ public class GeneratedTestVerifier implements Runnable {
 	
 	private final View view;
 	
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public GeneratedTestVerifier(View view, AbstractController controller) {
 		this.view = view;
@@ -65,7 +65,7 @@ public class GeneratedTestVerifier implements Runnable {
     				temporalExpression = queryBuilder.delete(queryBuilder.lastIndexOf(separator), queryBuilder.length()).toString();
     			}
     			//
-    			Logger.getLogger("GammaLogger").log(Level.INFO, "Checking " + temporalExpression + "...");
+    			logger.log(Level.INFO, "Checking " + temporalExpression + "...");
     			verifier = new GuiVerifier(temporalExpression, false, view);
     			verifier.execute();
 				int elapsedTime = 0;
@@ -104,7 +104,7 @@ public class GeneratedTestVerifier implements Runnable {
 									isReachableString = "reachable";
 								break;
 								case FALSE:
-									isReachableString = "not reachable";
+									isReachableString = "NOT reachable";
 								break;
 								case UNDEF:
     								// Theoretically unreachable because of !cancelled
@@ -115,10 +115,10 @@ public class GeneratedTestVerifier implements Runnable {
     					}
 					}
 					buffer.append(resultSentence + System.lineSeparator());
-					Logger.getLogger("GammaLogger").log(Level.INFO, resultSentence); // Removing temporal operator
+					logger.log(Level.INFO, resultSentence); // Removing temporal operator
 				}
 				else if (elapsedTime >= TIMEOUT) {
-					Logger.getLogger("GammaLogger").log(Level.INFO, "Timeout...");
+					logger.log(Level.INFO, "Timeout...");
 				}
 				// Important to cancel the process
 				verifier.cancelProcess(true);

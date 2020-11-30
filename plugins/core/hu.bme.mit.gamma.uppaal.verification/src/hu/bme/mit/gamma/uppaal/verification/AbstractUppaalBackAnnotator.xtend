@@ -15,13 +15,15 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.Scanner
 import java.util.logging.Level
 import java.util.logging.Logger
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.util.GammaEcoreUtil
+
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 abstract class AbstractUppaalBackAnnotator {
 	
@@ -46,7 +48,7 @@ abstract class AbstractUppaalBackAnnotator {
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Scanner traceScanner, boolean sortTrace) {
 		this.traceScanner = traceScanner
@@ -60,14 +62,13 @@ abstract class AbstractUppaalBackAnnotator {
 			it.import = this.gammaPackage
 			it.name = this.component.name + "Trace"
 		]
-		// Setting the arguments: AnalysisModelPreprocessor saved them in the Package
+		val topComponentArguments = gammaPackage.topComponentArguments
 		// Note that the top component does not contain parameter declarations anymore due to the preprocessing
-		checkState(gammaPackage.topComponentArguments.size == component.parameterDeclarations.size, 
+		checkState(topComponentArguments.size == component.parameterDeclarations.size, 
 			"The numbers of top component arguments and top component parameters are not equal: " +
-			gammaPackage.topComponentArguments.size + " - " + component.parameterDeclarations.size)
-		logger.log(Level.INFO, "The number of arguments of the top component is " +
-			gammaPackage.topComponentArguments.size)
-		trace.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
+				topComponentArguments.size + " - " + component.parameterDeclarations.size)
+		logger.log(Level.INFO, "The number of top component arguments is " + topComponentArguments.size)
+		trace.arguments += topComponentArguments.map[it.clone]
 		return trace
 	}
 	

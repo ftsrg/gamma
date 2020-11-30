@@ -1,40 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
 <nta>
 <declaration>
 
 
-broadcast chan finalize;
-
-bool isStable = true;
-
-bool toRaise_Control_toggleOfcrossroad_prior;
-
-bool isRaised_Control_toggleOfcrossroad_prior;
-
-bool toRaise_PoliceInterrupt_policeOfcrossroad_secondary;
-
-bool isRaised_PoliceInterrupt_policeOfcrossroad_secondary;
-
-bool toRaise_PoliceInterrupt_policeOfcrossroad_prior;
-
-bool isRaised_PoliceInterrupt_policeOfcrossroad_prior;
-
-bool toRaise_PoliceInterrupt_policeOfcrossroad_controller;
-
-bool isRaised_PoliceInterrupt_policeOfcrossroad_controller;
-
-bool toRaise_LightInputs_displayYellowOfmonitor;
-
-bool isRaised_LightInputs_displayYellowOfmonitor;
+bool isStable = false;
 
 bool toRaise_LightInputs_displayGreenOfmonitor;
 
 bool isRaised_LightInputs_displayGreenOfmonitor;
 
+bool toRaise_PoliceInterrupt_policeOfcrossroad_secondary;
+
+bool isRaised_PoliceInterrupt_policeOfcrossroad_secondary;
+
 bool toRaise_LightInputs_displayNoneOfmonitor;
 
 bool isRaised_LightInputs_displayNoneOfmonitor;
+
+bool toRaise_Control_toggleOfcrossroad_prior;
+
+bool isRaised_Control_toggleOfcrossroad_prior;
+
+bool toRaise_PoliceInterrupt_policeOfcrossroad_prior;
+
+bool isRaised_PoliceInterrupt_policeOfcrossroad_prior;
 
 bool toRaise_Control_toggleOfcrossroad_secondary;
 
@@ -44,601 +32,142 @@ bool toRaise_LightInputs_displayRedOfmonitor;
 
 bool isRaised_LightInputs_displayRedOfmonitor;
 
-bool Monitor_errorOfmonitor;
+bool toRaise_PoliceInterrupt_policeOfcrossroad_controller;
 
-bool LightCommands_displayYellowOfcrossroad_secondary;
+bool isRaised_PoliceInterrupt_policeOfcrossroad_controller;
 
-bool LightCommands_displayGreenOfcrossroad_prior;
+bool toRaise_LightInputs_displayYellowOfmonitor;
+
+bool isRaised_LightInputs_displayYellowOfmonitor;
 
 bool LightCommands_displayRedOfcrossroad_secondary;
 
-bool LightCommands_displayNoneOfcrossroad_prior;
+bool LightCommands_displayNoneOfcrossroad_secondary;
 
 bool LightCommands_displayGreenOfcrossroad_secondary;
 
-bool LightCommands_displayNoneOfcrossroad_secondary;
+bool LightCommands_displayRedOfcrossroad_prior;
+
+bool LightCommands_displayYellowOfcrossroad_secondary;
 
 bool LightCommands_displayYellowOfcrossroad_prior;
 
-bool LightCommands_displayRedOfcrossroad_prior;
+bool LightCommands_displayGreenOfcrossroad_prior;
 
-broadcast chan runCycleInterruptedOfInterruptedOfcrossroad_secondary;
+bool LightCommands_displayNoneOfcrossroad_prior;
 
-bool isScheduledinterruptedOfInterruptedOfcrossroad_secondary;
-
-broadcast chan runCycleMain_regionOfStatechartOfcrossroad_controller;
-
-bool isScheduledmain_regionOfStatechartOfcrossroad_controller;
-
-broadcast chan runCycleMain_regionOfStatechartOfcrossroad_secondary;
-
-bool isScheduledmain_regionOfStatechartOfcrossroad_secondary;
+bool Error_errorOfmonitor;
 
 broadcast chan runCycleMain_regionOfStatechartOfcrossroad_prior;
 
-bool isScheduledmain_regionOfStatechartOfcrossroad_prior;
-
-broadcast chan runCycleInterruptedOfInterruptedOfcrossroad_prior;
-
-bool isScheduledinterruptedOfInterruptedOfcrossroad_prior;
-
-broadcast chan runCycleNormalOfNormalOfcrossroad_secondary;
-
-bool isSchedulednormalOfNormalOfcrossroad_secondary;
-
-broadcast chan runCycleOperatingOfOperatingOfcrossroad_controller;
-
-bool isScheduledoperatingOfOperatingOfcrossroad_controller;
+bool isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior;
 
 broadcast chan runCycleMain_regionOfStatechartOfmonitor;
 
-bool isScheduledmain_regionOfStatechartOfmonitor;
+bool isScheduledmain_regionOfStatechartOfmonitorOfmonitor;
 
 broadcast chan runCycleNormalOfNormalOfcrossroad_prior;
 
-bool isSchedulednormalOfNormalOfcrossroad_prior;
+bool isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior;
 
-broadcast chan entryChanOfOperating5;
+broadcast chan runCycleOperatingOfOperatingOfcrossroad_controller;
 
-broadcast chan entryChanOfInterrupted6;
+bool isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller;
 
-broadcast chan entryChanOfNormal7;
+broadcast chan runCycleInterruptedOfInterruptedOfcrossroad_prior;
 
-broadcast chan entryChanOfInterrupted8;
+bool isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior;
 
-broadcast chan entryChanOfNormal9;
+broadcast chan runCycleNormalOfNormalOfcrossroad_secondary;
 
-broadcast chan exitChanOfInterrupted5;
+bool isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary;
 
-broadcast chan exitChanOfNormal6;
+broadcast chan runCycleInterruptedOfInterruptedOfcrossroad_secondary;
 
-broadcast chan exitChanOfOperating7;
+bool isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary;
 
-broadcast chan exitChanOfInterrupted8;
+broadcast chan runCycleMain_regionOfStatechartOfcrossroad_secondary;
 
-broadcast chan exitChanOfNormal9;
+bool isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary;
 
-void clearOutEvents52() {
+broadcast chan runCycleMain_regionOfStatechartOfcrossroad_controller;
+
+bool isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller;
+
+clock timer0;
+
+bool PriorityTimeout4ofcrossroad_controller = true;
+
+bool InitTimeout2ofcrossroad_controller = true;
+
+bool SecondaryPreparesTimeout3ofcrossroad_controller = true;
+
+bool SecondaryTimeout5ofcrossroad_controller = true;
+
+clock timer1;
+
+bool BlinkingYellowTimeout4ofcrossroad_prior = true;
+
+bool BlackTimeout3ofcrossroad_prior = true;
+
+clock timer2;
+
+bool BlinkingYellowTimeout4ofcrossroad_secondary = true;
+
+bool PriorityPreparesTimeout6ofcrossroad_controller = true;
+
+bool BlackTimeout3ofcrossroad_secondary = true;
+
+broadcast chan entryChanOfNormal15;
+
+broadcast chan entryChanOfInterrupted16;
+
+broadcast chan entryChanOfOperating17;
+
+broadcast chan entryChanOfInterrupted18;
+
+broadcast chan entryChanOfNormal19;
+
+broadcast chan exitChanOfNormal15;
+
+broadcast chan exitChanOfOperating16;
+
+broadcast chan exitChanOfInterrupted17;
+
+broadcast chan exitChanOfNormal18;
+
+broadcast chan exitChanOfInterrupted19;
+
+void clearOutEvents15() {
+	LightCommands_displayYellowOfcrossroad_prior = false;
+	LightCommands_displayRedOfcrossroad_secondary = false;
+	LightCommands_displayNoneOfcrossroad_secondary = false;
+	Error_errorOfmonitor = false;
 	LightCommands_displayRedOfcrossroad_prior = false;
 	LightCommands_displayNoneOfcrossroad_prior = false;
-	LightCommands_displayGreenOfcrossroad_prior = false;
-	LightCommands_displayGreenOfcrossroad_secondary = false;
-	LightCommands_displayNoneOfcrossroad_secondary = false;
-	Monitor_errorOfmonitor = false;
 	LightCommands_displayYellowOfcrossroad_secondary = false;
-	LightCommands_displayRedOfcrossroad_secondary = false;
-	LightCommands_displayYellowOfcrossroad_prior = false;
+	LightCommands_displayGreenOfcrossroad_secondary = false;
+	LightCommands_displayGreenOfcrossroad_prior = false;
 }
 
-bool noInnerEvents() {
-	bool tempVar0;
-	bool tempVar1;
-	bool tempVar2;
-	bool tempVar3;
-	bool tempVar4;
-	bool tempVar5;
-	bool tempVar6;
-	bool tempVar7;
-	bool tempVar8;
-	tempVar0 = toRaise_LightInputs_displayNoneOfmonitor;
-	tempVar1 = (tempVar0 || toRaise_LightInputs_displayGreenOfmonitor);
-	tempVar2 = (tempVar1 || toRaise_Control_toggleOfcrossroad_secondary);
-	tempVar3 = (tempVar2 || toRaise_PoliceInterrupt_policeOfcrossroad_prior);
-	tempVar4 = (tempVar3 || toRaise_Control_toggleOfcrossroad_prior);
-	tempVar5 = (tempVar4 || toRaise_PoliceInterrupt_policeOfcrossroad_secondary);
-	tempVar6 = (tempVar5 || toRaise_PoliceInterrupt_policeOfcrossroad_controller);
-	tempVar7 = (tempVar6 || toRaise_LightInputs_displayYellowOfmonitor);
-	tempVar8 = (tempVar7 || toRaise_LightInputs_displayRedOfmonitor);
-	return !(tempVar8);
+void resetClocks17() {
+	if (((((PriorityPreparesTimeout6ofcrossroad_controller &amp;&amp; SecondaryTimeout5ofcrossroad_controller) &amp;&amp; PriorityTimeout4ofcrossroad_controller) &amp;&amp; SecondaryPreparesTimeout3ofcrossroad_controller) &amp;&amp; InitTimeout2ofcrossroad_controller))
+		timer0 = 0;
+	if ((BlackTimeout3ofcrossroad_prior &amp;&amp; BlinkingYellowTimeout4ofcrossroad_prior))
+		timer1 = 0;
+	if ((BlinkingYellowTimeout4ofcrossroad_secondary &amp;&amp; BlackTimeout3ofcrossroad_secondary))
+		timer2 = 0;
 }
 
 </declaration>
-<template>
-<name>
-interruptedOfInterruptedOfcrossroad_secondary
-</name>
-<declaration>
-bool isActive;
-
-clock timer18;
-
-clock timer24;
-</declaration>
-<location id="EntryLocation2">
-<name>
-EntryLocation2
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="GenInitLocation3">
-<name>
-GenInitLocation3
-</name>
-<label kind="comments">
-Generated for the synchronization of subregions.
-</label>
-</location>
-
-<location id="BlinkingYellow">
-<name>
-BlinkingYellow
-</name>
-<label kind="invariant">
-timer18 &lt;= 500
-</label>
-</location>
-
-<location id="entryOfBlinkingYellow">
-<name>
-entryOfBlinkingYellow
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Black">
-<name>
-Black
-</name>
-<label kind="invariant">
-timer24 &lt;= 500
-</label>
-</location>
-
-<location id="entryOfBlack">
-<name>
-entryOfBlack
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="timer19">
-<name>
-timer19
-</name>
-</location>
-
-<location id="timer25">
-<name>
-timer25
-</name>
-</location>
-<init ref="GenInitLocation3"/>
-
-<transition>
-<source ref="entryOfBlinkingYellow"/>
-<target ref="BlinkingYellow"/>
-<label kind="assignment">LightCommands_displayYellowOfcrossroad_secondary = true,
-timer18 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfBlack"/>
-<target ref="Black"/>
-<label kind="assignment">LightCommands_displayNoneOfcrossroad_secondary = true,
-timer24 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="timer19"/>
-<target ref="entryOfBlack"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_secondary?</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="timer25"/>
-<target ref="entryOfBlinkingYellow"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_secondary?</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation2"/>
-<target ref="entryOfBlinkingYellow"/>
-<label kind="guard">isActive</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="timer19"/>
-<label kind="guard">(isStable &amp;&amp; timer18 >= 500)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="timer25"/>
-<label kind="guard">(isStable &amp;&amp; timer24 >= 500)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="timer19"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted6?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted6?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted6?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation3"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted6?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer25"/>
-<target ref="EntryLocation2"/>
-<label kind="synchronisation">entryChanOfInterrupted6?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer19"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted8?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted8?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted8?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation3"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted8?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer25"/>
-<target ref="GenInitLocation3"/>
-<label kind="synchronisation">exitChanOfInterrupted8?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-</template>
-
-<template>
-<name>
-main_regionOfStatechartOfcrossroad_controller
-</name>
-<location id="EntryLocation13">
-<name>
-EntryLocation13
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="Operating">
-<name>
-Operating
-</name>
-</location>
-
-<location id="entryOfOperating">
-<name>
-entryOfOperating
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Interrupted">
-<name>
-Interrupted
-</name>
-</location>
-
-<location id="exitOfOperating7">
-<name>
-exitOfOperating7
-</name>
-<label kind="comments">
-Synchronization location.
-</label>
-<committed/>
-</location>
-
-<location id="FinalizeBeforeOperating32">
-<name>
-FinalizeBeforeOperating32
-</name>
-<urgent/>
-</location>
-<init ref="EntryLocation13"/>
-
-<transition>
-<source ref="entryOfOperating"/>
-<target ref="Operating"/>
-<label kind="synchronisation">entryChanOfOperating5!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="Operating"/>
-<target ref="exitOfOperating7"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_controller</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controller = true,
-toRaise_PoliceInterrupt_policeOfcrossroad_prior = true,
-toRaise_PoliceInterrupt_policeOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation13"/>
-<target ref="entryOfOperating"/>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="Interrupted"/>
-<target ref="FinalizeBeforeOperating32"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_controller</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controller = true,
-toRaise_PoliceInterrupt_policeOfcrossroad_secondary = true,
-toRaise_PoliceInterrupt_policeOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="exitOfOperating7"/>
-<target ref="Interrupted"/>
-<label kind="synchronisation">exitChanOfOperating7!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeOperating32"/>
-<target ref="entryOfOperating"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-</template>
-
-<template>
-<name>
-main_regionOfStatechartOfcrossroad_secondary
-</name>
-<location id="EntryLocation4">
-<name>
-EntryLocation4
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="Interrupted">
-<name>
-Interrupted
-</name>
-</location>
-
-<location id="entryOfInterrupted">
-<name>
-entryOfInterrupted
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Normal">
-<name>
-Normal
-</name>
-</location>
-
-<location id="entryOfNormal">
-<name>
-entryOfNormal
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="exitOfNormal6">
-<name>
-exitOfNormal6
-</name>
-<label kind="comments">
-Synchronization location.
-</label>
-<committed/>
-</location>
-
-<location id="exitOfInterrupted8">
-<name>
-exitOfInterrupted8
-</name>
-<label kind="comments">
-Synchronization location.
-</label>
-<committed/>
-</location>
-
-<location id="FinalizeBeforeNormal33">
-<name>
-FinalizeBeforeNormal33
-</name>
-<urgent/>
-</location>
-
-<location id="FinalizeBeforeInterrupted36">
-<name>
-FinalizeBeforeInterrupted36
-</name>
-<urgent/>
-</location>
-<init ref="EntryLocation4"/>
-
-<transition>
-<source ref="entryOfInterrupted"/>
-<target ref="Interrupted"/>
-<label kind="synchronisation">entryChanOfInterrupted6!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfNormal"/>
-<target ref="Normal"/>
-<label kind="synchronisation">entryChanOfNormal9!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="Normal"/>
-<target ref="exitOfNormal6"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_secondary</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_secondary?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation4"/>
-<target ref="entryOfNormal"/>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="Interrupted"/>
-<target ref="exitOfInterrupted8"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_secondary</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_secondary?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="exitOfNormal6"/>
-<target ref="FinalizeBeforeInterrupted36"/>
-<label kind="synchronisation">exitChanOfNormal6!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="exitOfInterrupted8"/>
-<target ref="FinalizeBeforeNormal33"/>
-<label kind="synchronisation">exitChanOfInterrupted8!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeNormal33"/>
-<target ref="entryOfNormal"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeInterrupted36"/>
-<target ref="entryOfInterrupted"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-</template>
-
 <template>
 <name>
 main_regionOfStatechartOfcrossroad_prior
 </name>
-<location id="EntryLocation0">
+<location id="Entry2">
 <name>
-EntryLocation0
+Entry2
 </name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="Normal">
-<name>
-Normal
-</name>
-</location>
-
-<location id="entryOfNormal">
-<name>
-entryOfNormal
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
 <committed/>
 </location>
 
@@ -652,945 +181,85 @@ Interrupted
 <name>
 entryOfInterrupted
 </name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
 <committed/>
 </location>
 
-<location id="exitOfInterrupted5">
+<location id="Normal">
 <name>
-exitOfInterrupted5
+Normal
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
+</location>
+
+<location id="entryOfNormal">
+<name>
+entryOfNormal
+</name>
 <committed/>
 </location>
 
-<location id="exitOfNormal9">
+<location id="exitOfNormal18">
 <name>
-exitOfNormal9
+exitOfNormal18
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <committed/>
 </location>
 
-<location id="FinalizeBeforeInterrupted34">
+<location id="exitOfInterrupted19">
 <name>
-FinalizeBeforeInterrupted34
+exitOfInterrupted19
 </name>
-<urgent/>
+<committed/>
 </location>
-
-<location id="FinalizeBeforeNormal35">
-<name>
-FinalizeBeforeNormal35
-</name>
-<urgent/>
-</location>
-<init ref="EntryLocation0"/>
-
-<transition>
-<source ref="entryOfNormal"/>
-<target ref="Normal"/>
-<label kind="synchronisation">entryChanOfNormal7!</label>
-<label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
+<init ref="Entry2"/>
 
 <transition>
 <source ref="entryOfInterrupted"/>
 <target ref="Interrupted"/>
-<label kind="synchronisation">entryChanOfInterrupted8!</label>
+<label kind="synchronisation">entryChanOfInterrupted16!</label>
 <label kind="assignment"></label>
-<label kind="comments">Edge for subregion synchronization</label>
 </transition>
 
 <transition>
-<source ref="EntryLocation0"/>
-<target ref="entryOfNormal"/>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="Normal"/>
-<target ref="exitOfNormal9"/>
-<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_prior</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_prior?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_prior = true</label>
+<source ref="entryOfNormal"/>
+<target ref="Normal"/>
+<label kind="synchronisation">entryChanOfNormal15!</label>
+<label kind="assignment"></label>
 </transition>
 
 <transition>
 <source ref="Interrupted"/>
-<target ref="exitOfInterrupted5"/>
+<target ref="exitOfInterrupted19"/>
 <label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_prior</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_prior?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_prior = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
-<source ref="exitOfInterrupted5"/>
-<target ref="FinalizeBeforeNormal35"/>
-<label kind="synchronisation">exitChanOfInterrupted5!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="exitOfNormal9"/>
-<target ref="FinalizeBeforeInterrupted34"/>
-<label kind="synchronisation">exitChanOfNormal9!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeInterrupted34"/>
-<target ref="entryOfInterrupted"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="FinalizeBeforeNormal35"/>
+<source ref="Entry2"/>
 <target ref="entryOfNormal"/>
-<label kind="synchronisation">finalize?</label>
-<label kind="assignment"></label>
-</transition>
-</template>
-
-<template>
-<name>
-interruptedOfInterruptedOfcrossroad_prior
-</name>
-<declaration>
-bool isActive;
-
-clock timer20;
-
-clock timer28;
-</declaration>
-<location id="EntryLocation11">
-<name>
-EntryLocation11
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="GenInitLocation12">
-<name>
-GenInitLocation12
-</name>
-<label kind="comments">
-Generated for the synchronization of subregions.
-</label>
-</location>
-
-<location id="BlinkingYellow">
-<name>
-BlinkingYellow
-</name>
-<label kind="invariant">
-timer28 &lt;= 500
-</label>
-</location>
-
-<location id="entryOfBlinkingYellow">
-<name>
-entryOfBlinkingYellow
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Black">
-<name>
-Black
-</name>
-<label kind="invariant">
-timer20 &lt;= 500
-</label>
-</location>
-
-<location id="entryOfBlack">
-<name>
-entryOfBlack
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="timer21">
-<name>
-timer21
-</name>
-</location>
-
-<location id="timer29">
-<name>
-timer29
-</name>
-</location>
-<init ref="GenInitLocation12"/>
-
-<transition>
-<source ref="entryOfBlinkingYellow"/>
-<target ref="BlinkingYellow"/>
-<label kind="assignment">toRaise_LightInputs_displayYellowOfmonitor = true,
-LightCommands_displayYellowOfcrossroad_prior = true,
-timer28 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
-<source ref="entryOfBlack"/>
-<target ref="Black"/>
-<label kind="assignment">toRaise_LightInputs_displayNoneOfmonitor = true,
-LightCommands_displayNoneOfcrossroad_prior = true,
-timer20 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
+<source ref="Normal"/>
+<target ref="exitOfNormal18"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_prior</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_prior?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
-<source ref="EntryLocation11"/>
-<target ref="entryOfBlinkingYellow"/>
-<label kind="guard">isActive</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="timer21"/>
-<target ref="entryOfBlinkingYellow"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_prior?</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="timer29"/>
-<target ref="entryOfBlack"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_prior?</label>
-<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="timer21"/>
-<label kind="guard">(isStable &amp;&amp; timer20 >= 500)</label>
+<source ref="exitOfNormal18"/>
+<target ref="entryOfInterrupted"/>
+<label kind="synchronisation">exitChanOfNormal18!</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="BlinkingYellow"/>
-<target ref="timer29"/>
-<label kind="guard">(isStable &amp;&amp; timer28 >= 500)</label>
+<source ref="exitOfInterrupted19"/>
+<target ref="entryOfNormal"/>
+<label kind="synchronisation">exitChanOfInterrupted19!</label>
 <label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfInterrupted8?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer21"/>
-<target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfInterrupted8?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfInterrupted8?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer29"/>
-<target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfInterrupted8?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation12"/>
-<target ref="EntryLocation11"/>
-<label kind="synchronisation">entryChanOfInterrupted8?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Black"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfInterrupted5?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer21"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfInterrupted5?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="BlinkingYellow"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfInterrupted5?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer29"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfInterrupted5?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation12"/>
-<target ref="GenInitLocation12"/>
-<label kind="synchronisation">exitChanOfInterrupted5?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-</template>
-
-<template>
-<name>
-normalOfNormalOfcrossroad_secondary
-</name>
-<declaration>
-bool isActive;
-</declaration>
-<location id="EntryLocation5">
-<name>
-EntryLocation5
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="GenInitLocation6">
-<name>
-GenInitLocation6
-</name>
-<label kind="comments">
-Generated for the synchronization of subregions.
-</label>
-</location>
-
-<location id="Red">
-<name>
-Red
-</name>
-</location>
-
-<location id="entryOfRed">
-<name>
-entryOfRed
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Yellow">
-<name>
-Yellow
-</name>
-</location>
-
-<location id="entryOfYellow">
-<name>
-entryOfYellow
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Green">
-<name>
-Green
-</name>
-</location>
-
-<location id="entryOfGreen">
-<name>
-entryOfGreen
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-<init ref="GenInitLocation6"/>
-
-<transition>
-<source ref="entryOfRed"/>
-<target ref="Red"/>
-<label kind="assignment">LightCommands_displayRedOfcrossroad_secondary = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfYellow"/>
-<target ref="Yellow"/>
-<label kind="assignment">LightCommands_displayYellowOfcrossroad_secondary = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfGreen"/>
-<target ref="Green"/>
-<label kind="assignment">LightCommands_displayGreenOfcrossroad_secondary = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation5"/>
-<target ref="entryOfRed"/>
-<label kind="guard">isActive</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="Yellow"/>
-<target ref="entryOfRed"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="Green"/>
-<target ref="entryOfYellow"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfGreen"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondary = true</label>
-</transition>
-
-<transition>
-<source ref="Yellow"/>
-<target ref="entryOfYellow"/>
-<label kind="synchronisation">entryChanOfNormal9?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Green"/>
-<target ref="entryOfGreen"/>
-<label kind="synchronisation">entryChanOfNormal9?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation6"/>
-<target ref="EntryLocation5"/>
-<label kind="synchronisation">entryChanOfNormal9?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfRed"/>
-<label kind="synchronisation">entryChanOfNormal9?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Yellow"/>
-<target ref="Yellow"/>
-<label kind="synchronisation">exitChanOfNormal6?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Green"/>
-<target ref="Green"/>
-<label kind="synchronisation">exitChanOfNormal6?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation6"/>
-<target ref="GenInitLocation6"/>
-<label kind="synchronisation">exitChanOfNormal6?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="Red"/>
-<label kind="synchronisation">exitChanOfNormal6?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-</template>
-
-<template>
-<name>
-operatingOfOperatingOfcrossroad_controller
-</name>
-<declaration>
-bool isActive;
-
-clock timer14;
-
-clock timer16;
-
-clock timer22;
-
-clock timer26;
-
-clock timer30;
-</declaration>
-<location id="EntryLocation7">
-<name>
-EntryLocation7
-</name>
-<label kind="comments">
-Entry Location
-</label>
-<committed/>
-</location>
-
-<location id="GenInitLocation8">
-<name>
-GenInitLocation8
-</name>
-<label kind="comments">
-Generated for the synchronization of subregions.
-</label>
-</location>
-
-<location id="SecondaryPrepares">
-<name>
-SecondaryPrepares
-</name>
-<label kind="invariant">
-timer14 &lt;= 1 * 1000
-</label>
-</location>
-
-<location id="entryOfSecondaryPrepares">
-<name>
-entryOfSecondaryPrepares
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Secondary">
-<name>
-Secondary
-</name>
-<label kind="invariant">
-timer26 &lt;= 2 * 1000
-</label>
-</location>
-
-<location id="entryOfSecondary">
-<name>
-entryOfSecondary
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Init">
-<name>
-Init
-</name>
-<label kind="invariant">
-timer22 &lt;= 2 * 1000
-</label>
-</location>
-
-<location id="entryOfInit">
-<name>
-entryOfInit
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="Priority">
-<name>
-Priority
-</name>
-<label kind="invariant">
-timer30 &lt;= 2 * 1000
-</label>
-</location>
-
-<location id="entryOfPriority">
-<name>
-entryOfPriority
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="PriorityPrepares">
-<name>
-PriorityPrepares
-</name>
-<label kind="invariant">
-timer16 &lt;= 1 * 1000
-</label>
-</location>
-
-<location id="entryOfPriorityPrepares">
-<name>
-entryOfPriorityPrepares
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
-</location>
-
-<location id="timer15">
-<name>
-timer15
-</name>
-</location>
-
-<location id="timer17">
-<name>
-timer17
-</name>
-</location>
-
-<location id="timer23">
-<name>
-timer23
-</name>
-</location>
-
-<location id="timer27">
-<name>
-timer27
-</name>
-</location>
-
-<location id="timer31">
-<name>
-timer31
-</name>
-</location>
-<init ref="GenInitLocation8"/>
-
-<transition>
-<source ref="entryOfSecondaryPrepares"/>
-<target ref="SecondaryPrepares"/>
-<label kind="assignment">toRaise_Control_toggleOfcrossroad_secondary = true,
-timer14 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfSecondary"/>
-<target ref="Secondary"/>
-<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
-toRaise_Control_toggleOfcrossroad_secondary = true,
-timer26 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfInit"/>
-<target ref="Init"/>
-<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
-timer22 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfPriority"/>
-<target ref="Priority"/>
-<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
-toRaise_Control_toggleOfcrossroad_secondary = true,
-timer30 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="entryOfPriorityPrepares"/>
-<target ref="PriorityPrepares"/>
-<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
-timer16 = 0</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
-
-<transition>
-<source ref="timer31"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="timer23"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="timer27"/>
-<target ref="entryOfSecondaryPrepares"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="timer15"/>
-<target ref="entryOfPriority"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation7"/>
-<target ref="entryOfInit"/>
-<label kind="guard">isActive</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="timer17"/>
-<target ref="entryOfSecondary"/>
-<label kind="guard">isActive</label>
-<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
-<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controller = true</label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="timer15"/>
-<label kind="guard">(isStable &amp;&amp; timer14 >= 1 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
-<target ref="timer17"/>
-<label kind="guard">(isStable &amp;&amp; timer16 >= 1 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Init"/>
-<target ref="timer23"/>
-<label kind="guard">(isStable &amp;&amp; timer22 >= 2 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Secondary"/>
-<target ref="timer27"/>
-<label kind="guard">(isStable &amp;&amp; timer26 >= 2 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="timer31"/>
-<label kind="guard">(isStable &amp;&amp; timer30 >= 2 * 1000)</label>
-<label kind="assignment"></label>
-</transition>
-
-<transition>
-<source ref="Secondary"/>
-<target ref="entryOfSecondary"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Init"/>
-<target ref="entryOfInit"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer15"/>
-<target ref="entryOfSecondaryPrepares"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation8"/>
-<target ref="EntryLocation7"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer17"/>
-<target ref="entryOfPriorityPrepares"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="entryOfPriority"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="entryOfSecondaryPrepares"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer27"/>
-<target ref="entryOfSecondary"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer31"/>
-<target ref="entryOfPriority"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="timer23"/>
-<target ref="entryOfInit"/>
-<label kind="synchronisation">entryChanOfOperating5?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Secondary"/>
-<target ref="Secondary"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Init"/>
-<target ref="Init"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer15"/>
-<target ref="timer15"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="PriorityPrepares"/>
-<target ref="PriorityPrepares"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation8"/>
-<target ref="GenInitLocation8"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer17"/>
-<target ref="timer17"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="Priority"/>
-<target ref="Priority"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="SecondaryPrepares"/>
-<target ref="SecondaryPrepares"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer27"/>
-<target ref="timer27"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer31"/>
-<target ref="timer31"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="timer23"/>
-<target ref="timer23"/>
-<label kind="synchronisation">exitChanOfOperating7?</label>
-<label kind="assignment">isActive = false</label>
 </transition>
 </template>
 
@@ -1598,19 +267,16 @@ timer16 = 0</label>
 <name>
 main_regionOfStatechartOfmonitor
 </name>
-<location id="EntryLocation1">
+<location id="Entry0">
 <name>
-EntryLocation1
+Entry0
 </name>
-<label kind="comments">
-Entry Location
-</label>
 <committed/>
 </location>
 
-<location id="Green">
+<location id="Error">
 <name>
-Green
+Error
 </name>
 </location>
 
@@ -1626,74 +292,33 @@ Other
 </name>
 </location>
 
-<location id="Error">
+<location id="Green">
 <name>
-Error
+Green
 </name>
 </location>
-<init ref="EntryLocation1"/>
+<init ref="Entry0"/>
 
 <transition>
-<source ref="Red"/>
-<target ref="Green"/>
-<label kind="guard">isRaised_LightInputs_displayGreenOfmonitor</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="Error"/>
-<label kind="guard">isRaised_LightInputs_displayRedOfmonitor</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true,
-Monitor_errorOfmonitor = true</label>
-</transition>
-
-<transition>
-<source ref="Other"/>
-<target ref="Red"/>
-<label kind="guard">isRaised_LightInputs_displayRedOfmonitor</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
-</transition>
-
-<transition>
-<source ref="Other"/>
-<target ref="Green"/>
-<label kind="guard">isRaised_LightInputs_displayGreenOfmonitor</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
+<source ref="Entry0"/>
+<target ref="Other"/>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
 </transition>
 
 <transition>
 <source ref="Red"/>
 <target ref="Other"/>
-<label kind="guard">isRaised_LightInputs_displayYellowOfmonitor</label>
+<label kind="guard">(!((!(isRaised_LightInputs_displayRedOfmonitor) &amp;&amp; (!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayNoneOfmonitor))) &amp;&amp; (!((!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayRedOfmonitor)) &amp;&amp; (!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayYellowOfmonitor)))</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
-</transition>
-
-<transition>
-<source ref="EntryLocation1"/>
-<target ref="Other"/>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="Other"/>
-<label kind="guard">isRaised_LightInputs_displayNoneOfmonitor</label>
-<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="Other"/>
-<label kind="guard">isRaised_LightInputs_displayYellowOfmonitor</label>
+<label kind="guard">(!(isRaised_LightInputs_displayNoneOfmonitor) &amp;&amp; (!(isRaised_LightInputs_displayRedOfmonitor) &amp;&amp; (!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayYellowOfmonitor)))</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
 </transition>
 
 <transition>
@@ -1701,24 +326,65 @@ Monitor_errorOfmonitor = true</label>
 <target ref="Error"/>
 <label kind="guard">isRaised_LightInputs_displayGreenOfmonitor</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true,
-Monitor_errorOfmonitor = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true,
+Error_errorOfmonitor = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="Green"/>
+<label kind="guard">isRaised_LightInputs_displayGreenOfmonitor</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="Other"/>
-<label kind="guard">isRaised_LightInputs_displayNoneOfmonitor</label>
+<label kind="guard">(!(isRaised_LightInputs_displayRedOfmonitor) &amp;&amp; (!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayNoneOfmonitor))</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
+</transition>
+
+<transition>
+<source ref="Other"/>
+<target ref="Green"/>
+<label kind="guard">isRaised_LightInputs_displayGreenOfmonitor</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="Error"/>
+<label kind="guard">(!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayRedOfmonitor)</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true,
+Error_errorOfmonitor = true</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="Red"/>
-<label kind="guard">isRaised_LightInputs_displayRedOfmonitor</label>
+<label kind="guard">(!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayRedOfmonitor)</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
-<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitor = true</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="Other"/>
+<label kind="guard">(!(isRaised_LightInputs_displayRedOfmonitor) &amp;&amp; (!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayNoneOfmonitor))</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
+</transition>
+
+<transition>
+<source ref="Other"/>
+<target ref="Red"/>
+<label kind="guard">(!(isRaised_LightInputs_displayGreenOfmonitor) &amp;&amp; isRaised_LightInputs_displayRedOfmonitor)</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfmonitorOfmonitor = true</label>
 </transition>
 </template>
 
@@ -1729,39 +395,17 @@ normalOfNormalOfcrossroad_prior
 <declaration>
 bool isActive;
 </declaration>
-<location id="EntryLocation9">
+<location id="Entry1">
 <name>
-EntryLocation9
+Entry1
 </name>
-<label kind="comments">
-Entry Location
-</label>
 <committed/>
 </location>
 
-<location id="GenInitLocation10">
+<location id="GenInitLocation4">
 <name>
-GenInitLocation10
+GenInitLocation4
 </name>
-<label kind="comments">
-Generated for the synchronization of subregions.
-</label>
-</location>
-
-<location id="Yellow">
-<name>
-Yellow
-</name>
-</location>
-
-<location id="entryOfYellow">
-<name>
-entryOfYellow
-</name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
-<committed/>
 </location>
 
 <location id="Red">
@@ -1774,9 +418,19 @@ Red
 <name>
 entryOfRed
 </name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
+<committed/>
+</location>
+
+<location id="Yellow">
+<name>
+Yellow
+</name>
+</location>
+
+<location id="entryOfYellow">
+<name>
+entryOfYellow
+</name>
 <committed/>
 </location>
 
@@ -1790,27 +444,22 @@ Green
 <name>
 entryOfGreen
 </name>
-<label kind="comments">
-Pseudo state for subregion synchronization
-</label>
 <committed/>
 </location>
-<init ref="GenInitLocation10"/>
-
-<transition>
-<source ref="entryOfYellow"/>
-<target ref="Yellow"/>
-<label kind="assignment">toRaise_LightInputs_displayYellowOfmonitor = true,
-LightCommands_displayYellowOfcrossroad_prior = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
-</transition>
+<init ref="GenInitLocation4"/>
 
 <transition>
 <source ref="entryOfRed"/>
 <target ref="Red"/>
 <label kind="assignment">toRaise_LightInputs_displayRedOfmonitor = true,
 LightCommands_displayRedOfcrossroad_prior = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="entryOfYellow"/>
+<target ref="Yellow"/>
+<label kind="assignment">toRaise_LightInputs_displayYellowOfmonitor = true,
+LightCommands_displayYellowOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
@@ -1818,7 +467,14 @@ LightCommands_displayRedOfcrossroad_prior = true</label>
 <target ref="Green"/>
 <label kind="assignment">toRaise_LightInputs_displayGreenOfmonitor = true,
 LightCommands_displayGreenOfcrossroad_prior = true</label>
-<label kind="comments">Edge for subregion synchronization</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="entryOfGreen"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_prior)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_prior?</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
@@ -1826,7 +482,7 @@ LightCommands_displayGreenOfcrossroad_prior = true</label>
 <target ref="entryOfRed"/>
 <label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_prior)</label>
 <label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_prior?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_prior = true</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
@@ -1834,231 +490,1144 @@ LightCommands_displayGreenOfcrossroad_prior = true</label>
 <target ref="entryOfYellow"/>
 <label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_prior)</label>
 <label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_prior?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_prior = true</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
-<source ref="EntryLocation9"/>
+<source ref="Entry1"/>
 <target ref="entryOfRed"/>
 <label kind="guard">isActive</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfGreen"/>
-<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_prior)</label>
-<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_prior?</label>
-<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_prior = true</label>
-</transition>
-
-<transition>
-<source ref="Yellow"/>
-<target ref="entryOfYellow"/>
-<label kind="synchronisation">entryChanOfNormal7?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation10"/>
-<target ref="EntryLocation9"/>
-<label kind="synchronisation">entryChanOfNormal7?</label>
-<label kind="assignment">isActive = true</label>
-</transition>
-
-<transition>
-<source ref="Red"/>
-<target ref="entryOfRed"/>
-<label kind="synchronisation">entryChanOfNormal7?</label>
-<label kind="assignment">isActive = true</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
 </transition>
 
 <transition>
 <source ref="Green"/>
 <target ref="entryOfGreen"/>
-<label kind="synchronisation">entryChanOfNormal7?</label>
-<label kind="assignment">isActive = true</label>
+<label kind="synchronisation">entryChanOfNormal15?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
+<target ref="entryOfYellow"/>
+<label kind="synchronisation">entryChanOfNormal15?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="entryOfRed"/>
+<label kind="synchronisation">entryChanOfNormal15?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation4"/>
+<target ref="Entry1"/>
+<label kind="synchronisation">entryChanOfNormal15?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="Green"/>
+<label kind="synchronisation">exitChanOfNormal18?</label>
+<label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Yellow"/>
 <target ref="Yellow"/>
-<label kind="synchronisation">exitChanOfNormal9?</label>
-<label kind="assignment">isActive = false</label>
-</transition>
-
-<transition>
-<source ref="GenInitLocation10"/>
-<target ref="GenInitLocation10"/>
-<label kind="synchronisation">exitChanOfNormal9?</label>
+<label kind="synchronisation">exitChanOfNormal18?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
 <source ref="Red"/>
 <target ref="Red"/>
-<label kind="synchronisation">exitChanOfNormal9?</label>
+<label kind="synchronisation">exitChanOfNormal18?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 
 <transition>
-<source ref="Green"/>
-<target ref="Green"/>
-<label kind="synchronisation">exitChanOfNormal9?</label>
+<source ref="GenInitLocation4"/>
+<target ref="GenInitLocation4"/>
+<label kind="synchronisation">exitChanOfNormal18?</label>
 <label kind="assignment">isActive = false</label>
 </transition>
 </template>
 
 <template>
 <name>
-MonitoredCrossroadOrchestrator37
+operatingOfOperatingOfcrossroad_controller
 </name>
 <declaration>
-clock orchestratorTimer53;
+bool isActive;
+</declaration>
+<location id="Entry0">
+<name>
+Entry0
+</name>
+<committed/>
+</location>
+
+<location id="GenInitLocation6">
+<name>
+GenInitLocation6
+</name>
+</location>
+
+<location id="SecondaryPrepares">
+<name>
+SecondaryPrepares
+</name>
+</location>
+
+<location id="entryOfSecondaryPrepares">
+<name>
+entryOfSecondaryPrepares
+</name>
+<committed/>
+</location>
+
+<location id="Init">
+<name>
+Init
+</name>
+</location>
+
+<location id="entryOfInit">
+<name>
+entryOfInit
+</name>
+<committed/>
+</location>
+
+<location id="Priority">
+<name>
+Priority
+</name>
+</location>
+
+<location id="entryOfPriority">
+<name>
+entryOfPriority
+</name>
+<committed/>
+</location>
+
+<location id="Secondary">
+<name>
+Secondary
+</name>
+</location>
+
+<location id="entryOfSecondary">
+<name>
+entryOfSecondary
+</name>
+<committed/>
+</location>
+
+<location id="PriorityPrepares">
+<name>
+PriorityPrepares
+</name>
+</location>
+
+<location id="entryOfPriorityPrepares">
+<name>
+entryOfPriorityPrepares
+</name>
+<committed/>
+</location>
+<init ref="GenInitLocation6"/>
+
+<transition>
+<source ref="entryOfSecondaryPrepares"/>
+<target ref="SecondaryPrepares"/>
+<label kind="assignment">toRaise_Control_toggleOfcrossroad_secondary = true,
+timer0 = 0,
+SecondaryPreparesTimeout3ofcrossroad_controller = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfInit"/>
+<target ref="Init"/>
+<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
+timer0 = 0,
+InitTimeout2ofcrossroad_controller = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfPriority"/>
+<target ref="Priority"/>
+<label kind="assignment">toRaise_Control_toggleOfcrossroad_secondary = true,
+toRaise_Control_toggleOfcrossroad_prior = true,
+timer0 = 0,
+PriorityTimeout4ofcrossroad_controller = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfSecondary"/>
+<target ref="Secondary"/>
+<label kind="assignment">toRaise_Control_toggleOfcrossroad_secondary = true,
+toRaise_Control_toggleOfcrossroad_prior = true,
+timer0 = 0,
+SecondaryTimeout5ofcrossroad_controller = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfPriorityPrepares"/>
+<target ref="PriorityPrepares"/>
+<label kind="assignment">toRaise_Control_toggleOfcrossroad_prior = true,
+timer0 = 0,
+PriorityPreparesTimeout6ofcrossroad_controller = false</label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="entryOfPriority"/>
+<label kind="guard">(isActive &amp;&amp; SecondaryPreparesTimeout3ofcrossroad_controller)</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Entry0"/>
+<target ref="entryOfInit"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="guard">(isActive &amp;&amp; InitTimeout2ofcrossroad_controller)</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="entryOfSecondary"/>
+<label kind="guard">(isActive &amp;&amp; PriorityPreparesTimeout6ofcrossroad_controller)</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Secondary"/>
+<target ref="entryOfSecondaryPrepares"/>
+<label kind="guard">(isActive &amp;&amp; SecondaryTimeout5ofcrossroad_controller)</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="guard">(isActive &amp;&amp; PriorityTimeout4ofcrossroad_controller)</label>
+<label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="entryOfPriority"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="entryOfSecondaryPrepares"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="entryOfPriorityPrepares"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Secondary"/>
+<target ref="entryOfSecondary"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation6"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="entryOfInit"/>
+<label kind="synchronisation">entryChanOfOperating17?</label>
+<label kind="assignment">isActive = true,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="Priority"/>
+<target ref="Priority"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="SecondaryPrepares"/>
+<target ref="SecondaryPrepares"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="PriorityPrepares"/>
+<target ref="PriorityPrepares"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Secondary"/>
+<target ref="Secondary"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation6"/>
+<target ref="GenInitLocation6"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Init"/>
+<target ref="Init"/>
+<label kind="synchronisation">exitChanOfOperating16?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+interruptedOfInterruptedOfcrossroad_prior
+</name>
+<declaration>
+bool isActive;
+</declaration>
+<location id="Entry0">
+<name>
+Entry0
+</name>
+<committed/>
+</location>
+
+<location id="GenInitLocation7">
+<name>
+GenInitLocation7
+</name>
+</location>
+
+<location id="Black">
+<name>
+Black
+</name>
+</location>
+
+<location id="entryOfBlack">
+<name>
+entryOfBlack
+</name>
+<committed/>
+</location>
+
+<location id="BlinkingYellow">
+<name>
+BlinkingYellow
+</name>
+</location>
+
+<location id="entryOfBlinkingYellow">
+<name>
+entryOfBlinkingYellow
+</name>
+<committed/>
+</location>
+<init ref="GenInitLocation7"/>
+
+<transition>
+<source ref="entryOfBlack"/>
+<target ref="Black"/>
+<label kind="assignment">toRaise_LightInputs_displayNoneOfmonitor = true,
+LightCommands_displayNoneOfcrossroad_prior = true,
+timer1 = 0,
+BlackTimeout3ofcrossroad_prior = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfBlinkingYellow"/>
+<target ref="BlinkingYellow"/>
+<label kind="assignment">toRaise_LightInputs_displayYellowOfmonitor = true,
+LightCommands_displayYellowOfcrossroad_prior = true,
+timer1 = 0,
+BlinkingYellowTimeout4ofcrossroad_prior = false</label>
+</transition>
+
+<transition>
+<source ref="Entry0"/>
+<target ref="entryOfBlinkingYellow"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="entryOfBlack"/>
+<label kind="guard">(isActive &amp;&amp; BlinkingYellowTimeout4ofcrossroad_prior)</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_prior?</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="entryOfBlinkingYellow"/>
+<label kind="guard">(isActive &amp;&amp; BlackTimeout3ofcrossroad_prior)</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_prior?</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation7"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted16?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted16?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted16?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation7"/>
+<target ref="GenInitLocation7"/>
+<label kind="synchronisation">exitChanOfInterrupted19?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="GenInitLocation7"/>
+<label kind="synchronisation">exitChanOfInterrupted19?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="GenInitLocation7"/>
+<label kind="synchronisation">exitChanOfInterrupted19?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+normalOfNormalOfcrossroad_secondary
+</name>
+<declaration>
+bool isActive;
+</declaration>
+<location id="Entry1">
+<name>
+Entry1
+</name>
+<committed/>
+</location>
+
+<location id="GenInitLocation5">
+<name>
+GenInitLocation5
+</name>
+</location>
+
+<location id="Red">
+<name>
+Red
+</name>
+</location>
+
+<location id="entryOfRed">
+<name>
+entryOfRed
+</name>
+<committed/>
+</location>
+
+<location id="Yellow">
+<name>
+Yellow
+</name>
+</location>
+
+<location id="entryOfYellow">
+<name>
+entryOfYellow
+</name>
+<committed/>
+</location>
+
+<location id="Green">
+<name>
+Green
+</name>
+</location>
+
+<location id="entryOfGreen">
+<name>
+entryOfGreen
+</name>
+<committed/>
+</location>
+<init ref="GenInitLocation5"/>
+
+<transition>
+<source ref="entryOfRed"/>
+<target ref="Red"/>
+<label kind="assignment">LightCommands_displayRedOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="entryOfYellow"/>
+<target ref="Yellow"/>
+<label kind="assignment">LightCommands_displayYellowOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="entryOfGreen"/>
+<target ref="Green"/>
+<label kind="assignment">LightCommands_displayGreenOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
+<target ref="entryOfRed"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="entryOfGreen"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Entry1"/>
+<target ref="entryOfRed"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="entryOfYellow"/>
+<label kind="guard">(isActive &amp;&amp; isRaised_Control_toggleOfcrossroad_secondary)</label>
+<label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary?</label>
+<label kind="assignment">isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="entryOfGreen"/>
+<label kind="synchronisation">entryChanOfNormal19?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation5"/>
+<target ref="Entry1"/>
+<label kind="synchronisation">entryChanOfNormal19?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
+<target ref="entryOfYellow"/>
+<label kind="synchronisation">entryChanOfNormal19?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="entryOfRed"/>
+<label kind="synchronisation">entryChanOfNormal19?</label>
+<label kind="assignment">isActive = true,
+isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Green"/>
+<target ref="Green"/>
+<label kind="synchronisation">exitChanOfNormal15?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation5"/>
+<target ref="GenInitLocation5"/>
+<label kind="synchronisation">exitChanOfNormal15?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Yellow"/>
+<target ref="Yellow"/>
+<label kind="synchronisation">exitChanOfNormal15?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Red"/>
+<target ref="Red"/>
+<label kind="synchronisation">exitChanOfNormal15?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+interruptedOfInterruptedOfcrossroad_secondary
+</name>
+<declaration>
+bool isActive;
+</declaration>
+<location id="Entry0">
+<name>
+Entry0
+</name>
+<committed/>
+</location>
+
+<location id="GenInitLocation3">
+<name>
+GenInitLocation3
+</name>
+</location>
+
+<location id="BlinkingYellow">
+<name>
+BlinkingYellow
+</name>
+</location>
+
+<location id="entryOfBlinkingYellow">
+<name>
+entryOfBlinkingYellow
+</name>
+<committed/>
+</location>
+
+<location id="Black">
+<name>
+Black
+</name>
+</location>
+
+<location id="entryOfBlack">
+<name>
+entryOfBlack
+</name>
+<committed/>
+</location>
+<init ref="GenInitLocation3"/>
+
+<transition>
+<source ref="entryOfBlinkingYellow"/>
+<target ref="BlinkingYellow"/>
+<label kind="assignment">LightCommands_displayYellowOfcrossroad_secondary = true,
+timer2 = 0,
+BlinkingYellowTimeout4ofcrossroad_secondary = false</label>
+</transition>
+
+<transition>
+<source ref="entryOfBlack"/>
+<target ref="Black"/>
+<label kind="assignment">LightCommands_displayNoneOfcrossroad_secondary = true,
+timer2 = 0,
+BlackTimeout3ofcrossroad_secondary = false</label>
+</transition>
+
+<transition>
+<source ref="Entry0"/>
+<target ref="entryOfBlinkingYellow"/>
+<label kind="guard">isActive</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="entryOfBlack"/>
+<label kind="guard">(isActive &amp;&amp; BlinkingYellowTimeout4ofcrossroad_secondary)</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_secondary?</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="entryOfBlinkingYellow"/>
+<label kind="guard">(isActive &amp;&amp; BlackTimeout3ofcrossroad_secondary)</label>
+<label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_secondary?</label>
+<label kind="assignment">isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted18?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation3"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted18?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="Entry0"/>
+<label kind="synchronisation">entryChanOfInterrupted18?</label>
+<label kind="assignment">isActive = true</label>
+</transition>
+
+<transition>
+<source ref="BlinkingYellow"/>
+<target ref="GenInitLocation3"/>
+<label kind="synchronisation">exitChanOfInterrupted17?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="GenInitLocation3"/>
+<target ref="GenInitLocation3"/>
+<label kind="synchronisation">exitChanOfInterrupted17?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+
+<transition>
+<source ref="Black"/>
+<target ref="GenInitLocation3"/>
+<label kind="synchronisation">exitChanOfInterrupted17?</label>
+<label kind="assignment">isActive = false</label>
+</transition>
+</template>
+
+<template>
+<name>
+main_regionOfStatechartOfcrossroad_secondary
+</name>
+<location id="Entry2">
+<name>
+Entry2
+</name>
+<committed/>
+</location>
+
+<location id="Interrupted">
+<name>
+Interrupted
+</name>
+</location>
+
+<location id="entryOfInterrupted">
+<name>
+entryOfInterrupted
+</name>
+<committed/>
+</location>
+
+<location id="Normal">
+<name>
+Normal
+</name>
+</location>
+
+<location id="entryOfNormal">
+<name>
+entryOfNormal
+</name>
+<committed/>
+</location>
+
+<location id="exitOfNormal15">
+<name>
+exitOfNormal15
+</name>
+<committed/>
+</location>
+
+<location id="exitOfInterrupted17">
+<name>
+exitOfInterrupted17
+</name>
+<committed/>
+</location>
+<init ref="Entry2"/>
+
+<transition>
+<source ref="entryOfInterrupted"/>
+<target ref="Interrupted"/>
+<label kind="synchronisation">entryChanOfInterrupted18!</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="entryOfNormal"/>
+<target ref="Normal"/>
+<label kind="synchronisation">entryChanOfNormal19!</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Entry2"/>
+<target ref="entryOfNormal"/>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Normal"/>
+<target ref="exitOfNormal15"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_secondary</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_secondary?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Interrupted"/>
+<target ref="exitOfInterrupted17"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_secondary</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_secondary?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="exitOfNormal15"/>
+<target ref="entryOfInterrupted"/>
+<label kind="synchronisation">exitChanOfNormal15!</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="exitOfInterrupted17"/>
+<target ref="entryOfNormal"/>
+<label kind="synchronisation">exitChanOfInterrupted17!</label>
+<label kind="assignment"></label>
+</transition>
+</template>
+
+<template>
+<name>
+main_regionOfStatechartOfcrossroad_controller
+</name>
+<location id="Entry1">
+<name>
+Entry1
+</name>
+<committed/>
+</location>
+
+<location id="Interrupted">
+<name>
+Interrupted
+</name>
+</location>
+
+<location id="Operating">
+<name>
+Operating
+</name>
+</location>
+
+<location id="entryOfOperating">
+<name>
+entryOfOperating
+</name>
+<committed/>
+</location>
+
+<location id="exitOfOperating16">
+<name>
+exitOfOperating16
+</name>
+<committed/>
+</location>
+<init ref="Entry1"/>
+
+<transition>
+<source ref="entryOfOperating"/>
+<target ref="Operating"/>
+<label kind="synchronisation">entryChanOfOperating17!</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="Operating"/>
+<target ref="exitOfOperating16"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_controller</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller = true,
+toRaise_PoliceInterrupt_policeOfcrossroad_prior = true,
+toRaise_PoliceInterrupt_policeOfcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="Interrupted"/>
+<target ref="entryOfOperating"/>
+<label kind="guard">isRaised_PoliceInterrupt_policeOfcrossroad_controller</label>
+<label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_controller?</label>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller = true,
+toRaise_PoliceInterrupt_policeOfcrossroad_secondary = true,
+toRaise_PoliceInterrupt_policeOfcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="Entry1"/>
+<target ref="entryOfOperating"/>
+<label kind="assignment">isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="exitOfOperating16"/>
+<target ref="Interrupted"/>
+<label kind="synchronisation">exitChanOfOperating16!</label>
+<label kind="assignment"></label>
+</transition>
+</template>
+
+<template>
+<name>
+ClockTemplate
+</name>
+<location id="initLoc">
+<name>
+initLoc
+</name>
+<label kind="invariant">
+(((((((((BlackTimeout3ofcrossroad_prior || (timer1 &lt;= 500)) &amp;&amp; (BlinkingYellowTimeout4ofcrossroad_prior || (timer1 &lt;= 500))) &amp;&amp; (PriorityTimeout4ofcrossroad_controller || (timer0 &lt;= (2 * 1000)))) &amp;&amp; (SecondaryPreparesTimeout3ofcrossroad_controller || (timer0 &lt;= (1 * 1000)))) &amp;&amp; (BlinkingYellowTimeout4ofcrossroad_secondary || (timer2 &lt;= 500))) &amp;&amp; (BlackTimeout3ofcrossroad_secondary || (timer2 &lt;= 500))) &amp;&amp; (PriorityPreparesTimeout6ofcrossroad_controller || (timer0 &lt;= (1 * 1000)))) &amp;&amp; (SecondaryTimeout5ofcrossroad_controller || (timer0 &lt;= (2 * 1000)))) &amp;&amp; (InitTimeout2ofcrossroad_controller || (timer0 &lt;= (2 * 1000))))
+</label>
+</location>
+<init ref="initLoc"/>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(BlackTimeout3ofcrossroad_prior) &amp;&amp; (timer1 >= 500)))</label>
+<label kind="assignment">BlackTimeout3ofcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(BlinkingYellowTimeout4ofcrossroad_prior) &amp;&amp; (timer1 >= 500)))</label>
+<label kind="assignment">BlinkingYellowTimeout4ofcrossroad_prior = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(PriorityTimeout4ofcrossroad_controller) &amp;&amp; (timer0 >= (2 * 1000))))</label>
+<label kind="assignment">PriorityTimeout4ofcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(SecondaryPreparesTimeout3ofcrossroad_controller) &amp;&amp; (timer0 >= (1 * 1000))))</label>
+<label kind="assignment">SecondaryPreparesTimeout3ofcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(BlinkingYellowTimeout4ofcrossroad_secondary) &amp;&amp; (timer2 >= 500)))</label>
+<label kind="assignment">BlinkingYellowTimeout4ofcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(BlackTimeout3ofcrossroad_secondary) &amp;&amp; (timer2 >= 500)))</label>
+<label kind="assignment">BlackTimeout3ofcrossroad_secondary = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(PriorityPreparesTimeout6ofcrossroad_controller) &amp;&amp; (timer0 >= (1 * 1000))))</label>
+<label kind="assignment">PriorityPreparesTimeout6ofcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(SecondaryTimeout5ofcrossroad_controller) &amp;&amp; (timer0 >= (2 * 1000))))</label>
+<label kind="assignment">SecondaryTimeout5ofcrossroad_controller = true</label>
+</transition>
+
+<transition>
+<source ref="initLoc"/>
+<target ref="initLoc"/>
+<label kind="guard">(isStable &amp;&amp; (!(InitTimeout2ofcrossroad_controller) &amp;&amp; (timer0 >= (2 * 1000))))</label>
+<label kind="assignment">InitTimeout2ofcrossroad_controller = true</label>
+</transition>
+</template>
+
+<template>
+<name>
+MonitoredCrossroadOrchestrator0
+</name>
+<declaration>
+clock timerOrchestrator16;
 </declaration>
 <location id="InitLoc">
 <name>
 InitLoc
 </name>
 <label kind="invariant">
-orchestratorTimer53 &lt;= 2000
+(timerOrchestrator16 &lt;= 2000)
 </label>
 </location>
 
-<location id="swapLocation38">
+<location id="swapLocation1">
 <name>
-swapLocation38
+swapLocation1
 </name>
 <urgent/>
 </location>
 
-<location id="RunMain_regionOfStatechartOfcrossroad_controller39">
+<location id="RunMain_regionOfStatechartOfcrossroad_controller2">
 <name>
-RunMain_regionOfStatechartOfcrossroad_controller39
+RunMain_regionOfStatechartOfcrossroad_controller2
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunOperatingOfOperatingOfcrossroad_controller40">
+<location id="RunOperatingOfOperatingOfcrossroad_controller3">
 <name>
-RunOperatingOfOperatingOfcrossroad_controller40
+RunOperatingOfOperatingOfcrossroad_controller3
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="finalizecrossroad_controller41">
+<location id="finalizing4crossroad_controller">
 <name>
-finalizecrossroad_controller41
+finalizing4crossroad_controller
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunMain_regionOfStatechartOfcrossroad_prior42">
+<location id="RunMain_regionOfStatechartOfcrossroad_prior5">
 <name>
-RunMain_regionOfStatechartOfcrossroad_prior42
+RunMain_regionOfStatechartOfcrossroad_prior5
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunNormalOfNormalOfcrossroad_prior43">
+<location id="RunNormalOfNormalOfcrossroad_prior6">
 <name>
-RunNormalOfNormalOfcrossroad_prior43
+RunNormalOfNormalOfcrossroad_prior6
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunInterruptedOfInterruptedOfcrossroad_prior44">
+<location id="RunInterruptedOfInterruptedOfcrossroad_prior7">
 <name>
-RunInterruptedOfInterruptedOfcrossroad_prior44
+RunInterruptedOfInterruptedOfcrossroad_prior7
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="finalizecrossroad_prior45">
+<location id="finalizing8crossroad_prior">
 <name>
-finalizecrossroad_prior45
+finalizing8crossroad_prior
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunMain_regionOfStatechartOfcrossroad_secondary46">
+<location id="RunMain_regionOfStatechartOfcrossroad_secondary9">
 <name>
-RunMain_regionOfStatechartOfcrossroad_secondary46
+RunMain_regionOfStatechartOfcrossroad_secondary9
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunNormalOfNormalOfcrossroad_secondary47">
+<location id="RunNormalOfNormalOfcrossroad_secondary10">
 <name>
-RunNormalOfNormalOfcrossroad_secondary47
+RunNormalOfNormalOfcrossroad_secondary10
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunInterruptedOfInterruptedOfcrossroad_secondary48">
+<location id="RunInterruptedOfInterruptedOfcrossroad_secondary11">
 <name>
-RunInterruptedOfInterruptedOfcrossroad_secondary48
+RunInterruptedOfInterruptedOfcrossroad_secondary11
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="finalizecrossroad_secondary49">
+<location id="finalizing12crossroad_secondary">
 <name>
-finalizecrossroad_secondary49
+finalizing12crossroad_secondary
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="RunMain_regionOfStatechartOfmonitor50">
+<location id="RunMain_regionOfStatechartOfmonitor13">
 <name>
-RunMain_regionOfStatechartOfmonitor50
+RunMain_regionOfStatechartOfmonitor13
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
-<location id="finalizemonitor51">
+<location id="finalizing14monitor">
 <name>
-finalizemonitor51
+finalizing14monitor
 </name>
-<label kind="comments">
-Synchronization location.
-</label>
 <urgent/>
 </location>
 
@@ -2066,201 +1635,232 @@ Synchronization location.
 <name>
 final
 </name>
-<label kind="comments">
-To ensure all synchronizations to take place before an isStable state.
-</label>
 <urgent/>
 </location>
-<init ref="InitLoc"/>
+
+<location id="notIsStable">
+<name>
+notIsStable
+</name>
+<urgent/>
+</location>
+<init ref="notIsStable"/>
 
 <transition>
 <source ref="InitLoc"/>
-<target ref="swapLocation38"/>
-<label kind="assignment">clearOutEvents52(),
+<target ref="swapLocation1"/>
+<label kind="assignment">clearOutEvents15(),
 isStable = false,
-isScheduledmain_regionOfStatechartOfmonitor = false,
-isScheduledinterruptedOfInterruptedOfcrossroad_prior = false,
-isScheduledmain_regionOfStatechartOfcrossroad_prior = false,
-isScheduledmain_regionOfStatechartOfcrossroad_controller = false,
-isSchedulednormalOfNormalOfcrossroad_prior = false,
-isScheduledmain_regionOfStatechartOfcrossroad_secondary = false,
-isScheduledinterruptedOfInterruptedOfcrossroad_secondary = false,
-isSchedulednormalOfNormalOfcrossroad_secondary = false,
-isScheduledoperatingOfOperatingOfcrossroad_controller = false</label>
+isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior = false,
+isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary = false,
+isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller = false,
+isScheduledmain_regionOfStatechartOfmonitorOfmonitor = false,
+isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior = false,
+isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller = false,
+isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary = false,
+isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior = false,
+isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary = false,
+timerOrchestrator16 = 0,
+resetClocks17()</label>
 </transition>
 
 <transition>
-<source ref="swapLocation38"/>
-<target ref="RunMain_regionOfStatechartOfcrossroad_controller39"/>
-<label kind="assignment">isRaised_LightInputs_displayNoneOfmonitor = toRaise_LightInputs_displayNoneOfmonitor,
-toRaise_LightInputs_displayNoneOfmonitor = false,
-isRaised_LightInputs_displayGreenOfmonitor = toRaise_LightInputs_displayGreenOfmonitor,
-toRaise_LightInputs_displayGreenOfmonitor = false,
-isRaised_LightInputs_displayYellowOfmonitor = toRaise_LightInputs_displayYellowOfmonitor,
-toRaise_LightInputs_displayYellowOfmonitor = false,
-isRaised_LightInputs_displayRedOfmonitor = toRaise_LightInputs_displayRedOfmonitor,
-toRaise_LightInputs_displayRedOfmonitor = false,
-isRaised_PoliceInterrupt_policeOfcrossroad_controller = toRaise_PoliceInterrupt_policeOfcrossroad_controller,
-toRaise_PoliceInterrupt_policeOfcrossroad_controller = false,
-isRaised_Control_toggleOfcrossroad_prior = toRaise_Control_toggleOfcrossroad_prior,
-toRaise_Control_toggleOfcrossroad_prior = false,
-isRaised_PoliceInterrupt_policeOfcrossroad_prior = toRaise_PoliceInterrupt_policeOfcrossroad_prior,
-toRaise_PoliceInterrupt_policeOfcrossroad_prior = false,
-isRaised_Control_toggleOfcrossroad_secondary = toRaise_Control_toggleOfcrossroad_secondary,
+<source ref="swapLocation1"/>
+<target ref="RunMain_regionOfStatechartOfcrossroad_controller2"/>
+<label kind="assignment">isRaised_Control_toggleOfcrossroad_secondary = toRaise_Control_toggleOfcrossroad_secondary,
 toRaise_Control_toggleOfcrossroad_secondary = false,
 isRaised_PoliceInterrupt_policeOfcrossroad_secondary = toRaise_PoliceInterrupt_policeOfcrossroad_secondary,
-toRaise_PoliceInterrupt_policeOfcrossroad_secondary = false</label>
+toRaise_PoliceInterrupt_policeOfcrossroad_secondary = false,
+isRaised_PoliceInterrupt_policeOfcrossroad_controller = toRaise_PoliceInterrupt_policeOfcrossroad_controller,
+toRaise_PoliceInterrupt_policeOfcrossroad_controller = false,
+isRaised_PoliceInterrupt_policeOfcrossroad_prior = toRaise_PoliceInterrupt_policeOfcrossroad_prior,
+toRaise_PoliceInterrupt_policeOfcrossroad_prior = false,
+isRaised_Control_toggleOfcrossroad_prior = toRaise_Control_toggleOfcrossroad_prior,
+toRaise_Control_toggleOfcrossroad_prior = false,
+isRaised_LightInputs_displayRedOfmonitor = toRaise_LightInputs_displayRedOfmonitor,
+toRaise_LightInputs_displayRedOfmonitor = false,
+isRaised_LightInputs_displayNoneOfmonitor = toRaise_LightInputs_displayNoneOfmonitor,
+toRaise_LightInputs_displayNoneOfmonitor = false,
+isRaised_LightInputs_displayYellowOfmonitor = toRaise_LightInputs_displayYellowOfmonitor,
+toRaise_LightInputs_displayYellowOfmonitor = false,
+isRaised_LightInputs_displayGreenOfmonitor = toRaise_LightInputs_displayGreenOfmonitor,
+toRaise_LightInputs_displayGreenOfmonitor = false</label>
 </transition>
 
 <transition>
-<source ref="RunMain_regionOfStatechartOfcrossroad_controller39"/>
-<target ref="RunOperatingOfOperatingOfcrossroad_controller40"/>
+<source ref="RunMain_regionOfStatechartOfcrossroad_controller2"/>
+<target ref="RunOperatingOfOperatingOfcrossroad_controller3"/>
+<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller)</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_controller!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunOperatingOfOperatingOfcrossroad_controller40"/>
-<target ref="finalizecrossroad_controller41"/>
-<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_controller)</label>
+<source ref="RunMain_regionOfStatechartOfcrossroad_controller2"/>
+<target ref="RunOperatingOfOperatingOfcrossroad_controller3"/>
+<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="RunOperatingOfOperatingOfcrossroad_controller3"/>
+<target ref="finalizing4crossroad_controller"/>
+<label kind="guard">!((isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller || isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller))</label>
 <label kind="synchronisation">runCycleOperatingOfOperatingOfcrossroad_controller!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunOperatingOfOperatingOfcrossroad_controller40"/>
-<target ref="finalizecrossroad_controller41"/>
-<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_controller</label>
+<source ref="RunOperatingOfOperatingOfcrossroad_controller3"/>
+<target ref="finalizing4crossroad_controller"/>
+<label kind="guard">(isScheduledmain_regionOfStatechartOfcrossroad_controllerOfcrossroad_controller || isScheduledoperatingOfOperatingOfcrossroad_controllerOfcrossroad_controller)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="finalizecrossroad_controller41"/>
-<target ref="RunMain_regionOfStatechartOfcrossroad_prior42"/>
-<label kind="synchronisation">finalize!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
+<source ref="finalizing4crossroad_controller"/>
+<target ref="RunMain_regionOfStatechartOfcrossroad_prior5"/>
+<label kind="assignment">isRaised_PoliceInterrupt_policeOfcrossroad_controller = false</label>
 </transition>
 
 <transition>
-<source ref="RunMain_regionOfStatechartOfcrossroad_prior42"/>
-<target ref="RunNormalOfNormalOfcrossroad_prior43"/>
+<source ref="RunMain_regionOfStatechartOfcrossroad_prior5"/>
+<target ref="RunNormalOfNormalOfcrossroad_prior6"/>
+<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior)</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_prior!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunNormalOfNormalOfcrossroad_prior43"/>
-<target ref="RunInterruptedOfInterruptedOfcrossroad_prior44"/>
-<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_prior)</label>
+<source ref="RunMain_regionOfStatechartOfcrossroad_prior5"/>
+<target ref="RunNormalOfNormalOfcrossroad_prior6"/>
+<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="RunNormalOfNormalOfcrossroad_prior6"/>
+<target ref="RunInterruptedOfInterruptedOfcrossroad_prior7"/>
+<label kind="guard">!((isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior || isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior))</label>
 <label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_prior!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunNormalOfNormalOfcrossroad_prior43"/>
-<target ref="RunInterruptedOfInterruptedOfcrossroad_prior44"/>
-<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_prior</label>
+<source ref="RunNormalOfNormalOfcrossroad_prior6"/>
+<target ref="RunInterruptedOfInterruptedOfcrossroad_prior7"/>
+<label kind="guard">(isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior || isSchedulednormalOfNormalOfcrossroad_priorOfcrossroad_prior)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="RunInterruptedOfInterruptedOfcrossroad_prior44"/>
-<target ref="finalizecrossroad_prior45"/>
-<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_prior)</label>
+<source ref="RunInterruptedOfInterruptedOfcrossroad_prior7"/>
+<target ref="finalizing8crossroad_prior"/>
+<label kind="guard">!((isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior || isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior))</label>
 <label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_prior!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunInterruptedOfInterruptedOfcrossroad_prior44"/>
-<target ref="finalizecrossroad_prior45"/>
-<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_prior</label>
+<source ref="RunInterruptedOfInterruptedOfcrossroad_prior7"/>
+<target ref="finalizing8crossroad_prior"/>
+<label kind="guard">(isScheduledmain_regionOfStatechartOfcrossroad_priorOfcrossroad_prior || isScheduledinterruptedOfInterruptedOfcrossroad_priorOfcrossroad_prior)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="finalizecrossroad_prior45"/>
-<target ref="RunMain_regionOfStatechartOfcrossroad_secondary46"/>
-<label kind="synchronisation">finalize!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
+<source ref="finalizing8crossroad_prior"/>
+<target ref="RunMain_regionOfStatechartOfcrossroad_secondary9"/>
+<label kind="assignment">isRaised_PoliceInterrupt_policeOfcrossroad_prior = false,
+isRaised_Control_toggleOfcrossroad_prior = false</label>
 </transition>
 
 <transition>
-<source ref="RunMain_regionOfStatechartOfcrossroad_secondary46"/>
-<target ref="RunNormalOfNormalOfcrossroad_secondary47"/>
+<source ref="RunMain_regionOfStatechartOfcrossroad_secondary9"/>
+<target ref="RunNormalOfNormalOfcrossroad_secondary10"/>
+<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary)</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfcrossroad_secondary!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunNormalOfNormalOfcrossroad_secondary47"/>
-<target ref="RunInterruptedOfInterruptedOfcrossroad_secondary48"/>
-<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_secondary)</label>
+<source ref="RunMain_regionOfStatechartOfcrossroad_secondary9"/>
+<target ref="RunNormalOfNormalOfcrossroad_secondary10"/>
+<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary</label>
+<label kind="assignment"></label>
+</transition>
+
+<transition>
+<source ref="RunNormalOfNormalOfcrossroad_secondary10"/>
+<target ref="RunInterruptedOfInterruptedOfcrossroad_secondary11"/>
+<label kind="guard">!((isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary || isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary))</label>
 <label kind="synchronisation">runCycleNormalOfNormalOfcrossroad_secondary!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunNormalOfNormalOfcrossroad_secondary47"/>
-<target ref="RunInterruptedOfInterruptedOfcrossroad_secondary48"/>
-<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_secondary</label>
+<source ref="RunNormalOfNormalOfcrossroad_secondary10"/>
+<target ref="RunInterruptedOfInterruptedOfcrossroad_secondary11"/>
+<label kind="guard">(isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary || isSchedulednormalOfNormalOfcrossroad_secondaryOfcrossroad_secondary)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="RunInterruptedOfInterruptedOfcrossroad_secondary48"/>
-<target ref="finalizecrossroad_secondary49"/>
-<label kind="guard">!(isScheduledmain_regionOfStatechartOfcrossroad_secondary)</label>
+<source ref="RunInterruptedOfInterruptedOfcrossroad_secondary11"/>
+<target ref="finalizing12crossroad_secondary"/>
+<label kind="guard">!((isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary || isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary))</label>
 <label kind="synchronisation">runCycleInterruptedOfInterruptedOfcrossroad_secondary!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="RunInterruptedOfInterruptedOfcrossroad_secondary48"/>
-<target ref="finalizecrossroad_secondary49"/>
-<label kind="guard">isScheduledmain_regionOfStatechartOfcrossroad_secondary</label>
+<source ref="RunInterruptedOfInterruptedOfcrossroad_secondary11"/>
+<target ref="finalizing12crossroad_secondary"/>
+<label kind="guard">(isScheduledmain_regionOfStatechartOfcrossroad_secondaryOfcrossroad_secondary || isScheduledinterruptedOfInterruptedOfcrossroad_secondaryOfcrossroad_secondary)</label>
 <label kind="assignment"></label>
 </transition>
 
 <transition>
-<source ref="finalizecrossroad_secondary49"/>
-<target ref="RunMain_regionOfStatechartOfmonitor50"/>
-<label kind="synchronisation">finalize!</label>
-<label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
+<source ref="finalizing12crossroad_secondary"/>
+<target ref="RunMain_regionOfStatechartOfmonitor13"/>
+<label kind="assignment">isRaised_Control_toggleOfcrossroad_secondary = false,
+isRaised_PoliceInterrupt_policeOfcrossroad_secondary = false</label>
 </transition>
 
 <transition>
-<source ref="RunMain_regionOfStatechartOfmonitor50"/>
-<target ref="finalizemonitor51"/>
+<source ref="RunMain_regionOfStatechartOfmonitor13"/>
+<target ref="finalizing14monitor"/>
+<label kind="guard">!(isScheduledmain_regionOfStatechartOfmonitorOfmonitor)</label>
 <label kind="synchronisation">runCycleMain_regionOfStatechartOfmonitor!</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
 </transition>
 
 <transition>
-<source ref="finalizemonitor51"/>
-<target ref="final"/>
-<label kind="synchronisation">finalize!</label>
+<source ref="RunMain_regionOfStatechartOfmonitor13"/>
+<target ref="finalizing14monitor"/>
+<label kind="guard">isScheduledmain_regionOfStatechartOfmonitorOfmonitor</label>
 <label kind="assignment"></label>
-<label kind="comments">Synchronization edge.</label>
+</transition>
+
+<transition>
+<source ref="finalizing14monitor"/>
+<target ref="final"/>
+<label kind="assignment">isRaised_LightInputs_displayRedOfmonitor = false,
+isRaised_LightInputs_displayNoneOfmonitor = false,
+isRaised_LightInputs_displayYellowOfmonitor = false,
+isRaised_LightInputs_displayGreenOfmonitor = false</label>
 </transition>
 
 <transition>
 <source ref="final"/>
 <target ref="InitLoc"/>
-<label kind="assignment">isStable = true,
-orchestratorTimer53 = 0</label>
+<label kind="assignment">isStable = true</label>
+</transition>
+
+<transition>
+<source ref="notIsStable"/>
+<target ref="InitLoc"/>
+<label kind="assignment">isStable = true</label>
 </transition>
 </template>
 
@@ -2283,27 +1883,29 @@ InitLoc
 </transition>
 </template>
 <system>
-	P_interruptedOfInterruptedOfcrossroad_secondary = interruptedOfInterruptedOfcrossroad_secondary();
-	
-	P_main_regionOfStatechartOfcrossroad_controller = main_regionOfStatechartOfcrossroad_controller();
-	
-	P_main_regionOfStatechartOfcrossroad_secondary = main_regionOfStatechartOfcrossroad_secondary();
-	
 	P_main_regionOfStatechartOfcrossroad_prior = main_regionOfStatechartOfcrossroad_prior();
-	
-	P_interruptedOfInterruptedOfcrossroad_prior = interruptedOfInterruptedOfcrossroad_prior();
-	
-	P_normalOfNormalOfcrossroad_secondary = normalOfNormalOfcrossroad_secondary();
-	
-	P_operatingOfOperatingOfcrossroad_controller = operatingOfOperatingOfcrossroad_controller();
 	
 	P_main_regionOfStatechartOfmonitor = main_regionOfStatechartOfmonitor();
 	
 	P_normalOfNormalOfcrossroad_prior = normalOfNormalOfcrossroad_prior();
 	
-	P_MonitoredCrossroadOrchestrator37 = MonitoredCrossroadOrchestrator37();
+	P_operatingOfOperatingOfcrossroad_controller = operatingOfOperatingOfcrossroad_controller();
+	
+	P_interruptedOfInterruptedOfcrossroad_prior = interruptedOfInterruptedOfcrossroad_prior();
+	
+	P_normalOfNormalOfcrossroad_secondary = normalOfNormalOfcrossroad_secondary();
+	
+	P_interruptedOfInterruptedOfcrossroad_secondary = interruptedOfInterruptedOfcrossroad_secondary();
+	
+	P_main_regionOfStatechartOfcrossroad_secondary = main_regionOfStatechartOfcrossroad_secondary();
+	
+	P_main_regionOfStatechartOfcrossroad_controller = main_regionOfStatechartOfcrossroad_controller();
+	
+	P_ClockTemplate = ClockTemplate();
+	
+	P_MonitoredCrossroadOrchestrator0 = MonitoredCrossroadOrchestrator0();
 	
 	P_Environment = Environment();
-	system P_interruptedOfInterruptedOfcrossroad_secondary, P_main_regionOfStatechartOfcrossroad_controller, P_main_regionOfStatechartOfcrossroad_secondary, P_main_regionOfStatechartOfcrossroad_prior, P_interruptedOfInterruptedOfcrossroad_prior, P_normalOfNormalOfcrossroad_secondary, P_operatingOfOperatingOfcrossroad_controller, P_main_regionOfStatechartOfmonitor, P_normalOfNormalOfcrossroad_prior, P_MonitoredCrossroadOrchestrator37, P_Environment;
+	system P_main_regionOfStatechartOfcrossroad_prior, P_main_regionOfStatechartOfmonitor, P_normalOfNormalOfcrossroad_prior, P_operatingOfOperatingOfcrossroad_controller, P_interruptedOfInterruptedOfcrossroad_prior, P_normalOfNormalOfcrossroad_secondary, P_interruptedOfInterruptedOfcrossroad_secondary, P_main_regionOfStatechartOfcrossroad_secondary, P_main_regionOfStatechartOfcrossroad_controller, P_ClockTemplate, P_MonitoredCrossroadOrchestrator0, P_Environment;
 </system>
-	</nta>
+		</nta>

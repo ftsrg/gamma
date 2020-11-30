@@ -55,6 +55,8 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eventReference" lowerBound="1"
         upperBound="-1" eType="ecore:EClass interface.ecore#//EventReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="eventDiscardStrategy" eType="#//DiscardStrategy"
+        defaultValueLiteral="INCOMING"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SynchronousComponent" abstract="true"
       eSuperTypes="interface.ecore#//Component"/>
@@ -93,5 +95,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="ComponentInstanceReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="componentInstanceHierarchy"
         lowerBound="1" upperBound="-1" eType="#//ComponentInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="DiscardStrategy">
+    <eLiterals name="INCOMING"/>
+    <eLiterals name="OLDEST" value="1"/>
   </eClassifiers>
 </ecore:EPackage>

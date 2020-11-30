@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.plugintemplate.transformation
 
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ChoiceStates
@@ -12,32 +22,42 @@ import hu.bme.mit.gamma.plugintemplate.transformation.patterns.ShallowHistorySta
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.Statecharts
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.States
 import hu.bme.mit.gamma.plugintemplate.transformation.patterns.Transitions
-import hu.bme.mit.gamma.statechart.model.CompositeElement
-import hu.bme.mit.gamma.statechart.model.Package
-import hu.bme.mit.gamma.statechart.model.Region
-import hu.bme.mit.gamma.statechart.model.State
-import hu.bme.mit.gamma.statechart.model.StatechartDefinition
-import hu.bme.mit.gamma.statechart.model.StatechartModelFactory
-import org.eclipse.emf.ecore.resource.Resource
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.CompositeElement
+import hu.bme.mit.gamma.statechart.statechart.Region
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRule
 import org.eclipse.viatra.transformation.runtime.emf.rules.batch.BatchTransformationRuleFactory
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformation
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
+import org.eclipse.xtend.lib.annotations.Data
 
 import static com.google.common.base.Preconditions.checkState
-
+/**
+ * In the context of the transformer class:
+	- DO declare every object necessary for the tranformation in the constructor. If the EMF objects to be transformed are expected to be in a ResourceSet, communicate this constraint in a comment above the constructor.
+	- DO mark every not changable attribute in the class final.
+	- DO define a single void execute() method for the transformation
+	- If the transformer returns multiple objects, DO define an inner class named Result that contains these.
+ * In the case of Ecore metamodel projects
+	- DO set the Model directory to src-gen in the respective genmodel file.
+ */
 class ExampleTransformer {
 	// Transformation-related extensions
 	protected final extension BatchTransformation transformation
 	protected final extension BatchTransformationStatements statements
 	// Transformation rule-related extensions
 	protected final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
+	protected final extension InterfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension StatechartModelFactory = StatechartModelFactory.eINSTANCE
 
-	protected ViatraQueryEngine engine
-	protected Resource resource
+	protected final ViatraQueryEngine engine
+	protected final Package _package
 
 	protected Trace trace
 
@@ -54,8 +74,12 @@ class ExampleTransformer {
 	protected BatchTransformationRule<States.Match, States.Matcher> statesRule
 	protected BatchTransformationRule<Transitions.Match, Transitions.Matcher> transitionsRule
 
-	new(Resource resource) {
-		this.resource = resource
+	/**
+	 * The Package is expected to be in a resource.
+	 */
+	new(Package _package) {
+		this._package = _package
+		val resource = _package.eResource
 		// Create EMF scope and EMF IncQuery engine based on the resource
 		val scope = new EMFScope(resource)
 		this.engine = ViatraQueryEngine.on(scope);
@@ -81,7 +105,7 @@ class ExampleTransformer {
 		getForkStatesRule.fireAllCurrent
 		getJoinStatesRule.fireAllCurrent
 		getTransitionsRule.fireAllCurrent
-		return trace
+		return new Result(trace)
 	}
 
 	private def isEachRegionIsTransformed() {
@@ -283,6 +307,11 @@ class ExampleTransformer {
 					it.targetState = targetTransitionTarget
 				]
 				
+				// Add on cycle trigger to transitions going out from transitions
+				if (targetTransitionSource instanceof State) {
+					targetTransition.trigger = createOnCycleTrigger
+				}
+				
 				val targetStatechart = trace.getTargetStatechart(sourceStatechart)
 				targetStatechart.transitions += targetTransition
 				trace.put(sourceTransition, targetTransition)
@@ -297,4 +326,10 @@ class ExampleTransformer {
 		}
 		return
 	}
+	
+	@Data
+	static class Result {
+		Trace trace
+	}
+	
 }

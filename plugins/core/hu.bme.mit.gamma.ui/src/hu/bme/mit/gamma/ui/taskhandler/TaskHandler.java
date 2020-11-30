@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 Contributors to the Gamma project
+ * Copyright (c) 2019-2020 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -39,9 +39,9 @@ public abstract class TaskHandler {
 	
 	protected final IFile file;
 	
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected FileUtil fileUtil = FileUtil.INSTANCE;
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final FileUtil fileUtil = FileUtil.INSTANCE;
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	protected final String projectLocation;
 	protected String targetFolderUri;
 	
@@ -51,7 +51,7 @@ public abstract class TaskHandler {
 		this.projectLocation = file.getProject().getLocation().toString(); 
 	}
 
-	public void setTargetFolder(Task task, String parentFolderUri) {
+	public void setTargetFolder(Task task) {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;

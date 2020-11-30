@@ -16,15 +16,21 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
+import hu.bme.mit.gamma.statechart.composite.ControlFunction
+import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.InEventGroup
 import hu.bme.mit.gamma.xsts.model.RegionGroup
 import hu.bme.mit.gamma.xsts.model.SystemInEventGroup
 import hu.bme.mit.gamma.xsts.model.SystemOutEventGroup
@@ -33,7 +39,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
-import java.io.File
 import java.math.BigInteger
 import java.util.Collections
 import java.util.List
@@ -62,43 +67,46 @@ class GammaToXSTSTransformer {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
 	protected boolean optimize
 	// Logger
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
 		this(null, false, true)
 	}
 	
-	new(Integer schedulingConstraint, boolean transformOrthogonalActions, boolean optimize) {
+	new(Integer schedulingConstraint,
+			boolean transformOrthogonalActions, boolean optimize) {
 		this.schedulingConstraint = schedulingConstraint
 		this.transformOrthogonalActions = transformOrthogonalActions
 		this.optimize = optimize
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			File containingFile) {
-		return _package.preprocessAndExecute(Collections.emptyList, containingFile).serializeXSTS
+			String targetFolderUri, String fileName) {
+		return _package.preprocessAndExecute(#[], targetFolderUri, fileName).serializeXSTS
 	}
 	
 	def preprocessAndExecuteAndSerialize(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			List<Expression> topComponentArguments, File containingFile) {
-		return _package.preprocessAndExecute(topComponentArguments, containingFile).serializeXSTS
+			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
+		return _package.preprocessAndExecute(topComponentArguments, targetFolderUri, fileName).serializeXSTS
 	}
 
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			File containingFile) {
-		val component = modelPreprocessor.preprocess(_package, Collections.emptyList, containingFile)
+			String targetFolderUri, String fileName) {
+		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
 	
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
-			List<Expression> topComponentArguments, File containingFile) {
-		val component = modelPreprocessor.preprocess(_package, topComponentArguments, containingFile)
+			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
+		val component = modelPreprocessor.preprocess(_package, topComponentArguments,
+			targetFolderUri, fileName)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -109,6 +117,9 @@ class GammaToXSTSTransformer {
 		val lowlevelPackage = gammaToLowlevelTransformer.transform(_package) // Not execute, as we want to distinguish between statecharts
 		// Serializing the xSTS
 		val xSts = gammaComponent.transform(lowlevelPackage) // Transforming the Gamma component
+		// Creating system event groups for traceability purposes
+		logger.log(Level.INFO, "Creating system event groups for " + gammaComponent.name)
+		xSts.createSystemEventGroups(gammaComponent)
 		// Removing duplicated types
 		xSts.removeDuplicatedTypes
 		// Setting clock variable increase
@@ -148,6 +159,88 @@ class GammaToXSTSTransformer {
 	
 	protected def dispatch XSTS transform(Component component, Package lowlevelPackage) {
 		throw new IllegalArgumentException("Not supported component type: " + component)
+	}
+	
+	protected def dispatch XSTS transform(AsynchronousAdapter component, Package lowlevelPackage) {
+		// TODO maybe isTop boolean variables should be introduced as now in event actions are created discarded
+		component.checkAdapter
+		val wrappedInstance = component.wrappedComponent
+		val wrappedType = wrappedInstance.type
+		
+		val messageQueue = component.messageQueues.head
+		
+		wrappedType.transformParameters(wrappedInstance.arguments) 
+		val xSts = wrappedType.transform(lowlevelPackage)
+		
+		val inEventAction = xSts.inEventAction
+		// Deleting synchronous event assignments
+		val xStsSynchronousInEventVariables = xSts.variableGroups
+			.filter[it.annotation instanceof InEventGroup].map[it.variables]
+			.flatten // There are more than one
+		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
+			val xStsDeclaration = xStsAssignment.lhs.declaration
+			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
+				xStsAssignment.remove // Deleting in-event bool flags
+			}
+		}
+		
+		val extension eventRef = new EventReferenceToXSTSVariableMapper(xSts)
+		// Collecting the referenced event variables
+		val xStsReferencedEventVariables = newHashSet
+		for (eventReference : messageQueue.eventReference) {
+			xStsReferencedEventVariables += eventReference.variables
+		}
+		
+		val newInEventAction = createSequentialAction
+		// Setting the referenced event variables to false
+		for (xStsEventVariable : xStsReferencedEventVariables) {
+			newInEventAction.actions += createAssignmentAction => [
+				it.lhs = createReferenceExpression => [
+					it.declaration = xStsEventVariable
+				]
+				it.rhs = createFalseExpression
+			]
+		}
+		// Enabling the setting of the referenced event variables to true if no other is set
+		for (xStsEventVariable : xStsReferencedEventVariables) {
+			val negatedVariables = newArrayList
+			negatedVariables += xStsReferencedEventVariables
+			negatedVariables -= xStsEventVariable
+			val branch = createIfActionBranch(
+				negatedVariables.connectThroughNegations,
+				createAssignmentAction => [
+					it.lhs = createReferenceExpression => [
+						it.declaration = xStsEventVariable
+					]
+					it.rhs = createTrueExpression
+				]
+			)
+			branch.extendChoiceWithBranch(createTrueExpression, createEmptyAction)
+			newInEventAction.actions += branch
+		}
+		// Binding event variables that come from the same ports
+		newInEventAction.actions += xSts.createEventAssignmentsBoundToTheSameSystemPort(wrappedType)
+		 // Original parameter settings
+		newInEventAction.actions += inEventAction
+		// Binding parameter variables that come from the same ports
+		newInEventAction.actions += xSts.createParameterAssignmentsBoundToTheSameSystemPort(wrappedType)
+		xSts.inEventAction = newInEventAction
+		
+		return xSts
+	}
+	
+	protected def checkAdapter(AsynchronousAdapter component) {
+		val messageQueues = component.messageQueues
+		checkState(messageQueues.size == 1)
+		// The capacity (and priority) do not matter, as they are from the environment
+		checkState(component.clocks.empty)
+		val controlSpecifications = component.controlSpecifications
+		checkState(controlSpecifications.size == 1)
+		val controlSpecification = controlSpecifications.head
+		val trigger = controlSpecification.trigger
+		checkState(trigger instanceof AnyTrigger)
+		val controlFunction = controlSpecification.controlFunction
+		checkState(controlFunction == ControlFunction.RUN_ONCE)
 	}
 	
 	protected def dispatch XSTS transform(AbstractSynchronousCompositeComponent component, Package lowlevelPackage) {
@@ -244,18 +337,23 @@ class GammaToXSTSTransformer {
 				componentMergedActions.put(type, actualComponentMergedAction.clone(true, true))
 			}
 		}
+		xSts.name = component.name
 		xSts.mergedAction = mergedAction
-		// Creating system event groups for traceability purposes
-		logger.log(Level.INFO, "Creating system event groups for " + component.name)
-		xSts.createSystemEventGroups(component)
 		logger.log(Level.INFO, "Deleting unused instance ports in " + component.name)
 		xSts.deleteUnusedPorts(component) // Deleting variable assignments for unused ports
 		// Connect only after xSts.mergedTransition.action = mergedAction
 		logger.log(Level.INFO, "Connecting events through channels in " + component.name)
 		xSts.connectEventsThroughChannels(component) // Event (variable setting) connecting across channels
 		logger.log(Level.INFO, "Binding event to system port events in " + component.name)
-		xSts.inEventAction.bindEventsBoundToTheSameSystemPort(component) // Bind together ports connected to the same system port
-		xSts.name = component.name
+		val oldInEventAction = xSts.inEventAction
+		val bindingAssignments = xSts.createEventAndParameterAssignmentsBoundToTheSameSystemPort(component)
+		// Optimization: removing old NonDeterministicActions 
+		bindingAssignments.removeNonDeterministicActionsReferencingAssignedVariables(oldInEventAction)
+		xSts.inEventAction = createSequentialAction => [
+			it.actions += oldInEventAction
+			// Bind together ports connected to the same system port
+			it.actions += bindingAssignments
+		]
 		return xSts
 	}
 	
@@ -362,8 +460,7 @@ class GammaToXSTSTransformer {
 		xSts.variableGroups += systemOutEventGroup
 		
 		for (port : component.allConnectedSimplePorts) {
-			val statechart = port.containingStatechart
-			val instance = statechart.referencingComponentInstance
+			val instance = port.containingComponentInstance
 			for (inEvent : port.inputEvents) {
 				val inEventVariableName = customizeInputName(inEvent, port, instance)
 				val inEventVariable = xSts.getVariable(inEventVariableName)

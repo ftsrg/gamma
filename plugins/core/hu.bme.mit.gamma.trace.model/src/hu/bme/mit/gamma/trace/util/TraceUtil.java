@@ -19,16 +19,17 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
+import hu.bme.mit.gamma.trace.model.Assert;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
-import hu.bme.mit.gamma.trace.model.InstanceState;
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
 import hu.bme.mit.gamma.trace.model.InstanceVariableState;
 import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Step;
-import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 
 public class TraceUtil {
 	// Singleton
@@ -36,14 +37,25 @@ public class TraceUtil {
 	protected TraceUtil() {}
 	//
 	
-	public static InstanceStateSorter instanceStateSorter = new InstanceStateSorter();
+	public static final AssertSorter assertSorter = new AssertSorter();
 	
 	// Step sorter
 	
-	public static class InstanceStateSorter implements Comparator<InstanceState> {
+	public static class AssertSorter implements Comparator<Assert> {
 
 		@Override
-		public int compare(InstanceState lhs, InstanceState rhs) {
+		public int compare(Assert lhsAssert, Assert rhsAssert) {
+			Assert lhs = TraceModelDerivedFeatures.getLowermostAssert(lhsAssert);
+			Assert rhs = TraceModelDerivedFeatures.getLowermostAssert(rhsAssert);
+			if (lhs instanceof RaiseEventAct) {
+				if (rhs instanceof RaiseEventAct) {
+					return 0;
+				}
+				return -1;
+			}
+			if (rhs instanceof RaiseEventAct) {
+				return 1;
+			}
 			if (lhs instanceof InstanceStateConfiguration && rhs instanceof InstanceStateConfiguration) {
 				// Two instance states: first - instance name, second - state level
 				InstanceStateConfiguration lhsInstanceStateConfiguration = (InstanceStateConfiguration) lhs;
@@ -90,9 +102,9 @@ public class TraceUtil {
 	}
 	
 	public void sortInstanceStates(Step step) {
-		EList<InstanceState> instanceStates = step.getInstanceStates();
-		List<InstanceState> list = new ArrayList<InstanceState>(instanceStates); // Needed to avoid the 'no duplicates' constraint
-		list.sort(instanceStateSorter);
+		List<Assert> instanceStates = step.getAsserts();
+		List<Assert> list = new ArrayList<Assert>(instanceStates); // Needed to avoid the 'no duplicates' constraint
+		list.sort(assertSorter);
 		instanceStates.clear();
 		instanceStates.addAll(list);
 	}
@@ -173,8 +185,24 @@ public class TraceUtil {
 		}
 	}
 	
+	public boolean isCovered(ExecutionTrace covered, List<ExecutionTrace> covering) {
+		for (ExecutionTrace coveringTrace : covering) {
+			if (isCovered(covered, coveringTrace)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isCovered(ExecutionTrace covered, ExecutionTrace covering) {
-		return isCovered(covered.getSteps(), covering.getSteps());
+		List<Step> coveredTrace = covered.getSteps();
+		List<List<Step>> coveringTraces = identifySeparateTracesByReset(covering);
+		for (List<Step> coveringTrace : coveringTraces) {
+			if (isCovered(coveredTrace, coveringTrace)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean isCovered(List<Step> covered, List<Step> covering) {

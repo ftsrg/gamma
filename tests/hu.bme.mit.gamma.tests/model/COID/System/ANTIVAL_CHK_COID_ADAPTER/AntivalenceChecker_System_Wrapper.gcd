@@ -1,0 +1,11 @@
+package antivalchk_coid_system_wrapper
+import "ANTIVAL_CHK_COID/ANTIVAL_CHK_COID_System.gcd"
+
+adapter AntivalenceChecker_System_Wrapper of component system :
+	AntivalenceChecker_System [
+] {
+	when any / run
+	queue messages(priority = 1, capacity = 1) {
+		Antivalence_Input.any
+	}
+}

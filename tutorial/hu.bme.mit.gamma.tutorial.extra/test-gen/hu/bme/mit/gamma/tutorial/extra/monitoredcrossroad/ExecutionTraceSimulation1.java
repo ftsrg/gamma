@@ -1,6 +1,6 @@
 package hu.bme.mit.gamma.tutorial.extra.monitoredcrossroad;
 
-import hu.bme.mit.gamma.tutorial.extra.VirtualTimerService;
+import hu.bme.mit.gamma.tutorial.extra.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,19 +17,28 @@ public class ExecutionTraceSimulation1 {
 	public void init() {
 		timer = new VirtualTimerService();
 		reflectiveMonitoredCrossroad = new ReflectiveMonitoredCrossroad(timer);  // Virtual timer is automatically set
-		reflectiveMonitoredCrossroad.reset();
 	}
 	
 	@After
 	public void tearDown() {
-		// Only for override by potential subclasses
+		stop();
+	}
+	
+	// Only for override by potential subclasses
+	protected void stop() {
 		timer = null;
-		reflectiveMonitoredCrossroad = null;
+		reflectiveMonitoredCrossroad = null;				
 	}
 	
 	@Test
+	public void test() {
+		finalStep0();
+		return;
+	}
 	public void step0() {
 		// Act
+		timer.reset(); // Timer before the system
+		reflectiveMonitoredCrossroad.reset();
 		// Checking out events
 		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("secondaryOutput", "displayRed", new Object[] {}));
 		assertTrue(reflectiveMonitoredCrossroad.isRaisedEvent("priorityOutput", "displayRed", new Object[] {}));
@@ -44,7 +53,6 @@ public class ExecutionTraceSimulation1 {
 		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Other"));
 	}
 	
-	@Test
 	public void step1() {
 		step0();
 		// Act
@@ -63,7 +71,6 @@ public class ExecutionTraceSimulation1 {
 		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Red"));
 	}
 	
-	@Test
 	public void step2() {
 		step1();
 		// Act
@@ -82,8 +89,7 @@ public class ExecutionTraceSimulation1 {
 		assertTrue(reflectiveMonitoredCrossroad.getComponent("monitor").isStateActive("main_region", "Green"));
 	}
 	
-	@Test
-	public void step3() {
+	public void finalStep0() {
 		step2();
 		// Act
 		timer.elapse(2000);

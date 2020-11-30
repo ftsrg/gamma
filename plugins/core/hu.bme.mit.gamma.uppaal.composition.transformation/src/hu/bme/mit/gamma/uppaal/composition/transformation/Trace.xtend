@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -48,7 +49,6 @@ import uppaal.declarations.ClockVariableDeclaration
 import uppaal.declarations.DataVariableDeclaration
 import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.FunctionDeclaration
-import uppaal.declarations.VariableDeclaration
 import uppaal.expressions.BinaryExpression
 import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LiteralExpression
@@ -117,7 +117,7 @@ class Trace {
 		return traces.head		
 	}
 	
-	def getPort(VariableDeclaration variable) {
+	def getPort(uppaal.declarations.VariableDeclaration variable) {
 		val traces = PortTraces.Matcher.on(traceEngine).getAllValuesOfport(null, variable)
 		if (traces.size != 1) {
 			throw new IllegalArgumentException("The number of owners of this object is not one! Object: " + variable + " Size: " + traces.size + " Owners: " + traces.map[it.owner])
@@ -290,6 +290,25 @@ class Trace {
 			throw new IllegalArgumentException("This clock has more than one const representations: " + clock + " " + variables)
 		}
 		return variables.head
+	}
+	
+	def checkDataVariable(VariableDeclaration variable) {
+		val dataDeclaration = getDataVariable(variable)
+		if (dataDeclaration === null) {
+			throw new IllegalArgumentException("No variable for " + variable)
+		}
+		return dataDeclaration
+	}
+	
+	def getDataVariable(VariableDeclaration variable) {
+		val dataDeclarations = variable.allValuesOfTo.filter(DataVariableDeclaration)
+		if (dataDeclarations.size > 1) {
+			throw new IllegalArgumentException("Not one variable: " + dataDeclarations)
+		}
+		if (dataDeclarations.size < 1) {
+			return null
+		}
+		return dataDeclarations.head
 	}
 	
 	/**

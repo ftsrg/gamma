@@ -25,6 +25,8 @@ import hu.bme.mit.gamma.statechart.composite.ControlFunction
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.composite.DiscardStrategy
+import hu.bme.mit.gamma.statechart.composite.MessageQueue
 
 class AsynchronousAdapterCodeGenerator {
 	
@@ -88,7 +90,7 @@ class AsynchronousAdapterCodeGenerator {
 			«component.generateParameterDeclarationFields»
 			
 			«IF component.needTimer»
-				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«YAKINDU_TIMER_INTERFACE» timer) {
+				public «component.generateComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«UNIFIED_TIMER_INTERFACE» timer) {
 					«component.createInstances»
 					setTimer(timer);
 					// Init is done in setTimer
@@ -297,7 +299,7 @@ class AsynchronousAdapterCodeGenerator {
 			}
 			
 			«IF component.needTimer»
-				public void setTimer(«YAKINDU_TIMER_INTERFACE» timer) {
+				public void setTimer(«UNIFIED_TIMER_INTERFACE» timer) {
 					«IF !component.clocks.empty»timerService = timer;«ENDIF»
 					«IF component.wrappedComponent.type.needTimer»«component.generateWrappedComponentName».setTimer(timer);«ENDIF»
 					init(); // To set the service into functioning state with clocks (so that "after 1 s" works with new timer as well)
@@ -348,11 +350,23 @@ class AsynchronousAdapterCodeGenerator {
 			@Override
 			public void raise«event.name.toFirstUpper»(«event.generateParameters») {
 				«FOR queue : QueuesOfEvents.Matcher.on(engine).getAllValuesOfqueue(port, event) SEPARATOR "\n"»
-					«queue.name».offer(new Event("«port.name».«event.name»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
+					«queue.name».«queue.additionMethodName»(new Event("«port.name».«event.name»"«IF event.generateArguments.length != 0», «ENDIF»«event.generateArguments»));
 				«ENDFOR»
 			}
 		«ENDFOR»
 	'''
+	
+	protected def getAdditionMethodName(MessageQueue queue) {
+		val eventDiscardStrategy = queue.eventDiscardStrategy
+		switch (eventDiscardStrategy) {
+			case DiscardStrategy.INCOMING:
+				return "offer"
+			case DiscardStrategy.OLDEST:
+				return "push"
+			default:
+				throw new IllegalStateException("Not known strategy: " + eventDiscardStrategy)
+		}
+	}
 	
 	/**
 	 * Generates methods for out-event checks in case of control ports of wrapper components.

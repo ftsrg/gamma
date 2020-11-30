@@ -39,6 +39,7 @@ import uppaal.expressions.AssignmentExpression
 import uppaal.expressions.CompareExpression
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.ExpressionsPackage
+import uppaal.expressions.FunctionCallExpression
 import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.IncrementDecrementExpression
 import uppaal.expressions.IncrementDecrementOperator
@@ -89,7 +90,8 @@ class MessageQueueCreator {
 	
 	new(NtaBuilder ntaBuilder, IModelManipulations manipulation, ViatraQueryEngine engine,
 			ExpressionTransformer expressionTransformer, Trace modelTrace,
-			DeclaredType messageStructType, DataVariableDeclaration messageEvent, DataVariableDeclaration messageValue) {
+			DeclaredType messageStructType, DataVariableDeclaration messageEvent,
+			DataVariableDeclaration messageValue) {
 		this.target = ntaBuilder.nta
 		this.ntaBuilder = ntaBuilder
 		this.manipulation = manipulation
@@ -117,7 +119,8 @@ class MessageQueueCreator {
 				// Creating shift function
 				val shiftFunction = queue.createShiftFunction(messageArray, sizeVar, null)
 				// Creating the push function
-				val pushFunction = queue.createPushFunction(messageArray, sizeVar, capacityConst, null)
+				val pushFunction = queue.createPushFunction(shiftFunction, messageArray,
+					sizeVar, capacityConst, null)
 				// Creating isFull function
 				val isFullFunction = queue.createIsFullFunction(sizeVar, capacityConst, null)
 				// The trace cannot be done with "addToTrace", so it is done here
@@ -144,7 +147,8 @@ class MessageQueueCreator {
 				// Creating shift function
 				val shiftFunction = queue.createShiftFunction(messageArray, sizeVar, it.instance)
 				// Creating the push function
-				val pushFunction = queue.createPushFunction(messageArray, sizeVar, capacityConst, it.instance)
+				val pushFunction = queue.createPushFunction(shiftFunction, messageArray,
+					sizeVar, capacityConst, it.instance)
 				// Creating isFull function
 				val isFullFunction = queue.createIsFullFunction(sizeVar, capacityConst, it.instance)
 				// The trace cannot be done with "addToTrace", so it is done here
@@ -189,7 +193,7 @@ class MessageQueueCreator {
 		val messageVariableContainer = target.globalDeclarations.createChild(declarations_Declaration, dataVariableDeclaration) as DataVariableDeclaration => [
 			it.createChild(variableContainer_TypeDefinition, typeReference) as TypeReference => [
 				it.referredType = messageStructType // Only one variable is expected
-			]			
+			]
 		]
 		val messageArray = messageVariableContainer.createChild(variableContainer_Variable, declPackage.variable) as Variable => [
 			it.container = messageVariableContainer
@@ -220,8 +224,8 @@ class MessageQueueCreator {
 							]
 						]
 					]
-				]			
-			]	
+				]
+			]
 		]
 		return peekFunction	
 	}
@@ -265,13 +269,13 @@ class MessageQueueCreator {
 					// for (i = 0; i < executionMessagesSize - 1; i++) {
 					it.createChild(block_Statement, forLoop) as ForLoop => [
 						// i = 0
-						it.createChild(forLoop_Initialization, assignmentExpression) as AssignmentExpression => [							
+						it.createChild(forLoop_Initialization, assignmentExpression) as AssignmentExpression => [						
 							it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 								it.identifier = i.variable.head
 							]
 							it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
 								it.text = "0"
-							] 					
+							]
 						]
 						// i < executionMessagesSize - 1
 						it.createChild(forLoop_Condition, compareExpression) as CompareExpression => [							
@@ -286,14 +290,14 @@ class MessageQueueCreator {
 								it.operator = ArithmeticOperator.SUBTRACT
 								it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
 									it.text = "1"
-								] 	
-							]			
+								]
+							]
 						]
 						// i++ (default values are okay)
 						it.createChild(forLoop_Iteration, incrementDecrementExpression) as IncrementDecrementExpression => [							
 							it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
 								it.identifier = i.variable.head
-							]	
+							]
 						]
 						// executionMessages[i] = executionMessages[i + 1];
 						it.createChild(forLoop_Statement, expressionStatement) as ExpressionStatement => [							
@@ -313,10 +317,10 @@ class MessageQueueCreator {
 										it.operator = ArithmeticOperator.ADD
 										it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
 											it.text = "1"
-										] 	
-									]		
+										]
+									]
 								]
-							]	
+							]
 						]
 					]
 					// executionMessages[executionMessagesSize - 1] = emptyMessage;
@@ -331,8 +335,8 @@ class MessageQueueCreator {
 									it.operator = ArithmeticOperator.SUBTRACT
 									it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
 										it.text = "1"
-									] 	
-								]		
+									]
+								]
 							]
 							it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
 								it.identifier = emptyMessageVar.variable.head
@@ -341,21 +345,22 @@ class MessageQueueCreator {
 					]
 					// ...MessagesCapacity--;
 					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-						it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
+						it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [
 							it.operator = IncrementDecrementOperator.DECREMENT
 							it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
 								it.identifier = capacityVar.variable.head
 							]
 						]
 					]
-				]		
-			]	
+				]
+			]
 		]
 		return shiftFunction	
 	}
 	
-	private def createPushFunction(MessageQueue queue, Variable messageArray, DataVariableDeclaration capacityVar,
-		DataVariableDeclaration sizeConst, ComponentInstance owner) {
+	private def createPushFunction(MessageQueue queue, FunctionDeclaration shiftFunction,
+			Variable messageArray, DataVariableDeclaration capacityVar,
+			DataVariableDeclaration sizeConst, ComponentInstance owner) {
 		val pushFunction = target.globalDeclarations.createChild(declarations_Declaration, functionDeclaration) as FunctionDeclaration => [
 			it.createChild(functionDeclaration_Function, declPackage.function) as Function => [
 				it.createChild(function_ReturnType, typeReference) as TypeReference => [
@@ -382,73 +387,88 @@ class MessageQueueCreator {
 						it.name = "message"
 					]
 					
-					// if (...MessagesCapacity < ..._SIZE) {
+					// if (...MessagesCapacity >= ..._SIZE) {
 					it.createChild(block_Statement, ifStatement) as IfStatement => [
-						// (...MessagesCapacity < ..._SIZE)
+						// (...MessagesCapacity >= ..._SIZE)
 						it.createChild(ifStatement_IfExpression, compareExpression) as CompareExpression => [
 							it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
 								it.identifier = capacityVar.variable.head
 							]
-							it.operator = CompareOperator.LESS
+							it.operator = CompareOperator.GREATER_OR_EQUAL
 							it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
 								it.identifier = sizeConst.variable.head
 							]
 						]
-						it.createChild(ifStatement_ThenStatement, block) as Block => [
-							// message.event = event;
-							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-								it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
-									it.createChild(binaryExpression_FirstExpr, scopedIdentifierExpression) as ScopedIdentifierExpression => [
-										it.createChild(scopedIdentifierExpression_Scope, identifierExpression) as IdentifierExpression => [
-											it.identifier = newMessageVariable
-										]
-										it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
-											it.identifier = messageEvent.variable.head
-										]										
+						val eventDiscardStrategy = queue.eventDiscardStrategy
+						switch (eventDiscardStrategy) {
+							case INCOMING: {
+								// return;
+								it.createChild(ifStatement_ThenStatement, returnStatement)
+							}
+							case OLDEST: {
+								// shift();
+								it.createChild(ifStatement_ThenStatement, expressionStatement) as ExpressionStatement => [
+									it.createChild(expressionStatement_Expression, functionCallExpression) as FunctionCallExpression => [
+										it.function = shiftFunction.function
 									]
-									it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-										it.identifier = eventVar									
-									]
+								]
+							}
+							default:
+								throw new IllegalStateException("Not known strategy: " + eventDiscardStrategy)
+						}
+					]
+					// message.event = event;
+					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
+						it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
+							it.createChild(binaryExpression_FirstExpr, scopedIdentifierExpression) as ScopedIdentifierExpression => [
+								it.createChild(scopedIdentifierExpression_Scope, identifierExpression) as IdentifierExpression => [
+									it.identifier = newMessageVariable
+								]
+								it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
+									it.identifier = messageEvent.variable.head
 								]
 							]
-							// message.value = value;
-							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-								it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
-									it.createChild(binaryExpression_FirstExpr, scopedIdentifierExpression) as ScopedIdentifierExpression => [
-										it.createChild(scopedIdentifierExpression_Scope, identifierExpression) as IdentifierExpression => [
-											it.identifier = newMessageVariable
-										]
-										it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
-											it.identifier = messageValue.variable.head
-										]										
-									]
-									it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-										it.identifier = valueVar								
-									]
+							it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
+								it.identifier = eventVar									
+							]
+						]
+					]
+					// message.value = value;
+					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
+						it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
+							it.createChild(binaryExpression_FirstExpr, scopedIdentifierExpression) as ScopedIdentifierExpression => [
+								it.createChild(scopedIdentifierExpression_Scope, identifierExpression) as IdentifierExpression => [
+									it.identifier = newMessageVariable
+								]
+								it.createChild(scopedIdentifierExpression_Identifier, identifierExpression) as IdentifierExpression => [
+									it.identifier = messageValue.variable.head
 								]
 							]
-							// ...Messages[...MessagesCapacity] = message;
-							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-								it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
-									it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-										it.identifier = messageArray
-										it.createChild(identifierExpression_Index, identifierExpression) as IdentifierExpression => [
-											it.identifier = capacityVar.variable.head
-										]		
-									]
-									it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
-										it.identifier = newMessageVariable
-									]
+							it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
+								it.identifier = valueVar								
+							]
+						]
+					]
+					// ...Messages[...MessagesCapacity] = message;
+					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
+						it.createChild(expressionStatement_Expression, assignmentExpression) as AssignmentExpression => [
+							it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
+								it.identifier = messageArray
+								it.createChild(identifierExpression_Index, identifierExpression) as IdentifierExpression => [
+									it.identifier = capacityVar.variable.head
 								]
 							]
-							// ...MessagesCapacity++;
-							it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
-								it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
-									it.operator = IncrementDecrementOperator.INCREMENT
-									it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
-										it.identifier = capacityVar.variable.head
-									]	
-								]
+							it.createChild(binaryExpression_SecondExpr, identifierExpression) as IdentifierExpression => [
+								it.identifier = newMessageVariable
+							]
+						]
+					]
+					// ...MessagesCapacity++;
+					it.createChild(block_Statement, expressionStatement) as ExpressionStatement => [
+						it.createChild(expressionStatement_Expression, incrementDecrementExpression) as IncrementDecrementExpression => [	
+							it.operator = IncrementDecrementOperator.INCREMENT
+							it.createChild(incrementDecrementExpression_Expression, identifierExpression) as IdentifierExpression => [
+								it.identifier = capacityVar.variable.head
 							]
 						]
 					]
@@ -478,8 +498,8 @@ class MessageQueueCreator {
 							]
 						]
 					]
-				]			
-			]	
+				]
+			]
 		]
 		return isFullFunction
 	}

@@ -22,11 +22,11 @@ import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode
-import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Component
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
+import hu.bme.mit.gamma.statechart.statechart.ChoiceState
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.math.BigInteger
 import java.util.List
 import org.eclipse.emf.ecore.util.EcoreUtil
 
@@ -366,6 +367,7 @@ class StatechartToLowlevelTransformer {
 		if (guard !== null) {
 			// Transforming else expressions
 			if (guard instanceof ElseExpression) {
+				trace.designateElseGuardedTransition(transition)
 				var Expression transformedGuard
 				val source = transition.sourceState
 				val lowlevelOutgoingTransitions = source.outgoingTransitions
@@ -410,11 +412,15 @@ class StatechartToLowlevelTransformer {
 	}
 	
 	protected def prioritizeTransitions(StatechartDefinition statechart) {
-		for (gammaTransition : statechart.transitions) {
-			val lowlevelTransition = trace.get(gammaTransition)
-			val lowlevelSource = lowlevelTransition.source
-			if (lowlevelSource instanceof hu.bme.mit.gamma.statechart.lowlevel.model.State || 
-					lowlevelSource instanceof ChoiceState) {
+		for (node : statechart.allStateNodes.filter[it instanceof State ||
+				it instanceof ChoiceState]) {
+			val gammaOutgoingTransitions = node.outgoingTransitions
+					// Else expressions should not be cloned again
+					.reject[trace.elseGuardedTransition.contains(it)]
+			// Sorting, so the resulting guard expressions do not get too big
+			gammaOutgoingTransitions.sortBy[it.calculatePriority]
+			for (gammaTransition : gammaOutgoingTransitions) {
+				val lowlevelTransition = trace.get(gammaTransition)
 				val newGuardExpression = createAndExpression
 				for (prioritizedTransition : gammaTransition.prioritizedTransitions) {
 					newGuardExpression.operands += createNotExpression => [
@@ -434,32 +440,36 @@ class StatechartToLowlevelTransformer {
 	protected def getPrioritizedTransitions(Transition gammaTransition) {
 		val gammaStatechart = gammaTransition.containingStatechart
 		val transitionPriority = gammaStatechart.transitionPriority
-		val gammaOutgoingTransitions = gammaTransition.sourceState.outgoingTransitions
 		val prioritizedTransitions = newLinkedList
-		switch (transitionPriority) {
-			case OFF: {
-				// No operation
-			}
-			case ORDER_BASED : {
-				for (gammaOutgoingTransition : gammaOutgoingTransitions) {
-					if (gammaOutgoingTransitions.indexOf(gammaOutgoingTransition) < 
-							gammaOutgoingTransitions.indexOf(gammaTransition)) {
-						prioritizedTransitions += gammaOutgoingTransition
-					}
+		if (transitionPriority != TransitionPriority.OFF) {
+			val gammaOutgoingTransitions = gammaTransition.sourceState.outgoingTransitions
+			for (gammaOutgoingTransition : gammaOutgoingTransitions) {
+				if (gammaOutgoingTransition.calculatePriority > gammaTransition.calculatePriority) {
+					prioritizedTransitions += gammaOutgoingTransition
 				}
-			}
-			case VALUE_BASED : {
-				for (gammaOutgoingTransition : gammaOutgoingTransitions) {
-					if (gammaOutgoingTransition.priority > gammaTransition.priority) {
-						prioritizedTransitions += gammaOutgoingTransition
-					}
-				}
-			}
-			default: {
-				throw new IllegalArgumentException("Not known priority enum literal: " + transitionPriority)
 			}
 		}
 		return prioritizedTransitions
+	}
+	
+	protected def BigInteger calculatePriority(Transition transition) {
+		val statechart = transition.containingStatechart
+		val transitionPriority = statechart.transitionPriority
+		switch (transitionPriority) {
+			case ORDER_BASED : {
+				val outgoingTransitions = transition.sourceState.outgoingTransitions
+				val size = outgoingTransitions.size
+				val index = outgoingTransitions.indexOf(transition)
+				val priority = size - index
+				return BigInteger.valueOf(priority)
+			}
+			case VALUE_BASED : {
+				return transition.priority
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported literal: " + transitionPriority)
+			}
+		}
 	}
 
 }

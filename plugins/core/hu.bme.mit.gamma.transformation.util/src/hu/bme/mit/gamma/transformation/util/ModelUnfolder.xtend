@@ -11,27 +11,26 @@
 package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
-import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.PortEventReference
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventTrigger
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
+import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
+import hu.bme.mit.gamma.statechart.statechart.PortEventReference
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.HashMap
 import java.util.Map
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.util.EcoreUtil.Copier
-import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
@@ -43,21 +42,27 @@ class ModelUnfolder {
 	
 	protected final Package gammaPackage
 	
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension InterfaceModelFactory factory = InterfaceModelFactory.eINSTANCE
+	
 	new(Package gammaPackage) {
 		this.gammaPackage = gammaPackage
 	}
 	
 	def unfold() {
-		val clonedPackage = gammaPackage.clone(true, true) as Package => [
+		val clonedPackage = gammaPackage.clone => [
 			it.imports.clear // Clearing the imports as no reference will be needed in the "Instance container"
 			// The interfaces and type declarations of imports are not copied here as the multiple
 			// references in the (possible more than one) original models (due to instantiation)
 			// would also be necessary to retarget. Therefore, the definition of interfaces and
 			// type declarations is possible only in packages different from the component package
 			it.name = it.name + "View"
+			it.annotations += createUnfoldedPackageAnnotation // Denoting that the package is unfolded
 		]
-		val originalComponent = gammaPackage.component
-		val topComponent = clonedPackage.component
+		val originalComponent = gammaPackage.topComponent
+		// Clearing other components to prevent potential duplication of components
+		val topComponent = clonedPackage.topComponentClearAdditionalComponents
+		
 		val trace = new Trace(clonedPackage, topComponent)
 		topComponent.copyComponents(clonedPackage, trace)
 		topComponent.renameInstances
@@ -78,7 +83,7 @@ class ModelUnfolder {
 			Package gammaPackage, Trace trace) {
 		for (instance : component.components) {
 			val type = instance.type
-			val clonedPackage = type.eContainer.clone(true, true) as Package
+			val clonedPackage = type.containingPackage.clone
 			gammaPackage.addDeclarations(clonedPackage)
 			// Declarations have been moved
 			val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent // Sync Composite or Statechart
@@ -103,7 +108,7 @@ class ModelUnfolder {
 		for (instance : component.components) {
 			val type = instance.type
 			if (type instanceof AsynchronousCompositeComponent) {
-				val clonedPackage = type.eContainer.clone(true, true) as Package
+				val clonedPackage = type.containingPackage.clone
 				gammaPackage.addDeclarations(clonedPackage)
 				// Declarations have been moved		
 				val clonedComposite = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousCompositeComponent // Cloning the declaration
@@ -114,7 +119,7 @@ class ModelUnfolder {
 				type.traceComponentInstances(clonedComposite, trace)
 			}
 			else if (type instanceof AsynchronousAdapter) {
-				val clonedPackage = type.eContainer.clone(true, true) as Package
+				val clonedPackage = type.containingPackage.clone
 				gammaPackage.addDeclarations(clonedPackage)
 				// Declarations have been moved
 				val clonedWrapper = clonedPackage.components.findFirst[it.helperEquals(type)] as AsynchronousAdapter // Cloning the declaration
@@ -136,7 +141,7 @@ class ModelUnfolder {
 	private dispatch def void copyComponents(AsynchronousAdapter component, Package gammaPackage,
 			Trace trace) {
 		val type = component.wrappedComponent.type
-		val clonedPackage = type.eContainer.clone(true, true) as Package
+		val clonedPackage = type.containingPackage.clone
 		gammaPackage.addDeclarations(clonedPackage)
 		// Declarations have been moved
 		val clonedComponent = clonedPackage.components.findFirst[it.helperEquals(type)] as SynchronousComponent  // Sync Composite or Statechart
@@ -308,9 +313,22 @@ class ModelUnfolder {
 	
 	// Util
 	
-	private def getComponent(Package gammaPackage) {
+	private def getTopComponent(Package gammaPackage) {
 		// The first component is retrieved
 		return gammaPackage.components.head
+	}
+	
+	private def getTopComponentClearAdditionalComponents(Package gammaPackage) {
+		val topComponent = gammaPackage.topComponent
+		// Trick: so if there are multiple components in the gammaPackage,
+		// they are not cloned and doubled
+		val transientPackage = createPackage => [
+			it.name = "TransientPackage"
+		]
+		transientPackage.components += gammaPackage.components
+		// Only the top component stays in the original one
+		gammaPackage.components += topComponent
+		return topComponent
 	}
 	
 	protected def addDeclarations(Package gammaPackage, Package clonedPackage) {
@@ -341,19 +359,6 @@ class ModelUnfolder {
 	private def dispatch traceComponentInstances(AsynchronousAdapter oldComponent,
 			AsynchronousAdapter newComponent, Trace trace) {
 		trace.put(oldComponent.wrappedComponent, newComponent.wrappedComponent)
-	}
-	
-	private def <T extends EObject> T clone(T model, boolean a, boolean b) {
-		// A new copier should be used every time, otherwise anomalies happen (references are changed without asking)
-		val copier = new Copier(a, b)
-		val clone = copier.copy(model) as T;
-		copier.copyReferences();
-		return clone;
-	}
-	
-	private def helperEquals(EObject lhs, EObject rhs) {
-		val helper = new EqualityHelper
-		return helper.equals(lhs, rhs) 
 	}
 	
 	private def resolveNameCollisions(Collection<? extends Declaration> declarations) {

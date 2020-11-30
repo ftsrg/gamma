@@ -3,12 +3,14 @@ package hu.bme.mit.gamma.uppaal.composition.transformation.api.util
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.SimpleInstanceHandler
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.TestQueryGenerationHandler
 import hu.bme.mit.gamma.uppaal.serializer.UppaalModelSerializer
 import hu.bme.mit.gamma.uppaal.transformation.ModelValidator
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
+import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.io.File
 import java.util.Collection
@@ -19,26 +21,28 @@ import org.eclipse.xtend.lib.annotations.Data
 
 class DefaultCompositionToUppaalTransformer {
 	
-    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	TestQueryGenerationHandler testQueryGenerationHandler
 	
-	def transformComponent(Package gammaPackage, File containingFile) {
-		return transformComponent(gammaPackage, #[], containingFile,
+    protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
+	
+	def transformComponent(Package gammaPackage, String targetFolderUri, String fileName) {
+		return transformComponent(gammaPackage, #[], targetFolderUri, fileName,
 			Collections.singleton(ElementCoverage.STATE_COVERAGE))
 	}
 	
-	def transformComponent(Package gammaPackage, File containingFile,
+	def transformComponent(Package gammaPackage, String targetFolderUri, String fileName,
 			Collection<ElementCoverage> coverage) {
-		return transformComponent(gammaPackage, #[], containingFile, coverage)
+		return transformComponent(gammaPackage, #[], targetFolderUri, fileName, coverage)
 	}
 	
 	def transformComponent(Package gammaPackage, List<Expression> topComponentArguments,
-			File containingFile, Collection<ElementCoverage> coverage) {
-		val parentFolder = containingFile.parent
-		val fileName = containingFile.name
-		val fileNameExtensionless = fileName.substring(0, fileName.lastIndexOf("."))
+			String targetFolderUri, String fileName, Collection<ElementCoverage> coverage) {
+		val fileNameExtensionless = fileName.extensionlessName
 		val modelPreprocessor = new UppaalModelPreprocessor
-		val topComponent = modelPreprocessor.preprocess(gammaPackage, topComponentArguments, containingFile)
+		val topComponent = modelPreprocessor.preprocess(gammaPackage, topComponentArguments,
+			targetFolderUri, fileName)
 
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(topComponent)
@@ -54,22 +58,22 @@ class DefaultCompositionToUppaalTransformer {
 		var trace = resultModels.value
 		// Saving the generated models
 		val resourceSet = topComponent.eResource.resourceSet
-		resourceSet.normalSave(nta, parentFolder, "." + fileNameExtensionless + ".uppaal")
-		resourceSet.normalSave(trace, parentFolder, "." + fileNameExtensionless + ".g2u")
+		resourceSet.normalSave(nta, targetFolderUri, fileNameExtensionless.emfUppaalFileName)
+		resourceSet.normalSave(trace, targetFolderUri, fileNameExtensionless.gammaUppaalTraceabilityFileName)
 		// Serializing the NTA model to XML
-		val xmlFileName = fileNameExtensionless + ".xml"
-		UppaalModelSerializer.saveToXML(nta, parentFolder, xmlFileName)
+		val xmlFileName = fileNameExtensionless.xmlUppaalFileName
+		UppaalModelSerializer.saveToXML(nta, targetFolderUri, xmlFileName)
 		// Deleting old q file
-		val queryFileName = fileNameExtensionless + ".q"
-		new File(parentFolder + File.separator + queryFileName).delete
-		UppaalModelSerializer.saveString(parentFolder, queryFileName, testQueryGenerationHandler.getQueries(coverage))
+		val queryFileName = fileNameExtensionless.uppaalQueryFileName
+		new File(targetFolderUri + File.separator + queryFileName).delete
+		UppaalModelSerializer.saveString(targetFolderUri, queryFileName, testQueryGenerationHandler.getQueries(coverage))
 		transformer.dispose
 		modelPreprocessor.logger.log(Level.INFO, "The composite system transformation has been finished.")
 		return new Result(
 			topComponent,
 			trace,
-			new File(parentFolder + File.separator + xmlFileName),
-			new File(parentFolder + File.separator + queryFileName)
+			new File(targetFolderUri + File.separator + xmlFileName),
+			new File(targetFolderUri + File.separator + queryFileName)
 		)
 	}
 	

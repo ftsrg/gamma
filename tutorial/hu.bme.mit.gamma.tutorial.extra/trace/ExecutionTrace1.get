@@ -1,18 +1,20 @@
-import "monitoredcrossroadView"
-trace MonitoredCrossroadTrace of MonitoredCrossroad
+import "/hu.bme.mit.gamma.tutorial.extra/model/.MonitoredCrossroad.gsm"
+trace MonitoredCrossroadTrace of
+MonitoredCrossroad
 step {
+	act {
+		reset
+	}
 	assert {
-		raise priorityOutput.displayRed
 		raise secondaryOutput.displayRed
-		states {
-			monitor.Other,
-			crossroad_prior.Normal,
-			crossroad_controller.Operating,
-			crossroad_secondary.Red,
-			crossroad_secondary.Normal,
-			crossroad_prior.Red,
-			crossroad_controller.Init
-		}
+		raise priorityOutput.displayRed
+		crossroad_controller.Operating
+		crossroad_controller.Init
+		crossroad_prior.Normal
+		crossroad_prior.Red
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Other
 	}
 }
 step {
@@ -22,15 +24,13 @@ step {
 	}
 	assert {
 		raise priorityOutput.displayGreen
-		states {
-			crossroad_prior.Normal,
-			crossroad_controller.Operating,
-			crossroad_secondary.Red,
-			crossroad_secondary.Normal,
-			monitor.Red,
-			crossroad_prior.Green,
-			crossroad_controller.PriorityPrepares
-		}
+		crossroad_controller.Operating
+		crossroad_controller.PriorityPrepares
+		crossroad_prior.Normal
+		crossroad_prior.Green
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Red
 	}
 }
 step {
@@ -40,15 +40,13 @@ step {
 	}
 	assert {
 		raise priorityOutput.displayYellow
-		states {
-			crossroad_prior.Normal,
-			crossroad_prior.Yellow,
-			crossroad_controller.Secondary,
-			crossroad_controller.Operating,
-			crossroad_secondary.Red,
-			crossroad_secondary.Normal,
-			monitor.Green
-		}
+		crossroad_controller.Operating
+		crossroad_controller.Secondary
+		crossroad_prior.Normal
+		crossroad_prior.Yellow
+		crossroad_secondary.Normal
+		crossroad_secondary.Red
+		monitor.Green
 	}
 }
 step {
@@ -59,14 +57,12 @@ step {
 	assert {
 		raise secondaryOutput.displayGreen
 		raise priorityOutput.displayRed
-		states {
-			monitor.Other,
-			crossroad_prior.Normal,
-			crossroad_controller.Operating,
-			crossroad_controller.SecondaryPrepares,
-			crossroad_secondary.Normal,
-			crossroad_prior.Red,
-			crossroad_secondary.Green
-		}
+		crossroad_controller.Operating
+		crossroad_controller.SecondaryPrepares
+		crossroad_prior.Normal
+		crossroad_prior.Red
+		crossroad_secondary.Normal
+		crossroad_secondary.Green
+		monitor.Other
 	}
 }

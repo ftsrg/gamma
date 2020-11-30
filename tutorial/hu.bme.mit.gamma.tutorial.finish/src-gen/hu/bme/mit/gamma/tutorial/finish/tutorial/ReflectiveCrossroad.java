@@ -64,8 +64,8 @@ public class ReflectiveCrossroad implements ReflectiveComponentInterface {
 	public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 		String portEvent = port + "." + event;
 		switch (portEvent) {
-			case "priorityOutput.displayNone":
-				if (wrappedComponent.getPriorityOutput().isRaisedDisplayNone()) {
+			case "priorityOutput.displayRed":
+				if (wrappedComponent.getPriorityOutput().isRaisedDisplayRed()) {
 					return true;
 				}
 				break;
@@ -79,13 +79,13 @@ public class ReflectiveCrossroad implements ReflectiveComponentInterface {
 					return true;
 				}
 				break;
-			case "priorityOutput.displayRed":
-				if (wrappedComponent.getPriorityOutput().isRaisedDisplayRed()) {
+			case "priorityOutput.displayNone":
+				if (wrappedComponent.getPriorityOutput().isRaisedDisplayNone()) {
 					return true;
 				}
 				break;
-			case "secondaryOutput.displayNone":
-				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayNone()) {
+			case "secondaryOutput.displayRed":
+				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayRed()) {
 					return true;
 				}
 				break;
@@ -99,8 +99,8 @@ public class ReflectiveCrossroad implements ReflectiveComponentInterface {
 					return true;
 				}
 				break;
-			case "secondaryOutput.displayRed":
-				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayRed()) {
+			case "secondaryOutput.displayNone":
+				if (wrappedComponent.getSecondaryOutput().isRaisedDisplayNone()) {
 					return true;
 				}
 				break;
@@ -146,17 +146,17 @@ public class ReflectiveCrossroad implements ReflectiveComponentInterface {
 		switch (component) {
 			case "controller":
 				if (controller == null) {
-					controller = new ReflectiveControllerStatechart(wrappedComponent.getController());
+					controller = new ReflectiveController(wrappedComponent.getController());
 				}
 				return controller;
 			case "prior":
 				if (prior == null) {
-					prior = new ReflectiveTrafficLightCtrlStatechart(wrappedComponent.getPrior());
+					prior = new ReflectiveTrafficLightCtrl(wrappedComponent.getPrior());
 				}
 				return prior;
 			case "secondary":
 				if (secondary == null) {
-					secondary = new ReflectiveTrafficLightCtrlStatechart(wrappedComponent.getSecondary());
+					secondary = new ReflectiveTrafficLightCtrl(wrappedComponent.getSecondary());
 				}
 				return secondary;
 		}

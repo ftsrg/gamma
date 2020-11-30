@@ -81,12 +81,12 @@ class ReflectiveComponentCodeGenerator {
 			}
 			
 			public String[] getPorts() {
-				return new String[] { «FOR port : component.ports SEPARATOR ", "»"«port.name»"«ENDFOR» };
+				return new String[] { «FOR port : component.allPorts SEPARATOR ", "»"«port.name»"«ENDFOR» };
 			}
 			
 			public String[] getEvents(String port) {
 				switch (port) {
-					«FOR port : component.ports»
+					«FOR port : component.allPorts»
 						case "«port.name»":
 							return new String[] { «FOR event : port.interfaceRealization.interface.events SEPARATOR ", "»"«event.event.name»"«ENDFOR» };
 					«ENDFOR»
@@ -98,7 +98,7 @@ class ReflectiveComponentCodeGenerator {
 			public void raiseEvent(String port, String event, Object[] parameters) {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
-					«FOR port : component.ports»
+					«FOR port : component.allPorts»
 						«FOR inEvent : port.inputEvents»
 							case "«port.name».«inEvent.name»":
 								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«inEvent.parameterDeclarations.get(i).type.generateParameterCast('''parameters[«i»]''')»«ENDFOR»);
@@ -113,7 +113,7 @@ class ReflectiveComponentCodeGenerator {
 			public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
-					«FOR port : component.ports»
+					«FOR port : component.allPorts»
 						«FOR outEvent : port.outputEvents»
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
@@ -128,7 +128,7 @@ class ReflectiveComponentCodeGenerator {
 					default:
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
-				«IF !component.ports.map[it.outputEvents].flatten.empty»return false;«ENDIF»
+				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return false;«ENDIF»
 			}
 			
 			«component.generateIsActiveState»
@@ -157,6 +157,7 @@ class ReflectiveComponentCodeGenerator {
 				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
 			«ENDFOR»
 		«ELSEIF component instanceof AsynchronousAdapter»
+			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
 			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
 		«ENDIF»
 	'''
@@ -243,7 +244,7 @@ class ReflectiveComponentCodeGenerator {
 				«ELSEIF component instanceof AsynchronousAdapter»
 					case "«component.getWrappedComponentName»":
 						if («component.getWrappedComponentName» == null) {
-							«component.getWrappedComponentName» = new «component.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.getWrappedComponentName.toFirstUpper»());
+							«component.getWrappedComponentName» = new «component.wrappedComponent.type.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.getWrappedComponentName.toFirstUpper»());
 						}
 						return «component.getWrappedComponentName»;
 				«ENDIF»

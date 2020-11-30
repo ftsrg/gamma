@@ -117,6 +117,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import org.yakindu.sct.model.stext.stext.ReactionTrigger
 
 class YakinduToGammaTransformer {  
     // Transformation-related extensions
@@ -338,26 +339,26 @@ class YakinduToGammaTransformer {
     	val entry = it.entry
     	// Creating the entry nodes in the corresponding Gamma region: only one match is expected
     	val gammaRegion = it.parentRegion.getAllValuesOfTo.filter(Region).head
-    	var EntryState newgammaEntry
+    	var EntryState newGammaEntry
     	switch (it.kind) {
     		case EntryKind.INITIAL: 
-    			newgammaEntry = gammaRegion.createChild(region_StateNodes, initialState) as InitialState
+    			newGammaEntry = gammaRegion.createChild(region_StateNodes, initialState) as InitialState
     		case EntryKind.SHALLOW_HISTORY: 
-    			newgammaEntry = gammaRegion.createChild(region_StateNodes, shallowHistoryState) as ShallowHistoryState
+    			newGammaEntry = gammaRegion.createChild(region_StateNodes, shallowHistoryState) as ShallowHistoryState
     		case EntryKind.DEEP_HISTORY:
-    			newgammaEntry = gammaRegion.createChild(region_StateNodes, deepHistoryState) as DeepHistoryState
+    			newGammaEntry = gammaRegion.createChild(region_StateNodes, deepHistoryState) as DeepHistoryState
     		default:
     			throw new IllegalArgumentException("The entry kind is not known: " + it.kind) 
     	}
     	// The entry must have a name in the Gamma model
     	if (entry.name.nullOrEmpty) {
-    		newgammaEntry.name = "Entry" + id++
+    		newGammaEntry.name = "Entry" + id++
     	}
     	else {
-    		newgammaEntry.name = entry.name
+    		newGammaEntry.name = entry.name
     	}
     	// The trace is saved
-    	addToTrace(entry, #{newgammaEntry}, trace)
+    	addToTrace(entry, #{newGammaEntry}, trace)
     ].build
     
     /**
@@ -964,16 +965,17 @@ class YakinduToGammaTransformer {
     private def localReactionsRule() {
     	for (localReaction : runOnceEngine.getAllMatches(StatesWithRegularLocalReactions.instance)) {
     		var State localReactionState
+    		var State localReactionStateTarget
     		// If the state with local reaction has entry or exit events or it is a composite state, a new subregion with a state and a loop transition has to be created
 //    		if (localReaction.state.hasEntryEvent || localReaction.state.hasExitEvent || localReaction.state.composite) {
 	    		val gammaState = localReaction.state.getAllValuesOfTo.filter(State).head	    		
 	    		val localReactionRegion = gammaState.createChild(compositeElement_Regions, region) as Region
-	    		id++
 	    		localReactionRegion.name = "localReactionRegion" + id
 	    		val localReactionInit = localReactionRegion.createChild(region_StateNodes, initialState) as InitialState
 	    			localReactionInit.name = "Entry" + id
 	    		localReactionState = localReactionRegion.createChild(region_StateNodes, state) as State
 	    			localReactionState.name = "LocalReactionState" + id
+	    		id++
 	    		// This transition leads to the local reaction state from the initial node
 	    		val localReactionInitTransition = localReactionInit.createTransition(localReactionState)
 	    		addToTrace(localReaction.reaction, #{localReactionRegion, localReactionInit,
@@ -985,8 +987,23 @@ class YakinduToGammaTransformer {
 //    		else {
 //    			localReactionState = localReaction.state.getAllValuesOfTo.filter(State).head
 //    		}
+
+		    localReactionStateTarget = localReactionState // Default
+		    val localReactionTrigger = localReaction.reaction.trigger
+		    if (localReactionTrigger instanceof ReactionTrigger) {
+		    	val triggerList = localReactionTrigger.triggers
+		    	checkState(triggerList.size == 1)
+		    	val trigger = triggerList.head
+		    	if (trigger instanceof TimeEventSpec) {
+		    		// If it is an "after N s" trigger, we create another state
+		    		localReactionStateTarget = localReactionRegion.createChild(region_StateNodes, state) as State
+	    			localReactionStateTarget.name = "LocalReactionState" + id++
+		    	}
+		    }
+		    
 	    	// This this the loop transition that will contain the (action [guard] / effect) of the local reaction
-		    val localReactionTransition = localReactionState.createTransition(localReactionState)
+		    val localReactionTransition = localReactionState.createTransition(localReactionStateTarget)
+		    
 	    	// The most important part of the trace
 		    addToTrace(localReaction.reaction, #{localReactionTransition}, trace)
     	}    	
@@ -1009,9 +1026,13 @@ class YakinduToGammaTransformer {
     private def transformValueOfLocalReactions() {
     	for (localReactionValueOf : runOnceEngine.getAllMatches(ValueOfLocalReactions.instance)) {
     		// Filtering is important, so the right edge is fetched from the trace
-    		val gammaTransition = localReactionValueOf.reaction.getAllValuesOfTo.filter(Transition)
-    								.filter[sourceState == targetState].head
-    		createValueOfTrigger(gammaTransition, localReactionValueOf.eventValueReference, localReactionValueOf.event)
+    		val gammaTransition = localReactionValueOf.reaction.getAllValuesOfTo
+    			.filter(Transition)
+    			.filter[it.sourceState instanceof State &&
+    				it.targetState instanceof State]
+    			.head
+    		createValueOfTrigger(gammaTransition,
+    			localReactionValueOf.eventValueReference, localReactionValueOf.event)
     		// The trace is created by the createValueOfTrigger
     	}    	
     }
@@ -1023,24 +1044,32 @@ class YakinduToGammaTransformer {
     private def transformTriggersOfRegularLocalReactions() {
     	for (localReactionTrigger : runOnceEngine.getAllMatches(TriggersOfRegularLocalReactions.instance)) {
     		// Filtering is important, so the right edge is fetched from the trace
-    		val gammaTransition = localReactionTrigger.reaction.getAllValuesOfTo.filter(Transition)
-    								.filter[sourceState == targetState].head
-    		transformRegularTrigger(gammaTransition, localReactionTrigger.event, localReactionTrigger.trigger)
+    		val gammaTransition = localReactionTrigger.reaction.getAllValuesOfTo
+    			.filter(Transition)
+    			.filter[it.sourceState instanceof State &&
+    				it.targetState instanceof State]
+    			.head
+    		transformRegularTrigger(gammaTransition, localReactionTrigger.event,
+    			localReactionTrigger.trigger)
     		// The trace is created by the transformTimedTrigger
     	}
     }
     
     /**
-     * Transforms the triggers of regular local reactions.
+     * Transforms the timed triggers of regular local reactions.
      * This rule depends on localReactionsRule.
      */
     private def transformTimedTriggersOfLocalReactions() {
     	for (localReactionTrigger : runOnceEngine.getAllMatches(TriggersOfTimedLocalReactions.instance)) {
     		// Filtering is important, so the right edge is fetched from the trace
-    		val gammaTransition = localReactionTrigger.reaction.getAllValuesOfTo.filter(Transition)
-    								.filter[sourceState == targetState].head
-    		val gammaState = localReactionTrigger.reaction.getAllValuesOfTo.filter(State).head
-    		transformTimedTrigger(gammaTransition, gammaState, localReactionTrigger.event, localReactionTrigger.timeTrigger, localReactionTrigger.unit)
+    		val gammaTransition = localReactionTrigger.reaction.getAllValuesOfTo
+    			.filter(Transition)
+    			.filter[it.sourceState instanceof State &&
+    				it.targetState instanceof State]
+    			.head
+    		val gammaState = gammaTransition.sourceState as State
+    		transformTimedTrigger(gammaTransition, gammaState, localReactionTrigger.event,
+    			localReactionTrigger.timeTrigger, localReactionTrigger.unit)
     		// The trace is created by the transformTimedTrigger
     	}
     }
@@ -1052,8 +1081,11 @@ class YakinduToGammaTransformer {
     private def transformGuardsOfRegularLocalReactions() {
     	for (localReactionGuard : runOnceEngine.getAllMatches(GuardsOfRegularLocalReactions.instance)) {
     		// Filtering is important, so the right edge is fetched from the trace
-    		val gammaTransition = localReactionGuard.reaction.getAllValuesOfTo.filter(Transition)
-    								.filter[sourceState == targetState].head
+    		val gammaTransition = localReactionGuard.reaction.getAllValuesOfTo
+    			.filter(Transition)
+    			.filter[it.sourceState instanceof State &&
+    				it.targetState instanceof State]
+    			.head
 			gammaTransition.transformGuard(localReactionGuard.expression)
 			// The trace is created by the ExpressionTransformer
     	}
@@ -1066,8 +1098,11 @@ class YakinduToGammaTransformer {
     private def transformEffectsOfRegularLocalReactions() {
     	for (localReactionAction : runOnceEngine.getAllMatches(ActionsOfRegularLocalReactions.instance)) {
     		// Filtering is important, so the right edge is fetched from the trace
-    		val gammaTransition = localReactionAction.reaction.getAllValuesOfTo.filter(Transition)
-    								.filter[sourceState == targetState].head
+    		val gammaTransition = localReactionAction.reaction.getAllValuesOfTo
+    			.filter(Transition)
+    			.filter[it.sourceState instanceof State &&
+    				it.targetState instanceof State]
+    			.head
     		for (action : localReactionAction.reactionEffect.actions) {
 	    		// For loop is needed as VIATRA returns matches (and thus, actions) in a nondeterministic order
 				gammaTransition.transform(transition_Effects, action)

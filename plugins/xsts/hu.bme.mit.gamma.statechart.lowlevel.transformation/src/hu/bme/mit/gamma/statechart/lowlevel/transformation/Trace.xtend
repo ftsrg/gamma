@@ -13,19 +13,20 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
-import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
 import java.util.HashMap
 import java.util.Map
+import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
@@ -57,14 +58,14 @@ package class Trace {
 	final Map<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition> transitionMappings = new HashMap<Transition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition>
 	// For timeout declaration optimization
 	final Map<Region, VariableDeclaration> regionTimeoutMappings = newHashMap
+	// Else guarded transitions
+	final Set<Transition> elseGuardedTransitions = newHashSet
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = new HashMap<FunctionAccessExpression, List<VariableDeclaration>>
 	// Select temporary variables
 	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = new HashMap<SelectExpression, List<VariableDeclaration>>
 	// Record mappings (handled simply as 'values', as Java generics cannot differentiate)
 	final Map<Pair<ValueDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordValDeclMappings = new HashMap()
-	
-	
 	// Assertion variables
 	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
@@ -467,6 +468,16 @@ package class Trace {
 		regionTimeoutMappings.get(gammaRegion)
 	}
 	
+	// Else guarded transitions
+	def designateElseGuardedTransition(Transition gammaTransition) {
+		checkNotNull(gammaTransition)
+		elseGuardedTransitions += gammaTransition
+	}
+	
+	def getElseGuardedTransition() {
+		return elseGuardedTransitions
+	}
+
 	// Function return variable
 	def put(FunctionAccessExpression functionAccessExpression, List<VariableDeclaration> returnVariable) {
 		checkNotNull(functionAccessExpression)

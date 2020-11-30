@@ -10,6 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
@@ -97,7 +100,6 @@ class OrchestratorCreator {
 	// Id
 	var id = 0
 	protected final DataVariableDeclaration isStableVar
-	protected final Collection<DataVariableDeclaration> resetableVariables
 	// Orchestrating period for top sync components
 	protected TimeSpecification minimalOrchestratingPeriod
 	protected TimeSpecification maximalOrchestratingPeriod
@@ -110,6 +112,7 @@ class OrchestratorCreator {
 	protected final extension ExpressionEvaluator expressionEvaluator
 	protected final extension AssignmentExpressionCreator assignmentExpressionCreator
 	protected final extension CompareExpressionCreator compareExpressionCreator
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	// Rules
 	protected BatchTransformationRule<TopUnwrappedSyncComponents.Match, TopUnwrappedSyncComponents.Matcher> topSyncOrchestratorRule
 	protected BatchTransformationRule<TopWrapperComponents.Match, TopWrapperComponents.Matcher> topWrappedSyncOrchestratorRule
@@ -118,7 +121,7 @@ class OrchestratorCreator {
 	new(NtaBuilder ntaBuilder, ViatraQueryEngine engine, IModelManipulations manipulation,
 			AssignmentExpressionCreator assignmentExpressionCreator,
 			CompareExpressionCreator compareExpressionCreator, OrchestratingConstraint constraint,
-			Trace modelTrace, Collection<DataVariableDeclaration> resetableVariables, DataVariableDeclaration isStableVar) {
+			Trace modelTrace, DataVariableDeclaration isStableVar) {
 		this.ntaBuilder = ntaBuilder
 		this.manipulation = manipulation
 		this.engine = engine
@@ -127,8 +130,6 @@ class OrchestratorCreator {
 			this.maximalOrchestratingPeriod = constraint.maximumPeriod
 		}
 		this.modelTrace = modelTrace
-		// It is important that resetableVariables is not cloned, it is the same collection! (Variables are added later in the collection)
-		this.resetableVariables = resetableVariables
 		this.isStableVar = isStableVar
 		this.expressionTransformer = new ExpressionTransformer(this.manipulation, this.modelTrace)
 		this.expressionEvaluator = new ExpressionEvaluator(this.engine)
@@ -166,10 +167,6 @@ class OrchestratorCreator {
 					// If there is no timing, we set the loc to urgent
 					initLoc.locationTimeKind = LocationKind.URGENT
 				}
-				// Reset transition id variable to reduce state space
-				firstEdge.resetResetableVariables
-				// Reset clocks to reduce state space
-				firstEdge.resetClocks(it.syncComposite)
 			].build
 		}
 	}
@@ -183,7 +180,8 @@ class OrchestratorCreator {
 		if (topWrappedSyncOrchestratorRule === null) {
 			topWrappedSyncOrchestratorRule = createRule(TopWrapperComponents.instance).action [		
 				val lastEdge = it.composite.createSchedulerTemplate(it.wrapper.syncSchedulerChannel)
-				lastEdge.setSynchronization(it.wrapper.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
+				lastEdge.setSynchronization(it.wrapper.syncSchedulerChannel.variable.head,
+					SynchronizationKind.SEND)
 			].build
 		}
 	}
@@ -197,7 +195,8 @@ class OrchestratorCreator {
 		if (instanceWrapperSyncOrchestratorRule === null) {
 			instanceWrapperSyncOrchestratorRule = createRule(SimpleWrapperInstances.instance).action [		
 				val lastEdge = it.component.createSchedulerTemplate(it.instance.syncSchedulerChannel)
-				lastEdge.setSynchronization(it.instance.syncSchedulerChannel.variable.head, SynchronizationKind.SEND)
+				lastEdge.setSynchronization(it.instance.syncSchedulerChannel.variable.head,
+					SynchronizationKind.SEND)
 				val orchestratorTemplate = lastEdge.parentTemplate
 				addToTrace(it.instance, #{orchestratorTemplate}, instanceTrace)
 			].build
@@ -208,7 +207,8 @@ class OrchestratorCreator {
 	 * Creates a clock for the template of the given edge, sets the clock to "0" on the given edge,
 	 *  and places an invariant on the target of the edge.
 	 */
-	private def setOrchestratorTiming(Edge firstEdge, Optional<Integer> minTime, Edge lastEdge, Optional<Integer> maxTime) {
+	private def setOrchestratorTiming(Edge firstEdge, Optional<Integer> minTime,
+			Edge lastEdge, Optional<Integer> maxTime) {
 		checkState(firstEdge.source === lastEdge.target)
 		if (!minTime.present && !maxTime.present) {
 			return
@@ -216,7 +216,8 @@ class OrchestratorCreator {
 		val initLoc = lastEdge.target
 		val template = lastEdge.parentTemplate
 		// Creating the clock
-		val clockVar = template.declarations.createChild(declarations_Declaration, clockVariableDeclaration) as ClockVariableDeclaration
+		val clockVar = template.declarations.createChild(declarations_Declaration,
+				clockVariableDeclaration) as ClockVariableDeclaration
 		clockVar.createTypeAndVariable(nta.clock, "timerOrchestrator" + (id++))
 		// Creating the guard
 		if (minTime.present) {
@@ -230,9 +231,13 @@ class OrchestratorCreator {
 		firstEdge.createAssignmentExpression(edge_Update, clockVar, createLiteralExpression => [it.text = "0"])
 	}
 	
-	private def resetResetableVariables(Edge edge) {
-		for (variable : resetableVariables) {
-			edge.createAssignmentExpression(edge_Update, variable, createLiteralExpression => [it.text = "0"])
+	private def resetVariables(Edge edge, Collection<VariableDeclaration> variables) {
+		for (variable : variables) {
+			val uppaalVariable = variable.dataVariable
+			if (uppaalVariable !== null ) {
+				// Could be null due to optimizations and reductions
+				edge.createAssignmentExpression(edge_Update, uppaalVariable, "0")
+			}
 		}
 	}
 	
@@ -244,14 +249,16 @@ class OrchestratorCreator {
 	private def resetOutParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
 		for (parameter : event.parameterDeclarations) {
-			container.createAssignmentExpression(reference, event.getOutValueOfVariable(port, parameter, instance), "0")
+			container.createAssignmentExpression(reference,
+				event.getOutValueOfVariable(port, parameter, instance), "0")
 		}
 	}
 	
 	private def resetInParameterVariable(EObject container, EReference reference, Event event, Port port,
 			SynchronousComponentInstance instance) {
 		for (parameter : event.parameterDeclarations) {
-			container.createAssignmentExpression(reference, event.getIsRaisedValueOfVariable(port, parameter, instance), "0")
+			container.createAssignmentExpression(reference,
+				event.getIsRaisedValueOfVariable(port, parameter, instance), "0")
 		}
 	}
 	
@@ -273,7 +280,8 @@ class OrchestratorCreator {
 	 * Responsible for creating the scheduler template that schedules the run of the automata.
 	 * (A series edges with runCycle synchronizations and variable swapping on them.) 
 	 */
-	private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent, ChannelVariableDeclaration chan) {
+	private def Edge createSchedulerTemplate(SynchronousComponent compositeComponent,
+			ChannelVariableDeclaration chan) {
 		val initLoc = createTemplateWithInitLoc(compositeComponent.name + "Orchestrator" + id++, "InitLoc")
 		val schedulerTemplate = initLoc.parentTemplate
 		val firstEdge = initLoc.createEdge(initLoc)
@@ -312,6 +320,18 @@ class OrchestratorCreator {
 		trueInitialLocation.createEdge(initLoc) => [
 			it.createAssignmentExpression(edge_Update, isStableVar, true)
 		]
+		// Optimization
+		val statecharts = compositeComponent.allSimpleInstances.map[it.type].filter(StatechartDefinition)
+		val variables = statecharts.map[it.variableDeclarations].flatten.toSet
+		val resetableVariables = variables.filter[
+			!it.annotations.filter(ResetableVariableDeclarationAnnotation).empty].toList
+		val transientVariables = variables.filter[
+			!it.annotations.filter(TransientVariableDeclarationAnnotation).empty].toList
+		// Reset transition id variable to reduce state space
+		firstEdge.resetVariables(resetableVariables)
+		lastEdge.resetVariables(transientVariables)
+		// Reset clocks to reduce state space
+		firstEdge.resetClocks(compositeComponent)
 		// Returning last edge
 		return lastEdge
 	}
@@ -415,7 +435,8 @@ class OrchestratorCreator {
 	/**
 	 * Puts the queue swapping updates (isRaised = toRaised...) of all instances contained by the given topComposite onto the given edge.
 	 */
-	private def Edge swapQueuesOfContainedSimpleInstances(SynchronousCompositeComponent topComposite, Edge previousLastEdge) {
+	private def Edge swapQueuesOfContainedSimpleInstances(
+			SynchronousCompositeComponent topComposite, Edge previousLastEdge) {
 		var Edge lastEdge = previousLastEdge
 		val swapLocation = lastEdge.parentTemplate.createLocation => [
 			it.name = "swapLocation" + id++
@@ -425,7 +446,8 @@ class OrchestratorCreator {
 		lastEdge.target = swapEdge.source
 		lastEdge = swapEdge
 		val sameQueueSwapInstances = topComposite.simpleInstancesInSameQueueSwap
-		Logger.getLogger("GammaLogger").log(Level.INFO, "Instances with the same swap schedule in " + topComposite.name + ": " +sameQueueSwapInstances)
+		logger.log(Level.INFO, "Instances with the same swap schedule in " +
+			topComposite.name + ": " + sameQueueSwapInstances)
 		// Swapping queues of instances whose queues have not yet been swapped
 		for (queueSwapInstance : sameQueueSwapInstances) {
 			// Creating updates of a single instance
@@ -557,8 +579,8 @@ class OrchestratorCreator {
 		return regions
 	}
 	
-		/**
-	 * Inserts a runCycle edge in the Scheduler template for the template of the the given region,
+	/**
+	 * Inserts a runCycle edge in the Orchestrator template for the template of the the given region,
 	 * between the given last runCycle edge and the init location.
 	 */
 	private def Collection<Edge> createRunCycleEdge(Region region, Collection<Edge> lastEdges,

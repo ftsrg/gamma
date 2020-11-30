@@ -161,6 +161,15 @@ public class ExpressionUtil {
 				}
 			}
 		}
+		if (expression instanceof AndExpression) {
+			AndExpression andExpression = (AndExpression) expression;
+			for (Expression subExpression : andExpression.getOperands()) {
+				if (!isDefinitelyTrueExpression(subExpression)) {
+					return false;
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 
@@ -210,6 +219,15 @@ public class ExpressionUtil {
 			if (hasEqualityToDifferentLiterals(referenceEqualityExpressions)) {
 				return true;
 			}
+		}
+		if (expression instanceof OrExpression) {
+			OrExpression orExpression = (OrExpression) expression;
+			for (Expression subExpression : orExpression.getOperands()) {
+				if (!isDefinitelyFalseExpression(subExpression)) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
@@ -639,6 +657,59 @@ public class ExpressionUtil {
 			TypeDeclaration td = tr.getReference();
 			return findTypeDefinitionOfType(td.getType());
 		}
+	}
+	
+	public AndExpression connectThroughNegations(VariableDeclaration ponate,
+			Collection<VariableDeclaration> toBeNegated) {
+		AndExpression and = connectThroughNegations(toBeNegated);
+		DirectReferenceExpression ponateReference = factory.createDirectReferenceExpression();
+		ponateReference.setDeclaration(ponate);
+		and.getOperands().add(ponateReference);
+		return and;
+	}
+	
+	public AndExpression connectThroughNegations(Collection<VariableDeclaration> toBeNegated) {
+		AndExpression and = factory.createAndExpression();
+		for (VariableDeclaration toBeNegatedVariable : toBeNegated) {
+			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+			reference.setDeclaration(toBeNegatedVariable);
+			NotExpression not = factory.createNotExpression();
+			not.setOperand(reference);
+			and.getOperands().add(not);
+		}
+		return and;
+	}
+	
+	// Creators
+	
+	public BigInteger toBigInt(long value) {
+		return BigInteger.valueOf(value);
+	}
+	
+	public IntegerLiteralExpression toIntegerLiteral(long value) {
+		IntegerLiteralExpression integerLiteral = factory.createIntegerLiteralExpression();
+		integerLiteral.setValue(toBigInt(value));
+		return integerLiteral;
+	}
+	
+	public ReferenceExpression createReferenceExpression(VariableDeclaration variable) {
+		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+		reference.setDeclaration(variable);
+		return reference;
+	}
+	
+	public EqualityExpression createEqualityExpression(VariableDeclaration variable, Expression expression) {
+		EqualityExpression equalityExpression = factory.createEqualityExpression();
+		equalityExpression.setLeftOperand(createReferenceExpression(variable));
+		equalityExpression.setRightOperand(expression);
+		return equalityExpression;
+	}
+	
+	public EqualityExpression createEqualityExpression(Expression lhs, Expression rhs) {
+		EqualityExpression equalityExpression = factory.createEqualityExpression();
+		equalityExpression.setLeftOperand(lhs);
+		equalityExpression.setRightOperand(rhs);
+		return equalityExpression;
 	}
 	
 }

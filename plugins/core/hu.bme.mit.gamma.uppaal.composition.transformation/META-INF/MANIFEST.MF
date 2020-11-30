@@ -2,19 +2,22 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Composite System Transformer to UPPAAL
 Bundle-SymbolicName: hu.bme.mit.gamma.uppaal.composition.transformation;singleton:=true
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.4.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.uppaal.composition.transformation,
+ hu.bme.mit.gamma.uppaal.composition.transformation.api,
  hu.bme.mit.gamma.uppaal.composition.transformation.api.util,
  hu.bme.mit.gamma.uppaal.composition.transformation.queries
 Require-Bundle: de.uni_paderborn.uppaal,
  hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.transformation.util,
  hu.bme.mit.gamma.uppaal.util,
  hu.bme.mit.gamma.uppaal.transformation,
  hu.bme.mit.gamma.uppaal.serializer,
  hu.bme.mit.gamma.uppaal.transformation.traceability,
+ hu.bme.mit.gamma.querygenerator,
  org.eclipse.viatra.transformation.runtime.emf,
  org.eclipse.viatra.transformation.evm,
  org.eclipse.emf.ecore,

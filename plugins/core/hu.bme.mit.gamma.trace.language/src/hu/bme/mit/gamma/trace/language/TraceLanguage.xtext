@@ -38,10 +38,7 @@ Step returns Step:
 			(actions+=Act)+
 		'}')?
 		'assert' '{'
-			(outEvents+=RaiseEventAct)*
-			('states' '{'
-				(instanceStates+=InstanceState)? (',' (instanceStates+=InstanceState))*
-			'}')?
+			(asserts+=Assert)*
 		'}'
 	'}'
 ;
@@ -68,6 +65,14 @@ InstanceSchedule returns InstanceSchedule:
 ComponentSchedule returns ComponentSchedule:
 	{ComponentSchedule}
 	'schedule' 'component'
+;
+
+Assert returns Assert:
+	RaiseEventAct | InstanceState | NegatedAssert
+;
+
+NegatedAssert returns NegatedAssert:
+	'not' negatedAssert=Assert
 ;
 
 InstanceState returns InstanceState:

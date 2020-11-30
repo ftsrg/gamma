@@ -167,6 +167,10 @@ class UppaalPropertySerializer extends PropertySerializer {
 		}
 	}
 	
-	override serialize(Comment comment) '''/*«comment.comment»*/'''
+	override serialize(Comment comment) '''
+		/*
+		«comment.comment»
+		*/
+	'''
 	
 }

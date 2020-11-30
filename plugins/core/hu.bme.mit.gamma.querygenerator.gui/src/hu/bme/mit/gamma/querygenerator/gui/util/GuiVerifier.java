@@ -48,8 +48,8 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 	
 	private final View view;
 	
-	protected TraceUtil traceUtil = TraceUtil.INSTANCE;	
-	protected Logger logger = Logger.getLogger("GammaLogger");
+	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;	
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public GuiVerifier(String query, boolean contributeToView, View view) {
 		this.originalQueries = query;

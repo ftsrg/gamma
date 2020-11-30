@@ -6,20 +6,20 @@ You will need Java 11 to setup Gamma.
 
 Gamma has been implemented as a set of Eclipse plugins. To use the
 framework, you will need an Eclipse with the following plugins installed:
-* Eclipse Modeling Framework SDK 2.21.0.
-* Xtext Complete SDK 2.21.0. (It contains Xtend, no need for the additional download
+* Eclipse Modeling Framework SDK 2.23.0.
+* Xtext Complete SDK 2.23.0. (It contains Xtend, no need for the additional download
 of Xtend.)
-* VIATRA SDK 2.3.1.
-* Yakindu Statechart Tools 3.5.10.
+* VIATRA SDK 2.4.1.
+* Yakindu Statechart Tools 3.5.13.
 
 We recommend to start-up from an Eclipse IDE for Java and DSL Developers as it
 contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
-- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2020-03/r/eclipse-ide-java-and-dsl-developers).
+- Download a new Eclipse IDE for [Java and DSL Developers package](https://www.eclipse.org/downloads/packages/release/2020-09/r/eclipse-ide-java-and-dsl-developers).
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
- - Install VIATRA 2.3.1 from update site: http://download.eclipse.org/viatra/updates/release/2.3.1.
+ - Install VIATRA 2.4.1 from update site: http://download.eclipse.org/viatra/updates/release/2.4.1.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
- - Intall the Yakindu Statechart Tools 3.5.10. from update site: http://updates.yakindu.com/statecharts/releases/. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
+ - Intall the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
 	- _YAKINDU Statechart Tools Base_,
 	- _YAKINDU Statechart Tools Java Code Generator_ and

@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -8,7 +18,6 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
@@ -25,6 +34,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
 class TraceBackAnnotator {
 	
@@ -44,7 +54,7 @@ class TraceBackAnnotator {
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected Logger logger = Logger.getLogger("GammaLogger")
+	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)
@@ -65,14 +75,13 @@ class TraceBackAnnotator {
 			it.import = this.gammaPackage
 			it.name = this.component.name + "Trace"
 		]
-		// Setting the arguments: AnalysisModelPreprocessor saved them in the Package
+		val topComponentArguments = gammaPackage.topComponentArguments
 		// Note that the top component does not contain parameter declarations anymore due to the preprocessing
-		checkState(gammaPackage.topComponentArguments.size == component.parameterDeclarations.size, 
-			"The numbers of top component arguments and top component parameters are not equal: " +
-			gammaPackage.topComponentArguments.size + " - " + component.parameterDeclarations.size)
-		logger.log(Level.INFO, "The number of arguments of the top component is " +
-			gammaPackage.topComponentArguments.size)
-		trace.arguments += gammaPackage.topComponentArguments.map[it.clone(true, true)]
+		checkState(topComponentArguments.size == component.parameterDeclarations.size, 
+			"The number of top component arguments and top component parameters are not equal: " +
+				topComponentArguments.size + " - " + component.parameterDeclarations.size)
+		logger.log(Level.INFO, "The number of top component arguments is " + topComponentArguments.size)
+		trace.arguments += topComponentArguments.map[it.clone]
 		var step = createStep
 		trace.steps += step
 		// Sets for raised in and out events and activated states
@@ -208,13 +217,13 @@ class TraceBackAnnotator {
 	
 	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
 			Set<State> activatedStates) {
-		val raiseEventActs = step.outEvents.filter(RaiseEventAct).toList
+		val raiseEventActs = step.outEvents
 		for (raiseEventAct : raiseEventActs) {
 			if (!raisedOutEvents.contains(new Pair(raiseEventAct.port, raiseEventAct.event))) {
 				EcoreUtil.delete(raiseEventAct)
 			}
 		}
-		val instanceStates = step.instanceStates.filter(InstanceStateConfiguration).toList
+		val instanceStates = step.instanceStateConfigurations
 		for (instanceState : instanceStates) {
 			// A state is active if all of its ancestor states are active
 			val ancestorStates = instanceState.state.ancestors

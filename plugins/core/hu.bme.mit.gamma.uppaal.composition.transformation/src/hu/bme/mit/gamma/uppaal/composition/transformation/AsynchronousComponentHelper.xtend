@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -111,7 +110,7 @@ class AsynchronousComponentHelper {
 	}
 	
 	def FunctionCallExpression addPushFunctionUpdate(Edge edge, MessageQueueTrace messageQueueTrace,
-			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression, SynchronousComponentInstance instance) {
+			DataVariableDeclaration representation, hu.bme.mit.gamma.expression.model.Expression expression) {
 		// No addFunctionCall method as there are arguments
 		edge.createChild(edge_Update, functionCallExpression) as FunctionCallExpression => [
 			it.function = messageQueueTrace.pushFunction.function

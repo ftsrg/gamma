@@ -36,7 +36,7 @@ GenModel returns GenModel:
 Task returns Task:
 	YakinduCompilation | CodeGeneration | AnalysisModelTransformation | TestGeneration |
 		EventPriorityTransformation | AdaptiveContractTestGeneration | PhaseStatechartGeneration |
-		Verification | TestReplayModelGeneration
+		Verification | TestReplayModelGeneration | Slicing
 ;
 
 YakinduCompilation returns YakinduCompilation:
@@ -113,6 +113,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'folder' ':' targetFolder+=STRING |			
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
+			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
 			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
@@ -145,6 +146,18 @@ ComponentInstanceReference returns composite::ComponentInstanceReference:
 	componentInstanceHierarchy+=[composite::ComponentInstance] ('->' componentInstanceHierarchy+=[composite::ComponentInstance] )*
 ;
 
+ComponentInstancePortReference returns property::ComponentInstancePortReference:
+	instance=ComponentInstanceReference '.' port=[interface::Port]
+;
+
+ComponentInstanceStateConfigurationReference returns property::ComponentInstanceStateConfigurationReference:
+	instance=ComponentInstanceReference '.' region=[statechart::Region] '.' state=[statechart::State] 
+;
+
+ComponentInstanceTransitionReference returns property::ComponentInstanceTransitionReference:
+	instance=ComponentInstanceReference '.' transition=[statechart::TransitionIdAnnotation]
+;
+
 AsynchronousInstanceConstraint returns AsynchronousInstanceConstraint:
 	(instance=ComponentInstanceReference | 'top') ':' '{'
 		orchestratingConstraint=OrchestratingConstraint
@@ -173,7 +186,7 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | TransitionCoverage | OutEventCoverage | InteractionCoverage
+	StateCoverage | TransitionCoverage | TransitionPairCoverage | OutEventCoverage | InteractionCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -190,18 +203,39 @@ TransitionCoverage returns TransitionCoverage:
 	'}')?
 ;
 
-OutEventCoverage returns OutEventCoverage:
-	{OutEventCoverage} 'out-event-coverage' ('{' 
+TransitionPairCoverage returns TransitionPairCoverage:
+	{TransitionPairCoverage} 'transition-pair-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 	'}')?
 ;
 
-InteractionCoverage returns InteractionCoverage:
-	{InteractionCoverage} 'interaction-coverage' ('{'
+OutEventCoverage returns OutEventCoverage:
+	{OutEventCoverage} 'out-event-coverage' ('{' 
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
 	'}')?
+;
+
+InteractionCoverage returns InteractionCoverage:
+	{InteractionCoverage} 'interaction-coverage' ('{'
+		('sender-coverage-criterion' ':' senderCoverageCriterion=InteractionCoverageCriterion)?
+		('receiver-coverage-criterion' ':' receiverCoverageCriterion=InteractionCoverageCriterion)?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
+		('state-include' ':' '[' stateInclude+=ComponentInstanceStateConfigurationReference (',' stateInclude+=ComponentInstanceStateConfigurationReference)* ']')?
+		('state-exclude' ':' '[' stateExclude+=ComponentInstanceStateConfigurationReference (',' stateExclude+=ComponentInstanceStateConfigurationReference)* ']')?
+		('transition-include' ':' '[' transitionInclude+=ComponentInstanceTransitionReference (',' transitionInclude+=ComponentInstanceTransitionReference)* ']')?
+		('transition-exclude' ':' '[' transitionExclude+=ComponentInstanceTransitionReference (',' transitionExclude+=ComponentInstanceTransitionReference)* ']')?
+	'}')?
+;
+
+enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
+	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
 ;
 
 Verification returns Verification:
@@ -229,6 +263,17 @@ TestReplayModelGeneration returns TestReplayModelGeneration:
 		)*
 	'}'
 ;
+
+Slicing returns Slicing:
+	{Slicing} 'slicing' '{'
+		'property' ':' propertyPackage=[property::PropertyPackage | STRING]
+		(
+			'file' ':' fileName+=STRING | // The name of the generated file
+			'folder' ':' targetFolder+=STRING
+		)*
+	'}'
+;
+
 
 InterfaceMapping returns InterfaceMapping:
 	'map' yakinduInterface=[stext::InterfaceScope] '=' gammaInterface=[interface::Interface] 'as' realizationMode=RealizationMode ('{'

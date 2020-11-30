@@ -62,7 +62,7 @@ class FileUtil {
 	
 	def getExtensionlessName(String fileName) {
 		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex < 0) {
+		if (lastIndex <= 0) { // <= 0 so hidden files are handled
 			return fileName
 		}
 		return fileName.substring(0, lastIndex)
@@ -70,7 +70,7 @@ class FileUtil {
 	
 	def getExtension(String fileName) {
 		val lastIndex = fileName.lastIndexOf(".")
-		if (lastIndex < 0) {
+		if (lastIndex <= 0) { // <= 0 so hidden files are handled
 			return ""
 		}
 		return fileName.substring(lastIndex + 1)

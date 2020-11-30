@@ -11,10 +11,12 @@
 package hu.bme.mit.gamma.transformation.util.reducer
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
+import java.util.logging.Level
 import org.eclipse.emf.ecore.EObject
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.AccessExpression
@@ -39,7 +41,10 @@ class WrittenOnlyVariableReducer implements Reducer {
 	override execute() {
 		val assignments = root.getSelfAndAllContentsOfType(AssignmentStatement)
 		val writtenOnlyVariables = root.writtenOnlyVariables
-		val deletableVariables = newHashSet
+		writtenOnlyVariables += root.onlyIncrementedVariables // a := a + 1 can be deleted too
+		val deletableVariables = <Declaration>newHashSet
+		deletableVariables += root.unusedVariables
+		deletableVariables -= relevantVariables // An unused variable can still be relevant
 		for (assignment : assignments) {
 			if(assignment.lhs instanceof DirectReferenceExpression) {
 				val declaration = (assignment.lhs as DirectReferenceExpression).declaration
@@ -55,6 +60,7 @@ class WrittenOnlyVariableReducer implements Reducer {
 		}
 		for (deletableVariable : deletableVariables) {
 			deletableVariable.delete
+			logger.log(Level.INFO, deletableVariable.name + " has been deleted")
 		}
 	}
 	

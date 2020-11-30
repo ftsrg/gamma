@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2020 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.plugintemplate.transformation.commandhandler;
 
 import java.io.File;
@@ -23,10 +33,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.google.inject.Injector;
 
 import hu.bme.mit.gamma.plugintemplate.transformation.ExampleTransformer;
+import hu.bme.mit.gamma.plugintemplate.transformation.ExampleTransformer.Result;
 import hu.bme.mit.gamma.plugintemplate.transformation.Trace;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.internal.LanguageActivator;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
-import hu.bme.mit.gamma.statechart.model.Package;
 
 public class CommandHandler extends AbstractHandler {
 	
@@ -45,9 +56,11 @@ public class CommandHandler extends AbstractHandler {
 						ResourceSet resSet = new ResourceSetImpl();
 						URI compositeSystemURI = URI.createPlatformResourceURI(firstElement.getFullPath().toString(), true);
 						Resource resource = resSet.getResource(compositeSystemURI, true);
+						Package _package = (Package) resource.getContents().get(0);
 						// Model processing
-						ExampleTransformer exampleTransformer = new ExampleTransformer(resource);
-						Trace trace = exampleTransformer.execute();
+						ExampleTransformer exampleTransformer = new ExampleTransformer(_package);
+						Result result = exampleTransformer.execute();
+						Trace trace = result.getTrace();
 						saveModel(trace.getTargetPackage(), parentFolder.getLocation().toString(),
 								trace.getTargetPackage().getName() + "Copy.gcd");
 					} 
@@ -98,7 +111,7 @@ public class CommandHandler extends AbstractHandler {
 		Injector injector = LanguageActivator.getInstance()
 				.getInjector(LanguageActivator.HU_BME_MIT_GAMMA_STATECHART_LANGUAGE_STATECHARTLANGUAGE);
 		StatechartLanguageSerializer serializer = injector.getInstance(StatechartLanguageSerializer.class);
-		serializer.save(rootElem, URI.decode(parentFolder + File.separator + fileName));
+		serializer.serialize(rootElem, parentFolder, fileName);
 	}
 
 }

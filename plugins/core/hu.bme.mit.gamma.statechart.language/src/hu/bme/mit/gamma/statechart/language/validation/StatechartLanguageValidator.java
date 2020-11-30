@@ -77,6 +77,7 @@ import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
+import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
@@ -344,6 +345,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 		EcoreUtil2.getAllContentsOfType(_package, AdaptiveContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
+		EcoreUtil2.getAllContentsOfType(_package, ScenarioContractAnnotation.class).stream()
+			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
 		EcoreUtil2.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
 		for (MissionPhaseStateAnnotation annotation : EcoreUtil2.getAllContentsOfType(_package, MissionPhaseStateAnnotation.class)) {
@@ -458,6 +461,24 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 			warning("The transition priority setting is not set to value-based, it is set to " 
 				+ statechart.getTransitionPriority() + " therefore this priority specification has no effect.",
 				CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+		}
+	}
+	
+	@Check
+	public void checkElseTransitionPriority(Transition transition) {
+		if (StatechartModelDerivedFeatures.isElse(transition)) {
+			StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
+			TransitionPriority priority = statechart.getTransitionPriority();
+			if (priority == TransitionPriority.ORDER_BASED) {
+				StateNode source = transition.getSourceState();
+				List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(source);
+				int size = outgoingTransitions.size();
+				if (outgoingTransitions.get(size - 1) != transition) {
+					warning("This is an else transition, and its priority is bigger than some other transitions " +
+						"going out of the same state, as the transition priority is set to " + TransitionPriority.ORDER_BASED,
+						CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+				}
+			}
 		}
 	}
 	

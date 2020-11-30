@@ -19,11 +19,13 @@ import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.transformation.util.queries.Regions
 import hu.bme.mit.gamma.transformation.util.queries.RemovableTransitions
 import hu.bme.mit.gamma.transformation.util.queries.SimpleInstances
 import hu.bme.mit.gamma.transformation.util.queries.TopRegions
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.Collection
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
@@ -35,10 +37,11 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class SystemReducer implements Reducer {
 	
-	final ViatraQueryEngine engine
+	protected final ViatraQueryEngine engine
 	
-	final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	final extension Logger logger = Logger.getLogger("GammaLogger")
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension Logger logger = Logger.getLogger("GammaLogger")
 
 	new(ResourceSet resourceSet) {
 		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
@@ -55,6 +58,10 @@ class SystemReducer implements Reducer {
 			for (transition : transitionMatcher.allValuesOftransition.reject[it.eContainer === null]) {
 				transition.removeTransition
 			}
+		}
+		val falseGuardedTransitions = statecharts.falseGuardedTransitions
+		for (transition : falseGuardedTransitions.reject[it.eContainer === null]) {
+			transition.removeTransition
 		}
 		// Region optimizing
 		val regionMatcher = Regions.Matcher.on(engine)
@@ -150,6 +157,22 @@ class SystemReducer implements Reducer {
 				container.channels -= unnecessaryChannels
 			}
 		}
+	}
+	
+	private def getFalseGuardedTransitions(Collection<StatechartDefinition> statecharts) {
+		val transitions = statecharts.map[it.transitions].flatten.reject[it.guard === null]
+		val falseGuardedTransitions = newArrayList
+		for (transition : transitions) {
+			try {
+				val guard = transition.guard
+				if (guard.definitelyFalseExpression) {
+					falseGuardedTransitions += transition
+				}
+			} catch (IllegalArgumentException e) {
+				// The guard contains a variable reference
+			}
+		}
+		return falseGuardedTransitions
 	}
 	
 }

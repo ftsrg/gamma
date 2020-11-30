@@ -84,6 +84,7 @@ import java.util.HashSet
 import java.util.Set
 import java.util.logging.Level
 import java.util.logging.Logger
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.viatra.transformation.runtime.emf.modelmanipulation.IModelManipulations
@@ -210,10 +211,8 @@ class CompositeToUppaalTransformer {
 		this(component, Scheduler.RANDOM, null, false)
 	}
 	
-	new(Component component,
-			Scheduler asyncScheduler,
-			Constraint constraint,
-			boolean isMinimalElementSet) { 
+	new(Component component, Scheduler asyncScheduler,
+			Constraint constraint, boolean isMinimalElementSet) {
 		this.isMinimalElementSet = isMinimalElementSet
 		// The above parameters have to be set before calling initialize
 		this.initialize(component, asyncScheduler, constraint)
@@ -260,12 +259,14 @@ class CompositeToUppaalTransformer {
 		this.messageQueueCreator = new MessageQueueCreator(this.ntaBuilder, this.manipulation, this.engine, this.expressionTransformer, this.traceModel, 
 			this.messageStructType, this.messageEvent, this.messageValue)
 		this.orchestratorCreator = new OrchestratorCreator(this.ntaBuilder, this.engine, this.manipulation, this.assignmentExpressionCreator,
-			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null, this.traceModel, #[], this.isStableVar)
+			this.compareExpressionCreator, if (constraint instanceof OrchestratingConstraint) constraint else null,
+			this.traceModel, this.isStableVar)
 		this.environmentCreator = new EnvironmentCreator(this.ntaBuilder, this.engine, this.manipulation,
 			this.assignmentExpressionCreator, this.asynchronousComponentHelper, this.traceModel, this.isStableVar)
 		this.asynchronousClockTemplateCreator = new AsynchronousClockTemplateCreator(this.ntaBuilder, this.engine, this.manipulation, this.compareExpressionCreator,
 			this.traceModel, this.isStableVar, this.asynchronousComponentHelper, this.expressionTransformer)
-		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.ntaBuilder, this.engine, this.manipulation,
+		this.asynchronousSchedulerTemplateCreator = new AsynchronousSchedulerTemplateCreator(this.component,
+			this.ntaBuilder, this.engine, this.manipulation,
 			this.compareExpressionCreator, this.traceModel, this.isStableVar, this.asynchronousComponentHelper,
 			this.expressionEvaluator, this.assignmentExpressionCreator,	if (constraint instanceof SchedulingConstraint) constraint else null, asyncScheduler)
 		this.asynchronousConnectorTemplateCreator = new AsynchronousConnectorTemplateCreator(this.ntaBuilder, this.manipulation, this.assignmentExpressionCreator,
@@ -985,7 +986,7 @@ class CompositeToUppaalTransformer {
 		}
 		val owner = edge.owner
 		val isActiveVar = region.allValuesOfTo.filter(DataVariableDeclaration)
-								.filter[it.localVariableToTemplate == edge.parentTemplate && it.owner == owner].head
+								.filter[it.containingTemplate == edge.parentTemplate && it.owner == owner].head
 		edge.addGuard(isActiveVar, LogicalOperator.AND)
 	}
 	
@@ -1109,7 +1110,8 @@ class CompositeToUppaalTransformer {
 	private def setTemplateActivation(Edge edge, Region subregion, boolean enter) {
 		edge.createChild(edge_Update, assignmentExpression) as AssignmentExpression => [
 			it.createChild(binaryExpression_FirstExpr, identifierExpression) as IdentifierExpression => [
-				it.identifier = subregion.allValuesOfTo.filter(VariableDeclaration).filter[it.localVariableToTemplate == edge.parentTemplate].head.variable.head // Using only one variable in each declaration
+				it.identifier = subregion.allValuesOfTo.filter(VariableDeclaration)
+					.filter[it.containingTemplate == edge.parentTemplate].head.variable.head // Using only one variable in each declaration
 			]
 			it.operator = AssignmentOperator.EQUAL
 			it.createChild(binaryExpression_SecondExpr, literalExpression) as LiteralExpression => [
@@ -1118,11 +1120,8 @@ class CompositeToUppaalTransformer {
 		]
 	}	
 	
-	/**
-	 * Returns the template that contains the given variable.
-	 */
-	private def Template localVariableToTemplate(VariableDeclaration variable) {
-		return variable.eContainer.eContainer as Template
+	private def Template getContainingTemplate(EObject object) {
+		return object.getContainerOfType(Template)
 	}
 	
 	/**

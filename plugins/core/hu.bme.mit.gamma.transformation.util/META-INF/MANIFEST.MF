@@ -2,10 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Transformation Utility Classes
 Bundle-SymbolicName: hu.bme.mit.gamma.transformation.util;singleton:=true
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.4.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.transformation.util,
- hu.bme.mit.gamma.transformation.util.queries
+ hu.bme.mit.gamma.transformation.util.annotations,
+ hu.bme.mit.gamma.transformation.util.queries,
+ hu.bme.mit.gamma.transformation.util.reducer
 Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.viatra.query.runtime.rete,
  org.eclipse.viatra.query.runtime.localsearch,
@@ -14,7 +16,8 @@ Require-Bundle: org.eclipse.emf.ecore,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
  org.eclipse.viatra.query.runtime,
- hu.bme.mit.gamma.statechart.model,
+ hu.bme.mit.gamma.trace.model,
+ hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.eventpriority.transformation,
  hu.bme.mit.gamma.statechart.phase.transformation
 Bundle-RequiredExecutionEnvironment: JavaSE-11
