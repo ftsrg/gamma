@@ -234,7 +234,6 @@ class ActionTransformer {
 			
 			val transformExpression = action.expression.transformExpression
 			val returnVariableDeclarations = returnStack.peek()
-			println("RetVarSize:" + returnVariableDeclarations.size)
 			for (var i = 0; i < returnVariableDeclarations.size; i++) {
 				val index = i
 				val transformedAction = createAssignmentStatement => [
@@ -243,8 +242,6 @@ class ActionTransformer {
 					]
 					it.rhs = transformExpression.get(index)
 				]
-				println("LHS:" + transformedAction.lhs)
-				println("RHS:" + transformedAction.rhs)
 				result += transformedAction
 			}
 		}
@@ -492,7 +489,6 @@ class ActionTransformer {
 		val List<Expression> lowlevelRhs = new ArrayList<Expression>
 		lowlevelRhs += action.rhs.transformExpression
 		if (lowlevelLhs.size != lowlevelRhs.size) {
-			println("llrhs:" + lowlevelRhs)	
 			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
 		}
 		for (var i = 0; i < lowlevelLhs.size; i++) {

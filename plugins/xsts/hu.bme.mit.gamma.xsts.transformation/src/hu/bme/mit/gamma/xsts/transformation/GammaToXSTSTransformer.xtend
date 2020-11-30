@@ -51,6 +51,7 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class GammaToXSTSTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
@@ -178,7 +179,7 @@ class GammaToXSTSTransformer {
 			.filter[it.annotation instanceof InEventGroup].map[it.variables]
 			.flatten // There are more than one
 		for (xStsAssignment : inEventAction.getAllContentsOfType(AssignmentAction)) {
-			val xStsDeclaration = xStsAssignment.lhs.declaration
+			val xStsDeclaration = (xStsAssignment.lhs as DirectReferenceExpression).declaration
 			if (xStsSynchronousInEventVariables.contains(xStsDeclaration)) {
 				xStsAssignment.remove // Deleting in-event bool flags
 			}
@@ -195,7 +196,7 @@ class GammaToXSTSTransformer {
 		// Setting the referenced event variables to false
 		for (xStsEventVariable : xStsReferencedEventVariables) {
 			newInEventAction.actions += createAssignmentAction => [
-				it.lhs = createReferenceExpression => [
+				it.lhs = createDirectReferenceExpression => [
 					it.declaration = xStsEventVariable
 				]
 				it.rhs = createFalseExpression
@@ -209,7 +210,7 @@ class GammaToXSTSTransformer {
 			val branch = createIfActionBranch(
 				negatedVariables.connectThroughNegations,
 				createAssignmentAction => [
-					it.lhs = createReferenceExpression => [
+					it.lhs = createDirectReferenceExpression => [
 						it.declaration = xStsEventVariable
 					]
 					it.rhs = createTrueExpression

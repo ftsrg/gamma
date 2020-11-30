@@ -60,7 +60,6 @@ class ExpressionTransformer {
 
 	// Key method
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
-		System.out.println(expression.declaration)
 		checkState(expression.declaration instanceof VariableDeclaration)
 		val declaration = expression.declaration as VariableDeclaration
 		return expression.clone => [

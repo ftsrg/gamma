@@ -311,7 +311,6 @@ class ExpressionPreconditionTransformer {
 			transformed.addAll(createFunctionReturnArray(variable, nameProvider, variableType, arrayStack))//TODO new name provider
 			return transformed
 		} else {	//Simple variables and arrays of simple types are simply transformed
-		println("AAAAAAAAAA")
 			transformed.add(createVariableDeclaration => [
 				it.name = nameProvider.name						
 				it.type = variable.transformType

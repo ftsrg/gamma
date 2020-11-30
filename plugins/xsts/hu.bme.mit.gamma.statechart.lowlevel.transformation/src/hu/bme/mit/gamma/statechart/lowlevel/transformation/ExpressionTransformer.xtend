@@ -250,7 +250,22 @@ class ExpressionTransformer {
 		val declaration = expression.declaration
 		if (declaration instanceof ConstantDeclaration) {
 			// Constant type declarations have to be transformed as their right hand side is inlined
-			// TODO uncomment if inlining is chosen
+			if (!trace.isMapped(declaration)) {
+				// Constant type declarations have to be transformed as their right hand side is inlined
+				val constantType = declaration.type
+				if (constantType instanceof TypeReference) {
+					val constantTypeDeclaration = constantType.reference
+					val typeDefinition = constantTypeDeclaration.type
+					if (!typeDefinition.isPrimitive) {
+						if (!trace.isMapped(constantTypeDeclaration)) {
+							val transformedTypeDeclaration = constantTypeDeclaration.transformTypeDeclaration
+							val lowlevelPackage = trace.lowlevelPackage
+							lowlevelPackage.typeDeclarations += transformedTypeDeclaration
+						}
+					}
+				}
+				return declaration.expression.transformExpression
+			}
 			/*val constantType = declaration.type
 			if (constantType instanceof TypeReference) {
 				val constantTypeDeclaration = constantType.reference
@@ -427,12 +442,10 @@ class ExpressionTransformer {
 	}
 	
 	protected def List<VariableDeclaration> transformValue(ValueDeclaration variable) {
-		println("Variable:" + variable.name)
 		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>()
 		var TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
-			println("Transforming record")
 			var RecordTypeDefinition typeDef = variableType as RecordTypeDefinition
 			for (field : typeDef.fieldDeclarations) {
 				var innerField = new ArrayList<FieldDeclaration>
@@ -571,7 +584,6 @@ class ExpressionTransformer {
 					return assignment.value
 				} else {
 					if (assignment.value instanceof RecordLiteralExpression) {
-						//System.out.println("CURRFIELD: " + currentField.size )
 						var innerField = new ArrayList<FieldDeclaration>
 						innerField.addAll(currentField.subList(1, currentField.size))
 						return getExpressionFromRecordLiteral(assignment.value as RecordLiteralExpression, innerField)

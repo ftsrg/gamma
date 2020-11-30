@@ -484,7 +484,7 @@ class ExpressionTransformer {
 	 * For transforming variables appearing in variable initialization, guard and action expressions.
 	 */
 	def dispatch EObject transform(EObject container, EReference reference, VariableDefinition expression) {		
-		container.createChild(reference, referenceExpression) as ReferenceExpression => [
+		container.createChild(reference, directReferenceExpression) as DirectReferenceExpression => [
 			it.set(directReferenceExpression_Declaration, expression.getAllValuesOfTo.head)
 		]
 		// Trace is created by the method that called this one, and VariableDefintions are traced in Traces

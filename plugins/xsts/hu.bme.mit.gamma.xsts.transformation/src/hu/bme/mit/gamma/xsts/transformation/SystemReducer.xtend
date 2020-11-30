@@ -10,8 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -84,7 +84,7 @@ class SystemReducer {
 		// Deleting references to the input event variables in guards
 		// before variable removal as references must be present here
 		for (xStsFalseVariable : xStsFalseVariables) {
-			val references = xSts.getAllContentsOfType(ReferenceExpression)
+			val references = xSts.getAllContentsOfType(DirectReferenceExpression)
 				.filter[it.declaration === xStsFalseVariable]
 			for (reference : references) {
 				val falseExpression = createFalseExpression

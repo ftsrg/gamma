@@ -128,7 +128,7 @@ class EventConnector {
 		
 		// Deletion
 		for (xStsDeletableVariable : xStsDeletableVariables) {
-			for (xStsDeletableAssignmentAction : xStsAssignmentActions.filter[it.lhs.declaration === xStsDeletableVariable]) {
+			for (xStsDeletableAssignmentAction : xStsAssignmentActions.filter[(it.lhs as DirectReferenceExpression).declaration === xStsDeletableVariable]) {
 				xStsDeletableAssignmentAction.remove // To speed up the process
 			}
 			// Assignment removal before variable deletion!

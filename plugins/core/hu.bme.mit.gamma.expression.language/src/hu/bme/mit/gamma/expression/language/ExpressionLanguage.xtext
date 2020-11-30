@@ -325,7 +325,6 @@ ArrayLiteralExpression:
 	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
 ;
 
-//FIXME notation?
 IntegerRangeLiteralExpression:
 	{IntegerRangeLiteralExpression}
 	((leftInclusive?='<+') | '<-') (leftOperand=(Expression)) 
