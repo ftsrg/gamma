@@ -13,14 +13,14 @@ class ComponentInstanceReferenceMapper {
 	protected final SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
-	def getNewSimpleInstance(ComponentInstanceReference originalInstance, Component newTopComponent) {
-		return simpleInstanceHandler.getNewSimpleInstance(originalInstance, newTopComponent)
+	def checkAndGetNewSimpleInstance(ComponentInstanceReference originalInstance, Component newTopComponent) {
+		return simpleInstanceHandler.checkAndGetNewSimpleInstance(originalInstance, newTopComponent)
 	}
 	
 	def <T extends NamedElement> getNewObject(ComponentInstanceReference originalInstance,
 			T originalObject, Component newTopComponent) {
 		val originalName = originalObject.name
-		val newInstance = originalInstance.getNewSimpleInstance(newTopComponent)
+		val newInstance = originalInstance.checkAndGetNewSimpleInstance(newTopComponent)
 		val newComponent = newInstance.type
 		val contents = newComponent.getAllContentsOfType(originalObject.class)
 		for (content : contents) {

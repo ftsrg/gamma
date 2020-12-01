@@ -56,7 +56,7 @@ class SimpleInstanceHandler {
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalTransition = originalReference.transition.getSelfOrContainerOfType(Transition)
-			val newInstance = originalInstance.getNewSimpleInstance(newType)
+			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
 			val newTransition = newInstance.getNewTransition(originalTransition) 
 			if (newTransition !== null) {
 				newTransitions += newInstance.getNewTransition(originalTransition)
@@ -97,7 +97,7 @@ class SimpleInstanceHandler {
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalState= originalReference.state 
-			val newInstance = originalInstance.getNewSimpleInstance(newType)
+			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
 			val newState = newInstance.getNewState(originalState)
 			if (newState !== null) {
 				newStates += newState
@@ -141,7 +141,7 @@ class SimpleInstanceHandler {
 		for (originalReference : originalReferences) {
 			val originalInstance = originalReference.instance
 			val originalPort = originalReference.port 
-			val newInstance = originalInstance.getNewSimpleInstance(newType)
+			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
 			newPorts += newInstance.getNewPort(originalPort) 
 		}
 		return newPorts
@@ -179,15 +179,17 @@ class SimpleInstanceHandler {
 	def getNewSimpleInstances(Collection<ComponentInstanceReference> originalInstances, Component newType) {
 		val accpedtedNewInstances = newArrayList
 		for (originalInstance : originalInstances) {
-			accpedtedNewInstances += originalInstance.getNewSimpleInstance(newType)
+			accpedtedNewInstances += originalInstance.getNewSimpleInstances(newType)
 		}
 		return accpedtedNewInstances
 	}
 	
-	def getNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
+	def getNewSimpleInstances(ComponentInstanceReference originalInstance, Component newType) {
 		val newInstances = newType.allSimpleInstances
 		val accpedtedNewInstances = newArrayList
+		// This intances can be a composite instance, thus more than one new instance can be here
 		val lastInstance = originalInstance.componentInstanceHierarchy.last
+		val lastInstanceType = lastInstance.derivedType
 		val oldPackage = lastInstance.containingPackage
 		val isUnfolded = oldPackage.isUnfolded
 		if (isUnfolded) {
@@ -201,8 +203,20 @@ class SimpleInstanceHandler {
 				}
 			}
 		}
-		checkState(accpedtedNewInstances.size == 1)
-		return accpedtedNewInstances.head
+		if (lastInstanceType instanceof StatechartDefinition) {
+			checkState(accpedtedNewInstances.size == 1)
+		}
+		else {
+			checkState(accpedtedNewInstances.size >= 1)
+		}
+		return accpedtedNewInstances
+	}
+	
+	def checkAndGetNewSimpleInstance(ComponentInstanceReference originalInstance, Component newType) {
+		val newInstances = originalInstance.getNewSimpleInstances(newType)
+		// Only one instance is expected
+		checkState(newInstances.size == 1)
+		return newInstances.head
 	}
 	
 	

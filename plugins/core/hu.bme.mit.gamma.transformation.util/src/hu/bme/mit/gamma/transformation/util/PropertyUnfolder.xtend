@@ -124,7 +124,7 @@ class PropertyUnfolder {
 	}
 	
 	protected def getNewSimpleInstance(ComponentInstanceReference instance) {
-		return instance.getNewSimpleInstance(newTopComponent).createInstanceReference
+		return instance.checkAndGetNewSimpleInstance(newTopComponent).createInstanceReference
 	}
 	
 	protected def ComponentInstanceReference createInstanceReference(ComponentInstance instance) {

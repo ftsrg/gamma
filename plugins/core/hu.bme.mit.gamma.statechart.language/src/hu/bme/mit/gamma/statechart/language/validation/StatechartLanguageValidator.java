@@ -27,10 +27,8 @@ import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
-import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -50,8 +48,6 @@ import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.SubrangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
@@ -122,6 +118,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 
 /**
@@ -137,7 +134,23 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	@Override
 	public void checkNameUniqueness(NamedElement element) {
+		String name = element.getName();
 		if (element instanceof Event) {
+			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
+			checkNames(_interface, Collections.singleton(Event.class), name);
+			return;
+		}
+		if (element instanceof ParameterDeclaration) {
+			EObject container = element.eContainer();
+			if (container instanceof Event) {
+				checkNames(container, Collections.singleton(ParameterDeclaration.class), name);
+				return;
+			}
+		}
+		if (element instanceof TransitionIdAnnotation) {
+			StatechartDefinition statechart = StatechartModelDerivedFeatures
+					.getContainingStatechart(element);
+			checkNames(statechart, List.of(TransitionIdAnnotation.class, Declaration.class), name);
 			return;
 		}
 		super.checkNameUniqueness(element);

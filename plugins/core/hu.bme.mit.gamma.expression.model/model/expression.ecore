@@ -38,11 +38,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="Declaration" abstract="true" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ValueDeclaration" eSuperTypes="#//Declaration">
+  <eClassifiers xsi:type="ecore:EClass" name="ValueDeclaration" eSuperTypes="#//Declaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//VariableDeclarationAnnotation" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="VariableDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="FunctionDeclaration" eSuperTypes="#//Declaration #//ParametricElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="TypeDeclaration" eSuperTypes="#//Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="ConstantDeclaration" eSuperTypes="#//ValueDeclaration #//InitializableElement"/>
@@ -167,7 +167,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ReferenceExpression" eSuperTypes="#//NullaryExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ReferenceExpression" abstract="true"
+      eSuperTypes="#//NullaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="DirectReferenceExpression" eSuperTypes="#//ReferenceExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="#//Declaration"/>
   </eClassifiers>

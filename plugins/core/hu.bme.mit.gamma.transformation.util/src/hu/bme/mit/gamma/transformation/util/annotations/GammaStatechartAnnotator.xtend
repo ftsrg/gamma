@@ -178,7 +178,7 @@ class GammaStatechartAnnotator {
 		// e.g., states, that are not reachable from each other, could use the same variable pair
 		if (!transitionPairVariables.containsKey(state)) {
 			val statechart = state.containingStatechart
-			val variablePair = statechart.createVariablePair(null, null,
+			val variablePair = statechart.createVariablePair(null, null, true /*For transition-pairs */,
 				false /*They are not resettable, as two consecutive cycles have to be considered*/)
 			transitionPairVariables.put(state, variablePair)
 		}
@@ -383,7 +383,7 @@ class GammaStatechartAnnotator {
 		val regionInteractionVariables = region.interactionVariables
 		val statechartInteractionVariables = statechart.interactionVariables
 		return region.getOrCreateVariablePair(regionInteractionVariables,
-			statechartInteractionVariables, true)
+			statechartInteractionVariables, RECEIVER_CONSIDERATION, true)
 	}
 	
 	protected def getInteractionVariables(Transition transition, Port port, Event event) {
@@ -476,20 +476,20 @@ class GammaStatechartAnnotator {
 	// Variable pair creators, used both by transition pair and interaction annotation
 	
 	protected def getOrCreateVariablePair(Region region,
-			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean createSecond, boolean resettable) {
 		val statechart = region.containingStatechart
 		if (region.orthogonal) {
 			// A new variable is needed for orthogonal regions and it cannot be shared
 			return statechart.createVariablePair(localPool,
 				null /*Variables cannot be shared with other regions*/,
-				resettable)
+				createSecond, resettable)
 		}
 		// Optimization, maybe a new one does not need to be created
-		return statechart.getOrCreateVariablePair(localPool, globalPool, resettable)
+		return statechart.getOrCreateVariablePair(localPool, globalPool, createSecond, resettable)
 	}
 	
 	protected def getOrCreateVariablePair(StatechartDefinition statechart,
-			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean createSecond, boolean resettable) {
 		val localPoolSize = localPool.size
 		val globalPoolSize = globalPool.size
 		if (localPoolSize < globalPoolSize) {
@@ -501,19 +501,19 @@ class GammaStatechartAnnotator {
 		else {
 			return statechart.createVariablePair(localPool,
 				globalPool /*Variables can be shared with other regions*/,
-				resettable)
+				createSecond, resettable)
 		}
 	}
 	
 	protected def createVariablePair(StatechartDefinition statechart,
-			List<VariablePair> localPool, List<VariablePair> globalPool, boolean resettable) {
+			List<VariablePair> localPool, List<VariablePair> globalPool, boolean createSecond, boolean resettable) {
 		val senderVariable = createVariableDeclaration => [
 			it.type = createIntegerTypeDefinition
 			it.name = annotationNamings.getFirstVariableName(statechart)
 		]
 		statechart.variableDeclarations += senderVariable
 		var VariableDeclaration receiverVariable = null
-		if (RECEIVER_CONSIDERATION) {
+		if (createSecond) {
 			receiverVariable = createVariableDeclaration => [
 				it.type = createIntegerTypeDefinition
 				it.name = annotationNamings.getSecondVariableName(statechart)

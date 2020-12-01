@@ -11,6 +11,7 @@ package hu.bme.mit.gamma.expression.language.validation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -76,12 +76,32 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
+		Class<? extends NamedElement> clazz = null;
+		if (element instanceof Declaration) {
+			clazz = Declaration.class;
+		}
+		else {
+			clazz = element.getClass();
+		}
 		EObject root = EcoreUtil.getRootContainer(element);
-		Collection<? extends NamedElement> namedElements = EcoreUtil2.getAllContentsOfType(root, element.getClass());
-		namedElements.remove(element);
+		checkNames(root, Collections.singleton(clazz), name);
+	}
+
+	protected void checkNames(EObject root,
+			Collection<Class<? extends NamedElement>> classes, String name) {
+		int nameCount = 0;
+		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
+		for (Class<? extends NamedElement> clazz : classes) {
+			List<? extends NamedElement> elements = ecoreUtil.getAllContentsOfType(root, clazz);
+			namedElements.addAll(elements);
+		}
 		for (NamedElement otherElement : namedElements) {
 			if (name.equals(otherElement.getName())) {
-				error("In a Gamma model every identifier must be unique.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+				++nameCount;
+			}
+			if (nameCount > 1) {
+				error("In a Gamma model, these identifiers must be unique.",
+					ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			}
 		}
 	}
