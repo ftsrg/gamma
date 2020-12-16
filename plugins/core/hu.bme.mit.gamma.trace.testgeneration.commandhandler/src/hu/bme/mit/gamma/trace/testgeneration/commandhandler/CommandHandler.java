@@ -75,6 +75,7 @@ public class CommandHandler extends AbstractHandler {
 								else {
 									logger.log(Level.WARNING, "The package name does not contain View at the end: " + importedPackageName);
 								}
+								importedPackageName = importedPackageName.toLowerCase(); // Otherwise, capital letters may remain in the name
 								String className = splittedPath[splittedPath.length - 1].split(".get")[0];
 								String packageName = file.getProject().getName().toLowerCase();
 								TestGenerator testGenerator = new TestGenerator(executionTrace,	packageName, className);
