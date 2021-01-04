@@ -10,20 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.querygenerator
 
-import hu.bme.mit.gamma.statechart.interface_.Package
-import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
-import org.eclipse.viatra.query.runtime.emf.EMFScope
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
+import hu.bme.mit.gamma.statechart.interface_.Event
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Event
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
+import org.eclipse.viatra.query.runtime.emf.EMFScope
 
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
@@ -80,6 +80,64 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	// Auxiliary methods for back-annotation
 	
+	// Checkers
+	
+	def isSourceState(String targetStateName) {
+		try {
+			targetStateName.getSourceState
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceVariable(String targetVariableName) {
+		try {
+			targetVariableName.getSourceVariable
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceOutEvent(String targetOutEventName) {
+		try {
+			targetOutEventName.getSourceOutEvent
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceOutEventParamater(String targetOutEventParameterName) {
+		try {
+			targetOutEventParameterName.getSourceOutEventParamater
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceInEvent(String targetInEventName) {
+		try {
+			targetInEventName.getSourceInEvent
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceInEventParamater(String targetInEventParameterName) {
+		try {
+			targetInEventParameterName.getSourceInEventParamater
+			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	// Getters
+	
 	def getSourceState(String targetStateName) {
 		for (match : instanceStates) {
 			val name = getSingleTargetStateName(match.state, match.parentRegion, match.instance)
@@ -123,10 +181,10 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		throw new IllegalArgumentException("Not known id")
 	}
 	
-	def getSourceInEvent(String getTargetInEventName) {
+	def getSourceInEvent(String targetInEventName) {
 		for (match : systemInEvents) {
 			val name = getTargetInEventName(match.event, match.port, match.instance)
-			if (name.equals(getTargetInEventName)) {
+			if (name.equals(targetInEventName)) {
 				return #[match.event, match.port, match.instance]
 			}
 		}

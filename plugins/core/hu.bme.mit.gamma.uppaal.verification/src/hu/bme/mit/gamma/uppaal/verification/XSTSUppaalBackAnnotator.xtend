@@ -126,48 +126,44 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									
 									switch (localState) {
 										case STABLE: {
-											try {
-												
-												val index = Integer.parseInt(value)
-												val instanceState = xStsUppaalQueryGenerator.getSourceState(
-													'''«variable» == «index»''')
+											val index = Integer.parseInt(value)
+											val potentialStateString = '''«variable» == «index»'''
+											if (xStsUppaalQueryGenerator.isSourceState(potentialStateString)) {
+												val instanceState = xStsUppaalQueryGenerator.getSourceState(potentialStateString)
 												val controlState = instanceState.key
 												val instance = instanceState.value
 												if (index > 0) {
 													step.addInstanceState(instance, controlState)
 													activatedStates += controlState
 												}
-											} catch (IllegalArgumentException e) {
-												try {
-													val instanceVariable = xStsUppaalQueryGenerator.getSourceVariable(variable)
-													step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
-												} catch (IllegalArgumentException e1) {
-													try {
-														val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEvent(variable)
-														if (value.equals("1")) {
-															val event = systemOutEvent.get(0) as Event
-															val port = systemOutEvent.get(1) as Port
-															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-															step.addOutEvent(systemPort, event)
-															// Denoting that this event has been actually raised
-															raisedOutEvents += new Pair(systemPort, event)
-														}
-													} catch (IllegalArgumentException e2) {
-														try {
-															val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
-															val event = systemOutEvent.get(0) as Event
-															val port = systemOutEvent.get(1) as Port
-															val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-															val parameter = systemOutEvent.get(2) as ParameterDeclaration
-															step.addOutEventWithStringParameter(systemPort, event, parameter, value)
-															// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
-														} catch (IllegalArgumentException e3) {}
-													}
+											}
+											else if (xStsUppaalQueryGenerator.isSourceVariable(variable)) {
+												val instanceVariable = xStsUppaalQueryGenerator.getSourceVariable(variable)
+												step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+											}
+											else if (xStsUppaalQueryGenerator.isSourceOutEvent(variable)) {
+												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEvent(variable)
+												if (value.equals("1")) {
+													val event = systemOutEvent.get(0) as Event
+													val port = systemOutEvent.get(1) as Port
+													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+													step.addOutEvent(systemPort, event)
+													// Denoting that this event has been actually raised
+													raisedOutEvents += new Pair(systemPort, event)
 												}
+											}
+											else if (xStsUppaalQueryGenerator.isSourceOutEventParamater(variable)) {
+												val systemOutEvent = xStsUppaalQueryGenerator.getSourceOutEventParamater(variable)
+												val event = systemOutEvent.get(0) as Event
+												val port = systemOutEvent.get(1) as Port
+												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val parameter = systemOutEvent.get(2) as ParameterDeclaration
+												step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 											}
 										}
 										case ENVIRONMENT: {
-											try {
+											if (xStsUppaalQueryGenerator.isSourceInEvent(variable)) {
 												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEvent(variable)
 												if (value.equals("1")) {
 													val event = systemInEvent.get(0) as Event
@@ -177,16 +173,15 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 													// Denoting that this event has been actually raised
 													raisedInEvents += new Pair(systemPort, event)
 												}
-											} catch (IllegalArgumentException e) {
-												try {
-													val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
-													val event = systemInEvent.get(0) as Event
-													val port = systemInEvent.get(1) as Port
-													val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
-													val parameter = systemInEvent.get(2) as ParameterDeclaration
-													step.addInEventWithParameter(systemPort, event, parameter, value)
-													// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
-												} catch (IllegalArgumentException e1) {}
+											}
+											else if (xStsUppaalQueryGenerator.isSourceInEventParamater(variable)) {
+												val systemInEvent = xStsUppaalQueryGenerator.getSourceInEventParamater(variable)
+												val event = systemInEvent.get(0) as Event
+												val port = systemInEvent.get(1) as Port
+												val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
+												val parameter = systemInEvent.get(2) as ParameterDeclaration
+												step.addInEventWithParameter(systemPort, event, parameter, value)
+												// Will check in localState == StableEnvironmentState.ENVIRONMENT, if it is valid
 											}
 										}
 										default: {
