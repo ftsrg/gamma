@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
@@ -45,6 +47,8 @@ import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.InterruptableRunnable;
+import hu.bme.mit.gamma.util.ThreadRacer;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -202,6 +206,8 @@ abstract class AbstractVerification {
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
+
+	protected final Logger logger = Logger.getLogger("GammaLogger");
 	
 	public abstract ExecutionTrace execute(File modelFile, File queryFile);
 	
@@ -249,11 +255,41 @@ class ThetaVerification extends AbstractVerification {
 		String fileName = modelFile.getName();
 		String packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
 		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		ThetaVerifier verifier = new ThetaVerifier();
 		String queries = fileUtil.loadString(queryFile);
+		String defaultParameter = "";
+		
+//		ThetaVerifier verifier = new ThetaVerifier();
+//		return verifier.verifyQuery(gammaPackage, defaultParameter, modelFile, queries, true, true);
+		
 		// --domain PRED_CART --refinement SEQ_ITP // default
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250
-		return verifier.verifyQuery(gammaPackage, "", modelFile, queries, true, true);
+		String[] defaultParameters = {defaultParameter,
+				"--domain EXPL --refinement SEQ_ITP --maxenum 250"};
+		ThreadRacer<ExecutionTrace> racer = new ThreadRacer<ExecutionTrace>();
+		Collection<InterruptableRunnable> runnables = new ArrayList<InterruptableRunnable>();
+		for (String parameter : defaultParameters) {
+			ThetaVerifier verifier = new ThetaVerifier();
+			InterruptableRunnable runnable = new InterruptableRunnable() {
+				@Override
+				public void run() {
+					try {
+						logger.log(Level.INFO, "Starting " + parameter);
+						ExecutionTrace trace = verifier.verifyQuery(
+							gammaPackage, parameter, modelFile, queries, true, true);
+						racer.setObject(trace);
+						logger.log(Level.INFO, parameter + " ended");
+					} catch (IllegalArgumentException e) {
+						logger.log(Level.INFO, parameter + " has been interrupted");
+					}
+				}
+				@Override
+				public void interrupt() {
+					verifier.cancel();
+				}
+			};
+			runnables.add(runnable);
+		}
+		return racer.execute(runnables);
 	}
 	
 }
