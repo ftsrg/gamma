@@ -28,10 +28,10 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
@@ -83,6 +83,7 @@ import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 
 public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
@@ -903,6 +904,44 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 			}
 		}
 		return transitions;
+	}
+	
+	public static Collection<Transition> getPrioritizedTransitions(Transition gammaTransition) {
+		StatechartDefinition gammaStatechart = getContainingStatechart(gammaTransition);
+		TransitionPriority transitionPriority = gammaStatechart.getTransitionPriority();
+		Collection<Transition> prioritizedTransitions = new ArrayList<Transition>();
+		if (transitionPriority != TransitionPriority.OFF) {
+			StateNode source = gammaTransition.getSourceState();
+			List<Transition> gammaOutgoingTransitions = getOutgoingTransitions(source);
+			for (Transition gammaOutgoingTransition : gammaOutgoingTransitions) {
+				if (calculatePriority(gammaTransition).longValue() <
+						calculatePriority(gammaOutgoingTransition).longValue()) {
+					prioritizedTransitions.add(gammaOutgoingTransition);
+				}
+			}
+		}
+		return prioritizedTransitions;
+	}
+	
+	public static BigInteger calculatePriority(Transition transition) {
+		StatechartDefinition statechart = getContainingStatechart(transition);
+		TransitionPriority transitionPriority = statechart.getTransitionPriority();
+		switch (transitionPriority) {
+			case ORDER_BASED : {
+				StateNode source = transition.getSourceState();
+				List<Transition> outgoingTransitions = getOutgoingTransitions(source);
+				int size = outgoingTransitions.size();
+				int index = outgoingTransitions.indexOf(transition);
+				int priority = size - index;
+				return BigInteger.valueOf(priority);
+			}
+			case VALUE_BASED : {
+				return transition.getPriority();
+			}
+			default: {
+				throw new IllegalArgumentException("Not supported literal: " + transitionPriority);
+			}
+		}
 	}
 	
 	public static boolean isSameRegion(Transition transition) {

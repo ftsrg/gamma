@@ -10,6 +10,7 @@
   </extension>
   <extension id="hu.bme.mit.gamma.uppaal.transformation.queries.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.uppaal.transformation.queries.Patterns" id="hu.bme.mit.gamma.uppaal.transformation.queries.Patterns">
+      <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.statecharts"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.namedElements"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.assignedVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.uppaal.transformation.queries.isDeclarationOfReference"/>

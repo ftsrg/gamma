@@ -278,7 +278,8 @@ class ThetaVerification extends AbstractVerification {
 							gammaPackage, parameter, modelFile, queries, true, true);
 						racer.setObject(trace);
 						logger.log(Level.INFO, parameter + " ended");
-					} catch (IllegalArgumentException e) {
+					} catch (Exception e) {
+						// Every kind of exception, as we do not know where the interrupt comes
 						logger.log(Level.INFO, parameter + " has been interrupted");
 					}
 				}
