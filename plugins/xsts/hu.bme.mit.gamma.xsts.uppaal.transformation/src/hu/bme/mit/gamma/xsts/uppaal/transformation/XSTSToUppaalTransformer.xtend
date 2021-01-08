@@ -68,20 +68,28 @@ class XSTSToUppaalTransformer {
 		stableLocation.locationTimeKind = LocationKind.NORMAL
 		
 		val environmentFinishLocation = environmentalAction.transformAction(stableLocation)
-		environmentFinishLocation.name = environmentFinishLocationName
-		environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		// If there is no environmental action, the stable location should not be overwritten 
+		if (environmentFinishLocation !== stableLocation) {
+			environmentFinishLocation.name = environmentFinishLocationName
+			environmentFinishLocation.locationTimeKind = LocationKind.NORMAL // So optimization does not delete it
+		}
 		
 		val systemFinishLocation = mergedAction.transformAction(environmentFinishLocation)
 		
-		systemFinishLocation.createEdge(stableLocation)
+		// If there is no merged action, the loop edge is unnecessary
+		if (systemFinishLocation !== stableLocation) {
+			systemFinishLocation.createEdge(stableLocation)
+		}
 		
 		// Optimizing edges from these location
 		initialLocation.optimizeSubsequentEdges
 		stableLocation.optimizeSubsequentEdges
 		environmentFinishLocation.optimizeSubsequentEdges
 		
-		// Model checking is faster if the environment finish location is committed
-		environmentFinishLocation.locationTimeKind = LocationKind.COMMITED 
+		if (environmentFinishLocation !== stableLocation) {
+			// Model checking is faster if the environment finish location is committed
+			environmentFinishLocation.locationTimeKind = LocationKind.COMMITED
+		}
 		
 		ntaBuilder.instantiateTemplates
 		
