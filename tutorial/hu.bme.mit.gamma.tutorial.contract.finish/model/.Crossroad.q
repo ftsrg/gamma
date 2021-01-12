@@ -1,0 +1,1 @@
+E<> ((P_operatingOfOperatingOfcontroller.Priority) && P_operatingOfOperatingOfcontroller.isActive) && isStable
