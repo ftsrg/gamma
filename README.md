@@ -63,9 +63,9 @@ Supporters of the Gamma project:
 
 * [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/),
 * [Fault Tolerant Systems Research Group](https://inf.mit.bme.hu/en), [Department of Measurement and Information Systems](https://www.mit.bme.hu/eng/), [Budapest University of Technology and Economics](http://www.bme.hu/?language=en),
-* [Új Nemzeti Kiválóság Program 2017-2018](http://unkp.gov.hu),
-* [Új Nemzeti Kiválóság Program 2019-2020](https://unkp.gov.hu),
-* [Új Nemzeti Kiválóság Program 2020-2021](http://www.unkp.gov.hu/palyazatok/felsooktatasi-doktori-hallgatoi-doktorjelolti-kutatoi-osztondij/felsooktatasi-doktori),
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2017-2018](http://unkp.gov.hu),
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2019-2020](http://unkp.gov.hu),
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2020-2021](http://www.unkp.gov.hu/palyazatok/felsooktatasi-doktori-hallgatoi-doktorjelolti-kutatoi-osztondij/felsooktatasi-doktori),
 * [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013),
 * [EMBrACE](https://itea3.org/project/embrace.html) - Environment for model-based rigorous adaptive co-design and operation of CPS.
 
