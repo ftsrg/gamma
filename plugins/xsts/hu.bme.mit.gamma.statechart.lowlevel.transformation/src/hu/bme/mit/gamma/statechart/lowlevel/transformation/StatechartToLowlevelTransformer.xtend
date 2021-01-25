@@ -189,16 +189,13 @@ class StatechartToLowlevelTransformer {
 					if (source.outgoingTransitions.map[EcoreUtil.getAllContents(it, true)
 							.filter(TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
 						val gammaParentRegion = source.parentRegion
-						if (trace.doesRegionHaveOptimizedTimeout(gammaParentRegion)) {
-							val lowlevelTimeout = trace.getTimeout(gammaParentRegion)
-							trace.put(timeout, lowlevelTimeout)
-							return lowlevelTimeout
-						}
-						else {
+						if (!trace.doesRegionHaveOptimizedTimeout(gammaParentRegion)) {
 							val lowlevelTimeout = timeout.createTimeoutVariable
 							trace.put(gammaParentRegion, lowlevelTimeout)
-							return lowlevelTimeout
 						}
+						val lowlevelTimeout = trace.getTimeout(gammaParentRegion)
+						trace.put(timeout, lowlevelTimeout) // If the above if is true, this is not necessary
+						return lowlevelTimeout
 					}
 				}
 			}

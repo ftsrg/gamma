@@ -12,28 +12,30 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference
 import hu.bme.mit.gamma.statechart.statechart.ClockTickReference
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
-import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
-import hu.bme.mit.gamma.statechart.interface_.TimeUnit
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
-import static extension com.google.common.collect.Iterables.getOnlyElement
 
+import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class EventReferenceTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
@@ -96,10 +98,22 @@ class EventReferenceTransformer {
 			}
 			else {
 				// Multiple timeouts can be transformed to a single variable (optimization)
-				lowlevelTimeoutVar.expression = createAddExpression => [
-					it.operands += lowlevelTimeoutVar.expression
-					it.operands += value.clone(true, true)
-				]
+				// We need the max initial value, to make sure each one is true at the beginning
+				val oldValue = lowlevelTimeoutVar.expression
+				val newValue = value.clone(true, true)
+				try {
+					val evaluatedOldValue = oldValue.evaluateInteger
+					val evaluatedNewValue = newValue.evaluateInteger
+					if (evaluatedOldValue < evaluatedNewValue) {
+						lowlevelTimeoutVar.expression = newValue
+					}
+				} catch (IllegalArgumentException e) {
+					// One expression is a variable: better to do add expression
+					lowlevelTimeoutVar.expression = createAddExpression => [
+						it.operands += lowlevelTimeoutVar.expression
+						it.operands += value.clone(true, true)
+					]
+				}
 			}
 			// [500 <= timeoutClock]
 			return createLessEqualExpression => [
@@ -116,10 +130,7 @@ class EventReferenceTransformer {
 	
 	private def Expression getValueOfTimeout(TimeoutDeclaration timeoutDeclaration) {
 		val gammaStatechart = timeoutDeclaration.containingStatechart
-		val gammaTransitions = gammaStatechart.transitions
-		val gammaStates = gammaStatechart.allStates
-		val actions = (gammaTransitions.map[it.effects] + gammaStates.map[it.entryActions] + gammaStates.map[it.exitActions]).flatten
-		val timeoutSettings = actions.filter(SetTimeoutAction)
+		val timeoutSettings = gammaStatechart.getAllContentsOfType(SetTimeoutAction)
 		val correctTimeoutSetting = timeoutSettings.filter[it.timeoutDeclaration == timeoutDeclaration]
 		checkState(correctTimeoutSetting.size == 1, "Not one setting to the same timeout declaration: " + correctTimeoutSetting)
 		// Single assignment, expected branch
