@@ -255,18 +255,16 @@ class StatechartToPlantUMLTransformer {
 	 */
 	protected def stateActionsSearch(StateNode statenode) {
 		val state = statenode as State
-		if (!(state.getEntryActions().empty) || !(state.getExitActions().empty)) {
+		if (!(state.entryActions.empty) || !(state.exitActions.empty)) {
 			val result = '''
-				«IF !(state.getEntryActions().empty)»
-					«FOR entry: state.getEntryActions()»
-						«val entryraise = entry as Statement»
-						«statenode.name» : entry / «entryraise.transformAction»
+				«IF !(state.entryActions.empty)»
+					«FOR entry: state.entryActions»
+						«statenode.name» : entry / «entry.transformAction»
 					«ENDFOR»
 				«ENDIF»
-				«IF !(state.getExitActions().empty)»
-					«FOR exit: state.getExitActions()»
-						«val exitraise = exit as Statement»
-						«statenode.name» : exit / «exitraise.transformAction»
+				«IF !(state.exitActions.empty)»
+					«FOR exit: state.exitActions»
+						«statenode.name» : exit / «exit.transformAction»
 					«ENDFOR»
 				«ENDIF»
 			'''

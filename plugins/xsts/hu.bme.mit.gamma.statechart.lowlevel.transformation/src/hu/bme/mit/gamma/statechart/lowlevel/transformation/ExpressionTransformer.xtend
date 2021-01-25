@@ -234,9 +234,7 @@ class ExpressionTransformer {
 				}
 			}
 		}
-		
 		return result		
-		
 	}
 	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {

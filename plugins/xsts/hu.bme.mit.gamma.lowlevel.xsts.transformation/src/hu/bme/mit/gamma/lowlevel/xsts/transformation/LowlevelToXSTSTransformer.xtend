@@ -832,9 +832,9 @@ class LowlevelToXSTSTransformer {
 	
 	protected def handleVariableAnnotations() {
 		val resetableVariables = xSts.variableDeclarations.filter[
-			!it.annotations.filter(ResetableVariableDeclarationAnnotation).empty]
+			it.annotations.exists[it instanceof ResetableVariableDeclarationAnnotation]]
 		val transientVariables = xSts.variableDeclarations.filter[
-			!it.annotations.filter(TransientVariableDeclarationAnnotation).empty]
+			it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
 		val newMergedAction = createSequentialAction
 		for (resetableVariable : resetableVariables) {
 			newMergedAction.actions += resetableVariable.createAssignmentAction(resetableVariable.initialValue)

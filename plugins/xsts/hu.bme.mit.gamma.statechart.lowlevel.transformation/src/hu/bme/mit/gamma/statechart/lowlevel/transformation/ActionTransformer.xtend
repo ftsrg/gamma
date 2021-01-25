@@ -24,23 +24,14 @@ import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
-import hu.bme.mit.gamma.action.model.TypeReferenceExpression
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.AccessExpression
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DefaultExpression
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
-import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -60,7 +51,6 @@ import java.util.Stack
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -155,6 +145,8 @@ class ActionTransformer {
 		val variableDeclarations = action.variableDeclaration.transformValue
 		result += lowlevelPrecondition
 		for (variableDeclaration : variableDeclarations) {
+			// These are transient variables
+			variableDeclaration.annotations += createTransientVariableDeclarationAnnotation
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = variableDeclaration
 			]	

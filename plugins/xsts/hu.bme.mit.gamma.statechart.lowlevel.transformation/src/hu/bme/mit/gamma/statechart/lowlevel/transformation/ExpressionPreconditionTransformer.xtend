@@ -1,40 +1,38 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
-import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.Expression
-import java.util.List
 import hu.bme.mit.gamma.action.model.Action
-import java.util.ArrayList
-import java.util.LinkedList
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.action.model.ProcedureDeclaration
-import java.util.Map
-import java.util.HashMap
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
-import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration
+import hu.bme.mit.gamma.action.model.TypeReferenceExpression
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-
-import static extension com.google.common.collect.Iterables.getOnlyElement
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.model.SelectExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDefinition
-import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import java.util.ArrayList
+import java.util.HashMap
+import java.util.LinkedList
+import java.util.List
+import java.util.Map
 import java.util.stream.Collectors
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
-import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
-import hu.bme.mit.gamma.action.model.TypeReferenceExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+
+import static extension com.google.common.collect.Iterables.getOnlyElement
 
 class ExpressionPreconditionTransformer {
 	// Auxiliary object
