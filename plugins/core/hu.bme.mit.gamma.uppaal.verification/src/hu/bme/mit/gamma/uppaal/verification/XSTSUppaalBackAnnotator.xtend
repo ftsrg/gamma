@@ -10,11 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.verification
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.querygenerator.XSTSUppaalQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -33,6 +35,7 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
 	protected final XSTSUppaalQueryGenerator xStsUppaalQueryGenerator
+	protected final Expression schedulingConstraint
 	
 	new(Package gammaPackage, Scanner traceScanner) {
 		this(gammaPackage, traceScanner, true)
@@ -43,6 +46,14 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		this.gammaPackage = gammaPackage
 		this.component = gammaPackage.components.head
 		this.xStsUppaalQueryGenerator = new XSTSUppaalQueryGenerator(gammaPackage)
+		val schedulingConstraintAnnotation = gammaPackage.annotations
+			.filter(SchedulingConstraintAnnotation).head
+		if (schedulingConstraintAnnotation !== null) {
+			this.schedulingConstraint = schedulingConstraintAnnotation.schedulingConstraint
+		}
+		else {
+			this.schedulingConstraint = null
+		}
 	}
 	
 	override execute() throws EmptyTraceException {
@@ -207,6 +218,11 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									trace.steps += step
 									step = createStep
 								}
+								/// Add static delay every turn
+								if (schedulingConstraint !== null) {
+									step.addTimeElapse(schedulingConstraint)
+								}
+								///
 							}
 							if (localState == StableEnvironmentState.ENVIRONMENT) {
 								// Deleting events that are not raised (parameter values are always present)

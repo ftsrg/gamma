@@ -10,12 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
+import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -47,6 +49,7 @@ class TraceBackAnnotator {
 	
 	protected final Package gammaPackage
 	protected final Component component
+	protected final Expression schedulingConstraint
 	
 	protected final boolean sortTrace
 	// Auxiliary objects	
@@ -66,6 +69,14 @@ class TraceBackAnnotator {
 		this.thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage)
 		this.traceScanner = traceScanner
 		this.sortTrace = sortTrace
+		val schedulingConstraintAnnotation = gammaPackage.annotations
+			.filter(SchedulingConstraintAnnotation).head
+		if (schedulingConstraintAnnotation !== null) {
+			this.schedulingConstraint = schedulingConstraintAnnotation.schedulingConstraint
+		}
+		else {
+			this.schedulingConstraint = null
+		}
 	}
 	
 	def ExecutionTrace execute() {
@@ -115,6 +126,11 @@ class TraceBackAnnotator {
 								step.checkStates(raisedOutEvents, activatedStates)
 								// Creating a new step
 								step = createStep
+								/// Add static delay every turn
+								if (schedulingConstraint !== null) {
+									step.addTimeElapse(schedulingConstraint)
+								}
+								///
 								trace.steps += step
 								// Setting the state
 								state = BackAnnotatorState.ENVIRONMENT_CHECK

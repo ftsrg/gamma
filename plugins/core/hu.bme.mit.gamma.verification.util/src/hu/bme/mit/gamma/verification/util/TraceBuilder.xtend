@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -42,6 +43,7 @@ class TraceBuilder {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	// In event
@@ -72,6 +74,10 @@ class TraceBuilder {
 	}
 	
 	// Time elapse
+	
+	def addTimeElapse(Step step, Expression elapsedTime) {
+		return step.addTimeElapse(elapsedTime.evaluateInteger)
+	}
 	
 	def addTimeElapse(Step step, int elapsedTime) {
 		val timeElapseActions = step.actions.filter(TimeElapse)

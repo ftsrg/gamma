@@ -165,6 +165,9 @@
     <genClasses image="false" ecoreClass="interface.ecore#//PackageAnnotation"/>
     <genClasses ecoreClass="interface.ecore#//TopComponentArgumentsAnnotation"/>
     <genClasses ecoreClass="interface.ecore#//UnfoldedPackageAnnotation"/>
+    <genClasses ecoreClass="interface.ecore#//SchedulingConstraintAnnotation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//SchedulingConstraintAnnotation/schedulingConstraint"/>
+    </genClasses>
   </genPackages>
   <genPackages prefix="PhaseModel" basePackage="hu.bme.mit.gamma.statechart" disposableProviderFactory="true"
       ecorePackage="phase.ecore#/">

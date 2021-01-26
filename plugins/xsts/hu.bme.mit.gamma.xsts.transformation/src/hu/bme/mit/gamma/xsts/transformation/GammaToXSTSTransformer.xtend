@@ -23,6 +23,8 @@ import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ControlFunction
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
+import hu.bme.mit.gamma.statechart.interface_.SchedulingConstraintAnnotation
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.GammaToLowlevelTransformer
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -66,6 +68,7 @@ class GammaToXSTSTransformer {
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension AnalysisModelPreprocessor modelPreprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
+	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
@@ -125,6 +128,7 @@ class GammaToXSTSTransformer {
 		xSts.removeDuplicatedTypes
 		// Setting clock variable increase
 		xSts.setClockVariables
+		_package.setSchedulingAnnotation(schedulingConstraint) // Needed for back-annotation
 		if (transformOrthogonalActions) {
 			logger.log(Level.INFO, "Optimizing orthogonal actions in " + xSts.name)
 			xSts.transform
@@ -401,6 +405,18 @@ class GammaToXSTSTransformer {
 		]
 		xSts.mergedAction = xStsClockSettingAction
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
+	}
+	
+	protected def void setSchedulingAnnotation(
+			hu.bme.mit.gamma.statechart.interface_.Package _package, Integer schedulingConstraint) {
+		if (schedulingConstraint !== null) {
+			if (!_package.annotations.exists[it instanceof SchedulingConstraintAnnotation]) {
+				_package.annotations += createSchedulingConstraintAnnotation => [
+					it.schedulingConstraint = schedulingConstraint.toIntegerLiteral
+				]
+				_package.save
+			}
+		}
 	}
 	
 	protected def void customizeDeclarationNames(XSTS xSts, ComponentInstance instance) {
