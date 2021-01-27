@@ -1,5 +1,7 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
+import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionSerializer
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
@@ -12,8 +14,9 @@ import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerived
 class TraceToPlantUMLTransformer {
 	
 	protected final ExecutionTrace trace
-	
-	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	// Utility
+	protected final extension SpecialEnumLiteralSerializer expressionSerializer =
+		SpecialEnumLiteralSerializer.INSTANCE
 	
 	new(ExecutionTrace trace) {
 		this.trace = trace
@@ -79,5 +82,21 @@ class TraceToPlantUMLTransformer {
 		«ENDFOR»
 		endhnote
 	'''
+	
+}
+
+class SpecialEnumLiteralSerializer extends ExpressionSerializer {
+	// Singleton
+	public static final SpecialEnumLiteralSerializer INSTANCE = new SpecialEnumLiteralSerializer
+	protected new() {}
+	//
+	
+	protected override String _serialize(EnumerationLiteralExpression literalExpression) {
+		val literal = literalExpression.reference
+		val enumType = ecoreUtil.getContainerOfType(literal, TypeDeclaration)
+		val typeName = enumType.name
+		val literalName = literal.name
+		return '''«typeName»::«literalName»'''
+	}
 	
 }

@@ -52,14 +52,13 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
-import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.model.XorExpression;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionSerializer {
 	// Singleton
@@ -67,7 +66,7 @@ public class ExpressionSerializer {
 	protected ExpressionSerializer() {}
 	//
 	
-	
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	protected String _serialize(final ElseExpression expression) {
 		return "else";
