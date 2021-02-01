@@ -277,6 +277,7 @@ class CompositeToUppaalTransformer {
 	}
 	
 	def execute() {
+		unfoldBlocks
 		constantsRule.fireAllCurrent // Top components are constants now
 		while (!areAllParametersTransformed) {
 			parametersRule.fireAllCurrent[!it.instance.areAllArgumentsTransformed]
@@ -357,6 +358,19 @@ class CompositeToUppaalTransformer {
 		cleanUp
 		// The created EMF models are returned
 		return new SimpleEntry<NTA, G2UTrace>(target, traceRoot)
+	}
+	
+	/**
+	 * This way, blocks are supported.
+	 */
+	private def unfoldBlocks() {
+		val blocks = sourceRoot.getAllContentsOfType(hu.bme.mit.gamma.action.model.Block)
+		for (block : blocks) {
+			val actions = newArrayList
+			actions += block.actions
+			block.appendTo(actions)
+			ecoreUtil.remove(block)
+		}
 	}
 	
 	private def createMessageStructType() {

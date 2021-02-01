@@ -74,7 +74,6 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	
 	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();

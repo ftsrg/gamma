@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -529,16 +530,15 @@ class GammaStatechartAnnotator {
 		for (defReference : defReferences) {
 			val originalVariable = defReference.declaration as VariableDeclaration
 			val defVariablePairs =  variableDefs.get(originalVariable)
-			// TODO instead of this, action extend
-			val actionList = defReference.containingActionList
 			for (defVariablePair : defVariablePairs) {
 				val reference = defVariablePair.getOriginalVariableReference
+				val originalAssignment = reference.eContainer as AssignmentStatement
 				val defVariable = defVariablePair.getDefUseVariable
 				if (defReference === reference) {
-					actionList += defVariable.createAssignment(createTrueExpression)
+					originalAssignment.appendTo(defVariable.createAssignment(createTrueExpression))
 				}
 				else {
-					actionList += defVariable.createAssignment(createFalseExpression)
+					originalAssignment.appendTo(defVariable.createAssignment(createFalseExpression))
 				}
 			}
 		}
@@ -823,8 +823,8 @@ class AnnotationNamings {
 	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
 	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
 	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
-	def String getDefVariableName(VariableDeclaration variable) '''def_«variable.name»_«defId++»'''
-	def String getUseVariableName(VariableDeclaration variable) '''use_«variable.name»_«useId++»'''
+	def String getDefVariableName(VariableDeclaration variable) '''«PREFIX»def_«variable.name»_«defId++»«POSTFIX»'''
+	def String getUseVariableName(VariableDeclaration variable) '''«PREFIX»use_«variable.name»_«useId++»«POSTFIX»'''
 	
 }
 
