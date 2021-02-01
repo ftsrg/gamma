@@ -85,12 +85,12 @@ class ModelAnnotatorPropertyGenerator {
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedPortsForOutEvents.nullOrEmpty ||
 				!testedPortsForInteractions.nullOrEmpty || !testedStatesForInteractions.nullOrEmpty ||
 				!testedTransitionsForInteractions.nullOrEmpty ) {
-			val statechartAnnotator = new GammaStatechartAnnotator(newPackage,
+			val annotator = new GammaStatechartAnnotator(newPackage,
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,
 					testedTransitionsForInteractions,
 					senderCoverageCriterion, receiverCoverageCriterion)
-			statechartAnnotator.annotateModel
+			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
 			// We are after model unfolding, so the argument is true
@@ -98,14 +98,17 @@ class ModelAnnotatorPropertyGenerator {
 			generatedPropertyPackage = propertyGenerator.initializePackage(newTopComponent)
 			val formulas = generatedPropertyPackage.formulas
 			formulas += propertyGenerator.createTransitionReachability(
-							statechartAnnotator.getTransitionVariables)
+							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
-							statechartAnnotator.transitionPairAnnotations)
+							annotator.transitionPairAnnotations)
 			formulas += propertyGenerator.createInteractionReachability(
-							statechartAnnotator.getInteractions	)
+							annotator.getInteractions)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
 			formulas += propertyGenerator.createOutEventReachability(
 							testedPortsForOutEvents)
+			
+			formulas += propertyGenerator.createDataflowReachability(annotator.getVariableDefs,
+							annotator.getVariableUses, annotator.dataFlowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)

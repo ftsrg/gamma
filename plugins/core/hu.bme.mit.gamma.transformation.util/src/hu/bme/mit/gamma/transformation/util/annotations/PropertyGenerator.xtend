@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.DefUseReferences
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
@@ -57,7 +58,7 @@ class PropertyGenerator {
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
 	new(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference
@@ -268,6 +269,57 @@ class PropertyGenerator {
 		}
 		return formulas
 	}
+	
+	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
+			DefUseReferences uses, DataFlowCoverageCriterion criterion) {
+		val List<CommentableStateFormula> formulas = newArrayList
+		for (variable : defs.variables) {
+			// Def
+			val ands = newArrayList
+			val auxiliaryDefVariables = defs.getAuxiliaryVariables(variable)
+			val size = auxiliaryDefVariables.size
+			for (var i = 0; i < size; i++) {
+				val and = expressionFactory.createAndExpression
+				ands += and
+				for (var j = 0; j < size; j++) {
+					val auxiliaryVariable = auxiliaryDefVariables.get(j) 
+					val expression = 
+					if (i != j) {
+						expressionFactory.createNotExpression => [
+							it.operand = auxiliaryVariable.createVariableReference
+						]
+					}
+					else {
+						auxiliaryVariable.createVariableReference
+					}
+					and.operands += expression
+				}
+			}
+			// Use
+			for (and : ands) {
+				val auxiliaryUseVariables = uses.getAuxiliaryVariables(variable)
+				if (criterion == DataFlowCoverageCriterion.ALL_DEF) {
+					val or = expressionFactory.createOrExpression
+					for (auxiliaryUseVariable : auxiliaryUseVariables) {
+						or.operands += auxiliaryUseVariable.createVariableReference
+					}
+					and.operands += or
+					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
+					formulas += propertyUtil.createCommentableStateFormula("", stateFormula)
+				}
+				else {
+					for (auxiliaryUseVariable : auxiliaryUseVariables) {
+						val clonedAnd = and.clone
+						clonedAnd.operands += auxiliaryUseVariable.createVariableReference
+						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
+						formulas += propertyUtil.createCommentableStateFormula("Def-use", stateFormula)
+					}
+				}
+			}
+		}
+		return formulas
+	}
+	
 
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {

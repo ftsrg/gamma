@@ -743,3 +743,38 @@ pattern raiseInstanceEvents(raiseEventAction : RaiseEventAction, outInstance : S
 	find raiseInstanceEventOfTransitions(_, raiseEventAction, outInstance, outPort, raisedEvent, inInstance, inPort);
 	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 }
+
+// Data-flow coverage
+
+pattern expressionToExpression(from : Expression, to : Expression) {
+	UnaryExpression.operand(from, to);
+} or {
+	BinaryExpression.leftOperand(from, to);
+} or {
+	BinaryExpression.rightOperand(from, to);
+} or {
+	MultiaryExpression.operands(from, to);
+}
+
+pattern variableDefs(reference : DirectReferenceExpression, variable : VariableDeclaration) {
+	AssignmentStatement.lhs(_assignment, reference);
+	DirectReferenceExpression.declaration(reference, variable);
+}
+
+pattern variableCUses(reference : DirectReferenceExpression, variable : VariableDeclaration) {
+	AssignmentStatement.rhs(_assignment, rhs);
+	find expressionToExpression*(rhs, reference);
+	DirectReferenceExpression.declaration(reference, variable);
+}
+
+pattern variablePUses(reference : DirectReferenceExpression, variable : VariableDeclaration) {
+	neg find variableDefs(reference, variable);
+	neg find variableCUses(reference, variable);
+	DirectReferenceExpression.declaration(reference, variable);
+}
+
+pattern variableUses(reference : DirectReferenceExpression, variable : VariableDeclaration) {
+	find variableCUses(reference, variable);
+} or {
+	find variablePUses(reference, variable);
+}

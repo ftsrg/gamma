@@ -51,6 +51,11 @@
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.timeoutValues"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.removableTransitions"/>
       <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.raiseInstanceEvents"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.expressionToExpression"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variableDefs"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variableCUses"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variablePUses"/>
+      <query-specification fqn="hu.bme.mit.gamma.transformation.util.queries.variableUses"/>
     </group>
   </extension>
 </plugin>

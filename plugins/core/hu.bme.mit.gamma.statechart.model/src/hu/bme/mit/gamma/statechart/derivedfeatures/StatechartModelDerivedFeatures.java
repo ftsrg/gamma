@@ -25,6 +25,7 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -1062,15 +1063,34 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return !state.getRegions().isEmpty();
 	}
 	
-	public static EObject getContainingTransitionOrState(RaiseEventAction action) {
+	public static EObject getContainingTransitionOrState(EObject object) {
 		Transition containingTransition = ecoreUtil.getContainerOfType(
-				action, Transition.class);
+				object, Transition.class);
 		if (containingTransition != null) {
 			// Container is a transition
 			return containingTransition;
 		}
 		// Container is a state
-		return ecoreUtil.getContainerOfType(action, State.class);
+		return ecoreUtil.getContainerOfType(object, State.class);
+	}
+	
+	public static List<Action> getContainingActionList(EObject object) {
+		EObject container = object.eContainer();
+		if (container instanceof Transition) {
+			Transition transition = (Transition) container;
+			return transition.getEffects();
+		}
+		if (container instanceof State) {
+			State state = (State) container;
+			if (state.getEntryActions().contains(object)) {
+				return state.getEntryActions();
+			}
+			if (state.getExitActions().contains(object)) {
+				return state.getExitActions();
+			}
+		}
+		// Nullptr if the object is not contained by any of the above
+		return getContainingActionList(container);
 	}
 	
 	public static int getLiteralIndex(State state) {
