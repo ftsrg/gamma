@@ -276,7 +276,7 @@ class ExpressionPreconditionTransformer {
 				}
 			} 
 			else if (function instanceof ProcedureDeclaration) {
-				result.addAll(function.body.transformAction(new LinkedList<Action>))
+				result.addAll(function.body.transformAction)
 				actionTransformer.returnStack.pop()	//TODO pop in case of lambdas too?
 				
 			} 

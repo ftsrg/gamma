@@ -26,8 +26,6 @@ import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
-import hu.bme.mit.gamma.expression.model.DefaultExpression
-import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
@@ -47,6 +45,7 @@ import java.util.Collection
 import java.util.LinkedList
 import java.util.List
 import java.util.Stack
+import java.util.stream.Collectors
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -84,11 +83,7 @@ class ActionTransformer {
 			return createEmptyStatement
 		}
 		val block = createBlock
-		
-		val following = new LinkedList<Action>
-		following.addAll(actions)
-		val next = following.removeFirst
-		block.actions.addAll(next.transformAction(following))
+		actions.forEach[block.actions.addAll(it.transformAction)]
 		 
 		if (block.actions.size == 1) {
 			return block.actions.head
@@ -102,42 +97,19 @@ class ActionTransformer {
 	
 	// action (trivially) must not be nullf
 	// following (by definition) must not be null (but may be empty)
-	protected def dispatch List<Action> transformAction(Action action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(Action action) {
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(EmptyStatement action, LinkedList<Action> following) {
-		// Create return variable and transform the current action
-		var result = new LinkedList<Action>
-		result += createEmptyStatement
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
-		// Return the result
-		return result
+	protected def dispatch List<Action> transformAction(EmptyStatement action) {
+		return #[createEmptyStatement]
 	}
 	
-	protected def dispatch List<Action> transformAction(Block action, LinkedList<Action> following) {
-		// Create return variable
-		var result = new LinkedList<Action>
-		// Create new following-context variable and do the transformations
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(action.actions)
-
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
-		// Return the result
-		return result
+	protected def dispatch List<Action> transformAction(Block action) {
+		return action.actions.stream.map[transformAction].flatMap[stream].collect(Collectors.toList)
 	}
 	
-	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		var lowlevelPrecondition = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformPrecondition : new LinkedList<Action>
@@ -151,18 +123,11 @@ class ActionTransformer {
 				it.variableDeclaration = variableDeclaration
 			]	
 		}
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
-		// Return the result
+		
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action) {
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Constants are not transformed: their references are inlined
@@ -176,19 +141,11 @@ class ActionTransformer {
 				it.variableDeclaration = variableDeclaration
 			]	
 		}
-		///Delete up to this point if inlining is chosen 
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
-		// Return the result
+		///Delete up to this point if inlining is chosen
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(ExpressionStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Get expression precondition
@@ -202,22 +159,14 @@ class ActionTransformer {
 		} else {	//if function access without inlining
 			throw new IllegalArgumentException("Non-inlined functions currently not allowed: " + action)
 		}
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
-		// Return the result
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(BreakStatement action, LinkedList<Action> following) {
-		return new LinkedList<Action>
+	protected def dispatch List<Action> transformAction(BreakStatement action) {
+		return #[]
 	}
 	
-	protected def dispatch List<Action> transformAction(ReturnStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(ReturnStatement action) {
 		// Create return variable and transform the current action (discard the following-context)
 		var result = new LinkedList<Action>
 		if (action.expression !== null) {
@@ -241,58 +190,38 @@ class ActionTransformer {
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(IfStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(IfStatement action) {
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Transform the guards (and their preconditions)
-		var elseFlag = false
 		val List<Expression> guardExpressions = new ArrayList<Expression>
 		val List<Action> guardPreconditions = new ArrayList<Action>
 		for (conditional : action.conditionals) {
 			guardPreconditions.addAll(conditional.guard.transformPrecondition)
 			guardExpressions += conditional.guard.transformExpression.getOnlyElement
-			if (conditional.guard instanceof ElseExpression) {
-				elseFlag = true
-			}
 		}
 		result += guardPreconditions
-		// Transform the statement itself (including the following-context)
+		// Transform the statement itself
 		val transformedAction = createIfStatement => [
 			for (i : 0 .. action.conditionals.size - 1) {
 				it.conditionals += createBranch => [
 					it.guard = guardExpressions.get(i)
 					it.action = createBlock => [
-						val newFollowing = new LinkedList<Action>
-						newFollowing.addAll(following)
-						it.actions += action.conditionals.get(i).action.transformAction(newFollowing)
+						it.actions += action.conditionals.get(i).action.transformAction
 					]
 				]
 			}
-		]
-		if (!elseFlag) {
-			transformedAction.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					val newFollowing = new LinkedList<Action>
-					newFollowing.addAll(following)
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
-				]
-			]
-		}
+		] 
 		result += transformedAction
 		// Return the result
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(SwitchStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(SwitchStatement action) {
 		// No fallthrough functionality!
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Transform the guards (and their preconditions)
-		var defaultFlag = false
 		val List<Expression> guardExpressions = new ArrayList<Expression>
 		val List<Action> guardPreconditions = new ArrayList<Action>
 		guardPreconditions.addAll(action.controlExpression.transformPrecondition)
@@ -300,9 +229,6 @@ class ActionTransformer {
 		for (conditional : action.cases) {
 			guardPreconditions.addAll(conditional.guard.transformPrecondition)
 			guardExpressions += conditional.guard.transformExpression.getOnlyElement
-			if (conditional.guard instanceof DefaultExpression) {
-				defaultFlag = true
-			}
 		}
 		result += guardPreconditions
 		// Transform the statement itself (including the following-context)
@@ -314,32 +240,17 @@ class ActionTransformer {
 						it.rightOperand = guardExpressions.get(i)
 					]
 					it.action = createBlock => [
-						val newFollowing = new LinkedList<Action>
-						newFollowing.addAll(following)
-						it.actions += action.cases.get(i).action.transformAction(newFollowing)
+						it.actions += action.cases.get(i).action.transformAction
 					]
 				]
 			}
 		]
-		if (!defaultFlag) {
-			transformedAction.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					val newFollowing = new LinkedList<Action>
-					newFollowing.addAll(following)
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
-				]
-			]
-		}
 		result += transformedAction
 		// Return the result
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(ForStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(ForStatement action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		// enumerate parameter values
@@ -360,23 +271,19 @@ class ActionTransformer {
 			]
 			unrolledFor += action.body
 		}
-		if(action.then !== null)
+		if(action.then !== null){
 			unrolledFor += action.then
-		// call TRANSFORM on the 'unrolled for' and add to the transformed for
-		val first = unrolledFor.removeFirst
-		result += first.transformAction(unrolledFor)
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
 		}
+		// call TRANSFORM on the 'unrolled for' and add to the transformed for
+		for(Action unrolledAction: unrolledFor){
+			result += unrolledAction.transformAction
+		}
+		
 		// Return the result
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(ChoiceStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(ChoiceStatement action) {
 		// Create return variable
 		var result = new LinkedList<Action>
 		// Transform the guards (and their preconditions)
@@ -401,24 +308,11 @@ class ActionTransformer {
 							it.branches += createBranch => [
 								it.guard = guardExpressions.get(i)
 								it.action = createBlock => [
-									val newFollowing = new LinkedList<Action>
-									newFollowing.addAll(following)
-									it.actions += action.branches.get(i).action.transformAction(newFollowing)
+									it.actions += action.branches.get(i).action.transformAction
 								]
 							]
 						}
 					]
-				]
-			]
-			it.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					val newFollowing = new LinkedList<Action>
-					newFollowing.addAll(following)
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
 				]
 			]
 		]
@@ -427,7 +321,7 @@ class ActionTransformer {
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(AssignmentStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(AssignmentStatement action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		//Get the referred high-level declaration (assuming a single, assignable element)
@@ -492,20 +386,13 @@ class ActionTransformer {
 			]
 		}
 
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
 		// Return the result
 		return result
 	}
 	
 	
 	
-	protected def dispatch List<Action> transformAction(AssertionStatement action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(AssertionStatement action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		var lowlevelPrecondition = action.assertion.transformPrecondition
@@ -523,31 +410,10 @@ class ActionTransformer {
 							]
 							it.rhs = createTrueExpression
 						]
-						val newFollowing = new LinkedList<Action>
-						newFollowing.addAll(following)
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					]
-				]
-				it.conditionals += createBranch => [
-					it.guard = createElseExpression
-					it.action = createBlock => [
-						val newFollowing = new LinkedList<Action>
-						newFollowing.addAll(following)
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
 					]
 				]
 			]
 			
-		} else {	// ignore assertion and continue
-			// Create new following-context variable and transform the following-context
-			var newFollowing = new LinkedList<Action>
-			newFollowing.addAll(following)
-			if(newFollowing.size > 0) {
-				var next = newFollowing.removeFirst()
-				result.addAll(transformAction(next, newFollowing))
-			}
 		}
 		
 		// Return the result
@@ -556,7 +422,7 @@ class ActionTransformer {
 	
 	// Gamma statechart elements
 
-	protected def dispatch List<Action> transformAction(RaiseEventAction action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(RaiseEventAction action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		val port = action.port
@@ -583,18 +449,11 @@ class ActionTransformer {
 			it.rhs = createTrueExpression
 		]
 		result += flagRaising
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
 		// Return the result
 		return result
 	}
 
-	protected def dispatch List<Action> transformAction(SetTimeoutAction action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {
 		// Create return variable and transform the current action
 		var result = new LinkedList<Action>
 		val lowlevelTimeout = trace.get(action.timeoutDeclaration)
@@ -608,18 +467,11 @@ class ActionTransformer {
 			]
 		]
 		result += clockInit
-		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
-		}
 		// Return the result
 		return result
 	}
 
-	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action, LinkedList<Action> following) {
+	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action) {
 		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
 	}
 }
