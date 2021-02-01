@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
+import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -519,6 +520,7 @@ class GammaStatechartAnnotator {
 		}
 		val defReferences = newHashSet
 		val defMatcher = VariableDefs.Matcher.on(engine)
+		// TODO optimize unnecessary variables: check def and use references here
 		defReferences += defMatcher.allValuesOfreference
 //			.filter[dataFlowCoverableVariables.contains(it)]
 		for (defReference : defReferences) {
@@ -565,8 +567,17 @@ class GammaStatechartAnnotator {
 			val referredVariable = useReference.declaration as VariableDeclaration
 			val useVariable = useReference.createDefUseVariable(variableUses,
 				annotationNamings.getUseVariableName(referredVariable), true)
-			val actionList = useReference.containingActionList
-			actionList += useVariable.createAssignment(createTrueExpression)
+			val containingAction = useReference.getContainerOfType(Action)
+			val assignment = useVariable.createAssignment(createTrueExpression)
+			if (containingAction === null) {
+				// p-use
+				val actionList = useReference.containingActionList
+				actionList += assignment
+			}
+			else {
+				// c-use
+				containingAction.appendTo(assignment)
+			}
 		}
 	}
 	
