@@ -190,4 +190,20 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstancePortReference"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataflowCoverage" eSuperTypes="#//Coverage">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInclude" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceVariableReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableExclude" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//ComponentInstanceVariableReference"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="dataflowCoverageCriterion"
+        eType="#//DataflowCoverageCriterion" defaultValueLiteral="ALL_USE"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="DataflowCoverageCriterion">
+    <eLiterals name="ALL_DEF" literal="ALL_DEF"/>
+    <eLiterals name="ALL_P_USE" value="1"/>
+    <eLiterals name="ALL_C_USE" value="2"/>
+    <eLiterals name="ALL_USE" value="3"/>
+  </eClassifiers>
 </ecore:EPackage>

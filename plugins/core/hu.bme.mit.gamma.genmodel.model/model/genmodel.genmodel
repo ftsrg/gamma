@@ -27,6 +27,12 @@
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionCoverageCriterion/STATES_AND_EVENTS"/>
       <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//InteractionCoverageCriterion/EVENTS"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="genmodel.ecore#//DataflowCoverageCriterion">
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_DEF"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_P_USE"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_C_USE"/>
+      <genEnumLiterals ecoreEnumLiteral="genmodel.ecore#//DataflowCoverageCriterion/ALL_USE"/>
+    </genEnums>
     <genClasses ecoreClass="genmodel.ecore#//GenModel">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/statechartImports"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//GenModel/packageImports"/>
@@ -136,6 +142,11 @@
     <genClasses ecoreClass="genmodel.ecore#//EventCoverage">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventCoverage/portInclude"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//EventCoverage/portExclude"/>
+    </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//DataflowCoverage">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//DataflowCoverage/variableInclude"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//DataflowCoverage/variableExclude"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//DataflowCoverage/dataflowCoverageCriterion"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

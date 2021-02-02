@@ -271,8 +271,11 @@ class PropertyGenerator {
 	}
 	
 	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
-			DefUseReferences uses, DataFlowCoverageCriterion criterion) {
+			DefUseReferences uses, DataflowCoverageCriterion criterion) {
 		val List<CommentableStateFormula> formulas = newArrayList
+		if (defs.variables.nullOrEmpty || uses.variables.nullOrEmpty) {
+			return formulas
+		}
 		for (variable : defs.variables) {
 			// Def
 			val ands = newArrayList
@@ -298,12 +301,18 @@ class PropertyGenerator {
 			// Use
 			for (and : ands) {
 				val auxiliaryUseVariables = uses.getAuxiliaryVariables(variable)
-				if (criterion == DataFlowCoverageCriterion.ALL_DEF) {
-					val or = expressionFactory.createOrExpression
-					for (auxiliaryUseVariable : auxiliaryUseVariables) {
-						or.operands += auxiliaryUseVariable.createVariableReference
+				if (criterion == DataflowCoverageCriterion.ALL_DEF) {
+					if (auxiliaryUseVariables.size > 1) {
+						val or = expressionFactory.createOrExpression
+						for (auxiliaryUseVariable : auxiliaryUseVariables) {
+							or.operands += auxiliaryUseVariable.createVariableReference
+						}
+						and.operands += or
 					}
-					and.operands += or
+					else {
+						val auxiliaryUseVariable = auxiliaryUseVariables.head
+						and.operands += auxiliaryUseVariable.createVariableReference
+					}
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 					formulas += propertyUtil.createCommentableStateFormula("", stateFormula)
 				}

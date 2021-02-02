@@ -73,13 +73,13 @@ class GammaStatechartAnnotator {
 		List<VariablePair>> statechartInteractionVariables = newHashMap // Check: list must be unique
 	protected final List<Interaction> interactions = newArrayList
 	// Data-flow coverage
-	protected boolean DATA_FLOW_COVERAGE
-	protected DataFlowCoverageCriterion DATA_FLOW_COVERAGE_CRITERION
-	protected final Set<VariableDeclaration> dataFlowCoverableVariables = newHashSet
+	protected boolean DATAFLOW_COVERAGE
+	protected DataflowCoverageCriterion DATAFLOW_COVERAGE_CRITERION
+	protected final Set<VariableDeclaration> dataflowCoverableVariables = newHashSet
 	protected final Map<VariableDeclaration, /* Original variable whose def is marked */
-		List<DataFlowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs = newHashMap
-	protected final Map<VariableDeclaration, /* Original variable whose def is marked */
-		List<DataFlowReferenceVariable> /* Reference-variable pairs denoting if the original variable is used */> variableUses = newHashMap
+		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs = newHashMap
+	protected final Map<VariableDeclaration, /* Original variable whose use is marked */
+		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is used */> variableUses = newHashMap
 	// Factories
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
@@ -93,11 +93,13 @@ class GammaStatechartAnnotator {
 			Collection<SynchronousComponentInstance> transitionCoverableComponents,
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
-			Collection<Transition> interactionCoverableTransitions) {
+			Collection<Transition> interactionCoverableTransitions,
+			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion) {
 		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
 			interactionCoverablePorts, interactionCoverableStates,
 			interactionCoverableTransitions, InteractionCoverageCriterion.EVERY_INTERACTION,
-				InteractionCoverageCriterion.EVERY_INTERACTION)
+				InteractionCoverageCriterion.EVERY_INTERACTION,
+			dataflowCoverableVariables, dataflowCoverageCriterion)
 	}
 	
 	new(Package gammaPackage,
@@ -105,7 +107,8 @@ class GammaStatechartAnnotator {
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
 			Collection<Transition> interactionCoverableTransitions,
-			InteractionCoverageCriterion senderInteractionTuple, InteractionCoverageCriterion receiverInteractionTuple) {
+			InteractionCoverageCriterion senderInteractionTuple, InteractionCoverageCriterion receiverInteractionTuple,
+			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
 		if (!transitionCoverableComponents.empty) {
@@ -132,9 +135,11 @@ class GammaStatechartAnnotator {
 			this.interactionCoverableStates += interactionCoverableStates
 			this.interactionCoverableTransitions += interactionCoverableTransitions
 		}
-		// TODO
-		this.DATA_FLOW_COVERAGE = true
-		this.DATA_FLOW_COVERAGE_CRITERION = DataFlowCoverageCriterion.ALL_USE
+		if (!dataflowCoverableVariables.isEmpty) {
+			this.DATAFLOW_COVERAGE = true
+			this.dataflowCoverableVariables += dataflowCoverableVariables
+			this.DATAFLOW_COVERAGE_CRITERION = dataflowCoverageCriterion
+		}
 	}
 	
 	// Transition coverage
@@ -494,7 +499,7 @@ class GammaStatechartAnnotator {
 	// Data-flow coverage
 	
 	protected def createDefUseVariable(DirectReferenceExpression reference,
-			Map<VariableDeclaration, List<DataFlowReferenceVariable>> defUseMap,
+			Map<VariableDeclaration, List<DataflowReferenceVariable>> defUseMap,
 			String name, boolean isResetable) {
 		val statechart = reference.containingStatechart
 		val referredVariable = reference.declaration as VariableDeclaration
@@ -507,7 +512,7 @@ class GammaStatechartAnnotator {
 			defUseMap.put(referredVariable, newArrayList)
 		}
 		val variableDefList = defUseMap.get(referredVariable)
-		variableDefList += new DataFlowReferenceVariable(reference, defUseVariable)
+		variableDefList += new DataflowReferenceVariable(reference, defUseVariable)
 		if (isResetable) {
 			defUseVariable.designateVariableResetable
 		}
@@ -515,14 +520,39 @@ class GammaStatechartAnnotator {
 	}
 	
 	def annotateModelForDataFlowCoverage() {
-		if (!DATA_FLOW_COVERAGE) {
+		if (!DATAFLOW_COVERAGE) {
 			return
 		}
 		val defReferences = newHashSet
 		val defMatcher = VariableDefs.Matcher.on(engine)
-		// TODO optimize unnecessary variables: check def and use references here
 		defReferences += defMatcher.allValuesOfreference
-//			.filter[dataFlowCoverableVariables.contains(it)]
+		
+		val useReferences = newHashSet
+		switch (DATAFLOW_COVERAGE_CRITERION) {
+			case ALL_P_USE: {
+				val useMatcher = VariablePUses.Matcher.on(engine)
+				useReferences += useMatcher.allValuesOfreference
+			}
+			case ALL_C_USE: {
+				val useMatcher = VariableCUses.Matcher.on(engine)
+				useReferences += useMatcher.allValuesOfreference
+			}
+			case ALL_DEF,
+			case ALL_USE: {
+				val useMatcher = VariableUses.Matcher.on(engine)
+				useReferences += useMatcher.allValuesOfreference
+			}
+		}
+		// Optimization
+		val consideredVariables = newHashSet
+		consideredVariables += defMatcher.allValuesOfvariable
+		consideredVariables.retainAll(useReferences.map[it.declaration].toSet)
+		consideredVariables.retainAll(dataflowCoverableVariables) // Only considered vars
+		
+		defReferences.removeIf[!consideredVariables.contains(it.declaration)]
+		useReferences.removeIf[!consideredVariables.contains(it.declaration)]
+		
+		// Def
 		for (defReference : defReferences) {
 			val referredVariable = defReference.declaration as VariableDeclaration
 			defReference.createDefUseVariable(variableDefs,
@@ -544,25 +574,7 @@ class GammaStatechartAnnotator {
 				}
 			}
 		}
-		val useReferences = newHashSet
-		switch (DATA_FLOW_COVERAGE_CRITERION) {
-			case ALL_P_USE: {
-				val useMatcher = VariablePUses.Matcher.on(engine)
-				useReferences += useMatcher.allValuesOfreference
-//					.filter[dataFlowCoverableVariables.contains(it)]
-			}
-			case ALL_C_USE: {
-				val useMatcher = VariableCUses.Matcher.on(engine)
-				useReferences += useMatcher.allValuesOfreference
-//					.filter[dataFlowCoverableVariables.contains(it)]
-			}
-			case ALL_DEF,
-			case ALL_USE: {
-				val useMatcher = VariableUses.Matcher.on(engine)
-				useReferences += useMatcher.allValuesOfreference
-//					.filter[dataFlowCoverableVariables.contains(it)]
-			}
-		}
+		// Use
 		for (useReference : useReferences) {
 			val referredVariable = useReference.declaration as VariableDeclaration
 			val useVariable = useReference.createDefUseVariable(variableUses,
@@ -669,8 +681,8 @@ class GammaStatechartAnnotator {
 		return new DefUseReferences(this.variableUses)
 	}
 	
-	def getDataFlowCoverageCriterion() {
-		return this.DATA_FLOW_COVERAGE_CRITERION
+	def getDataflowCoverageCriterion() {
+		return this.DATAFLOW_COVERAGE_CRITERION
 	}
 	
 	// Entry point
@@ -787,16 +799,16 @@ class GammaStatechartAnnotator {
 	}
 	
 	@Data
-	static class DataFlowReferenceVariable {
+	static class DataflowReferenceVariable {
 		DirectReferenceExpression originalVariableReference
 		VariableDeclaration defUseVariable
 	}
 	
 	static class DefUseReferences {
 		final Map<VariableDeclaration, /* Original variable whose def is marked */
-			List<DataFlowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs
+			List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs
 		
-		new(Map<VariableDeclaration, List<DataFlowReferenceVariable>> variableDefs) {
+		new(Map<VariableDeclaration, List<DataflowReferenceVariable>> variableDefs) {
 			this.variableDefs = variableDefs
 		}
 		
@@ -843,6 +855,6 @@ enum InteractionCoverageCriterion {
 	EVERY_INTERACTION, STATES_AND_EVENTS, EVENTS
 }
 
-enum DataFlowCoverageCriterion {
+enum DataflowCoverageCriterion {
 	ALL_DEF, ALL_P_USE, ALL_C_USE, ALL_USE
 }

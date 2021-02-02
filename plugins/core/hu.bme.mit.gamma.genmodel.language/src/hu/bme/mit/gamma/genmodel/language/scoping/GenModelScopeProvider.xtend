@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.genmodel.model.YakinduCompilation
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.property.model.PropertyModelPackage
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
@@ -72,6 +73,17 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 			if (componentInstance !== null) {
 				val ports = componentInstance.derivedType.allPorts
 				return Scopes.scopeFor(ports)
+			}
+		}
+		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_VARIABLE_REFERENCE__VARIABLE) {
+			val componentInstanceReference = context as ComponentInstanceVariableReference
+			val componentInstance = componentInstanceReference.instance.componentInstanceHierarchy.last
+			if (componentInstance !== null) {
+				val type = componentInstance.derivedType
+				if (type instanceof StatechartDefinition) {
+					val variables = type.variableDeclarations
+					return Scopes.scopeFor(variables)
+				}
 			}
 		}
 		if (reference == PropertyModelPackage.Literals.COMPONENT_INSTANCE_STATE_CONFIGURATION_REFERENCE__REGION) {

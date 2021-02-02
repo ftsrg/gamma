@@ -17,6 +17,7 @@ import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as composite
 import "http://www.mit.bme.hu/gamma/genmodel/Model"
 import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 import "http://www.mit.bme.hu/gamma/property/Model" as property
+import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
@@ -150,6 +151,10 @@ ComponentInstancePortReference returns property::ComponentInstancePortReference:
 	instance=ComponentInstanceReference '.' port=[interface::Port]
 ;
 
+ComponentInstanceVariableReference returns property::ComponentInstanceVariableReference:
+	instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
+;
+
 ComponentInstanceStateConfigurationReference returns property::ComponentInstanceStateConfigurationReference:
 	instance=ComponentInstanceReference '.' region=[statechart::Region] '.' state=[statechart::State] 
 ;
@@ -186,7 +191,8 @@ enum AnalysisLanguage returns AnalysisLanguage:
 ;
 
 Coverage returns Coverage:
-	StateCoverage | TransitionCoverage | TransitionPairCoverage | OutEventCoverage | InteractionCoverage
+	StateCoverage | TransitionCoverage | TransitionPairCoverage |
+		OutEventCoverage | InteractionCoverage | DataflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -234,8 +240,22 @@ InteractionCoverage returns InteractionCoverage:
 	'}')?
 ;
 
+DataflowCoverage returns DataflowCoverage:
+	{DataflowCoverage} 'dataflow-coverage' ('{' 
+		('coverage-criterion' ':' dataflowCoverageCriterion=DataflowCoverageCriterion)?
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('variable-include' ':' '[' variableInclude+=ComponentInstanceVariableReference (',' variableInclude+=ComponentInstanceVariableReference)* ']')?
+		('variable-exclude' ':' '[' variableExclude+=ComponentInstanceVariableReference (',' variableExclude+=ComponentInstanceVariableReference)* ']')?
+	'}')?
+;
+
 enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
 	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
+;
+
+enum DataflowCoverageCriterion returns DataflowCoverageCriterion:
+	ALL_DEF = 'all-def' | ALL_C_USE = 'all-c-use' | ALL_P_USE = 'all-p-use' | ALL_USE = 'all-use'
 ;
 
 Verification returns Verification:
