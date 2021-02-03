@@ -553,15 +553,16 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
-	// Values (variables, parameters and constants)	
+	
+	// Values (variables, parameters and constants)
+	
 	public Set<ValueDeclaration> getReferredValues(final Expression expression) {
-		Set<ValueDeclaration> referred = new HashSet<>();
+		Set<ValueDeclaration> referred = new HashSet<ValueDeclaration>();
 		referred.addAll(getReferredVariables(expression));
 		referred.addAll(getReferredParameters(expression));
 		referred.addAll(getReferredConstants(expression));
 		return referred;
 	}
-
 	
 	// Initial values of types
 
@@ -649,14 +650,24 @@ public class ExpressionUtil {
 	}
 	
 	// Types
-	public TypeDefinition findTypeDefinitionOfType(Type t) {
-		if (t instanceof TypeDefinition) {
-			return (TypeDefinition) t;
-		} else {	// t instanceof TypeReference
-			TypeReference tr = (TypeReference) t;
-			TypeDeclaration td = tr.getReference();
-			return findTypeDefinitionOfType(td.getType());
+	
+	public TypeDefinition findTypeDefinitionOfType(Type type) {
+		if (type instanceof TypeDefinition) {
+			return (TypeDefinition) type;
 		}
+		else {
+			// type instanceof TypeReference
+			TypeReference typeReference = (TypeReference) type;
+			TypeDeclaration typeDeclaration = typeReference.getReference();
+			return findTypeDefinitionOfType(typeDeclaration.getType());
+		}
+	}
+	
+	public TypeDeclaration wrapIntoDeclaration(Type type, String name) {
+		TypeDeclaration declaration = factory.createTypeDeclaration();
+		declaration.setName(name);
+		declaration.setType(type);
+		return declaration;
 	}
 	
 	public AndExpression connectThroughNegations(VariableDeclaration ponate,

@@ -10,8 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -25,17 +30,12 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import java.util.HashMap
+import java.util.List
 import java.util.Map
 import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
-import java.util.List
-import hu.bme.mit.gamma.expression.model.ValueDeclaration
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
-import hu.bme.mit.gamma.expression.model.SelectExpression
 
 package class Trace {
 
