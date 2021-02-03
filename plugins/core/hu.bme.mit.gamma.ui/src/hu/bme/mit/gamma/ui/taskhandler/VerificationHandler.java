@@ -35,14 +35,14 @@ import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
+import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
-import hu.bme.mit.gamma.ui.taskhandler.verification.AbstractVerification;
-import hu.bme.mit.gamma.ui.taskhandler.verification.ThetaVerification;
-import hu.bme.mit.gamma.ui.taskhandler.verification.UppaalVerification;
-import hu.bme.mit.gamma.ui.taskhandler.verification.XSTSUppaalVerification;
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
+import hu.bme.mit.gamma.uppaal.verification.XSTSUppaalVerification;
+import hu.bme.mit.gamma.verification.util.AbstractVerification;
 
 public class VerificationHandler extends TaskHandler {
 
