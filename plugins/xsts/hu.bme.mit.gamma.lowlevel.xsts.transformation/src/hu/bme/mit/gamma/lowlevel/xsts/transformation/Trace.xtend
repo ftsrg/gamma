@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -48,12 +49,14 @@ import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
 package class Trace {
-	// Trace model factory
-	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Trace model
 	protected final L2STrace trace
 	// Tracing engine
 	protected final ViatraQueryEngine tracingEngine
+	// Trace model factory
+	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
+	// Auxiliary
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -147,6 +150,15 @@ package class Trace {
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelVariable(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	def delete(VariableDeclaration xStsVariable) {
+		checkArgument(xStsVariable !== null)
+		val traces = trace.traces.filter(hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.VariableTrace)
+			.filter[it.XStsVariable === xStsVariable].toSet
+		for (trace : traces) {
+			trace.remove
+		}
 	}
 	
 	// Region - variable

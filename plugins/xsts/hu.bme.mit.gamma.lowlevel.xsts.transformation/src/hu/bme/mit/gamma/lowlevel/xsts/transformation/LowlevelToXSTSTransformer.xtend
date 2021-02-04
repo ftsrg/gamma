@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComparisons
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
@@ -25,6 +26,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.NotReadVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OutEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.PlainVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ReferredEvents
@@ -811,7 +813,35 @@ class LowlevelToXSTSTransformer {
 		// Variable inlining
 		val inliner = VariableInliner.INSTANCE
 		inliner.inline(xSts.mergedAction)
+		inliner.inline(xSts.entryEventAction)
+		deleteNotReadTransientVariables
 		xSts.mergedAction = xSts.mergedAction.optimize
+		xSts.entryEventAction = xSts.entryEventAction.optimize
+	}
+	
+	protected def deleteNotReadTransientVariables() {
+//		val transitionSave = newArrayList
+//		transitionSave += this.xSts.transitions
+		// Needed to retrieve NotReadVariables as some 
+		// unoptimized XTransitions may reference some variables
+		this.xSts.transitions.clear
+		
+		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
+		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
+				.filter[it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
+		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
+		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
+			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
+			for (assignment : assignments) {
+				assignment.remove
+			}
+			notReadTransientXStsVariable.delete
+			trace.delete(notReadTransientXStsVariable)
+		}
+		
+		// Some "local" variables might have been deleted, thus,
+		// the original transitions cannot be serialized
+//		this.xSts.transitions += transitionSave
 	}
 	
 	protected def eliminateNullActions() {

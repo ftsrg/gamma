@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.plantuml.transformation
 
 import hu.bme.mit.gamma.action.model.Action
-import hu.bme.mit.gamma.action.model.Statement
 import hu.bme.mit.gamma.statechart.interface_.AnyTrigger
 import hu.bme.mit.gamma.statechart.interface_.EventTrigger
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference

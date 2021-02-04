@@ -4,14 +4,12 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
@@ -21,9 +19,6 @@ class VariableInliner {
 	public static final VariableInliner INSTANCE =  new VariableInliner
 	protected new() {}
 	//
-	
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
@@ -59,20 +54,6 @@ class VariableInliner {
 		// "Commonizing" the values into a new map, that is,
 		// deleting the values that we are not aware of anymore
 		val commonizedValues = branchValueList.commonizeMaps
-		// Commonizing at the end of the branches
-//		val size = branchValueList.size
-//		for (var i = 0; i < size; i++) {
-//			val branchValues = branchValueList.get(i)
-//			val branch = subactions.get(i)
-//			val thrownValues = newHashSet
-//			thrownValues += branchValues.keySet
-//			thrownValues -= commonizedValues.keySet
-//			for (thrownValue : thrownValues) {
-//				val value = branchValues.get(thrownValue).getValue
-//				val commonizerAction = thrownValue.createAssignmentAction(value)
-//				branch.appendToAction(commonizerAction)
-//			}
-//		}
 		
 		// Setting the map
 		values.clear

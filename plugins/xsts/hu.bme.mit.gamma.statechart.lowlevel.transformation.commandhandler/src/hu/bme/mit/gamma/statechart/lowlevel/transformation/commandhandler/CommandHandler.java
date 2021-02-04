@@ -93,6 +93,7 @@ public class CommandHandler extends AbstractHandler {
 		LowlevelToXSTSTransformer lowlevelTransformer = new LowlevelToXSTSTransformer(lowlevelPackage);
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
+		L2STrace traceability = resultModels.getValue();
 		lowlevelTransformer.dispose();
 		// XSTS to Java serializer
 		hu.bme.mit.gamma.xsts.codegeneration.java.ActionSerializer javaActionSerializer = null;
@@ -116,7 +117,9 @@ public class CommandHandler extends AbstractHandler {
 		}
 		// Saving the xSTS model
 		ecoreUtil.normalSave(xSts, modelFolderUri, fileNameWithoutExtenstion + ".gsts");
-		ecoreUtil.normalSave(resultModels.getValue(), modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
+		// Cannot be serialized anymore, as it references some XTransitions that are now not
+		// serialized due to variable inlinings (see LowlevelToXSTSTransformer.deleteNotReadTransientVariables)
+//		ecoreUtil.normalSave(traceability, modelFolderUri, "." + fileNameWithoutExtenstion + ".l2s");
 		logger.log(Level.INFO, "The Gamma low level - xSTS transformation has been finished.");
 		logger.log(Level.INFO, "Starting xSTS serialization.");
 		// Serializing the xSTS
