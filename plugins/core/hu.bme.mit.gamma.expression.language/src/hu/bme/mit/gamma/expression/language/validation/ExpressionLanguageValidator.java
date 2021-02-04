@@ -58,6 +58,9 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
+import hu.bme.mit.gamma.expression.util.ExpressionType;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -149,11 +152,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageValidatorUtil.
+		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
 				findAccessExpressionTypeDefinition(recordAccessExpression);
 		// check if the referred declaration is accessible
 		Declaration referredDeclaration = 
-				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
+				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
 		if (!(referredDeclaration instanceof ValueDeclaration)) {
 			error("The referred declaration is not accessible as a record!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
@@ -208,7 +211,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	public void checkArrayAccessExpression(ArrayAccessExpression expression) {
 		// check if the referred declaration is accessible
 		Declaration referredDeclaration = 
-				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
 		if (!(referredDeclaration instanceof ValueDeclaration)) {
 			error("The referred declaration is not accessible as an array!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
@@ -225,7 +228,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	public void checkSelectExpression(SelectExpression expression){
 		// check if the referred object
 		Declaration referredDeclaration = 
-				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
 		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
 			// TODO check if array type
 			error("The specified object is not selectable!",

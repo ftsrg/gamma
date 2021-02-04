@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.expression.language.validation;
+package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,13 +20,12 @@ import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 
-public class ExpressionLanguageValidatorUtil {
+public class ExpressionLanguageUtil {
 	
 	public static TypeDefinition findAccessExpressionTypeDefinition(AccessExpression accessExpression) {
 		Declaration instanceDeclaration = findAccessExpressionInstanceDeclaration(accessExpression);

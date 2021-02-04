@@ -45,10 +45,13 @@ import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
+import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
@@ -93,8 +96,7 @@ public class ExpressionUtil {
 					integerLiteralExpression.setValue(BigInteger.valueOf(value));
 					evaluatedExpressions.add(integerLiteralExpression);
 				}
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 			// Excluding branches
 			try {
 				// Boolean
@@ -103,14 +105,13 @@ public class ExpressionUtil {
 					booleanValues.add(bool);
 					evaluatedExpressions.add(bool ? factory.createTrueExpression() : factory.createFalseExpression());
 				}
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 		}
 		return evaluatedExpressions;
 	}
 	
-	public Collection<EnumerationLiteralExpression> mapToEnumerationLiterals(EnumerationTypeDefinition type,
-			Collection<Expression> expressions) {
+	public Collection<EnumerationLiteralExpression> mapToEnumerationLiterals(
+			EnumerationTypeDefinition type, Collection<Expression> expressions) {
 		List<EnumerationLiteralExpression> literals = new ArrayList<EnumerationLiteralExpression>();
 		for (Expression expression : expressions) {
 			int index = evaluator.evaluate(expression);
@@ -126,26 +127,43 @@ public class ExpressionUtil {
 			return true;
 		}
 		if (expression instanceof BinaryExpression) {
-			if (expression instanceof EqualityExpression || expression instanceof GreaterEqualExpression
-					|| expression instanceof LessEqualExpression) {
-				BinaryExpression binaryExpression = (BinaryExpression) expression;
-				Expression leftOperand = binaryExpression.getLeftOperand();
-				Expression rightOperand = binaryExpression.getRightOperand();
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			Expression leftOperand = binaryExpression.getLeftOperand();
+			Expression rightOperand = binaryExpression.getRightOperand();
+			if (expression instanceof EqualityExpression ||
+					expression instanceof GreaterEqualExpression ||
+					expression instanceof LessEqualExpression) {
 				if (ecoreUtil.helperEquals(leftOperand, rightOperand)) {
 					return true;
 				}
-				if (!(leftOperand instanceof EnumerationLiteralExpression
-						&& rightOperand instanceof EnumerationLiteralExpression)) {
-					// Different enum literals could be evaluated to the same value
-					try {
-						int leftValue = evaluator.evaluate(leftOperand);
-						int rightValue = evaluator.evaluate(rightOperand);
-						if (leftValue == rightValue) {
+			}
+			if (!(leftOperand instanceof EnumerationLiteralExpression
+					&& rightOperand instanceof EnumerationLiteralExpression)) {
+				// Different enum literals could be evaluated to the same value
+				try {
+					int leftValue = evaluator.evaluate(leftOperand);
+					int rightValue = evaluator.evaluate(rightOperand);
+					if (leftValue == rightValue) {
+						if (expression instanceof EqualityExpression ||
+								expression instanceof GreaterEqualExpression ||
+								expression instanceof LessEqualExpression) {
 							return true;
 						}
-					} catch (IllegalArgumentException e) {
-						// One of the arguments is not evaluable
 					}
+					else if (leftValue < rightValue) {
+						if (expression instanceof LessExpression ||
+								expression instanceof LessEqualExpression) {
+							return true;
+						}
+					}
+					else { // leftValue > rightValue
+						if (expression instanceof GreaterExpression ||
+								expression instanceof GreaterEqualExpression) {
+							return true;
+						}
+					}
+				} catch (IllegalArgumentException e) {
+					// One of the arguments is not evaluable
 				}
 			}
 		}
@@ -178,25 +196,48 @@ public class ExpressionUtil {
 			return true;
 		}
 		// Checking 'Red == Green' kind of assumptions
-		if (expression instanceof EqualityExpression) {
-			EqualityExpression equilityExpression = (EqualityExpression) expression;
-			Expression leftOperand = equilityExpression.getLeftOperand();
-			Expression rightOperand = equilityExpression.getRightOperand();
-			if (leftOperand instanceof EnumerationLiteralExpression
-					&& rightOperand instanceof EnumerationLiteralExpression) {
-				EnumerationLiteralDefinition leftReference = ((EnumerationLiteralExpression) leftOperand)
-						.getReference();
-				EnumerationLiteralDefinition rightReference = ((EnumerationLiteralExpression) rightOperand)
-						.getReference();
-				if (!ecoreUtil.helperEquals(leftReference, rightReference)) {
-					return true;
+		if (expression instanceof BinaryExpression) {
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			Expression leftOperand = binaryExpression.getLeftOperand();
+			Expression rightOperand = binaryExpression.getRightOperand();
+			if (expression instanceof EqualityExpression) {
+				if (leftOperand instanceof EnumerationLiteralExpression
+						&& rightOperand instanceof EnumerationLiteralExpression) {
+					EnumerationLiteralDefinition leftReference =
+							((EnumerationLiteralExpression) leftOperand).getReference();
+					EnumerationLiteralDefinition rightReference =
+							((EnumerationLiteralExpression) rightOperand).getReference();
+					if (!ecoreUtil.helperEquals(leftReference, rightReference)) {
+						return true;
+					}
 				}
 			}
 			try {
 				int leftValue = evaluator.evaluate(leftOperand);
 				int rightValue = evaluator.evaluate(rightOperand);
-				if (leftValue != rightValue) {
-					return true;
+				if (leftValue == rightValue) {
+					if (expression instanceof InequalityExpression || 
+							expression instanceof LessExpression ||
+							expression instanceof GreaterExpression) {
+						return true;
+					}
+				}
+				else { // leftValue != rightValue
+					if (expression instanceof EqualityExpression) {
+						return true;
+					}
+					if (leftValue < rightValue) {
+						if (expression instanceof GreaterExpression ||
+								expression instanceof GreaterEqualExpression) {
+							return true;
+						}
+					}
+					else { // leftValue > rightValue
+						if (expression instanceof LessExpression ||
+								expression instanceof LessEqualExpression) {
+							return true;
+						}
+					}
 				}
 			} catch (IllegalArgumentException e) {
 				// One of the arguments is not evaluable

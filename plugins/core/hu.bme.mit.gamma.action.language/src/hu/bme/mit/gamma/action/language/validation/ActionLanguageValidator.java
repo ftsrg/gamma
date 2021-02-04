@@ -36,8 +36,6 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
-import hu.bme.mit.gamma.expression.language.validation.ExpressionLanguageValidatorUtil;
-import hu.bme.mit.gamma.expression.language.validation.ExpressionType;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -46,6 +44,8 @@ import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
+import hu.bme.mit.gamma.expression.util.ExpressionType;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
 
@@ -113,7 +113,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	public void checkSelectExpression(SelectExpression expression){
 		// check if the referred object is a value declaration
 		Declaration referredDeclaration = 
-				ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(expression);
+				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
 		System.out.println(referredDeclaration);
 		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
 			return;

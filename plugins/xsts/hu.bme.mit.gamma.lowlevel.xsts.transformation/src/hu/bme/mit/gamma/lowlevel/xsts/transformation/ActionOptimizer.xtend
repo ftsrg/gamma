@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -30,7 +32,6 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ActionOptimizer {
 	// Singleton
@@ -41,6 +42,7 @@ class ActionOptimizer {
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Model factories
+	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
 	def optimize(Action action) {
@@ -58,6 +60,7 @@ class ActionOptimizer {
 			newXStsAction.deleteTrivialNonDeterministicActions
 			newXStsAction = newXStsAction.optimizeParallelActions // Might be resource intensive
 			newXStsAction.deleteUnnecessaryAssumeActions // Not correct in other transformation implementations
+			newXStsAction.deleteDefinitelyFalseBranches
 		}
 		return newXStsAction
 	}
@@ -71,7 +74,7 @@ class ActionOptimizer {
 	
 	protected def dispatch Action simplifyCompositeActions(CompositeAction action) {
 		var xStsActionList = newLinkedList
-		xStsActionList += action.actions.map[it.clone(true, true)] /* Cloning the action so the original
+		xStsActionList += action.actions.map[it.clone] /* Cloning the action so the original
 		 * does not change, which is a necessary quality in the optimization process */
 		if (xStsActionList.size > 1) {
 			val remainingXStsActions = newLinkedList
@@ -127,7 +130,7 @@ class ActionOptimizer {
 	
 	protected def dispatch List<Action> simplifySequentialActions(CompositeAction action, boolean isTop) {
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifySequentialActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -147,7 +150,7 @@ class ActionOptimizer {
 			return newXStsActions
 		}
 		// The assumptions can be true
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			if (xStsSubaction instanceof SequentialAction) {
 				// Subactions of a SequentialAction
 				for (xStsSequentialSubaction : xStsSubaction.actions) {
@@ -165,7 +168,6 @@ class ActionOptimizer {
 		// Not top call, this sequential action must be deleted 
 		return newXStsActions
 	}
-	
 	
 	// Parallel actions
 	
@@ -185,7 +187,7 @@ class ActionOptimizer {
 	
 	protected def dispatch List<Action> simplifyParallelActions(CompositeAction action, boolean isTop) {
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyParallelActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -196,7 +198,7 @@ class ActionOptimizer {
 	 */
 	protected def dispatch List<Action> simplifyParallelActions(ParallelAction action, boolean isTop) {
 		val newXStsActions = newLinkedList
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			if (xStsSubaction instanceof ParallelAction) {
 				// Subactions of a ParallelAction
 				for (xStsParallelSubaction : xStsSubaction.actions) {
@@ -233,7 +235,7 @@ class ActionOptimizer {
 	
 	protected def dispatch List<Action> simplifyOrthogonalActions(CompositeAction action, boolean isTop) {
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyOrthogonalActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -244,7 +246,7 @@ class ActionOptimizer {
 	 */
 	protected def dispatch List<Action> simplifyOrthogonalActions(OrthogonalAction action, boolean isTop) {
 		val newXStsActions = newLinkedList
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			if (xStsSubaction instanceof OrthogonalAction) {
 				// Subactions of a OrthogonalAction
 				for (xStsOrthogonalSubaction : xStsSubaction.actions) {
@@ -281,7 +283,7 @@ class ActionOptimizer {
 	
 	protected def dispatch List<Action> simplifyNonDeterministicActions(CompositeAction action, boolean isTop) {
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+		for (xStsSubaction : action.actions.map[it.clone]) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyNonDeterministicActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -304,7 +306,7 @@ class ActionOptimizer {
 				}
 			}
 		}
-		for (xStsSubaction : actions.reject[coveredXStsActions.contains(it)].map[it.clone(true, true)]) {
+		for (xStsSubaction : actions.reject[coveredXStsActions.contains(it)].map[it.clone]) {
 			if (xStsSubaction instanceof NonDeterministicAction) {
 				// Subactions of a NonDeterministicAction
 				for (xStsNonDeterministicSubaction : xStsSubaction.actions) {
@@ -330,14 +332,14 @@ class ActionOptimizer {
 		// TODO Now all parallel actions are optimized to sequential actions
 		if (true || action.isOptimizableToSequentialAction) {
 			return createSequentialAction => [
-				for (xStsSubaction : xStsSubactions.map[it.clone(true, true)]) {
+				for (xStsSubaction : xStsSubactions.map[it.clone]) {
 					it.actions += xStsSubaction.optimizeParallelActions
 				}
 			]
 		}
 		// This particular parallel action cannot be optimized
 		return createParallelAction => [
-			for (xStsSubaction : xStsSubactions.map[it.clone(true, true)]) {
+			for (xStsSubaction : xStsSubactions.map[it.clone]) {
 				it.actions += xStsSubaction.optimizeParallelActions
 			}
 		]
@@ -345,7 +347,7 @@ class ActionOptimizer {
 	
 	protected def dispatch Action optimizeParallelActions(CompositeAction action) {
 		return create(action.eClass) as CompositeAction => [
-			for (xStsSubaction : action.actions.map[it.clone(true, true)]) {
+			for (xStsSubaction : action.actions.map[it.clone]) {
 				it.actions += xStsSubaction.optimizeParallelActions
 			}
 		]
@@ -506,6 +508,37 @@ class ActionOptimizer {
 			}
 		}
 		return false
+	}
+	
+	// Deletion of false branches
+	
+	protected def dispatch void deleteDefinitelyFalseBranches(Action action) {
+		// No op
+	}
+	
+	protected def dispatch void deleteDefinitelyFalseBranches(CompositeAction action) {
+		for (xStsAction : action.actions) {
+			xStsAction.deleteDefinitelyFalseBranches
+		}
+	}
+	
+	protected def dispatch void deleteDefinitelyFalseBranches(NonDeterministicAction action) {
+		val subactions = newArrayList
+		subactions += action.actions
+		for (branch : subactions) {
+			val firstAction = branch.firstAtomicAction
+			if (firstAction instanceof AssumeAction) {
+				if (firstAction.isDefinitelyFalseAssumeAction) {
+					val falseAssume = createAssumeAction => [
+						it.assumption = expressionFactory.createFalseExpression
+					]
+					branch.replace(falseAssume)
+				}
+				else {
+					branch.deleteDefinitelyFalseBranches
+				}
+			}
+		}
 	}
 	
 }

@@ -1,8 +1,8 @@
 package hu.bme.mit.gamma.property.language.validation
 
-import hu.bme.mit.gamma.expression.language.validation.ExpressionType
-import hu.bme.mit.gamma.expression.language.validation.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.expression.util.ExpressionType
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventParameterReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceEventReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference

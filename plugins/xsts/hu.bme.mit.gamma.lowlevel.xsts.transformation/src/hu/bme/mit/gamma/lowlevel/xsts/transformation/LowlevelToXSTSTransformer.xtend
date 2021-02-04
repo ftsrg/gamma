@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComparisons
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
@@ -807,6 +808,10 @@ class LowlevelToXSTSTransformer {
 		xSts.outEventAction = xSts.outEventAction.optimize
 		/* Note: no optimization on the list of transitions as the
 		 deletion of actions would mean the breaking of the trace. */
+		// Variable inlining
+		val inliner = VariableInliner.INSTANCE
+		inliner.inline(xSts.mergedAction)
+		xSts.mergedAction = xSts.mergedAction.optimize
 	}
 	
 	protected def eliminateNullActions() {

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.expression.language.validation;
+package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,8 +68,6 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.expression.language.validation.ExpressionLanguageValidatorUtil;
 
 public class ExpressionTypeDeterminator {
 	// Singleton
@@ -177,12 +175,12 @@ public class ExpressionTypeDeterminator {
 			return transform(expressionUtil.findTypeDefinitionOfType(type));
 		}
 		if (expression instanceof FunctionAccessExpression) {
-			return transform(ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(((FunctionAccessExpression) expression)).getType());
+			return transform(ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(((FunctionAccessExpression) expression)).getType());
 			// What if it goes through a type reference / declaration?
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression)expression;
-			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
+			TypeDefinition typeDefinition = ExpressionLanguageUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
 			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) typeDefinition;
 			for (FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
 				if (fd.getName().equals(recordAccessExpression.getField())) {
@@ -192,7 +190,7 @@ public class ExpressionTypeDeterminator {
 		}
 		if (expression instanceof SelectExpression) {
 			SelectExpression selectExpression = (SelectExpression)expression;
-			TypeDefinition typeDefinition = ExpressionLanguageValidatorUtil.findAccessExpressionTypeDefinition(selectExpression);
+			TypeDefinition typeDefinition = ExpressionLanguageUtil.findAccessExpressionTypeDefinition(selectExpression);
 			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
 				return transform(arrayTypeDefinition.getElementType());
@@ -204,7 +202,7 @@ public class ExpressionTypeDeterminator {
 				return ExpressionType.ENUMERATION;
 			}
 			else {
-				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration(selectExpression));
+				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(selectExpression));
 			}
 		}
 		if (expression instanceof IfThenElseExpression) {
@@ -372,7 +370,7 @@ public class ExpressionTypeDeterminator {
 			Type declarationType = declaration.getType();
 			return transform(declarationType) == ExpressionType.BOOLEAN;
 		} else if (expression instanceof AccessExpression) {
-			Declaration declaration = ExpressionLanguageValidatorUtil.findAccessExpressionInstanceDeclaration((AccessExpression)expression);
+			Declaration declaration = ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration((AccessExpression)expression);
 			Type declarationType = declaration.getType();
 			return transform(declarationType) == ExpressionType.BOOLEAN;
 		}
@@ -463,7 +461,7 @@ public class ExpressionTypeDeterminator {
 			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
 	}
 	
-	protected EnumerationTypeDefinition getEnumerationType(Type type) {
+	public EnumerationTypeDefinition getEnumerationType(Type type) {
 		EnumerationTypeDefinition enumType = null;
 		if (type instanceof EnumerationTypeDefinition) {
 			enumType = (EnumerationTypeDefinition) type;

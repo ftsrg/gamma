@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
+import hu.bme.mit.gamma.xsts.model.AtomicAction;
+import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.EmptyAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
@@ -104,13 +106,26 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 		}
 		return false;
 	}
-
+	
 	public static boolean isTrivialAssignment(AssumeAction assumeAction, AssignmentAction action) {
 		Expression xStsAssumption = assumeAction.getAssumption();
 		if (xStsAssumption instanceof EqualityExpression) {
 			return isTrivialAssignment((EqualityExpression) xStsAssumption, action);
 		}
 		return false;
+	}
+	
+	public static AtomicAction getFirstAtomicAction(Action action) {
+		if (action instanceof AtomicAction) {
+			return (AtomicAction) action;
+		}
+		CompositeAction compositeAction = (CompositeAction) action;
+		List<Action> actions = compositeAction.getActions();
+		if (actions.isEmpty()) {
+			return null;
+		}
+		Action firstAction = actions.get(0);
+		return getFirstAtomicAction(firstAction);
 	}
 
 	private static boolean isTrivialAssignment(EqualityExpression expression, AssignmentAction action) {
