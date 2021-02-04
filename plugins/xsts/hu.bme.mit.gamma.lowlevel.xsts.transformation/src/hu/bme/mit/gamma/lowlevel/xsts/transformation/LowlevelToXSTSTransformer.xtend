@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComparisons
