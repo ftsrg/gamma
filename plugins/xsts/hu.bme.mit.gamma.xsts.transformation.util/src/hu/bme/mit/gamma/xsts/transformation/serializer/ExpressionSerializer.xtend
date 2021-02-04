@@ -11,10 +11,12 @@
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
@@ -35,6 +37,10 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
 	
 	override String _serialize(ModExpression expression) '''(«expression.leftOperand.serialize» % «expression.rightOperand.serialize»)'''
+	
+	override String _serialize(DivExpression expression) '''(«expression.leftOperand.serialize» / «expression.rightOperand.serialize»)'''
+	
+	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
