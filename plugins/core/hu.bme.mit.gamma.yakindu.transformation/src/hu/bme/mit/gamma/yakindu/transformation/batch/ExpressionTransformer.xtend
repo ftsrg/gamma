@@ -10,27 +10,29 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.yakindu.transformation.batch
 
+import hu.bme.mit.gamma.action.model.ActionModelPackage
+import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.BooleanExpression
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.FalseExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiplyExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
+import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
-import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage
-import hu.bme.mit.gamma.genmodel.model.StatechartCompilation
 import hu.bme.mit.gamma.yakindu.transformation.queries.EventToEvent
 import hu.bme.mit.gamma.yakindu.transformation.queries.ExpressionTraces
 import hu.bme.mit.gamma.yakindu.transformation.queries.Traces
@@ -70,9 +72,6 @@ import org.yakindu.sct.model.stext.stext.EventRaisingExpression
 import org.yakindu.sct.model.stext.stext.EventValueReferenceExpression
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 import org.yakindu.sct.model.stext.stext.VariableDefinition
-import hu.bme.mit.gamma.action.model.ActionModelPackage
-import hu.bme.mit.gamma.action.model.AssignmentStatement
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 /** 
  * Only initializations, guards and effects (actions) should be transformed by this, not triggers.

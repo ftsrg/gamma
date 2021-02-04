@@ -23,10 +23,6 @@ pattern assignmentActions(action : AssignmentAction,
 	find referencedVariables(reference, variable);
 }
 
-private pattern writtenVariables(variable : VariableDeclaration) {
-	find assignmentActions(_, _, variable);
-}
-
 private pattern readVariables(variable : VariableDeclaration) {
 	find referencedVariables(reference, variable);
 	neg find assignmentActions(_, reference, variable);

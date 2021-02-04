@@ -6,6 +6,7 @@ Bundle-Version: 2.4.0.qualifier
 Bundle-Vendor: BME-FTSRG
 Export-Package: hu.bme.mit.gamma.lowlevel.xsts.transformation,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer,
+ hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer,
  hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns
 Require-Bundle: hu.bme.mit.gamma.expression.model,
  hu.bme.mit.gamma.action.model,

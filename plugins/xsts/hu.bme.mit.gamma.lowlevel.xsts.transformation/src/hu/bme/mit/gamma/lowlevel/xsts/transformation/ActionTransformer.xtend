@@ -18,16 +18,15 @@ import hu.bme.mit.gamma.action.model.EmptyStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import java.util.Collection
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import org.eclipse.emf.ecore.EObject
 
 class ActionTransformer {
 	// Model factories

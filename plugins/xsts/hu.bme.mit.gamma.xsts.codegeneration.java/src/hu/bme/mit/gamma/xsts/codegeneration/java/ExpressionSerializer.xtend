@@ -10,11 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
 	// Singleton

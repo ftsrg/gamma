@@ -11,12 +11,12 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
@@ -37,7 +37,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 abstract class ActionPrimer {
 	// Auxiliary objects

@@ -14,8 +14,8 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent

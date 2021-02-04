@@ -30,11 +30,6 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.validation.Check
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
-
-import static extension  hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-
-
 
 /**
  * This class contains custom validation rules. 
