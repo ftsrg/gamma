@@ -8,6 +8,7 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import java.util.List
@@ -28,6 +29,10 @@ class VariableInliner {
 	
 	protected def dispatch void inline(Action action, Map<VariableDeclaration, InlineEntry> values) {
 		throw new IllegalArgumentException
+	}
+	
+	protected def dispatch void inline(EmptyAction action, Map<VariableDeclaration, InlineEntry> values) {
+		// Nop
 	}
 	
 	protected def dispatch void inline(SequentialAction action, Map<VariableDeclaration, InlineEntry> values) {
