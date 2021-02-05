@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -24,72 +34,114 @@ class VariableInliner {
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
 	def inline(Action action) {
-		action.inline(newHashMap)
+		action.inline(newHashMap, newHashMap)
 	}
 	
-	protected def dispatch void inline(Action action, Map<VariableDeclaration, InlineEntry> values) {
+	// The concreteValues and symbolicValues sets are disjunct!
+	
+	protected def dispatch void inline(Action action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		throw new IllegalArgumentException
 	}
 	
-	protected def dispatch void inline(EmptyAction action, Map<VariableDeclaration, InlineEntry> values) {
+	protected def dispatch void inline(EmptyAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		// Nop
 	}
 	
-	protected def dispatch void inline(SequentialAction action, Map<VariableDeclaration, InlineEntry> values) {
+	protected def dispatch void inline(SequentialAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val subactions = newArrayList
 		subactions += action.actions
 		for (subaction : subactions) {
-			subaction.inline(values)
+			subaction.inline(concreteValues, symbolicValues)
 		}
 	}
 	
-	protected def dispatch void inline(NonDeterministicAction action, Map<VariableDeclaration, InlineEntry> values) {
-		val branchValueList = newArrayList
+	protected def dispatch void inline(NonDeterministicAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val branchConcreteValueList = newArrayList
+		val branchSymbolicValueList = newArrayList
 		val subactions = newArrayList
 		subactions += action.actions
 		for (branch : subactions) {
-			val branchValues = newHashMap
-			branchValues += values
+			val branchConcreteValues = newHashMap
+			branchConcreteValues += concreteValues
+			val branchSymbolicValues = newHashMap
+			branchSymbolicValues += symbolicValues
 			// Cloned map
-			branch.inline(branchValues)
-			// Saving the new map
-			branchValueList += branchValues
+			branch.inline(branchConcreteValues, branchSymbolicValues)
+			// Saving the new maps
+			branchConcreteValueList += branchConcreteValues
+			branchSymbolicValueList += branchSymbolicValues
 		}
 		
 		// "Commonizing" the values into a new map, that is,
 		// deleting the values that we are not aware of anymore
-		val commonizedValues = branchValueList.commonizeMaps
+		val commonizedConcreteValues = branchConcreteValueList.commonizeMaps
+		val commonizedSymbolicValues = branchSymbolicValueList.commonizeMaps
 		
-		// Setting the map
-		values.clear
-		values += commonizedValues
+		// Setting the maps
+		concreteValues.clear
+		concreteValues += commonizedConcreteValues
+		symbolicValues.clear
+		symbolicValues += commonizedSymbolicValues
 	}
 	
-	protected def dispatch void inline(AssignmentAction action, Map<VariableDeclaration, InlineEntry> values) {
+	protected def dispatch void inline(AssignmentAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val rhs = action.rhs
-		rhs.inlineVariables(values)
+		rhs.inlineVariables(concreteValues)
 		val lhs = action.lhs
 		if (lhs instanceof DirectReferenceExpression) {
 			val declaration = lhs.declaration
 			if (declaration instanceof VariableDeclaration) {
 				val references = rhs.getSelfAndAllContentsOfType(ReferenceExpression)
 				if (references.empty) { // So it is evaluable
-					if (values.containsKey(declaration)) {
+					if (concreteValues.containsKey(declaration)) {
 						// Removing old assignment action due to the priming problem
-						val oldEntry = values.get(declaration)
+						val oldEntry = concreteValues.get(declaration)
 						val oldAssignment = oldEntry.getLastValueGivingAction
 						oldAssignment.remove
 					}
 					// Adding this new value
-					values += declaration -> new InlineEntry(rhs, action)
+					concreteValues += declaration -> new InlineEntry(rhs, action)
+					symbolicValues -= declaration
+				}
+				else {
+					if (symbolicValues.containsKey(declaration)) {
+						val oldSymbolicEntry = symbolicValues.get(declaration)
+						// Only this single value can be inlined
+						val singletonMap = #{declaration -> oldSymbolicEntry}
+						rhs.inlineVariables(singletonMap)
+						val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
+						oldAssignment.remove
+					}
+					// Removing read variables - if a variable is read, then the
+					// oldAssignment (see previous if) must not be removed
+					symbolicValues.deleteReferencedVariables(rhs)
+					
+					symbolicValues += declaration -> new InlineEntry(rhs, action)
+					concreteValues -= declaration
 				}
 			}
 		}
 	}
 	
-	protected def dispatch void inline(AssumeAction action, Map<VariableDeclaration, InlineEntry> values) {
+	protected def dispatch void inline(AssumeAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
 		val assumption = action.assumption
-		assumption.inlineVariables(values)
+		assumption.inlineVariables(concreteValues) // Only concrete values
+		// Removing read variables - if a variable is read, then the
+		// oldAssignment (see AssignmentAction inline) must not be removed
+		symbolicValues.deleteReferencedVariables(assumption)
+					
 	}
 	
 	// Auxiliary
@@ -130,7 +182,7 @@ class VariableInliner {
 			}
 		}
 		// Removing variables whose value is unknown
-		newBranchValues.keySet.removeAll(contradictingVariables)
+		newBranchValues.keySet -= contradictingVariables
 		return newBranchValues
 	}
 	
@@ -144,6 +196,13 @@ class VariableInliner {
 				clonedValue.replace(reference)
 			}
 		}
+	}
+	
+	protected def deleteReferencedVariables(Map<? super VariableDeclaration, InlineEntry> values,
+			Expression expression) {
+		val references = expression.getSelfAndAllContentsOfType(DirectReferenceExpression)
+		val variables = references.map[it.declaration]
+		values.keySet -= variables
 	}
 	
 	@Data

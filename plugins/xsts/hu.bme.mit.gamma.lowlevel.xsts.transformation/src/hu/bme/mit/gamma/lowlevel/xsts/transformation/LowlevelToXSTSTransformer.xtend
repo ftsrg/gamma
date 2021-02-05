@@ -56,6 +56,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
+import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -813,11 +814,18 @@ class LowlevelToXSTSTransformer {
 		 deletion of actions would mean the breaking of the trace. */
 		// Variable inlining
 		val inliner = VariableInliner.INSTANCE
-		inliner.inline(xSts.mergedAction)
-		inliner.inline(xSts.entryEventAction)
-		deleteNotReadTransientVariables
-		xSts.mergedAction = xSts.mergedAction.optimize
-		xSts.entryEventAction = xSts.entryEventAction.optimize
+		var Action oldMergedAction = null
+		var Action oldEntryEventAction = null
+		while (!oldMergedAction.helperEquals(xSts.mergedAction) ||
+				!oldEntryEventAction.helperEquals(xSts.entryEventAction)) {
+			oldMergedAction = xSts.mergedAction.clone
+			oldEntryEventAction = xSts.entryEventAction.clone
+			inliner.inline(xSts.mergedAction)
+			inliner.inline(xSts.entryEventAction)
+			deleteNotReadTransientVariables
+			xSts.mergedAction = xSts.mergedAction.optimize
+			xSts.entryEventAction = xSts.entryEventAction.optimize
+		}
 	}
 	
 	protected def deleteNotReadTransientVariables() {
@@ -873,11 +881,18 @@ class LowlevelToXSTSTransformer {
 			it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
 		val newMergedAction = createSequentialAction
 		for (resetableVariable : resetableVariables) {
-			newMergedAction.actions += resetableVariable.createAssignmentAction(resetableVariable.initialValue)
+			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
+			val initialValue = resetableVariable.type.initialValueOfType
+			newMergedAction.actions += resetableVariable.createAssignmentAction(initialValue)
 		}
 		newMergedAction.actions += xSts.mergedAction
 		for (transientVariable : transientVariables) {
-			newMergedAction.actions += transientVariable.createAssignmentAction(transientVariable.initialValue)
+			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)
+			val initialValue = transientVariable.type.initialValueOfType
+			val assignment = transientVariable.createAssignmentAction(initialValue)
+			newMergedAction.actions += assignment
+			// To reduce state space in the entry action too in the case of transient variables
+			xSts.entryEventAction.appendToAction(assignment.clone) // Cloning is important
 		}
 		xSts.mergedAction = newMergedAction
 	}

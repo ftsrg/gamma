@@ -141,7 +141,7 @@ package class Trace {
 	def getXStsVariable(VariableDeclaration lowlevelVariable) {
 		checkArgument(lowlevelVariable !== null)
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(lowlevelVariable)
-		checkState(matches.size == 1, matches.size)
+		checkState(matches.size == 1, '''«matches.size» «lowlevelVariable»''')
 		return matches.head
 	}
 	
@@ -150,6 +150,11 @@ package class Trace {
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelVariable(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	def hasXStsVariable(VariableDeclaration lowlevelVariable) {
+		checkArgument(lowlevelVariable !== null)
+		return VariableTrace.Matcher.on(tracingEngine).hasMatch(lowlevelVariable, null)
 	}
 	
 	def delete(VariableDeclaration xStsVariable) {

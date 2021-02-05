@@ -65,16 +65,22 @@ class ActionTransformer {
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {
 		// Create variable reset assignment (variable already transformed, global)
-		return createAssignmentAction => [
-			it.lhs = createDirectReferenceExpression => [
-				it.declaration = trace.getXStsVariable(action.variableDeclaration)
+		val lowlevelVariable = action.variableDeclaration
+		if (trace.hasXStsVariable(lowlevelVariable)) {
+			return createAssignmentAction => [
+				it.lhs = createDirectReferenceExpression => [
+					it.declaration = trace.getXStsVariable(lowlevelVariable)
+				]
+				if (action.variableDeclaration.expression !== null) {
+					it.rhs = lowlevelVariable.expression.transformExpression
+				}
+				else {
+					it.rhs = lowlevelVariable.initialValue.transformExpression
+				}
 			]
-			if (action.variableDeclaration.expression !== null) {
-				it.rhs = action.variableDeclaration.expression.transformExpression
-			} else {
-				it.rhs = action.variableDeclaration.initialValue.transformExpression
-			}
-		]
+		}
+		// The variable has already been optimized (removed)
+		return createEmptyAction
 	}
 	
 	def dispatch Action transformAction(AssignmentStatement action) {
