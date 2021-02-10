@@ -35,15 +35,15 @@ class ThetaVerification extends AbstractVerification {
 			val verifier = new ThetaVerifier
 			callables += new InterruptableCallable<ExecutionTrace> {
 				override ExecutionTrace call() {
-					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with «parameter»''')
+					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with "«parameter»"''')
 					val trace = verifier.verifyQuery(
 						gammaPackage, parameter, modelFile, queries, true, true)
-					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with «parameter» won''')
+					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with "«parameter»" has won''')
 					return trace
 				}
 				override void cancel() {
 					verifier.cancel
-					logger.log(Level.INFO, ''''Thread «Thread.currentThread.name» with «parameter» was cancelled''')
+					logger.log(Level.INFO, '''Theta verification instance with "«parameter»" has been cancelled''')
 				}
 			}
 		}
