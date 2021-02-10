@@ -45,9 +45,21 @@ class ThreadRacer<T> {
 				callable.cancel
 			}
 			override call() throws Exception {
-				val result = callable.call
-				result.fillObject
-				return result
+				try {
+					val result = callable.call
+					if (Thread.currentThread.isInterrupted) {
+						// The thread has been interrupted, the result is not valid
+						return null
+					}
+					result.fillObject
+					return result
+				} catch (Exception e) {
+					if (Thread.currentThread.isInterrupted) {
+						// The thread has been interrupted, the result is not valid
+						return null
+					}
+					throw e // Valid exception
+				}
 			}
 		}
 	}

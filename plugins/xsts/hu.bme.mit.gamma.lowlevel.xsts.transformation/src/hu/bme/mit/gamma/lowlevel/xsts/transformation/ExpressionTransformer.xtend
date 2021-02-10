@@ -59,10 +59,11 @@ class ExpressionTransformer {
 
 	// Key method
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
-		checkState(expression.declaration instanceof VariableDeclaration)
-		val declaration = expression.declaration as VariableDeclaration
+		val declaration = expression.declaration
+		checkState(declaration instanceof VariableDeclaration, declaration)
+		val variableDeclaration = expression.declaration as VariableDeclaration
 		return expression.clone => [
-			it.declaration = trace.getXStsVariable(declaration)
+			it.declaration = trace.getXStsVariable(variableDeclaration)
 		]
 	}
 	

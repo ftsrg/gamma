@@ -98,7 +98,8 @@ class ThetaVerifier extends AbstractVerifier {
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-			return backAnnotator.execute
+			val trace = backAnnotator.execute
+			return trace
 		} finally {
 			if (resultReader !== null) {
 				resultReader.close

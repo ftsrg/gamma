@@ -25,29 +25,25 @@ class ThetaVerification extends AbstractVerification {
 		
 		// --domain PRED_CART --refinement SEQ_ITP // default
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250
-		val defaultParameters = #[defaultParameter,
-			"--domain EXPL --refinement SEQ_ITP --maxenum 250"]
+		val defaultParameters = #[
+			defaultParameter,
+			"--domain EXPL --refinement SEQ_ITP --maxenum 250"
+		]
 		val racer = new ThreadRacer<ExecutionTrace>
 		val callables = <InterruptableCallable<ExecutionTrace>>newArrayList
 		for (parameter : defaultParameters) {
 			val verifier = new ThetaVerifier
 			callables += new InterruptableCallable<ExecutionTrace> {
 				override ExecutionTrace call() {
-					try {
-						logger.log(Level.INFO, "Starting " + parameter)
-						val trace = verifier.verifyQuery(
-							gammaPackage, parameter, modelFile, queries, true, true)
-						logger.log(Level.INFO, parameter + " ended")
-						return trace
-					} catch (Exception e) {
-						// Every kind of exception, as we do not know where the interrupt comes
-						// Note, this way, back-annotation bugs are covered
-						logger.log(Level.INFO, parameter + " has been interrupted")
-						return null
-					}
+					logger.log(Level.INFO, "Starting \"" + parameter + "\"")
+					val trace = verifier.verifyQuery(
+						gammaPackage, parameter, modelFile, queries, true, true)
+					logger.log(Level.INFO, "\"" + parameter + "\"" + " ended")
+					return trace
 				}
 				override void cancel() {
 					verifier.cancel
+					logger.log(Level.INFO, "\"" + parameter + "\"" + " has been cancelled")
 				}
 			}
 		}
