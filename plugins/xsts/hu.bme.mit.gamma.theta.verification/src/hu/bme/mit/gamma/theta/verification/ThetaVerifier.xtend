@@ -46,7 +46,7 @@ class ThetaVerifier extends AbstractVerifier {
 			if (trace === null) {
 				trace = newTrace
 			}
-			else {
+			else if (newTrace !== null) {
 				trace.extend(newTrace)
 			}
 		}

@@ -41,6 +41,7 @@ class ThetaVerification extends AbstractVerification {
 						return trace
 					} catch (Exception e) {
 						// Every kind of exception, as we do not know where the interrupt comes
+						// Note, this way, back-annotation bugs are covered
 						logger.log(Level.INFO, parameter + " has been interrupted")
 						return null
 					}
