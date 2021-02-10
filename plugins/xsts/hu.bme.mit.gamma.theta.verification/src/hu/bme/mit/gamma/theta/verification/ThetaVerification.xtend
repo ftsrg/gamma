@@ -1,11 +1,10 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
-import hu.bme.mit.gamma.util.InterruptableRunnable
+import hu.bme.mit.gamma.util.InterruptableCallable
 import hu.bme.mit.gamma.util.ThreadRacer
 import hu.bme.mit.gamma.verification.util.AbstractVerification
 import java.io.File
-import java.util.ArrayList
 import java.util.logging.Level
 
 class ThetaVerification extends AbstractVerification {
@@ -29,29 +28,29 @@ class ThetaVerification extends AbstractVerification {
 		val defaultParameters = #[defaultParameter,
 			"--domain EXPL --refinement SEQ_ITP --maxenum 250"]
 		val racer = new ThreadRacer<ExecutionTrace>
-		val runnables = new ArrayList<InterruptableRunnable>
+		val callables = <InterruptableCallable<ExecutionTrace>>newArrayList
 		for (parameter : defaultParameters) {
 			val verifier = new ThetaVerifier
-			val runnable = new InterruptableRunnable {
-				override void run() {
+			callables += new InterruptableCallable<ExecutionTrace> {
+				override ExecutionTrace call() {
 					try {
 						logger.log(Level.INFO, "Starting " + parameter)
 						val trace = verifier.verifyQuery(
 							gammaPackage, parameter, modelFile, queries, true, true)
-						racer.setObject(trace)
 						logger.log(Level.INFO, parameter + " ended")
+						return trace
 					} catch (Exception e) {
 						// Every kind of exception, as we do not know where the interrupt comes
 						logger.log(Level.INFO, parameter + " has been interrupted")
+						return null
 					}
 				}
-				override void interrupt() {
+				override void cancel() {
 					verifier.cancel
 				}
 			}
-			runnables += runnable
 		}
-		return racer.execute(runnables)
+		return racer.execute(callables)
 	}
 	
 }
