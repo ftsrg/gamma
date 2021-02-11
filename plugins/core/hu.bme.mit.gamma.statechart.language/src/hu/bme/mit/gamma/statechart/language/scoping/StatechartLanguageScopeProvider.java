@@ -257,7 +257,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
 				return Scopes.scopeFor(typeDeclarations);
 			}
-			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 				Collection<Declaration> declarations = new ArrayList<Declaration>();
 				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
 				declarations.addAll(gammaPackage.getConstantDeclarations());

@@ -56,6 +56,21 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 //			}
 			return parentScope;
 		}
+//		else if (reference == 
+//				ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+//			// The context is NOT an Action
+//			Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
+//			if (actionContainer instanceof Block) {
+//				// First action container is a block, not an assignment
+//				// This means that the Xtext code is being edited
+//				// Let us return every local variable in the block and the parent scopes too
+//				Block block = (Block) actionContainer;
+//				IScope parentScope = getScope(block, reference);
+//				List<VariableDeclaration> localDeclaratations =
+//						actionUtil.getVariableDeclarations(block);
+//				return Scopes.scopeFor(localDeclaratations, parentScope);
+//			}
+//		}
 		return super.getScope(context, reference);
 	}
 	
