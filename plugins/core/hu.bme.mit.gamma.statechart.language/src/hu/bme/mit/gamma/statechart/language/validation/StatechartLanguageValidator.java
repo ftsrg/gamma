@@ -29,6 +29,7 @@ import org.eclipse.xtext.validation.Check;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -135,6 +136,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Override
 	public void checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
+		if (element instanceof VariableDeclaration) {
+			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
+					element, VariableDeclarationStatement.class);
+			if (statement != null) {
+				return; // No op - Action language validator is used here
+			}
+		}
 		if (element instanceof Event) {
 			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
 			checkNames(_interface, Collections.singleton(Event.class), name);

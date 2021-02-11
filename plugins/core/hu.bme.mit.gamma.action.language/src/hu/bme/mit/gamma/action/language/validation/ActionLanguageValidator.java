@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -46,7 +47,6 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
 
 /**
@@ -55,7 +55,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionUtil;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
-	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	
+	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
 	
 	//TODO ???
 	@Check
@@ -105,6 +106,24 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 				checkTypeAndExpressionConformance(variableDeclarationType, assignment.getRhs(), ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS);
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
+			}
+		}
+	}
+	
+	@Check
+	public void checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
+		EObject container = statement.eContainer();
+		if (container instanceof Block) {
+			Block block = (Block) container;
+			String name = statement.getVariableDeclaration().getName();
+			List<VariableDeclaration> precedingVariableDeclarations =
+					actionUtil.getPrecedingVariableDeclarations(block, statement);
+			for (VariableDeclaration precedingVariableDeclaration : precedingVariableDeclarations) {
+				String newName = precedingVariableDeclaration.getName();
+				if (name.equals(newName)) {
+					error("This variable cannot be named " + newName + " as it would enshadow a previous local variable.",
+							ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION);
+				}
 			}
 		}
 	}

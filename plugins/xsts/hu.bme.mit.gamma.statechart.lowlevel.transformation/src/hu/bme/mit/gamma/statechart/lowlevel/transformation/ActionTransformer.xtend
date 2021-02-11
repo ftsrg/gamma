@@ -147,16 +147,20 @@ class ActionTransformer {
 		for (variableDeclaration : variableDeclarations) {
 			// These are transient variables
 			variableDeclaration.annotations += createTransientVariableDeclarationAnnotation
+			val name = variableDeclaration.name
+			val hashCode = variableDeclaration.hashCode
+			variableDeclaration.name = name + hashCode // Giving unique name to local variable
+			// This unique name can be added, as these variables are not back-annotated!
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = variableDeclaration
 			]	
 		}
 		// Create new following-context variable and transform the following-context
-		var newFollowing = new LinkedList<Action>
-		newFollowing.addAll(following)
-		if(newFollowing.size > 0) {
-			var next = newFollowing.removeFirst()
-			result.addAll(transformAction(next, newFollowing))
+		var newFollowing = <Action>newLinkedList
+		newFollowing += following
+		if (newFollowing.size > 0) {
+			val next = newFollowing.removeFirst
+			result += next.transformAction(newFollowing)
 		}
 		// Return the result
 		return result

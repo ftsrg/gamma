@@ -10,6 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.scoping;
 
+import java.util.List;
+
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
+
+import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.util.ActionUtil;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
 /**
  * This class contains custom scoping description.
@@ -19,4 +31,32 @@ package hu.bme.mit.gamma.action.language.scoping;
  */
 public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProvider {
 
+	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
+	
+	@Override
+	public IScope getScope(final EObject context, final EReference reference) {
+		
+		if (context instanceof Action &&
+				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			EObject container = context.eContainer();
+			IScope parentScope = getScope(container, reference);
+			if (container instanceof Block) {
+				Block block = (Block) container;
+				Action action = (Action) context;
+				List<VariableDeclaration> precedingLocalDeclaratations =
+						actionUtil.getPrecedingVariableDeclarations(block, action);
+				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
+			}
+//			else if (context instanceof Block) {
+//				// In Xtext, when editing, the assignment statement is NOT the context, but the block
+//				Block block = (Block) context;
+//				List<VariableDeclaration> localDeclaratations =
+//						actionUtil.getVariableDeclarations(block);
+//				return Scopes.scopeFor(localDeclaratations, parentScope);
+//			}
+			return parentScope;
+		}
+		return super.getScope(context, reference);
+	}
+	
 }

@@ -23,7 +23,9 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 
+import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
@@ -256,9 +258,20 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(typeDeclarations);
 			}
 			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
-				return Scopes.scopeFor(normalDeclarations);
+				Collection<Declaration> declarations = new ArrayList<Declaration>();
+				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+				declarations.addAll(gammaPackage.getConstantDeclarations());
+				StatechartDefinition gammaStatechart = ecoreUtil.getSelfOrContainerOfType(context, StatechartDefinition.class);
+				declarations.addAll(gammaStatechart.getParameterDeclarations());
+				declarations.addAll(gammaStatechart.getVariableDeclarations());
+				IScope statechartDeclarations = Scopes.scopeFor(declarations);
+				
+				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
+				if (actionContainer != null) {
+					IScope actionDeclarations = super.getScope(actionContainer, reference);
+					return new SimpleScope(statechartDeclarations, actionDeclarations.getAllElements());
+				}
+				return statechartDeclarations;
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
