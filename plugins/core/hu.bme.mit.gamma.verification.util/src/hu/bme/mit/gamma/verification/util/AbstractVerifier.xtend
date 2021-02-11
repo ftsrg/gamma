@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.util.PathEscaper
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import java.io.File
 import java.util.logging.Logger
+import org.eclipse.xtend.lib.annotations.Data
 
 abstract class AbstractVerifier {
 	
@@ -30,7 +31,7 @@ abstract class AbstractVerifier {
 	protected extension PathEscaper pathEscaper = PathEscaper.INSTANCE
 	protected extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
-	def ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	def Result verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {
 		// Writing the query to a temporary file
 		val parentFolder = modelFile.parent
@@ -41,7 +42,7 @@ abstract class AbstractVerifier {
 		return verifyQuery(traceability, parameters, modelFile, tempQueryFile, log, storeOutput)
 	}
 	
-	def abstract ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	def abstract Result verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput)
 	
 	def cancel() {
@@ -69,6 +70,12 @@ abstract class AbstractVerifier {
 	
 	protected def getTemporaryQueryFilename(File modelFile) {
 		return "." + modelFile.extensionlessName + ".q"
+	}
+	
+	@Data
+	static class Result {
+		ThreeStateBoolean result
+		ExecutionTrace trace
 	}
 	
 }

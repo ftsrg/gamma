@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -31,9 +30,9 @@ class ThetaVerifier extends AbstractVerifier {
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
 	
-	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	override Result verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {
-		var ExecutionTrace trace = null
+		var Result result = null
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			// Supporting multiple queries in separate files
 			val parsedQuery = singleQuery.adaptQuery
@@ -42,18 +41,22 @@ class ThetaVerifier extends AbstractVerifier {
 					«parsedQuery»
 				}
 			'''
-			val newTrace = super.verifyQuery(traceability, parameters, modelFile, wrappedQuery, log, storeOutput)
-			if (trace === null) {
-				trace = newTrace
+			val newResult = super.verifyQuery(traceability, parameters,
+					modelFile, wrappedQuery, log, storeOutput)
+			val oldTrace = result?.trace
+			val newTrace = newResult?.trace
+			if (oldTrace === null) {
+				result = newResult
 			}
 			else if (newTrace !== null) {
-				trace.extend(newTrace)
+				oldTrace.extend(newTrace)
+				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
 			}
 		}
-		return trace
+		return result
 	}
 	
-	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	override Result verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceFileScanner = null
@@ -99,7 +102,7 @@ class ThetaVerifier extends AbstractVerifier {
 			traceFileScanner = new Scanner(traceFile)
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
 			val trace = backAnnotator.execute
-			return trace
+			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {
 				resultReader.close

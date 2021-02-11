@@ -28,7 +28,7 @@ import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import static com.google.common.base.Preconditions.checkArgument
 import static hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-abstract class AbstractQueryGenerator {
+abstract class AbstractQueryGenerator implements AutoCloseable {
 		
 	protected ViatraQueryEngine engine
 	
@@ -36,6 +36,8 @@ abstract class AbstractQueryGenerator {
 		this.engine = engine
 	}
 	
+	override close() {} // So that derived classes do not have to define it
+
 	def wrap(String id) {
 		return "(" + id + ")"
 	}

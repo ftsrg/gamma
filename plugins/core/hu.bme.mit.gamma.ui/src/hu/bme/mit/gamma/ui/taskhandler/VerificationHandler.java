@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XSTSUppaalVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -140,7 +141,8 @@ public class VerificationHandler extends TaskHandler {
 
 	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
-		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
+		Result result = verificationTask.execute(modelFile, queryFile);
+		ExecutionTrace trace = result.getTrace();
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {

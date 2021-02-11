@@ -64,8 +64,9 @@ class StatechartToTestTransformer {
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
 			val verifier = new UppaalVerifier
-			val simpleStateExecutionTrace = verifier.verifyQuery(uppaalTraceability, queryParameters,
+			val result = verifier.verifyQuery(uppaalTraceability, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
+			val simpleStateExecutionTrace = result.trace
 			
 			simpleStateExecutionTrace => [
 				it.import = adaptiveContractAnnotation.monitoredComponent.containingPackage

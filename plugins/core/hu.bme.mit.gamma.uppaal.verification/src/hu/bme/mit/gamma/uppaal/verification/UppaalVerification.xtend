@@ -1,7 +1,7 @@
 package hu.bme.mit.gamma.uppaal.verification
 
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.verification.util.AbstractVerification
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 
 class UppaalVerification extends AbstractVerification {
@@ -10,7 +10,7 @@ class UppaalVerification extends AbstractVerification {
 	protected new() {}
 	//
 	
-	override ExecutionTrace execute(File modelFile, File queryFile) {
+	override Result execute(File modelFile, File queryFile) {
 		val fileName = modelFile.name
 		val packageFileName = fileName.gammaUppaalTraceabilityFileName
 		val gammaTrace = ecoreUtil.normalLoad(modelFile.parent, packageFileName)

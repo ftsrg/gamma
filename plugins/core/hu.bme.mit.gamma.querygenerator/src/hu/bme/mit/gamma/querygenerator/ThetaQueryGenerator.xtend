@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -28,8 +29,24 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	new(Package gammaPackage) {
+		this(gammaPackage, false)
+	}
+	
+	new(Package gammaPackage, boolean createAdvancedEngine) {
 		val resourceSet = gammaPackage.eResource.resourceSet
-		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
+		val scope = new EMFScope(resourceSet)
+		if (createAdvancedEngine) {
+			super.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(scope)
+		}
+		else {
+			super.engine = ViatraQueryEngine.on(scope)
+		}
+	}
+	
+	override close() {
+		if (engine instanceof AdvancedViatraQueryEngine) {
+			engine.dispose
+		}
 	}
 	
 	override parseRegularQuery(String text, TemporalOperator operator) {
