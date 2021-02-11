@@ -326,11 +326,22 @@ package class Trace {
 		checkNotNull(gammaVariable)
 		varDeclMappings.containsKey(gammaVariable)
 	}
-
+	
 	def get(VariableDeclaration gammaVariable) {
 		checkNotNull(gammaVariable)
 		varDeclMappings.get(gammaVariable)
 	}
+	
+//	def isMapped(VariableDeclaration gammaVariable) {
+//		checkNotNull(gammaVariable)
+//		 varDeclMappings.containsKey(gammaVariable) || varDeclMappings.containsValue(gammaVariable) // insert the second OR clause
+//	}
+//
+//	def get(VariableDeclaration gammaVariable) {
+//		checkNotNull(gammaVariable)
+//		var candidate = varDeclMappings.get(gammaVariable)
+//		candidate === null && isMapped(gammaVariable) ? gammaVariable: candidate // insert this line
+//	}
 	
 	// Constant declaration
 	def put(ConstantDeclaration gammaConstant, VariableDeclaration lowlevelVariable) {

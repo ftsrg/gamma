@@ -30,6 +30,8 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.expression.model.ArgumentedElement
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures
 
 /**
  * This class contains custom validation rules. 
@@ -39,11 +41,9 @@ import org.eclipse.xtext.validation.Check
 class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
 	@Check
-	def checkParameters(ExecutionTrace executionTrace) {
-		val type = executionTrace.component
-		if (executionTrace.getArguments().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
-		}
+	def checkArgumentTypes(ArgumentedElement element) {
+		val parameters = TraceModelDerivedFeatures.getParameterDeclarations(element);
+		super.checkArgumentTypes(element, parameters);
 	}
 	
 	@Check
@@ -65,12 +65,6 @@ class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 				realizationMode == RealizationMode.REQUIRED && eventDirection == EventDirection.OUT) {
 				error("This event is an in-event of the component.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 			}			
-		}
-		if (event.parameterDeclarations.empty && !raiseEventAct.arguments.empty) {
-			error("This event type has no parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
-		}
-		if (!event.parameterDeclarations.empty && raiseEventAct.arguments.empty) {
-			error("This event type must have a parameter.", StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT)
 		}
 	}
 	

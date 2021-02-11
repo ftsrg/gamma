@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.validation.Check;
 
+import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
@@ -117,6 +118,22 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
 			if (typeDeclaration == referencedTypeDeclaration) {
 				error("A type declaration cannot reference itself as a type definition.", ExpressionModelPackage.Literals.DECLARATION__TYPE);
+			}
+		}
+	}
+	
+	// For derived classes - they have to add the parameterDeclarations
+	protected void checkArgumentTypes(ArgumentedElement element, List<ParameterDeclaration> parameterDeclarations) {
+		List<Expression> arguments = element.getArguments();
+		if (arguments.size() != parameterDeclarations.size()) {
+			error("The number of arguments must match the number of parameters.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			return;
+		}
+		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
+			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
+				ParameterDeclaration parameter = parameterDeclarations.get(i);
+				Expression argument = arguments.get(i);
+				checkTypeAndExpressionConformance(parameter.getType(), argument, ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 			}
 		}
 	}

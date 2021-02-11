@@ -13,26 +13,26 @@ package hu.bme.mit.gamma.trace.language.scoping
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
-import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
-import hu.bme.mit.gamma.trace.model.Assert
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.trace.model.InstanceSchedule
 import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
+import java.util.Collection
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 /**
@@ -69,7 +69,8 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 				}
 			}
 		}	
-		if (context instanceof InstanceSchedule && reference == TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
+		if (context instanceof InstanceSchedule &&
+				reference == TraceModelPackage.Literals.INSTANCE_SCHEDULE__SCHEDULED_INSTANCE) {
 			val executionTrace = EcoreUtil2.getRootContainer(context, true) as ExecutionTrace
 			val component = executionTrace.component
 			if (component instanceof AsynchronousCompositeComponent) {
@@ -102,7 +103,8 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			return Scopes.scopeFor(states)
 		}
-		if (context instanceof InstanceVariableState && reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+		if (context instanceof InstanceVariableState &&
+				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
 			val instanceVariableState = context as InstanceVariableState
 			val instance = instanceVariableState.instance
 			val instanceType = instance.type
@@ -113,31 +115,35 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			return Scopes.scopeFor(variables)
 		}
 		if (context instanceof EnumerationLiteralExpression) {
-			var Type enumerationDefinition
-			val parent = ecoreUtil.getContainerOfType(context, Assert) // First assert container
-			switch parent {
-				InstanceVariableState: {
-					enumerationDefinition = parent.declaration.type
+			var Collection<EnumerationTypeDefinition> enumTypes
+			val raiseEventAct = ecoreUtil.getContainerOfType(context, RaiseEventAction)
+			if (raiseEventAct !== null) {
+				val event = raiseEventAct.event
+				val parameterDeclarations = event.parameterDeclarations
+				if (!parameterDeclarations.empty) {
+					enumTypes = parameterDeclarations.map[it.type.typeDefinition]
+							.filter(EnumerationTypeDefinition).toSet
 				}
-				RaiseEventAct: {
-					val parameterDeclarations = parent.event.parameterDeclarations
-					if (!parameterDeclarations.empty) {
-						enumerationDefinition = parameterDeclarations.head.type
+			}
+			else {
+				val instanceVariableState = ecoreUtil.getContainerOfType(context, InstanceVariableState)
+				if (instanceVariableState !== null) {
+					val declaration = instanceVariableState.declaration
+					val type = declaration.type
+					val typeDefinition = type.typeDefinition
+					if (typeDefinition instanceof EnumerationTypeDefinition) {
+						enumTypes = #[typeDefinition]
 					}
 				}
-				default:
+				else {
 					throw new IllegalArgumentException("Not known enumeration use!")
-			}
-			if (enumerationDefinition instanceof TypeReference) {
-				val typeDeclaration = enumerationDefinition.reference
-				val typeDefinition = typeDeclaration.type
-				if (typeDefinition instanceof EnumerationTypeDefinition) {
-					return Scopes.scopeFor(typeDefinition.literals)
 				}
 			}
-			if (enumerationDefinition instanceof EnumerationTypeDefinition) {
-				return Scopes.scopeFor(enumerationDefinition.literals)
+			val literals = newArrayList
+			for (enumType : enumTypes) {
+				literals += enumType.literals
 			}
+			return Scopes.scopeFor(literals)
 		}
 		super.getScope(context, reference)
 	}

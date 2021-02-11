@@ -31,7 +31,6 @@ import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
@@ -206,21 +205,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkArgumentTypes(ArgumentedElement element) {
-		List<Expression> arguments = element.getArguments();
-		if (element instanceof ArrayAccessExpression) {
-			
-		} else {
-			List<ParameterDeclaration> parameterDeclarations = StatechartModelDerivedFeatures.getParameterDeclarations(element);
-			if (arguments.size() != parameterDeclarations.size()) {
-				error("The number of arguments must match the number of parameters.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-				return;
-			}
-			if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
-				for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
-					checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(), arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
-				}
-			}
-		}
+		List<ParameterDeclaration> parameterDeclarations = StatechartModelDerivedFeatures.getParameterDeclarations(element);
+		super.checkArgumentTypes(element, parameterDeclarations);
 	}
 	
 	// Interfaces

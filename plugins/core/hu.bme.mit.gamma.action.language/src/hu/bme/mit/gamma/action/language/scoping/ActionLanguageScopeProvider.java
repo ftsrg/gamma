@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
+import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.util.ActionUtil;
@@ -44,7 +45,7 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				Block block = (Block) container;
 				Action action = (Action) context;
 				List<VariableDeclaration> precedingLocalDeclaratations =
-						actionUtil.getPrecedingVariableDeclarations(block, action);
+						ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, action);
 				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
 			}
 //			else if (context instanceof Block) {

@@ -23,6 +23,7 @@ public class ExpressionLanguageFormatterUtil {
 		setDots(c, f);
 		setExclamationMarks(c, f);
 		setCommas(c, f);
+		setSemicolons(c, f);
 		setDoubleColons(c, f);
 	}
 
@@ -33,6 +34,12 @@ public class ExpressionLanguageFormatterUtil {
 	}
 
 	public void setCommas(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Keyword comma : f.findKeywords(",")) {
+			c.setNoSpace().before(comma);
+		}
+	}
+	
+	public void setSemicolons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword comma : f.findKeywords(";")) {
 			c.setNoSpace().before(comma);
 		}

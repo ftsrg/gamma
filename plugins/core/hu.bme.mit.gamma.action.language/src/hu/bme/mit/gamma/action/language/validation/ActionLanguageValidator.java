@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.validation.Check;
 
+import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
@@ -55,8 +56,6 @@ import hu.bme.mit.gamma.expression.util.ExpressionType;
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
-	
-	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
 	
 	//TODO ???
 	@Check
@@ -117,7 +116,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 			Block block = (Block) container;
 			String name = statement.getVariableDeclaration().getName();
 			List<VariableDeclaration> precedingVariableDeclarations =
-					actionUtil.getPrecedingVariableDeclarations(block, statement);
+					ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, statement);
 			for (VariableDeclaration precedingVariableDeclaration : precedingVariableDeclarations) {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
@@ -133,7 +132,6 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		// check if the referred object is a value declaration
 		Declaration referredDeclaration = 
 				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
-		System.out.println(referredDeclaration);
 		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
 			return;
 		}
