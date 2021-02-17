@@ -71,9 +71,14 @@ class VariableInliner {
 		for (branch : subactions) {
 			val branchConcreteValues = newHashMap
 			branchConcreteValues += concreteValues
+			// The action removing approach for symbolic maps CAN be used via choices,
+			// as the oldAssignment in 'inline(AssignmentAction ...' is NOT removed
 			val branchSymbolicValues = newHashMap
-			branchSymbolicValues += symbolicValues
-			// Cloned map
+//			branchSymbolicValues += symbolicValues
+			// The action removing approach for symbolic maps CANNOT be used via choices,
+			// e.g., 'a := 1; if (...) { a := a + 1; } else { b := 2; } c := a + 3;'
+
+			// New maps
 			branch.inline(branchConcreteValues, branchSymbolicValues)
 			// Saving the new maps
 			branchConcreteValueList += branchConcreteValues
@@ -103,12 +108,13 @@ class VariableInliner {
 			if (declaration instanceof VariableDeclaration) {
 				val references = rhs.getSelfAndAllContentsOfType(ReferenceExpression)
 				if (references.empty) { // So it is evaluable
-					if (concreteValues.containsKey(declaration)) {
-						// Removing old assignment action due to the priming problem
-						val oldEntry = concreteValues.get(declaration)
-						val oldAssignment = oldEntry.getLastValueGivingAction
-						oldAssignment.remove
-					}
+					// If the oldAssignment is NOT removed, then concrete maps can 
+					// fall through validly through different choices???
+//					if (concreteValues.containsKey(declaration)) {
+//						val oldEntry = concreteValues.get(declaration)
+//						val oldAssignment = oldEntry.getLastValueGivingAction
+//						oldAssignment.remove
+//					}
 					// Adding this new value
 					concreteValues += declaration -> new InlineEntry(rhs, action)
 					symbolicValues -= declaration
@@ -119,6 +125,7 @@ class VariableInliner {
 						// Only this single value can be inlined
 						val singletonMap = #{declaration -> oldSymbolicEntry}
 						rhs.inlineVariables(singletonMap)
+						// Removing old assignment action due to the priming problem
 						val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
 						oldAssignment.remove
 					}

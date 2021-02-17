@@ -149,7 +149,7 @@ class ActionTransformer {
 			variableDeclaration.annotations += createTransientVariableDeclarationAnnotation
 			val name = variableDeclaration.name
 			val hashCode = variableDeclaration.hashCode
-			variableDeclaration.name = name + hashCode // Giving unique name to local variable
+			variableDeclaration.name = name + "_" + hashCode // Giving unique name to local variable
 			// This unique name can be added, as these variables are not back-annotated!
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = variableDeclaration
