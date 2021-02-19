@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +29,6 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -326,10 +324,13 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) operand;
 			Declaration declaration = reference.getParameter();
 			Type type = declaration.getType();
-			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-			if (typeDefinition instanceof RecordTypeDefinition) {
-				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-				return record.getFieldDeclarations();
+			if (type != null) {
+				// Due to an Xtext parsing bug, sometimes every attribute of the element is null
+				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+				if (typeDefinition instanceof RecordTypeDefinition) {
+					RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+					return record.getFieldDeclarations();
+				}
 			}
 		}
 		return super.getFieldDeclarations(operand);
