@@ -378,7 +378,7 @@ public class ExpressionSerializer {
 	protected String _serialize(final RecordAccessExpression recordAccessExpression) {
 		String _serialize = this.serialize(recordAccessExpression.getOperand());
 		String _plus = (_serialize + ".");
-		String _field = recordAccessExpression.getField();
+		String _field = recordAccessExpression.getField().getDeclaration().getName();
 		return (_plus + _field);
 	}
 
@@ -457,7 +457,7 @@ public class ExpressionSerializer {
 		String string = "";
 		EList<FieldAssignment> _fieldAssignments = recordLiteralExpression.getFieldAssignments();
 		for (final FieldAssignment expression : _fieldAssignments) {
-			String _reference = expression.getReference();
+			String _reference = expression.getReference().getDeclaration().getName();
 			String _plus = (_reference + ":=");
 			String _serialize = this.serialize(expression.getValue());
 			String _plus_1 = (_plus + _serialize);

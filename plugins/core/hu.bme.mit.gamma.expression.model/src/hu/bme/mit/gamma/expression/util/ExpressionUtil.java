@@ -661,9 +661,13 @@ public class ExpressionUtil {
 	
 	protected Expression _getInitialValueOfType(final RecordTypeDefinition type) {
 		RecordLiteralExpression recordLiteralExpression = factory.createRecordLiteralExpression();
+		// TODO set record reference
+//		recordLiteralExpression.setRecord(value);
 		for (FieldDeclaration field : type.getFieldDeclarations()) {
 			FieldAssignment assignment = factory.createFieldAssignment();
-			assignment.setReference(field.getName());
+			DirectReferenceExpression fieldReference = factory.createDirectReferenceExpression();
+			fieldReference.setDeclaration(field);
+			assignment.setReference(fieldReference);
 			assignment.setValue(getInitialValueOfType(field.getType()));
 			recordLiteralExpression.getFieldAssignments().add(assignment);
 		}

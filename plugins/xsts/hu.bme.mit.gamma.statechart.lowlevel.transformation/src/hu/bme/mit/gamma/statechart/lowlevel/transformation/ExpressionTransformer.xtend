@@ -172,7 +172,7 @@ class ExpressionTransformer {
 			var functionReturnVariables = if (trace.isMapped(functionAccess)) {
 				trace.get(functionAccess)
 			} else {newArrayList}
-			val returnVariable = functionReturnVariables.filter[vari | vari.name.contains(expression.field)].onlyElement
+			val returnVariable = functionReturnVariables.filter[it === expression.field.declaration].onlyElement
 			result += createDirectReferenceExpression => [
 				it.declaration = returnVariable
 			]
