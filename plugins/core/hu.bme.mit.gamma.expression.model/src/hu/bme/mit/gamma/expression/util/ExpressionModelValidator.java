@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.validation.Check;
@@ -54,50 +53,57 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionModelValidator {
 	
-	class ValidationResultMessage{
+	public static final ExpressionModelValidator INSTANCE = new ExpressionModelValidator();
+	protected ExpressionModelValidator() {}
+	
+	public enum ValidationResult{
+		ERROR, INFO, WARNING
+	}
+	
+	static public class ValidationResultMessage{
 		ValidationResult result;
 		String resultText;
 		ReferenceInfo referenceInfo;
 		
-		ValidationResultMessage(ValidationResult result, String resultText,
+		public ValidationResultMessage(ValidationResult result, String resultText,
 				ReferenceInfo referenceInfo){
 			this.result = result;
 			this.resultText = resultText;
 			this.referenceInfo = referenceInfo;
 		}
 		
-		ValidationResult getResult() {
+		public ValidationResult getResult() {
 			return result;
 		}
 		
-		String getResultText() {
+		public String getResultText() {
 			return resultText;
 		}
 		
-		ReferenceInfo getReferenceInfo() {
+		public ReferenceInfo getReferenceInfo() {
 			return referenceInfo;
 		}
 		
 	}
 	
-	class ReferenceInfo{
+	static public class ReferenceInfo{
 		EStructuralFeature reference;
 		Integer index;
 		
-		ReferenceInfo(EStructuralFeature reference, Integer index){
+		public ReferenceInfo(EStructuralFeature reference, Integer index){
 			this.reference = reference;
 			this.index = index;
 		}
 		
-		boolean hasInteger() {
+		public boolean hasInteger() {
 			return index != null;
 		}
 		
-		int getIndex() {
+		public int getIndex() {
 			return index;
 		}
 		
-		EStructuralFeature getReference() {
+		public EStructuralFeature getReference() {
 			return reference;
 		}
 	}
@@ -109,8 +115,9 @@ public class ExpressionModelValidator {
 	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	
 	@Check
-	public void checkNameUniqueness(NamedElement element) {
+	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Class<? extends NamedElement> clazz = null;
 		if (element instanceof Declaration) {
 			clazz = Declaration.class;
@@ -119,11 +126,12 @@ public class ExpressionModelValidator {
 			clazz = element.getClass();
 		}
 		EObject root = EcoreUtil.getRootContainer(element);
-		checkNames(root, Collections.singleton(clazz), name);
+		validationResultMessages.addAll(checkNames(root, Collections.singleton(clazz), name));
+		return validationResultMessages;
 	}
 	
 	
-	protected Collection<ValidationResultMessage> checkNames(EObject root,
+	public Collection<ValidationResultMessage> checkNames(EObject root,
 			Collection<Class<? extends NamedElement>> classes, String name) {
 		int nameCount = 0;
 		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
@@ -167,7 +175,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element, List<ParameterDeclaration> parameterDeclarations) {
+	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element, List<ParameterDeclaration> parameterDeclarations) {
 		List<Expression> arguments = element.getArguments();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (arguments.size() != parameterDeclarations.size()) {
@@ -511,7 +519,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
 		ExpressionType leftHandSideExpressionType = typeDeterminator.transform(lhs);
 		ExpressionType rightHandSideExpressionType = typeDeterminator.transform(rhs);
 		
@@ -535,7 +543,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
 		ExpressionType lhsExpressionType = typeDeterminator.transform(type);
 		ExpressionType rhsExpressionType = typeDeterminator.getType(rhs);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -556,7 +564,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkEnumerationConformance(Type lhs, Type rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkEnumerationConformance(Type lhs, Type rhs, EStructuralFeature feature) {
 		//addAll is used to add possible errors to the list
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EnumerationTypeDefinition enumType = typeDeterminator.getEnumerationType(lhs);
@@ -567,7 +575,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 
-	protected Collection<ValidationResultMessage> checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
 		//addAll is used to add possible errors to the list
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EnumerationTypeDefinition enumType = typeDeterminator.getEnumerationType(type);
@@ -578,7 +586,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
 		//addAll is used to add possible errors to the list
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EnumerationTypeDefinition lhsType = typeDeterminator.getEnumerationType(lhs);
@@ -587,7 +595,7 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected Collection<ValidationResultMessage> checkEnumerationConformance(EnumerationTypeDefinition lhs, EnumerationTypeDefinition rhs,
+	public Collection<ValidationResultMessage> checkEnumerationConformance(EnumerationTypeDefinition lhs, EnumerationTypeDefinition rhs,
 			EStructuralFeature feature) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (lhs != rhs) {
@@ -760,6 +768,4 @@ public class ExpressionModelValidator {
 
 
 
-enum ValidationResult{
-	ERROR, INFO, WARNING
-}
+
