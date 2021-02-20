@@ -181,8 +181,8 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		}
 		// check if the referred field exists
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
-		List<String> fieldDeclarationNames = fieldDeclarations.stream().map(fd -> fd.getName()).collect(Collectors.toList());
-		if (!fieldDeclarationNames.contains(recordAccessExpression.getField())){
+		Declaration referredField = recordAccessExpression.getField().getDeclaration();
+		if (!fieldDeclarations.contains(referredField)){
 			error("The record type does not contain any fields with the given name.",
 					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD);
 			return;

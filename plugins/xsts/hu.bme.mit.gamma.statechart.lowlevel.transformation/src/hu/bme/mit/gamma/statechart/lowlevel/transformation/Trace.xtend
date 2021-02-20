@@ -523,7 +523,6 @@ package class Trace {
 		selectVariableMappings.get(selectExpression)
 	}
 	
-	
 	// Record
 	def put(Pair<ValueDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
@@ -535,10 +534,12 @@ package class Trace {
 
 	def isMapped(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
-		checkNotNull(recordField.key)
-		checkNotNull(recordField.value)
-		for (key : recordValDeclMappings.keySet) {
-			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : recordValDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
 				return true
 			}
 		}
@@ -547,17 +548,17 @@ package class Trace {
 
 	def get(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
 		checkNotNull(recordField)
-		checkNotNull(recordField.key)
-		checkNotNull(recordField.value)
-		for (key : recordValDeclMappings.keySet) {
-			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : recordValDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
 				return recordValDeclMappings.get(key)
 			}
 		}
-		return null
+		throw new IllegalArgumentException("Not found: " + recordField)
 	}
-	
-	
 	
 	// Assertion
 	def put(String name, VariableDeclaration assertionVariable) {

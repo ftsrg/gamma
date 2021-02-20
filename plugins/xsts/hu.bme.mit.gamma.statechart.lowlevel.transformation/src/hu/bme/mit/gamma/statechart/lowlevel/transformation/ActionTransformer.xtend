@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
 import hu.bme.mit.gamma.expression.model.DefaultExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -76,7 +77,10 @@ class ActionTransformer {
 		this.maxRecursionDepth = maxRecursionDepth
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
 		this.assertionVariableName = assertionVariableName
-		this.preconditionTransformer = new ExpressionPreconditionTransformer(this.trace, this.expressionTransformer, this, assertionVariableName, functionInlining, maxRecursionDepth)
+		this.preconditionTransformer = new ExpressionPreconditionTransformer(this.trace,
+			this.expressionTransformer, new TypeTransformer(trace), this, assertionVariableName,
+			functionInlining, maxRecursionDepth
+		)
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
@@ -450,27 +454,24 @@ class ActionTransformer {
 		} else {
 			var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
 			// access expressions:
-			var List<Object> accessList = action.lhs.collectAccessList
-			var List<String> recordAccessList = new ArrayList<String>	//TODO better (~isSameAccessTree)
-			for (elem : accessList) {
-				if (elem instanceof String) {
-					recordAccessList.add(elem)
-				}
-			}			
+			val accessList = action.lhs.collectAccessList
+			var recordAccessList = accessList.filter(DirectReferenceExpression).toList
 			for (elem : originalLhsFields) {	
 				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
 					// Create lhs
 					lowlevelLhs += createDirectReferenceExpression => [
 						if (trace.isMapped(elem)) {	//mapped as complex type
 							it.declaration = trace.get(elem)
-						} else if ((elem.key instanceof VariableDeclaration && trace.isMapped(elem.key as VariableDeclaration)) || 
+						}
+						else if ((elem.key instanceof VariableDeclaration && trace.isMapped(elem.key as VariableDeclaration)) || 
 							(elem.key instanceof ParameterDeclaration && trace.isMapped(elem.key as ParameterDeclaration))
 						) {	//simple arrays are mapped as a simple type (either var or par)
 							if (elem.key instanceof VariableDeclaration)
 								it.declaration = trace.get(elem.key as VariableDeclaration)
 							else if (elem.key instanceof ParameterDeclaration)
 								it.declaration = trace.get(elem.key as ParameterDeclaration)
-						} else {
+						}
+						else {
 							throw new IllegalArgumentException("Transformed variable declaration not found!")
 						}
 					]
@@ -506,8 +507,6 @@ class ActionTransformer {
 		// Return the result
 		return result
 	}
-	
-	
 	
 	protected def dispatch List<Action> transformAction(AssertionStatement action, LinkedList<Action> following) {
 		// Create return variable and transform the current action

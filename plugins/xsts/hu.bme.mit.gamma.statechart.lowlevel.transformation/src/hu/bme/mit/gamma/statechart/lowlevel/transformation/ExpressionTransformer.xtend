@@ -16,9 +16,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -33,11 +31,9 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
@@ -60,16 +56,15 @@ import java.util.ArrayList
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
-import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionTransformer {
 	// Auxiliary object
+	protected final extension TypeTransformer typeTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
@@ -83,6 +78,7 @@ class ExpressionTransformer {
 	new(Trace trace, boolean functionInlining) {
 		this.trace = trace
 		this.functionInlining = functionInlining
+		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
 	protected def transformAnnotation(VariableDeclarationAnnotation annotation) {
@@ -143,15 +139,11 @@ class ExpressionTransformer {
 		
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
 		if (originalDeclaration instanceof ValueDeclaration) {
-			var originalLhsVariables = exploreComplexType(originalDeclaration as ValueDeclaration,
+			val originalLhsVariables = exploreComplexType(originalDeclaration as ValueDeclaration,
 				getTypeDefinitionFromType(originalDeclaration.type), new ArrayList<FieldDeclaration>)
-			var accessList = expression.collectAccessList
-			var List<String> recordAccessList = new ArrayList<String>
-			for (elem : accessList) {
-				if (elem instanceof String) { //TODO better ;)
-					recordAccessList += elem
-				}
-			}
+			val accessList = expression.collectAccessList
+			val List<DirectReferenceExpression> recordAccessList =
+				accessList.filter(DirectReferenceExpression).toList
 	
 			for (elem : originalLhsVariables) {	
 				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
@@ -182,7 +174,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		var result = new ArrayList<Expression>
+		val result = new ArrayList<Expression>
 		
 		// find original declaration and get the keys of the transformation
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
@@ -195,14 +187,10 @@ class ExpressionTransformer {
 		}
 		// explore the chain of access expressions
 		var accessList = expression.collectAccessList
-		var List<String> recordAccessList = new ArrayList<String>
-		var List<Expression> arrayAccessList = new ArrayList<Expression>
-		for (elem : accessList) {
-			if (elem instanceof String) { //TODO better ;)
-				recordAccessList += elem
-			}
-		}
-		arrayAccessList = accessList.filter(Expression).toList
+		var List<DirectReferenceExpression> recordAccessList =
+			accessList.filter(DirectReferenceExpression).toList
+		var List<Expression> arrayAccessList = 
+			accessList.filter(Expression).toList
 		
 		// if 'simple' array
 		if (recordAccessList.empty) {
@@ -390,71 +378,6 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	protected def dispatch Type transformType(Type type) {
-		throw new IllegalArgumentException("Not known type: " + type)
-	}
-
-	protected def dispatch Type transformType(BooleanTypeDefinition type) {
-		return type.clone
-	}
-
-	protected def dispatch Type transformType(IntegerTypeDefinition type) {
-		return type.clone
-	}
-
-	protected def dispatch Type transformType(DecimalTypeDefinition type) {
-		return type.clone
-	}
-	
-	protected def dispatch Type transformType(RationalTypeDefinition type) {
-		return type.clone
-	}
-	
-	protected def dispatch Type transformType(EnumerationTypeDefinition type) {
-		return type.clone
-	}
-	
-	protected def dispatch Type transformType(ArrayTypeDefinition type) {
-		//FIXME this only copies
-		return type.clone
-	}
-	
-	protected def dispatch Type transformType(RecordTypeDefinition type) {
-		//FIXME this only copies
-		return type.clone
-	}
-	
-	protected def dispatch Type transformType(TypeReference type) {
-		val typeDeclaration = type.reference
-		val typeDefinition = typeDeclaration.type
-		// Inlining primitive types
-		if (typeDefinition.isPrimitive) {
-			return typeDefinition.transformType
-		}
-		val lowlevelTypeDeclaration = if (trace.isMapped(typeDeclaration)) {
-			trace.get(typeDeclaration)
-		}
-		else {
-			// Transforming type declaration
-			val transformedTypeDeclaration = typeDeclaration.transformTypeDeclaration
-			val lowlevelPackage = trace.lowlevelPackage
-			lowlevelPackage.typeDeclarations += transformedTypeDeclaration
-			transformedTypeDeclaration
-		}
-		return createTypeReference => [
-			it.reference = lowlevelTypeDeclaration
-		]
-	}
-	
-	protected def transformTypeDeclaration(TypeDeclaration typeDeclaration) {
-		val newTypeDeclaration = constraintFactory.create(typeDeclaration.eClass) as TypeDeclaration => [
-			it.name = getName(typeDeclaration)
-			it.type = typeDeclaration.type.transformType
-		]
-		trace.put(typeDeclaration, newTypeDeclaration)
-		return newTypeDeclaration
-	}
-	
 	protected def List<VariableDeclaration> transformValue(ValueDeclaration variable) {
 		var List<VariableDeclaration> transformed = new ArrayList<VariableDeclaration>
 		var TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
@@ -633,10 +556,10 @@ class ExpressionTransformer {
 	
 	protected def Type createTransformedRecordType(List<ArrayTypeDefinition> arrayStack, Type innerType) {
 		if (arrayStack.size > 0) {
-			var stackCopy = new ArrayList<ArrayTypeDefinition>
-			stackCopy.addAll(arrayStack)
-			var stackTop = stackCopy.remove(0)
-			var arrayTypeDef = constraintFactory.createArrayTypeDefinition
+			val stackCopy = newArrayList
+			stackCopy += arrayStack
+			val stackTop = stackCopy.remove(0)
+			val arrayTypeDef = constraintFactory.createArrayTypeDefinition
 			arrayTypeDef.size = stackTop.size.transformExpression.getOnlyElement as IntegerLiteralExpression
 			arrayTypeDef.elementType = createTransformedRecordType(stackCopy, innerType)
 			return arrayTypeDef
@@ -646,16 +569,8 @@ class ExpressionTransformer {
 		}
 	}
 	
-	//TODO move to expressionUtil or use that of expressionUtil
 	protected def TypeDefinition getTypeDefinitionFromType(Type type) {
-		// Resolve type reference (may be chain) or return type definition
-		if (type instanceof TypeReference) {
-			var innerType = type.reference.type
-			return getTypeDefinitionFromType(innerType)
-		}
-		else {
-			return type as TypeDefinition
-		}
+		return type.getTypeDefinition
 	}
 	
 	protected def List<Pair<ValueDeclaration, List<FieldDeclaration>>> exploreComplexType(
@@ -668,9 +583,9 @@ class ExpressionTransformer {
 			// In case of records go into each field
 			for (field : type.fieldDeclarations) {
 				// Get current field by extending the previous (~current) with the one to explore
-				var newCurrent = new ArrayList<FieldDeclaration>
-				newCurrent.addAll(currentField)
-				newCurrent.add(field)
+				val newCurrent = newArrayList
+				newCurrent += currentField
+				newCurrent += field
 				//Explore
 				result += exploreComplexType(original, getTypeDefinitionFromType(field.type), newCurrent)
 			}
@@ -690,15 +605,15 @@ class ExpressionTransformer {
 	protected def List<List<FieldDeclaration>> exploreComplexType2(
 			TypeDefinition type, List<FieldDeclaration> currentField) {
 		// Experimental
-		var List<List<FieldDeclaration>> result = newArrayList
+		val List<List<FieldDeclaration>> result = newArrayList
 		
 		if (type instanceof RecordTypeDefinition) {
 			// In case of records go into each field
 			for (field : type.fieldDeclarations) {
 				// Get current field by extending the previous (~current) with the one to explore
-				var newCurrent = new ArrayList<FieldDeclaration>
-				newCurrent.addAll(currentField)
-				newCurrent.add(field)
+				val newCurrent = newArrayList
+				newCurrent += currentField
+				newCurrent += field
 				//Explore
 				result += exploreComplexType2(getTypeDefinitionFromType(field.type), newCurrent)
 			}
@@ -715,33 +630,33 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	protected def List<Object> collectAccessList(ReferenceExpression exp) {
+	protected def List<Expression> collectAccessList(ReferenceExpression exp) {
 		// Returns the operands of (chained) access expression(s)
 		// e.g. a.r1[2].r2 returns [r1, 2, r2]
-		var List<Object> result = new ArrayList<Object>
+		val result = newArrayList
 		if (exp instanceof ArrayAccessExpression) {
 			// if possible, add inner
-			var inner = exp.operand
+			val inner = exp.operand
 			if (inner instanceof ReferenceExpression) {
-				result.addAll(collectAccessList(inner))
+				result += collectAccessList(inner)
 			}
 			// add own
-			result.add(exp.arguments.getOnlyElement)
+			result += exp.arguments.getOnlyElement
 		}
 		else if (exp instanceof RecordAccessExpression) {
 			// if possible, add inner
-			var inner = exp.operand
+			val inner = exp.operand
 			if (inner instanceof ReferenceExpression) {
-				result.addAll(collectAccessList(inner))
+				result += collectAccessList(inner)
 			}
 			// add own
-			result.add(exp.field)
+			result += exp.field
 		}
 		else if (exp instanceof SelectExpression){
 			// if possible, jump over (as it returns a value with the same access list)
-			var inner = exp.operand
+			val inner = exp.operand
 			if (inner instanceof ReferenceExpression) {
-				result.addAll(collectAccessList(inner))
+				result += collectAccessList(inner)
 			}
 		}
 		else {
@@ -753,25 +668,40 @@ class ExpressionTransformer {
 	protected def dispatch Declaration findDeclarationOfReferenceExpression(DirectReferenceExpression expression) {
 		return expression.declaration
 	}
+	
 	protected def dispatch Declaration findDeclarationOfReferenceExpression(RecordAccessExpression expression) {
-		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	
-	}
-	protected def dispatch Declaration findDeclarationOfReferenceExpression(ArrayAccessExpression expression) {
-		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression
-	}
-	protected def dispatch Declaration findDeclarationOfReferenceExpression(FunctionAccessExpression expression) {
-		return (expression.operand as ReferenceExpression).findDeclarationOfReferenceExpression	
-	}
-	protected def dispatch Declaration findDeclarationOfReferenceExpression(ReferenceExpression expression) {
-		throw new IllegalArgumentException("Unhandled Reference Expression type: " + expression.class)
+		val operand = expression.operand
+		return operand.findDeclarationOfReferenceExpression	
 	}
 	
-	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList, List<String> currentAccessList) {
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(ArrayAccessExpression expression) {
+		val operand = expression.operand
+		return operand.findDeclarationOfReferenceExpression
+	}
+	
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(FunctionAccessExpression expression) {
+		val operand = expression.operand
+		return operand.findDeclarationOfReferenceExpression
+	}
+	
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(EventParameterReferenceExpression expression) {
+		val operand = expression.parameter
+		return operand
+	}
+	
+	protected def dispatch Declaration findDeclarationOfReferenceExpression(Expression expression) {
+		throw new IllegalArgumentException("Unhandled Expression type: " + expression.class)
+	}
+	
+	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList,
+			List<DirectReferenceExpression> currentAccessList) {
 		if (fieldsList.size < currentAccessList.size) {
 			return false
 		}
 		for (var i = 0; i < currentAccessList.size; i++) {
-			if (currentAccessList.get(i) != fieldsList.get(i).name) {
+			val access = currentAccessList.get(i).declaration
+			val field = fieldsList.get(i)
+			if (access === field) {
 				return false
 			}
 		}
@@ -810,15 +740,15 @@ class ExpressionTransformer {
 	
 	protected def dispatch List<Expression> enumerateExpression(AccessExpression expression) {
 		// array-in-array, array-in-record, (array-from-function, array-from-select TODO) DOES NOT TRANSFORM
-		var List<Expression> result = newArrayList
+		val List<Expression> result = newArrayList
 		
 		val referredDeclaration = expression.referredValues.getOnlyElement
 		val typeToAssign = referredDeclaration.type.typeDefinitionFromType
-		var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, new ArrayList<FieldDeclaration>)			
+		var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, newArrayList)			
 	
 		// if array type
 		var randomElem = originalLhsFields.get(0)			//equals a random accessible element
-		var randomElemKey = originalLhsFields.get(0).key	//equals referredDeclaration
+		var randomElemKey = randomElem.key	//equals referredDeclaration
 		var int i = 0	// number of the array elements 
 		// if mapped as complex and is an array
 		if (trace.isMapped(randomElem) && 
@@ -850,7 +780,7 @@ class ExpressionTransformer {
 		for (var j = 0; j < i; j++) {	// running variable for the array indices
 			val temp = j	//to use inside a lambda
 			result += createArrayAccessExpression => [
-				it.operand = expression.clone(true,true)	//DOES NOT TRANSFORM
+				it.operand = expression.clone	//DOES NOT TRANSFORM
 				it.arguments += createIntegerLiteralExpression => [
 					it.value = BigInteger.valueOf(temp)
 				]
@@ -865,13 +795,13 @@ class ExpressionTransformer {
 	}
 	
 	protected def dispatch List<Expression> enumerateExpression(IntegerRangeLiteralExpression expression) {
-		val result = new ArrayList<Expression>
+		val result = <Expression>newArrayList
 		
 		if (!(expression.leftOperand instanceof IntegerLiteralExpression && expression.rightOperand instanceof IntegerLiteralExpression)) {
 			throw new IllegalArgumentException("For statements over non-literal ranges are currently not supported!: " + expression)
 		}
 		
-		//evaluate if possible
+		// evaluate if possible
 		val left = expression.leftOperand as IntegerLiteralExpression
 		val start = expression.leftInclusive ? left.value.intValue : left.value.intValue + 1
 		val right = expression.rightOperand as IntegerLiteralExpression
@@ -879,14 +809,14 @@ class ExpressionTransformer {
 		for (var i = start; i <= end; i++) {
 			val newLiteral = createIntegerLiteralExpression
 			newLiteral.value = BigInteger.valueOf(i)
-			result.add(newLiteral)
+			result += newLiteral
 		}
 		
 		return result
 	}
 
 	protected def dispatch List<Expression> enumerateExpression(TypeReferenceExpression expression) {
-		val result = new ArrayList<Expression>
+		val result = <Expression>newArrayList
 		
 		// only enums are enumerable
 		var typeDefinition = expression.declaration.type.typeDefinitionFromType

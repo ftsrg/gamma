@@ -51,6 +51,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
+	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
@@ -68,8 +69,10 @@ class StatechartToLowlevelTransformer {
 
 	new() {
 		this.trace = new Trace
+		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining, this.maxRecursionDepth, this.assertionVariableName)
+		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
+			this.maxRecursionDepth, this.assertionVariableName)
 		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}

@@ -103,10 +103,12 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			DirectReferenceExpression reference = (DirectReferenceExpression) operand;
 			Declaration declaration = reference.getDeclaration();
 			Type type = declaration.getType();
-			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-			if (typeDefinition instanceof RecordTypeDefinition) {
-				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-				return record.getFieldDeclarations();
+			if (type != null) {
+				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+				if (typeDefinition instanceof RecordTypeDefinition) {
+					RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+					return record.getFieldDeclarations();
+				}
 			}
 		} 
 		return Collections.emptyList();
