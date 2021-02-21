@@ -34,7 +34,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
-import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -275,16 +274,16 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				declarations.addAll(gammaStatechart.getParameterDeclarations());
 				declarations.addAll(gammaStatechart.getVariableDeclarations());
 				IScope statechartDeclarations = Scopes.scopeFor(declarations);
-				// Actions and local declarations
+				// 1. Record fields
+//				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+//				if (recordAccess != null) {
+//					return super.getScope(recordAccess, reference);
+//				}
+				// 2. Actions and local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
 				if (actionContainer != null) {
 					IScope actionDeclarations = super.getScope(actionContainer, reference);
 					return new SimpleScope(statechartDeclarations, actionDeclarations.getAllElements());
-				}
-				// Record fields
-				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-				if (recordAccess != null) {
-					return super.getScope(recordAccess, reference);
 				}
 				return statechartDeclarations;
 			}

@@ -163,14 +163,18 @@ class ExpressionTransformer {
 			var functionAccess = currentAccess as FunctionAccessExpression
 			var functionReturnVariables = if (trace.isMapped(functionAccess)) {
 				trace.get(functionAccess)
-			} else {newArrayList}
-			val returnVariable = functionReturnVariables.filter[it === expression.field.declaration].onlyElement
+			}
+			else {
+				newArrayList
+			}
+			// FIXME is this correct? it is a variable declaration, whereas the rhs is a field declaration
+			val returnVariable = functionReturnVariables.filter[
+					it == expression.fieldReference.fieldDeclaration].onlyElement
 			result += createDirectReferenceExpression => [
 				it.declaration = returnVariable
 			]
 		}
 		return result		
-		
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
@@ -650,7 +654,7 @@ class ExpressionTransformer {
 				result += collectAccessList(inner)
 			}
 			// add own
-			result += exp.field
+			result += exp.fieldReference
 		}
 		else if (exp instanceof SelectExpression){
 			// if possible, jump over (as it returns a value with the same access list)

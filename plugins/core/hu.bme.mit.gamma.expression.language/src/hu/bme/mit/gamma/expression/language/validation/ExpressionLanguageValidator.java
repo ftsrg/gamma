@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -181,10 +180,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		}
 		// check if the referred field exists
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
-		Declaration referredField = recordAccessExpression.getField().getDeclaration();
+		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			error("The record type does not contain any fields with the given name.",
-					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD);
+					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE);
 			return;
 		}
 	}
@@ -352,6 +351,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		checkEnumerationConformance(lhs, rhs, feature);
 	}
 	
+	// FIXME Not correct approach, as cannot look into e.g., a Record type
 	protected void checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
 		ExpressionType lhsExpressionType = typeDeterminator.transform(type);
 		ExpressionType rhsExpressionType = typeDeterminator.getType(rhs);

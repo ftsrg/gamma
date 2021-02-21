@@ -48,15 +48,25 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 		// Records
-		RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-		if (recordAccess != null) {
-			Expression operand = recordAccess.getOperand();
-			if (operand == null) {
-				return super.getScope(context, reference); // Still looking for a record variable
+//		RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+//		if (recordAccess != null) {
+//			Expression operand = recordAccess.getOperand();
+//			if (operand == null) {
+//				EObject container = context.eContainer();
+//				// NOT '.super'
+//				return getScope(container, reference); // Still looking for a record variable
+//			}
+//			// Looking for the fields in the operand
+//			Collection<FieldDeclaration> fieldDeclarations = getFieldDeclarations(operand);
+//			return Scopes.scopeFor(fieldDeclarations);
+//		}
+		if (reference == ExpressionModelPackage.Literals.FIELD_REFERENCE_EXPRESSION__FIELD_DECLARATION) {
+			RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+			if (recordAccess != null) {
+				Expression operand = recordAccess.getOperand();
+				Collection<FieldDeclaration> fieldDeclarations = getFieldDeclarations(operand);
+				return Scopes.scopeFor(fieldDeclarations);
 			}
-			// Looking for the fields in the operand
-			Collection<FieldDeclaration> fieldDeclarations = getFieldDeclarations(operand);
-			return Scopes.scopeFor(fieldDeclarations);
 		}
 		// Local declarations
 		if (context instanceof Action &&

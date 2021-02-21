@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
 import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
@@ -661,12 +662,10 @@ public class ExpressionUtil {
 	
 	protected Expression _getInitialValueOfType(final RecordTypeDefinition type) {
 		RecordLiteralExpression recordLiteralExpression = factory.createRecordLiteralExpression();
-		// TODO set record reference
-//		recordLiteralExpression.setRecord(value);
 		for (FieldDeclaration field : type.getFieldDeclarations()) {
 			FieldAssignment assignment = factory.createFieldAssignment();
-			DirectReferenceExpression fieldReference = factory.createDirectReferenceExpression();
-			fieldReference.setDeclaration(field);
+			FieldReferenceExpression fieldReference = factory.createFieldReferenceExpression();
+			fieldReference.setFieldDeclaration(field);
 			assignment.setReference(fieldReference);
 			assignment.setValue(getInitialValueOfType(field.getType()));
 			recordLiteralExpression.getFieldAssignments().add(assignment);

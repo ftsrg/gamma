@@ -154,8 +154,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="rightInclusive" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordLiteralExpression" eSuperTypes="#//LiteralExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="record" lowerBound="1"
-        eType="#//TypeReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldAssignments" upperBound="-1"
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
@@ -165,7 +163,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FieldAssignment">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
-        eType="#//DirectReferenceExpression" containment="true"/>
+        eType="#//FieldReferenceExpression" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
@@ -181,8 +179,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="AssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//ArgumentedElement #//AssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AssignableAccessExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="field" lowerBound="1" eType="#//DirectReferenceExpression"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fieldReference" lowerBound="1"
+        eType="#//FieldReferenceExpression" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FieldReferenceExpression" eSuperTypes="#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fieldDeclaration" lowerBound="1"
+        eType="#//FieldDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>
