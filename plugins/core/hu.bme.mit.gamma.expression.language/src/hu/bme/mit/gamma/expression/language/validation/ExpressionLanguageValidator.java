@@ -119,7 +119,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
 		handleValidationResultMessage(expressionModelValidator.checkRecordAccessExpression(recordAccessExpression));
-		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
+		/*RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
 				findAccessExpressionTypeDefinition(recordAccessExpression);
 		// check if the referred declaration is accessible
 		Declaration referredDeclaration = 
@@ -136,7 +136,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 			error("The record type does not contain any fields with the given name.",
 					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE);
 			return;
-		}
+		}*/
 	}
 	
 	@Check

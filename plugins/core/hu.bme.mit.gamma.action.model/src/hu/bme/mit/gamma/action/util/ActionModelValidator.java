@@ -43,6 +43,10 @@ import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 public class ActionModelValidator extends ExpressionModelValidator {
+	
+	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
+	private ActionModelValidator() {}
+	
 	//TODO ???
 	@Check
 	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
@@ -65,12 +69,14 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				List<Action> actions = (List<Action>) object;
 				int index = actions.indexOf(action);
 				//error("Not supported action.", container, eContainmentFeature, index);
-				
-				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",container, eContainmentFeature, index));
+
+				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",
+				// new ReferenceInfo(eContainmentFeature, index, container)));
 			}
 			else {
 				//error("Not supported action.", container, eContainmentFeature);
-				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",container, eContainmentFeature));
+				//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported action.",
+				//new ReferenceInfo(eContainmentFeature, index, container)));
 			}
 		}
 		return validationResultMessages;
@@ -113,7 +119,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	}
 	
 	@Check
-	public void checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
+	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject container = statement.eContainer();
 		if (container instanceof Block) {
 			Block block = (Block) container;
@@ -123,53 +130,71 @@ public class ActionModelValidator extends ExpressionModelValidator {
 			for (VariableDeclaration precedingVariableDeclaration : precedingVariableDeclarations) {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
-					error("This variable cannot be named " + newName + " as it would enshadow a previous local variable.",
-							ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION);
+					//error("This variable cannot be named " + newName + " as it would enshadow a previous local variable.",
+					//		ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION,null)));
 				}
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	@Check
-	public void checkSelectExpression(SelectExpression expression){
+	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		// check if the referred object is a value declaration
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Declaration referredDeclaration = 
 				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
 		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
-			return;
+			//return;
+			return validationResultMessages;
 		}
 		// or an IR literal expression
 		if ((expression.getOperand() instanceof IntegerRangeLiteralExpression)) {
-			return;
+			//return;
+			return validationResultMessages;
 		}
 		// or a type reference expression
 		if ((expression.getOperand() instanceof ReferenceExpression) && (expression.getOperand() instanceof TypeReferenceExpression)) {
-			return;
+			//return;
+			return validationResultMessages;
 		}
 		// otherwise throw error
-		error("The specified object is not selectable: " + expression.getOperand().getClass(),
-				ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+		//error("The specified object is not selectable: " + expression.getOperand().getClass(),
+		//		ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"The specified object is not selectable: " + expression.getOperand().getClass(),
+				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+		return validationResultMessages;
 	}
 
 	@Check
-	public void CheckReturnStatementType(ReturnStatement rs) {
+	public Collection<ValidationResultMessage> CheckReturnStatementType(ReturnStatement rs) {
 		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
-		
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
 		Type containingProcedureType = null;
 		if(containingProcedure != null) {
 			containingProcedureType = containingProcedure.getType();
 		}
 		if(!typeDeterminator.equals(containingProcedureType, returnStatementType)) {
-			error("The type of the return statement (" + returnStatementType.toString().toLowerCase()
+			//error("The type of the return statement (" + returnStatementType.toString().toLowerCase()
+			//		+ ") does not match the declared type of the procedure (" 
+			//		+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
+			//		null);	//Underlines the whole line
+			
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The type of the return statement (" + returnStatementType.toString().toLowerCase()
 					+ ") does not match the declared type of the procedure (" 
 					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
-					null);	//Underlines the whole line
+					null));
 		}
+		return validationResultMessages;
 	}
 	
 	//TODO extract into util-class
-	private ProcedureDeclaration getContainingProcedure(Action action) {
+	public ProcedureDeclaration getContainingProcedure(Action action) {
 		EObject container = action.eContainer();
 		if (container instanceof ProcedureDeclaration) {
 			return (ProcedureDeclaration)container;
@@ -185,7 +210,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	}
 	
 	//TODO extract into util-class
-	private ProcedureDeclaration getContainingProcedure(Branch branch) {
+	public ProcedureDeclaration getContainingProcedure(Branch branch) {
 		EObject container = branch.eContainer();
 		if (container instanceof Action) {
 			return getContainingProcedure((Action)container);

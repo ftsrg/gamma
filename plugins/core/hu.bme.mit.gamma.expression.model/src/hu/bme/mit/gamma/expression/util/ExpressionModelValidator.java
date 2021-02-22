@@ -88,6 +88,7 @@ public class ExpressionModelValidator {
 	
 	static public class ReferenceInfo{
 		EStructuralFeature reference;
+		EObject source;
 		Integer index;
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index){
@@ -95,8 +96,22 @@ public class ExpressionModelValidator {
 			this.index = index;
 		}
 		
+		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {
+			this.reference = reference;
+			this.index = index;
+			this.source = source;
+		}
+		
+		public boolean hasSource() {
+			return source != null;
+		}
+		
 		public boolean hasInteger() {
 			return index != null;
+		}
+		
+		public EObject getSource() {
+			return source;
 		}
 		
 		public int getIndex() {
@@ -255,22 +270,20 @@ public class ExpressionModelValidator {
 			//		ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 			//return;
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The referred declaration is not accessible as a record!", 
-							new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+					"The referred declaration is not accessible as a record!", new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
-			
 		}
 		// check if the referred field exists
 		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
-		List<String> fieldDeclarationNames = fieldDeclarations.stream().map(fd -> fd.getName()).collect(Collectors.toList());
-		if (!fieldDeclarationNames.contains(recordAccessExpression.getField())){
+		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
+		if (!fieldDeclarations.contains(referredField)){
 			//error("The record type does not contain any fields with the given name.",
-			//		ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD);
+			//		ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE);
 			//return;
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The record type does not contain any fields with the given name.", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD, null)));
+					"The record type does not contain any fields with the given name.", new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
 			return validationResultMessages;
+			
 		}
 		return validationResultMessages;
 	}
