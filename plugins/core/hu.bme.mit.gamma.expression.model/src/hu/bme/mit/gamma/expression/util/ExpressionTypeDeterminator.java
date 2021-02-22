@@ -145,16 +145,17 @@ public class ExpressionTypeDeterminator {
 		}
 		if (expression instanceof ArrayAccessExpression) {
 			int depth = 0;
-			List<String> fields = new ArrayList<String>();
-			ReferenceExpression ref = (ArrayAccessExpression)expression;
+			List<FieldDeclaration> fields = new ArrayList<FieldDeclaration>();
+			ReferenceExpression ref = (ArrayAccessExpression) expression;
 			TypeDefinition type;
 			while (true) {
-				if(ref instanceof ArrayAccessExpression) {
+				if (ref instanceof ArrayAccessExpression) {
 					depth++;
 					ref = (ReferenceExpression)((ArrayAccessExpression)ref).getOperand();
 				} else if (ref instanceof RecordAccessExpression) {
-					fields.add(0, ((RecordAccessExpression) ref).getField());
-					ref = (ReferenceExpression)((RecordAccessExpression)ref).getOperand();
+					RecordAccessExpression recordAccessExpression = (RecordAccessExpression) ref;
+					fields.add(0, recordAccessExpression.getFieldReference().getFieldDeclaration());
+					ref = (ReferenceExpression) recordAccessExpression.getOperand();
 				} else if (ref instanceof DirectReferenceExpression) {
 					type = expressionUtil.findTypeDefinitionOfType(((DirectReferenceExpression)ref).getDeclaration().getType());
 					break;
@@ -167,7 +168,7 @@ public class ExpressionTypeDeterminator {
 					type = expressionUtil.findTypeDefinitionOfType(((ArrayTypeDefinition)type).getElementType());
 					depth--;
 				} else if (type instanceof RecordTypeDefinition) {
-					type = expressionUtil.findTypeDefinitionOfType(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.getName().equals(fields.remove(0))).findFirst().get().getType());
+					type = expressionUtil.findTypeDefinitionOfType(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.equals(fields.remove(0))).findFirst().get().getType());
 				} else {
 					throw new IllegalArgumentException("Type contains forbidden elements: " + type.getClass());
 				}
@@ -183,7 +184,7 @@ public class ExpressionTypeDeterminator {
 			TypeDefinition typeDefinition = ExpressionLanguageUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
 			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) typeDefinition;
 			for (FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
-				if (fd.getName().equals(recordAccessExpression.getField())) {
+				if (fd.equals(recordAccessExpression.getFieldReference().getFieldDeclaration())) {
 					return transform(fd.getType());
 				}
 			}

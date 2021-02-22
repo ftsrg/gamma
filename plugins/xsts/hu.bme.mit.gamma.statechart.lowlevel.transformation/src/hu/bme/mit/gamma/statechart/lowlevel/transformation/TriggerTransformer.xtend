@@ -36,7 +36,8 @@ class TriggerTransformer {
 	}
 	
 	protected def dispatch Expression transformTrigger(BinaryTrigger trigger) {
-		switch (trigger.type) {
+		val type = trigger.type
+		switch (type) {
 			case AND:
 				return createAndExpression => [
 					it.operands += trigger.leftOperand.transformTrigger
@@ -68,7 +69,8 @@ class TriggerTransformer {
 	}
 
 	protected def dispatch Expression transformTrigger(UnaryTrigger trigger) {
-		switch (trigger.type) {
+		val type = trigger.type
+		switch (type) {
 			case NOT: 
 				return createNotExpression => [
 					it.operand = trigger.operand.transformTrigger

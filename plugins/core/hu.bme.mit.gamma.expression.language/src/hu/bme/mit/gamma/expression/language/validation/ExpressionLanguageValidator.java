@@ -21,9 +21,12 @@ import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
@@ -31,10 +34,13 @@ import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
+import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
@@ -113,6 +119,24 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
 		handleValidationResultMessage(expressionModelValidator.checkRecordAccessExpression(recordAccessExpression));
+		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
+				findAccessExpressionTypeDefinition(recordAccessExpression);
+		// check if the referred declaration is accessible
+		Declaration referredDeclaration = 
+				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
+		if (!(referredDeclaration instanceof ValueDeclaration)) {
+			error("The referred declaration is not accessible as a record!",
+					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
+			return;
+		}
+		// check if the referred field exists
+		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
+		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
+		if (!fieldDeclarations.contains(referredField)){
+			error("The record type does not contain any fields with the given name.",
+					ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE);
+			return;
+		}
 	}
 	
 	@Check

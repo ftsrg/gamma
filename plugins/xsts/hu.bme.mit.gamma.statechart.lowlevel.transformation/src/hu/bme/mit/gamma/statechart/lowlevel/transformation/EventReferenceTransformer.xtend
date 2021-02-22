@@ -94,13 +94,13 @@ class EventReferenceTransformer {
 			val lowlevelTimeoutVar = trace.get(timeout)
 			// The timeouts are TRUE at start according to semantics, that is why they have to set to the highest value
 			if (lowlevelTimeoutVar.expression === null) {
-				lowlevelTimeoutVar.expression = value.clone(true, true) // This is already a low-level expression
+				lowlevelTimeoutVar.expression = value.clone // This is already a low-level expression
 			}
 			else {
 				// Multiple timeouts can be transformed to a single variable (optimization)
 				// We need the max initial value, to make sure each one is true at the beginning
 				val oldValue = lowlevelTimeoutVar.expression
-				val newValue = value.clone(true, true)
+				val newValue = value.clone
 				try {
 					val evaluatedOldValue = oldValue.evaluateInteger
 					val evaluatedNewValue = newValue.evaluateInteger
@@ -111,7 +111,7 @@ class EventReferenceTransformer {
 					// One expression is a variable: better to do add expression
 					lowlevelTimeoutVar.expression = createAddExpression => [
 						it.operands += lowlevelTimeoutVar.expression
-						it.operands += value.clone(true, true)
+						it.operands += value.clone
 					]
 				}
 			}

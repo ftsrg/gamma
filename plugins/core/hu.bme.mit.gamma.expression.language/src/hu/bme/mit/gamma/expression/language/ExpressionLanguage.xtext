@@ -253,19 +253,23 @@ AccessExpression returns Expression:
 	PrimaryExpression(
 		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
 		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
-		{RecordAccessExpression.operand=current} '.' field=ID |
-		{SelectExpression.operand=current} '.' 'select'
+		{RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression |
+		{SelectExpression.operand=current} '->' 'select'
 	)* 
+;
+
+FieldReferenceExpression returns FieldReferenceExpression:
+		{FieldReferenceExpression} fieldDeclaration=[FieldDeclaration] 
 ;
 
 PrimaryExpression returns Expression: 
 	  DirectReferenceExpression | 
+	  LiteralExpression | 
 	 '(' Expression ')'
 ;
 
-DirectReferenceExpression returns Expression:
-		{DirectReferenceExpression} declaration=[ValueDeclaration] | 
-		LiteralExpression
+DirectReferenceExpression returns DirectReferenceExpression:
+		{DirectReferenceExpression} declaration=[ValueDeclaration] 
 ;
 
 LiteralExpression returns Expression:
@@ -304,13 +308,12 @@ FalseExpression returns FalseExpression:
 	{FalseExpression} 'false'
 ;
 
-
 RecordLiteralExpression:
-	'(#' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '#)'
+	'#(' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* ')'
 ;
 
 FieldAssignment:
-	reference=ID ':=' value=Expression
+	reference=FieldReferenceExpression ':=' value=Expression
 ;
 
 EnumerationLiteralExpression:

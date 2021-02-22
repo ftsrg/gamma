@@ -133,7 +133,7 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//EnumerationLiteralExpression/reference"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//FieldAssignment">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//FieldAssignment/reference"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/reference"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//FieldAssignment/value"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//ReferenceExpression"/>
@@ -146,7 +146,10 @@
     <genClasses ecoreClass="expression.ecore#//AssignableAccessExpression"/>
     <genClasses ecoreClass="expression.ecore#//ArrayAccessExpression"/>
     <genClasses ecoreClass="expression.ecore#//RecordAccessExpression">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute expression.ecore#//RecordAccessExpression/field"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordAccessExpression/fieldReference"/>
+    </genClasses>
+    <genClasses ecoreClass="expression.ecore#//FieldReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//FieldReferenceExpression/fieldDeclaration"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//NonAssignableAccessExpression"/>
     <genClasses ecoreClass="expression.ecore#//SelectExpression"/>

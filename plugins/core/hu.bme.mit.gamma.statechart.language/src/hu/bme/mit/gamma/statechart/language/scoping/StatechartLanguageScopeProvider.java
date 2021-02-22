@@ -27,11 +27,17 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -253,11 +259,14 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(events);
 			}
 			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
-				return Scopes.scopeFor(typeDeclarations);
+				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+				if (gammaPackage != null) {
+					List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+					return Scopes.scopeFor(typeDeclarations);
+				}
 			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				// Global declarations
 				Collection<Declaration> declarations = new ArrayList<Declaration>();
 				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
 				declarations.addAll(gammaPackage.getConstantDeclarations());
@@ -265,7 +274,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				declarations.addAll(gammaStatechart.getParameterDeclarations());
 				declarations.addAll(gammaStatechart.getVariableDeclarations());
 				IScope statechartDeclarations = Scopes.scopeFor(declarations);
-				
+				// 1. Record fields
+//				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+//				if (recordAccess != null) {
+//					return super.getScope(recordAccess, reference);
+//				}
+				// 2. Actions and local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
 				if (actionContainer != null) {
 					IScope actionDeclarations = super.getScope(actionContainer, reference);
@@ -301,6 +315,24 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
+	}
+	
+	@Override
+	protected Collection<FieldDeclaration> getFieldDeclarations(Expression operand) {
+		if (operand instanceof EventParameterReferenceExpression) {
+			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) operand;
+			Declaration declaration = reference.getParameter();
+			Type type = declaration.getType();
+			if (type != null) {
+				// Due to an Xtext parsing bug, sometimes every attribute of the element is null
+				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+				if (typeDefinition instanceof RecordTypeDefinition) {
+					RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+					return record.getFieldDeclarations();
+				}
+			}
+		}
+		return super.getFieldDeclarations(operand);
 	}
 
 }

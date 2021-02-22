@@ -37,7 +37,6 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
-import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
@@ -48,7 +47,6 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
-
 
 /**
  * This class contains custom validation rules. 
