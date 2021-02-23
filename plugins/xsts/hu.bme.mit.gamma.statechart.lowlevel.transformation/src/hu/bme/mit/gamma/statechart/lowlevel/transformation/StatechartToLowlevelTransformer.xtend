@@ -166,7 +166,7 @@ class StatechartToLowlevelTransformer {
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
 		for (gammaParam : gammaEvent.parameterDeclarations) {
-			val lowlevelParam = createVariableDeclaration => [
+			val lowlevelParam = createVariableDeclaration => [ // FIXME
 				it.name = if (direction == EventDirection.IN) gammaParam.getInName(gammaPort) else gammaParam.getOutName(gammaPort)
 				it.type = gammaParam.type.transformType
 			]
@@ -247,12 +247,12 @@ class StatechartToLowlevelTransformer {
 		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
-			val lowlevelParameterDeclaration = parameterDeclaration.transform
+			val lowlevelParameterDeclaration = parameterDeclaration.transform // FIXME
 			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
 			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
 		}
 		for (variableDeclaration : statechart.variableDeclarations) {
-			lowlevelStatechart.variableDeclarations += variableDeclaration.transform
+			lowlevelStatechart.variableDeclarations += variableDeclaration.transform // FIXME
 		}
 		for (timeoutDeclaration : statechart.timeoutDeclarations) {
 			// Timeout declarations are transformed to integer variable declarations

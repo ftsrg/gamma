@@ -767,4 +767,17 @@ public class ExpressionUtil {
 		return equalityExpression;
 	}
 	
+	public Expression wrapIntoMultiaryExpression(Expression original,
+			Expression addition, MultiaryExpression potentialContainer) {
+		if (original == null) {
+			return addition;
+		}
+		if (addition == null) {
+			return original;
+		}
+		potentialContainer.getOperands().add(original);
+		potentialContainer.getOperands().add(addition);
+		return potentialContainer;
+	}
+	
 }
