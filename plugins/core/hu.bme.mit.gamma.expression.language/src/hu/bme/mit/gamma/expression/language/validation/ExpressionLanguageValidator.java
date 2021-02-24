@@ -63,24 +63,36 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	protected ExpressionModelValidator expressionModelValidator = ExpressionModelValidator.INSTANCE;
 	
 	public void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
-		for(ValidationResultMessage element: collection) {
-			if(element.getResult() == ValidationResult.ERROR) {
-				if(element.getReferenceInfo().hasInteger()) {
-					error(element.getResultText(),element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				}else {
-					error(element.getResultText(),element.getReferenceInfo().getReference());
+		for (ValidationResultMessage element: collection) {
+			if (element.getResult() == ValidationResult.ERROR) {
+				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
+					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+					error(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
+				} else {
+					error(element.getResultText(), element.getReferenceInfo().getReference());
 				}
-			}else if(element.getResult() == ValidationResult.WARNING) {
-				if(element.getReferenceInfo().hasInteger()) {
-					warning(element.getResultText(),element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				}else {
-					warning(element.getResultText(),element.getReferenceInfo().getReference());
+			}else if (element.getResult() == ValidationResult.WARNING) {
+				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
+					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+					warning(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
+				} else {
+					warning(element.getResultText(), element.getReferenceInfo().getReference());
 				}
-			}else if(element.getResult() == ValidationResult.INFO) {
-				if(element.getReferenceInfo().hasInteger()) {
-					info(element.getResultText(),element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				}else {
-					info(element.getResultText(),element.getReferenceInfo().getReference());
+			}else if (element.getResult() == ValidationResult.INFO) {
+				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
+					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+					info(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
+				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
+				} else {
+					info(element.getResultText(), element.getReferenceInfo().getReference());
 				}
 			}
 		}

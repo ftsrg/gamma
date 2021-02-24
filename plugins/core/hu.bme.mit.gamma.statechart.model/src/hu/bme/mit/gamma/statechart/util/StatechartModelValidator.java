@@ -117,6 +117,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	// Some elements can have the same name
 	
+	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
+	public StatechartModelValidator() {}
 
 	@Override
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
@@ -126,7 +128,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
 					element, VariableDeclarationStatement.class);
 			if (statement != null) {
-				//return; // No op - Action language validator is used here
+				// No op - Action language validator is used here
 				return validationResultMessages;
 			}
 		}
@@ -160,13 +162,11 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		int index = parentPackage.getComponents().indexOf(component);
 		if (!parentPackage.getInterfaces().isEmpty()) {
-			//error("Components cannot be defined in package containing an interface.", parentPackage, InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Components cannot be defined in package containing an interface.",
 					new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index, parentPackage)));
 		}
 		if (!parentPackage.getTypeDeclarations().isEmpty()) {
-			//error("Components cannot be defined in package containing a type declaration.", parentPackage, InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Components cannot be defined in package containing a type declaration.",
 					new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__COMPONENTS, index, parentPackage)));
@@ -177,7 +177,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	public Collection<ValidationResultMessage> checkUnsupportedTriggers(OpaqueTrigger trigger) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		//error("Not supported trigger.", StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER);
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported trigger.",
 				new ReferenceInfo(StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER, null)));
 		return validationResultMessages;
@@ -195,9 +194,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			  type instanceof ArrayTypeDefinition ||
 			  type instanceof RecordTypeDefinition
 				)) {
-			//error("This type is not supported in the GSL.", ExpressionModelPackage.Literals.DECLARATION__TYPE);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This type is not supported in the GSL."
-					,new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE,null)));
+					,new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
 			
 		}
 		return validationResultMessages;
@@ -225,8 +223,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		for (Interface parent : gammaInterface.getParents()) {
 			Interface parentInterface = getParentInterfaces(gammaInterface, parent);
 			if (parentInterface != null) {
-				//error("This interface is in a parent circle, referred by " + parentInterface.getName() + "!" 
-				//		+ "Interfaces must have an acyclical parent hierarchy!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 						"This interface is in a parent circle, referred by " + parentInterface.getName() + "!" 
 						+ "Interfaces must have an acyclical parent hierarchy!", new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
@@ -235,7 +231,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	private Interface getParentInterfaces(Interface initialInterface, Interface actualInterface) {
+	public Interface getParentInterfaces(Interface initialInterface, Interface actualInterface) {
 		if (initialInterface == actualInterface) {
 			return initialInterface;
 		}
@@ -258,7 +254,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (event.getPersistency() == Persistency.PERSISTENT) {
 			if (event.getParameterDeclarations().isEmpty()) {
-				//error("A persistent event must have a parameter.", InterfaceModelPackage.Literals.EVENT__PERSISTENCY);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A persistent event must have a parameter.",
 						new ReferenceInfo(InterfaceModelPackage.Literals.EVENT__PERSISTENCY, null)));
 			}
@@ -272,8 +267,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (event.getParameterDeclarations().size() == 1) {
 			final ParameterDeclaration parameterDeclaration = event.getParameterDeclarations().get(0);
 			if (!parameterDeclaration.getName().equals(event.getName() + "Value")) {
-				//warning("This parameter should be named " + event.getName() + "Value to be consistent with the namings of integrated modeling languages",
-				//	ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 						"This parameter should be named " + event.getName() + "Value to be consistent with the namings of integrated modeling languages",
 						new ReferenceInfo(ExpressionModelPackage.Literals.PARAMETRIC_ELEMENT__PARAMETER_DECLARATIONS, null)));
@@ -289,8 +282,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
 		if (!(statechart.getAnnotation() instanceof AdaptiveContractAnnotation)) {
-			//error("States with state contracts can be defined only in adaptive contract statecharts.",
-			//		ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"States with state contracts can be defined only in adaptive contract statecharts.",
 					new ReferenceInfo(ContractModelPackage.Literals.STATE_CONTRACT_ANNOTATION__CONTRACT_STATECHARTS, null)));
@@ -300,17 +291,16 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	
-	public void checkStatechartAnnotation(AdaptiveContractAnnotation annotation) {
+	public Collection<ValidationResultMessage> checkStatechartAnnotation(AdaptiveContractAnnotation annotation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component component = StatechartModelDerivedFeatures.getContainingComponent(annotation);
 		Component monitoredComponent = annotation.getMonitoredComponent();
 		if (!StatechartModelDerivedFeatures.areInterfacesEqual(component, monitoredComponent)) {
-			//error("The contained ports of the monitored component are not equal to that of the adaptive statechart.",
-			//		ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The contained ports of the monitored component are not equal to that of the adaptive statechart.",
 					new ReferenceInfo(ContractModelPackage.Literals.ADAPTIVE_CONTRACT_ANNOTATION__MONITORED_COMPONENT, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	// Statechart mission phase
@@ -321,8 +311,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		SynchronousComponentInstance component = stateDefinition.getComponent();
 		SynchronousComponent type = component.getType();
 		if (!(type instanceof StatechartDefinition)) {
-			//error("Mission phase state definitions can refer to only statechart definitions as type.",
-			//		component, CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Mission phase state definitions can refer to only statechart definitions as type.",
 					new ReferenceInfo(CompositeModelPackage.Literals.SYNCHRONOUS_COMPONENT_INSTANCE__TYPE, null, component)));
@@ -336,8 +324,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				VariableBinding rhs = variableBindings.get(j);
 				VariableDeclaration rhsInstanceVariable = rhs.getInstanceVariableReference().getVariable();
 				if (lhsInstanceVariable == rhsInstanceVariable) {
-					//error("More than one statechart variable is bound to this instance variable.",
-					//		lhs, PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE);
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"More than one statechart variable is bound to this instance variable.",
 							new ReferenceInfo(PhaseModelPackage.Literals.VARIABLE_BINDING__INSTANCE_VARIABLE_REFERENCE, null, lhs)));
@@ -446,7 +432,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
 				int index = _package.getImports().indexOf(importedPackage);
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "No component or interface or type declaration from this imported package is used.",
-						new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__IMPORTS,index)));
+						new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__IMPORTS, index)));
 			}
 		}
 		return validationResultMessages;
@@ -457,9 +443,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<StateNode> entries = region.getStateNodes().stream().filter(it -> it instanceof EntryState).collect(Collectors.toList());
 		if (entries.isEmpty()) {
-			//error("A region must have at least one entry node.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A region must have at least one entry node.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		return validationResultMessages;
 	}
@@ -500,13 +485,13 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				SetTimeoutAction.class).stream().filter(it -> it.getTimeoutDeclaration() == declaration).collect(Collectors.toSet());
 		if (timeoutSettings.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This declaration is not used.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 			
 		}
 		if (timeoutSettings.size() > 1) {
 			for (SetTimeoutAction timeoutSetting : timeoutSettings) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This timeout declaration is set more than once.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION,null, timeoutSetting)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TIMEOUT_ACTION__TIMEOUT_DECLARATION, null, timeoutSetting)));
 			}
 		}
 		return validationResultMessages;
@@ -519,7 +504,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			int value = expressionEvaluator.evaluateInteger(timeSpecification.getValue());
 			if (value <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Time specifications must have positive values: " + value, new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE,null)));
+						"Time specifications must have positive values: " + value, new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE, null)));
 			}
 		} catch (IllegalArgumentException e) {
 			// Untransformable expression, it contains variable declarations
@@ -541,7 +526,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				if (references.stream().noneMatch(it -> it.getPort() == port && it.getEvent() == event)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 							"None of the preceding transitions are triggered by this port-event combination.",
-							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT,null)));
+							new ReferenceInfo(InterfaceModelPackage.Literals.EVENT_PARAMETER_REFERENCE_EXPRESSION__EVENT, null)));
 				}
 			}
 		}
@@ -572,13 +557,10 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(source);
 				int size = outgoingTransitions.size();
 				if (outgoingTransitions.get(size - 1) != transition) {
-					//warning("This is an else transition, and its priority is bigger than some other transitions " +
-					//	"going out of the same state, as the transition priority is set to " + TransitionPriority.ORDER_BASED,
-					//	CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 							"This is an else transition, and its priority is bigger than some other transitions " +
 							"going out of the same state, as the transition priority is set to " + TransitionPriority.ORDER_BASED,
-							new ReferenceInfo(CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY,null)));
+							new ReferenceInfo(CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY, null)));
 				}
 			}
 		}
@@ -610,20 +592,20 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		EObject container = elseExpression.eContainer();
 		if (!(container instanceof Transition) && !(container instanceof Branch)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Else expressions must be an atomic guard in the expression."
-					, new ReferenceInfo(elseExpression.eContainingFeature(),null,container)));
+					, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 		}
 		if (container instanceof Transition) {
 			Transition transition = (Transition) container;
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Else expressions cannot be used with triggers."
-						, new ReferenceInfo(elseExpression.eContainingFeature(),null,container)));
+						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 			StateNode node = transition.getSourceState();
 			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 			outgoingTransitions.remove(transition);
 			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Only a single transition with and else expression can go out of a certain node."
-						, new ReferenceInfo(elseExpression.eContainingFeature(),null,container)));
+						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 		}
 		return validationResultMessages;
@@ -641,7 +623,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				Event event = portEventReference.getEvent();
 				if (!getSemanticEvents(Collections.singleton(port), EventDirection.IN).contains(event)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This event is not an in event.",
-							new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT,null)));
+							new ReferenceInfo(StatechartModelPackage.Literals.PORT_EVENT_REFERENCE__EVENT, null)));
 				}
 			}
 		}
@@ -654,7 +636,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			Expression guard = transition.getGuard();
 			if (!typeDeterminator.isBoolean(guard)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This guard is not a boolean expression.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}
 		return validationResultMessages;
@@ -669,12 +651,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		final EList<Expression> arguments = raiseEvent.getArguments();
 		if (!StatechartModelDerivedFeatures.getOutputEvents(port).contains(event)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This event is not an out event.",
-					new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.RAISE_EVENT_ACTION__EVENT, null)));
 			return validationResultMessages;
 		}
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The number of arguments must match the number of parameters.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 			return validationResultMessages;
 		}
 		if (!arguments.isEmpty()) {
@@ -688,7 +670,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 						otherRaiseEvent.getEvent() == raiseEvent.getEvent() &&
 						!otherRaiseEvent.getArguments().isEmpty()) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This event raise argument is overriden by other event raise arguments.",
-							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS,null)));
+							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 				}
 			}
 		}
@@ -711,12 +693,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (!hasIncomingTransition(node) || (!StatechartModelDerivedFeatures.getIncomingTransitions(node).isEmpty()
 				&& allTransitionsAreLoop(node))) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This node is unreachable.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		return validationResultMessages;
 	}
 	
-	private boolean hasIncomingTransition(StateNode node) {
+	public boolean hasIncomingTransition(StateNode node) {
 		boolean hasIncomingTransition = !StatechartModelDerivedFeatures.getIncomingTransitions(node).isEmpty();
 		if (hasIncomingTransition) {
 			return true;
@@ -735,11 +717,11 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return false;
 	}
 	
-	private boolean isLoopEdge(Transition transition) {
+	public boolean isLoopEdge(Transition transition) {
 		return transition.getSourceState() == transition.getTargetState();
 	}
 	
-	private boolean allTransitionsAreLoop(StateNode node) {
+	public boolean allTransitionsAreLoop(StateNode node) {
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(node);
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 		if (incomingTransitions.size() != outgoingTransitions.size()) {
@@ -767,16 +749,16 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> !(it instanceof EntryState) &&
 				StatechartModelDerivedFeatures.getParentRegion(it) == parentRegion)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Entry nodes must not have incoming transitions from non-entry nodes in the same region.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		if (incomingTransitions.stream().map(it -> it.getSourceState()).anyMatch(it -> it instanceof EntryState &&
 				StatechartModelDerivedFeatures.getParentRegion(it) != parentRegion)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Entry nodes must not have incoming transitions from entry nodes in other regions.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));		
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));		
 		}
 		if (outgoingTransitions.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Entry nodes must have a single outgoing transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		else {
 			// A single transition
@@ -784,7 +766,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				StateNode target = transition.getTargetState();
 				if (StatechartModelDerivedFeatures.getParentRegion(target) != parentRegion) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions going out from entry nodes must be targeted to a node in the region of the entry node.",
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE,null,transition)));
+							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, null, transition)));
 				}
 			}
 		}
@@ -799,11 +781,11 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		if (transition.getTrigger() != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Entry node transitions must not have triggers.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 		}
 		if (transition.getGuard() != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Entry node transitions must not have guards.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 		}
 		return validationResultMessages;
 	}
@@ -815,7 +797,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	private Collection<ValidationResultMessage> checkPseudoNodeAcyclicity(PseudoState node, Collection<PseudoState> visitedNodes) {
+	public Collection<ValidationResultMessage> checkPseudoNodeAcyclicity(PseudoState node, Collection<PseudoState> visitedNodes) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		visitedNodes.add(node);
 		for (Transition outgoingTransition : StatechartModelDerivedFeatures.getOutgoingTransitions(node)) {
@@ -823,7 +805,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			if (target instanceof PseudoState) {
 				if (visitedNodes.contains(target)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This transition creates a circle of pseudo nodes, which is forbidden.",
-							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE,null,outgoingTransition)));
+							new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, null, outgoingTransition)));
 					return validationResultMessages;
 				}
 				checkPseudoNodeAcyclicity((PseudoState) target, visitedNodes);
@@ -841,17 +823,17 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Choice nodes must have a single incoming transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(choice);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize == 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Choice nodes should have at least two outgoing transitions.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		else if (outgoingTransitionSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A choice node must have at least one outgoing transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		return validationResultMessages;
 	}
@@ -863,17 +845,17 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Fork nodes must have a single incoming transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(fork);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize == 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Fork nodes must have a single incoming transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		else if (outgoingTransitionSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A fork node must have at least one outgoing transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> targetedRegions = new HashSet<Region>();
@@ -881,9 +863,9 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			Region region = (Region) transition.getTargetState().eContainer();
 			if (targetedRegions.contains(region)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Targets of outgoing transitions of fork nodes must be in distinct regions.",
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Targets of outgoing transitions of fork nodes must be in distinct regions.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, null)));
 			}
 			else {
 				targetedRegions.add(region);
@@ -899,17 +881,17 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize == 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Merge nodes should have at least two incoming transitions.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		else if (incomingTransitionSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A merge node must have at least one incoming transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(merge);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Merge nodes must have a single outgoing transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		return validationResultMessages;
 	}
@@ -921,17 +903,17 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		int incomingTransitionSize = incomingTransitions.size();
 		if (incomingTransitionSize == 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Join nodes should have at least two incoming transitions.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		else if (incomingTransitionSize < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A join node must have at least one incoming transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		Collection<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(join);
 		int outgoingTransitionSize = outgoingTransitions.size();
 		if (outgoingTransitionSize != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Join nodes must have a single outgoing transition.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		// Targets of fork nodes must always be in distinct regions
 		Set<Region> sourceRegions = new HashSet<Region>();
@@ -939,9 +921,9 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			Region region = (Region) transition.getSourceState().eContainer();
 			if (sourceRegions.contains(region)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Sources of incoming transitions of join nodes must be in distinct regions.",
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Sources of incoming transitions of join nodes must be in distinct regions.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE,null,transition)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, null, transition)));
 			}
 			else {
 				sourceRegions.add(region);
@@ -958,51 +940,51 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (source instanceof ChoiceState) {
 			if (transition.getGuard() == null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Transitions from choice nodes should have guards if deterministic behavior is expected.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}
 		if (source instanceof ForkState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from fork nodes must not have triggers.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 				
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from fork nodes must not have guards.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}
 		if (source instanceof MergeState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from merge nodes must not have triggers.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 				
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from merge nodes must not have guards.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}
 		if (source instanceof JoinState) {
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from join nodes must not have triggers.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 			}
 			if (transition.getGuard() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions from join nodes must not have guards.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}
 		if (target instanceof JoinState) {
 			if (!(source instanceof PseudoState) &&	!transition.getEffects().isEmpty()) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions targeted to join nodes must not have actions.",
-						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS,null)));
+						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS, null)));
 			}
 		}
 		if ((source instanceof EntryState || source instanceof ChoiceState || source instanceof ForkState) &&
 				(target instanceof MergeState || source instanceof JoinState)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Transitions cannot connect entry, choice or fork states to merge or join states.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TARGET_STATE, null)));
 		}
 		return validationResultMessages;
 	}
@@ -1016,7 +998,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			it.getGuard() == null).count() > 1;
 		if (multipleTimedTransitions) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This state has multiple transitions with occluding timing specifications.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME,null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
 		return validationResultMessages;
 	}
@@ -1030,12 +1012,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		Transition nonDeterministicTransition = checkTransitionDeterminism(transition, siblingTransitions);
 		if (nonDeterministicTransition != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This transitions is in a non-deterministic relation with other transitions from the same source.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 		}
 		return validationResultMessages;
 	}
 	
-	private Transition checkTransitionDeterminism(Transition transition, Collection<Transition> transitions) {
+	public Transition checkTransitionDeterminism(Transition transition, Collection<Transition> transitions) {
 		if (transition.getGuard() != null || !(transition.getTrigger() instanceof EventTrigger) ||
 			(!(((EventTrigger) transition.getTrigger()).getEventReference() instanceof PortEventReference) &&
 			!(((EventTrigger) transition.getTrigger()).getEventReference() instanceof AnyPortEventReference))) {
@@ -1062,7 +1044,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	private boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
+	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
 		if (transition.getTrigger() instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) transition.getTrigger();
 			if (eventTrigger.getEventReference() instanceof PortEventReference) {
@@ -1081,7 +1063,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return false;
 	}
 	
-	private boolean isTransitionTriggeredByPortEvent(Transition transition, Port port) {
+	public boolean isTransitionTriggeredByPortEvent(Transition transition, Port port) {
 		if (transition.getTrigger() instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) transition.getTrigger();
 			if (eventTrigger.getEventReference() instanceof PortEventReference) {
@@ -1110,12 +1092,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (nonDeterministicTransition != null && 
 				statechart.getSchedulingOrder() == SchedulingOrder.TOP_DOWN) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This transitions is occluded by a higher level transition.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__TRIGGER, null)));
 		}
 		return validationResultMessages;
 	}
 	
-	private Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode source) {
+	public Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode source) {
 		if (source.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
 			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) source.eContainer().eContainer();
 			Collection<Transition> transitions = StatechartModelDerivedFeatures.getOutgoingTransitions(parentState) ;
@@ -1134,7 +1116,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		if (declaration != null) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Both this and transition between " + sameTriggerParallelTransition.getSourceState().getName() + 
 					" and " + sameTriggerParallelTransition.getTargetState().getName() + " assigns value to variable " + declaration.getName(),
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS, null)));
 		}
 		return validationResultMessages;
 	}
@@ -1148,12 +1130,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Both this and transition between " + sameTriggerParallelTransition.getSourceState().getName() + 
 				" and " + sameTriggerParallelTransition.getTargetState().getName() + " raises the same event "
 					+ portEvent.getValue().getName() + " with potentional parameters.",
-					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS,null)));
+					new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__EFFECTS, null)));
 		}
 		return validationResultMessages;
 	}
 	
-	private Transition getSameTriggedTransitionOfParallelRegions(Transition transition) {
+	public Transition getSameTriggedTransitionOfParallelRegions(Transition transition) {
 		StateNode sourceState = transition.getSourceState();
 		Region parentRegion = (Region) sourceState.eContainer();
 		if (parentRegion.eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
@@ -1166,7 +1148,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	private Collection<Transition> getTransitionsOfSiblingRegions(Collection<Region> siblingRegions) {
+	public Collection<Transition> getTransitionsOfSiblingRegions(Collection<Region> siblingRegions) {
 		Collection<Transition> siblingTransitions = new HashSet<Transition>();
 		siblingRegions.stream().map(it -> it.getStateNodes()).forEach(it -> it.stream()
 				.map(node -> StatechartModelDerivedFeatures.getOutgoingTransitions(node))
@@ -1174,7 +1156,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return siblingTransitions;
 	}
 	
-	private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
+	public Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof AssignmentStatement) {
 				AssignmentStatement assignment = (AssignmentStatement) action;
@@ -1198,7 +1180,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	private Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
+	public Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
 		for (Action action : lhs.getEffects()) {
 			if (action instanceof RaiseEventAction) {
 				RaiseEventAction lhsRaiseEvent = (RaiseEventAction) action;
@@ -1218,46 +1200,56 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	
-	private void checkTransitionOrientation(Transition transition) {
+	public Collection<ValidationResultMessage> checkTransitionOrientation(Transition transition) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (StatechartModelDerivedFeatures.isSameRegion(transition) ||
 				StatechartModelDerivedFeatures.isToLower(transition) ||
 				StatechartModelDerivedFeatures.isToHigher(transition) || 
 				StatechartModelDerivedFeatures.isToHigherAndLower(transition)) {
 			// These transitions are permitted
-			return;
+			return validationResultMessages;
 		}
-		error("The orientation of this transition is incorrect as the source and target are in orthogonal regions.",
-			StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE);
+		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The orientation of this transition is incorrect as the source and target are in orthogonal regions.",
+				new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__SOURCE_STATE, null)));
+		return validationResultMessages;
 	}
 	
 	
-	public void checkTimeSpecification(TimeSpecification timeSpecification) {
+	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
-			error("Time values must be of type integer.", InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Time values must be of type integer.",
+					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	// Composite system
 	
 	
-	public void checkName(Package _package) {
+	public Collection<ValidationResultMessage> checkName(Package _package) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!_package.getName().toLowerCase().equals(_package.getName())) {
-			info("Package names in the generated code will not contain uppercase letters.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, "Package names in the generated code will not contain uppercase letters.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkCircularDependencies(Package statechart) {
+	public Collection<ValidationResultMessage> checkCircularDependencies(Package statechart) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		for (Package referredStatechart : statechart.getImports()) {
 			Package parentStatechart = getReferredPackages(statechart, referredStatechart);
 			if (parentStatechart != null) {
-				error("This statechart is in a dependency circle, referred by " + parentStatechart.getName() + "! " 
-						+ "Composite systems must have an acyclical dependency hierarchy!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This statechart is in a dependency circle, referred by " + parentStatechart.getName() + "! " 
+						+ "Composite systems must have an acyclical dependency hierarchy!", new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 			}
 		}
+		return validationResultMessages;
 	}
 	
-	private Package getReferredPackages(Package initialStatechart, Package statechart) {
+	public Package getReferredPackages(Package initialStatechart, Package statechart) {
 		for (Package referredStatechart : statechart.getImports()) {
 			if (referredStatechart == initialStatechart) {
 				return statechart;
@@ -1273,28 +1265,35 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	
-	public void checkMultipleImports(Package gammaPackage) {
+	public Collection<ValidationResultMessage> checkMultipleImports(Package gammaPackage) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Package> importedPackages = new HashSet<Package>();
 		importedPackages.add(gammaPackage);
 		for (Package importedPackage : gammaPackage.getImports()) {
 			if (importedPackages.contains(importedPackage)) {
 				int index = gammaPackage.getImports().indexOf(importedPackage);
-				warning("Package " + importedPackage.getName() + " is already imported!", InterfaceModelPackage.Literals.PACKAGE__IMPORTS, index);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Package " + importedPackage.getName() + " is already imported!",
+						new ReferenceInfo(InterfaceModelPackage.Literals.PACKAGE__IMPORTS, index)));
 			}
 			importedPackages.add(importedPackage);
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkParameters(ComponentInstance instance) {
+	public Collection<ValidationResultMessage> checkParameters(ComponentInstance instance) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		if (instance.getArguments().size() != type.getParameterDeclarations().size()) {
-			error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The number of arguments is wrong.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkComponentInstanceArguments(ComponentInstance instance) {
+	public Collection<ValidationResultMessage> checkComponentInstanceArguments(ComponentInstance instance) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
 			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 			EList<ParameterDeclaration> parameters = type.getParameterDeclarations();
@@ -1304,53 +1303,62 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				Type declarationType = parameter.getType();
 				ExpressionType argumentType = typeDeterminator.getType(argument);
 				if (!typeDeterminator.equals(declarationType, argumentType)) {
-					error("The types of the declaration and the right hand side expression are not the same: " +
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The types of the declaration and the right hand side expression are not the same: " +
 							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
 							argumentType.toString().toLowerCase() + ".",
-							ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
+							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 				} 
 			}
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkPortBinding(Port port) {
+	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component container = (Component) port.eContainer();
 		if (container instanceof CompositeComponent) {
 			CompositeComponent componentDefinition = (CompositeComponent) container;
 			for (PortBinding portDefinition : componentDefinition.getPortBindings()) {
 				if (portDefinition.getCompositeSystemPort() == port) {
-					return;
+					return validationResultMessages;
 				}
 			}
-			warning("This system port is not connected to any ports of an instance!", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This system port is not connected to any ports of an instance!",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkUnusedInstancePort(ComponentInstance instance) {
+	public Collection<ValidationResultMessage> checkUnusedInstancePort(ComponentInstance instance) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getContainingComponent(instance);
 		String name = instance.getName();
 		if (name.startsWith("_") || name.endsWith("_")) {
-			error("A Gamma instance identifier cannot start or end with an '_' underscore character.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-			return;
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A Gamma instance identifier cannot start or end with an '_' underscore character.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+			return validationResultMessages;
 		}
 		EObject container = instance.eContainer();
 		if (type instanceof AsynchronousAdapter || !(container instanceof CompositeComponent)) {
 			// Not checking AsynchronousAdapters or port bindings not contained by CompositeComponents
-			return;
+			return validationResultMessages;
 		}
 		Collection<Port> unusedPorts = StatechartModelDerivedFeatures.getUnusedPorts(instance);
 		if (!unusedPorts.isEmpty()) {
-			warning("The following ports are not used either in system port binding or a channel: " +
-				unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()), ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The following ports are not used either in system port binding or a channel: " +
+					unusedPorts.stream().map(it -> it.getName()).collect(Collectors.toSet()),
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkPortBindingUniqueness(PortBinding portBinding) {
+	public Collection<ValidationResultMessage> checkPortBindingUniqueness(PortBinding portBinding) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Port systemPort = portBinding.getCompositeSystemPort();
 		Port instancePort = portBinding.getInstancePortReference().getPort();
 		ComponentInstance instance = portBinding.getInstancePortReference().getInstance();
@@ -1359,135 +1367,152 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		container.eContents().stream().filter(it -> it instanceof PortBinding).forEach(it -> portBindings.add((PortBinding) it));
 		if (!StatechartModelDerivedFeatures.getOutputEvents(systemPort).isEmpty() &&
 				portBindings.stream().filter(it -> it.getCompositeSystemPort() == systemPort).count() > 1) {
-			error("This system port is connected to multiple ports of instances!",
-					CompositeModelPackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,"This system port is connected to multiple ports of instances!",
+					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__COMPOSITE_SYSTEM_PORT, null)));
 		}
 		if (portBindings.stream().filter(it -> it.getInstancePortReference().getPort() == instancePort &&
 				it.getInstancePortReference().getInstance() == instance).count() > 1) {
-			error("Multiple system ports are connected to the port of this instance!",
-					CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Multiple system ports are connected to the port of this instance!",
+					new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkPortBinding(PortBinding portDefinition) {
+	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portDefinition) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		RealizationMode systemPortIT = portDefinition.getCompositeSystemPort().getInterfaceRealization().getRealizationMode();
 		RealizationMode instancePortIT = portDefinition.getInstancePortReference().getPort().getInterfaceRealization().getRealizationMode();
 		Interface systemPortIf = portDefinition.getCompositeSystemPort().getInterfaceRealization().getInterface();
 		Interface instancePortIf = portDefinition.getInstancePortReference().getPort().getInterfaceRealization().getInterface(); 
 		if (systemPortIT != instancePortIT) {
-			error("Ports can be connected only if their interface types match. This is not realized in this case: " + systemPortIT.getName() 
-				+ " -> " + instancePortIT.getName(), CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Ports can be connected only if their interface types match. This is not realized in this case: " + systemPortIT.getName() 
+			+ " -> " + instancePortIT.getName(), new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE, null)));
 		}	
 		if (systemPortIf != instancePortIf) {
-			error("Ports can be connected only if their interfaces match. This is not realized in this case: " + systemPortIf.getName()
-				+ " -> " + instancePortIf.getName(), CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Ports can be connected only if their interfaces match. This is not realized in this case: " + systemPortIf.getName()
+			+ " -> " + instancePortIf.getName(), new ReferenceInfo(CompositeModelPackage.Literals.PORT_BINDING__INSTANCE_PORT_REFERENCE, null)));
 		}	
+		return validationResultMessages;
 	}
 	
 	
-	public void checkInstancePortReference(InstancePortReference reference) {
+	public Collection<ValidationResultMessage> checkInstancePortReference(InstancePortReference reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = reference.getInstance();
 		if (instance == null) {
-			return;
+			return validationResultMessages;
 		}
 		Port port = reference.getPort();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 		Collection<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 		if (!ports.contains(port)) {
-			error("The specified port is not on instance " + instance.getName() + ".",
-					CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The specified port is not on instance " + instance.getName() + ".",
+					new ReferenceInfo(CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkPortBindingWithSimpleChannel(SimpleChannel channel) {
-		EObject root = EcoreUtil2.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = EcoreUtil2.getAllContentsOfType(root, PortBinding.class);
+	public Collection<ValidationResultMessage> checkPortBindingWithSimpleChannel(SimpleChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		EObject root = EcoreUtil.getRootContainer(channel);
+		Collection<PortBinding> portDefinitions = getAllContentsOfType(root, PortBinding.class);
 		for (PortBinding portDefinition : portDefinitions) {
 			// Broadcast ports can be used in multiple places
 			if (!isBroadcast(channel.getProvidedPort().getPort()) && equals(channel.getProvidedPort(), portDefinition.getInstancePortReference())) {
-				error("A port of an instance can be included either in a channel or a port binding!",
-						CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included either in a channel or a port binding!",
+						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
 			}
 			if (equals(channel.getRequiredPort(), portDefinition.getInstancePortReference())) {
-				error("A port of an instance can be included either in a channel or a port binding!",
-						CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included either in a channel or a port binding!",
+						new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT, null)));
 			}
 		}			
+		return validationResultMessages;
 	}
 	
-	private boolean isBroadcast(Port port) {
+	public boolean isBroadcast(Port port) {
 		return StatechartModelDerivedFeatures.isBroadcast(port);
 	}
 	
 	
-	public void checkPortBindingWithBroadcastChannel(BroadcastChannel channel) {
-		EObject root = EcoreUtil2.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = EcoreUtil2.getAllContentsOfType(root, PortBinding.class);
+	public Collection<ValidationResultMessage> checkPortBindingWithBroadcastChannel(BroadcastChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		EObject root = EcoreUtil.getRootContainer(channel);
+		Collection<PortBinding> portDefinitions = getAllContentsOfType(root, PortBinding.class);
 		for (PortBinding portDefinition : portDefinitions) {
 			for (InstancePortReference output : channel.getRequiredPorts()) {
 				if (equals(output, portDefinition.getInstancePortReference())) {
-					error("A port of an instance can be included either in a channel or a port binding!",
-							CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included either in a channel or a port binding!",
+							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, null)));
 				}
 			}
-		}			
+		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkChannelProvidedPorts(Channel channel) {
+	public Collection<ValidationResultMessage> checkChannelProvidedPorts(Channel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AsynchronousCompositeComponent) {
-			return;
+			return validationResultMessages;
 		}
 		// Checking provided instance ports in different channels
-		EObject root = EcoreUtil2.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = EcoreUtil2.getAllContentsOfType(root, InstancePortReference.class);
+		EObject root = EcoreUtil.getRootContainer(channel);
+		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 						.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
 			if (equals(instancePortReference, channel.getProvidedPort())) {
-				error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included only in a single channel!",
+						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkChannelRequiredPorts(SimpleChannel channel) {
+	public Collection<ValidationResultMessage> checkChannelRequiredPorts(SimpleChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AsynchronousCompositeComponent) {
-			return;
+			return validationResultMessages;
 		}
-		EObject root = EcoreUtil2.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = EcoreUtil2.getAllContentsOfType(root, InstancePortReference.class);
+		EObject root = EcoreUtil.getRootContainer(channel);
+		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
 		// Checking required instance ports in different simple channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			if (equals(instancePortReference, channel.getRequiredPort())) {
-				error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included only in a single channel!",
+						new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT, null)));
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkChannelRequiredPorts(BroadcastChannel channel) {
+	public Collection<ValidationResultMessage> checkChannelRequiredPorts(BroadcastChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
 		// Ports inside asynchronous components can be connected to multiple ports
 		if (parentComponent instanceof AsynchronousCompositeComponent) {
-			return;
+			return validationResultMessages;
 		}
-		EObject root = EcoreUtil2.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = EcoreUtil2.getAllContentsOfType(root, InstancePortReference.class);
+		EObject root = EcoreUtil.getRootContainer(channel);
+		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
 		// Checking required instance ports in different broadcast channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it.eContainer() != channel && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			for (InstancePortReference requiredPort : channel.getRequiredPorts()) {
 				if (equals(instancePortReference, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort);
-					error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included only in a single channel!",
+							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
 				}
 			}
 		}
@@ -1497,97 +1522,122 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 					.filter(it -> it != requiredPort && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 				if (equals(requiredPort2, requiredPort)) {
 					int index = channel.getRequiredPorts().indexOf(requiredPort2);
-					error("A port of an instance can be included only in a single channel!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port of an instance can be included only in a single channel!",
+							new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
 				}
 			}
 		}
+		return validationResultMessages;
 	}
 	
-	private boolean equals(InstancePortReference p1, InstancePortReference p2) {
+	public boolean equals(InstancePortReference p1, InstancePortReference p2) {
 		return p1.getInstance() == p2.getInstance() && p1.getPort() == p2.getPort();
 	}
 	
 	
-	public void checkChannelInput(Channel channel) {
+	public Collection<ValidationResultMessage> checkChannelInput(Channel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(channel.getProvidedPort().getPort().getInterfaceRealization().getRealizationMode() == RealizationMode.PROVIDED)) {
-			error("A port providing an interface is needed here!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
-		}		
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port providing an interface is needed here!",
+					new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
+		} 
+		return validationResultMessages;
 	}
 	
 	
-	public void checkSimpleChannelOutput(SimpleChannel channel) {
+	public Collection<ValidationResultMessage> checkSimpleChannelOutput(SimpleChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (channel.getRequiredPort().getPort().getInterfaceRealization().getRealizationMode()  != RealizationMode.REQUIRED) {
-			error("A port requiring an interface is needed here!", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port requiring an interface is needed here!",
+					new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT, null)));
 		}
 		// Checking the interfaces
 		Interface providedInterface = channel.getProvidedPort().getPort().getInterfaceRealization().getInterface();
 		Interface requiredInterface = channel.getRequiredPort().getPort().getInterfaceRealization().getInterface();
 		if (providedInterface != requiredInterface) {
-			error("Ports connected with a channel must have the same interface! This is not realized in this case. The provided interface: " + providedInterface.getName() +
-					". The required interface: " + requiredInterface.getName() + ".", CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Ports connected with a channel must have the same interface! This is not realized in this case. The provided interface: " + providedInterface.getName() +
+					". The required interface: " + requiredInterface.getName() + ".", new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkBroadcastChannelOutput(BroadcastChannel channel) {
+	public Collection<ValidationResultMessage> checkBroadcastChannelOutput(BroadcastChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!isBroadcast(channel.getProvidedPort().getPort()) && !(channel.eContainer() instanceof AsynchronousComponent)) {
 			// Asynchronous components can have two-way broadcast channels 
-			error("A port providing a broadcast interface is needed here!", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port providing a broadcast interface is needed here!",
+					new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
 		}
 		for (InstancePortReference output : channel.getRequiredPorts()) {
 			if (output.getPort().getInterfaceRealization().getRealizationMode() != RealizationMode.REQUIRED) {
 				int index = channel.getRequiredPorts().indexOf(output);
-				error("A port requiring an interface is needed here!", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A port requiring an interface is needed here!",
+						new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, index)));
 			}
 			Interface requiredInterface = output.getPort().getInterfaceRealization().getInterface();
 			Interface providedInterface = channel.getProvidedPort().getPort().getInterfaceRealization().getInterface();
 			if (providedInterface != requiredInterface) {
-				error("Ports connected with a broadcast channel must have the same interface! This is not realized in this case. The provided interface: "
-						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName() + ".", CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Ports connected with a broadcast channel must have the same interface! This is not realized in this case. The provided interface: "
+						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName() + ".", new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS, null)));
 			}
-		}		
+		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkCascadeLoopChannels(SimpleChannel channel) {
+	public Collection<ValidationResultMessage> checkCascadeLoopChannels(SimpleChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
 		if (StatechartModelDerivedFeatures.getDerivedType(instance) instanceof AbstractSynchronousCompositeComponent &&
-				instance == channel.getRequiredPort().getInstance()) {			
-			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
+				instance == channel.getRequiredPort().getInstance()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Verification cannot be executed if different ports of a synchronous component are connected.",
+					new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkCascadeLoopChannels(BroadcastChannel channel) {
+	public Collection<ValidationResultMessage> checkCascadeLoopChannels(BroadcastChannel channel) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
 		if (StatechartModelDerivedFeatures.getDerivedType(instance)  instanceof AbstractSynchronousCompositeComponent &&
-				channel.getRequiredPorts().stream().anyMatch(it -> it.getInstance() == instance)) {			
-			warning("Verification cannot be executed if different ports of a synchronous component are connected.", CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT);
+				channel.getRequiredPorts().stream().anyMatch(it -> it.getInstance() == instance)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Verification cannot be executed if different ports of a synchronous component are connected.",
+					new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	// Wrapper
 	
 	
-	public void checkWrapperPortName(Port port) {
+	public Collection<ValidationResultMessage> checkWrapperPortName(Port port) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (port.eContainer() instanceof AsynchronousAdapter) {
 			AsynchronousAdapter adapter = (AsynchronousAdapter) port.eContainer();
 			String portName = port.getName();
 			if (adapter.getWrappedComponent().getType().getPorts().stream().anyMatch(it -> it.getName().equals(portName))) {
-				error("This port enshadows a port in the wrapped synchronous component.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This port enshadows a port in the wrapped synchronous component.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkWrapperClock(Clock clock) {
+	public Collection<ValidationResultMessage> checkWrapperClock(Clock clock) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!isContainedInQueue(clock, (AsynchronousAdapter) clock.eContainer())) {
-			warning("Ticks of this clock are not forwarded to any messages queues.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Ticks of this clock are not forwarded to any messages queues.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
+	public Collection<ValidationResultMessage> checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> containedEvents = new HashMap<Port, Collection<Event>>();
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
@@ -1599,8 +1649,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 					if (containedEvents.containsKey(containedPort)) {
 						Collection<Event> alreadyContainedEvents = containedEvents.get(containedPort);
 						if (alreadyContainedEvents.contains(containedEvent)) {
-							error("Event " + containedEvent.getName() + " is already forwarded to a message queue.",
-									queue, CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Event " + containedEvent.getName() + " is already forwarded to a message queue.",
+									new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, index, queue)));
 						}
 						else {
 							alreadyContainedEvents.add(containedEvent);
@@ -1620,8 +1670,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 						Collection<Event> alreadyContainedEvents = containedEvents.get(containedPort);
 						alreadyContainedEvents.addAll(events);
 						Collection<String> alreadyContainedEventNames = alreadyContainedEvents.stream().map(it -> it.getName()).collect(Collectors.toSet());
-						error("Events " + alreadyContainedEventNames + " are already forwarded to a message queue.",
-								queue, CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Events " + alreadyContainedEventNames + " are already forwarded to a message queue.",
+								new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index, queue)));
 					}
 					else {
 						containedEvents.put(containedPort, events);
@@ -1629,30 +1679,37 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				}
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkInputPossibility(AsynchronousAdapter wrapper) {
+	public Collection<ValidationResultMessage> checkInputPossibility(AsynchronousAdapter wrapper) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Collection<Event> inputEvents = getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN);
 		if (inputEvents.isEmpty() && wrapper.getClocks().isEmpty()) {
-			warning("This asynchronous adapter can never be executed.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This asynchronous adapter can never be executed.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkWrappedPort(AsynchronousAdapter wrapper) {
+	public Collection<ValidationResultMessage> checkWrappedPort(AsynchronousAdapter wrapper) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		for (Port port : StatechartModelDerivedFeatures.getAllPorts(wrapper)) {
 			for (Event event : getSemanticEvents(Collections.singleton(port), EventDirection.IN)) {
 				if (!isContainedInQueue(port, event, wrapper)) {
-					warning("Event " + event.getName() + " of port " + port.getName() + 
-						" is not forwarded to a message queue.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Event " + event.getName() + " of port " + port.getName() + 
+							" is not forwarded to a message queue.", new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 				}
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkControlSpecification(ControlSpecification controlSpecification) {
+	public Collection<ValidationResultMessage> checkControlSpecification(ControlSpecification controlSpecification) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		SimpleTrigger trigger = controlSpecification.getTrigger();
 		if (trigger instanceof EventTrigger) {
 			EventTrigger eventTrigger = (EventTrigger) trigger;
@@ -1665,30 +1722,35 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				if (getSemanticEvents(Collections.singleton(containedPort), EventDirection.OUT).stream()
 						.filter(it -> ((EventDeclaration) it.eContainer()).getDirection() != EventDirection.INOUT)
 						.anyMatch(it -> it == containedEvent)) {
-					error("Event " + containedEvent.getName() + " is an out event and can not be used in a control specification.", CompositeModelPackage.Literals.CONTROL_SPECIFICATION__TRIGGER);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Event " + containedEvent.getName() + " is an out event and can not be used in a control specification.",
+							new ReferenceInfo(CompositeModelPackage.Literals.CONTROL_SPECIFICATION__TRIGGER, null)));
 				}
 			}	 
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkMessageQueuePriorities(AsynchronousAdapter wrapper) {
+	public Collection<ValidationResultMessage> checkMessageQueuePriorities(AsynchronousAdapter wrapper) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Integer> priorityValues = new HashSet<Integer>();
 		for (int i = 0; i < wrapper.getMessageQueues().size(); ++i) {
 			MessageQueue queue = wrapper.getMessageQueues().get(i);
 			int priorityValue = queue.getPriority().intValue();
 			if (priorityValues.contains(priorityValue)) {
-				warning("Another queue with the same priority is already defined.", queue,
-						CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "Another queue with the same priority is already defined.",
+						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null, queue)));
 			}
 			else {
 				priorityValues.add(priorityValue);
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkMessageQueue(MessageQueue queue) {
+	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<EventReference> eventReferences = queue.getEventReference();
 		for (EventReference eventReference : eventReferences) {
 			int index = queue.getEventReference().indexOf(eventReference);
@@ -1700,13 +1762,15 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				if (getSemanticEvents(Collections.singleton(containedPort), EventDirection.OUT).stream()
 						.filter(it -> ((EventDeclaration) it.eContainer()).getDirection() != EventDirection.INOUT)
 						.anyMatch(it -> it == containedEvent)) {
-					error("Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue.", CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Event " + containedEvent.getName() + " is an out event and can not be forwarded to a message queue.",
+							new ReferenceInfo(CompositeModelPackage.Literals.MESSAGE_QUEUE__EVENT_REFERENCE, index)));
 				}
 			}			
 		}
+		return validationResultMessages;
 	}
 	
-	private Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
+	public Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
 		Collection<Event> events = new HashSet<Event>();
 		for (Interface anInterface : ports.stream()
 				.filter(it -> it.getInterfaceRealization().getRealizationMode() == RealizationMode.PROVIDED)
@@ -1721,7 +1785,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return events;
 	}
 
-	private EventDirection getOppositeDirection(EventDirection direction) {
+	public EventDirection getOppositeDirection(EventDirection direction) {
 		switch (direction) {
 			case IN:
 				return EventDirection.OUT;
@@ -1735,7 +1799,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	/**
 	 * The parent interfaces are taken into considerations as well.
 	 */
-	private Collection<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
+	public Collection<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
 		if (anInterface == null) {
 			return Collections.emptySet();
 		}
@@ -1750,7 +1814,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return eventSet;
 	}
 	
-	private boolean isContainedInQueue(Port port, Event event, AsynchronousAdapter wrapper) {
+	public boolean isContainedInQueue(Port port, Event event, AsynchronousAdapter wrapper) {
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
 				if (StatechartModelDerivedFeatures.getEventSource(eventReference)  == port) {
@@ -1769,7 +1833,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return false;
 	}
 	
-	private boolean isContainedInQueue(Clock clock, AsynchronousAdapter wrapper) {
+	public boolean isContainedInQueue(Clock clock, AsynchronousAdapter wrapper) {
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
 				if (eventReference instanceof ClockTickReference) {
@@ -1783,15 +1847,17 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	
-	public void checkAnyPortControls(AsynchronousAdapter adapter) {
+	public Collection<ValidationResultMessage> checkAnyPortControls(AsynchronousAdapter adapter) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> usedEvents = new HashMap<Port, Collection<Event>>();
 		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
 			Trigger trigger = controlSpecification.getTrigger();
 			int index =  adapter.getControlSpecifications().indexOf(controlSpecification);
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
-					error("This control specification with any trigger enshadows all other control specifications.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
-					return;
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This control specification with any trigger enshadows all other control specifications.",
+							new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
+					return validationResultMessages;
 				}
 			}
 			if (trigger instanceof EventTrigger) {
@@ -1802,8 +1868,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 					Port port = anyPortEventReference.getPort();
 					Collection<Event> portEvents = getSemanticEvents(Collections.singleton(port), EventDirection.IN);
 					if (usedEvents.containsKey(port)) {
-						error("This control specification with any port trigger enshadows all control specifications "
-							+ "with reference to the same port.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This control specification with any port trigger enshadows all control specifications "
+								+ "with reference to the same port.", new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 						Collection<Event> containedEvents = usedEvents.get(port);
 						containedEvents.addAll(portEvents);
 					}
@@ -1818,8 +1884,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 					if (usedEvents.containsKey(port)) {
 						Collection<Event> containedEvents = usedEvents.get(port);
 						if (containedEvents.contains(event)) {
-							error("This control specification with port event trigger has the same effect as some "
-									+ "previous control specification.", adapter, CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index);
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This control specification with port event trigger has the same effect as some "
+									+ "previous control specification.", new ReferenceInfo(CompositeModelPackage.Literals.ASYNCHRONOUS_ADAPTER__CONTROL_SPECIFICATIONS, index, adapter)));
 						}
 						else {
 							containedEvents.add(event);
@@ -1833,34 +1899,42 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				}
 			}
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
+	public Collection<ValidationResultMessage> checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (anyPortEventReference.eContainer() instanceof MessageQueue && isBroadcast(anyPortEventReference.getPort())) {
-			error("There are no events coming in through this port.", StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "There are no events coming in through this port.",
+					new ReferenceInfo(StatechartModelPackage.Literals.ANY_PORT_EVENT_REFERENCE__PORT, null)));
 		}
+		return validationResultMessages;
+		
 	}
 	
 	
-	public void checkExecutionLists(CascadeCompositeComponent cascade) {
+	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (cascade.getExecutionList().isEmpty()) {
 			// Nothing to validate
-			return;
+			return validationResultMessages;
 		}
 		Collection<SynchronousComponentInstance> containedInstances = new HashSet<SynchronousComponentInstance>(cascade.getComponents());
 		containedInstances.removeAll(cascade.getExecutionList());
 		if (!containedInstances.isEmpty()) {
-			error("The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
-					.collect(Collectors.toSet()) + ".",	CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The following instances are never executed: " + containedInstances.stream().map(it -> it.getName())
+					.collect(Collectors.toSet()) + ".", new ReferenceInfo(CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST, null)));
 		}
+		return validationResultMessages;
 	}
 	
 	
-	public void checkComponentInstanceReferences(ComponentInstanceReference reference) {
+	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
 		if (instances.isEmpty()) {
-			return;
+			return validationResultMessages;
 		}
 		for (int i = 0; i < instances.size() - 1; i++) {
 			ComponentInstance instance = instances.get(i);
@@ -1868,15 +1942,16 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
 			List<EObject> containedInstances = type.eContents();
 			if (!containedInstances.contains(nextInstance)) {
-				error(instance.getName() + " does not contain component instance " + nextInstance.getName(),
-					CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i);
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, instance.getName() + " does not contain component instance " + nextInstance.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, i)));
 			}
 		}
 		ComponentInstance lastInstance = instances.get(instances.size() - 1);
 		Component lastType = StatechartModelDerivedFeatures.getDerivedType(lastInstance);
 		if (!(lastType instanceof StatechartDefinition)) {
-			error("The last component instance must have a statechart type.",
-				CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY);
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The last component instance must have a statechart type.",
+					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, null)));
 		}
+		return validationResultMessages;
 	}
 }
