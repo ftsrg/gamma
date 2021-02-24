@@ -360,6 +360,46 @@ package class Trace {
 		constDeclMappings.get(gammaConstant)
 	}
 	
+	// Dispatch for value declaration
+	def put(ValueDeclaration gammaValue, VariableDeclaration lowlevelVariable) {
+		if (gammaValue instanceof ParameterDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		else if (gammaValue instanceof VariableDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		throw new IllegalArgumentException("Not known type: " + lowlevelVariable)
+	}
+	
+	def isMapped(ValueDeclaration gammaValue) {
+		if (gammaValue instanceof ParameterDeclaration) {
+			isMapped(gammaValue)
+		}
+		else if (gammaValue instanceof VariableDeclaration) {
+			isMapped(gammaValue)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			isMapped(gammaValue)
+		}
+		throw new IllegalArgumentException("Not known type: " + gammaValue)
+	}
+	
+	def get(ValueDeclaration gammaValue) {
+		if (gammaValue instanceof ParameterDeclaration) {
+			get(gammaValue)
+		}
+		else if (gammaValue instanceof VariableDeclaration) {
+			get(gammaValue)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			get(gammaValue)
+		}
+		throw new IllegalArgumentException("Not known type: " + gammaValue)
+	}
+	
 	// Timeout declaration
 	def put(TimeoutDeclaration gammaTimeout, VariableDeclaration lowlevelTimeout) {
 		checkNotNull(gammaTimeout)

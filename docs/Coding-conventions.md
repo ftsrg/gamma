@@ -8,6 +8,7 @@ We mainly follow the standard Java coding conventions and most of the convention
 * **DO** start project names with the prefix `hu.bme.mit.gamma`.
 * **DO** use CamelCase for class names containing subsequent capital letters, except when the whole name is a sequence of capital letters. Examples: `CFA`, `CfaEdge`, `OsHelper`.
 * **DO** add a single space after keywords like `for`, `do`, `while`, `if` and `else`.
+* **DO** add a single space before `{`.
 * **DO** put the `else` keyword in a new line (and not like this: `} else {`).
 
 ## Classes and interfaces
