@@ -12,12 +12,14 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -297,19 +299,21 @@ public class ExpressionUtil {
 		for (int i = 0; i < expressions.size() - 1; ++i) {
 			try {
 				EqualityExpression leftEqualityExpression = expressions.get(i);
-				DirectReferenceExpression leftReferenceExpression = (DirectReferenceExpression) leftEqualityExpression
-						.getLeftOperand();
-				Declaration leftDeclaration = leftReferenceExpression.getDeclaration();
-				int leftValue = evaluator.evaluate(leftEqualityExpression.getRightOperand());
+				Entry<Declaration, Expression> left = getDeclarationExpressions(leftEqualityExpression);
+				Declaration leftDeclaration = left.getKey();
+				Expression leftValueExpression = left.getValue();
+				int leftValue = evaluator.evaluate(leftValueExpression);
 				for (int j = i + 1; j < expressions.size(); ++j) {
 					try {
 						EqualityExpression rightEqualityExpression = expressions.get(j);
-						DirectReferenceExpression rightReferenceExpression = (DirectReferenceExpression) rightEqualityExpression
-								.getLeftOperand();
-						Declaration rightDeclaration = rightReferenceExpression.getDeclaration();
-						int rightValue = evaluator.evaluate(rightEqualityExpression.getRightOperand());
-						if (leftDeclaration == rightDeclaration && leftValue != rightValue) {
-							return true;
+						Entry<Declaration, Expression> right = getDeclarationExpressions(rightEqualityExpression);
+						Declaration rightDeclaration = right.getKey();
+						if (leftDeclaration == rightDeclaration) {
+							Expression rightValueExpression = right.getValue();
+							int rightValue = evaluator.evaluate(rightValueExpression);
+							if (leftValue != rightValue) {
+								return true;
+							}
 						}
 					} catch (IllegalArgumentException e) {
 						// j is not evaluable
@@ -325,13 +329,33 @@ public class ExpressionUtil {
 		}
 		return false;
 	}
+	
+	protected Entry<Declaration, Expression> getDeclarationExpressions(BinaryExpression expression) {
+		Expression leftOperand = expression.getLeftOperand();
+		Declaration declaration = getDeclaration(leftOperand);
+		Expression rightOperand = expression.getRightOperand();
+		return new SimpleEntry<Declaration, Expression>(declaration, rightOperand);
+	}
+	
+	/**
+	 * Worth overriding (extending) in subclasses.
+	 */
+	public Declaration getDeclaration(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			Declaration declaration = reference.getDeclaration();
+			return declaration;
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
+	}
 
 	public Collection<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
 			if (subexpression instanceof EqualityExpression) {
 				equalityExpressions.add((EqualityExpression) subexpression);
-			} else if (subexpression instanceof AndExpression) {
+			}
+			else if (subexpression instanceof AndExpression) {
 				equalityExpressions.addAll(collectAllEqualityExpressions((AndExpression) subexpression));
 			}
 		}
@@ -358,6 +382,7 @@ public class ExpressionUtil {
 	}
 
 	// Declaration references
+	
 	// Variables
 	public Set<VariableDeclaration> getReferredVariables(EObject object) {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
@@ -431,6 +456,7 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
+	
 	// Parameters
 	public Set<ParameterDeclaration> getReferredParameters(EObject object) {
 		Set<ParameterDeclaration> parameters = new HashSet<ParameterDeclaration>();
@@ -461,11 +487,15 @@ public class ExpressionUtil {
 	}
 
 	protected Set<ParameterDeclaration> _getReferredParameters(final ReferenceExpression expression) {
-		if (expression instanceof DirectReferenceExpression ) {
-			if (((DirectReferenceExpression)expression).getDeclaration() instanceof ParameterDeclaration) {
-				return Collections.singleton((ParameterDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ParameterDeclaration) {
+				ParameterDeclaration parameter = (ParameterDeclaration) declaration;
+				return Collections.singleton(parameter);
 			}
-		} else if (expression instanceof AccessExpression) {
+		}
+		else if (expression instanceof AccessExpression) {
 			return getReferredParameters(((AccessExpression)expression).getOperand());
 		}
 		return Collections.emptySet();
@@ -504,7 +534,8 @@ public class ExpressionUtil {
 			throw new IllegalArgumentException("Unhandled parameter types: " + Arrays.<Object>asList(expression).toString());
 		}
 	}
-	//Constants
+	
+	// Constants
 	public Set<ConstantDeclaration> getReferredConstants(EObject object) {
 		Set<ConstantDeclaration> constants = new HashSet<ConstantDeclaration>();
 		for (DirectReferenceExpression referenceExpression :
@@ -535,10 +566,14 @@ public class ExpressionUtil {
 
 	protected Set<ConstantDeclaration> _getReferredConstants(final ReferenceExpression expression) {
 		if (expression instanceof DirectReferenceExpression ) {
-			if (((DirectReferenceExpression)expression).getDeclaration() instanceof ConstantDeclaration) {
-				return Collections.singleton((ConstantDeclaration) ((DirectReferenceExpression)expression).getDeclaration());
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				ConstantDeclaration constant = (ConstantDeclaration) declaration;
+				return Collections.singleton(constant);
 			}
-		} else if (expression instanceof AccessExpression) {
+		}
+		else if (expression instanceof AccessExpression) {
 			return getReferredConstants(((AccessExpression)expression).getOperand());
 		}
 		return Collections.emptySet();
