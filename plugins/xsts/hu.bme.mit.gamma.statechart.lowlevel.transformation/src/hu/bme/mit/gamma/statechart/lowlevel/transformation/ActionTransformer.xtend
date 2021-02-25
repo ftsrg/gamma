@@ -400,7 +400,7 @@ class ActionTransformer {
 			it.conditionals += createBranch => [
 				it.guard = createOrExpression => [
 					for (guard : guardExpressions) {
-						it.operands += guard.transformExpression.getOnlyElement
+						it.operands += guard		// the expressions are already transformed
 					}
 				]
 				it.action = createBlock => [
