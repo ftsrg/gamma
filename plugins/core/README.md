@@ -31,9 +31,9 @@ _Tip: It is advised to turn on automatic refreshing for the _runtime workspace_.
 
 The plugin setup procedure should be done as follows:
 1. Import all Eclipse projects from the `plugins` folder.
-2. Generate the Model and Edit plugins of the Gamma Expression Language: `hu.bme.mit.gamma.expression.model`. The Model and Edit plugins can be generated from the ecore file using a genmodel.
-3. Generate the Model and Edit plugins of the Gamma Action Language: `hu.bme.mit.gamma.action.model`. They can be generated the same way as in the previous step.
-3. Generate the Model, Edit and Editor plugins of the Gamma Statechart Language: `hu.bme.mit.gamma.statechart.model`. They can be generated the same way as in the previous step.
+2. Generate the Model plugin of the Gamma Expression Language: `hu.bme.mit.gamma.expression.model`. The Model plugin can be generated from the ecore file using a genmodel.
+3. Generate the Model plugin of the Gamma Action Language: `hu.bme.mit.gamma.action.model`. It can be generated the same way as in the previous step.
+3. Generate the Model plugin of the Gamma Statechart Language: `hu.bme.mit.gamma.statechart.model`. It can be generated the same way as in the previous step.
 4. Generate the Model plugin of the traceability projects:
 `hu.bme.mit.gamma.uppaal.transformation.traceability` and
 `hu.bme.mit.gamma.yakindu.transformation.traceability`. Again use the ecore file and the genmodel.
@@ -61,9 +61,9 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 | Project | Model | Edit | Editor |
 |-|:-:|:-:|:-:|
 |`de.uni_paderborn.uppaal`| x | | |
-|`hu.bme.mit.gamma.expression.model`| x | x | |
-|`hu.bme.mit.gamma.action.model`| x | x | |
-|`hu.bme.mit.gamma.statechart.model`| x | x | x |
+|`hu.bme.mit.gamma.expression.model`| x | | |
+|`hu.bme.mit.gamma.action.model`| x | | |
+|`hu.bme.mit.gamma.statechart.model`| x |  |  |
 |`hu.bme.mit.gamma.trace.model`| x | | |
 |`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
 |`hu.bme.mit.gamma.genmodel.model`| x | | |

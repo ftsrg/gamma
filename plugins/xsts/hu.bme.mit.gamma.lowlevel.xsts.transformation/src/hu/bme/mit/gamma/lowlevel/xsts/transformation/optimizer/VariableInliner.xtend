@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
@@ -24,6 +23,8 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class VariableInliner {
 	// Singleton
@@ -71,10 +72,9 @@ class VariableInliner {
 		for (branch : subactions) {
 			val branchConcreteValues = newHashMap
 			branchConcreteValues += concreteValues
-			// The action removing approach for symbolic maps CAN be used via choices,
+			// The action removing approach for concrete maps CAN be used via choices,
 			// as the oldAssignment in 'inline(AssignmentAction ...' is NOT removed
 			val branchSymbolicValues = newHashMap
-//			branchSymbolicValues += symbolicValues
 			// The action removing approach for symbolic maps CANNOT be used via choices,
 			// e.g., 'a := 1; if (...) { a := a + 1; } else { b := 2; } c := a + 3;'
 
@@ -106,15 +106,10 @@ class VariableInliner {
 		if (lhs instanceof DirectReferenceExpression) {
 			val declaration = lhs.declaration
 			if (declaration instanceof VariableDeclaration) {
-				val references = rhs.getSelfAndAllContentsOfType(ReferenceExpression)
-				if (references.empty) { // So it is evaluable
-					// If the oldAssignment is NOT removed, then concrete maps can 
-					// fall through validly through different choices???
-//					if (concreteValues.containsKey(declaration)) {
-//						val oldEntry = concreteValues.get(declaration)
-//						val oldAssignment = oldEntry.getLastValueGivingAction
-//						oldAssignment.remove
-//					}
+				if (rhs.isEvaluable) { // So it is evaluable
+					// If the oldAssignment is NOT removed, then concrete maps can fall through
+					// validly through different choices. So oldAssignment must NOT be removed.
+					
 					// Adding this new value
 					concreteValues += declaration -> new InlineEntry(rhs, action)
 					symbolicValues -= declaration
@@ -148,7 +143,6 @@ class VariableInliner {
 		// Removing read variables - if a variable is read, then the
 		// oldAssignment (see AssignmentAction inline) must not be removed
 		symbolicValues.deleteReferencedVariables(assumption)
-					
 	}
 	
 	// Auxiliary

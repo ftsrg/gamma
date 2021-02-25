@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
@@ -56,6 +57,11 @@ public class ExpressionModelDerivedFeatures {
 	public static int getIndex(ParameterDeclaration parameter) {
 		ParametricElement container = (ParametricElement) parameter.eContainer();
 		return container.getParameterDeclarations().indexOf(parameter);
+	}
+	
+	public static boolean isEvaluable(Expression expression) {
+		return ecoreUtil.getSelfAndAllContentsOfType(
+				expression, ReferenceExpression.class).isEmpty();
 	}
 	
 }
