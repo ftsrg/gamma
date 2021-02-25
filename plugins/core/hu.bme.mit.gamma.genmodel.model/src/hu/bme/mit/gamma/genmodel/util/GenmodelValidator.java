@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.genmodel.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,51 +9,69 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.xtext.EcoreUtil2;
 import org.yakindu.base.types.Direction;
+import org.yakindu.sct.model.sgraph.Statechart;
 import org.yakindu.sct.model.stext.stext.InterfaceScope;
 
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
+import hu.bme.mit.gamma.expression.util.ExpressionType;
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
+import hu.bme.mit.gamma.genmodel.model.Constraint;
+import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.EventMapping;
+import hu.bme.mit.gamma.genmodel.model.EventPriorityTransformation;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
 import hu.bme.mit.gamma.genmodel.model.GenmodelModelPackage;
 import hu.bme.mit.gamma.genmodel.model.InterfaceMapping;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
+import hu.bme.mit.gamma.genmodel.model.PhaseStatechartGeneration;
+import hu.bme.mit.gamma.genmodel.model.SchedulingConstraint;
+import hu.bme.mit.gamma.genmodel.model.StateCoverage;
 import hu.bme.mit.gamma.genmodel.model.StatechartCompilation;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.TestReplayModelGeneration;
+import hu.bme.mit.gamma.genmodel.model.TransitionCoverage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 import hu.bme.mit.gamma.genmodel.model.YakinduCompilation;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
 import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.util.FileUtil;
-
-
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class GenmodelValidator extends ExpressionModelValidator {
 	
 			protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 			protected final FileUtil fileUtil = FileUtil.INSTANCE;
+			protected final GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
 			
 			// Checking tasks, only one parameter is acceptable
 			
@@ -104,297 +123,383 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				}
 				ModelReference modelReference = analysisModelTransformation.getModel();
 				if (modelReference instanceof XSTSReference) {
-					if (languages.exists()[it != AnalysisLanguage.UPPAAL]) {
-						error("XSTS models can be transformed only to UPPAAL", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)
+					if (languages.stream().anyMatch(it -> it != AnalysisLanguage.UPPAAL)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "XSTS models can be transformed only to UPPAAL",
+								new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES, null)));
 					}
 				}
-				if (analysisModelTransformation.coverages.filter(TransitionCoverage).size > 1) {
-					error("A single transition coverage task can be defined.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+				if (analysisModelTransformation.getCoverages().stream().filter(it -> it instanceof TransitionCoverage).count() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single transition coverage task can be defined.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES, null)));
 				}
-				if (analysisModelTransformation.coverages.filter(StateCoverage).size > 1) {
-					error("A single state coverage task can be defined.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)
+				if (analysisModelTransformation.getCoverages().stream().filter(it -> it instanceof StateCoverage).count() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single state coverage task can be defined.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES, null)));
 				}
-				val constraint = analysisModelTransformation.constraint
-				if (constraint !== null) {
+				Constraint constraint = analysisModelTransformation.getConstraint();
+				if (constraint != null) {
 					if (modelReference instanceof ComponentReference) {
-						val component = modelReference.component
+						ComponentReference componentReference = (ComponentReference)modelReference;
+						Component component = componentReference.getComponent();
 						if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
-							error("Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.", GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT, null)));
 						}
 					}
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkTasks(Verification verification) {
-				val languages = verification.languages
-				if (languages.size != 1) {
-					error("A single formal language must be specified.", GenmodelModelPackage.Literals.VERIFICATION__LANGUAGES)
+			public Collection<ValidationResultMessage> checkTasks(Verification verification) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				List<AnalysisLanguage> languages = verification.getLanguages();
+				if (languages.size() != 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single formal language must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__LANGUAGES, null)));
 				}
-				val resourceFile = ecoreUtil.getFile(verification.eResource)
-				val modelFiles = verification.fileName
-				if (modelFiles.size != 1) {
-					error("A single model file must be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
+				File resourceFile = ecoreUtil.getFile(verification.eResource());
+				List<String> modelFiles = verification.getFileName();
+				if (modelFiles.size() != 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single model file must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, null)));
 				}
-				for (modelFile : modelFiles) {
-					if (!resourceFile.isValidRelativeFile(modelFile)) {
-						val index = modelFiles.indexOf(modelFile)
-						error("This is not a valid relative path to a model file: " + modelFile,
-							GenmodelModelPackage.Literals.TASK__FILE_NAME, index)
+				for (String modelFile : modelFiles) {
+					if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
+						int index = modelFiles.indexOf(modelFile);
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This is not a valid relative path to a model file: " + modelFile,
+								new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, index)));
 					}
 				}
-				val queryFiles = verification.queryFiles
-				val propertyPackages = verification.propertyPackages
-				if (queryFiles.size + propertyPackages.size < 1) {
-					error("At least one query file must be specified.", GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES)
+				List<String> queryFiles = verification.getQueryFiles();
+				List<PropertyPackage> propertyPackages = verification.getPropertyPackages();
+				if (queryFiles.size() + propertyPackages.size() < 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "At least one query file must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, null)));
 				}
-				for (queryFile : queryFiles) {
-					if (!resourceFile.isValidRelativeFile(queryFile)) {
-						val index = queryFiles.indexOf(queryFile)
-						error("This is not a valid relative path to a query file: " + queryFile,
-							GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)
+				for (String queryFile : queryFiles) {
+					if (!fileUtil.isValidRelativeFile(resourceFile, queryFile)) {
+						int index = queryFiles.indexOf(queryFile);
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "This is not a valid relative path to a query file: " + queryFile,
+								new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)));
 					}
 				}
-				val testFolders = verification.testFolder
-				if (testFolders.size > 1) {
-					error("At most one test folder can be specified.", GenmodelModelPackage.Literals.VERIFICATION__TEST_FOLDER)
+				List<String> testFolders = verification.getTestFolder();
+				if (testFolders.size() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "At most one test folder can be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__TEST_FOLDER, null)));
 				}
+				
+				return validationResultMessages;
 			}
 			
 			
-			def checkTasks(TestReplayModelGeneration modelGeneration) {
-				val systemFileNames = modelGeneration.fileName
-				if (systemFileNames.size != 1) {
-					error("A single system file name must be specified.", GenmodelModelPackage.Literals.TASK__FILE_NAME)
+			public Collection<ValidationResultMessage> checkTasks(TestReplayModelGeneration modelGeneration) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				List<String> systemFileNames = modelGeneration.getFileName();
+				if (systemFileNames.size() != 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single system file name must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, null)));
 				}
-				val targetFolders = modelGeneration.targetFolder
-				if (targetFolders.size > 1) {
-					error("At most one test folder can be specified.", GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)
+				List<String> targetFolders = modelGeneration.getTargetFolder();
+				if (targetFolders.size() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "At most one test folder can be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER, null)));
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkTimeSpecification(TimeSpecification timeSpecification) {
+			public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 				if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
-					error("Time values must be of type integer.", InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Time values must be of type integer.",
+							new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE, null)));
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkConstraint(AsynchronousInstanceConstraint constraint) {
-				val analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation)
-				val modelReference = analysisModelTransformation.model
+			public Collection<ValidationResultMessage> checkConstraint(AsynchronousInstanceConstraint constraint) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				AnalysisModelTransformation analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation.class);
+				ModelReference modelReference = analysisModelTransformation.getModel();
 				if (modelReference instanceof ComponentReference) {
-					val component = modelReference.component
-					if (!component.isAsynchronous) {
-						error("Asynchronous component constraints must refer to an asynchronous component.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
-						return
+					ComponentReference componentReference = (ComponentReference)modelReference;
+					Component component = componentReference.getComponent();
+					if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(component)) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+								"Asynchronous component constraints must refer to an asynchronous component.",
+								new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT, null)));
+						return validationResultMessages;
 					}
-					val scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint)
-					val instance = constraint.instance
-					if (instance !== null) {
-						val lastInstance = instance.componentInstanceHierarchy.last
-						if (!lastInstance.isAsynchronous) {
-							error("Asynchronous component constraints must contain a reference to a contained asynchronous instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+					SchedulingConstraint scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint.class);
+					ComponentInstanceReference instance = constraint.getInstance();
+					if (instance != null) {
+						ComponentInstance lastInstance = instance.getComponentInstanceHierarchy().get(instance.getComponentInstanceHierarchy().size() - 1);
+						if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(lastInstance)) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"Asynchronous component constraints must contain a reference to a contained asynchronous instance.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
 						}
 					}
 					if (component instanceof AsynchronousCompositeComponent) {
-						if (instance === null) {
-							error("Asynchronous component constraints must contain a reference to a contained instance.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+						if (instance == null) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"Asynchronous component constraints must contain a reference to a contained instance.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
 						}
-						if (scheduling.instanceConstraint.filter[ecoreUtil.helperEquals(it.instance, instance)].size > 1) {
-							error("The scheduling constraints for a certain asynchronous component can be defined at most once.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)
+						if (scheduling.getInstanceConstraint().stream().filter(it -> ecoreUtil.helperEquals(it.getInstance(), instance)).count() > 1) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"The scheduling constraints for a certain asynchronous component can be defined at most once.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
 						}
 					}
 					if (component instanceof AsynchronousAdapter) {
-						if (scheduling.instanceConstraint.size > 1) {
-							error("Asynchronous adapters can contain at most one constraint.", GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)
+						if (scheduling.getInstanceConstraint().size() > 1) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Asynchronous adapters can contain at most one constraint.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT, null)));
 						}
 					}
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
+			public Collection<ValidationResultMessage> checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 				try {
-					val minimum = orchestratingConstraint.minimumPeriod
-					val maximum = orchestratingConstraint.maximumPeriod
-					if (minimum !== null) {
-						if (maximum !== null) {
-							var minimumIntegerValue = minimum.evaluateMilliseconds
-							var maximumIntegerValue = maximum.evaluateMilliseconds
+					TimeSpecification minimum = orchestratingConstraint.getMinimumPeriod();
+					TimeSpecification maximum = orchestratingConstraint.getMaximumPeriod();
+					if (minimum != null) {
+						if (maximum != null) {
+							int minimumIntegerValue = statechartUtil.evaluateMilliseconds(minimum);
+							int maximumIntegerValue = statechartUtil.evaluateMilliseconds(maximum);
 							if (minimumIntegerValue < 0) {
-								error("Time value must be positive.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Time value must be positive.",
+										new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
 							}
 							if (maximumIntegerValue < 0) {
-								error("Time value must be positive.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Time value must be positive.",
+										new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD, null)));
 							}
 							if (maximumIntegerValue < minimumIntegerValue) {
-								error("The minimum orchestrating period value must be greater than the maximum orchestrating period value.", GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+										"The minimum orchestrating period value must be greater than the maximum orchestrating period value.",
+										new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
 							}
 						}
 					}
 				} catch (IllegalArgumentException e) {
-					error('''Both the minimum and maximum values must be of type integer.''', GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Both the minimum and maximum values must be of type integer.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
+				}
+				return validationResultMessages;
+			}
+			
+			
+			public Collection<ValidationResultMessage> checkTasks(CodeGeneration codeGeneration) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				if (codeGeneration.getPackageName().size() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "At most one package name can be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
+				}
+				if (codeGeneration.getLanguage().size() != 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single programming language must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 				}
 			}
 			
 			
-			def checkTasks(CodeGeneration codeGeneration) {
-				if (codeGeneration.packageName.size > 1) {
-					error("At most one package name can be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+			public Collection<ValidationResultMessage> checkTasks(TestGeneration testGeneration) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				if (testGeneration.getPackageName().size() > 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "At most one package name can be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 				}
-				if (codeGeneration.language.size != 1) {
-					error("A single programming language must be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
+				if (testGeneration.getLanguage().size() != 1) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A single programming language must be specified.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 				}
-			}
-			
-			
-			def checkTasks(TestGeneration testGeneration) {
-				if (testGeneration.packageName.size > 1) {
-					error("At most one package name can be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
-				}
-				if (testGeneration.language.size != 1) {
-					error("A single programming language must be specified.", GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)
-				}
+				return validationResultMessages;
 			}
 			
 			// Additional validation rules
 			
 			
-			def checkGammaImports(GenModel genmodel) {
-				val packageImports = genmodel.packageImports.toSet
-				for (codeGenerationTask : genmodel.tasks.filter(CodeGeneration)) {
-					val parentPackage = codeGenerationTask.component.containingPackage
-					packageImports.remove(parentPackage)
+			public Collection<ValidationResultMessage> checkGammaImports(GenModel genmodel) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				Set<Package> packageImports = genmodel.getPackageImports().stream().collect(Collectors.toSet());
+				for (CodeGeneration codeGenerationTask : genmodel.getTasks().stream().filter(it -> it instanceof CodeGeneration).collect(Collectors.toSet())) {
+					Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(codeGenerationTask.getComponent());
+					packageImports.remove(parentPackage);
 				}
-				for (analysisModelTransformationTask : genmodel.tasks.filter(AnalysisModelTransformation)) {
-					val modelReference = analysisModelTransformationTask.model
+				for (AnalysisModelTransformation analysisModelTransformationTask : genmodel.getTasks().stream().filter(it -> it instanceof AnalysisModelTransformation)) {
+					ModelReference modelReference = analysisModelTransformationTask.getModel();
 					if (modelReference instanceof ComponentReference) {
-						val component = modelReference.component
-						val parentPackage = component.containingPackage
-						packageImports.remove(parentPackage)
+						ComponentReference componentReference = (ComponentReference)modelReference;
+						Component component = componentReference.getComponent();
+						Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
+						packageImports.remove(parentPackage);
 					}
-					for (coverage : analysisModelTransformationTask.coverages) {
-						for (instance : coverage.include + coverage.exclude) {
-							val instanceParentPackage = instance.containingPackage
-							packageImports.remove(instanceParentPackage)
+					for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
+						List<ComponentInstanceReference> allCoverages = new ArrayList<ComponentInstanceReference>();
+						allCoverages.addAll(coverage.getInclude());
+						allCoverages.addAll(coverage.getExclude());
+						for (ComponentInstanceReference instance : allCoverages) {
+							Package instanceParentPackage = StatechartModelDerivedFeatures.getContainingPackage(instance);
+							packageImports.remove(instanceParentPackage);
 						}
 					}
 				}
-				for (statechartCompilationTask : genmodel.tasks.filter(StatechartCompilation)) {
-					for (interfaceMapping : statechartCompilationTask.interfaceMappings) {
-						val parentPackage = interfaceMapping.gammaInterface.containingPackage
-						packageImports.remove(parentPackage)
+				for (StatechartCompilation statechartCompilationTask : genmodel.getTasks().stream().filter(it -> it instanceof StatechartCompilation)) {
+					for (InterfaceMapping interfaceMapping : statechartCompilationTask.getInterfaceMappings()) {
+						Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(interfaceMapping.getGammaInterface());
+						packageImports.remove(parentPackage);
 					}
 				}
-				for (eventPriorityTransformationTask : genmodel.tasks.filter(EventPriorityTransformation)) {
-					val parentPackage = eventPriorityTransformationTask.statechart.containingPackage
-					packageImports.remove(parentPackage)
+				for (EventPriorityTransformation eventPriorityTransformationTask : genmodel.getTasks().stream().filter(it -> it instanceof EventPriorityTransformation)) {
+					Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(eventPriorityTransformationTask.getStatechart());
+					packageImports.remove(parentPackage);
 				}
-				for (adaptiveContractTestGenerationTask : genmodel.tasks.filter(AdaptiveContractTestGeneration)) {
-					val parentPackage = adaptiveContractTestGenerationTask.statechartContract.containingPackage
-					packageImports.remove(parentPackage)
+				for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask : genmodel.getTasks().stream().filter(it -> it instanceof AdaptiveContractTestGeneration)) {
+					Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(adaptiveContractTestGenerationTask.getStatechartContract());
+					packageImports.remove(parentPackage);
 				}
-				for (phaseStatechartGenerationTask : genmodel.tasks.filter(PhaseStatechartGeneration)) {
-					val parentPackage = phaseStatechartGenerationTask.statechart.containingPackage
-					packageImports.remove(parentPackage)
+				for (PhaseStatechartGeneration phaseStatechartGenerationTask : genmodel.getTasks().stream().filter(it -> it instanceof PhaseStatechartGeneration)) {
+					Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechartGenerationTask.getStatechart());
+					packageImports.remove(parentPackage);
 				}
-				for (packageImport : packageImports) {
-					val index = genmodel.packageImports.indexOf(packageImport);
-					warning("This Gamma package import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)
+				for (Package packageImport : packageImports) {
+					int index = genmodel.getPackageImports().indexOf(packageImport);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This Gamma package import is not used.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__PACKAGE_IMPORTS, index)));
 				}
+				return validationResultMessages;
 			}
 
 			
-			def checkYakinduImports(GenModel genmodel) {
-				val statechartImports = genmodel.statechartImports.toSet
-				for (statechartCompilationTask : genmodel.tasks.filter(YakinduCompilation)) {
-					statechartImports -= statechartCompilationTask.statechart
+			public Collection<ValidationResultMessage> checkYakinduImports(GenModel genmodel) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
+				for (YakinduCompilation statechartCompilationTask : genmodel.getTasks().stream().filter(it -> it instanceof YakinduCompilation)) {
+					statechartImports.remove(statechartCompilationTask.getStatechart()); //remove removeAll
 				}
-				for (statechartImport : statechartImports) {
-					val index = genmodel.statechartImports.indexOf(statechartImport);
-					warning("This Yakindu import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index);
+				for (Statechart statechartImport : statechartImports) {
+					int index = genmodel.getStatechartImports().indexOf(statechartImport);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This Yakindu import is not used.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__STATECHART_IMPORTS, index)));
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkTraceImports(GenModel genmodel) {
-				val traceImports = genmodel.traceImports.toSet
-				for (testGenerationTask : genmodel.tasks.filter(TestGeneration)) {
-					traceImports -= testGenerationTask.executionTrace
+			public Collection<ValidationResultMessage> checkTraceImports(GenModel genmodel) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				Set<ExecutionTrace> traceImports = genmodel.getTraceImports().stream().collect(Collectors.toSet());
+				for (TestGeneration testGenerationTask : genmodel.getTasks().stream().filter(it -> it instanceof TestGeneration)) {
+					traceImports.remove(testGenerationTask.getExecutionTrace());
 				}
-				for (testReplayModelGeneration : genmodel.tasks.filter(TestReplayModelGeneration)) {
-					traceImports -= testReplayModelGeneration.executionTrace
+				for (TestReplayModelGeneration testReplayModelGeneration : genmodel.tasks.filter(TestReplayModelGeneration)) {
+					traceImports.remove(testReplayModelGeneration.getExecutionTrace());
 				}
-				for (traceImport : traceImports) {
-					val index = genmodel.traceImports.indexOf(traceImport);
-					warning("This execution trace import is not used.", GenmodelModelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index);
+				for (ExecutionTrace traceImport : traceImports) {
+					int index = genmodel.getTraceImports().indexOf(traceImport);
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "This execution trace import is not used.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.GEN_MODEL__TRACE_IMPORTS, index)));
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkParameters(ComponentReference componentReference) {
-				val type = componentReference.component
+			public Collection<ValidationResultMessage> checkParameters(ComponentReference componentReference) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				Component type = componentReference.getComponent();
 				if (componentReference.getArguments().size() != type.getParameterDeclarations().size()) {
-					error("The number of arguments is wrong.", ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The number of arguments is wrong.",
+							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkComponentInstanceArguments(AnalysisModelTransformation analysisModelTransformation) {
+			public Collection<ValidationResultMessage> checkComponentInstanceArguments(AnalysisModelTransformation analysisModelTransformation) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 				try {
-					val modelReference = analysisModelTransformation.model
+					ModelReference modelReference = analysisModelTransformation.getModel();
 					if (modelReference instanceof ComponentReference) {
-						val type = modelReference.component
-						val parameters = type.getParameterDeclarations();
+						ComponentReference componentReference = (ComponentReference)modelReference;
+						Component type = componentReference.getComponent();
+						List<ParameterDeclaration> parameters = type.getParameterDeclarations();
 						for (var i = 0; i < parameters.size(); i++) {
-							val parameter = parameters.get(i);
-							val argument = modelReference.getArguments().get(i);
-							val declarationType = parameter.getType();
-							val argumentType = typeDeterminator.getType(argument);
+							ParameterDeclaration parameter = parameters.get(i);
+							Expression argument = modelReference.getArguments().get(i);
+							Type declarationType = parameter.getType();
+							ExpressionType argumentType = typeDeterminator.getType(argument);
 							if (!typeDeterminator.equals(declarationType, argumentType)) {
-								error("The types of the declaration and the right hand side expression are not the same: " +
+								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+										"The types of the declaration and the right hand side expression are not the same: " +
 										typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
-										argumentType.toString().toLowerCase() + ".",
-										ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i);
+										argumentType.toString().toLowerCase() + ".", new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 							} 
 						}
 					}
 				} catch (Exception exception) {
 					// There is a type error on a lower level, no need to display the error message on this level too
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
-				val interfaces = statechartCompilation.statechart.scopes.filter(InterfaceScope).toSet
-				val mappedInterfaces = statechartCompilation.interfaceMappings.map[it.yakinduInterface].toSet
-				interfaces.removeAll(mappedInterfaces)
-				if (!interfaces.empty) {
-					val interfacesWithEvents = interfaces.filter[!it.events.empty].toSet
-					val interfacesWithoutEvents = interfaces.filter[it.events.empty].toSet
-					if (!interfacesWithEvents.empty) {
-						error("The following interfaces with events are not mapped: " + interfacesWithEvents.map[it.name] + ".", GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
+			public Collection<ValidationResultMessage> checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();//(Set<InterfaceScope>)statechartCompilation.getStatechart().getScopes().stream().filter(it -> it instanceof InterfaceScope).collect(Collectors.toSet());
+				for (InterfaceScope interfaceScope: statechartCompilation.getStatechart().getScopes()) {
+					
+				}
+				Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();//statechartCompilation.getInterfaceMappings().stream().map(it -> it.get);///.map(it -> it.getYakinduInterface()).collect(Collectors.toSet());
+				for (InterfaceMapping interfaceMapping: statechartCompilation.getInterfaceMappings()) {
+					mappedInterfaces.add(interfaceMapping.getYakinduInterface());
+				}
+				interfaces.removeAll(mappedInterfaces);
+				if (!interfaces.isEmpty()) {
+					Set<InterfaceScope> interfacesWithEvents = interfaces.stream().filter(it -> !it.getEvents().isEmpty()).collect(Collectors.toSet());
+					Set<InterfaceScope> interfacesWithoutEvents = interfaces.stream().filter(it -> it.getEvents().isEmpty()).collect(Collectors.toSet());
+					if (!interfacesWithEvents.isEmpty()) {
+						for (InterfaceScope interfacesWithEventsMap : interfacesWithEvents) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"The following interfaces with events are not mapped: " + interfacesWithEventsMap.getName() + ".",
+									new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART, null)));
+						}
 					}
-					if (!interfacesWithoutEvents.empty) {
-						info("The following interfaces without events are not mapped: " + interfacesWithoutEvents.map[it.name] + ".", GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)
+					if (!interfacesWithoutEvents.isEmpty()) {
+						for (InterfaceScope interfacesWithoutEventsMap : interfacesWithoutEvents) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
+									"The following interfaces without events are not mapped: " + interfacesWithoutEventsMap.getName() + ".",
+									new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART, null)));
+						}
 					}
 				}
+				return validationResultMessages;
 			}
 			
 			
-			def checkInterfaceConformance(InterfaceMapping mapping) {
-				if (!(mapping.checkConformance)) {
-					switch mapping.realizationMode {
-						case RealizationMode.PROVIDED:
-							error("In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
-						case RealizationMode.REQUIRED:
+			public Collection<ValidationResultMessage> checkInterfaceConformance(InterfaceMapping mapping) {
+				Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+				if (!(checkConformance(mapping))) {
+					switch (mapping.getRealizationMode()) {
+						case PROVIDED:
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+									"In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.",
+									new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+						case REQUIRED:
 							error("In case of required realization mode number of in/out events must equal to the number of out/in events in the Gamma interface and vice versa", GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)
 						default:
 							throw new IllegalArgumentException("Such interface realization mode is not supported: " + mapping.realizationMode)
 					}
 				}
+				return validationResultMessages;
 			}
 			
 			/** It checks the events of the parent interfaces as well. */
