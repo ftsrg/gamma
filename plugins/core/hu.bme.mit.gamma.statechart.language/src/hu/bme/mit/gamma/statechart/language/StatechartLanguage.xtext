@@ -531,7 +531,12 @@ enum Persistency returns InterfaceModel::Persistency:
 @Override 
 PrimaryExpression returns ConstraintModel::Expression: 
 	super |
-	EventParameterReferenceExpression
+	EventParameterReferenceExpression |
+	StateReferenceExpression
+;
+
+StateReferenceExpression returns StateReferenceExpression:
+	'in-state' '(' region=[Region] '.' state = [State] ')'
 ;
 
 EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenceExpression:

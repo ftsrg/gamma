@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.statechart.statechart.EntryState
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -309,12 +308,7 @@ class GammaStatechartAnnotator {
 	}
 	
 	protected def getCorrespondingStateNode(RaiseEventAction action) {
-		val container = action.containingTransitionOrState
-		if (container instanceof Transition) {
-			// Container is a transition
-			return container.sourceState as StateNode
-		}
-		return container as StateNode
+		return action.containingOrSourceStateNode
 	}
 	
 	protected def getReceivingId(Transition transition) {

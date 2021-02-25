@@ -802,6 +802,12 @@ public class ExpressionUtil {
 		return equalityExpression;
 	}
 	
+	public EnumerationLiteralExpression wrap(EnumerationLiteralDefinition literal) {
+		EnumerationLiteralExpression literalExpression = factory.createEnumerationLiteralExpression();
+		literalExpression.setReference(literal);
+		return literalExpression;
+	}
+	
 	public Expression wrapIntoMultiaryExpression(Expression original,
 			Expression addition, MultiaryExpression potentialContainer) {
 		if (original == null) {

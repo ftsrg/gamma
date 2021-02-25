@@ -52,7 +52,6 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -114,12 +113,14 @@ import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
 
 /**
  * This class contains custom validation rules. 
@@ -127,7 +128,9 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 	
-	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	public StatechartLanguageValidator() {
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
+	}
 	
 	// Some elements can have the same name
 	
@@ -587,6 +590,24 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		}
 	}
 	
+	@Check
+	public void checkStateReference(StateReferenceExpression reference) {
+		Region region = reference.getRegion();
+		hu.bme.mit.gamma.statechart.statechart.State state = reference.getState();
+		if (region != StatechartModelDerivedFeatures.getParentRegion(state)) {
+			error("The state is not contained by this region.", StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE);
+		}
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(region);
+		StateNode source = StatechartModelDerivedFeatures.getContainingOrSourceStateNode(reference);
+		Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(source);
+		StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(parentRegion);
+		if (statechart != parentStatechart) {
+			error("The referenced state must be in the same state machine component.", StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE);
+		}
+		if (region == parentRegion) {
+			warning("The referenced state should not be in the same region.", StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE);
+		}
+	}
 	
 	@Check
 	public void checkNodeReachability(StateNode node) {
