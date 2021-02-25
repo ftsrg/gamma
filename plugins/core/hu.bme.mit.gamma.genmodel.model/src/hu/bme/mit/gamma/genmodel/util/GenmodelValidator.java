@@ -72,6 +72,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			protected final StatechartUtil statechartUtil = StatechartUtil.INSTANCE;
 			protected final FileUtil fileUtil = FileUtil.INSTANCE;
 			protected final GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
+			protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 			
 			// Checking tasks, only one parameter is acceptable
 			
