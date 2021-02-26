@@ -17,10 +17,11 @@ We mainly follow the standard Java coding conventions and most of the convention
 * **CONSIDER** making classes final if they are not designed to be inherited from (Item 17 of [1]).
 * **AVOID** unused modifiers, for example methods of interfaces are automatically public.
 * **CONSIDER** using the weakest types on interfaces. For example, instead of `ArrayList`, use `List`, `Collection` or `Iterable` if possible.
+* **CONSIDER** adding a final modifier to a variable if its value is not expected to change. In Xtend, **DO** use the `val` keyword instead of the `var` keyword when declaring variables whenever possible.
 
 ## Testing and verification
 
-* **CONSIDER** using `com.google.common.base.Preconditions` methods to check if the preconditions of a method holds. For example: null checks, bound checks, etc. Consider filling the `errorMessage` parameter of these functions with a short error message.
+* **CONSIDER** using `com.google.common.base.Preconditions` methods to check if the preconditions of a method holds. For example: null checks, bound checks, etc. **CONSIDER** filling the `errorMessage` parameter of these functions with a short error message.
 
 ## Transformation classes
 
