@@ -26,7 +26,6 @@ import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.ArrayList
-import java.util.LinkedList
 import java.util.List
 import java.util.Map
 import java.util.stream.Collectors
@@ -70,7 +69,7 @@ class ExpressionPreconditionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformPrecondition(SelectExpression expression) {
-		val result = new LinkedList<Action>
+		val result = <Action>newLinkedList
 		// get the possible values (enumerate & transform)
 		val innerExpression = expression.operand
 		// 'temporary' variable(s)
@@ -90,7 +89,8 @@ class ExpressionPreconditionTransformer {
 				]
 				trace.put(expression, tempVariableDeclarations)
 				tempVariables += tempVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
-			} else {
+			}
+			else {
 				throw new IllegalArgumentException("Cannot select from expression of type: " + originalType)
 			}
 		}
@@ -146,7 +146,8 @@ class ExpressionPreconditionTransformer {
 				tempVariables += createVariableDeclarationStatement => [
 					it.variableDeclaration = tempVariable
 				]
-			} else {
+			}
+			else {
 				tempVariableDeclarations += tempVariableOriginalType.createVariablesFromType(new NameProvider(expression))
 				trace.put(expression, tempVariableDeclarations)
 				tempVariables += tempVariableDeclarations.map[decl | 
@@ -203,13 +204,14 @@ class ExpressionPreconditionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
-		val result = new LinkedList<Action>
+		val result = <Action>newLinkedList
 		if (functionInlining) {
 			// increase recursion depth
 			val FunctionDeclaration function = (expression.operand as DirectReferenceExpression).declaration as FunctionDeclaration
 			if (currentRecursionDepth.containsKey(function)) {
 				currentRecursionDepth.replace(function, currentRecursionDepth.get(function) + 1)
-			} else {
+			}
+			else {
 				currentRecursionDepth.put(function, 1);
 			}
 			// check recursion depth
@@ -238,10 +240,10 @@ class ExpressionPreconditionTransformer {
 						]
 					]
 					var arguments = expression.arguments.get(i).transformExpression
-					if(arguments.size != parameterVariableDeclarations.size) {
+					if (arguments.size != parameterVariableDeclarations.size) {
 						throw new IllegalArgumentException("Argument and parameter numbers do not match!")
 					}
-					for(j : 0 .. arguments.size - 1) {	//TODO is assignment based on ordering correct?
+					for (j : 0 .. arguments.size - 1) {	//TODO is assignment based on ordering correct?
 						parameterVariableDeclarations.get(i).expression = arguments.get(i)
 					}
 					
@@ -315,7 +317,7 @@ class ExpressionPreconditionTransformer {
 	//TODO rename variable to sth relevant
 	protected def List<VariableDeclaration> createVariablesFromType(Type variable, NameProvider nameProvider) {
 		val List<VariableDeclaration> transformed = newArrayList
-		val variableType = getTypeDefinitionFromType(variable)
+		val variableType = variable.typeDefinitionFromType
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
 			val typeDef = variableType

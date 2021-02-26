@@ -362,40 +362,42 @@ package class Trace {
 	
 	// Dispatch for value declaration
 	def put(ValueDeclaration gammaValue, VariableDeclaration lowlevelVariable) {
-		if (gammaValue instanceof ParameterDeclaration) {
+		if (gammaValue instanceof VariableDeclaration) {
 			put(gammaValue, lowlevelVariable)
 		}
-		else if (gammaValue instanceof VariableDeclaration) {
+		else if (gammaValue instanceof ParameterDeclaration) {
 			put(gammaValue, lowlevelVariable)
 		}
 		else if (gammaValue instanceof ConstantDeclaration) {
 			put(gammaValue, lowlevelVariable)
 		}
-		throw new IllegalArgumentException("Not known type: " + lowlevelVariable)
+		else {
+			throw new IllegalArgumentException("Not known type: " + lowlevelVariable)
+		}
 	}
 	
 	def isMapped(ValueDeclaration gammaValue) {
-		if (gammaValue instanceof ParameterDeclaration) {
-			isMapped(gammaValue)
+		if (gammaValue instanceof VariableDeclaration) {
+			return isMapped(gammaValue)
 		}
-		else if (gammaValue instanceof VariableDeclaration) {
-			isMapped(gammaValue)
+		else if (gammaValue instanceof ParameterDeclaration) {
+			return isMapped(gammaValue)
 		}
 		else if (gammaValue instanceof ConstantDeclaration) {
-			isMapped(gammaValue)
+			return isMapped(gammaValue)
 		}
 		throw new IllegalArgumentException("Not known type: " + gammaValue)
 	}
 	
 	def get(ValueDeclaration gammaValue) {
-		if (gammaValue instanceof ParameterDeclaration) {
-			get(gammaValue)
+		if (gammaValue instanceof VariableDeclaration) {
+			return get(gammaValue)
 		}
-		else if (gammaValue instanceof VariableDeclaration) {
-			get(gammaValue)
+		else if (gammaValue instanceof ParameterDeclaration) {
+			return get(gammaValue)
 		}
 		else if (gammaValue instanceof ConstantDeclaration) {
-			get(gammaValue)
+			return get(gammaValue)
 		}
 		throw new IllegalArgumentException("Not known type: " + gammaValue)
 	}

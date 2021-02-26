@@ -1,4 +1,4 @@
-$thetaVersion = "v2.5.0"
+$thetaVersion = "v2.11.1"
 $z3release = "z3-4.5.0"
 $z3version = "z3-4.5.0-x64-win"
 
