@@ -17,7 +17,7 @@ We mainly follow the standard Java coding conventions and most of the convention
 * **CONSIDER** making classes final if they are not designed to be inherited from (Item 17 of [1]).
 * **AVOID** unused modifiers, for example methods of interfaces are automatically public.
 * **CONSIDER** using the weakest types on interfaces. For example, instead of `ArrayList`, use `List`, `Collection` or `Iterable` if possible.
-* **CONSIDER** adding a final modifier to a variable if its value is not expected to change. In Xtend, **DO** use the `val` keyword instead of the `var` keyword when declaring variables whenever possible.
+* **CONSIDER** adding a final modifier to a variable if its value is not expected to change.
 
 ## Testing and verification
 
@@ -26,9 +26,16 @@ We mainly follow the standard Java coding conventions and most of the convention
 ## Transformation classes
 
 * **DO** declare every object necessary for the tranformation in the constructor. If the EMF objects to be transformed are expected to be in a ResourceSet, communicate this constraint in a comment above the constructor.
-* **DO** mark every not changable attribute in the class final.
+* **DO** mark every not changable attribute in the class `final`.
 * **DO** define a single `void execute()` method for the transformation.
 * If the transformer returns multiple artifacts, **DO** define an inner class named *Result* that contains these.
+
+## Xtend-specific constructs
+
+* **DO** use the `val` keyword instead of the `var` keyword when declaring variables whenever possible.
+* **CONSIDER** using the += and -= operator for adding and removing a single value or a collection of values to/from another collection.
+* **DO NOT** cast an object to a certain type after checking whether the object is the instance of that certain type. Xtend  does that implicitly in the subsequent block of the if-structure.
+* **CONSIDER** creating collections with the automatically imported `newCollectionType` method, e.g., newArrayList and newHashSet.
 
 ## Ecore metamodel projects
 

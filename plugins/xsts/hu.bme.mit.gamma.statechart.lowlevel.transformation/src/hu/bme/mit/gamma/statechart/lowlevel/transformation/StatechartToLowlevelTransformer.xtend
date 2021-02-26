@@ -39,7 +39,6 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -120,7 +119,8 @@ class StatechartToLowlevelTransformer {
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
 	 */
-	protected def List<EventDeclaration> transform(hu.bme.mit.gamma.statechart.interface_.EventDeclaration declaration, Port gammaPort) {
+	protected def List<EventDeclaration> transform(
+			hu.bme.mit.gamma.statechart.interface_.EventDeclaration declaration, Port gammaPort) {
 		val gammaDirection = declaration.direction
 		val realizationMode = gammaPort.interfaceRealization.realizationMode
 		if (gammaDirection == EventDirection.IN &&
@@ -157,7 +157,8 @@ class StatechartToLowlevelTransformer {
 	protected def EventDeclaration transform(Event gammaEvent, Port gammaPort, EventDirection direction) {
 		checkState(direction == EventDirection.IN || direction == EventDirection.OUT)
 		val lowlevelEvent = createEventDeclaration => [
-			it.name = if (direction == EventDirection.IN) gammaEvent.getInputName(gammaPort) else gammaEvent.getOutputName(gammaPort)
+			it.name = (direction == EventDirection.IN) ?
+				gammaEvent.getInputName(gammaPort) : gammaEvent.getOutputName(gammaPort)
 			it.persistency = gammaEvent.persistency.transform
 			it.direction = direction.transform
 			it.isRaised = createVariableDeclaration => [
@@ -169,7 +170,8 @@ class StatechartToLowlevelTransformer {
 		// Transforming the parameters
 		for (gammaParam : gammaEvent.parameterDeclarations) {
 			val lowlevelParam = createVariableDeclaration => [ // FIXME
-				it.name = if (direction == EventDirection.IN) gammaParam.getInName(gammaPort) else gammaParam.getOutName(gammaPort)
+				it.name = (direction == EventDirection.IN) ?
+					gammaParam.getInName(gammaPort) : gammaParam.getOutName(gammaPort)
 				it.type = gammaParam.type.transformType
 			]
 			lowlevelEvent.parameters += lowlevelParam
@@ -180,19 +182,19 @@ class StatechartToLowlevelTransformer {
 
 	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
 		val statechart = timeout.containingStatechart
-		val transitions = statechart.transitions.filter[EcoreUtil.getAllContents(it, true)
-			.filter(TimeoutEventReference).exists[it.timeout === timeout]]
+		val transitions = statechart.transitions.filter[it.getAllContentsOfType(
+			TimeoutEventReference).exists[it.timeout === timeout]]
 		// We can optimize, if this timeout is used for triggering the transitions of only one state
 		if (transitions.size == 1) {
 			val transition = transitions.head
 			val source = transition.sourceState
 			if (source instanceof State) {
 				// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
-				if (EcoreUtil.getAllContents(source, true)
-						.filter(TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
+				if (source.getAllContentsOfType(
+						TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
 					// We can optimize, if all outgoing transitions use (potentially) only this timeout
-					if (source.outgoingTransitions.map[EcoreUtil.getAllContents(it, true)
-							.filter(TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
+					if (source.outgoingTransitions.map[it.getAllContentsOfType(
+							TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
 						val gammaParentRegion = source.parentRegion
 						if (!trace.doesRegionHaveOptimizedTimeout(gammaParentRegion)) {
 							val lowlevelTimeout = timeout.createTimeoutVariable
