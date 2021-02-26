@@ -105,12 +105,15 @@ import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 
 public class StatechartModelValidator extends ActionModelValidator {
 ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
@@ -356,7 +359,29 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
+	public Collection<ValidationResultMessage> checkStateReference(StateReferenceExpression reference) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Region region = reference.getRegion();
+		hu.bme.mit.gamma.statechart.statechart.State state = reference.getState();
+		if (region != StatechartModelDerivedFeatures.getParentRegion(state)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "The state is not contained by this region.",
+					new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE, null)));
+		}
+		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(region);
+		StateNode source = StatechartModelDerivedFeatures.getContainingOrSourceStateNode(reference);
+		Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(source);
+		StatechartDefinition parentStatechart = StatechartModelDerivedFeatures.getContainingStatechart(parentRegion);
+		if (statechart != parentStatechart) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+					"The referenced state must be in the same state machine component.",
+					new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE, null)));
+		}
+		if (region == parentRegion) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, "The referenced state should not be in the same region.",
+					new ReferenceInfo(StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE, null)));
+		}
+		return validationResultMessages;
+	}
 
 	protected <T extends EObject> List<T> getAllContentsOfType(EObject element, Class<T> classType){
 		List<T> contents = new ArrayList<T>();

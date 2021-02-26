@@ -108,4 +108,9 @@
     <eLiterals name="TRANSIENT"/>
     <eLiterals name="PERSISTENT" value="1"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StateReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NullaryExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="region" lowerBound="1"
+        eType="#//Region"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="state" lowerBound="1" eType="#//State"/>
+  </eClassifiers>
 </ecore:EPackage>

@@ -81,5 +81,9 @@
     <genClasses ecoreClass="model.ecore#//JoinState"/>
     <genClasses ecoreClass="model.ecore#//ChoiceState"/>
     <genClasses ecoreClass="model.ecore#//ForkState"/>
+    <genClasses ecoreClass="model.ecore#//StateReferenceExpression">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateReferenceExpression/region"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference model.ecore#//StateReferenceExpression/state"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

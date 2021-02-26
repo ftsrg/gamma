@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.util.ExpressionType;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
+
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -116,22 +117,31 @@ import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
+
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
+
+import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
+
 
 /**
  * This class contains custom validation rules. 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
-	
-	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+
 	StatechartModelValidator statechartModelValidator = StatechartModelValidator.INSTANCE;
+
+	public StatechartLanguageValidator() {
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
+	}
+
 	
 	// Some elements can have the same name
 	
@@ -353,6 +363,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkTransitionEventRaisings(raiseEvent));
 	}
 	
+	@Check
+	public void checkStateReference(StateReferenceExpression reference) {
+		handleValidationResultMessage(statechartModelValidator.checkStateReference(reference));
+	}
 	
 	@Check
 	public void checkNodeReachability(StateNode node) {

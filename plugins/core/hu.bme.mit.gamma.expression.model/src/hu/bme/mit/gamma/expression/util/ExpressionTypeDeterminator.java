@@ -74,7 +74,7 @@ public class ExpressionTypeDeterminator {
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
 	protected ExpressionTypeDeterminator() {}
 	//
-	ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	/**
 	 * Collector of extension methods.

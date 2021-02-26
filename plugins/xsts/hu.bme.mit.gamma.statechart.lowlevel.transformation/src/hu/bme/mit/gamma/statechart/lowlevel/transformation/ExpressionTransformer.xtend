@@ -59,6 +59,8 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
+import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 
 class ExpressionTransformer {
 	// Auxiliary object
@@ -67,6 +69,7 @@ class ExpressionTransformer {
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
+	protected final StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
 	protected final boolean functionInlining
@@ -233,6 +236,17 @@ class ExpressionTransformer {
 		var result = new ArrayList<Expression>
 		result += create(expression.eClass) as UnaryExpression => [
 			it.operand = expression.operand.transformExpression.getOnlyElement
+		]
+		return result
+	}
+	
+	def dispatch List<Expression> transformExpression(StateReferenceExpression expression) {
+		var result = new ArrayList<Expression>
+		val gammaRegion = expression.region
+		val gammaState = expression.state
+		result += statechartModelFactory.createStateReferenceExpression => [
+			it.region = trace.get(gammaRegion)
+			it.state = trace.get(gammaState)
 		]
 		return result
 	}

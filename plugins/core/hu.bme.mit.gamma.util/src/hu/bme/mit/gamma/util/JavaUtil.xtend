@@ -1,6 +1,5 @@
 package hu.bme.mit.gamma.util
 
-import java.util.Collection
 import java.util.List
 
 class JavaUtil {
@@ -9,7 +8,7 @@ class JavaUtil {
 	protected new() {}
 	//
 
-	def <T> List<T> filter(Collection<? super T> collection, Class<T> clazz) {
+	def <T> List<T> filter(Iterable<? super T> collection, Class<T> clazz) {
 		val list = <T>newArrayList
 		for (element : collection) {
 			if (clazz.isInstance(element)) {
@@ -19,4 +18,7 @@ class JavaUtil {
 		return list
 	}
 	
+	def <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> inputs) {
+		return inputs.flatten
+	}
 }

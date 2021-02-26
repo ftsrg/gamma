@@ -68,7 +68,10 @@ import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
@@ -179,6 +182,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				checkState(expression.getPort() != null);
 				Event event = expression.getEvent();
 				return Scopes.scopeFor(event.getParameterDeclarations());
+			}
+			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				Collection<Region> allRegions = StatechartModelDerivedFeatures.getAllRegions(statechart);
+				return Scopes.scopeFor(allRegions);
+			}
+			if (context instanceof StateReferenceExpression &&
+					reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE) {
+				StateReferenceExpression stateReferenceExpression = (StateReferenceExpression) context;
+				Region region = stateReferenceExpression.getRegion();
+				List<State> states = StatechartModelDerivedFeatures.getStates(region);
+				return Scopes.scopeFor(states);
 			}
 
 			// Composite system

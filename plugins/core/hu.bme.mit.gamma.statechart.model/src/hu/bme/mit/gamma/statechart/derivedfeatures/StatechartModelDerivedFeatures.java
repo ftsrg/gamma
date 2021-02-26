@@ -1074,6 +1074,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return ecoreUtil.getContainerOfType(object, State.class);
 	}
 	
+	public static StateNode getContainingOrSourceStateNode(EObject object) {
+		EObject container = getContainingTransitionOrState(object);
+		if (container instanceof Transition) {
+			Transition transition = (Transition) container;
+			return transition.getSourceState();
+		}
+		return (StateNode) container;
+	}
+	
 	public static List<Action> getContainingActionList(EObject object) {
 		EObject container = object.eContainer();
 		if (container instanceof Transition) {
