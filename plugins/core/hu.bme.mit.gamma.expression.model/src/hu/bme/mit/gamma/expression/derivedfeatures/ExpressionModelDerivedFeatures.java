@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -37,6 +38,11 @@ public class ExpressionModelDerivedFeatures {
 			return true;
 		}
 		return false;
+	}
+	
+	public static TypeDefinition getTypeDefinition(Declaration declaration) {
+		Type type = declaration.getType();
+		return getTypeDefinition(type);
 	}
 	
 	public static TypeDefinition getTypeDefinition(Type type) {

@@ -53,6 +53,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
@@ -71,6 +72,7 @@ class StatechartToLowlevelTransformer {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
 			this.maxRecursionDepth, this.assertionVariableName)
 		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
