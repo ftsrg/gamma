@@ -76,13 +76,9 @@ class DeclarationSerializer {
 
 	// Variable
 
-	def String serializeVariableDeclaration(VariableDeclaration variable) '''
-		«variable.serializeModifier»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
-	'''
+	def String serializeVariableDeclaration(VariableDeclaration variable) '''«variable.serializeModifier»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»'''
 	
-	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''
-		local «variable.serializeVariableDeclaration»
-	'''
+	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''local «variable.serializeVariableDeclaration»'''
 	
 	private def serializeModifier(VariableDeclaration variable) {
 		val container = variable.eContainer
