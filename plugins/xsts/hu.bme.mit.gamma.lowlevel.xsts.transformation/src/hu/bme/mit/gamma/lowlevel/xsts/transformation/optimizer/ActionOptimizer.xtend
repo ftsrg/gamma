@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.ReadWrittenVariableLocator
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -33,13 +32,13 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 
 class ActionOptimizer {
 	// Singleton
 	public static final ActionOptimizer INSTANCE =  new ActionOptimizer
 	protected new() {}
 	// Auxiliary objects
-	protected final extension ReadWrittenVariableLocator locator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Model factories
@@ -52,7 +51,8 @@ class ActionOptimizer {
 		// Until the action cannot be optimized any more
 		while (!oldXStsAction.helperEquals(newXStsAction)) {
 			oldXStsAction = newXStsAction
-			newXStsAction = newXStsAction.simplifyCompositeActions
+			newXStsAction = newXStsAction
+				.simplifyCompositeActions
 				.simplifySequentialActions
 				.simplifyParallelActions
 				.simplifyOrthogonalActions
@@ -398,7 +398,7 @@ class ActionOptimizer {
 	
 	protected def dispatch void optimizeAssignmentActions(SequentialAction action) {
 		val xStsActions = action.actions
-		val removeableXStsActions = newLinkedList
+		val removeableXStsActions = <AssignmentAction>newLinkedList
 		for (var i = 0; i < xStsActions.size; i++) {
 			val xStsFirstAction = xStsActions.get(i)
 			if (xStsFirstAction instanceof AssignmentAction) {
@@ -540,6 +540,12 @@ class ActionOptimizer {
 				}
 			}
 		}
+	}
+	
+	// Must not be cloned
+	
+	def mustNotBeCloned(Action action) {
+		return action instanceof VariableDeclarationAction
 	}
 	
 }

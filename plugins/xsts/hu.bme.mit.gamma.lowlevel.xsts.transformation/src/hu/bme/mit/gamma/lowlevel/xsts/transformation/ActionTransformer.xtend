@@ -19,8 +19,8 @@ import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
@@ -38,12 +38,14 @@ class ActionTransformer {
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	// Trace
 	protected final Trace trace
 	
 	new(Trace trace) {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 	}
 
 	def transformActions(Collection<? extends hu.bme.mit.gamma.action.model.Action> actions) {
@@ -64,28 +66,16 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {
-		// Create variable reset assignment (variable already transformed, global)
 		val lowlevelVariable = action.variableDeclaration
-		if (trace.hasXStsVariable(lowlevelVariable)) {
-			return createAssignmentAction => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = trace.getXStsVariable(lowlevelVariable)
-				]
-				if (action.variableDeclaration.expression !== null) {
-					it.rhs = lowlevelVariable.expression.transformExpression
-				}
-				else {
-					it.rhs = lowlevelVariable.initialValue.transformExpression
-				}
-			]
-		}
-		// The variable has already been optimized (removed)
-		return createEmptyAction
+		val xStsVariable = lowlevelVariable.transformVariableDeclarationAndInitialExpression
+		return createVariableDeclarationAction => [
+			it.variableDeclaration = xStsVariable
+		]
 	}
 	
 	def dispatch Action transformAction(AssignmentStatement action) {
 		return createAssignmentAction => [
-			it.lhs = action.lhs.transformExpression as DirectReferenceExpression
+			it.lhs = action.lhs.transformExpression as ReferenceExpression
 			it.rhs = action.rhs.transformExpression
 		]
 	}

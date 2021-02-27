@@ -22,10 +22,10 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.PrimedVariable;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
@@ -169,6 +170,15 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getReadVariables(final AssignmentAction action) {
 		return expressionUtil.getReferredVariables(action.getRhs());
 	}
+	
+	private static Set<VariableDeclaration> _getReadVariables(final VariableDeclarationAction action) {
+		VariableDeclaration variable = action.getVariableDeclaration();
+		Expression initialValue = variable.getExpression();
+		if (initialValue != null) {
+			return expressionUtil.getReferredVariables(initialValue);
+		}
+		return Collections.emptySet();
+	}
 
 	private static Set<VariableDeclaration> _getReadVariables(final EmptyAction action) {
 		return Collections.emptySet();
@@ -211,6 +221,11 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	private static Set<VariableDeclaration> _getWrittenVariables(final AssignmentAction action) {
 		return expressionUtil.getReferredVariables(action.getLhs());
 	}
+	
+	private static Set<VariableDeclaration> _getWrittenVariables(final VariableDeclarationAction action) {
+		VariableDeclaration variable = action.getVariableDeclaration();
+		return Collections.singleton(variable); // Or this should be an empty set?
+	}
 
 	private static Set<VariableDeclaration> _getWrittenVariables(final EmptyAction action) {
 		return Collections.emptySet();
@@ -249,6 +264,8 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static Set<VariableDeclaration> getReadVariables(final Action action) {
 		if (action instanceof AssignmentAction) {
 			return _getReadVariables((AssignmentAction) action);
+		} else if (action instanceof VariableDeclarationAction) {
+			return _getReadVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
 			return _getReadVariables((AssumeAction) action);
 		} else if (action instanceof EmptyAction) {
@@ -267,6 +284,8 @@ public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static Set<VariableDeclaration> getWrittenVariables(final Action action) {
 		if (action instanceof AssignmentAction) {
 			return _getWrittenVariables((AssignmentAction) action);
+		} else if (action instanceof VariableDeclarationAction) {
+			return _getWrittenVariables((VariableDeclarationAction) action);
 		} else if (action instanceof AssumeAction) {
 			return _getWrittenVariables((AssumeAction) action);
 		} else if (action instanceof EmptyAction) {

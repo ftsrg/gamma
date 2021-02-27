@@ -144,19 +144,16 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action, List<Action> following) {
 		// Create return variable and transform the current action
 		val result = <Action>newLinkedList
-		var lowlevelPrecondition = action.variableDeclaration.expression !== null ? action.variableDeclaration.expression.transformPrecondition : <Action>newLinkedList
+		val variableDeclaration = action.variableDeclaration
+		val initalExpression = variableDeclaration.expression
 		
-		val variableDeclarations = action.variableDeclaration.transformValue
+		var lowlevelPrecondition = initalExpression !== null ? initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
-		for (variableDeclaration : variableDeclarations) {
-			// These are transient variables
-			variableDeclaration.annotations += createTransientVariableDeclarationAnnotation
-			val name = variableDeclaration.name
-			val hashCode = variableDeclaration.hashCode
-			variableDeclaration.name = name + "_" + hashCode // Giving unique name to local variable
-			// This unique name can be added, as these variables are not back-annotated!
+		
+		val lowlevelVariableDeclarations = variableDeclaration.transformValue
+		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
-				it.variableDeclaration = variableDeclaration
+				it.variableDeclaration = lowlevelVariableDeclaration
 			]	
 		}
 		// Create new following-context variable and transform the following-context
@@ -171,21 +168,19 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, List<Action> following) {
-		// Create return variable
 		val result = <Action>newLinkedList
-		// Constants are not transformed: their references are inlined
-		// TODO transformation (delete if unnecessary):
-		var lowlevelPrecondition = action.constantDeclaration.expression !== null ?
-			action.constantDeclaration.expression.transformPrecondition : <Action>newLinkedList
+		val constantDeclaration = action.constantDeclaration
+		val initalExpression = constantDeclaration.expression
 		
-		val variableDeclarations = action.constantDeclaration.transformValue
+		var lowlevelPrecondition = initalExpression !== null ? initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
-		for (variableDeclaration : variableDeclarations) {
+		
+		val lowlevelVariableDeclarations = constantDeclaration.transformValue
+		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
-				it.variableDeclaration = variableDeclaration
+				it.variableDeclaration = lowlevelVariableDeclaration
 			]	
 		}
-		///Delete up to this point if inlining is chosen 
 		// Create new following-context variable and transform the following-context
 		val newFollowing = <Action>newLinkedList
 		newFollowing += following

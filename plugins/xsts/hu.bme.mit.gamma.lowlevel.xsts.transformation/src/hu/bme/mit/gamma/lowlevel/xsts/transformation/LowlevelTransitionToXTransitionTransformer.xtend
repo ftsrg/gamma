@@ -16,9 +16,10 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+
 abstract class LowlevelTransitionToXTransitionTransformer {
 	// Auxiliary object
-	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
 	protected final extension XSTSActionUtil actionFactory
 	protected final extension StateAssumptionCreator stateAssumptionCreator

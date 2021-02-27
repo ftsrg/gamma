@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
@@ -49,6 +50,10 @@ class ActionSerializer {
 	
 	def dispatch String serialize(AssignmentAction action) '''
 		«action.lhs.serialize» := «action.rhs.serialize»;
+	'''
+	
+	def dispatch String serialize(VariableDeclarationAction action) '''
+		«action.variableDeclaration.serializeLocalVariableDeclaration»;
 	'''
 	
 	// nop cannot be parsed by Theta

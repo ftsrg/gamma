@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComp
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
@@ -41,7 +42,6 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Subregions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Timeouts
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TopRegions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Variables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
@@ -91,7 +91,6 @@ class LowlevelToXSTSTransformer {
 	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension AnnotationTransformer annotationTransformer = AnnotationTransformer.INSTANCE
-	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
@@ -99,6 +98,7 @@ class LowlevelToXSTSTransformer {
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
 	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
@@ -123,7 +123,7 @@ class LowlevelToXSTSTransformer {
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> componentParametersRule
 	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
-	protected BatchTransformationRule<Variables.Match, Variables.Matcher> variableInitializationsRule
+	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
 	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
 	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
@@ -155,6 +155,7 @@ class LowlevelToXSTSTransformer {
 		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
 		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
 			this.engine, this.trace)
@@ -467,15 +468,8 @@ class LowlevelToXSTSTransformer {
 			plainVariablesRule = createRule(PlainVariables.instance).action [
 				val lowlevelVariable = it.variable
 				if (lowlevelVariable.notOptimizable) {
-					val xStsVariable = createVariableDeclaration => [
-						it.name = lowlevelVariable.name.variableName
-						it.type = lowlevelVariable.type.transformType
-					]
-					for (lowlevelAnnotation : lowlevelVariable.annotations) {
-						xStsVariable.annotations += lowlevelAnnotation.transform
-					}
+					val xStsVariable = lowlevelVariable.transformVariableDeclaration
 					xSts.variableDeclarations += xStsVariable // Target model modification
-					trace.put(lowlevelVariable, xStsVariable) // Tracing
 					xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
 				}
 			].build
@@ -505,7 +499,7 @@ class LowlevelToXSTSTransformer {
 
 	protected def getVariableInitializationsRule() {
 		if (variableInitializationsRule === null) {
-			variableInitializationsRule = createRule(Variables.instance).action [
+			variableInitializationsRule = createRule(GlobalVariables.instance).action [
 				val lowlevelVariable = it.variable
 				if (lowlevelVariable.notOptimizable) {
 					val xStsVariable = trace.getXStsVariable(lowlevelVariable)

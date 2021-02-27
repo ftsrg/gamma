@@ -184,16 +184,17 @@ class ValueDeclarationTransformer {
 	private def Expression getExpressionFromRecordLiteral(RecordLiteralExpression initial,
 			List<FieldDeclaration> currentField) {
 		for (assignment : initial.fieldAssignments) {
+			val value = assignment.value
 			if (currentField.head.name == assignment.reference) {
 				if (currentField.size == 1) {
-					return assignment.value
+					return value
 				}
 				else {
 					if (assignment.value instanceof RecordLiteralExpression) {
 						val innerField = <FieldDeclaration>newArrayList
 						innerField += currentField.subList(1, currentField.size)
 						return getExpressionFromRecordLiteral(
-							assignment.value as RecordLiteralExpression, innerField)
+							value as RecordLiteralExpression, innerField)
 					}
 					else {
 						throw new IllegalArgumentException("Invalid expression!")

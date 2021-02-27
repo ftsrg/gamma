@@ -18,6 +18,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
@@ -68,6 +69,14 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		}
 		return '''
 			«action.lhs.serialize» = «action.rhs.serialize»;
+		'''
+	}
+	
+	def dispatch CharSequence serialize(VariableDeclarationAction action) {
+		val variable = action.variableDeclaration
+		val intialValue = variable.expression
+		return '''
+			«variable.type.serialize» «variable.name»«IF intialValue !== null» = «intialValue.serialize»«ENDIF»;
 		'''
 	}
 	
