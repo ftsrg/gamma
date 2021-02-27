@@ -596,7 +596,7 @@ package class Trace {
 		checkNotNull(value)
 		for (record : recordValDeclMappings.keySet) {
 			if (record.key.equals(key) && record.value.equals(value)) {
-				return recordValDeclMappings.get(key)
+				return recordValDeclMappings.get(record)
 			}
 		}
 		throw new IllegalArgumentException("Not found: " + recordField)

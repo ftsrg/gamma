@@ -27,7 +27,6 @@ import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
 import hu.bme.mit.gamma.expression.model.DefaultExpression
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -175,7 +174,7 @@ class ActionTransformer {
 		// Create return variable
 		val result = <Action>newLinkedList
 		// Constants are not transformed: their references are inlined
-		//TODO transformation (delete if unnecessary):
+		// TODO transformation (delete if unnecessary):
 		var lowlevelPrecondition = action.constantDeclaration.expression !== null ?
 			action.constantDeclaration.expression.transformPrecondition : <Action>newLinkedList
 		
@@ -300,7 +299,7 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(SwitchStatement action, List<Action> following) {
-		// No fallthrough functionality!
+		// No fall-through functionality!
 		// Create return variable
 		val result = <Action>newLinkedList
 		// Transform the guards (and their preconditions)
@@ -445,8 +444,9 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(AssignmentStatement action, List<Action> following) {
 		// Create return variable and transform the current action
 		val result = <Action>newLinkedList
-		//Get the referred high-level declaration (assuming a single, assignable element)
-		val referredDeclaration = action.lhs.referredValues.getOnlyElement
+		// Get the referred high-level declaration (assuming a single, assignable element)
+		val actionLhs = action.lhs
+		val referredDeclaration = actionLhs.referredValues.getOnlyElement
 		checkState(referredDeclaration instanceof VariableDeclaration ||
 			referredDeclaration instanceof ParameterDeclaration) //transformed to assignable type (=variable)
 		// Transform lhs
@@ -461,9 +461,8 @@ class ActionTransformer {
 		}
 		else {
 			var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, newArrayList)			
-			// access expressions:
-			val accessList = action.lhs.collectAccessList
-			var recordAccessList = accessList.filter(DirectReferenceExpression).toList
+			// access expressions
+			val recordAccessList = actionLhs.collectRecordAccessList
 			for (elem : originalLhsFields) {
 				val key = elem.key
 				val value = elem.value
@@ -483,13 +482,13 @@ class ActionTransformer {
 				}
 			}
 		}
-		
+		val actionRhs = action.rhs
 		// Get rhs precondition
-		val lowlevelPrecondition = action.rhs.transformPrecondition
+		val lowlevelPrecondition = actionRhs.transformPrecondition
 		result += lowlevelPrecondition
 		// Transform rhs and create action
 		val List<Expression> lowlevelRhs = <Expression>newArrayList
-		lowlevelRhs += action.rhs.transformExpression
+		lowlevelRhs += actionRhs.transformExpression
 		if (lowlevelLhs.size != lowlevelRhs.size) {
 			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
 		}

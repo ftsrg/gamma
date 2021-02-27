@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FieldDeclaration
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
@@ -143,9 +144,7 @@ class ExpressionTransformer {
 		if (originalDeclaration instanceof ValueDeclaration) {
 			val originalLhsVariables = exploreComplexType(originalDeclaration,
 				getTypeDefinitionFromType(originalDeclaration.type), newArrayList)
-			val accessList = expression.collectAccessList
-			val List<DirectReferenceExpression> recordAccessList =
-				accessList.filter(DirectReferenceExpression).toList
+			val recordAccessList = expression.collectRecordAccessList
 	
 			for (elem : originalLhsVariables) {	
 				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
@@ -192,10 +191,8 @@ class ExpressionTransformer {
 			throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration)
 		}
 		// explore the chain of access expressions
-		var accessList = expression.collectAccessList
-		var List<DirectReferenceExpression> recordAccessList = accessList
-			.filter(DirectReferenceExpression).toList
-		var List<Expression> arrayAccessList = accessList.filter(Expression).toList
+		var arrayAccessList = expression.collectAccessList
+		var recordAccessList = expression.collectRecordAccessList
 		
 		// if 'simple' array
 		if (recordAccessList.empty) {
@@ -310,7 +307,7 @@ class ExpressionTransformer {
 						it.declaration = trace.get(declaration)
 					]	
 				}
-				else {							//if not as simple, try as complex
+				else { //if not as simple, try as complex
 					var mapKeys = exploreComplexType(declaration,
 						declaration.typeDefinitionFromType, newArrayList)
 					for (key : mapKeys) {
@@ -356,7 +353,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(RecordLiteralExpression expression) {
-		//TODO currently the field assignment position has to match the field declaration position
+		// TODO currently the field assignment position has to match the field declaration position
 		val result = <Expression>newArrayList
 		for (assignment : expression.fieldAssignments) {
 			result += assignment.value.transformExpression
@@ -440,12 +437,13 @@ class ExpressionTransformer {
 		}
 		else {	//Simple
 			// In case of simple types create a result element
-			result += new Pair<ValueDeclaration, List<FieldDeclaration>>(original, currentField)
+			result += new Pair(original, currentField)
 		}
 		
 		return result
 	}
 	
+	// Question: why is it unused?
 	protected def List<List<FieldDeclaration>> exploreComplexType2(
 			TypeDefinition type, List<FieldDeclaration> currentField) {
 		// Experimental
@@ -467,7 +465,7 @@ class ExpressionTransformer {
 			result += exploreComplexType2(getTypeDefinitionFromType(type.elementType), currentField)
 		}
 		else {	//Simple
-			// In case of simple types create a result element
+			// In case of simple types, create a result element
 			result += currentField
 		}
 		
@@ -509,19 +507,24 @@ class ExpressionTransformer {
 		return result
 	}
 	
+	protected def List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
+		return exp.collectAccessList
+			.filter(FieldReferenceExpression).toList
+	}
+	
 	protected def findDeclarationOfReferenceExpression(Expression expression) {
 		return expression.declaration
 	}
 	
 	protected def boolean isSameAccessTree(List<FieldDeclaration> fieldsList,
-			List<DirectReferenceExpression> currentAccessList) {
+			List<FieldReferenceExpression> currentAccessList) {
 		if (fieldsList.size < currentAccessList.size) {
 			return false
 		}
 		for (var i = 0; i < currentAccessList.size; i++) {
-			val access = currentAccessList.get(i).declaration
+			val access = currentAccessList.get(i).fieldDeclaration
 			val field = fieldsList.get(i)
-			if (access === field) {
+			if (access !== field) {
 				return false
 			}
 		}
@@ -614,7 +617,6 @@ class ExpressionTransformer {
 			throw new IllegalArgumentException(
 				"For statements over non-literal ranges are currently not supported!: " + expression)
 		}
-		
 		// evaluate if possible
 		val left = leftOperand as IntegerLiteralExpression
 		val start = expression.leftInclusive ? left.value.intValue : left.value.intValue + 1
@@ -625,13 +627,11 @@ class ExpressionTransformer {
 			newLiteral.value = BigInteger.valueOf(i)
 			result += newLiteral
 		}
-		
 		return result
 	}
 
 	protected def dispatch List<Expression> enumerateExpression(TypeReferenceExpression expression) {
 		val result = <Expression>newArrayList
-		
 		// only enums are enumerable
 		val typeDefinition = expression.declaration.typeDefinitionFromType
 		if (!(typeDefinition instanceof EnumerationTypeDefinition)) {
@@ -644,7 +644,6 @@ class ExpressionTransformer {
 				it.reference = literalDefinition
 			]
 		}
-		
 		return result
 	}	
 	
