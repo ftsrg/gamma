@@ -42,7 +42,6 @@ import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDefinition
-import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -184,8 +183,8 @@ class ExpressionTransformer {
 		// find original declaration and get the keys of the transformation
 		var originalDeclaration = expression.findDeclarationOfReferenceExpression
 		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
-			exploreComplexType(originalDeclaration as ValueDeclaration,
-				getTypeDefinitionFromType(originalDeclaration.type), newArrayList)
+			exploreComplexType(originalDeclaration,
+				getTypeDefinitionFromType(originalDeclaration), newArrayList)
 		}
 		else {
 			throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration)
@@ -259,79 +258,22 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
 		val result = <Expression>newArrayList
 		val declaration = expression.declaration
-		if (declaration instanceof ConstantDeclaration) {
-			// Constant type declarations have to be transformed as their right hand side is inlined
-			if (!trace.isMapped(declaration)) {
-				// Constant type declarations have to be transformed as their right hand side is inlined
-				val constantType = declaration.type
-				if (constantType instanceof TypeReference) {
-					val constantTypeDeclaration = constantType.reference
-					val typeDefinition = constantTypeDeclaration.type
-					if (!typeDefinition.isPrimitive) {
-						if (!trace.isMapped(constantTypeDeclaration)) {
-							val transformedTypeDeclaration = constantTypeDeclaration.transformTypeDeclaration
-							val lowlevelPackage = trace.lowlevelPackage
-							lowlevelPackage.typeDeclarations += transformedTypeDeclaration
-						}
-					}
-				}
-				return declaration.expression.transformExpression
-			}
-			/*val constantType = declaration.type
-			if (constantType instanceof TypeReference) {
-				val constantTypeDeclaration = constantType.reference
-				val typeDefinition = constantTypeDeclaration.type
-				if (!typeDefinition.isPrimitive && !(typeDefinition instanceof CompositeTypeDefinition)) {	//TODO handle composite?
-					if (!trace.isMapped(constantTypeDeclaration)) {
-						val transformedTypeDeclaration = constantTypeDeclaration.transformTypeDeclaration
-						val lowlevelPackage = trace.lowlevelPackage
-						lowlevelPackage.typeDeclarations += transformedTypeDeclaration
-					}
-				}
-			}
-			// Inlining the referred constant
-			result += declaration.expression.transformExpression*/
-			//////Uncomment up to this point and delete after if inlining is chosen
-			//TODO complex types
-			checkState(trace.isMapped(declaration), declaration)
-			result += createDirectReferenceExpression => [
-				it.declaration = trace.get(declaration)
-			]
-		}
-		else {
+		if (declaration instanceof ValueDeclaration) {
 			checkState(declaration instanceof VariableDeclaration || 
-				declaration instanceof ParameterDeclaration, declaration)
-			if (declaration instanceof VariableDeclaration) {
-				if (trace.isMapped(declaration)) {	//if mapped as simple
-					result += createDirectReferenceExpression => [
-						it.declaration = trace.get(declaration)
-					]	
-				}
-				else { //if not as simple, try as complex
-					var mapKeys = exploreComplexType(declaration,
-						declaration.typeDefinitionFromType, newArrayList)
-					for (key : mapKeys) {
-						result += createDirectReferenceExpression => [
-							it.declaration = trace.get(key)
-						]
-					}
-				}
+				declaration instanceof ParameterDeclaration ||
+				declaration instanceof ConstantDeclaration, declaration)
+			if (trace.isMapped(declaration)) {	//if mapped as simple
+				result += createDirectReferenceExpression => [
+					it.declaration = trace.get(declaration)
+				]	
 			}
-			else if (declaration instanceof ParameterDeclaration) {
-				//TODO complex types
-				//checkState(trace.isMapped(declaration), declaration)
-				if (trace.isMapped(declaration)) {	//TODO clean up and comment, same as the previous branch
+			else { //if not as simple, try as complex
+				var mapKeys = exploreComplexType(declaration,
+					declaration.typeDefinitionFromType, newArrayList)
+				for (key : mapKeys) {
 					result += createDirectReferenceExpression => [
-						it.declaration = trace.get(declaration)
+						it.declaration = trace.get(key)
 					]
-				}
-				else {
-					var mapKeys = exploreComplexType(declaration, declaration.typeDefinitionFromType, newArrayList)
-					for (key : mapKeys) {
-						result += createDirectReferenceExpression => [
-							it.declaration = trace.get(key)
-						]
-					}
 				}
 			}
 		}

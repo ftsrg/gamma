@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -110,8 +111,12 @@ class StatechartToLowlevelTransformer {
 		return lowlevelVariable
 	}
 
+	protected def List<VariableDeclaration> transform(ConstantDeclaration variable) {
+		val lowlevelVariable = variable.transformValue
+		return lowlevelVariable
+	}
+	
 	protected def List<VariableDeclaration> transform(VariableDeclaration variable) {
-		// Cloning the variable
 		val lowlevelVariable = variable.transformValue
 		return lowlevelVariable
 	}
@@ -248,6 +253,11 @@ class StatechartToLowlevelTransformer {
 			]
 			lowlevelStatechart.variableDeclarations += assertionVariable
 			trace.put(assertionVariableName, assertionVariable)
+		}
+		// Constants
+		val gammaPackage = statechart.containingPackage
+		for (constantDeclaration : gammaPackage.constantDeclarations) {
+			lowlevelStatechart.variableDeclarations += constantDeclaration.transform // FIXME
 		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
