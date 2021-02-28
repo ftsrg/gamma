@@ -183,9 +183,11 @@ class LowlevelToXSTSTransformer {
 			getSubregionsRule.fireAllCurrent[!trace.isTraced(it.region) && trace.isTraced(it.parentRegion)]
 		}
 		getComponentParametersRule.fireAllCurrent
-		getTimeoutsRule.fireAllCurrent
-		// Event variables, parameters and timeouts are transformed already
 		getPlainVariablesRule.fireAllCurrent
+		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
+		// Timeouts can refer to constants
+		getTimeoutsRule.fireAllCurrent
+		// Event variables, parameters, variables and timeouts are transformed already
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
