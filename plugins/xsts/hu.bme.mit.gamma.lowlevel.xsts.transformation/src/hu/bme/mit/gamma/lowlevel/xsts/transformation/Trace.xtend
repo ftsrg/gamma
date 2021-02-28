@@ -133,9 +133,6 @@ package class Trace {
 	def put(VariableDeclaration lowlevelVariable, VariableDeclaration xStsVariable) {
 		checkArgument(lowlevelVariable !== null)
 		checkArgument(xStsVariable !== null)
-		if (lowlevelVariable.name == "gen6") {
-			println()
-		}
 		if (lowlevelVariable.hasXStsVariable) {
 			// This can happen if we transform the same action multiple times
 			// Solution: we "forget" the previously created local xSts variable

@@ -652,7 +652,7 @@ public class ExpressionUtil {
 	public Expression getInitialValue(final VariableDeclaration variableDeclaration) {
 		final Expression initialValue = variableDeclaration.getExpression();
 		if (initialValue != null) {
-			return ecoreUtil.clone(initialValue, true, true);
+			return ecoreUtil.clone(initialValue);
 		}
 		final Type type = variableDeclaration.getType();
 		return getInitialValueOfType(type);

@@ -1492,7 +1492,7 @@ class CompositeToUppaalTransformer {
 							for (higherPriorityGuard : higherPriorityEdges.map[it.guard].filterNull) {
 								edge.addGuard(
 									createNegationExpression => [
-										it.negatedExpression = higherPriorityGuard.clone(true, true)
+										it.negatedExpression = higherPriorityGuard.clone
 									],
 									LogicalOperator.AND
 								)

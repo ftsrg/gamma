@@ -98,6 +98,16 @@ class VariableInliner {
 		symbolicValues += commonizedSymbolicValues
 	}
 	
+	protected def dispatch void inline(AssumeAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val assumption = action.assumption
+		assumption.inlineVariables(concreteValues) // Only concrete values
+		// Removing read variables - if a variable is read, then the
+		// oldAssignment (see AssignmentAction inline) must not be removed
+		symbolicValues.deleteReferencedVariableKeys(assumption)
+	}
+	
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
@@ -157,16 +167,6 @@ class VariableInliner {
 			symbolicValues += declaration -> new InlineEntry(rhs, action)
 			concreteValues -= declaration
 		}
-	}
-	
-	protected def dispatch void inline(AssumeAction action,
-			Map<VariableDeclaration, InlineEntry> concreteValues,
-			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		val assumption = action.assumption
-		assumption.inlineVariables(concreteValues) // Only concrete values
-		// Removing read variables - if a variable is read, then the
-		// oldAssignment (see AssignmentAction inline) must not be removed
-		symbolicValues.deleteReferencedVariableKeys(assumption)
 	}
 	
 	// Auxiliary

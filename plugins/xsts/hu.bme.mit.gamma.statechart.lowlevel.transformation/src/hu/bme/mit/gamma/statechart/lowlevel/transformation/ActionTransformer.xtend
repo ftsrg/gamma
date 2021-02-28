@@ -31,8 +31,10 @@ import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
@@ -145,17 +147,8 @@ class ActionTransformer {
 		// Create return variable and transform the current action
 		val result = <Action>newLinkedList
 		val variableDeclaration = action.variableDeclaration
-		val initalExpression = variableDeclaration.expression
 		
-		var lowlevelPrecondition = initalExpression !== null ? initalExpression.transformPrecondition : <Action>newLinkedList
-		result += lowlevelPrecondition
-		
-		val lowlevelVariableDeclarations = variableDeclaration.transformValue
-		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
-			result += createVariableDeclarationStatement => [
-				it.variableDeclaration = lowlevelVariableDeclaration
-			]	
-		}
+		variableDeclaration.transformValueDeclarationAction(result)
 		// Create new following-context variable and transform the following-context
 		var newFollowing = <Action>newLinkedList
 		newFollowing += following
@@ -170,17 +163,8 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, List<Action> following) {
 		val result = <Action>newLinkedList
 		val constantDeclaration = action.constantDeclaration
-		val initalExpression = constantDeclaration.expression
 		
-		var lowlevelPrecondition = initalExpression !== null ? initalExpression.transformPrecondition : <Action>newLinkedList
-		result += lowlevelPrecondition
-		
-		val lowlevelVariableDeclarations = constantDeclaration.transformValue
-		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
-			result += createVariableDeclarationStatement => [
-				it.variableDeclaration = lowlevelVariableDeclaration
-			]	
-		}
+		constantDeclaration.transformValueDeclarationAction(result)
 		// Create new following-context variable and transform the following-context
 		val newFollowing = <Action>newLinkedList
 		newFollowing += following
@@ -190,6 +174,21 @@ class ActionTransformer {
 		}
 		// Return the result
 		return result
+	}
+	
+	private def <T extends ValueDeclaration & InitializableElement> transformValueDeclarationAction(
+			T valueDeclaration, List<Action> result) {
+		val initalExpression = valueDeclaration.expression
+		var lowlevelPrecondition = initalExpression !== null ?
+			initalExpression.transformPrecondition : <Action>newLinkedList
+		result += lowlevelPrecondition
+		
+		val lowlevelVariableDeclarations = valueDeclaration.transformValue
+		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
+			result += createVariableDeclarationStatement => [
+				it.variableDeclaration = lowlevelVariableDeclaration
+			]	
+		}
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action, List<Action> following) {

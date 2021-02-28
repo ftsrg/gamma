@@ -113,7 +113,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	protected def dispatch Expression getCondition(AssumeAction action) {
-		return action.assumption.clone(true, true)
+		return action.assumption.clone
 	}
 	
 	// Optimization: for deleting unnecessary branches

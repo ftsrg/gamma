@@ -303,7 +303,7 @@ public class XSTSActionUtil {
 	}
 	
 	private <T extends EObject> T clone(T element) {
-		return gammaEcoreUtil.clone(element, true, true);
+		return gammaEcoreUtil.clone(element);
 	}
 	
 }

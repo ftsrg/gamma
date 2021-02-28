@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation
-import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
@@ -77,6 +75,7 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -333,14 +332,16 @@ class LowlevelToXSTSTransformer {
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					regionInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
+					regionInitializingAction.actions +=
+						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
 				entryEventAction as CompositeAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					entryEventInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
+					entryEventInitializingAction.actions +=
+						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
 				}
 			].build
 		}
@@ -642,7 +643,8 @@ class LowlevelToXSTSTransformer {
 						// Initial value
 						val lowlevelType = lowlevelParameterDeclaration.type
 						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
-						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
+						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
+								.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
 							xStsAllPossibleParameterValues += lowlevelValue.transformExpression
 						}
 						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
@@ -793,7 +795,7 @@ class LowlevelToXSTSTransformer {
 			xStsTransitions += trace.getXStsTransition(lastChoiceState)
 		}
 		for (xStsTransition : xStsTransitions) {
-			xStsAction.actions += xStsTransition.action.clone // Cloning is important
+			xStsAction.actions += xStsTransition.action.clone // Will not break local variable references?
 		}
 	}
 
@@ -831,7 +833,7 @@ class LowlevelToXSTSTransformer {
 		
 		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
 		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
-				.filter[it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
+				.filter[it.transient]
 		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
 		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
 			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
@@ -869,10 +871,8 @@ class LowlevelToXSTSTransformer {
 	}
 	
 	protected def handleVariableAnnotations() {
-		val resetableVariables = xSts.variableDeclarations.filter[
-			it.annotations.exists[it instanceof ResetableVariableDeclarationAnnotation]]
-		val transientVariables = xSts.variableDeclarations.filter[
-			it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
+		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
+		val transientVariables = xSts.variableDeclarations.filter[it.transient]
 		val newMergedAction = createSequentialAction
 		for (resetableVariable : resetableVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)

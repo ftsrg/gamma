@@ -151,8 +151,8 @@ class GammaToXSTSTransformer {
 		for (parameter : parameterDeclarations) {
 			val argumentConstant = createConstantDeclaration => [
 				it.name = "__" + parameter.name + "Argument__"
-				it.type = parameter.type.clone(true, true)
-				it.expression = arguments.get(parameter.index).clone(true, true)
+				it.type = parameter.type.clone
+				it.expression = arguments.get(parameter.index).clone
 			]
 			_package.constantDeclarations += argumentConstant
 			// Changing the references to the constant
@@ -260,7 +260,7 @@ class GammaToXSTSTransformer {
 			if (componentMergedActions.containsKey(type)) {
 				// This type has already been transformed, this is just a new scheduling
 				checkState(component instanceof CascadeCompositeComponent)
-				mergedAction.actions += componentMergedActions.get(type).clone(true, true)
+				mergedAction.actions += componentMergedActions.get(type).clone
 			}
 			else {
 				// Normal transformation
@@ -312,13 +312,13 @@ class GammaToXSTSTransformer {
 				// Note, System in and out events are reset in the env action
 				if (component instanceof CascadeCompositeComponent) {
 					// Resetting IN events AFTER schedule
-					val clonedNewInEventAction = newInEventAction.clone(true, true)
+					val clonedNewInEventAction = newInEventAction.clone
 						.resetEverythingExceptPersistentParameters(type) // Clone is important
 					actualComponentMergedAction.actions += clonedNewInEventAction // Putting the new action AFTER
 				}
 				else {
 					// Resetting OUT events BEFORE schedule
-					val clonedNewOutEventAction = newOutEventAction.clone(true, true) // Clone is important
+					val clonedNewOutEventAction = newOutEventAction.clone // Clone is important
 						.resetEverythingExceptPersistentParameters(type)
 					actualComponentMergedAction.actions.add(0, clonedNewOutEventAction) // Putting the new action BEFORE
 				}
@@ -339,7 +339,7 @@ class GammaToXSTSTransformer {
 					xSts.outEventAction = outEventAction
 				}
 				// Tracing merged action
-				componentMergedActions.put(type, actualComponentMergedAction.clone(true, true))
+				componentMergedActions.put(type, actualComponentMergedAction.clone)
 			}
 		}
 		xSts.name = component.name

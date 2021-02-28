@@ -32,7 +32,6 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 
 class ActionOptimizer {
 	// Singleton
@@ -50,8 +49,10 @@ class ActionOptimizer {
 		var Action newXStsAction = action
 		// Until the action cannot be optimized any more
 		while (!oldXStsAction.helperEquals(newXStsAction)) {
-			oldXStsAction = newXStsAction
+			oldXStsAction = newXStsAction.clone
 			newXStsAction = newXStsAction
+				/* Cannot use "clone" as local variable actions contain variable declarations and
+				   cloning would break the references: they would be set to the "old" declaration */
 				.simplifyCompositeActions
 				.simplifySequentialActions
 				.simplifyParallelActions
@@ -75,8 +76,7 @@ class ActionOptimizer {
 	
 	protected def dispatch Action simplifyCompositeActions(CompositeAction action) {
 		var xStsActionList = newLinkedList
-		xStsActionList += action.actions.map[if (it.mustNotBeCloned) {it} else (it.clone)] /* Cloning the action so the original
-		 * does not change, which is a necessary quality in the optimization process */
+		xStsActionList += action.actions
 		if (xStsActionList.size > 1) {
 			val remainingXStsActions = newLinkedList
 			// Sequence order must be reserved
@@ -130,10 +130,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifySequentialActions(CompositeAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifySequentialActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -143,9 +143,11 @@ class ActionOptimizer {
 	 * The isTop flag specifies whether the given action should be preserved (true) or deleted (false).
 	 */
 	protected def dispatch List<Action> simplifySequentialActions(SequentialAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsActions = newLinkedList
 		// Additional checks - is a definitely false assumption there
-		if (action.actions.filter(AssumeAction).exists[it.assumption.definitelyFalseExpression]) {
+		if (xStsSubactions.filter(AssumeAction).exists[it.assumption.definitelyFalseExpression]) {
 			// This action cannot be executed
 			if (isTop) {
 				return #[createSequentialAction => [it.actions += createEmptyAction]]
@@ -153,9 +155,7 @@ class ActionOptimizer {
 			return newXStsActions
 		}
 		// The assumptions can be true
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			if (xStsSubaction instanceof SequentialAction) {
 				// Subactions of a SequentialAction
 				for (xStsSequentialSubaction : xStsSubaction.actions) {
@@ -191,10 +191,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyParallelActions(CompositeAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyParallelActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -204,10 +204,10 @@ class ActionOptimizer {
 	 * The isTop flag specifies whether the given action should be preserved (true) or deleted (false).
 	 */
 	protected def dispatch List<Action> simplifyParallelActions(ParallelAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsActions = newLinkedList
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			if (xStsSubaction instanceof ParallelAction) {
 				// Subactions of a ParallelAction
 				for (xStsParallelSubaction : xStsSubaction.actions) {
@@ -243,10 +243,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyOrthogonalActions(CompositeAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyOrthogonalActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -256,10 +256,10 @@ class ActionOptimizer {
 	 * The isTop flag specifies whether the given action should be preserved (true) or deleted (false).
 	 */
 	protected def dispatch List<Action> simplifyOrthogonalActions(OrthogonalAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsActions = newLinkedList
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			if (xStsSubaction instanceof OrthogonalAction) {
 				// Subactions of a OrthogonalAction
 				for (xStsOrthogonalSubaction : xStsSubaction.actions) {
@@ -295,10 +295,10 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch List<Action> simplifyNonDeterministicActions(CompositeAction action, boolean isTop) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		val newXStsCompositeAction = create(action.eClass) as CompositeAction
-		val subactions = newArrayList
-		subactions += action.actions
-		for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : xStsSubactions) {
 			newXStsCompositeAction.actions += xStsSubaction.simplifyNonDeterministicActions(true)
 		}
 		return #[newXStsCompositeAction]
@@ -321,7 +321,7 @@ class ActionOptimizer {
 				}
 			}
 		}
-		for (xStsSubaction : actions.reject[coveredXStsActions.contains(it)].map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+		for (xStsSubaction : actions.reject[coveredXStsActions.contains(it)]) {
 			if (xStsSubaction instanceof NonDeterministicAction) {
 				// Subactions of a NonDeterministicAction
 				for (xStsNonDeterministicSubaction : xStsSubaction.actions) {
@@ -343,28 +343,29 @@ class ActionOptimizer {
 	// Transforming parallel actions to sequential actions when possible
 	
 	protected def dispatch Action optimizeParallelActions(ParallelAction action) {
-		val xStsSubactions = action.actions
-		// TODO Now all parallel actions are optimized to sequential actions
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
+		// Now all parallel actions are optimized to sequential actions
 		if (true || action.isOptimizableToSequentialAction) {
 			return createSequentialAction => [
-				for (xStsSubaction : xStsSubactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+				for (xStsSubaction : xStsSubactions) {
 					it.actions += xStsSubaction.optimizeParallelActions
 				}
 			]
 		}
 		// This particular parallel action cannot be optimized
 		return createParallelAction => [
-			for (xStsSubaction : xStsSubactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+			for (xStsSubaction : xStsSubactions) {
 				it.actions += xStsSubaction.optimizeParallelActions
 			}
 		]
 	}
 	
 	protected def dispatch Action optimizeParallelActions(CompositeAction action) {
-		val subactions = newArrayList
-		subactions += action.actions
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
 		return create(action.eClass) as CompositeAction => [
-			for (xStsSubaction : subactions.map[if (it.mustNotBeCloned) {it} else (it.clone)]) {
+			for (xStsSubaction : xStsSubactions) {
 				it.actions += xStsSubaction.optimizeParallelActions
 			}
 		]
@@ -540,9 +541,9 @@ class ActionOptimizer {
 	}
 	
 	protected def dispatch void deleteDefinitelyFalseBranches(NonDeterministicAction action) {
-		val subactions = newArrayList
-		subactions += action.actions
-		for (branch : subactions) {
+		val xStsSubactions = newArrayList
+		xStsSubactions += action.actions
+		for (branch : xStsSubactions) {
 			val firstAction = branch.firstAtomicAction
 			if (firstAction instanceof AssumeAction) {
 				if (firstAction.isDefinitelyFalseAssumeAction) {
@@ -556,12 +557,6 @@ class ActionOptimizer {
 				}
 			}
 		}
-	}
-	
-	// Must not be cloned
-	
-	def mustNotBeCloned(Action action) {
-		return action instanceof VariableDeclarationAction
 	}
 	
 }

@@ -203,7 +203,7 @@ class TransitionToStepTransformer {
 		checkState(expression.eContents.size == 2)
 		val foundExpression = expression.eContents.filter(Expression)
 			.filter[it !== expression.findEventParameterReferenceExpression].head
-		return foundExpression.clone(true, true)
+		return foundExpression.clone
 	}
 	
 	// Out events
@@ -217,7 +217,7 @@ class TransitionToStepTransformer {
 			it.port = action.port
 			it.event = action.event
 			for (argument : action.arguments) {
-				it.arguments += argument.clone(true, true)
+				it.arguments += argument.clone
 			}
 		]
 	}

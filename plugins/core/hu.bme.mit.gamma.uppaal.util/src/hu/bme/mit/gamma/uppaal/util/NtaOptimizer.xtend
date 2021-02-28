@@ -56,7 +56,7 @@ class NtaOptimizer {
 					val guard = firstEdge.guard
 					if (targetOutgoingEdges.forall[it.hasOnlyGuard]) {
 						for (outgoingEdge : targetOutgoingEdges) {
-							outgoingEdge.addGuard(guard.clone(true, true), LogicalOperator.AND)
+							outgoingEdge.addGuard(guard.clone, LogicalOperator.AND)
 							outgoingEdge.source = source
 						}
 						firstEdge.remove // Delete does not work due to unsupported basicGetTypeDefinition
