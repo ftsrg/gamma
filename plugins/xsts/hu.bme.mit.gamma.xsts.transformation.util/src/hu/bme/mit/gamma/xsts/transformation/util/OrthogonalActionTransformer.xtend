@@ -113,7 +113,7 @@ class OrthogonalActionTransformer {
 			Collection<VariableDeclaration> consideredVariables) {
 		val xSts = variable.root as XSTS
 		val orthogonalVariable = createVariableDeclaration => [
-			it.type = variable.type.clone(true, true)
+			it.type = variable.type.clone
 			// If there are multiple ort variables with the same name
 			// (variables written in multiple branches), the model is faulty
 			it.name = variable.orthogonalName

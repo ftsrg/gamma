@@ -58,6 +58,7 @@ class ThreadRacer<T> {
 						// The thread has been interrupted, the result is not valid
 						return null
 					}
+					e.printStackTrace
 					throw e // Valid exception
 				}
 			}

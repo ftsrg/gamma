@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
@@ -19,6 +20,7 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.Map
 import java.util.Set
@@ -26,7 +28,6 @@ import java.util.Set
 import static com.google.common.base.Preconditions.checkArgument
 
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class InlinedChoiceActionSerializer extends ActionSerializer {
 	
@@ -86,6 +87,14 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	def dispatch CharSequence serialize(AssignmentAction action) '''
 		«action.serializeTemporaryAssignment» ««« Setting temporary variables, at the end there is serializeFinalizationAssignments
 	'''
+	
+	def dispatch CharSequence serialize(VariableDeclarationAction action) {
+		val variable = action.variableDeclaration
+		val intialValue = variable.expression
+		return '''
+			«variable.type.serialize» «variable.name»«IF intialValue !== null» = «intialValue.serialize»«ENDIF»;
+		'''
+	}
 	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
 		«action.serializeNonDeterministicAction»

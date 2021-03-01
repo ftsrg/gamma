@@ -20,6 +20,7 @@ import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
@@ -43,7 +44,7 @@ class VariableInliner {
 	protected def dispatch void inline(Action action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		throw new IllegalArgumentException
+		throw new IllegalArgumentException("Not supported action: " + action)
 	}
 	
 	protected def dispatch void inline(EmptyAction action,
@@ -97,6 +98,16 @@ class VariableInliner {
 		symbolicValues += commonizedSymbolicValues
 	}
 	
+	protected def dispatch void inline(AssumeAction action,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		val assumption = action.assumption
+		assumption.inlineVariables(concreteValues) // Only concrete values
+		// Removing read variables - if a variable is read, then the
+		// oldAssignment (see AssignmentAction inline) must not be removed
+		symbolicValues.deleteReferencedVariableKeys(assumption)
+	}
+	
 	protected def dispatch void inline(AssignmentAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
@@ -106,43 +117,56 @@ class VariableInliner {
 		if (lhs instanceof DirectReferenceExpression) {
 			val declaration = lhs.declaration
 			if (declaration instanceof VariableDeclaration) {
-				if (rhs.isEvaluable) { // So it is evaluable
-					// If the oldAssignment is NOT removed, then concrete maps can fall through
-					// validly through different choices. So oldAssignment must NOT be removed.
-					
-					// Adding this new value
-					concreteValues += declaration -> new InlineEntry(rhs, action)
-					symbolicValues -= declaration
-				}
-				else {
-					if (symbolicValues.containsKey(declaration)) {
-						val oldSymbolicEntry = symbolicValues.get(declaration)
-						// Only this single value can be inlined
-						val singletonMap = #{declaration -> oldSymbolicEntry}
-						rhs.inlineVariables(singletonMap)
-						// Removing old assignment action due to the priming problem
-						val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
-						oldAssignment.remove
-					}
-					// Removing read variables - if a variable is read, then the
-					// oldAssignment (see previous if) must not be removed
-					symbolicValues.deleteReferencedVariables(rhs)
-					
-					symbolicValues += declaration -> new InlineEntry(rhs, action)
-					concreteValues -= declaration
-				}
+				declaration.handleMaps(action, rhs, concreteValues, symbolicValues)
 			}
 		}
 	}
 	
-	protected def dispatch void inline(AssumeAction action,
+	protected def dispatch void inline(VariableDeclarationAction action,
 			Map<VariableDeclaration, InlineEntry> concreteValues,
 			Map<VariableDeclaration, InlineEntry> symbolicValues) {
-		val assumption = action.assumption
-		assumption.inlineVariables(concreteValues) // Only concrete values
-		// Removing read variables - if a variable is read, then the
-		// oldAssignment (see AssignmentAction inline) must not be removed
-		symbolicValues.deleteReferencedVariables(assumption)
+		val variable = action.variableDeclaration
+		val rhs = variable.expression
+		rhs?.inlineVariables(concreteValues)
+		if (rhs !== null) {
+			variable.handleMaps(action, rhs, concreteValues, symbolicValues)
+		}
+	}
+	
+	private def handleMaps(VariableDeclaration declaration,
+			Action action, Expression rhs,
+			Map<VariableDeclaration, InlineEntry> concreteValues,
+			Map<VariableDeclaration, InlineEntry> symbolicValues) {
+		if (rhs.isEvaluable) { // So it is evaluable
+			// If the oldAssignment is NOT removed, then concrete maps can fall through
+			// validly through different choices. So oldAssignment must NOT be removed.
+			
+			// Adding this new value
+			concreteValues += declaration -> new InlineEntry(rhs, action)
+			symbolicValues -= declaration
+		}
+		else {
+			if (symbolicValues.containsKey(declaration)) {
+				val oldSymbolicEntry = symbolicValues.get(declaration)
+				// Only this single value can be inlined
+				val singletonMap = #{declaration -> oldSymbolicEntry}
+				rhs.inlineVariables(singletonMap)
+				// Removing old assignment action due to the priming problem
+				// Can be removed as in the NonDet branch, symbolic maps are cleared, i.e.,
+				
+				val oldAssignment = oldSymbolicEntry.getLastValueGivingAction
+				if (oldAssignment instanceof AssignmentAction) {
+					// Local variable declarations actions cannot be deleted 
+					oldAssignment.remove
+				}
+			}
+			// Removing read variables - if a variable is read, then the
+			// oldAssignment (see previous if) must not be removed
+			symbolicValues.deleteReferencedVariableKeys(rhs)
+			
+			symbolicValues += declaration -> new InlineEntry(rhs, action)
+			concreteValues -= declaration
+		}
 	}
 	
 	// Auxiliary
@@ -199,7 +223,7 @@ class VariableInliner {
 		}
 	}
 	
-	protected def deleteReferencedVariables(Map<? super VariableDeclaration, InlineEntry> values,
+	protected def deleteReferencedVariableKeys(Map<? super VariableDeclaration, InlineEntry> values,
 			Expression expression) {
 		val references = expression.getSelfAndAllContentsOfType(DirectReferenceExpression)
 		val variables = references.map[it.declaration]
@@ -209,7 +233,7 @@ class VariableInliner {
 	@Data
 	static class InlineEntry {
 		Expression value
-		AssignmentAction lastValueGivingAction
+		Action lastValueGivingAction
 	}
 	
 }

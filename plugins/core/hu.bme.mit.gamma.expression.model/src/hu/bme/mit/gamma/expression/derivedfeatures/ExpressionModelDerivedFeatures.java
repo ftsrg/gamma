@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -19,9 +20,12 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
+import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
@@ -31,12 +35,27 @@ public class ExpressionModelDerivedFeatures {
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
+	public static boolean isTransient(VariableDeclaration variable) {
+		return variable.getAnnotations().stream()
+				.anyMatch(it -> it instanceof TransientVariableDeclarationAnnotation);
+	}
+	
+	public static boolean isResetable(VariableDeclaration variable) {
+		return variable.getAnnotations().stream()
+				.anyMatch(it -> it instanceof ResetableVariableDeclarationAnnotation);
+	}
+	
 	public static boolean isPrimitive(Type type) {
 		if (type instanceof BooleanTypeDefinition || type instanceof IntegerTypeDefinition ||
 				type instanceof DecimalTypeDefinition || type instanceof RationalTypeDefinition) {
 			return true;
 		}
 		return false;
+	}
+	
+	public static TypeDefinition getTypeDefinition(Declaration declaration) {
+		Type type = declaration.getType();
+		return getTypeDefinition(type);
 	}
 	
 	public static TypeDefinition getTypeDefinition(Type type) {

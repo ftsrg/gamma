@@ -48,7 +48,7 @@ class PhaseStatechartTransformer {
 				val stateDefinitions = annotation.stateDefinitions
 				for (stateDefinition : stateDefinitions) {
 					val component = stateDefinition.component
-					val inlineableStatechart = component.type.clone(true, true) as StatechartDefinition
+					val inlineableStatechart = component.type.clone as StatechartDefinition
 					for (portBinding : stateDefinition.portBindings) {
 						portBinding.inlinePorts(inlineableStatechart)
 					}

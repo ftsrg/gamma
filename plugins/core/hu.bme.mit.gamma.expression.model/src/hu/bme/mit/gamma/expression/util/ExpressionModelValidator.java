@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
@@ -159,7 +158,8 @@ public class ExpressionModelValidator {
 				++nameCount;
 			}
 			if (nameCount > 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "In a Gamma model, these identifiers must be unique.",
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"In a Gamma model, these identifiers must be unique.",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
 				
 
@@ -177,7 +177,8 @@ public class ExpressionModelValidator {
 			TypeReference typeReference = (TypeReference) type;
 			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
 			if (typeDeclaration == referencedTypeDeclaration) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "A type declaration cannot reference itself as a type definition."
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"A type declaration cannot reference itself as a type definition."
 						, new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
 			}
 		}
@@ -189,14 +190,16 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (arguments.size() != parameterDeclarations.size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The number of arguments must match the number of parameters.", new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
+					"The number of arguments must match the number of parameters.", 
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 			return validationResultMessages;
 		}
 		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
 				ParameterDeclaration parameter = parameterDeclarations.get(i);
 				Expression argument = arguments.get(i);
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS));
+				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, 
+						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS));
 			
 			}
 		}
@@ -248,7 +251,8 @@ public class ExpressionModelValidator {
 				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
 		if (!(referredDeclaration instanceof ValueDeclaration)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as a record!", new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+					"The referred declaration is not accessible as a record!", 
+					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
 		// check if the referred field exists
@@ -256,7 +260,8 @@ public class ExpressionModelValidator {
 		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The record type does not contain any fields with the given name.", new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+					"The record type does not contain any fields with the given name.", 
+					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
 			return validationResultMessages;
 			
 		}
@@ -428,13 +433,14 @@ public class ExpressionModelValidator {
 				ExpressionType rightHandSideExpressionType = typeDeterminator.getType(rhs);
 				if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " +
-							rightHandSideExpressionType, new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+							"The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " + rightHandSideExpressionType, 
+							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
 				}
 				// Additional checks for enums
 				else if (leftHandSideExpressionType == ExpressionType.ENUMERATION) {
 
-					validationResultMessages.addAll(checkEnumerationConformance(lhs, rhs, ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND));
+					validationResultMessages.addAll(checkEnumerationConformance(lhs, rhs, 
+							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND));
 				}
 			}
 			// Comparison

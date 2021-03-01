@@ -25,11 +25,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.ArrayList
-import java.util.LinkedList
 import java.util.List
 import java.util.Map
-import java.util.stream.Collectors
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
 
@@ -45,6 +42,7 @@ class ExpressionPreconditionTransformer {
 	protected final Trace trace
 	// The related transformers
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TypeTransformer typeTransformer
 	// Transformation parameters
@@ -53,12 +51,14 @@ class ExpressionPreconditionTransformer {
 	protected final int maxRecursionDepth
 	protected Map<FunctionDeclaration, Integer> currentRecursionDepth = newHashMap
 	
-	new(Trace trace, ExpressionTransformer expressionTransformer, TypeTransformer typeTransformer,
+	new(Trace trace, ExpressionTransformer expressionTransformer,
+			ValueDeclarationTransformer valueDeclarationTransformer, TypeTransformer typeTransformer,
 			ActionTransformer actionTransformer, String assertionVariableName,
 			boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
 		this.typeTransformer = typeTransformer
 		this.expressionTransformer = expressionTransformer
+		this.valueDeclarationTransformer = valueDeclarationTransformer
 		this.actionTransformer = actionTransformer
 		this.assertionVariableName = assertionVariableName
 		this.functionInlining = functionInlining
@@ -70,7 +70,7 @@ class ExpressionPreconditionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformPrecondition(SelectExpression expression) {
-		val result = new LinkedList<Action>
+		val result = <Action>newLinkedList
 		// get the possible values (enumerate & transform)
 		val innerExpression = expression.operand
 		// 'temporary' variable(s)
@@ -78,7 +78,8 @@ class ExpressionPreconditionTransformer {
 		val List<VariableDeclarationStatement> tempVariables = newArrayList 
 		// set temporary variable(s)
 		if (innerExpression instanceof TypeReferenceExpression) {
-			var originalType = innerExpression.declaration.type.findTypeDefinitionOfType
+			val type = innerExpression.declaration.type
+			var originalType = type.findTypeDefinitionOfType
 			if (originalType instanceof EnumerationTypeDefinition) {
 				// pseudo-high-level type reference needed to transform the type declaration too (if not yet transformed)
 				val otr = createTypeReference => [
@@ -89,14 +90,19 @@ class ExpressionPreconditionTransformer {
 					it.type = otr.transformType
 				]
 				trace.put(expression, tempVariableDeclarations)
-				tempVariables += tempVariableDeclarations.stream.map([decl | createVariableDeclarationStatement => [it.variableDeclaration = decl]]).collect(Collectors.toList())				
-			} else {
+				tempVariables += tempVariableDeclarations.map[decl | 
+					createVariableDeclarationStatement => [
+						it.variableDeclaration = decl
+					]
+				].toList			
+			}
+			else {
 				throw new IllegalArgumentException("Cannot select from expression of type: " + originalType)
 			}
 		}
 		else if (innerExpression instanceof ReferenceExpression) {
 			// get variable type
-			val originalType = innerExpression.referredValues.onlyElement.type.typeDefinitionFromType
+			val originalType = innerExpression.referredValues.onlyElement.typeDefinitionFromType
 			val accessList = innerExpression.collectAccessList
 			
 			var currentType = originalType	//TODO extract this (~with other sameAccessTree code blocks)
@@ -134,7 +140,7 @@ class ExpressionPreconditionTransformer {
 			}
 			
 			// set temporary variables
-			val tempVariableOriginalTypeConst = tempVariableOriginalType		// const to be used inside a lambda
+			val tempVariableOriginalTypeConst = tempVariableOriginalType // const to be used inside a lambda
 			
 			if (!(tempVariableOriginalType instanceof CompositeTypeDefinition)) {	//TODO simplify this and the following 2 branches
 				val tempVariable = createVariableDeclaration => [
@@ -146,7 +152,8 @@ class ExpressionPreconditionTransformer {
 				tempVariables += createVariableDeclarationStatement => [
 					it.variableDeclaration = tempVariable
 				]
-			} else {
+			}
+			else {
 				tempVariableDeclarations += tempVariableOriginalType.createVariablesFromType(new NameProvider(expression))
 				trace.put(expression, tempVariableDeclarations)
 				tempVariables += tempVariableDeclarations.map[decl | 
@@ -203,18 +210,19 @@ class ExpressionPreconditionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
-		val result = new LinkedList<Action>
+		val result = <Action>newLinkedList
 		if (functionInlining) {
 			// increase recursion depth
-			val FunctionDeclaration function = (expression.operand as DirectReferenceExpression).declaration as FunctionDeclaration
+			val operand = expression.operand as DirectReferenceExpression
+			val FunctionDeclaration function = operand.declaration as FunctionDeclaration
 			if (currentRecursionDepth.containsKey(function)) {
 				currentRecursionDepth.replace(function, currentRecursionDepth.get(function) + 1)
-			} else {
-				currentRecursionDepth.put(function, 1);
+			}
+			else {
+				currentRecursionDepth.put(function, 1)
 			}
 			// check recursion depth
 			if (currentRecursionDepth.get(function) > maxRecursionDepth) {
-				//throw new IllegalArgumentException("Cannot inline function access: max recursion depth reached!")
 				// Terminate recursion transformation and fail assertion (if possible)
 				if (trace.isAssertionVariableMapped(assertionVariableName)) {
 					result += createAssignmentStatement => [
@@ -230,18 +238,19 @@ class ExpressionPreconditionTransformer {
 			if (function.parameterDeclarations.size > 0) {
 				val precondition = newLinkedList
 				val List<VariableDeclarationStatement> parameterVariables = newLinkedList
-				for (i : 0 .. function.parameterDeclarations.size - 1) {
-					var parameterVariableDeclarations = function.parameterDeclarations.get(i).transformValue
+				val parameterDeclarations = function.parameterDeclarations
+				for (i : 0 .. parameterDeclarations.size - 1) {
+					var parameterVariableDeclarations = parameterDeclarations.get(i).transformValue
 					parameterVariables += parameterVariableDeclarations.map[vari |
 						createVariableDeclarationStatement => [
 							it.variableDeclaration = vari
 						]
 					]
 					var arguments = expression.arguments.get(i).transformExpression
-					if(arguments.size != parameterVariableDeclarations.size) {
+					if (arguments.size != parameterVariableDeclarations.size) {
 						throw new IllegalArgumentException("Argument and parameter numbers do not match!")
 					}
-					for(j : 0 .. arguments.size - 1) {	//TODO is assignment based on ordering correct?
+					for (j : 0 .. arguments.size - 1) {	//TODO is assignment based on ordering correct?
 						parameterVariableDeclarations.get(i).expression = arguments.get(i)
 					}
 					
@@ -252,7 +261,7 @@ class ExpressionPreconditionTransformer {
 			// create return variable(s) if needed
 			val List<VariableDeclarationStatement> returnVariables = newArrayList
 			val List<VariableDeclaration> returnVariableDeclarations = newArrayList
-			var functionType = function.type.typeDefinitionFromType
+			val functionType = function.type.typeDefinitionFromType
 			if (!(functionType instanceof VoidTypeDefinition)) {
 				// create variable declarations
 				if (!(functionType instanceof CompositeTypeDefinition)) {
@@ -267,7 +276,8 @@ class ExpressionPreconditionTransformer {
 					]
 				} 
 				else {
-					returnVariableDeclarations += functionType.createVariablesFromType(new NameProvider(expression))
+					returnVariableDeclarations += functionType.createVariablesFromType(
+						new NameProvider(expression))
 					trace.put(expression, returnVariableDeclarations)
 					returnVariables += returnVariableDeclarations
 						.map[decl |
@@ -289,7 +299,7 @@ class ExpressionPreconditionTransformer {
 					for (var i = 0; i < returnVariableDeclarations.size; i++) {
 						val index = i
 						val assignment = createAssignmentStatement => [
-							it.rhs = transformedExpression.get(index)	//FIXME now the expression transformation and variable order have to match (also the sizes!)
+							it.rhs = transformedExpression.get(index) //FIXME now the expression transformation and variable order have to match (also the sizes!)
 							it.lhs = createDirectReferenceExpression => [
 								it.declaration = returnVariableDeclarations.get(index)
 							]
@@ -315,7 +325,7 @@ class ExpressionPreconditionTransformer {
 	//TODO rename variable to sth relevant
 	protected def List<VariableDeclaration> createVariablesFromType(Type variable, NameProvider nameProvider) {
 		val List<VariableDeclaration> transformed = newArrayList
-		val variableType = getTypeDefinitionFromType(variable)
+		val variableType = variable.typeDefinitionFromType
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
 			val typeDef = variableType
@@ -345,12 +355,12 @@ class ExpressionPreconditionTransformer {
 		val List<VariableDeclaration> transformed = newArrayList
 		
 		val typeDef = getTypeDefinitionFromType(currentField.last.type)
-		if (typeDef instanceof RecordTypeDefinition) {			// if another record
+		if (typeDef instanceof RecordTypeDefinition) { // if another record
 			for (field : typeDef.fieldDeclarations) {
 				val innerField = newArrayList
 				innerField += currentField
 				innerField += field
-				val innerStack = new ArrayList<ArrayTypeDefinition>
+				val innerStack = <ArrayTypeDefinition>newArrayList
 				innerStack += arrayStack
 				transformed += createFunctionReturnField(variable, nameProvider, innerField, innerStack) //TODO new name provider
 			}
@@ -365,7 +375,8 @@ class ExpressionPreconditionTransformer {
 		return transformed
 	}
 	
-	private def List<VariableDeclaration> createFunctionReturnArray(Type variable, NameProvider nameProvider, ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
+	private def List<VariableDeclaration> createFunctionReturnArray(Type variable, NameProvider nameProvider,
+			ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
 		val List<VariableDeclaration> transformed = newArrayList
 		
 		val TypeDefinition innerType = getTypeDefinitionFromType(currentType.elementType)
@@ -385,7 +396,7 @@ class ExpressionPreconditionTransformer {
 			}
 			return transformed
 		}
-		else {	// Simple
+		else { // Simple
 			transformed += createVariableDeclaration => [
 				it.name = nameProvider.name					
 				it.type = type.transformType
@@ -394,5 +405,4 @@ class ExpressionPreconditionTransformer {
 		return transformed
 	}
 	
-
 }

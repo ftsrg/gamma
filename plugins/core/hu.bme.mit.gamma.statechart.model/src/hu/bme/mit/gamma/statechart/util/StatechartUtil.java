@@ -267,7 +267,7 @@ public class StatechartUtil extends ActionUtil {
 		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
-			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration, true, true);
+			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
 			cascade.getParameterDeclarations().add(newParameter);
 			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 			reference.setDeclaration(newParameter);
@@ -277,7 +277,7 @@ public class StatechartUtil extends ActionUtil {
 		EList<Port> ports = component.getPorts();
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
-			Port clonedPort = ecoreUtil.clone(port, true, true);
+			Port clonedPort = ecoreUtil.clone(port);
 			cascade.getPorts().add(clonedPort);
 			PortBinding portBinding = compositeFactory.createPortBinding();
 			portBinding.setCompositeSystemPort(clonedPort);

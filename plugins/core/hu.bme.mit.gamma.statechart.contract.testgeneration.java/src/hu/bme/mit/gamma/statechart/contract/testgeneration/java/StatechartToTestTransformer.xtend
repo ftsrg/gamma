@@ -95,7 +95,7 @@ class StatechartToTestTransformer {
 			for (contractStatechart : contractStatecharts) {
 				val contractTraces = contractToTraceTransformer.execute(contractStatechart)
 				for (contractTrace : contractTraces) {
-					val finalTrace = simpleStateExecutionTrace.clone(true, true)
+					val finalTrace = simpleStateExecutionTrace.clone
 					finalTrace.steps += contractTrace.steps
 					finalTraces += finalTrace
 				}
@@ -113,7 +113,7 @@ class StatechartToTestTransformer {
 		val brokenAnnotation = newState.annotation
 		newState.annotation = null
 		for (state : statechart.allStates.filter[!it.composite]) {
-			val clonedState = state.clone(true, true) => [
+			val clonedState = state.clone => [
 				it.annotation = null
 			]
 			if (clonedState.helperEquals(newState)) {

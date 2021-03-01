@@ -14,10 +14,12 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
+import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 
 abstract class ActionSerializer {
 	
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE

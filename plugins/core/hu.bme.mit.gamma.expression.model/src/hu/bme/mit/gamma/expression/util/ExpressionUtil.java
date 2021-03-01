@@ -62,6 +62,7 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -84,6 +85,23 @@ public class ExpressionUtil {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	
+	/**
+	 * Worth overriding (extending) in subclasses.
+	 */
+	public Declaration getDeclaration(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			Declaration declaration = reference.getDeclaration();
+			return declaration;
+		}
+		if (expression instanceof AccessExpression) {
+			RecordAccessExpression access = (RecordAccessExpression) expression;
+			Expression operand = access.getOperand();
+			return getDeclaration(operand);
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
+	}
 	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
@@ -337,18 +355,6 @@ public class ExpressionUtil {
 		return new SimpleEntry<Declaration, Expression>(declaration, rightOperand);
 	}
 	
-	/**
-	 * Worth overriding (extending) in subclasses.
-	 */
-	public Declaration getDeclaration(Expression expression) {
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
-			Declaration declaration = reference.getDeclaration();
-			return declaration;
-		}
-		throw new IllegalArgumentException("Not known declaration: " + expression);
-	}
-
 	public Collection<EqualityExpression> collectAllEqualityExpressions(AndExpression expression) {
 		List<EqualityExpression> equalityExpressions = new ArrayList<EqualityExpression>();
 		for (Expression subexpression : expression.getOperands()) {
@@ -646,7 +652,7 @@ public class ExpressionUtil {
 	public Expression getInitialValue(final VariableDeclaration variableDeclaration) {
 		final Expression initialValue = variableDeclaration.getExpression();
 		if (initialValue != null) {
-			return ecoreUtil.clone(initialValue, true, true);
+			return ecoreUtil.clone(initialValue);
 		}
 		final Type type = variableDeclaration.getType();
 		return getInitialValueOfType(type);

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement;
 import hu.bme.mit.gamma.statechart.lowlevel.model.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.lowlevel.model.HistoryState;
@@ -26,7 +27,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode;
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition;
 
-public class LowlevelStatechartModelDerivedFeatures {
+public class LowlevelStatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static StatechartDefinition getStatechart(EObject object) {
 		if (object instanceof StatechartDefinition) {

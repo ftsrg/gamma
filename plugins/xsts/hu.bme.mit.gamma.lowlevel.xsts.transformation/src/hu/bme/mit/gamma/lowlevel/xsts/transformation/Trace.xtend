@@ -47,6 +47,7 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 
 package class Trace {
 	// Trace model
@@ -132,6 +133,15 @@ package class Trace {
 	def put(VariableDeclaration lowlevelVariable, VariableDeclaration xStsVariable) {
 		checkArgument(lowlevelVariable !== null)
 		checkArgument(xStsVariable !== null)
+		if (lowlevelVariable.hasXStsVariable) {
+			// This can happen if we transform the same action multiple times
+			// Solution: we "forget" the previously created local xSts variable
+			val container = lowlevelVariable.eContainer
+			checkState(container instanceof VariableDeclarationStatement)
+			val trace = lowlevelVariable.trace
+			trace.XStsVariable = xStsVariable
+			return
+		}
 		trace.traces += createVariableTrace => [
 			it.lowlevelVariable = lowlevelVariable
 			it.XStsVariable = xStsVariable
@@ -155,6 +165,14 @@ package class Trace {
 	def hasXStsVariable(VariableDeclaration lowlevelVariable) {
 		checkArgument(lowlevelVariable !== null)
 		return VariableTrace.Matcher.on(tracingEngine).hasMatch(lowlevelVariable, null)
+	}
+	
+	def getTrace(VariableDeclaration lowlevelVariable) {
+		checkArgument(lowlevelVariable !== null)
+		val traces = trace.traces.filter(hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.VariableTrace)
+			.filter[it.lowlevelVariable === lowlevelVariable].toSet
+		checkState(traces.size == 1)
+		return traces.head
 	}
 	
 	def delete(VariableDeclaration xStsVariable) {

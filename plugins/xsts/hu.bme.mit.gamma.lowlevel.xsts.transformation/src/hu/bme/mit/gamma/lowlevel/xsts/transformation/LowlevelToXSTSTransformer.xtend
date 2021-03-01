@@ -12,8 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation
-import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
@@ -24,6 +22,7 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.EventParameterComp
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Events
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstChoiceStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FirstForkStates
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.GlobalVariables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.InEvents
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastJoinStates
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.LastMergeStates
@@ -41,7 +40,6 @@ import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Subregions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Timeouts
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TopRegions
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.TypeDeclarations
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Variables
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.L2STrace
 import hu.bme.mit.gamma.statechart.lowlevel.model.ChoiceState
 import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
@@ -77,6 +75,7 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -91,7 +90,6 @@ class LowlevelToXSTSTransformer {
 	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension AnnotationTransformer annotationTransformer = AnnotationTransformer.INSTANCE
-	protected final extension ReadWrittenVariableLocator variableLocator = ReadWrittenVariableLocator.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE
 	protected final extension VariableGroupRetriever variableGroupRetriever = VariableGroupRetriever.INSTANCE
@@ -99,6 +97,7 @@ class LowlevelToXSTSTransformer {
 	protected final extension RegionActivator regionActivator
 	protected final extension EntryActionRetriever entryActionRetriever
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
 	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
@@ -123,7 +122,7 @@ class LowlevelToXSTSTransformer {
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> componentParametersRule
 	protected BatchTransformationRule<PlainVariables.Match, PlainVariables.Matcher> plainVariablesRule
 	protected BatchTransformationRule<Timeouts.Match, Timeouts.Matcher> timeoutsRule
-	protected BatchTransformationRule<Variables.Match, Variables.Matcher> variableInitializationsRule
+	protected BatchTransformationRule<GlobalVariables.Match, GlobalVariables.Matcher> variableInitializationsRule
 	protected BatchTransformationRule<Statecharts.Match, Statecharts.Matcher> topRegionInitializationRule
 	protected BatchTransformationRule<SimpleTransitionsBetweenStates.Match, SimpleTransitionsBetweenStates.Matcher> simpleTransitionBetweenStatesRule
 	protected BatchTransformationRule<SimpleTransitionsToEntryStates.Match, SimpleTransitionsToEntryStates.Matcher> simpleTransitionsToHistoryStatesRule
@@ -155,6 +154,7 @@ class LowlevelToXSTSTransformer {
 		this.regionActivator = new RegionActivator(this.engine, this.trace)
 		this.entryActionRetriever = new EntryActionRetriever(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
 		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
 			this.engine, this.trace)
@@ -183,9 +183,11 @@ class LowlevelToXSTSTransformer {
 			getSubregionsRule.fireAllCurrent[!trace.isTraced(it.region) && trace.isTraced(it.parentRegion)]
 		}
 		getComponentParametersRule.fireAllCurrent
-		getTimeoutsRule.fireAllCurrent
-		// Event variables, parameters and timeouts are transformed already
 		getPlainVariablesRule.fireAllCurrent
+		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule
+		// Timeouts can refer to constants
+		getTimeoutsRule.fireAllCurrent
+		// Event variables, parameters, variables and timeouts are transformed already
 		/* By now all variables must be transformed so the expressions and actions can be transformed
 		 * correctly with the trace model */
 		getVariableInitializationsRule.fireAllCurrent
@@ -332,14 +334,16 @@ class LowlevelToXSTSTransformer {
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					regionInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
+					regionInitializingAction.actions +=
+						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
 				entryEventAction as CompositeAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
-					entryEventInitializingAction.actions += lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
+					entryEventInitializingAction.actions +=
+						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionEntryActions
 				}
 			].build
 		}
@@ -467,15 +471,8 @@ class LowlevelToXSTSTransformer {
 			plainVariablesRule = createRule(PlainVariables.instance).action [
 				val lowlevelVariable = it.variable
 				if (lowlevelVariable.notOptimizable) {
-					val xStsVariable = createVariableDeclaration => [
-						it.name = lowlevelVariable.name.variableName
-						it.type = lowlevelVariable.type.transformType
-					]
-					for (lowlevelAnnotation : lowlevelVariable.annotations) {
-						xStsVariable.annotations += lowlevelAnnotation.transform
-					}
+					val xStsVariable = lowlevelVariable.transformVariableDeclaration
 					xSts.variableDeclarations += xStsVariable // Target model modification
-					trace.put(lowlevelVariable, xStsVariable) // Tracing
 					xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
 				}
 			].build
@@ -505,7 +502,7 @@ class LowlevelToXSTSTransformer {
 
 	protected def getVariableInitializationsRule() {
 		if (variableInitializationsRule === null) {
-			variableInitializationsRule = createRule(Variables.instance).action [
+			variableInitializationsRule = createRule(GlobalVariables.instance).action [
 				val lowlevelVariable = it.variable
 				if (lowlevelVariable.notOptimizable) {
 					val xStsVariable = trace.getXStsVariable(lowlevelVariable)
@@ -648,7 +645,8 @@ class LowlevelToXSTSTransformer {
 						// Initial value
 						val lowlevelType = lowlevelParameterDeclaration.type
 						xStsAllPossibleParameterValues += lowlevelType.initialValueOfType.transformExpression
-						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine).getAllValuesOfvalue(lowlevelParameterDeclaration)) {
+						for (lowlevelValue : EventParameterComparisons.Matcher.on(engine)
+								.getAllValuesOfvalue(lowlevelParameterDeclaration)) {
 							xStsAllPossibleParameterValues += lowlevelValue.transformExpression
 						}
 						val xStsPossibleParameterValues = xStsAllPossibleParameterValues.removeDuplicatedExpressions
@@ -799,7 +797,7 @@ class LowlevelToXSTSTransformer {
 			xStsTransitions += trace.getXStsTransition(lastChoiceState)
 		}
 		for (xStsTransition : xStsTransitions) {
-			xStsAction.actions += xStsTransition.action.clone // Cloning is important
+			xStsAction.actions += xStsTransition.action.clone // Will not break local variable references?
 		}
 	}
 
@@ -837,7 +835,7 @@ class LowlevelToXSTSTransformer {
 		
 		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
 		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
-				.filter[it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
+				.filter[it.transient]
 		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
 		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
 			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)
@@ -875,10 +873,8 @@ class LowlevelToXSTSTransformer {
 	}
 	
 	protected def handleVariableAnnotations() {
-		val resetableVariables = xSts.variableDeclarations.filter[
-			it.annotations.exists[it instanceof ResetableVariableDeclarationAnnotation]]
-		val transientVariables = xSts.variableDeclarations.filter[
-			it.annotations.exists[it instanceof TransientVariableDeclarationAnnotation]]
+		val resetableVariables = xSts.variableDeclarations.filter[it.resetable]
+		val transientVariables = xSts.variableDeclarations.filter[it.transient]
 		val newMergedAction = createSequentialAction
 		for (resetableVariable : resetableVariables) {
 			// Type initial value, as the variable initial expression might change (e.g., a + b + 1)

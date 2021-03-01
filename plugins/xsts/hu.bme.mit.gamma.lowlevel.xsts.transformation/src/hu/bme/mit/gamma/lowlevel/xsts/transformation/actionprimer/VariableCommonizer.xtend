@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.ReadWrittenVariableLocator
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -30,8 +29,6 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeature
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class VariableCommonizer extends ActionPrimer {
-	// Reader writer variable locator for optimization
-	protected final extension ReadWrittenVariableLocator locator = ReadWrittenVariableLocator.INSTANCE
 	
 	new() {
 		super(true)

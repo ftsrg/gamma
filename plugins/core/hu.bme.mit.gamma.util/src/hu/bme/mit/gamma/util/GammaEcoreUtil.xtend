@@ -224,7 +224,7 @@ class GammaEcoreUtil {
 	}
 
 	def <T extends EObject> T clone(T object) {
-		return object.clone(true, true)
+		return object.clone(true, true /* This parameter sets reference copying */)
 	}
 
 	@SuppressWarnings("unchecked")

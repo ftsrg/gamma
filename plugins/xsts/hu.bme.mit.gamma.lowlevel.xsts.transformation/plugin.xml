@@ -28,7 +28,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.timeouts"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.timeoutInitializations"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.plainVariables"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.variables"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.globalVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.referredVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.transitionsBetweenSameRegionNodes"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.transitionsToHigherNodes"/>

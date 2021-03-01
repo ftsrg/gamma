@@ -102,7 +102,9 @@ public class ActionModelValidator extends ExpressionModelValidator {
 			VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
 			try {
 				Type variableDeclarationType = variableDeclaration.getType();
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(variableDeclarationType, assignment.getRhs(), ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS));
+				validationResultMessages.addAll(checkTypeAndExpressionConformance(variableDeclarationType, 
+						assignment.getRhs(), 
+						ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS));
 			} catch (Exception exception) {
 				// There is a type error on a lower level, no need to display the error message on this level too
 			}
@@ -124,7 +126,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION,null)));
+							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", 
+							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION,null)));
 				}
 			}
 		}
