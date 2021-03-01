@@ -34,15 +34,11 @@ The plugin setup procedure should be done as follows:
 2. Generate the Model plugin of the Gamma Expression Language: `hu.bme.mit.gamma.expression.model`. The Model plugin can be generated from the ecore file using a genmodel.
 3. Generate the Model plugin of the Gamma Action Language: `hu.bme.mit.gamma.action.model`. It can be generated the same way as in the previous step.
 3. Generate the Model plugin of the Gamma Statechart Language: `hu.bme.mit.gamma.statechart.model`. It can be generated the same way as in the previous step.
-4. Generate the Model plugin of the traceability projects:
-`hu.bme.mit.gamma.uppaal.transformation.traceability` and
-`hu.bme.mit.gamma.yakindu.transformation.traceability`. Again use the ecore file and the genmodel.
-5. Generate the Model plugin of the UPPAAL metamodel:
-`de.uni_paderborn.uppaal`. Again use the ecore file and the genmodel.
-6. Generate the Model plugin of the statechart generator model:
-`hu.bme.mit.gamma.genmodel.model`. Again use the ecore file and the genmodel.
-6. Generate the Model plugin of the trace model:
-`hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
+3. Generate the Model plugin of the Gamma Property Language: `hu.bme.mit.gamma.property.model`. It can be generated the same way as in the previous step.
+4. Generate the Model plugin of the traceability projects: `hu.bme.mit.gamma.uppaal.transformation.traceability` and `hu.bme.mit.gamma.yakindu.transformation.traceability`. Again use the ecore file and the genmodel.
+5. Generate the Model plugin of the UPPAAL metamodel: `de.uni_paderborn.uppaal`. Again use the ecore file and the genmodel.
+6. Generate the Model plugin of the Gamma Genmodel Language: `hu.bme.mit.gamma.genmodel.model`. Again use the ecore file and the genmodel.
+6. Generate the Model plugin of the Gamma Test Language: `hu.bme.mit.gamma.trace.model`. Again use the ecore file and the genmodel.
 7. Run `hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` as a MWE2 Workflow.
 7. Run `hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/action/language/GenerateActionLanguage.mwe2` as a MWE2 Workflow.
 8. Run `hu.bme.mit.gamma.statechart.language/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` as a MWE2 Workflow.
@@ -64,6 +60,7 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 |`hu.bme.mit.gamma.expression.model`| x | | |
 |`hu.bme.mit.gamma.action.model`| x | | |
 |`hu.bme.mit.gamma.statechart.model`| x |  |  |
+|`hu.bme.mit.gamma.property.model`| x |  |  |
 |`hu.bme.mit.gamma.trace.model`| x | | |
 |`hu.bme.mit.gamma.uppaal.transformation.traceability`| x | | |
 |`hu.bme.mit.gamma.genmodel.model`| x | | |
@@ -75,5 +72,6 @@ Hopefully, now you have an Eclipse with the necessary plugins installed and read
 | `hu.bme.mit.gamma.expression.language` | `/src/hu/bme/mit/gamma/expression/language/GenerateExpressionLanguage.mwe2` |
 | `hu.bme.mit.gamma.action.language` | `/src/hu/bme/mit/gamma/action/language/GenerateActionLanguage.mwe2` |
 | `hu.bme.mit.gamma.statechart.language` | `/src/hu/bme/mit/gamma/statechart/language/GenerateStatechartLanguage.mwe2` |
-| `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/yakindu/genmodel/language/GenerateGenModel.mwe2` |
+| `hu.bme.mit.gamma.property.language` | `/src/hu/bme/mit/gamma/property/language/GeneratePropertyLanguage.mwe2` |
+| `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateGenModel.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
