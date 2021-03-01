@@ -1,5 +1,5 @@
 #!/bin/bash
-THETA_VERSION="v2.11.1"
+THETA_VERSION="v2.12.0"
 
 apt-get install libgomp1 -y
 
