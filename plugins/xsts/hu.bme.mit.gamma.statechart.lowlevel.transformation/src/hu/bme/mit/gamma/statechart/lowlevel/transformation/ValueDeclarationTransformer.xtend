@@ -136,7 +136,7 @@ class ValueDeclarationTransformer {
 				}
 			]
 			transformed += transformedField
-			trace.put(new Pair(variable,currentField), transformedField)
+			trace.put(new Pair(variable, currentField), transformedField)
 		}
 		
 		return transformed	

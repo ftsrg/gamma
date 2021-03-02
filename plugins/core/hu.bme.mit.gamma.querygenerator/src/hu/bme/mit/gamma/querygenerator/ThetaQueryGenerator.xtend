@@ -167,6 +167,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
+			// TODO Maybe an allFields method could be used here?
 			val name = getTargetVariableName(match.variable, match.instance)
 			if (name.equals(targetVariableName)) {
 				return new Pair(match.variable, match.instance)

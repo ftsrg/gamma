@@ -10,15 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.derivedfeatures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
@@ -27,6 +32,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
+import hu.bme.mit.gamma.expression.util.FieldHierarchy;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionModelDerivedFeatures {
@@ -67,6 +73,26 @@ public class ExpressionModelDerivedFeatures {
 			return (TypeDefinition) typeReference.getReference().getType();
 		}
 		throw new IllegalArgumentException("Not known type: " + type);
+	}
+	
+	public static List<FieldHierarchy> getAllFieldHierarchies(RecordTypeDefinition record) {
+		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
+		for (FieldDeclaration field : record.getFieldDeclarations()) {
+			Type type = field.getType();
+			if (type instanceof RecordTypeDefinition) {
+				RecordTypeDefinition subrecord = (RecordTypeDefinition) type;
+				List<FieldHierarchy> hierarchies = getAllFieldHierarchies(subrecord);
+				for (FieldHierarchy hierarchy : hierarchies) {
+					hierarchy.prepend(field);
+					fieldHierarchies.add(hierarchy);
+				}
+			}
+			else {
+				// Primitive type
+				fieldHierarchies.add(new FieldHierarchy(field));
+			}
+		}
+		return fieldHierarchies;
 	}
 	
 	public static Expression getDefaultExpression(Type type) {

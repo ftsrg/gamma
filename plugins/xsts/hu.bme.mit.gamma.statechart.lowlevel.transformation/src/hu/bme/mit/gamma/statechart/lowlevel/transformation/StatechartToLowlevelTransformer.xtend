@@ -107,18 +107,21 @@ class StatechartToLowlevelTransformer {
 			it.name = gammaParameter.componentParameterName
 			it.type = gammaParameter.type.transformType
 		]
+		// TODO add name
 		trace.put(gammaParameter, lowlevelVariable)
 		return lowlevelVariable
 	}
 
 	protected def List<VariableDeclaration> transform(ConstantDeclaration variable) {
-		val lowlevelVariable = variable.transformValue
-		return lowlevelVariable
+		val lowlevelVariables = variable.transformValue
+		// Constant variable names do not really matter in terms of traceability
+		return lowlevelVariables
 	}
 	
 	protected def List<VariableDeclaration> transform(VariableDeclaration variable) {
-		val lowlevelVariable = variable.transformValue
-		return lowlevelVariable
+		val lowlevelVariables = variable.transformValue
+		// TODO add name
+		return lowlevelVariables
 	}
 
 	/**
@@ -174,11 +177,12 @@ class StatechartToLowlevelTransformer {
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
 		for (gammaParam : gammaEvent.parameterDeclarations) {
-			val lowlevelParam = createVariableDeclaration => [ // FIXME
+			val lowlevelParam = createVariableDeclaration => [
 				it.name = (direction == EventDirection.IN) ?
 					gammaParam.getInName(gammaPort) : gammaParam.getOutName(gammaPort)
 				it.type = gammaParam.type.transformType
 			]
+			// TODO add name
 			lowlevelEvent.parameters += lowlevelParam
 			trace.put(gammaPort, gammaEvent, gammaParam, lowlevelEvent.direction, lowlevelParam)
 		}
@@ -257,16 +261,16 @@ class StatechartToLowlevelTransformer {
 		// Constants
 		val gammaPackage = statechart.containingPackage
 		for (constantDeclaration : gammaPackage.constantDeclarations) {
-			lowlevelStatechart.variableDeclarations += constantDeclaration.transform // FIXME
+			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
 		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
-			val lowlevelParameterDeclaration = parameterDeclaration.transform // FIXME
+			val lowlevelParameterDeclaration = parameterDeclaration.transform
 			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
 			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
 		}
 		for (variableDeclaration : statechart.variableDeclarations) {
-			lowlevelStatechart.variableDeclarations += variableDeclaration.transform // FIXME
+			lowlevelStatechart.variableDeclarations += variableDeclaration.transform
 		}
 		for (timeoutDeclaration : statechart.timeoutDeclarations) {
 			// Timeout declarations are transformed to integer variable declarations
