@@ -45,7 +45,6 @@ import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 /**
@@ -128,8 +127,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
 		// check if the referred object is a value declaration
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
 			return;
 		}

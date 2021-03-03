@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -107,20 +108,38 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 		return super.getScope(context, reference);
 	}
 	
-	protected Collection<FieldDeclaration> getFieldDeclarations(Expression operand) {
+	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
 		// TODO extend with recordLiterals too, e.g., ExpressionTypeDeterminator.getType(operand) method is needed
 		if (operand instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) operand;
 			Declaration declaration = reference.getDeclaration();
-			Type type = declaration.getType();
-			if (type != null) {
-				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-				if (typeDefinition instanceof RecordTypeDefinition) {
-					RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-					return record.getFieldDeclarations();
-				}
+			return getFieldDeclarations(declaration);
+		}
+		if (operand instanceof FieldReferenceExpression) {
+			FieldReferenceExpression reference = (FieldReferenceExpression) operand;
+			FieldDeclaration declaration = reference.getFieldDeclaration();
+			return Collections.singletonList(declaration);
+		}
+		if (operand instanceof RecordAccessExpression) {
+			RecordAccessExpression reference = (RecordAccessExpression) operand;
+			FieldReferenceExpression fieldReference = reference.getFieldReference();
+			if (fieldReference != null) {
+				Declaration declaration = fieldReference.getFieldDeclaration();
+				return getFieldDeclarations(declaration);
 			}
-		} 
+		}
+		return Collections.emptyList();
+	}
+	
+	protected List<FieldDeclaration> getFieldDeclarations(Declaration declaration) {
+		Type type = declaration.getType();
+		if (type != null) {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			if (typeDefinition instanceof RecordTypeDefinition) {
+				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+				return record.getFieldDeclarations();
+			}
+		}
 		return Collections.emptyList();
 	}
 	

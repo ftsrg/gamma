@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import java.util.AbstractMap.SimpleEntry
 import java.util.HashMap
 import java.util.List
 import java.util.Map
@@ -43,8 +44,8 @@ package class Trace {
 	final Map<TypeDeclaration, TypeDeclaration> typeDeclarationMappings = new HashMap<TypeDeclaration, TypeDeclaration>
 	// An event has to be connected to a port
 	// Map is needed as a value because an INOUT is transformed to an IN and an OUT event
-	final Map<Pair<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = new HashMap<Pair<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
-	final Map<Pair<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = new HashMap<Pair<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
+	final Map<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = new HashMap<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
+	final Map<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = new HashMap<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
 	final Map<Triple<Port, Event, ParameterDeclaration>, Map<EventDirection, VariableDeclaration>> paramMappings = new HashMap<Triple<Port, Event, ParameterDeclaration>, Map<EventDirection, VariableDeclaration>>
 	//
 	final Map<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component> componentMappings = new HashMap<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component>
@@ -65,7 +66,7 @@ package class Trace {
 	// Select temporary variables
 	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = new HashMap<SelectExpression, List<VariableDeclaration>>
 	// Record mappings (handled simply as 'values', as Java generics cannot differentiate)
-	final Map<Pair<ValueDeclaration, FieldHierarchy>, VariableDeclaration> recordValDeclMappings = new HashMap()
+	final Map<SimpleEntry<ValueDeclaration, FieldHierarchy>, VariableDeclaration> recordValDeclMappings = new HashMap()
 	// Assertion variables
 	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
@@ -120,7 +121,8 @@ package class Trace {
 			map.put(lowlevelEventDecl.direction, lowlevelEventDecl)
 		}
 		else {
-			eventDeclMappings.put(new Pair(gammaPort, gammaEventDecl), newHashMap(lowlevelEventDecl.direction -> lowlevelEventDecl))
+			eventDeclMappings.put(new SimpleEntry(gammaPort, gammaEventDecl),
+				newHashMap(lowlevelEventDecl.direction -> lowlevelEventDecl))
 		}
 	}
 
@@ -167,7 +169,8 @@ package class Trace {
 			map.put(lowlevelEvent.direction, lowlevelEvent)
 		}
 		else {
-			eventMappings.put(new Pair(gammaPort, gammaEvent), newHashMap(lowlevelEvent.direction -> lowlevelEvent))
+			eventMappings.put(new SimpleEntry(gammaPort, gammaEvent),
+				newHashMap(lowlevelEvent.direction -> lowlevelEvent))
 		}
 	}
 
@@ -566,7 +569,7 @@ package class Trace {
 	}
 	
 	// Record
-	def put(Pair<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {
+	def put(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
@@ -574,7 +577,7 @@ package class Trace {
 		recordValDeclMappings.put(recordField, lowLevelVariable)
 	} 
 
-	def isMapped(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+	def isMapped(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
 		val key = recordField.key
 		val value = recordField.value
@@ -588,7 +591,7 @@ package class Trace {
 		return false
 	}
 
-	def get(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+	def get(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
 		val key = recordField.key
 		val value = recordField.value

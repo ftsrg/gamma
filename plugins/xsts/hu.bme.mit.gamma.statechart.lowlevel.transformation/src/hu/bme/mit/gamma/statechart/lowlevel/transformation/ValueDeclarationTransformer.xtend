@@ -12,6 +12,7 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
+import java.util.AbstractMap.SimpleEntry
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
@@ -137,7 +138,7 @@ class ValueDeclarationTransformer {
 				}
 			]
 			transformed += transformedField
-			trace.put(new Pair(variable, currentField), transformedField)
+			trace.put(new SimpleEntry(variable, currentField), transformedField)
 		}
 		
 		return transformed	

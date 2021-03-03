@@ -101,27 +101,37 @@ class StatechartToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-	protected def VariableDeclaration transform(ParameterDeclaration gammaParameter) {
-		// Cloning the variable
-		val lowlevelVariable = createVariableDeclaration => [
-			it.name = gammaParameter.componentParameterName
-			it.type = gammaParameter.type.transformType
-		]
-		// TODO add name
-		trace.put(gammaParameter, lowlevelVariable)
-		return lowlevelVariable
+	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
+		val lowlevelVariables = gammaParameter.transformValue
+		// Traced in transformValue
+		val lowlevelVariableNames = gammaParameter.componentParameterNames
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		return lowlevelVariables
 	}
 
-	protected def List<VariableDeclaration> transform(ConstantDeclaration variable) {
-		val lowlevelVariables = variable.transformValue
+	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
+		val lowlevelVariables = gammaConstant.transformValue
 		// Constant variable names do not really matter in terms of traceability
 		return lowlevelVariables
 	}
 	
-	protected def List<VariableDeclaration> transform(VariableDeclaration variable) {
-		val lowlevelVariables = variable.transformValue
-		// TODO add name
+	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
+		val lowlevelVariables = gammaVariable.transformValue
+		// Traced in transformValue
+		val lowlevelVariableNames = gammaVariable.names
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
 		return lowlevelVariables
+	}
+	
+	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
+			List<String> lowlevelVariableNames) {
+		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
+		val size = lowlevelVariables.size
+		for (var i = 0; i < size; i++) {
+			val lowlevelVariable = lowlevelVariables.get(i)
+			val lowlevelVariableName = lowlevelVariableNames.get(i)
+			lowlevelVariable.name = lowlevelVariableName
+		}
 	}
 
 	/**
@@ -176,15 +186,20 @@ class StatechartToLowlevelTransformer {
 		]
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
-		for (gammaParam : gammaEvent.parameterDeclarations) {
-			val lowlevelParam = createVariableDeclaration => [
-				it.name = (direction == EventDirection.IN) ?
-					gammaParam.getInName(gammaPort) : gammaParam.getOutName(gammaPort)
-				it.type = gammaParam.type.transformType
-			]
-			// TODO add name
-			lowlevelEvent.parameters += lowlevelParam
-			trace.put(gammaPort, gammaEvent, gammaParam, lowlevelEvent.direction, lowlevelParam)
+		for (gammaParameter : gammaEvent.parameterDeclarations) {
+			val lowlevelParameters = gammaParameter.transformValue
+			val lowlevelVariableNames = (direction == EventDirection.IN) ?
+				gammaParameter.getInNames(gammaPort) : 
+				gammaParameter.getOutNames(gammaPort)
+			lowlevelParameters.nameLowlevelVariables(lowlevelVariableNames)
+			lowlevelEvent.parameters += lowlevelParameters
+			if (lowlevelParameters.size == 1) {
+				// Is this tracing good?
+				val lowlevelParameter = lowlevelParameters.head
+				trace.put(gammaPort, gammaEvent, gammaParameter,
+					lowlevelEvent.direction, lowlevelParameter)
+			
+			}
 		}
 		return lowlevelEvent
 	}
@@ -265,7 +280,7 @@ class StatechartToLowlevelTransformer {
 		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
-			val lowlevelParameterDeclaration = parameterDeclaration.transform
+			val lowlevelParameterDeclaration = parameterDeclaration.transformComponentParameter
 			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
 			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
 		}

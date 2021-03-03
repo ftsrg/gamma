@@ -27,17 +27,13 @@ import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
-import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance;
@@ -333,19 +329,11 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 	}
 	
 	@Override
-	protected Collection<FieldDeclaration> getFieldDeclarations(Expression operand) {
+	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
 		if (operand instanceof EventParameterReferenceExpression) {
 			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) operand;
 			Declaration declaration = reference.getParameter();
-			Type type = declaration.getType();
-			if (type != null) {
-				// Due to an Xtext parsing bug, sometimes every attribute of the element is null
-				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
-				if (typeDefinition instanceof RecordTypeDefinition) {
-					RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-					return record.getFieldDeclarations();
-				}
-			}
+			return super.getFieldDeclarations(declaration);
 		}
 		return super.getFieldDeclarations(operand);
 	}

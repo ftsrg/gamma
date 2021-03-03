@@ -16,44 +16,20 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 
 public class ExpressionLanguageUtil {
 	
-	public static TypeDefinition findAccessExpressionTypeDefinition(AccessExpression accessExpression) {
-		Declaration instanceDeclaration = findAccessExpressionInstanceDeclaration(accessExpression);
-		Type instanceDeclarationType = instanceDeclaration.getType();
-		return findTypeDefinitionOfType(instanceDeclarationType);
-	}
+	protected final static ExpressionUtil util = ExpressionUtil.INSTANCE;
 	
-	public static TypeDefinition findTypeDefinitionOfType(Type t) {
-		if (t instanceof TypeDefinition) {
-			return (TypeDefinition) t;
-		} else {	// t instanceof TypeReference
-			TypeReference tr = (TypeReference) t;
-			TypeDeclaration td = tr.getReference();
-			return findTypeDefinitionOfType(td.getType());
-		}
+	public static TypeDefinition findAccessExpressionTypeDefinition1(AccessExpression accessExpression) {
+		Declaration instanceDeclaration = util.getDeclaration(accessExpression);
+		return ExpressionModelDerivedFeatures.getTypeDefinition(instanceDeclaration);
 	}
-	
-	public static Declaration findAccessExpressionInstanceDeclaration(AccessExpression accessExpression)/* throws Exception*/ {
-		if (accessExpression.getOperand() instanceof DirectReferenceExpression) {
-			DirectReferenceExpression ref = (DirectReferenceExpression)accessExpression.getOperand();
-			return ref.getDeclaration();
-		} else if (accessExpression.getOperand() instanceof AccessExpression) {
-			return findAccessExpressionInstanceDeclaration((AccessExpression)accessExpression.getOperand());
-		} else {
-			return null;
-		}
-	}
-	
 	
 	public static Collection<? extends NamedElement> getRecursiveContainerContentsOfType(EObject ele, Class<? extends NamedElement> type){
 		List<NamedElement> ret = new ArrayList<NamedElement>();

@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.validation.Check;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -58,7 +59,6 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
-import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
 import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
@@ -168,18 +168,18 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	
 	@Check
 	public void checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
-				findAccessExpressionTypeDefinition(recordAccessExpression);
 		// check if the referred declaration is accessible
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
-		if (!(referredDeclaration instanceof ValueDeclaration)) {
+		Declaration accessedDeclaration = 
+				expressionUtil.getAccessedDeclaration(recordAccessExpression);
+		RecordTypeDefinition recordType = (RecordTypeDefinition) 
+				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+		if (!(accessedDeclaration instanceof ValueDeclaration)) {
 			error("The referred declaration is not accessible as a record!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
 			return;
 		}
 		// check if the referred field exists
-		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
+		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
 		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			error("The record type does not contain any fields with the given name.",
@@ -226,8 +226,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkArrayAccessExpression(ArrayAccessExpression expression) {
 		// check if the referred declaration is accessible
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		if (!(referredDeclaration instanceof ValueDeclaration)) {
 			error("The referred declaration is not accessible as an array!",
 					ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND);
@@ -243,8 +242,7 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkSelectExpression(SelectExpression expression){
 		// check if the referred object
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
 			// TODO check if array type
 			error("The specified object is not selectable!",

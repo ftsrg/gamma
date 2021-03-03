@@ -82,6 +82,4 @@ public class FieldHierarchy {
 		return true;
 	}
 	
-	
-	
 }
