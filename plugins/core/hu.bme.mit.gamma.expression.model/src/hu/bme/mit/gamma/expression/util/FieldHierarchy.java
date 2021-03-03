@@ -9,6 +9,10 @@ public class FieldHierarchy {
 
 	private List<FieldDeclaration> fields = new ArrayList<FieldDeclaration>();
 	
+	public FieldHierarchy(FieldHierarchy fields) {
+		this.fields.addAll(fields.getFields());
+	}
+	
 	public FieldHierarchy(List<FieldDeclaration> fields) {
 		this.fields.addAll(fields);
 	}
@@ -35,8 +39,17 @@ public class FieldHierarchy {
 		fields.add(field);
 	}
 	
+	public void add(List<FieldDeclaration> fields) {
+		fields.addAll(fields);
+	}
+	
 	public void add(FieldHierarchy fieldHierarchy) {
 		fields.addAll(fieldHierarchy.getFields());
+	}
+	
+	public FieldDeclaration getLast() {
+		int size = fields.size();
+		return fields.get(size - 1);
 	}
 
 	@Override
