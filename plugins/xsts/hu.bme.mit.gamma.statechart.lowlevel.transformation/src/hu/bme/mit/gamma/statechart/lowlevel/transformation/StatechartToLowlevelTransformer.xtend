@@ -194,7 +194,7 @@ class StatechartToLowlevelTransformer {
 			lowlevelParameters.nameLowlevelVariables(lowlevelVariableNames)
 			lowlevelEvent.parameters += lowlevelParameters
 			if (lowlevelParameters.size == 1) {
-				// Is this tracing good?
+				// TODO Is this tracing good?
 				val lowlevelParameter = lowlevelParameters.head
 				trace.put(gammaPort, gammaEvent, gammaParameter,
 					lowlevelEvent.direction, lowlevelParameter)

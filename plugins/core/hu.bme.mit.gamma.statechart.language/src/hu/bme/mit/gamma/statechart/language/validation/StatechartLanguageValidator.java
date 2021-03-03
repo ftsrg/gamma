@@ -121,6 +121,7 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -130,6 +131,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	public StatechartLanguageValidator() {
 		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
+		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
 	}
 	
 	// Some elements can have the same name

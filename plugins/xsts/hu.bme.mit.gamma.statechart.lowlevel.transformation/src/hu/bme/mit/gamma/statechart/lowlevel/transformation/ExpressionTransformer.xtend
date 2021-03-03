@@ -134,13 +134,14 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
 		val result = <Expression>newArrayList
 		
-		var originalDeclaration = expression.declaration
+		var originalDeclaration = expression.accessedDeclaration
 		if (originalDeclaration instanceof ValueDeclaration) {
 			val originalLhsVariables = exploreComplexType(originalDeclaration)
 			val recordAccessList = expression.collectRecordAccessList
 	
-			for (elem : originalLhsVariables) {	
-				if (isSameAccessTree(elem.value, recordAccessList)) {	//filter according to the access list
+			for (elem : originalLhsVariables) {
+				val fieldHierarchy = elem.value
+				if (isSameAccessTree(fieldHierarchy, recordAccessList)) {	//filter according to the access list
 					// Create references
 					result += createDirectReferenceExpression => [
 						it.declaration = trace.get(elem)
@@ -168,7 +169,7 @@ class ExpressionTransformer {
 				it.declaration = returnVariable
 			]
 		}
-		return result		
+		return result
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
