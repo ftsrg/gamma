@@ -20,12 +20,12 @@ import hu.bme.mit.gamma.xsts.model.EventParameterGroup
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Comparator
 import java.util.List
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class OrthogonalActionTransformer {
@@ -36,7 +36,7 @@ class OrthogonalActionTransformer {
 	
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected extension ExpressionUtil expressionActionUtil = ExpressionUtil.INSTANCE
-	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	

@@ -12,11 +12,11 @@ import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGe
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XSTSTransformerSerializer
-import hu.bme.mit.gamma.xsts.uppaal.transformation.api.XSTS2UppaalTransformerSerializer
 import java.util.List
+import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
+import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer
 
-class Gamma2XSTSUppaalTransformerSerializer {
+class Gamma2XstsUppaalTransformerSerializer {
 
 	protected final Component component
 	protected final List<Expression> arguments
@@ -90,7 +90,7 @@ class Gamma2XSTSUppaalTransformerSerializer {
 	}
 	
 	def execute() {
-		val xStsTransformer = new Gamma2XSTSTransformerSerializer(component,
+		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
 			propertyPackage,
@@ -100,7 +100,7 @@ class Gamma2XSTSUppaalTransformerSerializer {
 				dataflowTestedVariables, dataflowCoverageCriterion)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
-		val uppaalTransformer = new XSTS2UppaalTransformerSerializer(xSts,
+		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,
 			targetFolderUri, fileName)
 		uppaalTransformer.execute
 	}

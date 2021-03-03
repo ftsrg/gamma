@@ -38,10 +38,10 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
-public class XSTSActionUtil {
+public class XstsActionUtil {
 	// Singleton
-	public static final XSTSActionUtil INSTANCE = new XSTSActionUtil();
-	protected XSTSActionUtil() {}
+	public static final XstsActionUtil INSTANCE = new XstsActionUtil();
+	protected XstsActionUtil() {}
 	//
 	
 	protected GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;

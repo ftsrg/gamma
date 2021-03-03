@@ -24,7 +24,7 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Set
 
@@ -42,7 +42,7 @@ class EnvironmentalActionFilter {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
@@ -98,7 +98,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createEventAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {
@@ -122,7 +122,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createParameterAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {

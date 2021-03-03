@@ -25,12 +25,12 @@ import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGe
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer
+import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import java.io.File
 import java.util.List
 
-class Gamma2XSTSTransformerSerializer {
+class Gamma2XstsTransformerSerializer {
 	
 	protected final Component component
 	protected final List<Expression> arguments
@@ -121,7 +121,7 @@ class Gamma2XSTSTransformerSerializer {
 				dataflowTestedVariables, dataflowCoverageCriterion,
 				targetFolderUri, fileName)
 		slicerAnnotatorAndPropertyGenerator.execute
-		val gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true)
+		val gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint, true, true)
 		// Normal transformation
 		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
 		// EMF

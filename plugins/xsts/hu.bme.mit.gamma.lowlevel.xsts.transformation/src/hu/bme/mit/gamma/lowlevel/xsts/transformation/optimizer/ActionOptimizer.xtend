@@ -31,7 +31,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ActionOptimizer {
 	// Singleton

@@ -62,7 +62,7 @@ import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -79,7 +79,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
-class LowlevelToXSTSTransformer {
+class LowlevelToXstsTransformer {
 	// Transformation-related extensions
 	extension BatchTransformation transformation
 	extension BatchTransformationStatements statements
@@ -87,7 +87,7 @@ class LowlevelToXSTSTransformer {
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension AnnotationTransformer annotationTransformer = AnnotationTransformer.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE

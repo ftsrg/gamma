@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
@@ -41,7 +41,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.math.BigInteger
 import java.util.Collections
 import java.util.List
@@ -55,7 +55,7 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-class GammaToXSTSTransformer {
+class GammaToXstsTransformer {
 	// This gammaToLowlevelTransformer must be the same during this transformation cycle due to tracing
 	GammaToLowlevelTransformer gammaToLowlevelTransformer = new GammaToLowlevelTransformer
 	// Auxiliary objects
@@ -70,7 +70,7 @@ class GammaToXSTSTransformer {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
@@ -189,7 +189,7 @@ class GammaToXSTSTransformer {
 			}
 		}
 		
-		val extension eventRef = new EventReferenceToXSTSVariableMapper(xSts)
+		val extension eventRef = new EventReferenceToXstsVariableMapper(xSts)
 		// Collecting the referenced event variables
 		val xStsReferencedEventVariables = newHashSet
 		for (eventReference : messageQueue.eventReference) {
@@ -367,7 +367,7 @@ class GammaToXSTSTransformer {
 		// Note that the package is already transformed and traced because of the "val lowlevelPackage = gammaToLowlevelTransformer.transform(_package)" call
 		val lowlevelStatechart = gammaToLowlevelTransformer.transform(statechart)
 		lowlevelPackage.components += lowlevelStatechart
-		val lowlevelToXSTSTransformer = new LowlevelToXSTSTransformer(lowlevelPackage, optimize)
+		val lowlevelToXSTSTransformer = new LowlevelToXstsTransformer(lowlevelPackage, optimize)
 		val xStsEntry = lowlevelToXSTSTransformer.execute
 		lowlevelPackage.components -= lowlevelStatechart // So that next time the matches do not return elements from this statechart
 		val xSts = xStsEntry.key

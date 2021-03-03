@@ -52,7 +52,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
-
 class ActionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer

@@ -28,7 +28,7 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
@@ -36,12 +36,12 @@ import org.eclipse.emf.ecore.util.EcoreUtil.Copier
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 abstract class ActionPrimer {
 	// Auxiliary objects
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
 	// Model factories
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE

@@ -27,7 +27,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Maps;
 
-import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XSTSUppaalTransformerSerializer;
+import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -46,7 +46,7 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
@@ -74,9 +74,9 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
-import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XSTSTransformerSerializer;
+import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
-import hu.bme.mit.gamma.xsts.uppaal.transformation.api.XSTS2UppaalTransformerSerializer;
+import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer;
 
 public class AnalysisModelTransformationHandler extends TaskHandler {
 	
@@ -431,7 +431,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
 			
-			Gamma2XSTSTransformerSerializer transformer = new Gamma2XSTSTransformerSerializer(
+			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
 					component,
 					reference.getArguments(), targetFolderUri, fileName,
 					schedulingConstraint, transformation.getPropertyPackage(),
@@ -467,15 +467,15 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		}
 
 		public void execute(XSTS xSts, String fileName) {
-			XSTS2UppaalTransformerSerializer xStsToUppaalTransformer =
-					new XSTS2UppaalTransformerSerializer(xSts, targetFolderUri, fileName);
+			Xsts2UppaalTransformerSerializer xStsToUppaalTransformer =
+					new Xsts2UppaalTransformerSerializer(xSts, targetFolderUri, fileName);
 			xStsToUppaalTransformer.execute();
 			logger.log(Level.INFO, "The XSTS-UPPAAL transformation has been finished.");
 		}
 		
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return XSTSUppaalPropertySerializer.INSTANCE;
+			return XstsUppaalPropertySerializer.INSTANCE;
 		}
 
 		@Override
@@ -513,7 +513,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
 			
-			Gamma2XSTSUppaalTransformerSerializer transformer = new Gamma2XSTSUppaalTransformerSerializer(
+			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
 					component,
 					reference.getArguments(), targetFolderUri, fileName,
 					schedulingConstraint, transformation.getPropertyPackage(),
@@ -529,7 +529,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		
 		@Override
 		protected PropertySerializer getPropertySerializer() {
-			return XSTSUppaalPropertySerializer.INSTANCE;
+			return XstsUppaalPropertySerializer.INSTANCE;
 		}
 
 		@Override

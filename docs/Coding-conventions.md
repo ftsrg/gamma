@@ -35,7 +35,7 @@ We mainly follow the standard Java coding conventions and most of the convention
 * **DO** use the `val` keyword instead of the `var` keyword when declaring variables whenever possible.
 * **CONSIDER** using the += and -= operator for adding and removing a single value or a collection of values to/from another collection.
 * **DO NOT** cast an object to a certain type after checking whether the object is the instance of that certain type. Xtend  does that implicitly in the subsequent block of the if-structure.
-* **CONSIDER** creating collections with the automatically imported `newCollectionType` method, e.g., newArrayList and newHashSet.
+* **CONSIDER** creating collections with the automatically imported `newCollectionType` method, e.g., `newArrayList` and `newHashSet`.
 * **CONSIDER** using the created methods as extension methods when it makes sense.
 
 ## Ecore metamodel projects

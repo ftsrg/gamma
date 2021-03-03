@@ -52,7 +52,7 @@ class UppaalVerifier extends AbstractVerifier {
 				new UppaalBackAnnotator(traceability, traceReader)
 			}
 			else if (traceability instanceof Package) {
-				new XSTSUppaalBackAnnotator(traceability, traceReader)
+				new XstsUppaalBackAnnotator(traceability, traceReader)
 			}
 			else {
 				throw new IllegalStateException("Not known traceability element: " + traceability)

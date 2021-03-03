@@ -20,14 +20,14 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
 
 class LowlevelTransitionToActionTransformer {
 	// Auxiliary objects
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension TransitionPreconditionCreator transitionPreconditionCreator
 	protected final extension RegionActivator regionActivator

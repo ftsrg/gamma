@@ -34,14 +34,14 @@ import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
+import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
 import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
-import hu.bme.mit.gamma.uppaal.verification.XSTSUppaalVerification;
+import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
@@ -71,8 +71,8 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = ThetaPropertySerializer.INSTANCE;
 					break;
 				case XSTS_UPPAAL:
-					verificationTask = XSTSUppaalVerification.INSTANCE;
-					propertySerializer = XSTSUppaalPropertySerializer.INSTANCE;
+					verificationTask = XstsUppaalVerification.INSTANCE;
+					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");

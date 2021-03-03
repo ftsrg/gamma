@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 
 abstract class ActionSerializer {
 	
