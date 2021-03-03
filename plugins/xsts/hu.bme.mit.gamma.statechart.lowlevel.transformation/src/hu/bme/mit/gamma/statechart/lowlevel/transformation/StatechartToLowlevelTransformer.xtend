@@ -44,7 +44,7 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects

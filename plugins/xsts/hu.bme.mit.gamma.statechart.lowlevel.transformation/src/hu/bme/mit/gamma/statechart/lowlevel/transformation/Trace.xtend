@@ -11,13 +11,13 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
@@ -65,7 +65,7 @@ package class Trace {
 	// Select temporary variables
 	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = new HashMap<SelectExpression, List<VariableDeclaration>>
 	// Record mappings (handled simply as 'values', as Java generics cannot differentiate)
-	final Map<Pair<ValueDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordValDeclMappings = new HashMap()
+	final Map<Pair<ValueDeclaration, FieldHierarchy>, VariableDeclaration> recordValDeclMappings = new HashMap()
 	// Assertion variables
 	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
@@ -566,7 +566,7 @@ package class Trace {
 	}
 	
 	// Record
-	def put(Pair<ValueDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
+	def put(Pair<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
@@ -574,7 +574,7 @@ package class Trace {
 		recordValDeclMappings.put(recordField, lowLevelVariable)
 	} 
 
-	def isMapped(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
+	def isMapped(Pair<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
 		val key = recordField.key
 		val value = recordField.value
@@ -588,7 +588,7 @@ package class Trace {
 		return false
 	}
 
-	def get(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
+	def get(Pair<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
 		val key = recordField.key
 		val value = recordField.value

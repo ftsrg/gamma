@@ -62,7 +62,6 @@ import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -96,7 +95,7 @@ public class ExpressionUtil {
 			return declaration;
 		}
 		if (expression instanceof AccessExpression) {
-			RecordAccessExpression access = (RecordAccessExpression) expression;
+			AccessExpression access = (AccessExpression) expression;
 			Expression operand = access.getOperand();
 			return getDeclaration(operand);
 		}

@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import java.util.List
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ValueDeclarationTransformer {
 	// Auxiliary object
@@ -33,7 +34,7 @@ class ValueDeclarationTransformer {
 	
 	def List<VariableDeclaration> transformValue(ValueDeclaration variable) {
 		val List<VariableDeclaration> transformed = newArrayList
-		val TypeDefinition variableType = getTypeDefinitionFromType(variable.type)
+		val TypeDefinition variableType = variable.typeDefinition
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
 			for (field : variableType.fieldDeclarations) {
@@ -49,12 +50,12 @@ class ValueDeclarationTransformer {
 			transformed += transformValueArray(variable, variableType, arrayStack)
 			return transformed
 		}
-		else {	//Simple variables and arrays of simple types are simply transformed
+		else {	// Simple variables and arrays of simple types are simply transformed
 			val newVariable = createVariableDeclaration => [
 				it.name = variable.name
 				it.type = variable.type.transformType
 				if (variable instanceof InitializableElement) {
-					it.expression = variable.expression?.transformExpression?.getOnlyElement
+					it.expression = variable.expression?.transformExpression?.onlyElement
 				}
 				if (variable instanceof VariableDeclaration) {
 					for (annotation : variable.annotations) {
@@ -72,7 +73,7 @@ class ValueDeclarationTransformer {
 			List<FieldDeclaration> currentField, List<ArrayTypeDefinition> arrayStack) {
 		val List<VariableDeclaration> transformed = newArrayList
 		
-		val typeDef = getTypeDefinitionFromType(currentField.last.type)
+		val typeDef = currentField.last.typeDefinition
 		if (typeDef instanceof RecordTypeDefinition) { // if another record
 			for (field : typeDef.fieldDeclarations) {
 				val innerField = <FieldDeclaration>newArrayList
@@ -83,23 +84,23 @@ class ValueDeclarationTransformer {
 				transformed += transformValueField(variable, innerField, innerStack)
 			}
 		}
-		else {	//if simple type
+		else {	// if simple type
 			val transformedField = createVariableDeclaration => [
-				it.name = variable.name + "_" + currentField.last.name	//TODO name provider
+				it.name = variable.name + "_" + currentField.last.name	// TODO name provider
 				it.type = createTransformedRecordType(arrayStack, currentField.last.type)
 				if (variable instanceof InitializableElement) {
 					val initial = variable.expression
 					if (initial !== null) {
 						if (initial instanceof RecordLiteralExpression) {
 							it.expression = getExpressionFromRecordLiteral(
-								initial, currentField).transformExpression.getOnlyElement
+								initial, currentField).transformExpression.onlyElement
 						} 
 						else if (initial instanceof ArrayLiteralExpression) {
 							it.expression = constraintFactory.createArrayLiteralExpression
 							for (op : initial.operands) {
 								if (op instanceof RecordLiteralExpression) {
 									(it.expression as ArrayLiteralExpression).operands += 
-										getExpressionFromRecordLiteral(op, currentField).transformExpression.getOnlyElement
+										getExpressionFromRecordLiteral(op, currentField).transformExpression.onlyElement
 								}
 							}
 						} 
@@ -146,7 +147,7 @@ class ValueDeclarationTransformer {
 			ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
 		val List<VariableDeclaration> transformed = newArrayList
 		
-		val TypeDefinition innerType = getTypeDefinitionFromType(currentType.elementType)
+		val TypeDefinition innerType = currentType.elementType.typeDefinition
 		if (innerType instanceof ArrayTypeDefinition) {
 			val innerStack = <ArrayTypeDefinition>newArrayList
 			innerStack += arrayStack

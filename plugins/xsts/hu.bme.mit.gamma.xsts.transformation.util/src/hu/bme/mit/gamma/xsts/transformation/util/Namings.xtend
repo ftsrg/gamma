@@ -20,38 +20,20 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 
-import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+
 
 class Namings {
 	
-	// To Low-level
+	// To Low-level: in LowlevelNamings
 	
-	static def String getName(StatechartDefinition statechart) '''«statechart.name»'''
-	static def String getStateName(State state) '''«state.name»'''
-	static def String getRegionName(Region region) '''«region.name»'''
-	static def String getInputName(Event event, Port port) '''«port.name»_«event.name»_In'''
-	static def String getOutputName(Event event, Port port) '''«port.name»_«event.name»_Out'''
-	static def String getInName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getInputName(port)»_«parameterDeclaration.name»'''
-	static def String getOutName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getOutputName(port)»_«parameterDeclaration.name»'''
-	static def String getComponentParameterName(ParameterDeclaration parameter) '''«parameter.name»'''
-	static def String getName(TimeoutDeclaration timeout) '''«timeout.name»'''
-	static def String getName(VariableDeclaration variable) '''«variable.name»'''
-	static def String getName(TypeDeclaration type) '''«type.name»'''
+	// To XSTS: in XstsNamings
 	
-	// To XSTS
-	
-	static def String getTypeName(String lowlevelName) '''«lowlevelName»'''
-	static def String getVariableName(String lowlevelName) '''«lowlevelName»'''
-	static def String getEventName(String lowlevelName) '''«lowlevelName»'''
-	
-	static def String getStateEnumLiteralName(String lowlevelName) '''«lowlevelName»'''
-	static def String getRegionTypeName(String lowlevelName) '''«lowlevelName.toFirstUpper»'''
-	static def String getRegionVariableName(String lowlevelName) '''«lowlevelName.toFirstLower»'''
-
 	// XSTS customization
 	
 	static def String customizeName(VariableDeclaration variable, ComponentInstance instance) '''«customizeName(variable, instance.name)»'''

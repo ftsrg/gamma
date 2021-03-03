@@ -77,7 +77,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
 class LowlevelToXSTSTransformer {
 	// Transformation-related extensions
