@@ -76,7 +76,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
-		return variable.customizeName(instance)
+		return variable.customizeNames(instance)
 	}
 	
 	override protected getTargetOutEventName(Event event, Port port, SynchronousComponentInstance instance) {
@@ -84,7 +84,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetOutEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
-		return parameter.customizeOutName(port, instance)
+		return parameter.customizeOutNames(port, instance)
 	}
 	
 	def protected getTargetInEventName(Event event, Port port, SynchronousComponentInstance instance) {
@@ -92,7 +92,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def protected getTargetInEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
-		return parameter.customizeInName(port, instance)
+		return parameter.customizeInNames(port, instance)
 	}
 	
 	// Auxiliary methods for back-annotation
@@ -168,8 +168,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
 			// TODO Maybe an allFields method could be used here?
-			val name = getTargetVariableName(match.variable, match.instance)
-			if (name.equals(targetVariableName)) {
+			val names = getTargetVariableName(match.variable, match.instance)
+			if (names.contains(targetVariableName)) {
 				return new Pair(match.variable, match.instance)
 			}
 		}
@@ -190,8 +190,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : systemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
-				val name = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
-				if (name.equals(targetOutEventParameterName)) {
+				val names = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
+				if (names.contains(targetOutEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}
@@ -213,8 +213,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : systemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
-				val name = getTargetInEventParameterName(event, match.port, parameter, match.instance)
-				if (name.equals(targetInEventParameterName)) {
+				val names = getTargetInEventParameterName(event, match.port, parameter, match.instance)
+				if (names.contains(targetInEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}

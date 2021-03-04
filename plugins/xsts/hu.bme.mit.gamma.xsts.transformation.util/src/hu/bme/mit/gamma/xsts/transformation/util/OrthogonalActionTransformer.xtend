@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EventGroup
@@ -35,7 +34,6 @@ class OrthogonalActionTransformer {
 	//
 	
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected extension ExpressionUtil expressionActionUtil = ExpressionUtil.INSTANCE
 	protected extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE

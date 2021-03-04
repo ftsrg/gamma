@@ -62,13 +62,13 @@ class EventConnector {
 								xStsOutEventVariable.connectEvents(xStsInEventVariable, xStsAssignmentActions)
 								// In-parameters
 								for (parameter : event.parameterDeclarations) {
-									val requiredInParamaterName = parameter.customizeInName(requiredSimplePort, requiredInstance)
-									val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredInParamaterName]
-									if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization
-										val providedOutParamaterName = parameter.customizeOutName(providedSimplePort, providedInstance)
-										val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedOutParamaterName]
-										if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-											xStsOutParameterVariable.connectEvents(xStsInParameterVariable, xStsAssignmentActions)
+									val requiredInParamaterNames = parameter.customizeInNames(requiredSimplePort, requiredInstance)
+									val xStsInParameterVariables = xSts.variableDeclarations.filter[requiredInParamaterNames.contains(it.name)].toList
+									if (!xStsInParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
+										val providedOutParamaterNames = parameter.customizeOutNames(providedSimplePort, providedInstance)
+										val xStsOutParameterVariables = xSts.variableDeclarations.filter[providedOutParamaterNames.contains(it.name)].toList
+										if (!xStsOutParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
+											xStsOutParameterVariables.connectEvents(xStsInParameterVariables, xStsAssignmentActions)
 										}
 									}
 								}
@@ -86,13 +86,13 @@ class EventConnector {
 								xStsOutEventVariable.connectEvents(xStsInEventVariable, xStsAssignmentActions)
 								// Out-parameters
 								for (parameter : event.parameterDeclarations) {
-									val requiredOutParamaterName = parameter.customizeOutName(requiredSimplePort, requiredInstance)
-									val xStsOutParameterVariable = xSts.variableDeclarations.findFirst[it.name == requiredOutParamaterName]
-									if (xStsOutParameterVariable !== null) { // Can be null due to XSTS optimization
-										val providedInParamaterName = parameter.customizeInName(providedSimplePort, providedInstance)
-										val xStsInParameterVariable = xSts.variableDeclarations.findFirst[it.name == providedInParamaterName]
-										if (xStsInParameterVariable !== null) { // Can be null due to XSTS optimization
-											xStsOutParameterVariable.connectEvents(xStsInParameterVariable, xStsAssignmentActions)
+									val requiredOutParamaterNames = parameter.customizeOutNames(requiredSimplePort, requiredInstance)
+									val xStsOutParameterVariables = xSts.variableDeclarations.filter[requiredOutParamaterNames.contains(it.name)].toList
+									if (!xStsOutParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
+										val providedInParamaterNames = parameter.customizeInNames(providedSimplePort, providedInstance)
+										val xStsInParameterVariables = xSts.variableDeclarations.filter[providedInParamaterNames.contains(it.name)].toList
+										if (!xStsInParameterVariables.nullOrEmpty) { // Can be null due to XSTS optimization
+											xStsOutParameterVariables.connectEvents(xStsInParameterVariables, xStsAssignmentActions)
 										}
 									}
 								}
@@ -116,10 +116,10 @@ class EventConnector {
 				if (xStsOutEventVariable !== null) {
 					xStsDeletableVariables += xStsOutEventVariable
 					for (outParameter : outEvent.parameterDeclarations) {
-						val outParamaterName = outParameter.customizeOutName(optimizableSimplePort, instance)
-						val xStsOutParameterVariable = xSts.getVariable(outParamaterName)
-						if (xStsOutParameterVariable !== null) {
-							xStsDeletableVariables += xStsOutParameterVariable
+						val outParamaterNames = outParameter.customizeOutNames(optimizableSimplePort, instance)
+						val xStsOutParameterVariables = xSts.getVariables(outParamaterNames)
+						if (!xStsOutParameterVariables.nullOrEmpty) {
+							xStsDeletableVariables += xStsOutParameterVariables
 						}
 					}
 				}
@@ -146,6 +146,17 @@ class EventConnector {
 				]
 				xStsAssignmentAction.appendToAction(xStsNewAssignmentAction)
 			}
+		}
+	}
+	
+	protected def void connectEvents(List<VariableDeclaration> xStsOutVariables,
+			List<VariableDeclaration> xStsInVariables, List<AssignmentAction> xStsAssignmentActions) {
+		checkState(xStsOutVariables.size == xStsInVariables.size)
+		val size = xStsOutVariables.size
+		for (var i = 0; i < size; i++) {
+			val xStsOutVariable = xStsOutVariables.get(i)
+			val xStsInVariable = xStsInVariables.get(i)
+			xStsOutVariable.connectEvents(xStsInVariable, xStsAssignmentActions)
 		}
 	}
 	

@@ -212,7 +212,7 @@ class GammaToXstsTransformer {
 			negatedVariables += xStsReferencedEventVariables
 			negatedVariables -= xStsEventVariable
 			val branch = createIfActionBranch(
-				negatedVariables.connectThroughNegations,
+				xStsActionUtil.connectThroughNegations(negatedVariables),
 				createAssignmentAction => [
 					it.lhs = createDirectReferenceExpression => [
 						it.declaration = xStsEventVariable
@@ -412,7 +412,7 @@ class GammaToXstsTransformer {
 		if (schedulingConstraint !== null) {
 			if (!_package.annotations.exists[it instanceof SchedulingConstraintAnnotation]) {
 				_package.annotations += createSchedulingConstraintAnnotation => [
-					it.schedulingConstraint = schedulingConstraint.toIntegerLiteral
+					it.schedulingConstraint = statechartUtil.toIntegerLiteral(schedulingConstraint)
 				]
 				_package.save
 			}
@@ -424,7 +424,7 @@ class GammaToXstsTransformer {
 		if (type instanceof StatechartDefinition) {
 			// Customizing every variable name
 			for (variable : xSts.variableDeclarations) {
-				variable.name = variable.customizeName(instance)
+				variable.name = variable.getCustomizedName(instance)
 			}
 			// Customizing region type declaration name
 			for (regionType : xSts.variableGroups.filter[it.annotation instanceof RegionGroup]

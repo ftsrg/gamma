@@ -69,6 +69,8 @@ class UppaalVerifier extends AbstractVerifier {
 		} catch (NotBackannotatedException e) {
 			result = e.result
 			return null
+		} catch (Exception e) {
+			throw e
 		} finally {
 			resultReader.close
 			traceReader.close

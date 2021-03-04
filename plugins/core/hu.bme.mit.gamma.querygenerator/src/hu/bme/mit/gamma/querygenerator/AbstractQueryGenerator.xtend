@@ -182,7 +182,9 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		for (instancesMatch : getInstanceVariables) {
 			val name = getVariableName(instancesMatch.instance, instancesMatch.variable)
 			if (variableName.equals(name)) {
-				return getTargetVariableName(instancesMatch.variable, instancesMatch.instance)
+				val ids =  getTargetVariableName(instancesMatch.variable, instancesMatch.instance)
+				// TODO complex types?
+				return ids.head
 			}
 		}
 		throw new IllegalArgumentException("Not known variable: " + variableName)
@@ -204,7 +206,9 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
 				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
-					return getTargetOutEventParameterName(event, eventsMatch.port, parameter, eventsMatch.instance)
+					val ids = getTargetOutEventParameterName(event, eventsMatch.port, parameter, eventsMatch.instance)
+					// TODO what about complex types
+					return ids.head
 				}
 			}
 		}
@@ -214,13 +218,13 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	protected abstract def String getTargetStateName(State state, Region parentRegion,
 		SynchronousComponentInstance instance)
 	
-	protected abstract def String getTargetVariableName(VariableDeclaration variable,
+	protected abstract def List<String> getTargetVariableName(VariableDeclaration variable,
 		SynchronousComponentInstance instance)
 	
 	protected abstract def String getTargetOutEventName(Event event, Port port,
 		SynchronousComponentInstance instance)
 	
-	protected abstract def String getTargetOutEventParameterName(Event event, Port port,
+	protected abstract def List<String> getTargetOutEventParameterName(Event event, Port port,
 		ParameterDeclaration parameter, SynchronousComponentInstance instance)
 	
 }

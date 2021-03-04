@@ -64,11 +64,11 @@ class SystemReducer {
 						xStsDeletableAssignmentActions += xStsOutEventVariable.getAssignments(xStsAssignmentActions)
 						// Out-parameters
 						for (parameter : outputEvent.parameterDeclarations) {
-							val inParamaterName = parameter.customizeOutName(instancePort, instance)
-							val xStsOutParameterVariable = xSts.getVariable(inParamaterName)
-							if (xStsOutParameterVariable !== null) {
-								xStsDeletableVariables += xStsOutParameterVariable
-								xStsDeletableAssignmentActions += xStsOutParameterVariable.getAssignments(xStsAssignmentActions)
+							val inParamaterNames = parameter.customizeOutNames(instancePort, instance)
+							val xStsOutParameterVariables = xSts.getVariables(inParamaterNames)
+							if (!xStsOutParameterVariables.nullOrEmpty) {
+								xStsDeletableVariables += xStsOutParameterVariables
+								xStsDeletableAssignmentActions += xStsOutParameterVariables.getAssignments(xStsAssignmentActions)
 							}
 						}
 					}
