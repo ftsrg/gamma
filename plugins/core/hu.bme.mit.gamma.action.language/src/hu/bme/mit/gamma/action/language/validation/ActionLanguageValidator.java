@@ -24,6 +24,10 @@ import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.ValueDeclaration;
+import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 /**
  * This class contains custom validation rules. 

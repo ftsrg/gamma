@@ -14,7 +14,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.VariableInliner
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.AssignmentActions
@@ -62,7 +61,7 @@ import hu.bme.mit.gamma.xsts.model.VariableGroup
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.Set
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
@@ -77,9 +76,9 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
-class LowlevelToXSTSTransformer {
+class LowlevelToXstsTransformer {
 	// Transformation-related extensions
 	extension BatchTransformation transformation
 	extension BatchTransformationStatements statements
@@ -87,8 +86,7 @@ class LowlevelToXSTSTransformer {
 	final extension BatchTransformationRuleFactory = new BatchTransformationRuleFactory
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension AnnotationTransformer annotationTransformer = AnnotationTransformer.INSTANCE
 	protected final extension ActionOptimizer actionSimplifier = ActionOptimizer.INSTANCE
 	protected final extension OrthogonalActionTransformer orthogonalActionTransformer = OrthogonalActionTransformer.INSTANCE

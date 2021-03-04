@@ -10,6 +10,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -244,19 +245,19 @@ public class ExpressionModelValidator {
 	
 	
 	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		RecordTypeDefinition rtd = (RecordTypeDefinition) ExpressionLanguageUtil.
-				findAccessExpressionTypeDefinition(recordAccessExpression);
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(recordAccessExpression);
-		if (!(referredDeclaration instanceof ValueDeclaration)) {
+		Declaration accessedDeclaration = 
+				expressionUtil.getAccessedDeclaration(recordAccessExpression);
+		RecordTypeDefinition recordType = (RecordTypeDefinition) 
+				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();;
+		if (!(accessedDeclaration instanceof ValueDeclaration)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The referred declaration is not accessible as a record!", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
 		// check if the referred field exists
-		List<FieldDeclaration> fieldDeclarations = rtd.getFieldDeclarations();
+		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
 		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -317,8 +318,7 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkArrayAccessExpression(ArrayAccessExpression expression) {
 		// check if the referred declaration is accessible
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(referredDeclaration instanceof ValueDeclaration)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -341,8 +341,7 @@ public class ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		// check if the referred object
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
 			// TODO check if array type

@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-class XSTSUppaalQueryGenerator extends ThetaQueryGenerator {
+class XstsUppaalQueryGenerator extends ThetaQueryGenerator {
 	
 	new(Package gammaPackage) {
 		super(gammaPackage)

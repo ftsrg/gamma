@@ -36,7 +36,7 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	override getId(VariableDeclaration variable, ComponentInstanceReference instance) {
-		return variable.customizeName(instance)
+		return variable.customizeNames(instance)
 	}
 	
 	override getId(Event event, Port port, ComponentInstanceReference instance) {
@@ -48,9 +48,9 @@ class ThetaReferenceSerializer implements AbstractReferenceSerializer {
 	
 	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
 		if (port.isInputEvent(event)) {
-			parameter.customizeInName(port, instance)
+			parameter.customizeInNames(port, instance)
 		}
-		return parameter.customizeOutName(port, instance)
+		return parameter.customizeOutNames(port, instance)
 	}
 	
 }

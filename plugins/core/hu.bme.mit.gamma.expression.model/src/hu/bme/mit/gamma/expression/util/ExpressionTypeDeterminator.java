@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -176,22 +177,17 @@ public class ExpressionTypeDeterminator {
 			return transform(expressionUtil.findTypeDefinitionOfType(type));
 		}
 		if (expression instanceof FunctionAccessExpression) {
-			return transform(ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(((FunctionAccessExpression) expression)).getType());
+			return transform(expressionUtil.getDeclaration(((FunctionAccessExpression) expression)).getType());
 			// What if it goes through a type reference / declaration?
 		}
 		if (expression instanceof RecordAccessExpression) {
-			RecordAccessExpression recordAccessExpression = (RecordAccessExpression)expression;
-			TypeDefinition typeDefinition = ExpressionLanguageUtil.findAccessExpressionTypeDefinition(recordAccessExpression);
-			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) typeDefinition;
-			for (FieldDeclaration fd : recordTypeDefinition.getFieldDeclarations()) {
-				if (fd.equals(recordAccessExpression.getFieldReference().getFieldDeclaration())) {
-					return transform(fd.getType());
-				}
-			}
+			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
+			return getType(recordAccessExpression.getFieldReference());
 		}
 		if (expression instanceof SelectExpression) {
-			SelectExpression selectExpression = (SelectExpression)expression;
-			TypeDefinition typeDefinition = ExpressionLanguageUtil.findAccessExpressionTypeDefinition(selectExpression);
+			SelectExpression selectExpression = (SelectExpression) expression;
+			Declaration declaration = expressionUtil.getAccessedDeclaration(selectExpression);
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(declaration);
 			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
 				return transform(arrayTypeDefinition.getElementType());
@@ -203,7 +199,7 @@ public class ExpressionTypeDeterminator {
 				return ExpressionType.ENUMERATION;
 			}
 			else {
-				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(selectExpression));
+				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + expressionUtil.getDeclaration(selectExpression));
 			}
 		}
 		if (expression instanceof IfThenElseExpression) {
@@ -371,7 +367,7 @@ public class ExpressionTypeDeterminator {
 			Type declarationType = declaration.getType();
 			return transform(declarationType) == ExpressionType.BOOLEAN;
 		} else if (expression instanceof AccessExpression) {
-			Declaration declaration = ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration((AccessExpression)expression);
+			Declaration declaration = expressionUtil.getDeclaration(expression);
 			Type declarationType = declaration.getType();
 			return transform(declarationType) == ExpressionType.BOOLEAN;
 		}

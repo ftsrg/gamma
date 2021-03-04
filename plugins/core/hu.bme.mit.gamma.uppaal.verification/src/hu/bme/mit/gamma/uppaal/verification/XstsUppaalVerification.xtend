@@ -4,9 +4,9 @@ import hu.bme.mit.gamma.verification.util.AbstractVerification
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result
 import java.io.File
 
-class XSTSUppaalVerification extends AbstractVerification {
+class XstsUppaalVerification extends AbstractVerification {
 	// Singleton
-	public static final XSTSUppaalVerification INSTANCE = new XSTSUppaalVerification
+	public static final XstsUppaalVerification INSTANCE = new XstsUppaalVerification
 	protected new() {}
 	//
 	

@@ -29,6 +29,7 @@ import java.util.List
 import java.util.Map
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionPreconditionTransformer {
 	
@@ -102,7 +103,7 @@ class ExpressionPreconditionTransformer {
 		}
 		else if (innerExpression instanceof ReferenceExpression) {
 			// get variable type
-			val originalType = innerExpression.referredValues.onlyElement.typeDefinitionFromType
+			val originalType = innerExpression.referredValues.onlyElement.typeDefinition
 			val accessList = innerExpression.collectAccessList
 			
 			var currentType = originalType	//TODO extract this (~with other sameAccessTree code blocks)
@@ -115,7 +116,7 @@ class ExpressionPreconditionTransformer {
 						var fieldDeclarations = currentType.fieldDeclarations
 						for (field : fieldDeclarations) {
 							if (field.name == currentElem) {
-								currentType = field.type.typeDefinitionFromType
+								currentType = field.type.typeDefinition
 							}
 						}
 					}
@@ -123,7 +124,7 @@ class ExpressionPreconditionTransformer {
 				// if array access
 				else if (currentType instanceof ArrayTypeDefinition) {
 					if (currentElem instanceof Expression) {
-						currentType = currentType.elementType.typeDefinitionFromType
+						currentType = currentType.elementType.typeDefinition
 					}
 				}
 				else {
@@ -133,7 +134,7 @@ class ExpressionPreconditionTransformer {
 			// check if select-able
 			var TypeDefinition tempVariableOriginalType = null
 			if (currentType instanceof ArrayTypeDefinition) {
-				tempVariableOriginalType = currentType.elementType.typeDefinitionFromType
+				tempVariableOriginalType = currentType.elementType.typeDefinition
 			}
 			else {
 				throw new IllegalArgumentException("Cannot select from expression of type: " + tempVariableOriginalType)
@@ -261,7 +262,7 @@ class ExpressionPreconditionTransformer {
 			// create return variable(s) if needed
 			val List<VariableDeclarationStatement> returnVariables = newArrayList
 			val List<VariableDeclaration> returnVariableDeclarations = newArrayList
-			val functionType = function.type.typeDefinitionFromType
+			val functionType = function.type.typeDefinition
 			if (!(functionType instanceof VoidTypeDefinition)) {
 				// create variable declarations
 				if (!(functionType instanceof CompositeTypeDefinition)) {
@@ -325,7 +326,7 @@ class ExpressionPreconditionTransformer {
 	//TODO rename variable to sth relevant
 	protected def List<VariableDeclaration> createVariablesFromType(Type variable, NameProvider nameProvider) {
 		val List<VariableDeclaration> transformed = newArrayList
-		val variableType = variable.typeDefinitionFromType
+		val variableType = variable.typeDefinition
 		// Records are broken up into separate variables
 		if (variableType instanceof RecordTypeDefinition) {
 			val typeDef = variableType
@@ -354,7 +355,7 @@ class ExpressionPreconditionTransformer {
 	private def List<VariableDeclaration> createFunctionReturnField(Type variable, NameProvider nameProvider, List<FieldDeclaration> currentField, List<ArrayTypeDefinition> arrayStack) {
 		val List<VariableDeclaration> transformed = newArrayList
 		
-		val typeDef = getTypeDefinitionFromType(currentField.last.type)
+		val typeDef = currentField.last.type.typeDefinition
 		if (typeDef instanceof RecordTypeDefinition) { // if another record
 			for (field : typeDef.fieldDeclarations) {
 				val innerField = newArrayList
@@ -379,7 +380,7 @@ class ExpressionPreconditionTransformer {
 			ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
 		val List<VariableDeclaration> transformed = newArrayList
 		
-		val TypeDefinition innerType = getTypeDefinitionFromType(currentType.elementType)
+		val TypeDefinition innerType = currentType.elementType.typeDefinition
 		if (innerType instanceof ArrayTypeDefinition) {
 			val innerStack = newArrayList
 			innerStack += arrayStack

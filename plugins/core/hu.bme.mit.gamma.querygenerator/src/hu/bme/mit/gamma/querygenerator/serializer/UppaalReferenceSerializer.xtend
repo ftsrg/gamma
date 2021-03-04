@@ -38,7 +38,7 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	override getId(VariableDeclaration variable, ComponentInstanceReference instance) {
-		return getVariableName(variable, instance)
+		return #[getVariableName(variable, instance)]
 	}
 	
 	override getId(Event event, Port port, ComponentInstanceReference instance) {
@@ -50,9 +50,9 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	
 	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
 		if (port.isInputEvent(event)) {
-			return getToRaiseValueOfName(event, port, parameter, instance)
+			return #[getToRaiseValueOfName(event, port, parameter, instance)]
 		}
-		return getOutValueOfName(event, port, parameter, instance)
+		return #[getOutValueOfName(event, port, parameter, instance)]
 	}
 	
 }

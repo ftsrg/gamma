@@ -28,6 +28,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
@@ -95,13 +96,34 @@ public class ExpressionUtil {
 			Declaration declaration = reference.getDeclaration();
 			return declaration;
 		}
-		if (expression instanceof AccessExpression) {
+		if (expression instanceof FieldReferenceExpression) {
+			FieldReferenceExpression reference = (FieldReferenceExpression) expression;
+			FieldDeclaration declaration = reference.getFieldDeclaration();
+			return declaration;
+		}
+		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression access = (RecordAccessExpression) expression;
+			FieldReferenceExpression reference = access.getFieldReference();
+			return getDeclaration(reference);
+		}
+		if (expression instanceof ArrayAccessExpression) {
+			// ?
+		}
+		if (expression instanceof AccessExpression) {
+			// Default access
+			AccessExpression access = (AccessExpression) expression;
 			Expression operand = access.getOperand();
 			return getDeclaration(operand);
 		}
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
+	
+	public Declaration getAccessedDeclaration(AccessExpression expression) {
+		Expression operand = expression.getOperand();
+		return getDeclaration(operand);
+	}
+	
+	//
 	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();

@@ -1,6 +1,7 @@
 package hu.bme.mit.gamma.util
 
 import java.util.List
+import java.util.Collection
 
 class JavaUtil {
 	// Singleton
@@ -21,4 +22,11 @@ class JavaUtil {
 	def <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> inputs) {
 		return inputs.flatten
 	}
+	def <T> T getOnlyElement(Collection<T> collection) {
+		if (collection.size !== 1) {
+			throw new IllegalArgumentException("Not one elment: " + collection)
+		}
+		return collection.last
+	}
+	
 }

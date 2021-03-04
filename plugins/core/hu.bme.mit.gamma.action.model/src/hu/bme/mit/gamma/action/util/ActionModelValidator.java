@@ -138,8 +138,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		// check if the referred object is a value declaration
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Declaration referredDeclaration = 
-				ExpressionLanguageUtil.findAccessExpressionInstanceDeclaration(expression);
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
 			return validationResultMessages;
 		}

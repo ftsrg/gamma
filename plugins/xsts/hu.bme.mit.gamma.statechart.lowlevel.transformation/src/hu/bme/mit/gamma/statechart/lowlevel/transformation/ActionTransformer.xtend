@@ -50,6 +50,7 @@ import java.util.Stack
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -445,7 +446,7 @@ class ActionTransformer {
 			referredDeclaration instanceof ParameterDeclaration) //transformed to assignable type (=variable)
 		// Transform lhs
 		val List<ReferenceExpression> lowlevelLhs = newArrayList
-		var typeToAssign = referredDeclaration.type.typeDefinitionFromType
+		val typeToAssign = referredDeclaration.type.typeDefinition
 		if (!(typeToAssign instanceof CompositeTypeDefinition)) {
 			lowlevelLhs += createDirectReferenceExpression => [
 				if (trace.isMapped(referredDeclaration)) {
@@ -454,7 +455,7 @@ class ActionTransformer {
 			]
 		}
 		else {
-			var originalLhsFields = exploreComplexType(referredDeclaration, typeToAssign, newArrayList)			
+			var originalLhsFields = exploreComplexType(referredDeclaration)			
 			// access expressions
 			val recordAccessList = actionLhs.collectRecordAccessList
 			for (elem : originalLhsFields) {

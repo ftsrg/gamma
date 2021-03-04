@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
@@ -38,10 +39,10 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
-public class XSTSActionUtil {
+public class XstsActionUtil extends ExpressionUtil {
 	// Singleton
-	public static final XSTSActionUtil INSTANCE = new XSTSActionUtil();
-	protected XSTSActionUtil() {}
+	public static final XstsActionUtil INSTANCE = new XstsActionUtil();
+	protected XstsActionUtil() {}
 	//
 	
 	protected GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
@@ -78,9 +79,23 @@ public class XSTSActionUtil {
 		return variables.get(0);
 	}
 	
+	public List<VariableDeclaration> getVariables(XSTS xSts, Collection<String> names) {
+		List<VariableDeclaration> variables = new ArrayList<VariableDeclaration>();
+		for (String name : names) {
+			variables.add(getVariable(xSts, name));
+		}
+		return variables;
+	}
+	
 	public List<AssignmentAction> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentAction> assignments) {
-		return assignments.stream().filter(it -> ((DirectReferenceExpression)it.getLhs()).getDeclaration() == variable)
+		return assignments.stream().filter(it -> getDeclaration(it.getLhs()) == variable)
+				.collect(Collectors.toList());
+	}
+	
+	public List<AssignmentAction> getAssignments(Collection<VariableDeclaration> variables,
+			Collection<AssignmentAction> assignments) {
+		return assignments.stream().filter(it -> variables.contains(getDeclaration(it.getLhs())))
 				.collect(Collectors.toList());
 	}
 	

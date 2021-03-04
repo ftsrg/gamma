@@ -14,7 +14,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
-import static hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 

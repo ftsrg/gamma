@@ -29,7 +29,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import hu.bme.mit.gamma.dialog.DialogUtil;
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXSTSTransformer;
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ActionPrimer;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.ChoiceInliner;
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer.VariableCommonizer;
@@ -90,7 +90,7 @@ public class CommandHandler extends AbstractHandler {
 		logger.log(Level.INFO, "The Gamma - low level statechart transformation has been finished.");
 		logger.log(Level.INFO, "Starting Gamma low level - xSTS transformation.");
 		// Note: the package is not in a resource
-		LowlevelToXSTSTransformer lowlevelTransformer = new LowlevelToXSTSTransformer(lowlevelPackage);
+		LowlevelToXstsTransformer lowlevelTransformer = new LowlevelToXstsTransformer(lowlevelPackage);
 		Entry<XSTS, L2STrace> resultModels = lowlevelTransformer.execute();
 		XSTS xSts = resultModels.getKey();
 		L2STrace traceability = resultModels.getValue();

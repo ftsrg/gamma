@@ -17,12 +17,13 @@ import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import java.util.List
 
 abstract interface AbstractReferenceSerializer {
 	
 	def String getId(State state, Region parentRegion, ComponentInstanceReference instance)	
-	def String getId(VariableDeclaration variable, ComponentInstanceReference instance)	
 	def String getId(Event event, Port port, ComponentInstanceReference instance)	
-	def String getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance)
+	def List<String> getId(VariableDeclaration variable, ComponentInstanceReference instance)	
+	def List<String> getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance)
 	
 }

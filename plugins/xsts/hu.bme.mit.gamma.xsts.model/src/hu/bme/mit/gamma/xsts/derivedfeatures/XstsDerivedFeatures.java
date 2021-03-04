@@ -39,7 +39,7 @@ import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
-public class XSTSDerivedFeatures extends ExpressionModelDerivedFeatures {
+public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	protected static XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	

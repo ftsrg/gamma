@@ -26,10 +26,10 @@ import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
 import static extension hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
-class XSTSToUppaalTransformer {
+class XstsToUppaalTransformer {
 	
 	protected final XSTS xSts
 	protected final Traceability traceability

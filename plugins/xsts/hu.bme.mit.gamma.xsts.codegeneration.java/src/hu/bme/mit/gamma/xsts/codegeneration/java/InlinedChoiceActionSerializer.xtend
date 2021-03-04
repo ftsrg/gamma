@@ -27,7 +27,7 @@ import java.util.Set
 
 import static com.google.common.base.Preconditions.checkArgument
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class InlinedChoiceActionSerializer extends ActionSerializer {
 	

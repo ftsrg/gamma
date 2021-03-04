@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.querygenerator.XSTSUppaalQueryGenerator
+import hu.bme.mit.gamma.querygenerator.XstsUppaalQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -32,9 +32,9 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
-class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
+class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
-	protected final XSTSUppaalQueryGenerator xStsUppaalQueryGenerator
+	protected final XstsUppaalQueryGenerator xStsUppaalQueryGenerator
 	protected final Expression schedulingConstraint
 	
 	new(Package gammaPackage, Scanner traceScanner) {
@@ -45,7 +45,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		super(traceScanner, sortTrace)
 		this.gammaPackage = gammaPackage
 		this.component = gammaPackage.components.head
-		this.xStsUppaalQueryGenerator = new XSTSUppaalQueryGenerator(gammaPackage)
+		this.xStsUppaalQueryGenerator = new XstsUppaalQueryGenerator(gammaPackage)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 			.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {

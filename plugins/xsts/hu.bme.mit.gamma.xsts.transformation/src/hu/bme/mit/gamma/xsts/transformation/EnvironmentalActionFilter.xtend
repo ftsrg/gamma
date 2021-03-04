@@ -13,7 +13,6 @@ package hu.bme.mit.gamma.xsts.transformation
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Persistency
 import hu.bme.mit.gamma.util.GammaEcoreUtil
@@ -24,7 +23,7 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Set
 
@@ -38,11 +37,10 @@ class EnvironmentalActionFilter {
 	public static final EnvironmentalActionFilter INSTANCE =  new EnvironmentalActionFilter
 	protected new() {}
 	// Auxiliary objects
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	
 	def void deleteEverythingExceptSystemEventsAndParameters(CompositeAction action, Component component) {
 		val necessaryNames = newHashSet
@@ -55,9 +53,9 @@ class EnvironmentalActionFilter {
 				necessaryNames += customizeInputName(event, port, instance)
 				necessaryNames += customizeOutputName(event, port, instance)
 				for (parameter : event.parameterDeclarations) {
-					necessaryNames += customizeInName(parameter, port, instance)
+					necessaryNames += customizeInNames(parameter, port, instance)
 					if (event.persistency == Persistency.PERSISTENT) {
-						necessaryNames += customizeOutName(parameter, port, instance)
+						necessaryNames += customizeOutNames(parameter, port, instance)
 					}
 				}
 			}
@@ -81,8 +79,8 @@ class EnvironmentalActionFilter {
 				val event = eventDeclaration.event
 				if (event.persistency == Persistency.PERSISTENT) {
 					for (parameter : event.parameterDeclarations) {
-						necessaryNames += customizeInName(parameter, port, instance)
-						necessaryNames += customizeOutName(parameter, port, instance)
+						necessaryNames += customizeInNames(parameter, port, instance)
+						necessaryNames += customizeOutNames(parameter, port, instance)
 					}
 				}
 			}
@@ -98,7 +96,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createEventAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {
@@ -122,7 +120,7 @@ class EnvironmentalActionFilter {
 	}
 	
 	def createParameterAssignmentsBoundToTheSameSystemPort(XSTS xSts, Component component) {
-		val extension EventReferenceToXSTSVariableMapper mapper = new EventReferenceToXSTSVariableMapper(xSts)
+		val extension EventReferenceToXstsVariableMapper mapper = new EventReferenceToXstsVariableMapper(xSts)
 		val xStsAssignments = newArrayList
 		for (systemPort : component.allPorts) {
 			for (inEvent : systemPort.inputEvents) {
@@ -256,7 +254,8 @@ class EnvironmentalActionFilter {
 				}
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
-				val variables = xStsSubaction.assumption.referredVariables
+				val assumption = xStsSubaction.assumption
+				val variables = assumption.referredVariables
 				if (!variables.exists[necessaryNames.contains(it.name)]) {
 					// Deleting the assume action
 					xStsSubactions -= xStsSubaction

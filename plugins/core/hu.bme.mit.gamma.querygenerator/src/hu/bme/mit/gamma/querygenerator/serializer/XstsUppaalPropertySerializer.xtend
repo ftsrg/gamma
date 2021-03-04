@@ -15,11 +15,11 @@ import hu.bme.mit.gamma.property.model.UnaryPathOperator
 import static hu.bme.mit.gamma.uppaal.util.Namings.*
 import static hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
 
-class XSTSUppaalPropertySerializer extends UppaalPropertySerializer {
+class XstsUppaalPropertySerializer extends UppaalPropertySerializer {
 	// Singleton
-	public static final XSTSUppaalPropertySerializer INSTANCE = new XSTSUppaalPropertySerializer
+	public static final XstsUppaalPropertySerializer INSTANCE = new XstsUppaalPropertySerializer
 	protected new() {
-		super.serializer = new PropertyExpressionSerializer(XSTSUppaalReferenceSerializer.INSTANCE)
+		super.serializer = new PropertyExpressionSerializer(XstsUppaalReferenceSerializer.INSTANCE)
 	}
 	//
 	

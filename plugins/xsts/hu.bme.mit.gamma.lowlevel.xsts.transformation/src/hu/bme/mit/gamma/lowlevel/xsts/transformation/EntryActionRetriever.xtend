@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 
 import static extension hu.bme.mit.gamma.statechart.lowlevel.derivedfeatures.LowlevelStatechartModelDerivedFeatures.*
@@ -27,7 +27,7 @@ class EntryActionRetriever {
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Auxiliary object
-	protected final extension XSTSActionUtil actionFactory = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil actionFactory = XstsActionUtil.INSTANCE
 	protected final extension StateAssumptionCreator stateAssumptionCreator
 	protected final extension ActionTransformer actionTransformer
 	// Trace
