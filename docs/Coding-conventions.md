@@ -2,6 +2,10 @@
 
 We mainly follow the standard Java coding conventions and most of the conventions from the books _Effective Java_ [1] and _Clean Code_ [4]. Some exceptions and additional rules are listed below. Each rule starts with _DO_, _CONSIDER_, _AVOID_ or _DO NOT_, according to [2].
 
+## Source files
+
+* **DO** encode files in UTF-8. **DO NOT** use any other format.
+
 ## Naming and formatting
 
 * **DO** use the generally accepted naming and source code formatting conventions of Java (Item 56 of [1], Chapter 1 of [5]).

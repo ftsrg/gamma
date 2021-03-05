@@ -30,12 +30,12 @@ import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeature
 class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) '''
-		«xSts.initializingAction.serialize»
+		Â«xSts.initializingAction.serializeÂ»
 	'''
 	
 	override CharSequence serializeChangeState(XSTS xSts) '''
 		private void changeState() {
-			«xSts.mergedAction.serialize»
+			Â«xSts.mergedAction.serializeÂ»
 		}
 	'''
 	
@@ -46,21 +46,21 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
-		«FOR xStsSubaction : action.actions.filter[!it.unnecessaryAction] SEPARATOR ' else ' »
-			if («xStsSubaction.condition.serialize») {
-				«xStsSubaction.serialize»
+		Â«FOR xStsSubaction : action.actions.filter[!it.unnecessaryAction] SEPARATOR ' else ' Â»
+			if (Â«xStsSubaction.condition.serializeÂ») {
+				Â«xStsSubaction.serializeÂ»
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	def dispatch CharSequence serialize(SequentialAction action) '''
-		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
+		Â«FOR xStsSubaction : action.actionsÂ»Â«xStsSubaction.serializeÂ»Â«ENDFORÂ»
 	'''
 
 	def dispatch CharSequence serialize(AssumeAction action) ''''''
 	
 //	def dispatch CharSequence serialize(AssumeAction action) '''
-//		assert «action.assumption.serialize»;
+//		assert Â«action.assumption.serializeÂ»;
 //	'''
 	
 	def dispatch CharSequence serialize(AssignmentAction action) {
@@ -68,7 +68,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 			return ''''''
 		}
 		return '''
-			«action.lhs.serialize» = «action.rhs.serialize»;
+			Â«action.lhs.serializeÂ» = Â«action.rhs.serializeÂ»;
 		'''
 	}
 	
@@ -76,7 +76,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 		val variable = action.variableDeclaration
 		val intialValue = variable.expression
 		return '''
-			«variable.type.serialize» «variable.name»«IF intialValue !== null» = «intialValue.serialize»«ENDIF»;
+			Â«variable.type.serializeÂ» Â«variable.nameÂ»Â«IF intialValue !== nullÂ» = Â«intialValue.serializeÂ»Â«ENDIFÂ»;
 		'''
 	}
 	

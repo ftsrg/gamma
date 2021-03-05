@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
@@ -25,8 +26,7 @@ import uppaal.NTA
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
-import static extension hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class XstsToUppaalTransformer {

@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.util.InterruptableCallable
@@ -39,15 +49,15 @@ class ThetaVerification extends AbstractVerification {
 			val verifier = new ThetaVerifier
 			callables += new InterruptableCallable<Result> {
 				override Result call() {
-					logger.log(Level.INFO, '''Starting Theta on thread «Thread.currentThread.name» with "«parameter»"''')
+					logger.log(Level.INFO, '''Starting Theta on thread Â«Thread.currentThread.nameÂ» with "Â«parameterÂ»"''')
 					val result = verifier.verifyQuery(
 						gammaPackage, parameter, modelFile, queries, true, true)
-					logger.log(Level.INFO, '''Thread «Thread.currentThread.name» with "«parameter»" has won''')
+					logger.log(Level.INFO, '''Thread Â«Thread.currentThread.nameÂ» with "Â«parameterÂ»" has won''')
 					return result
 				}
 				override void cancel() {
 					verifier.cancel
-					logger.log(Level.INFO, '''Theta verification instance with "«parameter»" has been cancelled''')
+					logger.log(Level.INFO, '''Theta verification instance with "Â«parameterÂ»" has been cancelled''')
 				}
 			}
 		}

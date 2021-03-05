@@ -131,7 +131,7 @@ class CoveredPropertyReducer {
 				return value.clone
 			}
 		}
-		throw new IllegalStateException('''Not found variable: «variable.name»''')
+		throw new IllegalStateException('''Not found variable: Â«variable.nameÂ»''')
 	}
 		
 }

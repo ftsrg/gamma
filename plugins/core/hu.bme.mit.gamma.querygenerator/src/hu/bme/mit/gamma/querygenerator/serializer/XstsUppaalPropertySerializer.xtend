@@ -13,7 +13,7 @@ package hu.bme.mit.gamma.querygenerator.serializer
 import hu.bme.mit.gamma.property.model.UnaryPathOperator
 
 import static hu.bme.mit.gamma.uppaal.util.Namings.*
-import static hu.bme.mit.gamma.uppaal.util.XSTSNamings.*
+import static hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 
 class XstsUppaalPropertySerializer extends UppaalPropertySerializer {
 	// Singleton
@@ -26,10 +26,10 @@ class XstsUppaalPropertySerializer extends UppaalPropertySerializer {
 	protected override String addIsStable(UnaryPathOperator operator) {
 		switch (operator) {
 			case FUTURE: {
-				return '''&& «getProcessName(templateName)».«stableLocationName»'''
+				return '''&& Â«getProcessName(templateName)Â».Â«stableLocationNameÂ»'''
 			}
 			case GLOBAL: {
-				return '''|| !«getProcessName(templateName)».«stableLocationName»'''
+				return '''|| !Â«getProcessName(templateName)Â».Â«stableLocationNameÂ»'''
 			}
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)

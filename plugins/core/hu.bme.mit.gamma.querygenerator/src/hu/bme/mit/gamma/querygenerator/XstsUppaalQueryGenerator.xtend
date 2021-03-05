@@ -24,7 +24,7 @@ class XstsUppaalQueryGenerator extends ThetaQueryGenerator {
 	}
 	
 	def protected getSingleTargetStateName(int index, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «index»'''
+		return '''Â«parentRegion.customizeName(instance)Â» == Â«indexÂ»'''
 	}
 	
 	override getSourceState(String targetStateName) {

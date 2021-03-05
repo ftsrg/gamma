@@ -27,20 +27,20 @@ abstract class PropertySerializer {
 	abstract def String serialize(Comment comment)
 	
 	def String serialize(CommentableStateFormula formula) '''
-		«FOR comment : formula.comments SEPARATOR System.lineSeparator»«comment.serialize»«ENDFOR»
-		«formula.formula.serialize»
+		Â«FOR comment : formula.comments SEPARATOR System.lineSeparatorÂ»Â«comment.serializeÂ»Â«ENDFORÂ»
+		Â«formula.formula.serializeÂ»
 	'''
 	
 	def String serializeCommentableStateFormulas(Collection<CommentableStateFormula> formulas) '''
-		«FOR formula : formulas»
-			«formula.serialize»
-		«ENDFOR»
+		Â«FOR formula : formulasÂ»
+			Â«formula.serializeÂ»
+		Â«ENDFORÂ»
 	'''
 	
 	def String serializeStateFormulas(Collection<StateFormula> formulas) '''
-		«FOR formula : formulas»
-			«formula.serialize»
-		«ENDFOR»
+		Â«FOR formula : formulasÂ»
+			Â«formula.serializeÂ»
+		Â«ENDFORÂ»
 	'''
 	
 }

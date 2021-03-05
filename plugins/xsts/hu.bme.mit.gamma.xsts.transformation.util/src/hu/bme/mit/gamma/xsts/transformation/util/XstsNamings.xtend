@@ -2,12 +2,12 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 class XstsNamings {
 	
-	static def String getTypeName(String lowlevelName) '''«lowlevelName»'''
-	static def String getVariableName(String lowlevelName) '''«lowlevelName»'''
-	static def String getEventName(String lowlevelName) '''«lowlevelName»'''
+	static def String getTypeName(String lowlevelName) '''Â«lowlevelNameÂ»'''
+	static def String getVariableName(String lowlevelName) '''Â«lowlevelNameÂ»'''
+	static def String getEventName(String lowlevelName) '''Â«lowlevelNameÂ»'''
 	
-	static def String getStateEnumLiteralName(String lowlevelName) '''«lowlevelName»'''
-	static def String getRegionTypeName(String lowlevelName) '''«lowlevelName.toFirstUpper»'''
-	static def String getRegionVariableName(String lowlevelName) '''«lowlevelName.toFirstLower»'''
+	static def String getStateEnumLiteralName(String lowlevelName) '''Â«lowlevelNameÂ»'''
+	static def String getRegionTypeName(String lowlevelName) '''Â«lowlevelName.toFirstUpperÂ»'''
+	static def String getRegionVariableName(String lowlevelName) '''Â«lowlevelName.toFirstLowerÂ»'''
 	
 }

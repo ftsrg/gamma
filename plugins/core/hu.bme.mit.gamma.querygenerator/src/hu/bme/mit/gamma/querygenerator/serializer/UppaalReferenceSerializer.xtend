@@ -30,7 +30,7 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	override getId(State state, Region parentRegion, ComponentInstanceReference instance) {
 		val processName = parentRegion.getTemplateName(instance).processName
 		val locationName = new StringBuilder
-		locationName.append('''«processName».«state.locationName»''')
+		locationName.append('''Â«processNameÂ».Â«state.locationNameÂ»''')
 		if (parentRegion.subregion) {
 			locationName.append(" && " + processName + ".isActive") 
 		}

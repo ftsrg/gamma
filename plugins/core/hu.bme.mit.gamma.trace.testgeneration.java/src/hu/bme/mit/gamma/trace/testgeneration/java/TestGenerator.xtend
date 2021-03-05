@@ -123,29 +123,29 @@ class TestGenerator {
 		return BASE_PACKAGE + "." + finalName
 	}
 	
-	private def createPackageName() '''package «PACKAGE_NAME»;'''
+	private def createPackageName() '''package Â«PACKAGE_NAMEÂ»;'''
 		
 	protected def generateTestClass(List<ExecutionTrace> traces, Component component, String className) '''
-		«createPackageName»
+		Â«createPackageNameÂ»
 		
-		«component.generateImports»
+		Â«component.generateImportsÂ»
 		
-		public class «className» {
+		public class Â«classNameÂ» {
 			
-			private static «TEST_CLASS_NAME» «TEST_INSTANCE_NAME»;
-«««			Only if there are timing specis in the model
-			«IF component.needTimer»private static «TIMER_CLASS_NAME» «TIMER_OBJECT_NAME»;«ENDIF»
+			private static Â«TEST_CLASS_NAMEÂ» Â«TEST_INSTANCE_NAMEÂ»;
+Â«Â«Â«			Only if there are timing specis in the model
+			Â«IF component.needTimerÂ»private static Â«TIMER_CLASS_NAMEÂ» Â«TIMER_OBJECT_NAMEÂ»;Â«ENDIFÂ»
 			
 			@Before
 			public void init() {
-				«IF component.needTimer»
-«««					Only if there are timing specis in the model
-					«TIMER_OBJECT_NAME» = new «TIMER_CLASS_NAME»();
-					«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', '»«parameter.serialize»«ENDFOR»«TIMER_OBJECT_NAME»);  // Virtual timer is automatically set
-				«ELSE»
-«««				Each trace must reference the same component with the same parameter values (arguments)!
-				«TEST_INSTANCE_NAME» = new «TEST_CLASS_NAME»(«FOR parameter : traces.head.arguments SEPARATOR ', '»«parameter.serialize»«ENDFOR»);
-			«ENDIF»
+				Â«IF component.needTimerÂ»
+Â«Â«Â«					Only if there are timing specis in the model
+					Â«TIMER_OBJECT_NAMEÂ» = new Â«TIMER_CLASS_NAMEÂ»();
+					Â«TEST_INSTANCE_NAMEÂ» = new Â«TEST_CLASS_NAMEÂ»(Â«FOR parameter : traces.head.arguments SEPARATOR ', ' AFTER ', 'Â»Â«parameter.serializeÂ»Â«ENDFORÂ»Â«TIMER_OBJECT_NAMEÂ»);  // Virtual timer is automatically set
+				Â«ELSEÂ»
+Â«Â«Â«				Each trace must reference the same component with the same parameter values (arguments)!
+				Â«TEST_INSTANCE_NAMEÂ» = new Â«TEST_CLASS_NAMEÂ»(Â«FOR parameter : traces.head.arguments SEPARATOR ', 'Â»Â«parameter.serializeÂ»Â«ENDFORÂ»);
+			Â«ENDIFÂ»
 			}
 			
 			@After
@@ -155,20 +155,20 @@ class TestGenerator {
 			
 			// Only for override by potential subclasses
 			protected void stop() {
-				«IF component.needTimer»
-					«TIMER_OBJECT_NAME» = null;
-				«ENDIF»
-				«TEST_INSTANCE_NAME» = null;				
+				Â«IF component.needTimerÂ»
+					Â«TIMER_OBJECT_NAMEÂ» = null;
+				Â«ENDIFÂ»
+				Â«TEST_INSTANCE_NAMEÂ» = null;				
 			}
 			
-			«traces.generateTestCases»
+			Â«traces.generateTestCasesÂ»
 		}
 	'''
 	
 	protected def generateImports(Component component) '''
-		import «BASE_PACKAGE».*;
+		import Â«BASE_PACKAGEÂ».*;
 		
-		import static org.junit.Assert.«ASSERT_TRUE»;
+		import static org.junit.Assert.Â«ASSERT_TRUEÂ»;
 		
 		import org.junit.Before;
 		import org.junit.After;
@@ -181,14 +181,14 @@ class TestGenerator {
 		val builder = new StringBuilder
 		// The traces are in an OR-relation
 		builder.append('''
-			«TEST_ANNOTATION»
+			Â«TEST_ANNOTATIONÂ»
 			public void test() {
-				«FOR trace : traces»
-					«IF traces.last !== trace»try {«ENDIF»
-					«traces.addTabIfNeeded(trace)»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»();
-					«traces.addTabIfNeeded(trace)»return;
-					«IF traces.last !== trace»} catch(AssertionError e) {}«ENDIF»
-				«ENDFOR»
+				Â«FOR trace : tracesÂ»
+					Â«IF traces.last !== traceÂ»try {Â«ENDIFÂ»
+					Â«traces.addTabIfNeeded(trace)Â»Â«FINAL_TEST_PREFIXÂ»Â«TEST_NAME.toFirstUpperÂ»Â«traceId++Â»();
+					Â«traces.addTabIfNeeded(trace)Â»return;
+					Â«IF traces.last !== traceÂ»} catch(AssertionError e) {}Â«ENDIFÂ»
+				Â«ENDFORÂ»
 			}
 		''')
 		traceId = 0
@@ -202,16 +202,16 @@ class TestGenerator {
 			}
 			for (step : steps) {
 				val testMethod = '''
-					public void «IF steps.indexOf(step) == steps.size - 1»«FINAL_TEST_PREFIX»«TEST_NAME.toFirstUpper»«traceId++»()«ELSE»«TEST_NAME + stepId++»()«ENDIF» {
-						«IF step !== steps.head»«TEST_NAME»«IF step === steps.last»«stepId - 1»«ELSE»«stepId - 2»«ENDIF»();«ENDIF»
+					public void Â«IF steps.indexOf(step) == steps.size - 1Â»Â«FINAL_TEST_PREFIXÂ»Â«TEST_NAME.toFirstUpperÂ»Â«traceId++Â»()Â«ELSEÂ»Â«TEST_NAME + stepId++Â»()Â«ENDIFÂ» {
+						Â«IF step !== steps.headÂ»Â«TEST_NAMEÂ»Â«IF step === steps.lastÂ»Â«stepId - 1Â»Â«ELSEÂ»Â«stepId - 2Â»Â«ENDIFÂ»();Â«ENDIFÂ»
 						// Act
-						«FOR act : step.actions»
-							«act.serialize»
-						«ENDFOR»
+						Â«FOR act : step.actionsÂ»
+							Â«act.serializeÂ»
+						Â«ENDFORÂ»
 						// Assert
-						«FOR assertion : step.filterAsserts»
-							«ASSERT_TRUE»(«assertion.serializeAssert»);
-						«ENDFOR»
+						Â«FOR assertion : step.filterAssertsÂ»
+							Â«ASSERT_TRUEÂ»(Â«assertion.serializeAssertÂ»);
+						Â«ENDFORÂ»
 					}
 					
 				'''
@@ -221,28 +221,28 @@ class TestGenerator {
 		return builder.toString
 	}
 	
-	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''«IF traces.last !== trace»	«ENDIF»'''
+	private def addTabIfNeeded(List<ExecutionTrace> traces, ExecutionTrace trace) '''Â«IF traces.last !== traceÂ»	Â«ENDIFÂ»'''
 	
 	protected def dispatch serialize(Reset reset) '''
-		«IF component.needTimer»«TIMER_OBJECT_NAME».reset(); // Timer before the system«ENDIF»
-		«TEST_INSTANCE_NAME».reset();
+		Â«IF component.needTimerÂ»Â«TIMER_OBJECT_NAMEÂ».reset(); // Timer before the systemÂ«ENDIFÂ»
+		Â«TEST_INSTANCE_NAMEÂ».reset();
 	'''
 	
 	protected def dispatch serialize(RaiseEventAct raiseEvent) '''
-		«TEST_INSTANCE_NAME».raiseEvent("«raiseEvent.port.name»", "«raiseEvent.event.name»", new Object[] {«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "»«param.serialize»«ENDFOR»});
+		Â«TEST_INSTANCE_NAMEÂ».raiseEvent("Â«raiseEvent.port.nameÂ»", "Â«raiseEvent.event.nameÂ»", new Object[] {Â«FOR param : raiseEvent.arguments BEFORE " " SEPARATOR ", " AFTER " "Â»Â«param.serializeÂ»Â«ENDFORÂ»});
 	'''
 	
 	protected def dispatch serialize(TimeElapse elapse) '''
-		«TIMER_OBJECT_NAME».elapse(«elapse.elapsedTime»);
+		Â«TIMER_OBJECT_NAMEÂ».elapse(Â«elapse.elapsedTimeÂ»);
 	'''
 	
 	protected def dispatch serialize(InstanceSchedule schedule) '''
-		«TEST_INSTANCE_NAME».«schedule.scheduledInstance.getFullContainmentHierarchy(null)».schedule(null);
+		Â«TEST_INSTANCE_NAMEÂ».Â«schedule.scheduledInstance.getFullContainmentHierarchy(null)Â».schedule(null);
 	'''
 	
 	protected def dispatch serialize(ComponentSchedule schedule) '''
-«««		In theory only asynchronous adapters and synchronous adapters are used
-		«TEST_INSTANCE_NAME».schedule(null);
+Â«Â«Â«		In theory only asynchronous adapters and synchronous adapters are used
+		Â«TEST_INSTANCE_NAMEÂ».schedule(null);
 	'''
 	
 	// Assert serialization
@@ -268,19 +268,19 @@ class TestGenerator {
 		return asserts
 	}
 	
-	protected def dispatch String serializeAssert(OrAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " || "»«operand.serializeAssert»«ENDFOR»)'''
+	protected def dispatch String serializeAssert(OrAssert assert) '''(Â«FOR operand : assert.asserts SEPARATOR " || "Â»Â«operand.serializeAssertÂ»Â«ENDFORÂ»)'''
 	
-	protected def dispatch String serializeAssert(XorAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " ^ "»«operand.serializeAssert»«ENDFOR»)'''
+	protected def dispatch String serializeAssert(XorAssert assert) '''(Â«FOR operand : assert.asserts SEPARATOR " ^ "Â»Â«operand.serializeAssertÂ»Â«ENDFORÂ»)'''
 
-	protected def dispatch String serializeAssert(AndAssert assert) '''(«FOR operand : assert.asserts SEPARATOR " && "»«operand.serializeAssert»«ENDFOR»)'''
+	protected def dispatch String serializeAssert(AndAssert assert) '''(Â«FOR operand : assert.asserts SEPARATOR " && "Â»Â«operand.serializeAssertÂ»Â«ENDFORÂ»)'''
 	
-	protected def dispatch String serializeAssert(NegatedAssert assert) '''!(«assert.negatedAssert.serializeAssert»)'''
+	protected def dispatch String serializeAssert(NegatedAssert assert) '''!(Â«assert.negatedAssert.serializeAssertÂ»)'''
 	
-	protected def dispatch String serializeAssert(RaiseEventAct assert) '''«TEST_INSTANCE_NAME».isRaisedEvent("«assert.port.name»", "«assert.event.name»", new Object[] {«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "»«parameter.serialize»«ENDFOR»})'''
+	protected def dispatch String serializeAssert(RaiseEventAct assert) '''Â«TEST_INSTANCE_NAMEÂ».isRaisedEvent("Â«assert.port.nameÂ»", "Â«assert.event.nameÂ»", new Object[] {Â«FOR parameter : assert.arguments BEFORE " " SEPARATOR ", " AFTER " "Â»Â«parameter.serializeÂ»Â«ENDFORÂ»})'''
 	
-	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».isStateActive("«assert.state.parentRegion.name»", "«assert.state.name»")'''
+	protected def dispatch String serializeAssert(InstanceStateConfiguration assert) '''Â«TEST_INSTANCE_NAMEÂ».Â«assert.instance.getFullContainmentHierarchy(null)Â».isStateActive("Â«assert.state.parentRegion.nameÂ»", "Â«assert.state.nameÂ»")'''
 	
-	protected def dispatch String serializeAssert(InstanceVariableState assert) '''«TEST_INSTANCE_NAME».«assert.instance.getFullContainmentHierarchy(null)».checkVariableValue("«assert.declaration.name»", «assert.value.serialize»)'''
+	protected def dispatch String serializeAssert(InstanceVariableState assert) '''Â«TEST_INSTANCE_NAMEÂ».Â«assert.instance.getFullContainmentHierarchy(null)Â».checkVariableValue("Â«assert.declaration.nameÂ»", Â«assert.value.serializeÂ»)'''
 	
 	//
 	
@@ -350,7 +350,7 @@ class TestGenerator {
 				if (child instanceof SynchronousComponentInstance) {
 					// We are on the border of async-sync components
 					val wrapperInstance = child.asyncParent
-					return '''«wrapperInstance.getFullContainmentHierarchy(child)»getComponent("«child.localName»").'''
+					return '''Â«wrapperInstance.getFullContainmentHierarchy(child)Â»getComponent("Â«child.localNameÂ»").'''
 				}
 				else {
 					// We are on the top of async components
@@ -363,9 +363,9 @@ class TestGenerator {
 			if (child === null) {
 				// No dot after the last instance
 				// Local names are needed to form parent_actual names
-				return '''«parent.getFullContainmentHierarchy(actual)»getComponent("«actual.localName»")'''	
+				return '''Â«parent.getFullContainmentHierarchy(actual)Â»getComponent("Â«actual.localNameÂ»")'''	
 			}
-			return '''«parent.getFullContainmentHierarchy(actual)»getComponent("«actual.localName»").'''
+			return '''Â«parent.getFullContainmentHierarchy(actual)Â»getComponent("Â«actual.localNameÂ»").'''
 		}	
 	}
 	

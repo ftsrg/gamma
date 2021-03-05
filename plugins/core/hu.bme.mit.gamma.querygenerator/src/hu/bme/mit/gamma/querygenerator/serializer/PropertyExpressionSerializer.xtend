@@ -37,14 +37,14 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 		val instance = expression.instance
 		val region = expression.region
 		val state = expression.state
-		return '''«state.getId(region, instance)»'''
+		return '''Â«state.getId(region, instance)Â»'''
 	}
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceVariableReference expression) {
 		val instance = expression.instance
 		val variable = expression.variable
 		// TODO record?
-		return '''«variable.getId(instance).head»'''
+		return '''Â«variable.getId(instance).headÂ»'''
 	}
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceEventReference expression) {
@@ -52,7 +52,7 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 		val port = expression.port
 		val event = expression.event
 		// Could be extended with in-events too
-		return '''«event.getId(port, instance)»'''
+		return '''Â«event.getId(port, instance)Â»'''
 	}
 	
 	protected def dispatch serializeStateExpression(ComponentInstanceEventParameterReference expression) {
@@ -62,7 +62,7 @@ class PropertyExpressionSerializer extends ExpressionSerializer {
 		val parameter = expression.parameter
 		// Could be extended with in-events too
 		// TODO record?
-		return '''«event.getId(port, parameter, instance).head»'''
+		return '''Â«event.getId(port, parameter, instance).headÂ»'''
 	}
 	
 }

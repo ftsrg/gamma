@@ -100,7 +100,7 @@ class StatechartToTestTransformer {
 					finalTraces += finalTrace
 				}
 				// Generating tests
-				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«tranistionId»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
+				val className = '''Â«IF fileName === nullÂ»Â«simpleState.name.toFirstUpperÂ»Â«tranistionIdÂ»Â«contractStatechart.name.toFirstUpperÂ»Â«ELSEÂ»Â«fileNameÂ»Â«ENDIFÂ»'''
 				val testGenerator = new TestGenerator(finalTraces, basePackageName, className)
 				val testClass = testGenerator.execute
 				val testClassFile = getFile(testFolder, testGenerator.packageName, className)

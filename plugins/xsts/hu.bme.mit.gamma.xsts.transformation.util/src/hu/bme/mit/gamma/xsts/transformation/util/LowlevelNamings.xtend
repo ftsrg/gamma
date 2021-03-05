@@ -16,29 +16,29 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class LowlevelNamings {
 	
-	static def String getName(StatechartDefinition statechart) '''«statechart.name»'''
-	static def String getStateName(State state) '''«state.name»'''
-	static def String getRegionName(Region region) '''«region.name»'''
-	static def String getInputName(Event event, Port port) '''«port.name»_«event.name»_In'''
-	static def String getOutputName(Event event, Port port) '''«port.name»_«event.name»_Out'''
-	static def String getInName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getInputName(port)»_«parameterDeclaration.name»'''
-	static def String getOutName(ParameterDeclaration parameterDeclaration, Port port) '''«parameterDeclaration.containingEvent.getOutputName(port)»_«parameterDeclaration.name»'''
-	static def String getComponentParameterName(ParameterDeclaration parameter) '''«parameter.name»'''
-	static def String getName(VariableDeclaration variable) '''«variable.name»'''
-	static def String getName(TimeoutDeclaration timeout) '''«timeout.name»'''
-	static def String getName(TypeDeclaration type) '''«type.name»'''
+	static def String getName(StatechartDefinition statechart) '''Â«statechart.nameÂ»'''
+	static def String getStateName(State state) '''Â«state.nameÂ»'''
+	static def String getRegionName(Region region) '''Â«region.nameÂ»'''
+	static def String getInputName(Event event, Port port) '''Â«port.nameÂ»_Â«event.nameÂ»_In'''
+	static def String getOutputName(Event event, Port port) '''Â«port.nameÂ»_Â«event.nameÂ»_Out'''
+	static def String getInName(ParameterDeclaration parameterDeclaration, Port port) '''Â«parameterDeclaration.containingEvent.getInputName(port)Â»_Â«parameterDeclaration.nameÂ»'''
+	static def String getOutName(ParameterDeclaration parameterDeclaration, Port port) '''Â«parameterDeclaration.containingEvent.getOutputName(port)Â»_Â«parameterDeclaration.nameÂ»'''
+	static def String getComponentParameterName(ParameterDeclaration parameter) '''Â«parameter.nameÂ»'''
+	static def String getName(VariableDeclaration variable) '''Â«variable.nameÂ»'''
+	static def String getName(TimeoutDeclaration timeout) '''Â«timeout.nameÂ»'''
+	static def String getName(TypeDeclaration type) '''Â«type.nameÂ»'''
 	
 	static def List<String> getInNames(ParameterDeclaration parameterDeclaration, Port port) {
-		return parameterDeclaration.namePostfixes.map['''«parameterDeclaration.getInName(port)»«it»''']
+		return parameterDeclaration.namePostfixes.map['''Â«parameterDeclaration.getInName(port)Â»Â«itÂ»''']
 	}
 	static def List<String> getOutNames(ParameterDeclaration parameterDeclaration, Port port) {
-		return parameterDeclaration.namePostfixes.map['''«parameterDeclaration.getOutName(port)»«it»''']
+		return parameterDeclaration.namePostfixes.map['''Â«parameterDeclaration.getOutName(port)Â»Â«itÂ»''']
 	}
 	static def List<String> getComponentParameterNames(ParameterDeclaration parameter) {
-		return parameter.namePostfixes.map['''«parameter.getComponentParameterName»«it»''']
+		return parameter.namePostfixes.map['''Â«parameter.getComponentParameterNameÂ»Â«itÂ»''']
 	}
 	static def List<String> getNames(VariableDeclaration variable) {
-		return variable.namePostfixes.map['''«variable.getName»«it»''']
+		return variable.namePostfixes.map['''Â«variable.getNameÂ»Â«itÂ»''']
 	}
 	
 	protected static def List<String> getNamePostfixes(ValueDeclaration variable) {

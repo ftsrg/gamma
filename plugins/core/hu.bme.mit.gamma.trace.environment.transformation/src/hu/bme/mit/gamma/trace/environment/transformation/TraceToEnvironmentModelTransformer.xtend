@@ -167,7 +167,7 @@ class TraceToEnvironmentModelTransformer {
 		return trace
 	}
 	
-	protected def String getStateName() '''_«stateId++»'''
-	protected def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
+	protected def String getStateName() '''_Â«stateId++Â»'''
+	protected def String getTimeoutDeclarationName() '''TimeoutÂ«timeoutId++Â»'''
 	
 }

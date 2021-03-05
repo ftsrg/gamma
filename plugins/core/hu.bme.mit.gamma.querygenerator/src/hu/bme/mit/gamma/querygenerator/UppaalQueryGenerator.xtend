@@ -41,17 +41,17 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		var result = text.parseIdentifiers
 		if (!operator.equals(TemporalOperator.MIGHT_ALWAYS) && !operator.equals(TemporalOperator.MUST_ALWAYS)) {
 			// It is pointless to add isStable in the case of A[] and E[]
-			result += ''' && «isStableVariableName»'''
+			result += ''' && Â«isStableVariableNameÂ»'''
 		}
 		else {
 			// Instead this is added
-			result += ''' || !«isStableVariableName»'''
+			result += ''' || !Â«isStableVariableNameÂ»'''
 		}
 		return operator.operator + " " + result
 	}
 	
 	override String parseLeadsToQuery(String first, String second) {
-		return '''«first.parseIdentifiers» && «isStableVariableName» --> «second.parseIdentifiers» && «isStableVariableName»'''
+		return '''Â«first.parseIdentifiersÂ» && Â«isStableVariableNameÂ» --> Â«second.parseIdentifiersÂ» && Â«isStableVariableNameÂ»'''
 	}
 	
 	protected override String getTargetStateName(State state, Region parentRegion,

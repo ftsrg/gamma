@@ -30,15 +30,15 @@ class StatechartInterfaceCodeGenerator {
 	}
 	
 	protected def createStatechartWrapperInterface() '''
-		package «STATECHART_PACKAGE_NAME»;
+		package Â«STATECHART_PACKAGE_NAMEÂ»;
 		
-		import «INTERFACE_PACKAGE_NAME».*;
+		import Â«INTERFACE_PACKAGE_NAMEÂ».*;
 		
-		public interface «INTERFACE_NAME» {
+		public interface Â«INTERFACE_NAMEÂ» {
 		
-			«FOR port : gammaStatechart.ports»
-				public «port.implementedInterfaceName» get«port.name.toFirstUpper»();
-			«ENDFOR»
+			Â«FOR port : gammaStatechart.portsÂ»
+				public Â«port.implementedInterfaceNameÂ» getÂ«port.name.toFirstUpperÂ»();
+			Â«ENDFORÂ»
 			
 			void runCycle();
 			void reset();

@@ -22,9 +22,9 @@ class TimerCallbackInterfaceGenerator {
 	}
 	
 	def createITimerCallbackInterfaceCode() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
-		public interface «INTERFACE_NAME» {
+		public interface Â«INTERFACE_NAMEÂ» {
 			
 			void timeElapsed(int eventID);
 			

@@ -38,40 +38,40 @@ class Namings {
 	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
 	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
 	
-	static def String getPackageString(Package _package, String base) '''«base».«_package.name.toLowerCase»'''
+	static def String getPackageString(Package _package, String base) '''Â«baseÂ».Â«_package.name.toLowerCaseÂ»'''
 	
-	static def String getPackageString(Component component, String base) '''«component.containingPackage.getPackageString(base)»'''
+	static def String getPackageString(Component component, String base) '''Â«component.containingPackage.getPackageString(base)Â»'''
 	
-	static def String getInterfacePackageString(String base) '''«base».«INTERFACE_PACKAGE_POSTFIX»'''
+	static def String getInterfacePackageString(String base) '''Â«baseÂ».Â«INTERFACE_PACKAGE_POSTFIXÂ»'''
 	
 	/**
 	 * Returns the name of the Java interface generated from the given Gamma interface, e.g., PortInterface. 
 	 */
- 	static def String getImplementationName(Interface _interface) '''«_interface.name.toFirstUpper»Interface'''
+ 	static def String getImplementationName(Interface _interface) '''Â«_interface.name.toFirstUpperÂ»Interface'''
 	
 	/**
 	 * Returns the name of the Java interface the given port realizes, e.g., Controller.Required.
 	 */
-	static def String getImplementedInterfaceName(Port port) '''«port.interfaceRealization.interface.implementationName».«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpper»'''
+	static def String getImplementedInterfaceName(Port port) '''Â«port.interfaceRealization.interface.implementationNameÂ».Â«port.interfaceRealization.realizationMode.toString.toLowerCase.toFirstUpperÂ»'''
 	
 	/**
 	 * Returns the name of the Java class of the component.
 	 */
-	static def String getComponentClassName(Component component) '''«component.name.toFirstUpper»'''
+	static def String getComponentClassName(Component component) '''Â«component.name.toFirstUpperÂ»'''
 	
 	/**
 	 * Returns the name of the Java class of the reflective component.
 	 */
-	static def String getReflectiveClassName(Component component) '''Reflective«component.componentClassName»'''
+	static def String getReflectiveClassName(Component component) '''ReflectiveÂ«component.componentClassNameÂ»'''
 	
 	/**
 	 * Returns the name of the Java class of the wrapped statemachine component.
 	 */
-	static def String getWrappedStatemachineClassName(Component component) '''«component.componentClassName»Statemachine'''
+	static def String getWrappedStatemachineClassName(Component component) '''Â«component.componentClassNameÂ»Statemachine'''
 	
 	/**
 	 * Returns the name of the Java object of the wrapped synchronous component.
 	 */
-	static def String getWrappedComponentName(AsynchronousAdapter component) '''«component.wrappedComponent.name»'''
+	static def String getWrappedComponentName(AsynchronousAdapter component) '''Â«component.wrappedComponent.nameÂ»'''
 	
 }

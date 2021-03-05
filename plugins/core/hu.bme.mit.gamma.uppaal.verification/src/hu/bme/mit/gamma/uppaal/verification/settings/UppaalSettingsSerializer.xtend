@@ -27,7 +27,7 @@ import static hu.bme.mit.gamma.uppaal.verification.settings.UppaalSettings.TRACE
 
 class UppaalSettingsSerializer {
 	def String serialize(UppaalSettings settings) {
-		return '''«convertStateSpaceRepresentation(settings.stateSpaceRepresentation)» «convertSearchOrder(settings.searchOrder, settings.trace)» «convertDiagnosticTrace(settings.trace)» «convertReuseStateSpace(settings.reuseStateSpace)» «convertHashtableSize(settings.hashtableSize)» «convertStateSpaceReduction(settings.stateSpaceReduction)»'''
+		return '''Â«convertStateSpaceRepresentation(settings.stateSpaceRepresentation)Â» Â«convertSearchOrder(settings.searchOrder, settings.trace)Â» Â«convertDiagnosticTrace(settings.trace)Â» Â«convertReuseStateSpace(settings.reuseStateSpace)Â» Â«convertHashtableSize(settings.hashtableSize)Â» Â«convertStateSpaceReduction(settings.stateSpaceReduction)Â»'''
 	}
 
 	def private String convertSearchOrder(String searchOrder, String trace) {
@@ -35,31 +35,31 @@ class UppaalSettingsSerializer {
 		val parameterName = "-o "
 		switch (searchOrder) {
 			case SEARCH_ORDER_BF: {
-				return '''«parameterName»0'''
+				return '''Â«parameterNameÂ»0'''
 			}
 			case SEARCH_ORDER_DF: {
-				return '''«parameterName»1'''
+				return '''Â«parameterNameÂ»1'''
 			}
 			case SEARCH_ORDER_RDF: {
-				return '''«parameterName»2'''
+				return '''Â«parameterNameÂ»2'''
 			}
 			case SEARCH_ORDER_OF: {
 				if (traceIsShortestOrFastest) {
-					return '''«parameterName»3'''
+					return '''Â«parameterNameÂ»3'''
 				} // BFS
 				else {
-					return '''«parameterName»0'''
+					return '''Â«parameterNameÂ»0'''
 				}
 			}
 			case SEARCH_ORDER_RODF: {
 				if (traceIsShortestOrFastest) {
-					return '''«parameterName»4'''
+					return '''Â«parameterNameÂ»4'''
 				} else { // BFS
-					return '''«parameterName»0'''
+					return '''Â«parameterNameÂ»0'''
 				}
 			}
 			default: {
-				throw new IllegalArgumentException('''Not known option: «searchOrder»''');
+				throw new IllegalArgumentException('''Not known option: Â«searchOrderÂ»''');
 			}
 		}
 	}
@@ -76,7 +76,7 @@ class UppaalSettingsSerializer {
 				return "-Z"
 			}
 			default: {
-				throw new IllegalArgumentException('''Not known option: «stateSpaceRepresentation»''');
+				throw new IllegalArgumentException('''Not known option: Â«stateSpaceRepresentationÂ»''');
 			}
 		}
 	}
@@ -87,7 +87,7 @@ class UppaalSettingsSerializer {
 		 */
 		val int exponent = 20 + (Math.floor(Math.log10(hashtableSize) / Math.log10(2)) as int)
 		// log2(value)
-		return '''-H «exponent»'''
+		return '''-H Â«exponentÂ»'''
 	}
 
 	def private String convertStateSpaceReduction(String stateSpaceReduction) {
@@ -95,18 +95,18 @@ class UppaalSettingsSerializer {
 		switch (stateSpaceReduction) {
 			case STATE_SPACE_REDUCTION_NONE: {
 				// BFS
-				return '''«parameterName»0'''
+				return '''Â«parameterNameÂ»0'''
 			}
 			case STATE_SPACE_REDUCTION_CONSERVATIVE: {
 				// DFS
-				return '''«parameterName»1'''
+				return '''Â«parameterNameÂ»1'''
 			}
 			case STATE_SPACE_REDUCTION_AGGRESSIVE: {
 				// Random DFS
-				return '''«parameterName»2'''
+				return '''Â«parameterNameÂ»2'''
 			}
 			default: {
-				throw new IllegalArgumentException('''Not known option: «stateSpaceReduction»''');
+				throw new IllegalArgumentException('''Not known option: Â«stateSpaceReductionÂ»''');
 			}
 		}
 	}
@@ -120,18 +120,18 @@ class UppaalSettingsSerializer {
 		switch (trace) {
 			case TRACE_SOME: {
 				// Some trace
-				return '''«parameterName»0'''
+				return '''Â«parameterNameÂ»0'''
 			}
 			case TRACE_SHORTEST: {
 				// Shortest trace
-				return '''«parameterName»1'''
+				return '''Â«parameterNameÂ»1'''
 			}
 			case TRACE_FASTEST: {
 				// Fastest trace
-				return '''«parameterName»2'''
+				return '''Â«parameterNameÂ»2'''
 			}
 			default: {
-				throw new IllegalArgumentException('''Not known option: «trace»''');
+				throw new IllegalArgumentException('''Not known option: Â«traceÂ»''');
 			}
 		}
 	}

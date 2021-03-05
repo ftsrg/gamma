@@ -31,58 +31,58 @@ class ActionSerializer {
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	
 	def String serializeXSTS(XSTS xSts) '''
-		«xSts.serializeDeclarations(false)»
+		Â«xSts.serializeDeclarations(false)Â»
 		
 		trans {
-			«xSts.mergedAction.serialize»
+			Â«xSts.mergedAction.serializeÂ»
 		}
 		init {
-			«xSts.initializingAction.serialize»
+			Â«xSts.initializingAction.serializeÂ»
 		}
 		env {
-			«xSts.environmentalAction.serialize»
+			Â«xSts.environmentalAction.serializeÂ»
 		}
 	'''
 	
 	def dispatch String serialize(AssumeAction action) '''
-		assume «action.assumption.serialize»;
+		assume Â«action.assumption.serializeÂ»;
 	'''
 	
 	def dispatch String serialize(AssignmentAction action) '''
-		«action.lhs.serialize» := «action.rhs.serialize»;
+		Â«action.lhs.serializeÂ» := Â«action.rhs.serializeÂ»;
 	'''
 	
 	def dispatch String serialize(VariableDeclarationAction action) '''
-		«action.variableDeclaration.serializeLocalVariableDeclaration»;
+		Â«action.variableDeclaration.serializeLocalVariableDeclarationÂ»;
 	'''
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
 	
 	def dispatch String serialize(NonDeterministicAction action) '''
-		choice «FOR subaction : action.actions SEPARATOR " or "»{
-			«subaction.serialize»
-		}«ENDFOR»
+		choice Â«FOR subaction : action.actions SEPARATOR " or "Â»{
+			Â«subaction.serializeÂ»
+		}Â«ENDFORÂ»
 	'''
 	
 	def dispatch String serialize(ParallelAction action) '''
-		par «FOR subaction : action.actions SEPARATOR " and "»{
-			«subaction.serialize»
-		}«ENDFOR»
+		par Â«FOR subaction : action.actions SEPARATOR " and "Â»{
+			Â«subaction.serializeÂ»
+		}Â«ENDFORÂ»
 	'''
 	
 	def dispatch String serialize(OrthogonalAction action) '''
-		ort «FOR subaction : action.actions SEPARATOR " "»{
-			«subaction.serialize»
-		}«ENDFOR»
+		ort Â«FOR subaction : action.actions SEPARATOR " "Â»{
+			Â«subaction.serializeÂ»
+		}Â«ENDFORÂ»
 	'''
 	
 	def dispatch String serialize(SequentialAction action) '''
-«««		seq {
-			«FOR subaction : action.actions»
-				«subaction.serialize»
-			«ENDFOR»
-«««		}
+Â«Â«Â«		seq {
+			Â«FOR subaction : action.actionsÂ»
+				Â«subaction.serializeÂ»
+			Â«ENDFORÂ»
+Â«Â«Â«		}
 	'''
 	
 }

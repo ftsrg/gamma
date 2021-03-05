@@ -38,7 +38,7 @@ class ThetaVerifier extends AbstractVerifier {
 			val parsedQuery = singleQuery.adaptQuery
 			val wrappedQuery = '''
 				prop {
-					«parsedQuery»
+					Â«parsedQueryÂ»
 				}
 			'''
 			val newResult = super.verifyQuery(traceability, parameters,
@@ -67,7 +67,7 @@ class ThetaVerifier extends AbstractVerifier {
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one 
-			val command = '''java -jar «jar.escapePath» «parameters» --model «modelFile.canonicalPath.escapePath» --property «queryFile.canonicalPath.escapePath» --cex «traceFile.canonicalPath.escapePath»'''
+			val command = '''java -jar Â«jar.escapePathÂ» Â«parametersÂ» --model Â«modelFile.canonicalPath.escapePathÂ» --property Â«queryFile.canonicalPath.escapePathÂ» --cex Â«traceFile.canonicalPath.escapePathÂ»'''
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process = Runtime.getRuntime().exec(command)

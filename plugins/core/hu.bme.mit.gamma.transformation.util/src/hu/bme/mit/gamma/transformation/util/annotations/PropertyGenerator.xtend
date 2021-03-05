@@ -86,7 +86,7 @@ class PropertyGenerator {
 					stateReference.setState(state)
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
 					val commentableStateFormula = propertyUtil.
-						createCommentableStateFormula('''«instance.name».«parentRegion.name».«state.name»''',
+						createCommentableStateFormula('''Â«instance.nameÂ».Â«parentRegion.nameÂ».Â«state.nameÂ»''',
 							stateFormula)
 					formulas += commentableStateFormula
 				}
@@ -107,7 +107,7 @@ class PropertyGenerator {
 							createInstanceReference(instance), port, outEvent)
 						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(eventReference))
 						val commentableStateFormula = propertyUtil.
-							createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name»''',
+							createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ»''',
 								stateFormula)
 						formulas += commentableStateFormula
 					}
@@ -121,7 +121,7 @@ class PropertyGenerator {
 									createInstanceReference(instance), port, outEvent)
 								val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(eventReference))
 								val commentableStateFormula = propertyUtil.
-									createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name»''',
+									createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ»''',
 										stateFormula)
 								formulas += commentableStateFormula
 							}
@@ -140,7 +140,7 @@ class PropertyGenerator {
 									and.operands += equalityExpression
 									val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 									val commentableStateFormula = propertyUtil.
-										createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name».«parameter.name» == «expressionSerializer.serialize(value)»''',
+										createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ».Â«parameter.nameÂ» == Â«expressionSerializer.serialize(value)Â»''',
 											stateFormula)
 									formulas += commentableStateFormula
 								}
@@ -221,7 +221,7 @@ class PropertyGenerator {
 			]
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 			// Comment
-			var String comment = '''«getId(firstTransition)» -p- «getId(secondTransition)»'''
+			var String comment = '''Â«getId(firstTransition)Â» -p- Â«getId(secondTransition)Â»'''
 			val commentableStateFormula = propertyUtil.createCommentableStateFormula(comment, stateFormula)
 			formulas += commentableStateFormula
 		}
@@ -265,7 +265,7 @@ class PropertyGenerator {
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))
 			// Comment
 			val commentableStateFormula = propertyUtil.
-				createCommentableStateFormula('''«senderComment» -i- «receiverComment»''', stateFormula)
+				createCommentableStateFormula('''Â«senderCommentÂ» -i- Â«receiverCommentÂ»''', stateFormula)
 			formulas += commentableStateFormula
 		}
 		return formulas
@@ -329,7 +329,7 @@ class PropertyGenerator {
 					val useComment = originalUseReferences.ids
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 					formulas += propertyUtil.createCommentableStateFormula(
-							'''«defComment» -d-u- «useComment»''', stateFormula)
+							'''Â«defCommentÂ» -d-u- Â«useCommentÂ»''', stateFormula)
 				}
 				else {
 					for (auxiliaryUseReference : auxiliaryUseReferences) {
@@ -340,7 +340,7 @@ class PropertyGenerator {
 						val useComment = auxiliaryUseReference.originalVariableReference.id
 						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
 						formulas += propertyUtil.createCommentableStateFormula(
-								'''«defComment» -d-u- «useComment»''', stateFormula)
+								'''Â«defCommentÂ» -d-u- Â«useCommentÂ»''', stateFormula)
 					}
 				}
 			}
@@ -375,30 +375,30 @@ class PropertyGenerator {
 		if (transition === null) {
 			val state = ecoreUtil.getContainerOfType(action, State)
 			if (state === null) {
-				throw new IllegalArgumentException('''Not known raise event: «action»''')
+				throw new IllegalArgumentException('''Not known raise event: Â«actionÂ»''')
 			}
 			val containmentFeatureName = action.eContainmentFeature.name
-			return '''«getId(state)»-«containmentFeatureName»'''
+			return '''Â«getId(state)Â»-Â«containmentFeatureNameÂ»'''
 		}
 		return getId(transition)
 	}
 
 	def dispatch protected String getId(StateNode state) {
-		return '''«getInstanceId(state)».«state.parentRegion.name».«state.name»'''
+		return '''Â«getInstanceId(state)Â».Â«state.parentRegion.nameÂ».Â«state.nameÂ»'''
 	}
 
 	def dispatch protected String getId(Transition transition) {
-		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
+		return '''Â«transition.sourceState.idÂ» --> Â«transition.targetState.idÂ»'''
 	}
 	
 	def dispatch protected String getId(DirectReferenceExpression reference) {
 		val transitionOrState = reference.containingTransitionOrState
 		val variable = reference.declaration
-		return '''«transitionOrState.id»::«variable.name»'''
+		return '''Â«transitionOrState.idÂ»::Â«variable.nameÂ»'''
 	}
 	
 	def protected String getIds(Collection<DirectReferenceExpression> references) {
-		return '''«FOR reference : references SEPARATOR ' | '»«reference.id»«ENDFOR»'''
+		return '''Â«FOR reference : references SEPARATOR ' | 'Â»Â«reference.idÂ»Â«ENDFORÂ»'''
 	}
 	
 }

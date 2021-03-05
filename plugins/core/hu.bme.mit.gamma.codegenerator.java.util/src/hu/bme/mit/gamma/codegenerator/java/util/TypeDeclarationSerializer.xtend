@@ -30,6 +30,6 @@ class TypeDeclarationSerializer {
 	}
 	
 	def dispatch String serialize(EnumerationTypeDefinition type, String name) '''
-		enum «name» {«FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}
+		enum Â«nameÂ» {Â«FOR literal : type.literals SEPARATOR ', 'Â»Â«literal.nameÂ»Â«ENDFORÂ»}
 	'''
 }

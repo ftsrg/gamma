@@ -41,100 +41,100 @@ class StatechartCodeGenerator {
 	}
 	
 	protected def createStatechartClass() '''
-		package «STATECHART_PACKAGE_NAME»;
+		package Â«STATECHART_PACKAGE_NAMEÂ»;
 		
-		import «BASE_PACKAGE_NAME».*; ««« Needed for the type declarations 
+		import Â«BASE_PACKAGE_NAMEÂ».*; Â«Â«Â« Needed for the type declarations 
 		
-		public class «CLASS_NAME» {
+		public class Â«CLASS_NAMEÂ» {
 			
-			«FOR typeDeclaration : xSts.privateTypeDeclarations»
-				«typeDeclaration.serialize»
-			«ENDFOR»
-«««			Not timeout variables
-			«FOR variableDeclaration : xSts.retrieveNotTimeoutVariables»
-				private «variableDeclaration.type.serialize» «variableDeclaration.name»;
-			«ENDFOR»
-«««			Timeout variables		
-			«FOR variableDeclaration : xSts.retrieveTimeouts»
-				private «variableDeclaration.type.serialize» «variableDeclaration.name»;
-			«ENDFOR»
+			Â«FOR typeDeclaration : xSts.privateTypeDeclarationsÂ»
+				Â«typeDeclaration.serializeÂ»
+			Â«ENDFORÂ»
+Â«Â«Â«			Not timeout variables
+			Â«FOR variableDeclaration : xSts.retrieveNotTimeoutVariablesÂ»
+				private Â«variableDeclaration.type.serializeÂ» Â«variableDeclaration.nameÂ»;
+			Â«ENDFORÂ»
+Â«Â«Â«			Timeout variables		
+			Â«FOR variableDeclaration : xSts.retrieveTimeoutsÂ»
+				private Â«variableDeclaration.type.serializeÂ» Â«variableDeclaration.nameÂ»;
+			Â«ENDFORÂ»
 			
-			public «CLASS_NAME»(«FOR parameter : xSts.retrieveComponentParameters SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-				«FOR parameter : xSts.retrieveComponentParameters»
-					this.«parameter.name» = «parameter.name»;
-				«ENDFOR»
+			public Â«CLASS_NAMEÂ»(Â«FOR parameter : xSts.retrieveComponentParameters SEPARATOR ', 'Â»Â«parameter.type.serializeÂ» Â«parameter.nameÂ»Â«ENDFORÂ») {
+				Â«FOR parameter : xSts.retrieveComponentParametersÂ»
+					this.Â«parameter.nameÂ» = Â«parameter.nameÂ»;
+				Â«ENDFORÂ»
 			}
 			
 			public void reset() {
-«««				Reference variables, e.g., enums, have to be set, as null is not a valid value, including regions: they have to be set to __Inactive__ explicitly on every reset
-				«FOR enumVariable : (xSts.retrieveEnumVariables
-						.reject[xSts.retrieveComponentParameters.toList.contains(it)])»
-					this.«enumVariable.name» = «enumVariable.initialValue.serialize»;
-				«ENDFOR»
+Â«Â«Â«				Reference variables, e.g., enums, have to be set, as null is not a valid value, including regions: they have to be set to __Inactive__ explicitly on every reset
+				Â«FOR enumVariable : (xSts.retrieveEnumVariables
+						.reject[xSts.retrieveComponentParameters.toList.contains(it)])Â»
+					this.Â«enumVariable.nameÂ» = Â«enumVariable.initialValue.serializeÂ»;
+				Â«ENDFORÂ»
 				clearOutEvents();
 				clearInEvents();
-				«xSts.serializeInitializingAction»
+				Â«xSts.serializeInitializingActionÂ»
 			}
 			
-«««			No separation of variables on this level
-			«FOR variable : xSts.variableGroups
+Â«Â«Â«			No separation of variables on this level
+			Â«FOR variable : xSts.variableGroups
 					.map[it.variables]
-					.flatten SEPARATOR System.lineSeparator»
-				public void set«variable.name.toFirstUpper»(«variable.type.serialize» «variable.name») {
-					this.«variable.name» = «variable.name»;
+					.flatten SEPARATOR System.lineSeparatorÂ»
+				public void setÂ«variable.name.toFirstUpperÂ»(Â«variable.type.serializeÂ» Â«variable.nameÂ») {
+					this.Â«variable.nameÂ» = Â«variable.nameÂ»;
 				}
 				
-				public «variable.type.serialize» get«variable.name.toFirstUpper»() {
-					return «variable.name»;
+				public Â«variable.type.serializeÂ» getÂ«variable.name.toFirstUpperÂ»() {
+					return Â«variable.nameÂ»;
 				}
-			«ENDFOR»
+			Â«ENDFORÂ»
 			
 			public void runCycle() {
 				clearOutEvents();
-«««				signalTimePassing(); ««« It causes bugs when the entered timed state is not exited right away on the next run	 
+Â«Â«Â«				signalTimePassing(); Â«Â«Â« It causes bugs when the entered timed state is not exited right away on the next run	 
 				changeState();
 				clearInEvents();
 			}
-«««			
-«««			private void signalTimePassing() {
-«««				«FOR timeout : xSts.retrieveTimeouts»
-«««					if («timeout.name» == 0) {
-«««						«timeout.name» = -1;
-«««					}
-«««				«ENDFOR»
-«««			}
+Â«Â«Â«			
+Â«Â«Â«			private void signalTimePassing() {
+Â«Â«Â«				Â«FOR timeout : xSts.retrieveTimeoutsÂ»
+Â«Â«Â«					if (Â«timeout.nameÂ» == 0) {
+Â«Â«Â«						Â«timeout.nameÂ» = -1;
+Â«Â«Â«					}
+Â«Â«Â«				Â«ENDFORÂ»
+Â«Â«Â«			}
 
-			«xSts.serializeChangeState»
+			Â«xSts.serializeChangeStateÂ»
 			
 			private void clearOutEvents() {
-				«FOR event : xSts.retrieveOutEvents»
-					«event.name» = false;
-				«ENDFOR»
-«««				Clearing transient event parameters
-				«FOR transientOutParameter : xSts.retrieveOutEventParameters.filter[xSts.transientVariables.contains(it)]»
-					«transientOutParameter.name» = «transientOutParameter.initialValue.serialize»;
-				«ENDFOR»
+				Â«FOR event : xSts.retrieveOutEventsÂ»
+					Â«event.nameÂ» = false;
+				Â«ENDFORÂ»
+Â«Â«Â«				Clearing transient event parameters
+				Â«FOR transientOutParameter : xSts.retrieveOutEventParameters.filter[xSts.transientVariables.contains(it)]Â»
+					Â«transientOutParameter.nameÂ» = Â«transientOutParameter.initialValue.serializeÂ»;
+				Â«ENDFORÂ»
 			}
 			
 			private void clearInEvents() {
-				«FOR event : xSts.retrieveInEvents»
-					«event.name» = false;
-				«ENDFOR»
-«««				Clearing transient event parameters
-				«FOR transientInParameter : xSts.retrieveInEventParameters.filter[xSts.transientVariables.contains(it)]»
-					«transientInParameter.name» = «transientInParameter.initialValue.serialize»;
-				«ENDFOR»
+				Â«FOR event : xSts.retrieveInEventsÂ»
+					Â«event.nameÂ» = false;
+				Â«ENDFORÂ»
+Â«Â«Â«				Clearing transient event parameters
+				Â«FOR transientInParameter : xSts.retrieveInEventParameters.filter[xSts.transientVariables.contains(it)]Â»
+					Â«transientInParameter.nameÂ» = Â«transientInParameter.initialValue.serializeÂ»;
+				Â«ENDFORÂ»
 			}
 			
 			@Override
 			public String toString() {
 				return
-					«FOR variable : xSts.variableGroups
+					Â«FOR variable : xSts.variableGroups
 										.map[it.variables]
 										.flatten
-										SEPARATOR ' + System.lineSeparator() +'»
-						"«variable.name» = " + «variable.name»
-					«ENDFOR»
+										SEPARATOR ' + System.lineSeparator() +'Â»
+						"Â«variable.nameÂ» = " + Â«variable.nameÂ»
+					Â«ENDFORÂ»
 				;
 			}
 			

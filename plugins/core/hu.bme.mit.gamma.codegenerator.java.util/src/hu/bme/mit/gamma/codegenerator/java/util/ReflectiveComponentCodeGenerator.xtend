@@ -41,55 +41,55 @@ class ReflectiveComponentCodeGenerator {
 	 * Generates fields for parameter declarations
 	 */
 	def CharSequence createReflectiveClass() '''
-		package «component.getPackageString(BASE_PACKAGE_NAME)»;
+		package Â«component.getPackageString(BASE_PACKAGE_NAME)Â»;
 		
-		«component.generateReflectiveImports»
+		Â«component.generateReflectiveImportsÂ»
 		
-		public class «component.getReflectiveClassName» implements «Namings.REFLECTIVE_INTERFACE» {
+		public class Â«component.getReflectiveClassNameÂ» implements Â«Namings.REFLECTIVE_INTERFACEÂ» {
 			
-			private «component.getComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
+			private Â«component.getComponentClassNameÂ» Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ»;
 			// Wrapped contained components
-			«IF component instanceof CompositeComponent»
-				«FOR containedComponent : component.derivedComponents»
-					private «Namings.REFLECTIVE_INTERFACE» «containedComponent.name.toFirstLower» = null;
-				«ENDFOR»
-			«ELSEIF component instanceof AsynchronousAdapter»
-				private «Namings.REFLECTIVE_INTERFACE» «component.getWrappedComponentName» = null;
-			«ENDIF»
+			Â«IF component instanceof CompositeComponentÂ»
+				Â«FOR containedComponent : component.derivedComponentsÂ»
+					private Â«Namings.REFLECTIVE_INTERFACEÂ» Â«containedComponent.name.toFirstLowerÂ» = null;
+				Â«ENDFORÂ»
+			Â«ELSEIF component instanceof AsynchronousAdapterÂ»
+				private Â«Namings.REFLECTIVE_INTERFACEÂ» Â«component.getWrappedComponentNameÂ» = null;
+			Â«ENDIFÂ»
 			
-			«IF component.needTimer»
-				public «component.getReflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "»«parameter.type.transformType» «parameter.name»«ENDFOR»«Namings.UNIFIED_TIMER_INTERFACE» timer) {
-					this(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
-					«Namings.REFLECTIVE_WRAPPED_COMPONENT».setTimer(timer);
+			Â«IF component.needTimerÂ»
+				public Â«component.getReflectiveClassNameÂ»(Â«FOR parameter : component.parameterDeclarations SEPARATOR ", " AFTER ", "Â»Â«parameter.type.transformTypeÂ» Â«parameter.nameÂ»Â«ENDFORÂ»Â«Namings.UNIFIED_TIMER_INTERFACEÂ» timer) {
+					this(Â«FOR parameter : component.parameterDeclarations SEPARATOR ", "Â»Â«parameter.nameÂ»Â«ENDFORÂ»);
+					Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».setTimer(timer);
 				}
-			«ENDIF»
+			Â«ENDIFÂ»
 			
-			public «component.getReflectiveClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.type.transformType» «parameter.name»«ENDFOR») {
-				«Namings.REFLECTIVE_WRAPPED_COMPONENT» = new «component.getComponentClassName»(«FOR parameter : component.parameterDeclarations SEPARATOR ", "»«parameter.name»«ENDFOR»);
+			public Â«component.getReflectiveClassNameÂ»(Â«FOR parameter : component.parameterDeclarations SEPARATOR ", "Â»Â«parameter.type.transformTypeÂ» Â«parameter.nameÂ»Â«ENDFORÂ») {
+				Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ» = new Â«component.getComponentClassNameÂ»(Â«FOR parameter : component.parameterDeclarations SEPARATOR ", "Â»Â«parameter.nameÂ»Â«ENDFORÂ»);
 			}
 			
-			public «component.getReflectiveClassName»(«component.getComponentClassName» «Namings.REFLECTIVE_WRAPPED_COMPONENT») {
-				this.«Namings.REFLECTIVE_WRAPPED_COMPONENT» = «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
+			public Â«component.getReflectiveClassNameÂ»(Â«component.getComponentClassNameÂ» Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ») {
+				this.Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ» = Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ»;
 			}
 			
 			public void reset() {
-				«Namings.REFLECTIVE_WRAPPED_COMPONENT».reset();
+				Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».reset();
 			}
 			
-			public «component.getComponentClassName» get«Namings.REFLECTIVE_WRAPPED_COMPONENT.toFirstUpper»() {
-				return «Namings.REFLECTIVE_WRAPPED_COMPONENT»;
+			public Â«component.getComponentClassNameÂ» getÂ«Namings.REFLECTIVE_WRAPPED_COMPONENT.toFirstUpperÂ»() {
+				return Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ»;
 			}
 			
 			public String[] getPorts() {
-				return new String[] { «FOR port : component.allPorts SEPARATOR ", "»"«port.name»"«ENDFOR» };
+				return new String[] { Â«FOR port : component.allPorts SEPARATOR ", "Â»"Â«port.nameÂ»"Â«ENDFORÂ» };
 			}
 			
 			public String[] getEvents(String port) {
 				switch (port) {
-					«FOR port : component.allPorts»
-						case "«port.name»":
-							return new String[] { «FOR event : port.interfaceRealization.interface.events SEPARATOR ", "»"«event.event.name»"«ENDFOR» };
-					«ENDFOR»
+					Â«FOR port : component.allPortsÂ»
+						case "Â«port.nameÂ»":
+							return new String[] { Â«FOR event : port.interfaceRealization.interface.events SEPARATOR ", "Â»"Â«event.event.nameÂ»"Â«ENDFORÂ» };
+					Â«ENDFORÂ»
 					default:
 						throw new IllegalArgumentException("Not known port: " + port);
 				}
@@ -98,13 +98,13 @@ class ReflectiveComponentCodeGenerator {
 			public void raiseEvent(String port, String event, Object[] parameters) {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
-					«FOR port : component.allPorts»
-						«FOR inEvent : port.inputEvents»
-							case "«port.name».«inEvent.name»":
-								«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().raise«inEvent.name.toFirstUpper»(«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "»«inEvent.parameterDeclarations.get(i).type.generateParameterCast('''parameters[«i»]''')»«ENDFOR»);
+					Â«FOR port : component.allPortsÂ»
+						Â«FOR inEvent : port.inputEventsÂ»
+							case "Â«port.nameÂ».Â«inEvent.nameÂ»":
+								Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«port.name.toFirstUpperÂ»().raiseÂ«inEvent.name.toFirstUpperÂ»(Â«FOR i : 0..< inEvent.parameterDeclarations.size SEPARATOR ", "Â»Â«inEvent.parameterDeclarations.get(i).type.generateParameterCast('''parameters[Â«iÂ»]''')Â»Â«ENDFORÂ»);
 								break;
-						«ENDFOR»
-					«ENDFOR»
+						Â«ENDFORÂ»
+					Â«ENDFORÂ»
 					default:
 						throw new IllegalArgumentException("Not known port-in event combination: " + portEvent);
 				}
@@ -113,92 +113,92 @@ class ReflectiveComponentCodeGenerator {
 			public boolean isRaisedEvent(String port, String event, Object[] parameters) {
 				String portEvent = port + "." + event;
 				switch (portEvent) {
-					«FOR port : component.allPorts»
-						«FOR outEvent : port.outputEvents»
-							case "«port.name».«outEvent.name»":
-								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
-									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»()«IF outEvent.parameterDeclarations.get(i).toBeConvertedToString».toString()«ENDIF»)
-									«ENDFOR»
-									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
+					Â«FOR port : component.allPortsÂ»
+						Â«FOR outEvent : port.outputEventsÂ»
+							case "Â«port.nameÂ».Â«outEvent.nameÂ»":
+								if (Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«port.name.toFirstUpperÂ»().isRaisedÂ«outEvent.name.toFirstUpperÂ»()) {
+									Â«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"Â»
+										 parameters[Â«iÂ»].equals(Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«port.name.toFirstUpperÂ»().getÂ«outEvent.parameterDeclarations.get(i).name.toFirstUpperÂ»()Â«IF outEvent.parameterDeclarations.get(i).toBeConvertedToStringÂ».toString()Â«ENDIFÂ»)
+									Â«ENDFORÂ»
+									Â«IF outEvent.parameterDeclarations.emptyÂ»return true;Â«ENDIFÂ»
 								}
 								break;
-						«ENDFOR»
-					«ENDFOR»
+						Â«ENDFORÂ»
+					Â«ENDFORÂ»
 					default:
 						throw new IllegalArgumentException("Not known port-out event combination: " + portEvent);
 				}
-				«IF !component.allPorts.map[it.outputEvents].flatten.empty»return false;«ENDIF»
+				Â«IF !component.allPorts.map[it.outputEvents].flatten.emptyÂ»return false;Â«ENDIFÂ»
 			}
 			
-			«component.generateIsActiveState»
+			Â«component.generateIsActiveStateÂ»
 			
-			«component.generateRegionGetter»
+			Â«component.generateRegionGetterÂ»
 			
-			«component.generateStateGetter»
+			Â«component.generateStateGetterÂ»
 			
-			«component.generateScheduling»
+			Â«component.generateSchedulingÂ»
 			
-			«component.generateVariableGetters»
+			Â«component.generateVariableGettersÂ»
 			
-			«component.generateVariableValueGetters»
+			Â«component.generateVariableValueGettersÂ»
 			
-			«component.generateComponentGetters»
+			Â«component.generateComponentGettersÂ»
 			
-			«component.generateComponentValueGetters»
+			Â«component.generateComponentValueGettersÂ»
 			
 		}
 	'''
 	
 	protected def generateReflectiveImports(Component component) '''
-		import «BASE_PACKAGE_NAME».*;
-		«IF component instanceof CompositeComponent»
-			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
-				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
-			«ENDFOR»
-		«ELSEIF component instanceof AsynchronousAdapter»
-			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
-			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
-		«ENDIF»
+		import Â«BASE_PACKAGE_NAMEÂ».*;
+		Â«IF component instanceof CompositeComponentÂ»
+			Â«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSetÂ»
+				import Â«containedComponentType.getPackageString(BASE_PACKAGE_NAME)Â».*;
+			Â«ENDFORÂ»
+		Â«ELSEIF component instanceof AsynchronousAdapterÂ»
+			import Â«component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)Â».*;
+			import Â«component.getPackageString(BASE_PACKAGE_NAME)Â».*;
+		Â«ENDIFÂ»
 	'''
 	
 	protected def generateScheduling(Component component) '''
 		public void schedule(String instance) {
-			«IF component instanceof SynchronousComponent»
-					«Namings.REFLECTIVE_WRAPPED_COMPONENT».runCycle();
-			«ELSEIF component instanceof AsynchronousAdapter»
-					«Namings.REFLECTIVE_WRAPPED_COMPONENT».schedule();
-			«ELSE»
-	«««				TODO
-			«ENDIF»
+			Â«IF component instanceof SynchronousComponentÂ»
+					Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».runCycle();
+			Â«ELSEIF component instanceof AsynchronousAdapterÂ»
+					Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».schedule();
+			Â«ELSEÂ»
+	Â«Â«Â«				TODO
+			Â«ENDIFÂ»
 		}
 	'''
 	
 	protected def generateIsActiveState(Component component) '''
 		public boolean isStateActive(String region, String state) {
-			«IF component instanceof StatechartDefinition»
-				return «Namings.REFLECTIVE_WRAPPED_COMPONENT».isStateActive(region, state);
-			«ELSE»
+			Â«IF component instanceof StatechartDefinitionÂ»
+				return Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».isStateActive(region, state);
+			Â«ELSEÂ»
 				return false;
-			«ENDIF»
+			Â«ENDIFÂ»
 		}
 	'''
 	
 	protected def generateRegionGetter(Component component) '''
 		public String[] getRegions() {
-			return new String[] { «IF component instanceof StatechartDefinition»«FOR region : component.allRegions SEPARATOR ", "»"«region.name»"«ENDFOR»«ENDIF» };
+			return new String[] { Â«IF component instanceof StatechartDefinitionÂ»Â«FOR region : component.allRegions SEPARATOR ", "Â»"Â«region.nameÂ»"Â«ENDFORÂ»Â«ENDIFÂ» };
 		}
 	'''
 	
 	protected def generateStateGetter(Component component) '''
 		public String[] getStates(String region) {
 			switch (region) {
-				«IF component instanceof StatechartDefinition»
-					«FOR region : component.allRegions»
-						case "«region.name»":
-							return new String[] { «FOR state : region.states SEPARATOR ", "»"«state.name»"«ENDFOR» };
-					«ENDFOR»
-				«ENDIF»
+				Â«IF component instanceof StatechartDefinitionÂ»
+					Â«FOR region : component.allRegionsÂ»
+						case "Â«region.nameÂ»":
+							return new String[] { Â«FOR state : region.states SEPARATOR ", "Â»"Â«state.nameÂ»"Â«ENDFORÂ» };
+					Â«ENDFORÂ»
+				Â«ENDIFÂ»
 			}
 			throw new IllegalArgumentException("Not known region: " + region);
 		}
@@ -206,19 +206,19 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateVariableGetters(Component component) '''
 		public String[] getVariables() {
-			return new String[] { «IF component instanceof StatechartDefinition»«FOR variable : component.variableDeclarations SEPARATOR ", "»"«variable.name»"«ENDFOR»«ENDIF» };
+			return new String[] { Â«IF component instanceof StatechartDefinitionÂ»Â«FOR variable : component.variableDeclarations SEPARATOR ", "Â»"Â«variable.nameÂ»"Â«ENDFORÂ»Â«ENDIFÂ» };
 		}
 	'''
 	
 	protected def generateVariableValueGetters(Component component) '''
 		public Object getValue(String variable) {
 			switch (variable) {
-				«IF component instanceof StatechartDefinition»
-					«FOR variable : component.variableDeclarations»
-						case "«variable.name»":
-							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»()«IF variable.toBeConvertedToString».toString()«ENDIF»;
-					«ENDFOR»
-				«ENDIF»
+				Â«IF component instanceof StatechartDefinitionÂ»
+					Â«FOR variable : component.variableDeclarationsÂ»
+						case "Â«variable.nameÂ»":
+							return Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«variable.name.toFirstUpperÂ»()Â«IF variable.toBeConvertedToStringÂ».toString()Â«ENDIFÂ»;
+					Â«ENDFORÂ»
+				Â«ENDIFÂ»
 			}
 			throw new IllegalArgumentException("Not known variable: " + variable);
 		}
@@ -226,33 +226,33 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateComponentGetters(Component component) '''
 		public String[] getComponents() {
-			return new String[] { «IF component instanceof CompositeComponent»«FOR containedComponent : component.derivedComponents SEPARATOR ", "»"«containedComponent.name»"«ENDFOR»«ELSEIF component instanceof AsynchronousAdapter»"«component.getWrappedComponentName»"«ENDIF»};
+			return new String[] { Â«IF component instanceof CompositeComponentÂ»Â«FOR containedComponent : component.derivedComponents SEPARATOR ", "Â»"Â«containedComponent.nameÂ»"Â«ENDFORÂ»Â«ELSEIF component instanceof AsynchronousAdapterÂ»"Â«component.getWrappedComponentNameÂ»"Â«ENDIFÂ»};
 		}
 	'''
 	
 	protected def generateComponentValueGetters(Component component) '''
-		public «Namings.REFLECTIVE_INTERFACE» getComponent(String component) {
+		public Â«Namings.REFLECTIVE_INTERFACEÂ» getComponent(String component) {
 			switch (component) {
-				«IF component instanceof CompositeComponent»
-					«FOR containedComponent : component.derivedComponents»
-						case "«containedComponent.name»":
-							if («containedComponent.name.toFirstLower» == null) {
-								«containedComponent.name.toFirstLower» = new «containedComponent.derivedType.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«containedComponent.name.toFirstUpper»());
+				Â«IF component instanceof CompositeComponentÂ»
+					Â«FOR containedComponent : component.derivedComponentsÂ»
+						case "Â«containedComponent.nameÂ»":
+							if (Â«containedComponent.name.toFirstLowerÂ» == null) {
+								Â«containedComponent.name.toFirstLowerÂ» = new Â«containedComponent.derivedType.getReflectiveClassNameÂ»(Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«containedComponent.name.toFirstUpperÂ»());
 							}
-							return «containedComponent.name.toFirstLower»;
-					«ENDFOR»
-				«ELSEIF component instanceof AsynchronousAdapter»
-					case "«component.getWrappedComponentName»":
-						if («component.getWrappedComponentName» == null) {
-							«component.getWrappedComponentName» = new «component.wrappedComponent.type.getReflectiveClassName»(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«component.getWrappedComponentName.toFirstUpper»());
+							return Â«containedComponent.name.toFirstLowerÂ»;
+					Â«ENDFORÂ»
+				Â«ELSEIF component instanceof AsynchronousAdapterÂ»
+					case "Â«component.getWrappedComponentNameÂ»":
+						if (Â«component.getWrappedComponentNameÂ» == null) {
+							Â«component.getWrappedComponentNameÂ» = new Â«component.wrappedComponent.type.getReflectiveClassNameÂ»(Â«Namings.REFLECTIVE_WRAPPED_COMPONENTÂ».getÂ«component.getWrappedComponentName.toFirstUpperÂ»());
 						}
-						return «component.getWrappedComponentName»;
-				«ENDIF»
-				«IF component instanceof StatechartDefinition»
+						return Â«component.getWrappedComponentNameÂ»;
+				Â«ENDIFÂ»
+				Â«IF component instanceof StatechartDefinitionÂ»
 					// If the class name is given, then it will return itself
-					case "«component.getComponentClassName»":
+					case "Â«component.getComponentClassNameÂ»":
 						return this;
-				«ENDIF»
+				Â«ENDIFÂ»
 			}
 			throw new IllegalArgumentException("Not known component: " + component);
 		}
@@ -262,13 +262,13 @@ class ReflectiveComponentCodeGenerator {
 		if (type instanceof TypeReference) {
 			val typeDeclaration = type.reference
 			if (typeDeclaration.type instanceof EnumerableTypeDefinition) {
-				return '''«typeDeclaration.name».valueOf(«parameter».toString())'''
+				return '''Â«typeDeclaration.nameÂ».valueOf(Â«parameterÂ».toString())'''
 			}
 		}
-		return '''(«type.transformType») «parameter»'''
+		return '''(Â«type.transformTypeÂ») Â«parameterÂ»'''
 	}
 	
-	protected def transformType(Type type) '''«type.serialize»'''
+	protected def transformType(Type type) '''Â«type.serializeÂ»'''
 	
 	/**
 	 * Enums are returned as strings.

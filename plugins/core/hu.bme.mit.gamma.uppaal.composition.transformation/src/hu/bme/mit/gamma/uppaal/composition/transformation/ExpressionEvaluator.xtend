@@ -10,9 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.composition.transformation
 
+import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
@@ -26,7 +28,6 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
@@ -34,8 +35,6 @@ import hu.bme.mit.gamma.transformation.util.queries.ParameterizedInstancesWithPa
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.expression.model.AccessExpression
 
 // There is an expression evaluator in the Expression Model plugin, but that does not handle parameter declarations
 class ExpressionEvaluator {

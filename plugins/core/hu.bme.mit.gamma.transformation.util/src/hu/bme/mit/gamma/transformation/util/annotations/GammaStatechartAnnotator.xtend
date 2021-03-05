@@ -836,12 +836,12 @@ class AnnotationNamings {
 	int defId = 0
 	int useId = 0
 	
-	def String getVariableName(Transition transition) '''«IF transition.id !== null»«transition.id»«ELSE»«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»«ENDIF»'''
-	def String getFirstVariableName(StatechartDefinition statechart) '''«PREFIX»first_«statechart.name»«id++»«POSTFIX»'''
-	def String getSecondVariableName(StatechartDefinition statechart) '''«PREFIX»second_«statechart.name»«id++»«POSTFIX»'''
-	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
-	def String getDefVariableName(VariableDeclaration variable) '''«PREFIX»def_«variable.name»_«defId++»«POSTFIX»'''
-	def String getUseVariableName(VariableDeclaration variable) '''«PREFIX»use_«variable.name»_«useId++»«POSTFIX»'''
+	def String getVariableName(Transition transition) '''Â«IF transition.id !== nullÂ»Â«transition.idÂ»Â«ELSEÂ»Â«PREFIXÂ»Â«transition.sourceState.nameÂ»_Â«id++Â»_Â«transition.targetState.nameÂ»Â«POSTFIXÂ»Â«ENDIFÂ»'''
+	def String getFirstVariableName(StatechartDefinition statechart) '''Â«PREFIXÂ»first_Â«statechart.nameÂ»Â«id++Â»Â«POSTFIXÂ»'''
+	def String getSecondVariableName(StatechartDefinition statechart) '''Â«PREFIXÂ»second_Â«statechart.nameÂ»Â«id++Â»Â«POSTFIXÂ»'''
+	def String getParameterName(Event event) '''Â«PREFIXÂ»Â«event.nameÂ»Â«POSTFIXÂ»'''
+	def String getDefVariableName(VariableDeclaration variable) '''Â«PREFIXÂ»def_Â«variable.nameÂ»_Â«defId++Â»Â«POSTFIXÂ»'''
+	def String getUseVariableName(VariableDeclaration variable) '''Â«PREFIXÂ»use_Â«variable.nameÂ»_Â«useId++Â»Â«POSTFIXÂ»'''
 	
 }
 

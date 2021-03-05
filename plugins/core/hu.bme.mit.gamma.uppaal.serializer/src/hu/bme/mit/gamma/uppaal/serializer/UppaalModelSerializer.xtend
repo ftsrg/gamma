@@ -81,38 +81,38 @@ class UppaalModelSerializer {
 	 * @return The header of the XML file in a char sequence.
 	 */
 	private def static createHeader(NTA nta) '''
-«««		For some reason if this header is in, the xml file cannot be parsed
-«««		<?xml version="1.0" encoding="utf-8"?>
-«««		<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
+Â«Â«Â«		For some reason if this header is in, the xml file cannot be parsed
+Â«Â«Â«		<?xml version="1.0" encoding="utf-8"?>
+Â«Â«Â«		<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd'>
 		<nta>
 		<declaration>
 		
-		«FOR declaration : nta.globalDeclarations.declaration.filter(TypeDeclaration) SEPARATOR "\n"»
-			«IF declaration.typeDefinition instanceof StructTypeSpecification»
+		Â«FOR declaration : nta.globalDeclarations.declaration.filter(TypeDeclaration) SEPARATOR "\n"Â»
+			Â«IF declaration.typeDefinition instanceof StructTypeSpecificationÂ»
 				typedef struct { 
-					«declaration.typeDefinition.serializeTypeDefinition»
-				} «FOR type : declaration.type»«type.serializeType»«ENDFOR»;
-			«ENDIF»
-		«ENDFOR»
+					Â«declaration.typeDefinition.serializeTypeDefinitionÂ»
+				} Â«FOR type : declaration.typeÂ»Â«type.serializeTypeÂ»Â«ENDFORÂ»;
+			Â«ENDIFÂ»
+		Â«ENDFORÂ»
 		
-		«FOR declaration : nta.globalDeclarations.declaration.filter(VariableDeclaration)
+		Â«FOR declaration : nta.globalDeclarations.declaration.filter(VariableDeclaration)
 //				.sortBy[it.variable.head.name] /* Declaration order is crucial, it must not be reordered */ 
-				SEPARATOR "\n"»
-			«declaration.serializeVariable»
-		«ENDFOR»
+				SEPARATOR "\n"Â»
+			Â«declaration.serializeVariableÂ»
+		Â«ENDFORÂ»
 		
-		«FOR function : nta.globalDeclarations.declaration.filter(FunctionDeclaration).map[it.function] SEPARATOR "\n"»
-			«function.returnType.serializeTypeDefinition» «function.name»(«FOR param : function.parameter SEPARATOR ", "»«param.variableDeclaration.typeDefinition.serializeTypeDefinition»«param.callType.serializeCallType» «param.variableDeclaration.variable.head.name»«ENDFOR») {
-				«IF function.block.declarations !== null»
-					«FOR declaration : function.block.declarations.declaration.filter(DataVariableDeclaration)»
-						«declaration.serializeVariable»
-					«ENDFOR»
-				«ENDIF»
-				«FOR statement : function.block.statement»
-					«statement.transformStatement»
-				«ENDFOR»
+		Â«FOR function : nta.globalDeclarations.declaration.filter(FunctionDeclaration).map[it.function] SEPARATOR "\n"Â»
+			Â«function.returnType.serializeTypeDefinitionÂ» Â«function.nameÂ»(Â«FOR param : function.parameter SEPARATOR ", "Â»Â«param.variableDeclaration.typeDefinition.serializeTypeDefinitionÂ»Â«param.callType.serializeCallTypeÂ» Â«param.variableDeclaration.variable.head.nameÂ»Â«ENDFORÂ») {
+				Â«IF function.block.declarations !== nullÂ»
+					Â«FOR declaration : function.block.declarations.declaration.filter(DataVariableDeclaration)Â»
+						Â«declaration.serializeVariableÂ»
+					Â«ENDFORÂ»
+				Â«ENDIFÂ»
+				Â«FOR statement : function.block.statementÂ»
+					Â«statement.transformStatementÂ»
+				Â«ENDFORÂ»
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 		
 		</declaration>
 	'''	
@@ -125,68 +125,68 @@ class UppaalModelSerializer {
 	 * @return The main part of the XML file in a char sequence.
 	 */
 	private def static createTemplate(NTA nta) '''
-		«FOR template : nta.template SEPARATOR "\n"»
+		Â«FOR template : nta.template SEPARATOR "\n"Â»
 		<template>
 		<name>
-		«template.name»
+		Â«template.nameÂ»
 		</name>
-		«IF !template.declarations.declaration.filter(VariableDeclaration).empty»
-«««			This IF is due to an UPPAAL bug: if there is an empty declaration tag, UPPAAL throws
-«««			a nullptr exception upon opening the declaration of a template in the editor
+		Â«IF !template.declarations.declaration.filter(VariableDeclaration).emptyÂ»
+Â«Â«Â«			This IF is due to an UPPAAL bug: if there is an empty declaration tag, UPPAAL throws
+Â«Â«Â«			a nullptr exception upon opening the declaration of a template in the editor
 			<declaration>
-			«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"»
-				«variableDeclaration.serializeVariable»
-			«ENDFOR»
+			Â«FOR variableDeclaration : template.declarations.declaration.filter(VariableDeclaration) SEPARATOR "\n"Â»
+				Â«variableDeclaration.serializeVariableÂ»
+			Â«ENDFORÂ»
 			</declaration>
-		«ENDIF»
-		«FOR location : template.location SEPARATOR "\n"»
-		<location id="«location.name»">
+		Â«ENDIFÂ»
+		Â«FOR location : template.location SEPARATOR "\n"Â»
+		<location id="Â«location.nameÂ»">
 		<name>
-		«location.name»
+		Â«location.nameÂ»
 		</name>
-		«IF !(location.invariant === null)»
+		Â«IF !(location.invariant === null)Â»
 		<label kind="invariant">
-		«location.invariant.transform»
+		Â«location.invariant.transformÂ»
 		</label>
-		«ENDIF»
-		«IF !(location.comment === null)»
+		Â«ENDIFÂ»
+		Â«IF !(location.comment === null)Â»
 		<label kind="comments">
-		«location.comment»
+		Â«location.commentÂ»
 		</label>
-		«ENDIF»
-		«IF (location.locationTimeKind.literal.equals("COMMITED"))»
+		Â«ENDIFÂ»
+		Â«IF (location.locationTimeKind.literal.equals("COMMITED"))Â»
 		<committed/>
-		«ENDIF»
-		«IF (location.locationTimeKind.literal.equals("URGENT"))»
+		Â«ENDIFÂ»
+		Â«IF (location.locationTimeKind.literal.equals("URGENT"))Â»
 		<urgent/>
-		«ENDIF»
+		Â«ENDIFÂ»
 		</location>
-		«ENDFOR»
-		<init ref="«template.init.name»"/>
+		Â«ENDFORÂ»
+		<init ref="Â«template.init.nameÂ»"/>
 		
-		«FOR transition : template.edge SEPARATOR "\n"»
+		Â«FOR transition : template.edge SEPARATOR "\n"Â»
 		<transition>
-		<source ref="«transition.source.name»"/>
-		<target ref="«transition.target.name»"/>
-		«IF !transition.selection.empty»
-			<label kind="select">«FOR select : transition.selection SEPARATOR ", "»«select.serialize»«ENDFOR»</label>
-		«ENDIF»
-		«IF transition.guard !== null»
-			<label kind="guard">«transition.guard.transform»</label>
-		«ENDIF»
-		«IF transition.synchronization !== null»
-			<label kind="synchronisation">«transition.synchronization.channelExpression.identifier.name»«transition.synchronization.kind.literal»</label>
-		«ENDIF»
-		«IF transition.update !== null»
-			<label kind="assignment">«FOR anUpdate : transition.update SEPARATOR ",\n"»«anUpdate.transform»«ENDFOR»</label>
-		«ENDIF»
-		«IF transition.comment !== null»
-			<label kind="comments">«transition.comment»</label>
-		«ENDIF»
+		<source ref="Â«transition.source.nameÂ»"/>
+		<target ref="Â«transition.target.nameÂ»"/>
+		Â«IF !transition.selection.emptyÂ»
+			<label kind="select">Â«FOR select : transition.selection SEPARATOR ", "Â»Â«select.serializeÂ»Â«ENDFORÂ»</label>
+		Â«ENDIFÂ»
+		Â«IF transition.guard !== nullÂ»
+			<label kind="guard">Â«transition.guard.transformÂ»</label>
+		Â«ENDIFÂ»
+		Â«IF transition.synchronization !== nullÂ»
+			<label kind="synchronisation">Â«transition.synchronization.channelExpression.identifier.nameÂ»Â«transition.synchronization.kind.literalÂ»</label>
+		Â«ENDIFÂ»
+		Â«IF transition.update !== nullÂ»
+			<label kind="assignment">Â«FOR anUpdate : transition.update SEPARATOR ",\n"Â»Â«anUpdate.transformÂ»Â«ENDFORÂ»</label>
+		Â«ENDIFÂ»
+		Â«IF transition.comment !== nullÂ»
+			<label kind="comments">Â«transition.commentÂ»</label>
+		Â«ENDIFÂ»
 		</transition>
-		«ENDFOR»
+		Â«ENDFORÂ»
 		</template>
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	/**
@@ -198,11 +198,11 @@ class UppaalModelSerializer {
 	 */
 	private def static createFooter(NTA nta) '''
 			<system>
-				«FOR template : nta.template SEPARATOR "\n"»
-					«template.name.processNameOfTemplate» = «template.name»();
-				«ENDFOR»
-«««				The instantiation list needs reversing as they are declared in a decreasing priority			
-				system «FOR instantiationList : nta.systemDeclarations.system.instantiationList.reverseView SEPARATOR " &lt; "»«FOR instantiation : instantiationList.template SEPARATOR ", "»«instantiation.name.processNameOfTemplate»«ENDFOR»«ENDFOR»;
+				Â«FOR template : nta.template SEPARATOR "\n"Â»
+					Â«template.name.processNameOfTemplateÂ» = Â«template.nameÂ»();
+				Â«ENDFORÂ»
+Â«Â«Â«				The instantiation list needs reversing as they are declared in a decreasing priority			
+				system Â«FOR instantiationList : nta.systemDeclarations.system.instantiationList.reverseView SEPARATOR " &lt; "Â»Â«FOR instantiation : instantiationList.template SEPARATOR ", "Â»Â«instantiation.name.processNameOfTemplateÂ»Â«ENDFORÂ»Â«ENDFORÂ»;
 			</system>
 		</nta>
 	'''
@@ -211,6 +211,6 @@ class UppaalModelSerializer {
 	 * Converts the template name to process name.
 	 */
 	private def static getProcessNameOfTemplate(String templateName) '''
-		P_«templateName»'''
+		P_Â«templateNameÂ»'''
 		
 }
