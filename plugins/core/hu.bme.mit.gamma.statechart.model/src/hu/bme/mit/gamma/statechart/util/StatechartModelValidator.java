@@ -13,13 +13,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.action.model.Action;
+import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ExpressionStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -44,7 +45,6 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -115,12 +115,12 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 
 public class StatechartModelValidator extends ActionModelValidator {
-ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	// Singleton
+	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
+	protected StatechartModelValidator() {}
+	//
 	
 	// Some elements can have the same name
-	
-	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
-	public StatechartModelValidator() {}
 
 	@Override
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
@@ -157,7 +157,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	// Not supported elements
-	
 
 	public Collection<ValidationResultMessage> checkComponentSepratation(Component component) {
 		Package parentPackage = (Package) component.eContainer();
@@ -176,14 +175,12 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkUnsupportedTriggers(OpaqueTrigger trigger) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, "Not supported trigger.",
 				new ReferenceInfo(StatechartModelPackage.Literals.OPAQUE_TRIGGER__TRIGGER, null)));
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkUnsupportedVariableTypes(VariableDeclaration variable) {
 		Type type = expressionUtil.findTypeDefinitionOfType(variable.getType());
@@ -203,13 +200,15 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	/*
-	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
-		error("Expression statements are not supported in the GSL.", ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION);
-	}*/
+	
+	public Collection<ValidationResultMessage> checkUnsupportedExpressionStatements(
+			ExpressionStatement expressionStatement) {
+		return Collections.singletonList(new ValidationResultMessage(ValidationResult.ERROR, 
+				"Expression statements are not supported in the GSL.",
+				new ReferenceInfo(ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION, null)));
+	}
 	
 	// Expressions
-	
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -219,7 +218,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	// Interfaces
-	
 	
 	public Collection<ValidationResultMessage> checkInterfaceInheritance(Interface gammaInterface) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -253,7 +251,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkEventPersistency(Event event) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (event.getPersistency() == Persistency.PERSISTENT) {
@@ -265,7 +262,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkParameterName(Event event) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -282,7 +278,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	// Statechart adaptive contract
 	
-	
 	public Collection<ValidationResultMessage> checkStateAnnotation(StateContractAnnotation annotation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(annotation);
@@ -294,7 +289,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkStatechartAnnotation(AdaptiveContractAnnotation annotation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -309,7 +303,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	// Statechart mission phase
-	
 	
 	public Collection<ValidationResultMessage> checkStateDefinition(MissionPhaseStateDefinition stateDefinition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -338,7 +331,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkVaraibleBindings(VariableBinding variableBinding) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		VariableDeclaration statechartVariable = variableBinding.getStatechartVariable();
@@ -349,7 +341,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	// Statechart
-	
 	
 	public Collection<ValidationResultMessage> checkStatechartScheduling(StatechartDefinition statechart) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -387,38 +378,16 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 
-	protected <T extends EObject> List<T> getAllContentsOfType(EObject element, Class<T> classType){
-		List<T> contents = new ArrayList<T>();
-		TreeIterator<EObject> iterator = EcoreUtil.getAllContents(element, true);
-		while (iterator.hasNext()) {
-			EObject object = iterator.next();
-			if (classType.isInstance(object)) {
-				contents.add((T) object);
-			}
-		}
-		return contents;
-	}
-	
-	protected <T extends EObject> List<T> getSelfAndContentsOfAllType(EObject element, Class<T> classType){
-		List<T> contents = getAllContentsOfType(element, classType);
-		if (classType.isInstance(element)) {
-			contents.add((T) element);
-		}
-		return contents;
-	}
-	
-	
-	 
 	public Collection<ValidationResultMessage> checkImports(Package _package) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Collection<Interface> usedInterfaces = new HashSet<Interface>();
 		Collection<Component> usedComponents = new HashSet<Component>();
 		Collection<TypeDeclaration> usedTypeDeclarations =
-				getAllContentsOfType(EcoreUtil.getRootContainer(_package), TypeReference.class)
+			ecoreUtil.getAllContentsOfType(EcoreUtil.getRootContainer(_package), TypeReference.class)
 				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
 
 		Collection<EnumerationLiteralDefinition> usedEnumLiterals =
-				getAllContentsOfType(EcoreUtil.getRootContainer(_package), EnumerationLiteralExpression.class)
+			ecoreUtil.getAllContentsOfType(EcoreUtil.getRootContainer(_package), EnumerationLiteralExpression.class)
 				.stream().map(it -> it.getReference()).collect(Collectors.toSet());
 		// Collecting the used components and interfaces
 		for (Component component : _package.getComponents()) {
@@ -436,13 +405,14 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				usedComponents.add(((AsynchronousAdapter) component).getWrappedComponent().getType());
 			}
 		}
-		getAllContentsOfType(_package, AdaptiveContractAnnotation.class).stream()
+		ecoreUtil.getAllContentsOfType(_package, AdaptiveContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
-		getAllContentsOfType(_package, ScenarioContractAnnotation.class).stream()
+		ecoreUtil.getAllContentsOfType(_package, ScenarioContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.add(it.getMonitoredComponent()));
-		getAllContentsOfType(_package, StateContractAnnotation.class).stream()
+		ecoreUtil.getAllContentsOfType(_package, StateContractAnnotation.class).stream()
 			.forEach(it -> usedComponents.addAll(it.getContractStatecharts()));
-		for (MissionPhaseStateAnnotation annotation : getAllContentsOfType(_package, MissionPhaseStateAnnotation.class)) {
+		for (MissionPhaseStateAnnotation annotation : ecoreUtil.getAllContentsOfType(
+				_package, MissionPhaseStateAnnotation.class)) {
 			for (MissionPhaseStateDefinition state : annotation.getStateDefinitions()) {
 				usedComponents.add(state.getComponent().getType());
 			}
@@ -455,7 +425,7 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			components.retainAll(usedComponents);
 			Collection<TypeDeclaration> typeDeclarations = new HashSet<TypeDeclaration>(importedPackage.getTypeDeclarations());
 			typeDeclarations.retainAll(usedTypeDeclarations);
-			Collection<EnumerationLiteralDefinition> enumDefinitions =
+			Collection<EnumerationLiteralDefinition> enumDefinitions = ecoreUtil.
 					getAllContentsOfType(EcoreUtil.getRootContainer(importedPackage), EnumerationLiteralDefinition.class);
 			enumDefinitions.retainAll(usedEnumLiterals);
 			if (interfaces.isEmpty() && components.isEmpty() && typeDeclarations.isEmpty() && enumDefinitions.isEmpty()) {
@@ -467,7 +437,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkRegionEntries(Region region) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -481,38 +450,38 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	//FIXME commented to be able to run after changes
-	/*
-	public void checkUnusedDeclarations(Declaration declaration) {
-		// Not checking parameter declarations of events
-		if (declaration.eContainer() instanceof Event) {
-			return;
-		}
-		boolean isReferred;
-		if (declaration instanceof TypeDeclaration) {
-			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), TypeReference.class)
-					.stream().anyMatch(it -> it.getReference() == declaration);
-		}
-		else {
-			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
-					.stream().anyMatch(it -> it.getDeclaration() == declaration);
-			if (!isReferred) {
-				isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), VariableBinding.class)
-						.stream().anyMatch(it -> it.getStatechartVariable() == declaration);
-			}
-		}
-		if (!isReferred) {
-			if (declaration instanceof TypeDeclaration) {
-				// Type declarations can be referred from different package
-				return;
-			}
-			warning("This declaration is not used.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-		}
-	}*/
 	
+//	public void checkUnusedDeclarations(Declaration declaration) {
+//		// Not checking parameter declarations of events
+//		if (declaration.eContainer() instanceof Event) {
+//			return;
+//		}
+//		boolean isReferred;
+//		if (declaration instanceof TypeDeclaration) {
+//			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), TypeReference.class)
+//					.stream().anyMatch(it -> it.getReference() == declaration);
+//		}
+//		else {
+//			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
+//					.stream().anyMatch(it -> it.getDeclaration() == declaration);
+//			if (!isReferred) {
+//				isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), VariableBinding.class)
+//						.stream().anyMatch(it -> it.getStatechartVariable() == declaration);
+//			}
+//		}
+//		if (!isReferred) {
+//			if (declaration instanceof TypeDeclaration) {
+//				// Type declarations can be referred from different package
+//				return;
+//			}
+//			warning("This declaration is not used.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
+//		}
+//	}
 	
 	public Collection<ValidationResultMessage> checkUnusedTimeoutDeclarations(TimeoutDeclaration declaration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Collection<SetTimeoutAction> timeoutSettings = getAllContentsOfType(EcoreUtil.getRootContainer(declaration),
+		Collection<SetTimeoutAction> timeoutSettings = ecoreUtil.
+				getAllContentsOfType(EcoreUtil.getRootContainer(declaration),
 				SetTimeoutAction.class).stream().filter(it -> it.getTimeoutDeclaration() == declaration).collect(Collectors.toSet());
 		if (timeoutSettings.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
@@ -530,7 +499,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTimeSpecifications(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
@@ -545,7 +513,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkPortEventParameterReference(EventParameterReferenceExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -567,7 +534,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTransitionPriority(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(transition);
@@ -580,7 +546,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkElseTransitionPriority(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -608,7 +573,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 				transition.getSourceState() instanceof JoinState);
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTransitionTriggers(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!needsTrigger(transition)) {
@@ -621,7 +585,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkTransitionTriggers(ElseExpression elseExpression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -650,7 +613,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public void checkTransitionEventTriggers(PortEventReference portEventReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject eventTrigger = portEventReference.eContainer();
@@ -669,7 +631,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTransitionGuards(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (transition.getGuard() != null) {
@@ -682,7 +643,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkTransitionEventRaisings(RaiseEventAction raiseEvent) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -725,8 +685,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
-	
 	
 	public Collection<ValidationResultMessage> checkNodeReachability(StateNode node) {
 		// These nodes do not need incoming transitions
@@ -785,7 +743,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return true;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkEntryNodes(EntryState entry) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		final Region parentRegion = StatechartModelDerivedFeatures.getParentRegion(entry);
@@ -822,7 +779,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkEntryNodeTransitions(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(transition.getSourceState() instanceof EntryState)) {
@@ -840,7 +796,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkPseudoNodeAcyclicity(PseudoState node) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -868,7 +823,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkChoiceNodes(ChoiceState choice) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(choice);
@@ -892,7 +846,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkForkNodes(ForkState fork) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -934,7 +887,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkMergeNodes(MergeState merge) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Collection<Transition> incomingTransitions = StatechartModelDerivedFeatures.getIncomingTransitions(merge);
@@ -958,7 +910,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkJoinNodes(JoinState join) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -999,7 +950,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkPseudoNodeTransitions(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1066,7 +1016,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTimeoutTransitions(hu.bme.mit.gamma.statechart.statechart.State state) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		boolean multipleTimedTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(state).stream()
@@ -1080,7 +1029,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkOutgoingTransitionDeterminism(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1161,7 +1109,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return false;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTransitionOcclusion(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		StateNode sourceState = transition.getSourceState();
@@ -1187,8 +1134,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return new HashSet<Transition>();
 	}
 	
-	
-	
 	public Collection<ValidationResultMessage> checkParallelTransitionAssignments(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Transition sameTriggerParallelTransition = getSameTriggedTransitionOfParallelRegions(transition);
@@ -1201,7 +1146,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	 
 	
 	public Collection<ValidationResultMessage> checkParallelEventRaisings(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1281,7 +1225,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTransitionOrientation(Transition transition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (StatechartModelDerivedFeatures.isSameRegion(transition) ||
@@ -1297,7 +1240,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
@@ -1309,7 +1251,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	}
 	
 	// Composite system
-	
 	
 	public Collection<ValidationResultMessage> checkName(Package _package) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1350,7 +1291,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return null;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkMultipleImports(Package gammaPackage) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Package> importedPackages = new HashSet<Package>();
@@ -1367,7 +1307,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkParameters(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component type = StatechartModelDerivedFeatures.getDerivedType(instance);
@@ -1378,7 +1317,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceArguments(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1404,7 +1342,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPortBinding(Port port) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component container = (Component) port.eContainer();
@@ -1421,7 +1358,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkUnusedInstancePort(ComponentInstance instance) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1448,7 +1384,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPortBindingUniqueness(PortBinding portBinding) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Port systemPort = portBinding.getCompositeSystemPort();
@@ -1472,7 +1407,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPortBinding(PortBinding portDefinition) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		RealizationMode systemPortIT = portDefinition.getCompositeSystemPort().getInterfaceRealization().getRealizationMode();
@@ -1492,7 +1426,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkInstancePortReference(InstancePortReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = reference.getInstance();
@@ -1510,14 +1443,14 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPortBindingWithSimpleChannel(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = getAllContentsOfType(root, PortBinding.class);
+		Collection<PortBinding> portDefinitions = ecoreUtil.getAllContentsOfType(root, PortBinding.class);
 		for (PortBinding portDefinition : portDefinitions) {
 			// Broadcast ports can be used in multiple places
-			if (!isBroadcast(channel.getProvidedPort().getPort()) && equals(channel.getProvidedPort(), portDefinition.getInstancePortReference())) {
+			if (!isBroadcast(channel.getProvidedPort().getPort()) && equals(
+					channel.getProvidedPort(), portDefinition.getInstancePortReference())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"A port of an instance can be included either in a channel or a port binding!",
 						new ReferenceInfo(CompositeModelPackage.Literals.CHANNEL__PROVIDED_PORT, null)));
@@ -1535,11 +1468,10 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return StatechartModelDerivedFeatures.isBroadcast(port);
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPortBindingWithBroadcastChannel(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<PortBinding> portDefinitions = getAllContentsOfType(root, PortBinding.class);
+		Collection<PortBinding> portDefinitions = ecoreUtil.getAllContentsOfType(root, PortBinding.class);
 		for (PortBinding portDefinition : portDefinitions) {
 			for (InstancePortReference output : channel.getRequiredPorts()) {
 				if (equals(output, portDefinition.getInstancePortReference())) {
@@ -1552,7 +1484,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkChannelProvidedPorts(Channel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
@@ -1562,7 +1493,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		// Checking provided instance ports in different channels
 		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
+		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
+				getAllContentsOfType(root, InstancePortReference.class);
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 						.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
@@ -1575,7 +1507,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkChannelRequiredPorts(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
@@ -1584,7 +1515,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			return validationResultMessages;
 		}
 		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
+		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
+				getAllContentsOfType(root, InstancePortReference.class);
 		// Checking required instance ports in different simple channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it != channel.getRequiredPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
@@ -1597,7 +1529,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkChannelRequiredPorts(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Component parentComponent = (Component) channel.eContainer();
@@ -1606,7 +1537,8 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 			return validationResultMessages;
 		}
 		EObject root = EcoreUtil.getRootContainer(channel);
-		Collection<InstancePortReference> instancePortReferences = getAllContentsOfType(root, InstancePortReference.class);
+		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
+				getAllContentsOfType(root, InstancePortReference.class);
 		// Checking required instance ports in different broadcast channels
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
 				.filter(it -> it.eContainer() != channel && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
@@ -1638,7 +1570,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return p1.getInstance() == p2.getInstance() && p1.getPort() == p2.getPort();
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkChannelInput(Channel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(channel.getProvidedPort().getPort().getInterfaceRealization().getRealizationMode() == RealizationMode.PROVIDED)) {
@@ -1648,7 +1579,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		} 
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkSimpleChannelOutput(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1668,7 +1598,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkBroadcastChannelOutput(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1697,7 +1626,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkCascadeLoopChannels(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
@@ -1709,7 +1637,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkCascadeLoopChannels(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1725,7 +1652,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	
 	// Wrapper
 	
-	
 	public Collection<ValidationResultMessage> checkWrapperPortName(Port port) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (port.eContainer() instanceof AsynchronousAdapter) {
@@ -1740,7 +1666,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkWrapperClock(Clock clock) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!isContainedInQueue(clock, (AsynchronousAdapter) clock.eContainer())) {
@@ -1750,7 +1675,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1800,7 +1724,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkInputPossibility(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Collection<Event> inputEvents = getSemanticEvents(StatechartModelDerivedFeatures.getAllPorts(wrapper), EventDirection.IN);
@@ -1811,7 +1734,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkWrappedPort(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1826,7 +1748,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkControlSpecification(ControlSpecification controlSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1851,7 +1772,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkMessageQueuePriorities(AsynchronousAdapter wrapper) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Integer> priorityValues = new HashSet<Integer>();
@@ -1869,7 +1789,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkMessageQueue(MessageQueue queue) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -1969,7 +1888,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return false;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkAnyPortControls(AsynchronousAdapter adapter) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Map<Port, Collection<Event>> usedEvents = new HashMap<Port, Collection<Event>>();
@@ -2028,7 +1946,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (anyPortEventReference.eContainer() instanceof MessageQueue && isBroadcast(anyPortEventReference.getPort())) {
@@ -2039,7 +1956,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		return validationResultMessages;
 		
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkExecutionLists(CascadeCompositeComponent cascade) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -2056,7 +1972,6 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkComponentInstanceReferences(ComponentInstanceReference reference) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -2084,4 +1999,5 @@ ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 		}
 		return validationResultMessages;
 	}
+	
 }

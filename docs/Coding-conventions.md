@@ -10,6 +10,8 @@ We mainly follow the standard Java coding conventions and most of the convention
 * **DO** add a single space after keywords like `for`, `do`, `while`, `if` and `else`.
 * **DO** add a single space before `{`.
 * **DO** put the `else` keyword in a new line (and not like this: `} else {`).
+* **DO** separate different methods using a *single* line separator.
+
 
 ## Classes and interfaces
 

@@ -22,6 +22,7 @@ class JavaUtil {
 	def <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> inputs) {
 		return inputs.flatten
 	}
+	
 	def <T> T getOnlyElement(Collection<T> collection) {
 		if (collection.size !== 1) {
 			throw new IllegalArgumentException("Not one elment: " + collection)

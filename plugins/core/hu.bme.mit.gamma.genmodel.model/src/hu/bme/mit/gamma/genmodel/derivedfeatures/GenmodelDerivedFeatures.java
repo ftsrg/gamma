@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
 import hu.bme.mit.gamma.genmodel.model.GenModel;
@@ -12,7 +13,7 @@ import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.XSTSReference;
 
-public class GenmodelDerivedFeatures {
+public class GenmodelDerivedFeatures extends ExpressionModelDerivedFeatures {
 
 	public static List<Task> getIncludedTasks(GenModel genmodel) {
 		List<Task> tasks = getAllTasks(genmodel);

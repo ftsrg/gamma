@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.emf.common.util.TreeIterator;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -38,9 +36,10 @@ import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.model.TraceModelPackage;
 
 public class TraceModelValidator extends ExpressionModelValidator {
-	
+	// Singleton
 	public static final TraceModelValidator INSTANCE = new TraceModelValidator();
-	private TraceModelValidator() {}
+	protected TraceModelValidator() {}
+	//
 	
 	public Collection<ValidationResultMessage> checkArgumentTypes(ArgumentedElement element) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -48,7 +47,6 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		validationResultMessages.addAll(super.checkArgumentTypes(element, parameters));
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkRaiseEventAct(RaiseEventAct raiseEventAct) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -77,7 +75,6 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkInstanceState(InstanceState instanceState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		SynchronousComponentInstance instance = instanceState.getInstance();
@@ -90,25 +87,13 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	protected <T extends EObject> List<T> getAllContentsOfType(EObject element, Class<T> classType){
-		List<T> contents = new ArrayList<T>();
-		TreeIterator<EObject> iterator = EcoreUtil.getAllContents(element, true);
-		while (iterator.hasNext()) {
-			EObject object = iterator.next();
-			if (classType.isInstance(object)) {
-				contents.add((T) object);
-			}
-		}
-		return contents;
-	}
-	
 	public Collection<ValidationResultMessage> checkInstanceStateConfiguration(InstanceStateConfiguration configuration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		SynchronousComponentInstance instance = configuration.getInstance();
 		SynchronousComponent type = instance.getType();
 		if (type instanceof StatechartDefinition) {
 			State state = configuration.getState();
-			List<State> states =  getAllContentsOfType(type, hu.bme.mit.gamma.statechart.statechart.State.class);
+			List<State> states =  ecoreUtil.getAllContentsOfType(type, hu.bme.mit.gamma.statechart.statechart.State.class);
 			if (!states.contains(state)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This is not a valid state in the specified statechart.",
@@ -117,7 +102,6 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkInstanceVariableState(InstanceVariableState variableState) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -136,7 +120,6 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkInstanceSchedule(InstanceSchedule schedule) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ExecutionTrace executionTrace = (ExecutionTrace)EcoreUtil.getRootContainer(schedule, true);
@@ -150,7 +133,6 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkInstanceSchedule(ComponentSchedule schedule) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -166,4 +148,5 @@ public class TraceModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+	
 }

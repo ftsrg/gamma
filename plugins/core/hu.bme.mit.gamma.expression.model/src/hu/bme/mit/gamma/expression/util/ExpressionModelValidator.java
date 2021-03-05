@@ -49,21 +49,24 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
+import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionModelValidator {
-	
+	// Singleton
 	public static final ExpressionModelValidator INSTANCE = new ExpressionModelValidator();
 	protected ExpressionModelValidator() {}
+	//
 	
 	public enum ValidationResult{
-		//Enums that determine the type of the message: error, info, warning.
+		// Enum literals that determine the type of the message: error, info, warning.
 		ERROR, INFO, WARNING
 	}
 	
 	static public class ValidationResultMessage{
-		ValidationResult result;
-		String resultText;
-		ReferenceInfo referenceInfo;
+		
+		private ValidationResult result;
+		private String resultText;
+		private ReferenceInfo referenceInfo;
 		
 		public ValidationResultMessage(ValidationResult result, String resultText,
 				ReferenceInfo referenceInfo){
@@ -87,9 +90,10 @@ public class ExpressionModelValidator {
 	}
 	
 	static public class ReferenceInfo{
-		EStructuralFeature reference;
-		EObject source;
-		Integer index;
+		
+		private EStructuralFeature reference;
+		private EObject source;
+		private Integer index;
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index){
 			this.reference = reference;
@@ -123,12 +127,11 @@ public class ExpressionModelValidator {
 		}
 	}
 	
-	
-	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-	protected ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
-	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	
+	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
+	protected final ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
@@ -144,7 +147,6 @@ public class ExpressionModelValidator {
 		validationResultMessages.addAll(checkNames(root, Collections.singleton(clazz), name));
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkNames(EObject root,
 			Collection<Class<? extends NamedElement>> classes, String name) {
@@ -163,9 +165,6 @@ public class ExpressionModelValidator {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"In a Gamma model, these identifiers must be unique.",
 						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
-				
-
-				
 			}
 		}
 		return validationResultMessages;
@@ -208,7 +207,6 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkIfThenElseExpression(IfThenElseExpression expression) {
 		ExpressionType expressionType = typeDeterminator.getType(expression.getCondition());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -224,7 +222,6 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkArrayLiteralExpression(ArrayLiteralExpression expression) {
 		ExpressionType referenceType = null;
@@ -243,7 +240,6 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
 		Declaration accessedDeclaration = 
@@ -269,7 +265,6 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkFunctionAccessExpression(FunctionAccessExpression functionAccessExpression) {
 		List<Expression> arguments = functionAccessExpression.getArguments();
@@ -311,11 +306,8 @@ public class ExpressionModelValidator {
 			}
 			++i;
 		}
-		
 		return validationResultMessages;
 	}
-	
-	
 	
 	public Collection<ValidationResultMessage> checkArrayAccessExpression(ArrayAccessExpression expression) {
 		// check if the referred declaration is accessible
@@ -339,7 +331,6 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		// check if the referred object
 		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
@@ -361,7 +352,6 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkElseExpression(ElseExpression expression) {
 		EObject container = expression.eContainer();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -373,10 +363,8 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkBooleanExpression(BooleanExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		if (expression instanceof UnaryExpression) {
 			// not
 			UnaryExpression unaryExpression = (UnaryExpression) expression;
@@ -415,11 +403,8 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkPredicateExpression(PredicateExpression expression) {
-		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		if (expression instanceof UnaryExpression) {
 			// in expression, semantics not known
 		}
@@ -459,16 +444,13 @@ public class ExpressionModelValidator {
 				}
 			}
 		}	
-		
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
 		ExpressionType leftHandSideExpressionType = typeDeterminator.transform(lhs);
 		ExpressionType rightHandSideExpressionType = typeDeterminator.transform(rhs);
-		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		if (!leftHandSideExpressionType.equals(rightHandSideExpressionType)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The types of the left hand side and the right hand side are not the same: " +
@@ -478,7 +460,6 @@ public class ExpressionModelValidator {
 			return validationResultMessages;
 			
 		}
-
 		validationResultMessages.addAll(checkEnumerationConformance(lhs, rhs, feature));
 		return validationResultMessages;
 	}
@@ -602,9 +583,7 @@ public class ExpressionModelValidator {
 	
 	
 	public Collection<ValidationResultMessage> checkInitializableElement(InitializableElement elem) {
-		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		try {
 			Expression initialExpression = elem.getExpression();
 			if (initialExpression == null) {
@@ -675,8 +654,4 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 }
-
-
-

@@ -35,16 +35,14 @@ import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionLanguageUtil;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 public class ActionModelValidator extends ExpressionModelValidator {
-	
+	// Singleton
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
-	
-	//TODO ???
+	//
 	
 	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -75,10 +73,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
-	
-	
-	
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -113,7 +107,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject container = statement.eContainer();
@@ -133,7 +126,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		// check if the referred object is a value declaration
@@ -156,7 +148,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 		return validationResultMessages;
 	}
-
 	
 	public Collection<ValidationResultMessage> CheckReturnStatementType(ReturnStatement rs) {
 		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
