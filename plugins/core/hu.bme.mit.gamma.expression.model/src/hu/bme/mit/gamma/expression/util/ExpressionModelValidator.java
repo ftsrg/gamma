@@ -127,9 +127,9 @@ public class ExpressionModelValidator {
 		}
 	}
 	
-	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
+	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE; // Redefinable
+	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // Redefinable
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
-	protected final ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	
@@ -169,7 +169,6 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkTypeDeclaration(TypeDeclaration typeDeclaration) {
 		Type type = typeDeclaration.getType();
@@ -523,7 +522,6 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
 	public Collection<ValidationResultMessage> checkArithmeticExpression(ArithmeticExpression expression) {
 		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -580,7 +578,6 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-	
 	
 	public Collection<ValidationResultMessage> checkInitializableElement(InitializableElement elem) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();

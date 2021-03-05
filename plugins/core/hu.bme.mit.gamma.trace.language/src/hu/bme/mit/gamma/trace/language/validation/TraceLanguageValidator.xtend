@@ -27,10 +27,11 @@ import org.eclipse.xtext.validation.Check
  */
 class TraceLanguageValidator extends AbstractTraceLanguageValidator {
 	
-	TraceModelValidator traceModelValidator = TraceModelValidator.INSTANCE
+	protected final TraceModelValidator traceModelValidator = TraceModelValidator.INSTANCE
 	
-	
-	
+	new() {
+		super.expressionModelValidator = traceModelValidator
+	}
 	
 	@Check
 	def checkArgumentTypes(ArgumentedElement element) {

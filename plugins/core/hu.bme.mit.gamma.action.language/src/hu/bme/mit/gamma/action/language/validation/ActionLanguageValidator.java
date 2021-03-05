@@ -10,20 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.action.language.validation;
 
-import java.util.Collection;
-
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.action.model.Branch;
-import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
 
 /**
  * This class contains custom validation rules. 
@@ -33,44 +27,11 @@ import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResul
 public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	
 	protected ActionModelValidator actionModelValidator = ActionModelValidator.INSTANCE;
-	
-	public void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
-		for (ValidationResultMessage element: collection) {
-			if (element.getResult() == ValidationResult.ERROR) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					error(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					error(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}else if (element.getResult() == ValidationResult.WARNING) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					warning(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					warning(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}else if (element.getResult() == ValidationResult.INFO) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					info(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					info(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}
-		}
+
+	public ActionLanguageValidator() {
+		super.expressionModelValidator = actionModelValidator;
 	}
 	
-	//TODO ???
 	@Check
 	public void checkUnsupportedActions(Action action) {
 		handleValidationResultMessage(actionModelValidator.checkUnsupportedActions(action));
@@ -96,13 +57,4 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 		handleValidationResultMessage(actionModelValidator.CheckReturnStatementType(rs));
 	}
 	
-	//TODO extract into util-class
-	private ProcedureDeclaration getContainingProcedure(Action action) {
-		return actionModelValidator.getContainingProcedure(action);
-	}
-	
-	//TODO extract into util-class
-	private ProcedureDeclaration getContainingProcedure(Branch branch) {
-		return actionModelValidator.getContainingProcedure(branch);
-	}
 }

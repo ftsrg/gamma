@@ -117,7 +117,10 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 public class StatechartModelValidator extends ActionModelValidator {
 	// Singleton
 	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
-	protected StatechartModelValidator() {}
+	protected StatechartModelValidator() {
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
+		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
+	}
 	//
 	
 	// Some elements can have the same name
@@ -191,8 +194,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 			  type instanceof DecimalTypeDefinition ||
 			  type instanceof EnumerationTypeDefinition ||
 			  type instanceof ArrayTypeDefinition ||
-			  type instanceof RecordTypeDefinition
-				)) {
+			  type instanceof RecordTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"This type is not supported in the GSL."
 					,new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));

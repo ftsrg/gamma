@@ -10,37 +10,25 @@
 package hu.bme.mit.gamma.expression.language.validation;
 
 import java.util.Collection;
-import java.util.List;
 
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
-import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -49,43 +37,49 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
  */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
 	
-	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-	protected ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
-	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	
 	protected ExpressionModelValidator expressionModelValidator = ExpressionModelValidator.INSTANCE;
 	
-	public void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
+	protected void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
 		for (ValidationResultMessage element: collection) {
 			if (element.getResult() == ValidationResult.ERROR) {
 				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
 					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+				}
+				else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
 					error(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+				}
+				else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
 					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
+				}
+				else {
 					error(element.getResultText(), element.getReferenceInfo().getReference());
 				}
-			}else if (element.getResult() == ValidationResult.WARNING) {
+			}
+			else if (element.getResult() == ValidationResult.WARNING) {
 				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
 					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+				}
+				else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
 					warning(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+				}
+				else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
 					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
+				}
+				else {
 					warning(element.getResultText(), element.getReferenceInfo().getReference());
 				}
-			}else if (element.getResult() == ValidationResult.INFO) {
+			}
+			else if (element.getResult() == ValidationResult.INFO) {
 				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
 					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
+				}
+				else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
 					info(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
+				}
+				else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
 					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
+				}
+				else {
 					info(element.getResultText(), element.getReferenceInfo().getReference());
 				}
 			}
@@ -97,19 +91,9 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(element));
 	}
 
-	protected void checkNames(EObject root,
-			Collection<Class<? extends NamedElement>> classes, String name) {
-		handleValidationResultMessage(expressionModelValidator.checkNames(root, classes, name));
-	}
-	
 	@Check
 	public void checkTypeDeclaration(TypeDeclaration typeDeclaration) {
 		handleValidationResultMessage(expressionModelValidator.checkTypeDeclaration(typeDeclaration));
-	}
-	
-	// For derived classes - they have to add the parameterDeclarations
-	protected void checkArgumentTypes(ArgumentedElement element, List<ParameterDeclaration> parameterDeclarations) {
-		handleValidationResultMessage(expressionModelValidator.checkArgumentTypes(element, parameterDeclarations));
 	}
 	
 	@Check
@@ -155,31 +139,6 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkPredicateExpression(PredicateExpression expression) {
 		handleValidationResultMessage(expressionModelValidator.checkPredicateExpression(expression));
-	}
-	
-	protected void checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkTypeAndTypeConformance(lhs, rhs, feature));
-	}
-	
-	protected void checkTypeAndExpressionConformance(Type type, Expression rhs, EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkTypeAndExpressionConformance(type, rhs, feature));
-	}
-	
-	protected void checkEnumerationConformance(Type lhs, Type rhs, EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkEnumerationConformance(lhs, rhs, feature));
-	}
-
-	protected void checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkEnumerationConformance(type, rhs, feature));
-	}
-	
-	protected void checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkEnumerationConformance(lhs, rhs, feature));
-	}
-	
-	protected void checkEnumerationConformance(EnumerationTypeDefinition lhs, EnumerationTypeDefinition rhs,
-			EStructuralFeature feature) {
-		handleValidationResultMessage(expressionModelValidator.checkEnumerationConformance(lhs, rhs, feature));
 	}
 	
 	@Check

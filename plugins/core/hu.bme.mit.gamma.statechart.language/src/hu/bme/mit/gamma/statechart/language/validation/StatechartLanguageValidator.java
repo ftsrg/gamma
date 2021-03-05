@@ -10,126 +10,52 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.language.validation;
 
-import java.math.BigInteger;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import hu.bme.mit.gamma.action.model.Action;
-import hu.bme.mit.gamma.action.model.AssignmentStatement;
-import hu.bme.mit.gamma.action.model.Branch;
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Expression;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
-import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
-import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
-
-import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
 import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.Channel;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
-import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
-import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
 import hu.bme.mit.gamma.statechart.composite.ControlSpecification;
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference;
 import hu.bme.mit.gamma.statechart.composite.MessageQueue;
 import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
-import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
-import hu.bme.mit.gamma.statechart.contract.ContractModelPackage;
-import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.interface_.AnyTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Clock;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
-import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
-import hu.bme.mit.gamma.statechart.interface_.EventDirection;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
-import hu.bme.mit.gamma.statechart.interface_.EventReference;
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
-import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
-import hu.bme.mit.gamma.statechart.interface_.Persistency;
 import hu.bme.mit.gamma.statechart.interface_.Port;
-import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
-import hu.bme.mit.gamma.statechart.interface_.SimpleTrigger;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
-import hu.bme.mit.gamma.statechart.interface_.Trigger;
-import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation;
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition;
-import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.phase.VariableBinding;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState;
-import hu.bme.mit.gamma.statechart.statechart.ClockTickReference;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.ForkState;
 import hu.bme.mit.gamma.statechart.statechart.JoinState;
 import hu.bme.mit.gamma.statechart.statechart.MergeState;
 import hu.bme.mit.gamma.statechart.statechart.OpaqueTrigger;
-import hu.bme.mit.gamma.statechart.statechart.OrthogonalRegionSchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
-import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
-import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
-import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
-import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
-
 import hu.bme.mit.gamma.statechart.util.StatechartModelValidator;
-
-import hu.bme.mit.gamma.statechart.util.ExpressionTypeDeterminator;
-import hu.bme.mit.gamma.statechart.util.StatechartUtil;
-
 
 /**
  * This class contains custom validation rules. 
@@ -137,62 +63,18 @@ import hu.bme.mit.gamma.statechart.util.StatechartUtil;
  */
 public class StatechartLanguageValidator extends AbstractStatechartLanguageValidator {
 
-	StatechartModelValidator statechartModelValidator = StatechartModelValidator.INSTANCE;
-
+	protected StatechartModelValidator statechartModelValidator = StatechartModelValidator.INSTANCE;
+	
 	public StatechartLanguageValidator() {
-		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
-		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
+		super.expressionModelValidator = statechartModelValidator;
+		super.actionModelValidator = statechartModelValidator;
 	}
-
-	
-	// Some elements can have the same name
-	
-	
-	public void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
-		for (ValidationResultMessage element: collection) {
-			if (element.getResult() == ValidationResult.ERROR) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					error(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					error(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					error(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}else if (element.getResult() == ValidationResult.WARNING) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					warning(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					warning(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					warning(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}else if (element.getResult() == ValidationResult.INFO) {
-				if (element.getReferenceInfo().hasInteger() && element.getReferenceInfo().hasSource()) {
-					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasInteger() && !(element.getReferenceInfo().hasSource())) {
-					info(element.getResultText(), element.getReferenceInfo().getReference(), element.getReferenceInfo().getIndex());
-				} else if (element.getReferenceInfo().hasSource() && !(element.getReferenceInfo().hasInteger())) {
-					info(element.getResultText(), element.getReferenceInfo().getSource(), element.getReferenceInfo().getReference());
-				} else {
-					info(element.getResultText(), element.getReferenceInfo().getReference());
-				}
-			}
-		}
-	}
-	
-	
 	
 	@Check
 	@Override
 	public void checkNameUniqueness(NamedElement element) {
 		handleValidationResultMessage(statechartModelValidator.checkNameUniqueness(element));
 	}
-	
-	// Not supported elements
 	
 	@Check
 	public void checkComponentSepratation(Component component) {
@@ -208,10 +90,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	public void checkUnsupportedVariableTypes(VariableDeclaration variable) {
 		handleValidationResultMessage(statechartModelValidator.checkUnsupportedVariableTypes(variable));
 	}
-	/*@Check
-	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
-		error("Expression statements are not supported in the GSL.", ActionModelPackage.Literals.EXPRESSION_STATEMENT__EXPRESSION);
-	}*/
+	
+//	@Check
+//	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
+//	}
 	
 	// Expressions
 	
@@ -225,10 +107,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkInterfaceInheritance(Interface gammaInterface) {
 		handleValidationResultMessage(statechartModelValidator.checkInterfaceInheritance(gammaInterface));
-	}
-	
-	private Interface getParentInterfaces(Interface initialInterface, Interface actualInterface) {
-		return statechartModelValidator.getParentInterfaces(initialInterface, actualInterface);
 	}
 	
 	@Check
@@ -282,34 +160,9 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkRegionEntries(region));
 	}
 	
-	//FIXME commented to be able to run after changes
-	/*@Check
-	public void checkUnusedDeclarations(Declaration declaration) {
-		// Not checking parameter declarations of events
-		if (declaration.eContainer() instanceof Event) {
-			return;
-		}
-		boolean isReferred;
-		if (declaration instanceof TypeDeclaration) {
-			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), TypeReference.class)
-					.stream().anyMatch(it -> it.getReference() == declaration);
-		}
-		else {
-			isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), ReferenceExpression.class)
-					.stream().anyMatch(it -> it.getDeclaration() == declaration);
-			if (!isReferred) {
-				isReferred = EcoreUtil2.getAllContentsOfType(EcoreUtil2.getRootContainer(declaration), VariableBinding.class)
-						.stream().anyMatch(it -> it.getStatechartVariable() == declaration);
-			}
-		}
-		if (!isReferred) {
-			if (declaration instanceof TypeDeclaration) {
-				// Type declarations can be referred from different package
-				return;
-			}
-			warning("This declaration is not used.", ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME);
-		}
-	}*/
+//	@Check
+//	public void checkUnusedDeclarations(Declaration declaration) {
+//	}
 	
 	@Check
 	public void checkUnusedTimeoutDeclarations(TimeoutDeclaration declaration) {
@@ -334,10 +187,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkElseTransitionPriority(Transition transition) {
 		handleValidationResultMessage(statechartModelValidator.checkElseTransitionPriority(transition));
-	}
-	
-	public boolean needsTrigger(Transition transition) {
-		return statechartModelValidator.needsTrigger(transition);
 	}
 	
 	@Check
@@ -375,18 +224,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkNodeReachability(node));
 	}
 	
-	private boolean hasIncomingTransition(StateNode node) {
-		return statechartModelValidator.hasIncomingTransition(node);
-	}
-	
-	private boolean isLoopEdge(Transition transition) {
-		return statechartModelValidator.isLoopEdge(transition);
-	}
-	
-	private boolean allTransitionsAreLoop(StateNode node) {
-		return statechartModelValidator.allTransitionsAreLoop(node);
-	}
-	
 	@Check
 	public void checkEntryNodes(EntryState entry) {
 		handleValidationResultMessage(statechartModelValidator.checkEntryNodes(entry));
@@ -400,10 +237,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkPseudoNodeAcyclicity(PseudoState node) {
 		handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node));
-	}
-	
-	private void checkPseudoNodeAcyclicity(PseudoState node, Collection<PseudoState> visitedNodes) {
-		handleValidationResultMessage(statechartModelValidator.checkPseudoNodeAcyclicity(node, visitedNodes));
 	}
 	
 	@Check
@@ -441,27 +274,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkOutgoingTransitionDeterminism(transition));
 	}
 	
-	private Transition checkTransitionDeterminism(Transition transition, Collection<Transition> transitions) {
-		return statechartModelValidator.checkTransitionDeterminism(transition, transitions);
-	}
-	
-	private boolean isTransitionTriggeredByPortEvent(Transition transition, Port port, Event event) {
-		return statechartModelValidator.isTransitionTriggeredByPortEvent(transition, port, event);
-	}
-	
-	private boolean isTransitionTriggeredByPortEvent(Transition transition, Port port) {
-		return statechartModelValidator.isTransitionTriggeredByPortEvent(transition, port);
-	}
-	
 	@Check
 	public void checkTransitionOcclusion(Transition transition) {
 		statechartModelValidator.checkTransitionOcclusion(transition);
 	}
-	
-	private Collection<Transition> getOutgoingTransitionsOfAncestors(StateNode source) {
-		return statechartModelValidator.getOutgoingTransitionsOfAncestors(source);
-	}
-	
 	
 	@Check
 	public void checkParallelTransitionAssignments(Transition transition) {
@@ -471,22 +287,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkParallelEventRaisings(Transition transition) {
 		handleValidationResultMessage(statechartModelValidator.checkParallelEventRaisings(transition));
-	}
-	
-	private Transition getSameTriggedTransitionOfParallelRegions(Transition transition) {
-		return statechartModelValidator.getSameTriggedTransitionOfParallelRegions(transition);
-	}
-	
-	private Collection<Transition> getTransitionsOfSiblingRegions(Collection<Region> siblingRegions) {
-		return statechartModelValidator.getTransitionsOfSiblingRegions(siblingRegions);
-	}
-	
-	private Declaration getSameVariableOfAssignments(Transition lhs, Transition rhs) {
-		return statechartModelValidator.getSameVariableOfAssignments(lhs, rhs);
-	}
-	
-	private Entry<Port, Event> getSameEventOfParameteredRaisings(Transition lhs, Transition rhs) {
-		return statechartModelValidator.getSameEventOfParameteredRaisings(lhs, rhs);
 	}
 	
 	@Check
@@ -509,10 +309,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkCircularDependencies(Package statechart) {
 		handleValidationResultMessage(statechartModelValidator.checkCircularDependencies(statechart));
-	}
-	
-	private Package getReferredPackages(Package initialStatechart, Package statechart) {
-		return statechartModelValidator.getReferredPackages(initialStatechart, statechart);
 	}
 	
 	@Check
@@ -560,10 +356,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkPortBindingWithSimpleChannel(channel));	
 	}
 	
-	private boolean isBroadcast(Port port) {
-		return statechartModelValidator.isBroadcast(port);
-	}
-	
 	@Check
 	public void checkPortBindingWithBroadcastChannel(BroadcastChannel channel) {
 		handleValidationResultMessage(statechartModelValidator.checkPortBindingWithBroadcastChannel(channel));		
@@ -582,10 +374,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	@Check
 	public void checkChannelRequiredPorts(BroadcastChannel channel) {
 		handleValidationResultMessage(statechartModelValidator.checkChannelRequiredPorts(channel));
-	}
-	
-	private boolean equals(InstancePortReference p1, InstancePortReference p2) {
-		return statechartModelValidator.equals(p1, p2);
 	}
 	
 	@Check
@@ -655,29 +443,6 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkMessageQueue(queue));
 	}
 	
-	private Collection<Event> getSemanticEvents(Collection<? extends Port> ports, EventDirection direction) {
-		return statechartModelValidator.getSemanticEvents(ports, direction);
-	}
-
-	private EventDirection getOppositeDirection(EventDirection direction) {
-		return statechartModelValidator.getOppositeDirection(direction);
-	}
-
-	/**
-	 * The parent interfaces are taken into considerations as well.
-	 */
-	private Collection<Event> getAllEvents(Interface anInterface, EventDirection oppositeDirection) {
-		return statechartModelValidator.getAllEvents(anInterface, oppositeDirection);
-	}
-	
-	private boolean isContainedInQueue(Port port, Event event, AsynchronousAdapter wrapper) {
-		return statechartModelValidator.isContainedInQueue(port, event, wrapper);
-	}
-	
-	private boolean isContainedInQueue(Clock clock, AsynchronousAdapter wrapper) {
-		return statechartModelValidator.isContainedInQueue(clock, wrapper);
-	}
-	
 	@Check
 	public void checkAnyPortControls(AsynchronousAdapter adapter) {
 		handleValidationResultMessage(statechartModelValidator.checkAnyPortControls(adapter));
@@ -698,5 +463,4 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkComponentInstanceReferences(reference));
 	}
 	
-
 }
