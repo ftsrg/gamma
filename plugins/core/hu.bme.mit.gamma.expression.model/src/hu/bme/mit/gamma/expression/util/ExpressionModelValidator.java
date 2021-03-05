@@ -56,6 +56,7 @@ public class ExpressionModelValidator {
 	protected ExpressionModelValidator() {}
 	
 	public enum ValidationResult{
+		//Enums that determine the type of the message: error, info, warning.
 		ERROR, INFO, WARNING
 	}
 	
