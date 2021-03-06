@@ -34,6 +34,7 @@ import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 /** Runnable class responsible for the execution of formal verification. */
 public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
@@ -71,8 +72,9 @@ public class GuiVerifier extends SwingWorker<ThreeStateBoolean, Boolean> {
 			ExecutionTrace traceModel = null;
 			// Verification starts
 			verifier = getController().createVerifier();
-			traceModel = verifier.verifyQuery(traceability, getController().getParameters(),
+			Result result = verifier.verifyQuery(traceability, getController().getParameters(),
 					new File(getController().getModelFile()), originalQueries, true, false);
+			traceModel = result.getTrace();
 			if (traceModel != null) {
 				// No trace
 				if (view.isOptimizeTestSet()) {

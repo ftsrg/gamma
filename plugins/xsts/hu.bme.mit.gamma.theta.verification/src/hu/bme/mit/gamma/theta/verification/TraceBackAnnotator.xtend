@@ -45,7 +45,7 @@ class TraceBackAnnotator {
 	protected final String EXPL_STATE = "(ExplState"
 	
 	protected final Scanner traceScanner
-	protected final extension ThetaQueryGenerator thetaQueryGenerator
+	protected final ThetaQueryGenerator thetaQueryGenerator
 	
 	protected final Package gammaPackage
 	protected final Component component
@@ -80,6 +80,10 @@ class TraceBackAnnotator {
 	}
 	
 	def ExecutionTrace execute() {
+		//
+//		try (val thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage,
+//				true /* As ThetaVerification calls this on separate threads */)) {
+		
 		// Creating the trace component
 		val trace = createExecutionTrace => [
 			it.component = this.component
@@ -151,13 +155,13 @@ class TraceBackAnnotator {
 					}
 				}
 				// We parse in every turn
-				line = line.unwrap
+				line = thetaQueryGenerator.unwrap(line)
 				val split = line.split(" ")
 				val id = split.get(0)
 				val value = split.get(1)
 				switch (state) {
 					case STATE_CHECK: {
-						val potentialStateString = '''«id» == «value»'''
+						val potentialStateString = '''Â«idÂ» == Â«valueÂ»'''
 						if (thetaQueryGenerator.isSourceState(potentialStateString)) {
 							val instanceState = thetaQueryGenerator.getSourceState(potentialStateString)
 							val controlState = instanceState.key
@@ -226,6 +230,7 @@ class TraceBackAnnotator {
 			step.actions += createReset
 		}
 		return trace
+//		}
 	}
 	
 	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,

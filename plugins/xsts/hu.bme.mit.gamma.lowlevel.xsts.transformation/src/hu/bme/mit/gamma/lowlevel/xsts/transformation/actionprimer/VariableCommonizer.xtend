@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation.actionprimer
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
@@ -19,19 +20,15 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
-import hu.bme.mit.gamma.lowlevel.xsts.transformation.ReadWrittenVariableLocator
 import java.util.Collection
 import java.util.List
 import java.util.Map
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class VariableCommonizer extends ActionPrimer {
-	// Reader writer variable locator for optimization
-	protected final extension ReadWrittenVariableLocator locator = ReadWrittenVariableLocator.INSTANCE
 	
 	new() {
 		super(true)

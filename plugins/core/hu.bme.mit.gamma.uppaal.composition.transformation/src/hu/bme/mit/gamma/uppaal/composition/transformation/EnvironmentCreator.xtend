@@ -152,7 +152,7 @@ class EnvironmentCreator {
 									for (processableEdge : processableEdges) {
 										for (expression : expressions) {
 											// Putting variables raising for ALL instance parameters
-					   						val clonedLoopEdge = processableEdge.clone(true, true)
+					   						val clonedLoopEdge = processableEdge.clone
 					   						for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {
 												clonedLoopEdge.extendValueOfLoopEdge(innerMatch.port, innerMatch.event, parameter, innerMatch.instance, expression)
 											}
@@ -162,7 +162,7 @@ class EnvironmentCreator {
 										// Adding a different value if the type is an integer
 										if (originalExpressions.filter(EnumerationLiteralExpression).empty &&
 												expressions.exists[it instanceof IntegerLiteralExpression]) {
-						   					val clonedLoopEdge = processableEdge.clone(true, true)
+						   					val clonedLoopEdge = processableEdge.clone
 											val maxValue = expressions.filter(IntegerLiteralExpression).map[it.value].max
 											val biggerThanMax = constrFactory.createIntegerLiteralExpression => [it.value = maxValue.add(BigInteger.ONE)]
 											for (innerMatch : TopSyncSystemInEvents.Matcher.on(engine).getAllMatches(it.syncComposite, systemPort, null, null, inEvent)) {

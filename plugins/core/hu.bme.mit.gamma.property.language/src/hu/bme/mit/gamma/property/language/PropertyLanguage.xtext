@@ -102,11 +102,14 @@ ParenthesesPathFormula returns PathFormula:
 
 @Override
 PrimaryExpression returns expression::Expression:
-	LiteralExpression | ComponentInstanceStateExpression | '(' Expression ')'
+	LiteralExpression |
+	ComponentInstanceStateExpression |
+	'(' Expression ')'
 ;
 
 ComponentInstanceStateExpression returns ComponentInstanceStateExpression:
-	ComponentInstanceStateConfigurationReference | ComponentInstanceVariableReference |
+	ComponentInstanceStateConfigurationReference |
+	ComponentInstanceVariableReference |
 		ComponentInstanceEventReference | ComponentInstanceEventParameterReference
 ;
 
@@ -115,7 +118,7 @@ ComponentInstanceStateConfigurationReference returns ComponentInstanceStateConfi
 ;
 
 ComponentInstanceVariableReference returns ComponentInstanceVariableReference:
-	'var' instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
+	'variable' instance=ComponentInstanceReference '.' variable=[expression::VariableDeclaration]
 ;
 
 ComponentInstanceEventReference returns ComponentInstanceEventReference:
@@ -123,7 +126,7 @@ ComponentInstanceEventReference returns ComponentInstanceEventReference:
 ;
 
 ComponentInstanceEventParameterReference returns ComponentInstanceEventParameterReference:
-	'param' instance=ComponentInstanceReference '.' port=[interface::Port] '.'
+	'parameter' instance=ComponentInstanceReference '.' port=[interface::Port] '.'
 		event=[interface::Event] '::' parameter=[expression::ParameterDeclaration]
 ;
 

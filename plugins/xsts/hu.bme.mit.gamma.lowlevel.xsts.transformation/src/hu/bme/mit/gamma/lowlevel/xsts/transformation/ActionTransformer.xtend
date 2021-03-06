@@ -18,33 +18,34 @@ import hu.bme.mit.gamma.action.model.EmptyStatement
 import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-import org.eclipse.emf.ecore.EObject
 
 class ActionTransformer {
 	// Model factories
 	protected final extension XSTSModelFactory factory = XSTSModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	// Action utility
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	// Trace
 	protected final Trace trace
 	
 	new(Trace trace) {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+		this.variableDeclarationTransformer = new VariableDeclarationTransformer(this.trace)
 	}
 
 	def transformActions(Collection<? extends hu.bme.mit.gamma.action.model.Action> actions) {
@@ -65,22 +66,16 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(VariableDeclarationStatement action) {
-		// Create variable reset assignment (variable already transformed, global)
-		return createAssignmentAction => [
-			it.lhs = createDirectReferenceExpression => [
-				it.declaration = trace.getXStsVariable(action.variableDeclaration)
-			]
-			if (action.variableDeclaration.expression !== null) {
-				it.rhs = action.variableDeclaration.expression.transformExpression
-			} else {
-				it.rhs = action.variableDeclaration.initialValue.transformExpression
-			}
+		val lowlevelVariable = action.variableDeclaration
+		val xStsVariable = lowlevelVariable.transformVariableDeclarationAndInitialExpression
+		return createVariableDeclarationAction => [
+			it.variableDeclaration = xStsVariable
 		]
 	}
 	
 	def dispatch Action transformAction(AssignmentStatement action) {
 		return createAssignmentAction => [
-			it.lhs = action.lhs.transformExpression as DirectReferenceExpression
+			it.lhs = action.lhs.transformExpression as ReferenceExpression
 			it.rhs = action.rhs.transformExpression
 		]
 	}

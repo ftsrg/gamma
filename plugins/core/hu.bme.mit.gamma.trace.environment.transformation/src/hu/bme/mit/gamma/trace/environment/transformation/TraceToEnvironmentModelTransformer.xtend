@@ -84,7 +84,7 @@ class TraceToEnvironmentModelTransformer {
 	
 	protected def transformPorts(StatechartDefinition statechart, Trace trace) {
 		for (componentPort : executionTrace.component.ports) {
-			val environmentPort = componentPort.clone(true, true)
+			val environmentPort = componentPort.clone
 			statechart.ports += environmentPort
 			val interfaceRealization = environmentPort.interfaceRealization
 			interfaceRealization.realizationMode = interfaceRealization.realizationMode.opposite
@@ -138,7 +138,7 @@ class TraceToEnvironmentModelTransformer {
 			it.port = environmentPort
 			it.event = event
 			for (argument : arguments) {
-				it.arguments += argument.clone(true, true)
+				it.arguments += argument.clone
 			}
 		]
 		return transition
@@ -167,7 +167,7 @@ class TraceToEnvironmentModelTransformer {
 		return trace
 	}
 	
-	protected def String getStateName() '''_«stateId++»'''
-	protected def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
+	protected def String getStateName() '''_Â«stateId++Â»'''
+	protected def String getTimeoutDeclarationName() '''TimeoutÂ«timeoutId++Â»'''
 	
 }

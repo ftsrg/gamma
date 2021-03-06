@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -39,19 +40,20 @@ import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
-import org.eclipse.emf.ecore.util.EcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
 	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
+	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
+	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
@@ -68,8 +70,11 @@ class StatechartToLowlevelTransformer {
 
 	new() {
 		this.trace = new Trace
+		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining, this.maxRecursionDepth, this.assertionVariableName)
+		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
+			this.maxRecursionDepth, this.assertionVariableName)
 		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
@@ -96,26 +101,44 @@ class StatechartToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-	protected def VariableDeclaration transform(ParameterDeclaration gammaParameter) {
-		// Cloning the variable
-		val lowlevelVariable = createVariableDeclaration => [
-			it.name = gammaParameter.componentParameterName
-			it.type = gammaParameter.type.transformType
-		]
-		trace.put(gammaParameter, lowlevelVariable)
-		return lowlevelVariable
+	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
+		val lowlevelVariables = gammaParameter.transformValue
+		// Traced in transformValue
+		val lowlevelVariableNames = gammaParameter.componentParameterNames
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		return lowlevelVariables
 	}
 
-	protected def List<VariableDeclaration> transform(VariableDeclaration variable) {
-		// Cloning the variable
-		val lowlevelVariable = variable.transformValue
-		return lowlevelVariable
+	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
+		val lowlevelVariables = gammaConstant.transformValue
+		// Constant variable names do not really matter in terms of traceability
+		return lowlevelVariables
+	}
+	
+	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
+		val lowlevelVariables = gammaVariable.transformValue
+		// Traced in transformValue
+		val lowlevelVariableNames = gammaVariable.names
+		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+		return lowlevelVariables
+	}
+	
+	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
+			List<String> lowlevelVariableNames) {
+		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
+		val size = lowlevelVariables.size
+		for (var i = 0; i < size; i++) {
+			val lowlevelVariable = lowlevelVariables.get(i)
+			val lowlevelVariableName = lowlevelVariableNames.get(i)
+			lowlevelVariable.name = lowlevelVariableName
+		}
 	}
 
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
 	 */
-	protected def List<EventDeclaration> transform(hu.bme.mit.gamma.statechart.interface_.EventDeclaration declaration, Port gammaPort) {
+	protected def List<EventDeclaration> transform(
+			hu.bme.mit.gamma.statechart.interface_.EventDeclaration declaration, Port gammaPort) {
 		val gammaDirection = declaration.direction
 		val realizationMode = gammaPort.interfaceRealization.realizationMode
 		if (gammaDirection == EventDirection.IN &&
@@ -152,7 +175,8 @@ class StatechartToLowlevelTransformer {
 	protected def EventDeclaration transform(Event gammaEvent, Port gammaPort, EventDirection direction) {
 		checkState(direction == EventDirection.IN || direction == EventDirection.OUT)
 		val lowlevelEvent = createEventDeclaration => [
-			it.name = if (direction == EventDirection.IN) gammaEvent.getInputName(gammaPort) else gammaEvent.getOutputName(gammaPort)
+			it.name = (direction == EventDirection.IN) ?
+				gammaEvent.getInputName(gammaPort) : gammaEvent.getOutputName(gammaPort)
 			it.persistency = gammaEvent.persistency.transform
 			it.direction = direction.transform
 			it.isRaised = createVariableDeclaration => [
@@ -162,32 +186,39 @@ class StatechartToLowlevelTransformer {
 		]
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
-		for (gammaParam : gammaEvent.parameterDeclarations) {
-			val lowlevelParam = createVariableDeclaration => [
-				it.name = if (direction == EventDirection.IN) gammaParam.getInName(gammaPort) else gammaParam.getOutName(gammaPort)
-				it.type = gammaParam.type.transformType
-			]
-			lowlevelEvent.parameters += lowlevelParam
-			trace.put(gammaPort, gammaEvent, gammaParam, lowlevelEvent.direction, lowlevelParam)
+		for (gammaParameter : gammaEvent.parameterDeclarations) {
+			val lowlevelParameters = gammaParameter.transformValue
+			val lowlevelVariableNames = (direction == EventDirection.IN) ?
+				gammaParameter.getInNames(gammaPort) : 
+				gammaParameter.getOutNames(gammaPort)
+			lowlevelParameters.nameLowlevelVariables(lowlevelVariableNames)
+			lowlevelEvent.parameters += lowlevelParameters
+			if (lowlevelParameters.size == 1) {
+				// TODO Is this tracing good?
+				val lowlevelParameter = lowlevelParameters.head
+				trace.put(gammaPort, gammaEvent, gammaParameter,
+					lowlevelEvent.direction, lowlevelParameter)
+			
+			}
 		}
 		return lowlevelEvent
 	}
 
 	protected def VariableDeclaration transform(TimeoutDeclaration timeout) {
 		val statechart = timeout.containingStatechart
-		val transitions = statechart.transitions.filter[EcoreUtil.getAllContents(it, true)
-			.filter(TimeoutEventReference).exists[it.timeout === timeout]]
+		val transitions = statechart.transitions.filter[it.getAllContentsOfType(
+			TimeoutEventReference).exists[it.timeout === timeout]]
 		// We can optimize, if this timeout is used for triggering the transitions of only one state
 		if (transitions.size == 1) {
 			val transition = transitions.head
 			val source = transition.sourceState
 			if (source instanceof State) {
 				// We can optimize, if this is an after N sec trigger (each timeout is set only once, hence the "== 1" if it is one)
-				if (EcoreUtil.getAllContents(source, true)
-						.filter(TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
+				if (source.getAllContentsOfType(
+						TimeoutAction).exists[it.timeoutDeclaration === timeout]) {
 					// We can optimize, if all outgoing transitions use (potentially) only this timeout
-					if (source.outgoingTransitions.map[EcoreUtil.getAllContents(it, true)
-							.filter(TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
+					if (source.outgoingTransitions.map[it.getAllContentsOfType(
+							TimeoutEventReference).toList].flatten.forall[it.timeout === timeout]) {
 						val gammaParentRegion = source.parentRegion
 						if (!trace.doesRegionHaveOptimizedTimeout(gammaParentRegion)) {
 							val lowlevelTimeout = timeout.createTimeoutVariable
@@ -242,9 +273,14 @@ class StatechartToLowlevelTransformer {
 			lowlevelStatechart.variableDeclarations += assertionVariable
 			trace.put(assertionVariableName, assertionVariable)
 		}
+		// Constants
+		val gammaPackage = statechart.containingPackage
+		for (constantDeclaration : gammaPackage.constantDeclarations) {
+			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
+		}
 		// No parameter declarations mapping
 		for (parameterDeclaration : statechart.parameterDeclarations) {
-			val lowlevelParameterDeclaration = parameterDeclaration.transform
+			val lowlevelParameterDeclaration = parameterDeclaration.transformComponentParameter
 			lowlevelStatechart.variableDeclarations += lowlevelParameterDeclaration
 			lowlevelStatechart.parameterDeclarations += lowlevelParameterDeclaration
 		}

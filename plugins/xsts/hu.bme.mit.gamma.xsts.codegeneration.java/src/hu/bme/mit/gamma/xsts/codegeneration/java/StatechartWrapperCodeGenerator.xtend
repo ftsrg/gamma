@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
-import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
+import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class StatechartWrapperCodeGenerator {
 
@@ -43,23 +43,23 @@ class StatechartWrapperCodeGenerator {
 	}
 	
 	protected def createStatechartWrapperClass() '''
-		package «STATECHART_PACKAGE_NAME»;
+		package Â«STATECHART_PACKAGE_NAMEÂ»;
 		
 		import java.util.List;
 		import java.util.Queue;
 		import java.util.LinkedList;
-		import «BASE_PACKAGE_NAME».*;
-		import «BASE_PACKAGE_NAME».«GAMMA_TIMER_INTERFACE».*;
-		import «INTERFACE_PACKAGE_NAME».*;
-		import «STATECHART_PACKAGE_NAME».«gammaStatechart.wrappedStatemachineClassName».*;
+		import Â«BASE_PACKAGE_NAMEÂ».*;
+		import Â«BASE_PACKAGE_NAMEÂ».Â«GAMMA_TIMER_INTERFACEÂ».*;
+		import Â«INTERFACE_PACKAGE_NAMEÂ».*;
+		import Â«STATECHART_PACKAGE_NAMEÂ».Â«gammaStatechart.wrappedStatemachineClassNameÂ».*;
 		
-		public class «CLASS_NAME» implements «CLASS_NAME»Interface {
+		public class Â«CLASS_NAMEÂ» implements Â«CLASS_NAMEÂ»Interface {
 			// Port instances
-			«FOR port : gammaStatechart.ports»
-				private «port.name.toFirstUpper» «port.name.toFirstLower» = new «port.name.toFirstUpper»();
-			«ENDFOR»
+			Â«FOR port : gammaStatechart.portsÂ»
+				private Â«port.name.toFirstUpperÂ» Â«port.name.toFirstLowerÂ» = new Â«port.name.toFirstUpperÂ»();
+			Â«ENDFORÂ»
 			// Wrapped statemachine
-			private «gammaStatechart.wrappedStatemachineClassName» «CLASS_NAME.toFirstLower»;
+			private Â«gammaStatechart.wrappedStatemachineClassNameÂ» Â«CLASS_NAME.toFirstLowerÂ»;
 			// Indicates which queue is active in a cycle
 			private boolean insertQueue = true;
 			private boolean processQueue = false;
@@ -67,10 +67,10 @@ class StatechartWrapperCodeGenerator {
 			private Queue<Event> eventQueue1 = new LinkedList<Event>();
 			private Queue<Event> eventQueue2 = new LinkedList<Event>();
 			// Clocks
-			private «GAMMA_TIMER_INTERFACE» timer = new «GAMMA_TIMER_CLASS»();
+			private Â«GAMMA_TIMER_INTERFACEÂ» timer = new Â«GAMMA_TIMER_CLASSÂ»();
 			
-			public «CLASS_NAME»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-				«CLASS_NAME.toFirstLower» = new «gammaStatechart.wrappedStatemachineClassName»(«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»);
+			public Â«CLASS_NAMEÂ»(Â«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', 'Â»Â«parameter.type.serializeÂ» Â«parameter.nameÂ»Â«ENDFORÂ») {
+				Â«CLASS_NAME.toFirstLowerÂ» = new Â«gammaStatechart.wrappedStatemachineClassNameÂ»(Â«FOR parameter : gammaStatechart.parameterDeclarations SEPARATOR ', 'Â»Â«parameter.nameÂ»Â«ENDFORÂ»);
 			}
 			
 			public void reset() {
@@ -80,7 +80,7 @@ class StatechartWrapperCodeGenerator {
 				eventQueue1.clear();
 				eventQueue2.clear();
 				//
-				«CLASS_NAME.toFirstLower».reset();
+				Â«CLASS_NAME.toFirstLowerÂ».reset();
 				timer.saveTime(this);
 				notifyListeners();
 			}
@@ -117,41 +117,41 @@ class StatechartWrapperCodeGenerator {
 				return eventQueue2;
 			}
 			
-			«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparator»
-				public class «port.name.toFirstUpper» implements «port.interfaceRealization.interface.name.toFirstUpper»Interface.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» {
-					private List<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»> listeners = new LinkedList<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»>();
-					«FOR event : port.getEvents(EventDirection.IN)»
+			Â«FOR port : gammaStatechart.ports SEPARATOR System.lineSeparatorÂ»
+				public class Â«port.name.toFirstUpperÂ» implements Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ» {
+					private List<Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Listener.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ»> listeners = new LinkedList<Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Listener.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ»>();
+					Â«FOR event : port.getEvents(EventDirection.IN)Â»
 						@Override
-						public void raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.type.serialize» «parameter.name»«ENDFOR») {
-							getInsertQueue().add(new Event("«port.name».«event.name»"«IF !event.parameterDeclarations.empty», «FOR parameter : event.parameterDeclarations SEPARATOR ', '»«parameter.name»«ENDFOR»«ENDIF»));
+						public void raiseÂ«event.name.toFirstUpperÂ»(Â«FOR parameter : event.parameterDeclarations SEPARATOR ', 'Â»Â«parameter.type.serializeÂ» Â«parameter.nameÂ»Â«ENDFORÂ») {
+							getInsertQueue().add(new Event("Â«port.nameÂ».Â«event.nameÂ»"Â«IF !event.parameterDeclarations.emptyÂ», Â«FOR parameter : event.parameterDeclarations SEPARATOR ', 'Â»Â«parameter.nameÂ»Â«ENDFORÂ»Â«ENDIFÂ»));
 						}
-					«ENDFOR»
-					«FOR event : port.getEvents(EventDirection.OUT)»
+					Â«ENDFORÂ»
+					Â«FOR event : port.getEvents(EventDirection.OUT)Â»
 						@Override
-						public boolean isRaised«event.name.toFirstUpper»() {
-							return «CLASS_NAME.toFirstLower».get«event.getOutputName(port).toFirstUpper»();
+						public boolean isRaisedÂ«event.name.toFirstUpperÂ»() {
+							return Â«CLASS_NAME.toFirstLowerÂ».getÂ«event.getOutputName(port).toFirstUpperÂ»();
 						}
-						«FOR parameter : event.parameterDeclarations»
+						Â«FOR parameter : event.parameterDeclarationsÂ»
 							@Override
-							public «parameter.type.serialize» get«parameter.name.toFirstUpper»() {
-								return «CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»();
+							public Â«parameter.type.serializeÂ» getÂ«parameter.name.toFirstUpperÂ»() {
+								return Â«CLASS_NAME.toFirstLowerÂ».getÂ«parameter.getOutName(port).toFirstUpperÂ»();
 							}
-						«ENDFOR»
-					«ENDFOR»
+						Â«ENDFORÂ»
+					Â«ENDFORÂ»
 					@Override
-					public void registerListener(«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener) {
+					public void registerListener(Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Listener.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ» listener) {
 						listeners.add(listener);
 					}
 					@Override
-					public List<«port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper»> getRegisteredListeners() {
+					public List<Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Listener.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ»> getRegisteredListeners() {
 						return listeners;
 					}
 				}
 				
-				public «port.name.toFirstUpper» get«port.name.toFirstUpper»() {
-					return «port.name.toFirstLower»;
+				public Â«port.name.toFirstUpperÂ» getÂ«port.name.toFirstUpperÂ»() {
+					return Â«port.name.toFirstLowerÂ»;
 				}
-			«ENDFOR»
+			Â«ENDFORÂ»
 			
 			public void runCycle() {
 				changeEventQueues();
@@ -161,18 +161,18 @@ class StatechartWrapperCodeGenerator {
 			public void runComponent() {
 				Queue<Event> eventQueue = getProcessQueue();
 				while (!eventQueue.isEmpty()) {
-					«GAMMA_EVENT_CLASS» event = eventQueue.remove();
+					Â«GAMMA_EVENT_CLASSÂ» event = eventQueue.remove();
 					switch (event.getEvent()) {
-						«FOR port : gammaStatechart.ports»
-							«FOR event : port.getEvents(EventDirection.IN)»
-								case "«port.name».«event.name»": 
-									«CLASS_NAME.toFirstLower».set«event.getInputName(port).toFirstUpper»(true);
-									«FOR parameter : event.parameterDeclarations»
-										«CLASS_NAME.toFirstLower».set«parameter.getInName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
-									«ENDFOR»
+						Â«FOR port : gammaStatechart.portsÂ»
+							Â«FOR event : port.getEvents(EventDirection.IN)Â»
+								case "Â«port.nameÂ».Â«event.nameÂ»": 
+									Â«CLASS_NAME.toFirstLowerÂ».setÂ«event.getInputName(port).toFirstUpperÂ»(true);
+									Â«FOR parameter : event.parameterDeclarationsÂ»
+										Â«CLASS_NAME.toFirstLowerÂ».setÂ«parameter.getInName(port).toFirstUpperÂ»((Â«parameter.type.serializeÂ») event.getValue()[Â«event.parameterDeclarations.indexOf(parameter)Â»]);
+									Â«ENDFORÂ»
 								break;
-							«ENDFOR»
-						«ENDFOR»
+							Â«ENDFORÂ»
+						Â«ENDFORÂ»
 						default:
 							throw new IllegalArgumentException("No such event: " + event);
 					}
@@ -181,12 +181,12 @@ class StatechartWrapperCodeGenerator {
 			}
 			
 			private void executeStep() {
-				«IF !xSts.clockVariables.empty»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);«ENDIF»
-				«FOR timeout : xSts.clockVariables»
-					«CLASS_NAME.toFirstLower».set«timeout.name.toFirstUpper»(«CLASS_NAME.toFirstLower».get«timeout.name.toFirstUpper»() + elapsedTime);
-				«ENDFOR»
-				«CLASS_NAME.toFirstLower».runCycle();
-				«IF !xSts.clockVariables.empty»timer.saveTime(this);«ENDIF»
+				Â«IF !xSts.clockVariables.emptyÂ»int elapsedTime = (int) timer.getElapsedTime(this, TimeUnit.MILLISECOND);Â«ENDIFÂ»
+				Â«FOR timeout : xSts.clockVariablesÂ»
+					Â«CLASS_NAME.toFirstLowerÂ».setÂ«timeout.name.toFirstUpperÂ»(Â«CLASS_NAME.toFirstLowerÂ».getÂ«timeout.name.toFirstUpperÂ»() + elapsedTime);
+				Â«ENDFORÂ»
+				Â«CLASS_NAME.toFirstLowerÂ».runCycle();
+				Â«IF !xSts.clockVariables.emptyÂ»timer.saveTime(this);Â«ENDIFÂ»
 				notifyListeners();
 			}
 			
@@ -196,40 +196,40 @@ class StatechartWrapperCodeGenerator {
 			}
 			
 			public void notifyListeners() {
-				«FOR port : gammaStatechart.ports»
-					«FOR event : port.getEvents(EventDirection.OUT)»
-						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
-							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
-								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»()«ENDFOR»);
+				Â«FOR port : gammaStatechart.portsÂ»
+					Â«FOR event : port.getEvents(EventDirection.OUT)Â»
+						if (Â«port.name.toFirstLowerÂ».isRaisedÂ«event.name.toFirstUpperÂ»()) {
+							for (Â«port.interfaceRealization.interface.name.toFirstUpperÂ»Interface.Listener.Â«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpperÂ» listener : Â«port.name.toFirstLowerÂ».getRegisteredListeners()) {
+								listener.raiseÂ«event.name.toFirstUpperÂ»(Â«FOR parameter : event.parameterDeclarations SEPARATOR ", "Â»Â«CLASS_NAME.toFirstLowerÂ».getÂ«parameter.getOutName(port).toFirstUpperÂ»()Â«ENDFORÂ»);
 							}
 						}
-					«ENDFOR»
-				«ENDFOR»
+					Â«ENDFORÂ»
+				Â«ENDFORÂ»
 			}
 			
-			public void setTimer(«GAMMA_TIMER_INTERFACE» timer) {
+			public void setTimer(Â«GAMMA_TIMER_INTERFACEÂ» timer) {
 				this.timer = timer;
 			}
 			
 			public boolean isStateActive(String region, String state) {
 				switch (region) {
-					«FOR region : gammaStatechart.allRegions»
-						case "«region.name»":
-							return «CLASS_NAME.toFirstLower».get«region.name.toFirstUpper»() == «region.name.toFirstUpper».valueOf(state);
-					«ENDFOR»
+					Â«FOR region : gammaStatechart.allRegionsÂ»
+						case "Â«region.nameÂ»":
+							return Â«CLASS_NAME.toFirstLowerÂ».getÂ«region.name.toFirstUpperÂ»() == Â«region.name.toFirstUpperÂ».valueOf(state);
+					Â«ENDFORÂ»
 				}
 				return false;
 			}
 			
-			«FOR plainVariable : gammaStatechart.variableDeclarations SEPARATOR System.lineSeparator»
-				public «plainVariable.type.serialize» get«plainVariable.name.toFirstUpper»() {
-					return «CLASS_NAME.toFirstLower».get«plainVariable.name.toFirstUpper»();
+			Â«FOR plainVariable : gammaStatechart.variableDeclarations SEPARATOR System.lineSeparatorÂ»
+				public Â«plainVariable.type.serializeÂ» getÂ«plainVariable.name.toFirstUpperÂ»() {
+					return Â«CLASS_NAME.toFirstLowerÂ».getÂ«plainVariable.name.toFirstUpperÂ»();
 				}
-			«ENDFOR»
+			Â«ENDFORÂ»
 			
 			@Override
 			public String toString() {
-				return «CLASS_NAME.toFirstLower».toString();
+				return Â«CLASS_NAME.toFirstLowerÂ».toString();
 			}
 		}
 	'''

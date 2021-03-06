@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
-package hu.bme.mit.gamma.expression.language.validation;
+package hu.bme.mit.gamma.expression.util;
 
 public enum ExpressionType { 
 	BOOLEAN, 

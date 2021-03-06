@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.Declaration
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
@@ -19,14 +20,14 @@ import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.Map
 import java.util.Set
 
 import static com.google.common.base.Preconditions.checkArgument
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class InlinedChoiceActionSerializer extends ActionSerializer {
 	
@@ -46,12 +47,12 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) {
 		return '''
-			«xSts.variableInitializingAction.serialize»
-			«xSts.variableInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.configurationInitializingAction.serialize»
-			«xSts.configurationInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.entryEventAction.serialize»
-			«xSts.entryEventAction.originalWrittenVariables.serializeFinalizationAssignments»
+			Â«xSts.variableInitializingAction.serializeÂ»
+			Â«xSts.variableInitializingAction.originalWrittenVariables.serializeFinalizationAssignmentsÂ»
+			Â«xSts.configurationInitializingAction.serializeÂ»
+			Â«xSts.configurationInitializingAction.originalWrittenVariables.serializeFinalizationAssignmentsÂ»
+			Â«xSts.entryEventAction.serializeÂ»
+			Â«xSts.entryEventAction.originalWrittenVariables.serializeFinalizationAssignmentsÂ»
 		'''
 	}
 	
@@ -59,23 +60,23 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		val variableDeclarations = xSts.variableDeclarations.map[it.originalVariable].filter(VariableDeclaration).toSet
 		return '''
 			// Declaring temporary variables to avoid code duplication
-			«FOR variableDeclaration : variableDeclarations»
-				private «variableDeclaration.type.serialize» «variableDeclaration.temporaryName» = «variableDeclaration.initialValue.serialize»;
-			«ENDFOR»
+			Â«FOR variableDeclaration : variableDeclarationsÂ»
+				private Â«variableDeclaration.type.serializeÂ» Â«variableDeclaration.temporaryNameÂ» = Â«variableDeclaration.initialValue.serializeÂ»;
+			Â«ENDFORÂ»
 			
 			private void changeState() {
 				// Initializing the temporary variables - needed, as timings and clearing of in/out events come from the environment
-				«variableDeclarations.serializeInitializationAssignments»
-				«xSts.mergedAction.serialize»
+				Â«variableDeclarations.serializeInitializationAssignmentsÂ»
+				Â«xSts.mergedAction.serializeÂ»
 				// Finalizing the actions
-				«variableDeclarations.serializeFinalizationAssignments»
+				Â«variableDeclarations.serializeFinalizationAssignmentsÂ»
 			}
 			
-			«serializeChangeStateAuxiliaryMethods»
+			Â«serializeChangeStateAuxiliaryMethodsÂ»
 			
-			«serializeConditionAuxiliaryMethods»
+			Â«serializeConditionAuxiliaryMethodsÂ»
 			
-			«serializeActionAuxiliaryMethods»
+			Â«serializeActionAuxiliaryMethodsÂ»
 		'''
 	}
 	
@@ -84,11 +85,19 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	}
 	
 	def dispatch CharSequence serialize(AssignmentAction action) '''
-		«action.serializeTemporaryAssignment» ««« Setting temporary variables, at the end there is serializeFinalizationAssignments
+		Â«action.serializeTemporaryAssignmentÂ» Â«Â«Â« Setting temporary variables, at the end there is serializeFinalizationAssignments
 	'''
 	
+	def dispatch CharSequence serialize(VariableDeclarationAction action) {
+		val variable = action.variableDeclaration
+		val intialValue = variable.expression
+		return '''
+			Â«variable.type.serializeÂ» Â«variable.nameÂ»Â«IF intialValue !== nullÂ» = Â«intialValue.serializeÂ»Â«ENDIFÂ»;
+		'''
+	}
+	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
-		«action.serializeNonDeterministicAction»
+		Â«action.serializeNonDeterministicActionÂ»
 	'''
 	
 	def dispatch CharSequence serialize(SequentialAction action) {
@@ -96,9 +105,9 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		// Either all contained actions are NOT assume actions...
 		if (!xStsSubactions.exists[it instanceof AssumeAction]) {
 			return '''
-				«FOR xStsSubaction : xStsSubactions»
-					«xStsSubaction.serialize»
-				«ENDFOR»
+				Â«FOR xStsSubaction : xStsSubactionsÂ»
+					Â«xStsSubaction.serializeÂ»
+				Â«ENDFORÂ»
 			'''
 		}
 		// Or a single assume action and assignment actions
@@ -107,35 +116,35 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			+ "an assignment action, this code generator does not handle this case: " + xStsSubactionsSublist)
 		val xStsAssignmentActions = xStsSubactionsSublist.filter(AssignmentAction)
 		'''
-«««		 	First assume action is not serialized
-			«FOR xStsSubaction : xStsAssignmentActions»
-				«xStsSubaction.serializeTemporaryAssignment»
-			«ENDFOR»
+Â«Â«Â«		 	First assume action is not serialized
+			Â«FOR xStsSubaction : xStsAssignmentActionsÂ»
+				Â«xStsSubaction.serializeTemporaryAssignmentÂ»
+			Â«ENDFORÂ»
 		'''
 	}
 	
 	private def CharSequence serializeChangeStateAuxiliaryMethods() '''
-		«FOR i : 0 ..< decisionMethodCount SEPARATOR System.lineSeparator»
-			private void «DECISION_METHOD_NAME»«i»() {
-				«decisionMethodMap.get(i)»
+		Â«FOR i : 0 ..< decisionMethodCount SEPARATOR System.lineSeparatorÂ»
+			private void Â«DECISION_METHOD_NAMEÂ»Â«iÂ»() {
+				Â«decisionMethodMap.get(i)Â»
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	private def CharSequence serializeConditionAuxiliaryMethods() '''
-		«FOR i : 0 ..< conditionMethodCount SEPARATOR System.lineSeparator»
-			private boolean «CONDITION_METHOD_NAME»«i»() {
-				return «conditionMethodMap.get(i)»;
+		Â«FOR i : 0 ..< conditionMethodCount SEPARATOR System.lineSeparatorÂ»
+			private boolean Â«CONDITION_METHOD_NAMEÂ»Â«iÂ»() {
+				return Â«conditionMethodMap.get(i)Â»;
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	private def CharSequence serializeActionAuxiliaryMethods() '''
-		«FOR i : 0 ..< actionMethodCount SEPARATOR System.lineSeparator»
-			private void «ACTION_METHOD_NAME»«i»() {
-				«actionMethodMap.get(i)»
+		Â«FOR i : 0 ..< actionMethodCount SEPARATOR System.lineSeparatorÂ»
+			private void Â«ACTION_METHOD_NAMEÂ»Â«iÂ»() {
+				Â«actionMethodMap.get(i)Â»
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	/** Needed because of too long methods */
@@ -147,7 +156,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		for (var i = 0; i < ACTION_SIZE; i++) {
 			if (i % MAX_ACTION == 0) {
 				if (i != 0) {
-					stringBuilder.append(System.lineSeparator + '''else «DECISION_METHOD_NAME»«decisionMethodCount + 1»();''')
+					stringBuilder.append(System.lineSeparator + '''else Â«DECISION_METHOD_NAMEÂ»Â«decisionMethodCount + 1Â»();''')
 					decisionMethodMap.put(decisionMethodCount++, stringBuilder.toString)
 				}
 				stringBuilder.length = 0
@@ -157,10 +166,10 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 				stringBuilder.append(System.lineSeparator + 'else if ')
 			}
 			val xStsSubaction = action.actions.get(i)
-			stringBuilder.append('''(«xStsSubaction.getCondition.serializeExpression») «xStsSubaction.serializeAction»''')
+			stringBuilder.append('''(Â«xStsSubaction.getCondition.serializeExpressionÂ») Â«xStsSubaction.serializeActionÂ»''')
 		}
 		decisionMethodMap.put(decisionMethodCount++, stringBuilder.toString)
-		'''«DECISION_METHOD_NAME»«INITIAL_CHANGE_STATE_METHOD_VALUE»();'''
+		'''Â«DECISION_METHOD_NAMEÂ»Â«INITIAL_CHANGE_STATE_METHOD_VALUEÂ»();'''
 	}
 	
 	/** Needed because of too long methods */
@@ -180,22 +189,22 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 		checkArgument(declaration instanceof VariableDeclaration)
 		val variable = (declaration as VariableDeclaration).originalVariable
 		return '''
-			«variable.temporaryName» = «action.rhs.serialize»;
+			Â«variable.temporaryNameÂ» = Â«action.rhs.serializeÂ»;
 		'''
 	}
 	
 	// Temporary variable handling
 	
 	private def CharSequence serializeInitializationAssignments(Set<? extends Declaration> variableDeclarations) '''
-		«FOR variableDeclaration : variableDeclarations»
-			«variableDeclaration.temporaryName» = «variableDeclaration.name»;
-		«ENDFOR»
+		Â«FOR variableDeclaration : variableDeclarationsÂ»
+			Â«variableDeclaration.temporaryNameÂ» = Â«variableDeclaration.nameÂ»;
+		Â«ENDFORÂ»
 	'''
 	
 	private def CharSequence serializeFinalizationAssignments(Set<? extends Declaration> variableDeclarations) '''
-		«FOR variableDeclaration : variableDeclarations»
-			«variableDeclaration.name» = «variableDeclaration.temporaryName»;
-		«ENDFOR»
+		Â«FOR variableDeclaration : variableDeclarationsÂ»
+			Â«variableDeclaration.nameÂ» = Â«variableDeclaration.temporaryNameÂ»;
+		Â«ENDFORÂ»
 	'''
 	
 		

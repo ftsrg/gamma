@@ -31,7 +31,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.DefaultCompositionToUppaalTransformer;
 import hu.bme.mit.gamma.util.FileUtil;
-import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer;
+import hu.bme.mit.gamma.xsts.transformation.GammaToXstsTransformer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 
 public class CommandHandler extends AbstractHandler {
@@ -84,7 +84,7 @@ public class CommandHandler extends AbstractHandler {
 							resource = resourceSet.getResource(flattenedFileUri, true);
 							logger.log(Level.INFO, "Starting XSTS transformation.");
 							Package _package = (Package) resource.getContents().get(0);
-							GammaToXSTSTransformer gammaToXSTSTransformer = new GammaToXSTSTransformer();
+							GammaToXstsTransformer gammaToXSTSTransformer = new GammaToXstsTransformer();
 							File xStsFile = new File(absoluteParentFolder + File.separator + fileNamer.getXtextXStsFileName(fileName));
 							String xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder, fileName);
 							fileUtil.saveString(xStsFile, xStsString);

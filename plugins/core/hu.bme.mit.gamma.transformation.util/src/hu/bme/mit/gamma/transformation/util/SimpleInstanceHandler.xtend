@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.transformation.util
 import hu.bme.mit.gamma.property.model.ComponentInstancePortReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceStateConfigurationReference
 import hu.bme.mit.gamma.property.model.ComponentInstanceTransitionReference
+import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -28,6 +29,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.transformation.util.Namings.*
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 class SimpleInstanceHandler {
 	// Singleton
@@ -155,6 +157,31 @@ class SimpleInstanceHandler {
 			}
 		}
 		throw new IllegalStateException("Not found port: " + originalPort)
+	}
+	
+	// Component variable references
+	
+	def getNewSimpleInstanceVariables(
+			Collection<ComponentInstanceVariableReference> originalReferences, Component newType) {
+		val newPorts = newArrayList
+		for (originalReference : originalReferences) {
+			val originalInstance = originalReference.instance
+			val originalVariable = originalReference.variable 
+			val newInstance = originalInstance.checkAndGetNewSimpleInstance(newType)
+			newPorts += newInstance.getNewVariable(originalVariable) 
+		}
+		return newPorts
+	}
+	
+	private def getNewVariable(SynchronousComponentInstance newInstance,
+			VariableDeclaration originalVariable) {
+		val newType = newInstance.type as StatechartDefinition
+		for (variable : newType.variableDeclarations) {
+			if (variable.helperEquals(originalVariable)) {
+				return variable
+			}
+		}
+		throw new IllegalStateException("Not found variable: " + originalVariable)
 	}
 	
 	// Component instance references

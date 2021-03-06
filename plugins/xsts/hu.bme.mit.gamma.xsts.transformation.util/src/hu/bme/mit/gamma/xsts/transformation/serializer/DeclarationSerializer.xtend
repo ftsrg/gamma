@@ -35,19 +35,19 @@ class DeclarationSerializer {
 	// xSts
 	
 	def String serializeDeclarations(XSTS xSts, boolean serializePrimedVariables) '''
-		«FOR typeDeclaration : xSts.typeDeclarations»
-			«typeDeclaration.serializeTypeDeclaration»
-		«ENDFOR»
-		«FOR variableDeclaration : xSts.variableDeclarations
-					.filter[serializePrimedVariables || !(it instanceof PrimedVariable)]»
-			«variableDeclaration.serializeVariableDeclaration»
-		«ENDFOR»
+		Â«FOR typeDeclaration : xSts.typeDeclarationsÂ»
+			Â«typeDeclaration.serializeTypeDeclarationÂ»
+		Â«ENDFORÂ»
+		Â«FOR variableDeclaration : xSts.variableDeclarations
+					.filter[serializePrimedVariables || !(it instanceof PrimedVariable)]Â»
+			Â«variableDeclaration.serializeVariableDeclarationÂ»
+		Â«ENDFORÂ»
 	''' 
 	
 	// Type declaration
 	
 	def String serializeTypeDeclaration(TypeDeclaration typeDeclaration) '''
-		type «typeDeclaration.name» : «typeDeclaration.type.serializeType»
+		type Â«typeDeclaration.nameÂ» : Â«typeDeclaration.type.serializeTypeÂ»
 	'''
 	
 	// Type
@@ -56,7 +56,7 @@ class DeclarationSerializer {
 		throw new IllegalArgumentException("Not known type: " + type)
 	}
 	
-	def dispatch String serializeType(TypeReference type) '''«type.reference.name»'''
+	def dispatch String serializeType(TypeReference type) '''Â«type.reference.nameÂ»'''
 	
 	def dispatch String serializeType(VoidTypeDefinition type) '''void'''
 	
@@ -68,26 +68,29 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(RationalTypeDefinition type) '''rational'''
 	
-	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
+	def dispatch String serializeType(SubrangeTypeDefinition type) '''Â«type.lowerBound.serializeÂ» : Â«type.upperBound.serializeÂ»'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ Â«FOR literal : type.literals SEPARATOR ', 'Â»Â«literal.nameÂ»Â«ENDFORÂ»}'''
 
-	def dispatch String serializeType(ArrayTypeDefinition type) '''array «type.elementType.serializeType» [«type.size.serialize»]'''
+	def dispatch String serializeType(ArrayTypeDefinition type) '''array Â«type.elementType.serializeTypeÂ» [Â«type.size.serializeÂ»]'''
 
 	// Variable
 
-	def String serializeVariableDeclaration(VariableDeclaration variable) '''
-		«variable.serializeModifier»var «variable.name» : «variable.type.serializeType»«IF variable.expression !== null» = «variable.expression.serialize»«ENDIF»
-	'''
+	def String serializeVariableDeclaration(VariableDeclaration variable) '''Â«variable.serializeModifierÂ»var Â«variable.nameÂ» : Â«variable.type.serializeTypeÂ»Â«IF variable.expression !== nullÂ» = Â«variable.expression.serializeÂ»Â«ENDIFÂ»'''
+	
+	def String serializeLocalVariableDeclaration(VariableDeclaration variable) '''local Â«variable.serializeVariableDeclarationÂ»'''
 	
 	private def serializeModifier(VariableDeclaration variable) {
-		val xSts = variable.eContainer as XSTS
-		if (xSts.controlVariables.contains(variable)) {
-			return "ctrl "
+		val container = variable.eContainer
+		if (container instanceof XSTS) {
+			val xSts = container as XSTS
+			if (xSts.controlVariables.contains(variable)) {
+				return "ctrl "
+			}
+	//		if (xSts.clockVariables.contains(variable)) {
+	//			return "clk "
+	//		}
 		}
-//		if (xSts.clockVariables.contains(variable)) {
-//			return "clk "
-//		}
 		return ""
 	}
 	

@@ -160,7 +160,7 @@ AssertionStatement returns ActionModel::AssertionStatement:
 AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
 	AssignablePrimaryExpression(
 		{ConstraintModel::ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
-		{ConstraintModel::RecordAccessExpression.operand=current} '.' field=ID 
+		{ConstraintModel::RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression
 	)* 
 ;
 
@@ -178,12 +178,11 @@ TypeReferenceExpression returns ConstraintModel::Expression:
 ;
 
 @Override
-DirectReferenceExpression returns ConstraintModel::Expression:
-		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration] | 
-		 TypeSelectExpression |
-		LiteralExpression
+PrimaryExpression returns ConstraintModel::Expression:
+		super | 
+		TypeSelectExpression
 ;
 
 TypeSelectExpression returns ConstraintModel::Expression: 
-	{ConstraintModel::SelectExpression} operand=TypeReferenceExpression '.' 'select'
+	{ConstraintModel::SelectExpression} operand=TypeReferenceExpression '->' 'select'
 ;

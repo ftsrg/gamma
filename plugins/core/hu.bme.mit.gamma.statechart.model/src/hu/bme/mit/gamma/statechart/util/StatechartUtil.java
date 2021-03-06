@@ -64,6 +64,15 @@ public class StatechartUtil extends ActionUtil {
 	
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 
+	public Declaration getDeclaration(Expression expression) {
+		if (expression instanceof EventParameterReferenceExpression) {
+			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) expression;
+			Declaration declaration = reference.getParameter();
+			return declaration;
+		}
+		return super.getDeclaration(expression);
+	}
+	
 	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		ComponentInstanceReference instanceReference = compositeFactory.createComponentInstanceReference();
 		instanceReference.getComponentInstanceHierarchy().addAll(
@@ -80,13 +89,17 @@ public class StatechartUtil extends ActionUtil {
 		Set<VariableDeclaration> variables = new HashSet<VariableDeclaration>();
 		for (AssignmentStatement assignmentStatement :
 				ecoreUtil.getSelfAndAllContentsOfType(object, AssignmentStatement.class)) {
-			if(assignmentStatement.getLhs() instanceof DirectReferenceExpression) {
-				Declaration declaration = ((DirectReferenceExpression)assignmentStatement.getLhs()).getDeclaration();
+			ReferenceExpression lhs = assignmentStatement.getLhs();
+			if (lhs instanceof DirectReferenceExpression) {
+				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+				Declaration declaration = reference.getDeclaration();
 				if (declaration instanceof VariableDeclaration) {
-					variables.add((VariableDeclaration) declaration);
+					VariableDeclaration variable = (VariableDeclaration) declaration;
+					variables.add(variable);
 				}
-			} else if (assignmentStatement.getLhs() instanceof AccessExpression) {
-				//TODO handle access expressions
+			}
+			else if (lhs instanceof AccessExpression) {
+				// TODO handle access expressions
 			}
 		}
 		return variables;
@@ -105,14 +118,16 @@ public class StatechartUtil extends ActionUtil {
 				}
 			}
 			if (!isWritten) {
-				if(referenceExpression instanceof DirectReferenceExpression) {
-					Declaration declaration = ((DirectReferenceExpression)referenceExpression).getDeclaration();
+				if (referenceExpression instanceof DirectReferenceExpression) {
+					DirectReferenceExpression directReference = (DirectReferenceExpression) referenceExpression;
+					Declaration declaration = directReference.getDeclaration();
 					if (declaration instanceof VariableDeclaration) {
-						variables.add((VariableDeclaration) declaration);
+						VariableDeclaration variable = (VariableDeclaration) declaration;
+						variables.add(variable);
 					}
 				}
 				else {
-					//TODO handle access expressions
+					// TODO handle access expressions
 				}
 			}
 		}
@@ -252,7 +267,7 @@ public class StatechartUtil extends ActionUtil {
 		instance.setName(getWrapperInstanceName(component));
 		instance.setType(component);
 		for (ParameterDeclaration parameterDeclaration : component.getParameterDeclarations()) {
-			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration, true, true);
+			ParameterDeclaration newParameter = ecoreUtil.clone(parameterDeclaration);
 			cascade.getParameterDeclarations().add(newParameter);
 			DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 			reference.setDeclaration(newParameter);
@@ -262,7 +277,7 @@ public class StatechartUtil extends ActionUtil {
 		EList<Port> ports = component.getPorts();
 		for (int i = 0; i < ports.size(); ++i) {
 			Port port = ports.get(i);
-			Port clonedPort = ecoreUtil.clone(port, true, true);
+			Port clonedPort = ecoreUtil.clone(port);
 			cascade.getPorts().add(clonedPort);
 			PortBinding portBinding = compositeFactory.createPortBinding();
 			portBinding.setCompositeSystemPort(clonedPort);

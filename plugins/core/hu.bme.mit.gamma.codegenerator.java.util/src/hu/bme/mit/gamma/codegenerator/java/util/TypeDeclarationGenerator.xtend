@@ -23,8 +23,8 @@ class TypeDeclarationGenerator {
 	}
 	
 	def String generateTypeDeclarationCode(TypeDeclaration type) '''
-		package «PACKAGE_NAME»;
-		public «type.serialize»
+		package Â«PACKAGE_NAMEÂ»;
+		public Â«type.serializeÂ»
 	'''
 	
 }

@@ -29,16 +29,16 @@ class InterfaceCodeGenerator {
 	}
 	
 	def createInterface(Interface _interface) '''
-		package «INTERFACE_PACKAGE_NAME»;
+		package Â«INTERFACE_PACKAGE_NAMEÂ»;
 		
 		import java.util.List;
-		import «BASE_PACKAGE_NAME».*;
+		import Â«BASE_PACKAGE_NAMEÂ».*;
 		
-		public interface «_interface.implementationName» {
+		public interface Â«_interface.implementationNameÂ» {
 		
 			interface Provided extends Listener.Required {
 				
-				«_interface.createInterface(EventDirection.OUT)»
+				Â«_interface.createInterface(EventDirection.OUT)Â»
 				
 				void registerListener(Listener.Provided listener);
 				List<Listener.Provided> getRegisteredListeners();
@@ -46,7 +46,7 @@ class InterfaceCodeGenerator {
 			
 			interface Required extends Listener.Provided {
 				
-				«_interface.createInterface(EventDirection.IN)»
+				Â«_interface.createInterface(EventDirection.IN)Â»
 				
 				void registerListener(Listener.Required listener);
 				List<Listener.Required> getRegisteredListeners();
@@ -54,12 +54,12 @@ class InterfaceCodeGenerator {
 			
 			interface Listener {
 				
-			interface Provided«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Provided«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.OUT)»
+			interface ProvidedÂ«IF !_interface.parents.emptyÂ» extends Â«FOR parent : _interface.parentsÂ»Â«parent.implementationNameÂ».Listener.ProvidedÂ«ENDFORÂ»Â«ENDIFÂ» {
+				Â«_interface.createListenerInterface(EventDirection.OUT)Â»
 				}
 				
-			interface Required«IF !_interface.parents.empty» extends «FOR parent : _interface.parents»«parent.implementationName».Listener.Required«ENDFOR»«ENDIF» {
-				«_interface.createListenerInterface(EventDirection.IN)»
+			interface RequiredÂ«IF !_interface.parents.emptyÂ» extends Â«FOR parent : _interface.parentsÂ»Â«parent.implementationNameÂ».Listener.RequiredÂ«ENDFORÂ»Â«ENDIFÂ» {
+				Â«_interface.createListenerInterface(EventDirection.IN)Â»
 				}
 				
 			}
@@ -70,29 +70,29 @@ class InterfaceCodeGenerator {
 	private def createInterface(Interface _interface, EventDirection eventDirection)  {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR eventDeclaration : _interface.events.filter[it.direction != notCorrectDirection]»
-				boolean isRaised«eventDeclaration.event.name.toFirstUpper»();
-				«FOR parameter : eventDeclaration.event.parameterDeclarations»
-					«parameter.type.serialize» get«parameter.name.toFirstUpper»();
-				«ENDFOR»
-			«ENDFOR»
+			Â«FOR eventDeclaration : _interface.events.filter[it.direction != notCorrectDirection]Â»
+				boolean isRaisedÂ«eventDeclaration.event.name.toFirstUpperÂ»();
+				Â«FOR parameter : eventDeclaration.event.parameterDeclarationsÂ»
+					Â«parameter.type.serializeÂ» getÂ«parameter.name.toFirstUpperÂ»();
+				Â«ENDFORÂ»
+			Â«ENDFORÂ»
 		'''
 	}
 	
 	private def createListenerInterface(Interface _interface, EventDirection eventDirection) {
 		val notCorrectDirection = eventDirection.opposite
 		'''
-			«FOR eventDeclaration : _interface.allEventDeclarations.filter[it.direction != notCorrectDirection]»
-				void raise«eventDeclaration.event.name.toFirstUpper»(«FOR parameter : eventDeclaration.event.parameterDeclarations SEPARATOR ", "»«parameter.type.serialize» «parameter.name»«ENDFOR»);
-			«ENDFOR»
+			Â«FOR eventDeclaration : _interface.allEventDeclarations.filter[it.direction != notCorrectDirection]Â»
+				void raiseÂ«eventDeclaration.event.name.toFirstUpperÂ»(Â«FOR parameter : eventDeclaration.event.parameterDeclarations SEPARATOR ", "Â»Â«parameter.type.serializeÂ» Â«parameter.nameÂ»Â«ENDFORÂ»);
+			Â«ENDFORÂ»
 		'''
 	}
 	
 		
 	def createReflectiveInterface() '''
-		package «BASE_PACKAGE_NAME»;
+		package Â«BASE_PACKAGE_NAMEÂ»;
 		
-		public interface «Namings.REFLECTIVE_INTERFACE» {
+		public interface Â«Namings.REFLECTIVE_INTERFACEÂ» {
 			
 			void reset();
 					

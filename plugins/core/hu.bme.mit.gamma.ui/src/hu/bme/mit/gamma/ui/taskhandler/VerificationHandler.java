@@ -15,7 +15,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,11 +22,9 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -37,18 +34,16 @@ import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.querygenerator.serializer.PropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.ThetaPropertySerializer;
 import hu.bme.mit.gamma.querygenerator.serializer.UppaalPropertySerializer;
-import hu.bme.mit.gamma.querygenerator.serializer.XSTSUppaalPropertySerializer;
-import hu.bme.mit.gamma.theta.verification.ThetaVerifier;
+import hu.bme.mit.gamma.querygenerator.serializer.XstsUppaalPropertySerializer;
+import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
-import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
-import hu.bme.mit.gamma.uppaal.verification.UppaalVerifier;
-import hu.bme.mit.gamma.util.FileUtil;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.util.InterruptableRunnable;
-import hu.bme.mit.gamma.util.ThreadRacer;
+import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
+import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
+import hu.bme.mit.gamma.verification.util.AbstractVerification;
+import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
@@ -76,8 +71,8 @@ public class VerificationHandler extends TaskHandler {
 					propertySerializer = ThetaPropertySerializer.INSTANCE;
 					break;
 				case XSTS_UPPAAL:
-					verificationTask = XSTSUppaalVerification.INSTANCE;
-					propertySerializer = XSTSUppaalPropertySerializer.INSTANCE;
+					verificationTask = XstsUppaalVerification.INSTANCE;
+					propertySerializer = XstsUppaalPropertySerializer.INSTANCE;
 					break;
 				default:
 					throw new IllegalArgumentException("Currently only UPPAAL and Theta are supported.");
@@ -146,7 +141,8 @@ public class VerificationHandler extends TaskHandler {
 
 	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
 			File queryFile, List<ExecutionTrace> retrievedTraces, boolean isOptimize) {
-		ExecutionTrace trace = verificationTask.execute(modelFile, queryFile);
+		Result result = verificationTask.execute(modelFile, queryFile);
+		ExecutionTrace trace = result.getTrace();
 		// Maybe there is no trace
 		if (trace != null) {
 			if (isOptimize) {
@@ -197,100 +193,6 @@ public class VerificationHandler extends TaskHandler {
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
-	}
-	
-}
-
-abstract class AbstractVerification {
-
-	protected final FileUtil fileUtil = FileUtil.INSTANCE;
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
-
-	protected final Logger logger = Logger.getLogger("GammaLogger");
-	
-	public abstract ExecutionTrace execute(File modelFile, File queryFile);
-	
-}
-
-class UppaalVerification extends AbstractVerification {
-	// Singleton
-	public static final UppaalVerification INSTANCE = new UppaalVerification();
-	protected UppaalVerification() {}
-	//
-	@Override
-	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String fileName = modelFile.getName();
-		String packageFileName = fileNamer.getGammaUppaalTraceabilityFileName(fileName);
-		EObject gammaTrace = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		UppaalVerifier verifier = new UppaalVerifier();
-		return verifier.verifyQuery(gammaTrace, "-C -T -t0", modelFile, queryFile, true, true);
-	}
-
-}
-
-class XSTSUppaalVerification extends AbstractVerification {
-	// Singleton
-	public static final XSTSUppaalVerification INSTANCE = new XSTSUppaalVerification();
-	protected XSTSUppaalVerification() {}
-	//
-	@Override
-	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String fileName = modelFile.getName();
-		String packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
-		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		UppaalVerifier verifier = new UppaalVerifier();
-		return verifier.verifyQuery(gammaPackage, "-C -T -t0", modelFile, queryFile, true, true);
-	}
-
-}
-
-class ThetaVerification extends AbstractVerification {
-	// Singleton
-	public static final ThetaVerification INSTANCE = new ThetaVerification();
-	protected ThetaVerification() {}
-	//
-	@Override
-	public ExecutionTrace execute(File modelFile, File queryFile) {
-		String fileName = modelFile.getName();
-		String packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
-		EObject gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
-		String queries = fileUtil.loadString(queryFile);
-		String defaultParameter = "";
-		
-//		ThetaVerifier verifier = new ThetaVerifier();
-//		return verifier.verifyQuery(gammaPackage, defaultParameter, modelFile, queries, true, true);
-		
-		// --domain PRED_CART --refinement SEQ_ITP // default
-		// --domain EXPL --refinement SEQ_ITP --maxenum 250
-		String[] defaultParameters = {defaultParameter,
-				"--domain EXPL --refinement SEQ_ITP --maxenum 250"};
-		ThreadRacer<ExecutionTrace> racer = new ThreadRacer<ExecutionTrace>();
-		Collection<InterruptableRunnable> runnables = new ArrayList<InterruptableRunnable>();
-		for (String parameter : defaultParameters) {
-			ThetaVerifier verifier = new ThetaVerifier();
-			InterruptableRunnable runnable = new InterruptableRunnable() {
-				@Override
-				public void run() {
-					try {
-						logger.log(Level.INFO, "Starting " + parameter);
-						ExecutionTrace trace = verifier.verifyQuery(
-							gammaPackage, parameter, modelFile, queries, true, true);
-						racer.setObject(trace);
-						logger.log(Level.INFO, parameter + " ended");
-					} catch (Exception e) {
-						// Every kind of exception, as we do not know where the interrupt comes
-						logger.log(Level.INFO, parameter + " has been interrupted");
-					}
-				}
-				@Override
-				public void interrupt() {
-					verifier.cancel();
-				}
-			};
-			runnables.add(runnable);
-		}
-		return racer.execute(runnables);
 	}
 	
 }

@@ -11,7 +11,9 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.expression.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.action.model,
+Export-Package: hu.bme.mit.gamma.action.derivedfeatures,
+ hu.bme.mit.gamma.action.model,
  hu.bme.mit.gamma.action.model.impl,
+ hu.bme.mit.gamma.action.model.util,
  hu.bme.mit.gamma.action.util
 Automatic-Module-Name: hu.bme.mit.gamma.action.model

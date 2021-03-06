@@ -2,11 +2,13 @@ package hu.bme.mit.gamma.transformation.util
 
 import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 class ModelSlicerModelAnnotatorPropertyGenerator {
@@ -24,6 +26,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	protected final InteractionCoverageCriterion senderCoverageCriterion
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
+	protected final ComponentInstanceVariableReferences dataflowTestedVariables
+	protected final DataflowCoverageCriterion dataflowCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -36,6 +40,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 			ComponentInstancePortStateTransitionReferences testedInteractions,
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
+			ComponentInstanceVariableReferences dataflowTestedVariables,
+			DataflowCoverageCriterion dataflowCoverageCriterion,
 			String targetFolderUri, String fileName) {
 		this.newTopComponent = newTopComponent
 		this.targetFolderUri = targetFolderUri
@@ -50,6 +56,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 		this.testedInteractions = testedInteractions
 		this.senderCoverageCriterion = senderCoverageCriterion
 		this.receiverCoverageCriterion = receiverCoverageCriterion
+		this.dataflowTestedVariables = dataflowTestedVariables
+		this.dataflowCoverageCriterion = dataflowCoverageCriterion
 	}
 	
 	def execute() {
@@ -61,7 +69,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 				new ModelAnnotatorPropertyGenerator(newTopComponent,
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion);
+					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+					dataflowTestedVariables, dataflowCoverageCriterion);
 		val result = annotatorAndPropertyGenerator.execute
 		val propertyPackage = result.generatedPropertyPackage
 		if (propertyPackage !== null) {

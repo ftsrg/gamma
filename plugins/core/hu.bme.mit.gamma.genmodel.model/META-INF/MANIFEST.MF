@@ -10,7 +10,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.genmodel.derivedfeatures,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.genmodel.model.impl,
- hu.bme.mit.gamma.genmodel.model.util
+ hu.bme.mit.gamma.genmodel.model.util,
+ hu.bme.mit.gamma.genmodel.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport,

@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -31,29 +30,33 @@ class ThetaVerifier extends AbstractVerifier {
 	final String SAFE = "SafetyResult Safe"
 	final String UNSAFE = "SafetyResult Unsafe"
 	
-	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	override Result verifyQuery(Object traceability, String parameters, File modelFile,
 			String query, boolean log, boolean storeOutput) {
-		var ExecutionTrace trace = null
+		var Result result = null
 		for (singleQuery : query.split(System.lineSeparator).reject[it.nullOrEmpty]) {
 			// Supporting multiple queries in separate files
 			val parsedQuery = singleQuery.adaptQuery
 			val wrappedQuery = '''
 				prop {
-					«parsedQuery»
+					Â«parsedQueryÂ»
 				}
 			'''
-			val newTrace = super.verifyQuery(traceability, parameters, modelFile, wrappedQuery, log, storeOutput)
-			if (trace === null) {
-				trace = newTrace
+			val newResult = super.verifyQuery(traceability, parameters,
+					modelFile, wrappedQuery, log, storeOutput)
+			val oldTrace = result?.trace
+			val newTrace = newResult?.trace
+			if (oldTrace === null) {
+				result = newResult
 			}
-			else {
-				trace.extend(newTrace)
+			else if (newTrace !== null) {
+				oldTrace.extend(newTrace)
+				result = new Result(ThreeStateBoolean.UNDEF, oldTrace)
 			}
 		}
-		return trace
+		return result
 	}
 	
-	override ExecutionTrace verifyQuery(Object traceability, String parameters, File modelFile,
+	override Result verifyQuery(Object traceability, String parameters, File modelFile,
 			File queryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceFileScanner = null
@@ -64,7 +67,7 @@ class ThetaVerifier extends AbstractVerifier {
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
 			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one 
-			val command = '''java -jar «jar.escapePath» «parameters» --model «modelFile.canonicalPath.escapePath» --property «queryFile.canonicalPath.escapePath» --cex «traceFile.canonicalPath.escapePath»'''
+			val command = '''java -jar Â«jar.escapePathÂ» Â«parametersÂ» --model Â«modelFile.canonicalPath.escapePathÂ» --property Â«queryFile.canonicalPath.escapePathÂ» --cex Â«traceFile.canonicalPath.escapePathÂ»'''
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process = Runtime.getRuntime().exec(command)
@@ -98,7 +101,8 @@ class ThetaVerifier extends AbstractVerifier {
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
 			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-			return backAnnotator.execute
+			val trace = backAnnotator.execute
+			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {
 				resultReader.close

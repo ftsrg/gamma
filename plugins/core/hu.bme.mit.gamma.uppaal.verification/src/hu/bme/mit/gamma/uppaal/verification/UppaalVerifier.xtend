@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import hu.bme.mit.gamma.uppaal.transformation.traceability.G2UTrace
 import hu.bme.mit.gamma.verification.result.ThreeStateBoolean
 import hu.bme.mit.gamma.verification.util.AbstractVerifier
@@ -23,14 +22,14 @@ class UppaalVerifier extends AbstractVerifier {
 	
 	VerificationResultReader verificationResultReader = null // Created one for each execution
 	
-	override ExecutionTrace verifyQuery(Object traceability, String parameters, File uppaalFile,
+	override Result verifyQuery(Object traceability, String parameters, File uppaalFile,
 			File uppaalQueryFile, boolean log, boolean storeOutput) {
 		var Scanner resultReader = null
 		var Scanner traceReader = null
 		val actualUppaalQuery = uppaalQueryFile.loadString
 		try {
 			// verifyta -t0 -T TestOneComponent.xml asd.q 
-			val command = '''verifyta «parameters» «uppaalFile.canonicalPath.escapePath» «uppaalQueryFile.canonicalPath.escapePath»'''
+			val command = '''verifyta Â«parametersÂ» Â«uppaalFile.canonicalPath.escapePathÂ» Â«uppaalQueryFile.canonicalPath.escapePathÂ»'''
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
 			process =  Runtime.getRuntime().exec(command)
@@ -53,7 +52,7 @@ class UppaalVerifier extends AbstractVerifier {
 				new UppaalBackAnnotator(traceability, traceReader)
 			}
 			else if (traceability instanceof Package) {
-				new XSTSUppaalBackAnnotator(traceability, traceReader)
+				new XstsUppaalBackAnnotator(traceability, traceReader)
 			}
 			else {
 				throw new IllegalStateException("Not known traceability element: " + traceability)
@@ -63,13 +62,15 @@ class UppaalVerifier extends AbstractVerifier {
 				output = verificationResultReader.output
 			}
 			result = actualUppaalQuery.handleEmptyLines.opposite
-			return traceModel
+			return new Result(result, traceModel)
 		} catch (EmptyTraceException e) {
 			result = handleEmptyLines(actualUppaalQuery)
 			return null
 		} catch (NotBackannotatedException e) {
 			result = e.result
 			return null
+		} catch (Exception e) {
+			throw e
 		} finally {
 			resultReader.close
 			traceReader.close

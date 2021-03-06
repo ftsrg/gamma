@@ -25,7 +25,8 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
+import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -85,7 +86,7 @@ import hu.bme.mit.gamma.statechart.statechart.TransitionAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.TransitionPriority;
 
-public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatures {
+public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static List<ParameterDeclaration> getParameterDeclarations(ArgumentedElement element) {
 		if (element instanceof RaiseEventAction) {
@@ -1062,15 +1063,43 @@ public class StatechartModelDerivedFeatures extends ExpressionModelDerivedFeatur
 		return !state.getRegions().isEmpty();
 	}
 	
-	public static EObject getContainingTransitionOrState(RaiseEventAction action) {
+	public static EObject getContainingTransitionOrState(EObject object) {
 		Transition containingTransition = ecoreUtil.getContainerOfType(
-				action, Transition.class);
+				object, Transition.class);
 		if (containingTransition != null) {
 			// Container is a transition
 			return containingTransition;
 		}
 		// Container is a state
-		return ecoreUtil.getContainerOfType(action, State.class);
+		return ecoreUtil.getContainerOfType(object, State.class);
+	}
+	
+	public static StateNode getContainingOrSourceStateNode(EObject object) {
+		EObject container = getContainingTransitionOrState(object);
+		if (container instanceof Transition) {
+			Transition transition = (Transition) container;
+			return transition.getSourceState();
+		}
+		return (StateNode) container;
+	}
+	
+	public static List<Action> getContainingActionList(EObject object) {
+		EObject container = object.eContainer();
+		if (container instanceof Transition) {
+			Transition transition = (Transition) container;
+			return transition.getEffects();
+		}
+		if (container instanceof State) {
+			State state = (State) container;
+			if (state.getEntryActions().contains(object)) {
+				return state.getEntryActions();
+			}
+			if (state.getExitActions().contains(object)) {
+				return state.getExitActions();
+			}
+		}
+		// Nullptr if the object is not contained by any of the above
+		return getContainingActionList(container);
 	}
 	
 	public static int getLiteralIndex(State state) {

@@ -10,9 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration
@@ -24,18 +29,14 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import java.util.AbstractMap.SimpleEntry
 import java.util.HashMap
+import java.util.List
 import java.util.Map
 import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FieldDeclaration
-import java.util.List
-import hu.bme.mit.gamma.expression.model.ValueDeclaration
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
-import hu.bme.mit.gamma.expression.model.SelectExpression
 
 package class Trace {
 
@@ -43,8 +44,8 @@ package class Trace {
 	final Map<TypeDeclaration, TypeDeclaration> typeDeclarationMappings = new HashMap<TypeDeclaration, TypeDeclaration>
 	// An event has to be connected to a port
 	// Map is needed as a value because an INOUT is transformed to an IN and an OUT event
-	final Map<Pair<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = new HashMap<Pair<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
-	final Map<Pair<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = new HashMap<Pair<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
+	final Map<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = new HashMap<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
+	final Map<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = new HashMap<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>>
 	final Map<Triple<Port, Event, ParameterDeclaration>, Map<EventDirection, VariableDeclaration>> paramMappings = new HashMap<Triple<Port, Event, ParameterDeclaration>, Map<EventDirection, VariableDeclaration>>
 	//
 	final Map<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component> componentMappings = new HashMap<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component>
@@ -65,7 +66,7 @@ package class Trace {
 	// Select temporary variables
 	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = new HashMap<SelectExpression, List<VariableDeclaration>>
 	// Record mappings (handled simply as 'values', as Java generics cannot differentiate)
-	final Map<Pair<ValueDeclaration, List<FieldDeclaration>>, VariableDeclaration> recordValDeclMappings = new HashMap()
+	final Map<SimpleEntry<ValueDeclaration, FieldHierarchy>, VariableDeclaration> recordValDeclMappings = new HashMap()
 	// Assertion variables
 	final Map<String, VariableDeclaration> assertionVariableMappings = new HashMap<String, VariableDeclaration>
 	
@@ -120,7 +121,8 @@ package class Trace {
 			map.put(lowlevelEventDecl.direction, lowlevelEventDecl)
 		}
 		else {
-			eventDeclMappings.put(new Pair(gammaPort, gammaEventDecl), newHashMap(lowlevelEventDecl.direction -> lowlevelEventDecl))
+			eventDeclMappings.put(new SimpleEntry(gammaPort, gammaEventDecl),
+				newHashMap(lowlevelEventDecl.direction -> lowlevelEventDecl))
 		}
 	}
 
@@ -167,7 +169,8 @@ package class Trace {
 			map.put(lowlevelEvent.direction, lowlevelEvent)
 		}
 		else {
-			eventMappings.put(new Pair(gammaPort, gammaEvent), newHashMap(lowlevelEvent.direction -> lowlevelEvent))
+			eventMappings.put(new SimpleEntry(gammaPort, gammaEvent),
+				newHashMap(lowlevelEvent.direction -> lowlevelEvent))
 		}
 	}
 
@@ -326,11 +329,22 @@ package class Trace {
 		checkNotNull(gammaVariable)
 		varDeclMappings.containsKey(gammaVariable)
 	}
-
+	
 	def get(VariableDeclaration gammaVariable) {
 		checkNotNull(gammaVariable)
 		varDeclMappings.get(gammaVariable)
 	}
+	
+//	def isMapped(VariableDeclaration gammaVariable) {
+//		checkNotNull(gammaVariable)
+//		 varDeclMappings.containsKey(gammaVariable) || varDeclMappings.containsValue(gammaVariable) // insert the second OR clause
+//	}
+//
+//	def get(VariableDeclaration gammaVariable) {
+//		checkNotNull(gammaVariable)
+//		var candidate = varDeclMappings.get(gammaVariable)
+//		candidate === null && isMapped(gammaVariable) ? gammaVariable: candidate // insert this line
+//	}
 	
 	// Constant declaration
 	def put(ConstantDeclaration gammaConstant, VariableDeclaration lowlevelVariable) {
@@ -347,6 +361,48 @@ package class Trace {
 	def get(ConstantDeclaration gammaConstant) {
 		checkNotNull(gammaConstant)
 		constDeclMappings.get(gammaConstant)
+	}
+	
+	// Dispatch for value declaration
+	def put(ValueDeclaration gammaValue, VariableDeclaration lowlevelVariable) {
+		if (gammaValue instanceof VariableDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		else if (gammaValue instanceof ParameterDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			put(gammaValue, lowlevelVariable)
+		}
+		else {
+			throw new IllegalArgumentException("Not known type: " + lowlevelVariable)
+		}
+	}
+	
+	def isMapped(ValueDeclaration gammaValue) {
+		if (gammaValue instanceof VariableDeclaration) {
+			return isMapped(gammaValue)
+		}
+		else if (gammaValue instanceof ParameterDeclaration) {
+			return isMapped(gammaValue)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			return isMapped(gammaValue)
+		}
+		throw new IllegalArgumentException("Not known type: " + gammaValue)
+	}
+	
+	def get(ValueDeclaration gammaValue) {
+		if (gammaValue instanceof VariableDeclaration) {
+			return get(gammaValue)
+		}
+		else if (gammaValue instanceof ParameterDeclaration) {
+			return get(gammaValue)
+		}
+		else if (gammaValue instanceof ConstantDeclaration) {
+			return get(gammaValue)
+		}
+		throw new IllegalArgumentException("Not known type: " + gammaValue)
 	}
 	
 	// Timeout declaration
@@ -512,9 +568,8 @@ package class Trace {
 		selectVariableMappings.get(selectExpression)
 	}
 	
-	
 	// Record
-	def put(Pair<ValueDeclaration, List<FieldDeclaration>> recordField, VariableDeclaration lowLevelVariable) {
+	def put(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {
 		checkNotNull(recordField)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
@@ -522,31 +577,33 @@ package class Trace {
 		recordValDeclMappings.put(recordField, lowLevelVariable)
 	} 
 
-	def isMapped(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
+	def isMapped(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
-		checkNotNull(recordField.key)
-		checkNotNull(recordField.value)
-		for (key : recordValDeclMappings.keySet) {
-			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : recordValDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
 				return true
 			}
 		}
 		return false
 	}
 
-	def get(Pair<ValueDeclaration, List<FieldDeclaration>> recordField) {
+	def get(SimpleEntry<ValueDeclaration, FieldHierarchy> recordField) {
 		checkNotNull(recordField)
-		checkNotNull(recordField.key)
-		checkNotNull(recordField.value)
-		for (key : recordValDeclMappings.keySet) {
-			if(key.key.equals(recordField.key) && key.value.equals(recordField.value)) {
-				return recordValDeclMappings.get(key)
+		val key = recordField.key
+		val value = recordField.value
+		checkNotNull(key)
+		checkNotNull(value)
+		for (record : recordValDeclMappings.keySet) {
+			if (record.key.equals(key) && record.value.equals(value)) {
+				return recordValDeclMappings.get(record)
 			}
 		}
-		return null
+		throw new IllegalArgumentException("Not found: " + recordField)
 	}
-	
-	
 	
 	// Assertion
 	def put(String name, VariableDeclaration assertionVariable) {

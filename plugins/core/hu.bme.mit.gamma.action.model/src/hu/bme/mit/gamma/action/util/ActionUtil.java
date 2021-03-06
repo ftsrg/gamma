@@ -13,13 +13,16 @@ package hu.bme.mit.gamma.action.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
+import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -62,20 +65,24 @@ public class ActionUtil extends ExpressionUtil {
 	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentStatement> assignments) {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
-		for(AssignmentStatement assignment : assignments) {
-			if(assignment.getLhs() instanceof DirectReferenceExpression) {
-				if(((DirectReferenceExpression)assignment.getLhs()).getDeclaration() == variable) {
+		for (AssignmentStatement assignment : assignments) {
+			ReferenceExpression lhs = assignment.getLhs();
+			if (lhs instanceof DirectReferenceExpression) {
+				DirectReferenceExpression reference = (DirectReferenceExpression) lhs;
+				Declaration declaration = reference.getDeclaration();
+				if (declaration == variable) {
 					assignmentsOfVariable.add(assignment);
 				}
-			} else if(assignment.getLhs() instanceof AccessExpression) {
+			}
+			else if (lhs instanceof AccessExpression) {
 				//TODO handle access expressions
 			}
 		}
 		return assignmentsOfVariable;
 	}
 	
-	
-	public AssignmentStatement createAssignment(VariableDeclaration variable, Expression expression) {
+	public AssignmentStatement createAssignment(VariableDeclaration variable,
+			Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);

@@ -23,12 +23,16 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 
+import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -60,7 +64,10 @@ import hu.bme.mit.gamma.statechart.phase.PhaseModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.AnyPortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
+import hu.bme.mit.gamma.statechart.statechart.Region;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
@@ -172,6 +179,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				Event event = expression.getEvent();
 				return Scopes.scopeFor(event.getParameterDeclarations());
 			}
+			if (reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__REGION) {
+				StatechartDefinition statechart = StatechartModelDerivedFeatures.getContainingStatechart(context);
+				Collection<Region> allRegions = StatechartModelDerivedFeatures.getAllRegions(statechart);
+				return Scopes.scopeFor(allRegions);
+			}
+			if (context instanceof StateReferenceExpression &&
+					reference == StatechartModelPackage.Literals.STATE_REFERENCE_EXPRESSION__STATE) {
+				StateReferenceExpression stateReferenceExpression = (StateReferenceExpression) context;
+				Region region = stateReferenceExpression.getRegion();
+				List<State> states = StatechartModelDerivedFeatures.getStates(region);
+				return Scopes.scopeFor(states);
+			}
 
 			// Composite system
 
@@ -251,14 +270,33 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				return Scopes.scopeFor(events);
 			}
 			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
-				return Scopes.scopeFor(typeDeclarations);
+				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+				if (gammaPackage != null) {
+					List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+					return Scopes.scopeFor(typeDeclarations);
+				}
 			}
-			if (/*context instanceof EventTrigger && */reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<Declaration> normalDeclarations = EcoreUtil2.getAllContentsOfType(gammaPackage, Declaration.class);
-				return Scopes.scopeFor(normalDeclarations);
+			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+				// Global declarations
+				Collection<Declaration> declarations = new ArrayList<Declaration>();
+				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+				declarations.addAll(gammaPackage.getConstantDeclarations());
+				StatechartDefinition gammaStatechart = ecoreUtil.getSelfOrContainerOfType(context, StatechartDefinition.class);
+				declarations.addAll(gammaStatechart.getParameterDeclarations());
+				declarations.addAll(gammaStatechart.getVariableDeclarations());
+				IScope statechartDeclarations = Scopes.scopeFor(declarations);
+				// 1. Record fields
+//				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
+//				if (recordAccess != null) {
+//					return super.getScope(recordAccess, reference);
+//				}
+				// 2. Actions and local declarations
+				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
+				if (actionContainer != null) {
+					IScope actionDeclarations = super.getScope(actionContainer, reference);
+					return new SimpleScope(statechartDeclarations, actionDeclarations.getAllElements());
+				}
+				return statechartDeclarations;
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
@@ -288,6 +326,16 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 		StatechartDefinition rootElement = StatechartModelDerivedFeatures.getContainingStatechart(transition);
 		Collection<StateNode> candidates = EcoreUtil2.getAllContentsOfType(rootElement, StateNode.class);
 		return candidates;
+	}
+	
+	@Override
+	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
+		if (operand instanceof EventParameterReferenceExpression) {
+			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) operand;
+			Declaration declaration = reference.getParameter();
+			return super.getFieldDeclarations(declaration);
+		}
+		return super.getFieldDeclarations(operand);
 	}
 
 }

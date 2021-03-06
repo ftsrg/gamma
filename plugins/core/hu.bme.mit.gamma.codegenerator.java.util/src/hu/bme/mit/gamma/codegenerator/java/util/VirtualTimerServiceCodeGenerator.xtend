@@ -25,7 +25,7 @@ class VirtualTimerServiceCodeGenerator {
 	 * Creates the virtual timer class for the timings in the generated test cases.
 	 */
 	def createVirtualTimerClassCode() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
 		import java.util.List;
 		import java.util.ArrayList;
@@ -35,7 +35,7 @@ class VirtualTimerServiceCodeGenerator {
 		/**
 		 * Virtual timer service implementation.
 		 */
-		public class «CLASS_NAME» implements «UNIFIED_TIMER_INTERFACE_NAME» {
+		public class Â«CLASS_NAMEÂ» implements Â«UNIFIED_TIMER_INTERFACE_NAMEÂ» {
 			// Yakindu timer
 			private final List<TimeEventTask> timerTaskList = new ArrayList<TimeEventTask>();
 			// Gamma timer
@@ -46,7 +46,7 @@ class VirtualTimerServiceCodeGenerator {
 			 */
 			private class TimeEventTask {
 			
-				private «ITIMER_CALLBACK_INTERFACE_NAME» callback;
+				private Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback;
 			
 				int eventID;
 				
@@ -60,7 +60,7 @@ class VirtualTimerServiceCodeGenerator {
 				 * @param callback: Set to true if event should be repeated periodically.
 				 * @param eventID: index position within the state machine's timeEvent array.
 				 */
-				public TimeEventTask(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {
+				public TimeEventTask(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID, long time, boolean isPeriodic) {
 					this.callback = callback;
 					this.eventID = eventID;
 					this.time = time;
@@ -94,13 +94,13 @@ class VirtualTimerServiceCodeGenerator {
 				}
 			}
 			
-			public void setTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID, long time, boolean isPeriodic) {	
+			public void setTimer(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID, long time, boolean isPeriodic) {	
 				// Creating a new TimerTask for given event and storing it
 				TimeEventTask timerTask = new TimeEventTask(callback, eventID, time, isPeriodic);
 				timerTaskList.add(timerTask);
 			}
 			
-			public void unsetTimer(«ITIMER_CALLBACK_INTERFACE_NAME» callback, int eventID) {
+			public void unsetTimer(Â«ITIMER_CALLBACK_INTERFACE_NAMEÂ» callback, int eventID) {
 				for (TimeEventTask timer : new ArrayList<TimeEventTask>(timerTaskList)) {
 					if (timer.callback.equals(callback) && timer.eventID == eventID) {
 						timerTaskList.remove(timer);

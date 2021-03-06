@@ -90,9 +90,6 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1, 1, 2).before(f.getPortRule());
         c.setIndentationIncrement().before(f.getPortRule());
         c.setIndentationDecrement().after(f.getPortRule());
-		for (Keyword comma : f.findKeywords(",")) {
-            c.setNoSpace().before(comma);
-        }
         for (Pair<Keyword, Keyword> p : f.findKeywordPairs("]", "{")) {
             c.setLinewrap(1).before(p.getFirst());
         }

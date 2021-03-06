@@ -11,12 +11,15 @@
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.ModExpression
+import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -29,16 +32,22 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 		throw new IllegalArgumentException("Cannot be transformed")
 	}
 	
-	override String _serialize(IfThenElseExpression expression) '''(if «expression.condition.serialize» then «expression.then.serialize» else «expression.^else.serialize»)'''
+	override String _serialize(IfThenElseExpression expression) '''(if Â«expression.condition.serializeÂ» then Â«expression.then.serializeÂ» else Â«expression.^else.serializeÂ»)'''
 	
-	override String _serialize(EnumerationLiteralExpression expression) '''«expression.reference.name»'''
+	override String _serialize(EnumerationLiteralExpression expression) '''Â«expression.reference.nameÂ»'''
+	
+	override String _serialize(ModExpression expression) '''(Â«expression.leftOperand.serializeÂ» % Â«expression.rightOperand.serializeÂ»)'''
+	
+	override String _serialize(DivExpression expression) '''(Â«expression.leftOperand.serializeÂ» / Â«expression.rightOperand.serializeÂ»)'''
+	
+	override String _serialize(NotExpression expression) '''(Â«super._serialize(expression)Â»)'''
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
 		if (declaration instanceof PrimedVariable) {
-			return '''next(«declaration.originalVariable.name»)'''
+			return '''next(Â«declaration.originalVariable.nameÂ»)'''
 		}
-		return '''«declaration.name»'''
+		return '''Â«declaration.nameÂ»'''
 	}
 	
 }

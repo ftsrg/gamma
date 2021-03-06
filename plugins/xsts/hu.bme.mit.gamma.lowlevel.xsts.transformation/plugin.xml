@@ -7,6 +7,12 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.firstChoiceStates"/>
     </group>
   </extension>
+  <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OptimizationPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OptimizationPatterns" id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.OptimizationPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.assignmentActions"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.notReadVariables"/>
+    </group>
+  </extension>
   <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Patterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Patterns" id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.Patterns">
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.statecharts"/>
@@ -22,7 +28,7 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.timeouts"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.timeoutInitializations"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.plainVariables"/>
-      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.variables"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.globalVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.referredVariables"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.transitionsBetweenSameRegionNodes"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.transitionsToHigherNodes"/>

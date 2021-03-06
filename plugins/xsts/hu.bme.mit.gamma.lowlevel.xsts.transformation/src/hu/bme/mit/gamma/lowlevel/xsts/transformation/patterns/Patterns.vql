@@ -100,20 +100,21 @@ pattern plainVariables(variable : VariableDeclaration) {
 	neg find eventParameters(variable);
 	neg find componentParameters(variable);
 	neg find timeouts(variable);
+	neg find localVariables(variable);
 }
 
-pattern variables(variable : VariableDeclaration) {
+pattern globalVariables(variable : VariableDeclaration) {
 	VariableDeclaration(variable);
+	neg find localVariables(variable);
+}
+
+private pattern localVariables(variable : VariableDeclaration) {
+	VariableDeclarationStatement.variableDeclaration(_, variable);
 }
 
 pattern referredVariables(variable : VariableDeclaration) {
 	DirectReferenceExpression.declaration(_, variable);
-	find variables(variable);
-} or {
-	AccessExpression.operand(_, reference);
-	DirectReferenceExpression(reference);
-	DirectReferenceExpression.declaration(reference, variable);
-	find variables(variable);
+	find globalVariables(variable);
 }
 
 private pattern sameRegionStateNodes(region : Region, stateNodeLeft : StateNode, stateNodeRight : StateNode) {

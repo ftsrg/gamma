@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.xsts.transformation.util
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.EventGroup
@@ -20,12 +19,12 @@ import hu.bme.mit.gamma.xsts.model.EventParameterGroup
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.Comparator
 import java.util.List
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class OrthogonalActionTransformer {
@@ -35,8 +34,7 @@ class OrthogonalActionTransformer {
 	//
 	
 	protected extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected extension ExpressionUtil expressionActionUtil = ExpressionUtil.INSTANCE
-	protected extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected extension ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
 	
@@ -113,7 +111,7 @@ class OrthogonalActionTransformer {
 			Collection<VariableDeclaration> consideredVariables) {
 		val xSts = variable.root as XSTS
 		val orthogonalVariable = createVariableDeclaration => [
-			it.type = variable.type.clone(true, true)
+			it.type = variable.type.clone
 			// If there are multiple ort variables with the same name
 			// (variables written in multiple branches), the model is faulty
 			it.name = variable.orthogonalName

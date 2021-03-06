@@ -65,9 +65,9 @@ class ExpressionTransformer {
 		return expression.text
 	}
 	
-	def static dispatch String transform(IdentifierExpression expression) '''«expression.identifier.name»«FOR index : expression.index»[«index.transform»]«ENDFOR»'''
+	def static dispatch String transform(IdentifierExpression expression) '''Â«expression.identifier.nameÂ»Â«FOR index : expression.indexÂ»[Â«index.transformÂ»]Â«ENDFORÂ»'''
 	
-	def static dispatch String transform(ScopedIdentifierExpression expression) '''«expression.scope.transform».«expression.identifier.transform»'''
+	def static dispatch String transform(ScopedIdentifierExpression expression) '''Â«expression.scope.transformÂ».Â«expression.identifier.transformÂ»'''
 	
 	def static dispatch String transform(AssignmentExpression expression) {
 		return expression.firstExpr.transform + " " + expression.operator.transformAssignmentOperator + " " + expression.secondExpr.transform
@@ -159,11 +159,11 @@ class ExpressionTransformer {
 		return "(" + expression.firstExpr.transform + " " + expression.operator.literal + " " + expression.secondExpr.transform + ")"
 	}
 	
-	def static dispatch String transform(FunctionCallExpression expression) '''«expression.function.name»(«FOR argument : expression.argument SEPARATOR ", "»«argument.transform»«ENDFOR»)'''
+	def static dispatch String transform(FunctionCallExpression expression) '''Â«expression.function.nameÂ»(Â«FOR argument : expression.argument SEPARATOR ", "Â»Â«argument.transformÂ»Â«ENDFORÂ»)'''
 	
 	// Serializing selections
 	
-	def static serialize(Selection select) '''«FOR variable : select.variable»«variable.name»«ENDFOR» : «select.typeDefinition.serializeTypeDefinition»'''
+	def static serialize(Selection select) '''Â«FOR variable : select.variableÂ»Â«variable.nameÂ»Â«ENDFORÂ» : Â«select.typeDefinition.serializeTypeDefinitionÂ»'''
 	
 	// Serializing statements
 	
@@ -172,35 +172,35 @@ class ExpressionTransformer {
 	}
 	
 	def static dispatch String transformStatement(ForLoop forLoop) '''
-		for(«forLoop.initialization.transform»; «forLoop.condition.transform»; «forLoop.iteration.transform») {
-			«forLoop.statement.transformStatement»
+		for(Â«forLoop.initialization.transformÂ»; Â«forLoop.condition.transformÂ»; Â«forLoop.iteration.transformÂ») {
+			Â«forLoop.statement.transformStatementÂ»
 		}
 	'''
 	
 	def static dispatch String transformStatement(IfStatement statement) '''
-		if («statement.ifExpression.transform»)
-			«statement.thenStatement.transformStatement»
-		«IF statement.elseStatement !== null»
+		if (Â«statement.ifExpression.transformÂ»)
+			Â«statement.thenStatement.transformStatementÂ»
+		Â«IF statement.elseStatement !== nullÂ»
 			else
-				«statement.elseStatement.transformStatement»
-		«ENDIF»
+				Â«statement.elseStatement.transformStatementÂ»
+		Â«ENDIFÂ»
 	'''
 	
 	def static dispatch String transformStatement(Block block) ''' {
-			«IF block.declarations !== null»
-				«FOR declaration : block.declarations.declaration.filter(DataVariableDeclaration)»
-					«declaration.serializeVariable»
-				«ENDFOR»
-			«ENDIF»
-			«FOR statement: block.statement»
-				«statement.transformStatement»
-			«ENDFOR»
+			Â«IF block.declarations !== nullÂ»
+				Â«FOR declaration : block.declarations.declaration.filter(DataVariableDeclaration)Â»
+					Â«declaration.serializeVariableÂ»
+				Â«ENDFORÂ»
+			Â«ENDIFÂ»
+			Â«FOR statement: block.statementÂ»
+				Â«statement.transformStatementÂ»
+			Â«ENDFORÂ»
 		}
 	'''
 	
-	def static dispatch String transformStatement(ExpressionStatement statement) '''«statement.expression.transform»;'''
+	def static dispatch String transformStatement(ExpressionStatement statement) '''Â«statement.expression.transformÂ»;'''
 	
-	def static dispatch String transformStatement(ReturnStatement statement) '''return «IF statement.returnExpression !== null»«statement.returnExpression.transform»«ENDIF»;'''
+	def static dispatch String transformStatement(ReturnStatement statement) '''return Â«IF statement.returnExpression !== nullÂ»Â«statement.returnExpression.transformÂ»Â«ENDIFÂ»;'''
 	
 	def static dispatch String transformStatement(EmptyStatement statement) {
 		return ""
@@ -220,37 +220,37 @@ class ExpressionTransformer {
 		type.name
 	}
 	
-	def dispatch static String serializeTypeDefinition(TypeReference typeReference) '''«typeReference.referredType.serializeType»'''
+	def dispatch static String serializeTypeDefinition(TypeReference typeReference) '''Â«typeReference.referredType.serializeTypeÂ»'''
 	
-	def dispatch static String serializeTypeDefinition(StructTypeSpecification typeSpec) '''«FOR declaration : typeSpec.declaration»«declaration.serializeVariable»«ENDFOR»'''
+	def dispatch static String serializeTypeDefinition(StructTypeSpecification typeSpec) '''Â«FOR declaration : typeSpec.declarationÂ»Â«declaration.serializeVariableÂ»Â«ENDFORÂ»'''
 	
-	def dispatch static String serializeTypeDefinition(RangeTypeSpecification rangeSpec) '''int[«rangeSpec.bounds.lowerBound.transform», «rangeSpec.bounds.upperBound.transform»]'''
+	def dispatch static String serializeTypeDefinition(RangeTypeSpecification rangeSpec) '''int[Â«rangeSpec.bounds.lowerBound.transformÂ», Â«rangeSpec.bounds.upperBound.transformÂ»]'''
 	
 	// Serializing declarations
 	
 	def dispatch static serializeVariable(DataVariableDeclaration declaration) '''
-		«declaration.prefix.serializePrefix»«declaration.typeDefinition.serializeTypeDefinition» «FOR variable : declaration.variable SEPARATOR ", "»«variable.name»«FOR index : variable.index»«index.serializeIndex»«ENDFOR»«IF variable.initializer !== null» = «variable.initializer.serializeInitializer»«ENDIF»«ENDFOR»;
+		Â«declaration.prefix.serializePrefixÂ»Â«declaration.typeDefinition.serializeTypeDefinitionÂ» Â«FOR variable : declaration.variable SEPARATOR ", "Â»Â«variable.nameÂ»Â«FOR index : variable.indexÂ»Â«index.serializeIndexÂ»Â«ENDFORÂ»Â«IF variable.initializer !== nullÂ» = Â«variable.initializer.serializeInitializerÂ»Â«ENDIFÂ»Â«ENDFORÂ»;
 	'''
 	
 	def dispatch static serializeVariable(ClockVariableDeclaration declaration) '''
-		«declaration.typeDefinition.serializeTypeDefinition» «FOR variable : declaration.variable SEPARATOR ", "»«variable.name»«ENDFOR»;
+		Â«declaration.typeDefinition.serializeTypeDefinitionÂ» Â«FOR variable : declaration.variable SEPARATOR ", "Â»Â«variable.nameÂ»Â«ENDFORÂ»;
 	'''
 	
 	def dispatch static serializeVariable(ChannelVariableDeclaration declaration) '''
-		«IF declaration.isBroadcast»broadcast «ENDIF»«IF declaration.isUrgent»urgent «ENDIF»«declaration.typeDefinition.serializeTypeDefinition» «FOR variable : declaration.variable SEPARATOR ", "»«variable.name»«ENDFOR»;
+		Â«IF declaration.isBroadcastÂ»broadcast Â«ENDIFÂ»Â«IF declaration.isUrgentÂ»urgent Â«ENDIFÂ»Â«declaration.typeDefinition.serializeTypeDefinitionÂ» Â«FOR variable : declaration.variable SEPARATOR ", "Â»Â«variable.nameÂ»Â«ENDFORÂ»;
 	'''
 	
 	// Serializing initializers
 	
-	def dispatch static String serializeInitializer(ExpressionInitializer initializer) '''«initializer.expression.transform»'''
+	def dispatch static String serializeInitializer(ExpressionInitializer initializer) '''Â«initializer.expression.transformÂ»'''
 	
-	def dispatch static String serializeInitializer(ArrayInitializer initializer) '''{«FOR exprInit: initializer.initializer SEPARATOR ", "»«exprInit.serializeInitializer»«ENDFOR»}'''
+	def dispatch static String serializeInitializer(ArrayInitializer initializer) '''{Â«FOR exprInit: initializer.initializer SEPARATOR ", "Â»Â«exprInit.serializeInitializerÂ»Â«ENDFORÂ»}'''
 	
 	// Serializing indexes
 	
-	def dispatch static serializeIndex(ValueIndex index) '''[«index.sizeExpression.transform»]'''
+	def dispatch static serializeIndex(ValueIndex index) '''[Â«index.sizeExpression.transformÂ»]'''
 	
-	def dispatch static serializeIndex(TypeIndex index) '''[«index.typeDefinition.serializeTypeDefinition»]'''
+	def dispatch static serializeIndex(TypeIndex index) '''[Â«index.typeDefinition.serializeTypeDefinitionÂ»]'''
 	
 	// Serializing enums
 	

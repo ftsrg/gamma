@@ -12,7 +12,7 @@ package hu.bme.mit.gamma.uppaal.verification
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.querygenerator.XSTSUppaalQueryGenerator
+import hu.bme.mit.gamma.querygenerator.XstsUppaalQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -22,7 +22,7 @@ import hu.bme.mit.gamma.trace.model.ComponentSchedule
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
-import hu.bme.mit.gamma.uppaal.util.XSTSNamings
+import hu.bme.mit.gamma.uppaal.util.XstsNamings
 import java.util.Scanner
 import java.util.Set
 import org.eclipse.emf.ecore.util.EcoreUtil
@@ -32,9 +32,9 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
-class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
+class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 	
-	protected final XSTSUppaalQueryGenerator xStsUppaalQueryGenerator
+	protected final XstsUppaalQueryGenerator xStsUppaalQueryGenerator
 	protected final Expression schedulingConstraint
 	
 	new(Package gammaPackage, Scanner traceScanner) {
@@ -45,7 +45,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 		super(traceScanner, sortTrace)
 		this.gammaPackage = gammaPackage
 		this.component = gammaPackage.components.head
-		this.xStsUppaalQueryGenerator = new XSTSUppaalQueryGenerator(gammaPackage)
+		this.xStsUppaalQueryGenerator = new XstsUppaalQueryGenerator(gammaPackage)
 		val schedulingConstraintAnnotation = gammaPackage.annotations
 			.filter(SchedulingConstraintAnnotation).head
 		if (schedulingConstraintAnnotation !== null) {
@@ -109,15 +109,15 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 							val processLocationName = processLocationNames.head
 							val split = processLocationName.split("\\.")
 							val locationName = split.last
-							if (locationName.equals(XSTSNamings.stableLocationName)) {
+							if (locationName.equals(XstsNamings.stableLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
 								localState = StableEnvironmentState.STABLE
 							}
-							else if (locationName.equals(XSTSNamings.environmentFinishLocationName)) {
+							else if (locationName.equals(XstsNamings.environmentFinishLocationName)) {
 								state = BackAnnotatorState.STATE_VARIABLES
 								localState = StableEnvironmentState.ENVIRONMENT
 							}
-							else if (locationName.equals(XSTSNamings.initialLocationName)) {
+							else if (locationName.equals(XstsNamings.initialLocationName)) {
 								state = BackAnnotatorState.INITIAL
 								localState = StableEnvironmentState.INITIAL
 							}
@@ -138,7 +138,7 @@ class XSTSUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									switch (localState) {
 										case STABLE: {
 											val index = Integer.parseInt(value)
-											val potentialStateString = '''«variable» == «index»'''
+											val potentialStateString = '''ï¿½variableï¿½ == ï¿½indexï¿½'''
 											if (xStsUppaalQueryGenerator.isSourceState(potentialStateString)) {
 												val instanceState = xStsUppaalQueryGenerator.getSourceState(potentialStateString)
 												val controlState = instanceState.key

@@ -37,7 +37,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 			// Either a leads to
 			val left = leadsToOperands.key
 			val right = leadsToOperands.value
-			return '''(«left.serializeFormula») && «isStableVariableName» --> («right.serializeFormula») && «isStableVariableName»'''
+			return '''(Â«left.serializeFormulaÂ») && Â«isStableVariableNameÂ» --> (Â«right.serializeFormulaÂ») && Â«isStableVariableNameÂ»'''
 		}
 		// Or a simple CTL
 		val serializedFormula = formula.serializeFormula
@@ -117,13 +117,13 @@ class UppaalPropertySerializer extends PropertySerializer {
 	protected def dispatch String serializeFormula(QuantifiedFormula formula) {
 		val quantifier = formula.quantifier
 		val pathFormula = formula.formula
-		return '''«quantifier.transform»«pathFormula.serializeFormula»'''
+		return '''Â«quantifier.transformÂ»Â«pathFormula.serializeFormulaÂ»'''
 	}
 	
 	protected def dispatch String serializeFormula(UnaryOperandPathFormula formula) {
 		val operator = formula.operator
 		val operand = formula.operand
-		return '''«operator.transform» («operand.serializeFormula») «operator.addIsStable»'''
+		return '''Â«operator.transformÂ» (Â«operand.serializeFormulaÂ») Â«operator.addIsStableÂ»'''
 	}
 	
 	// Other CTL* formula expressions are not supported by UPPAAL
@@ -157,10 +157,10 @@ class UppaalPropertySerializer extends PropertySerializer {
 	protected def String addIsStable(UnaryPathOperator operator) {
 		switch (operator) {
 			case FUTURE: {
-				return '''&& «isStableVariableName»'''
+				return '''&& Â«isStableVariableNameÂ»'''
 			}
 			case GLOBAL: {
-				return '''|| !«isStableVariableName»'''
+				return '''|| !Â«isStableVariableNameÂ»'''
 			}
 			default: 
 				throw new IllegalArgumentException("Not supported operator: " + operator)
@@ -169,7 +169,7 @@ class UppaalPropertySerializer extends PropertySerializer {
 	
 	override serialize(Comment comment) '''
 		/*
-		«comment.comment»
+		Â«comment.commentÂ»
 		*/
 	'''
 	

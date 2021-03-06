@@ -10,18 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 /**
  * Works only if the assume actions are placed only in the first index of a sequential action.
@@ -30,12 +30,12 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) '''
-		«xSts.initializingAction.serialize»
+		Â«xSts.initializingAction.serializeÂ»
 	'''
 	
 	override CharSequence serializeChangeState(XSTS xSts) '''
 		private void changeState() {
-			«xSts.mergedAction.serialize»
+			Â«xSts.mergedAction.serializeÂ»
 		}
 	'''
 	
@@ -46,21 +46,21 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''
-		«FOR xStsSubaction : action.actions.filter[!it.unnecessaryAction] SEPARATOR ' else ' »
-			if («xStsSubaction.condition.serialize») {
-				«xStsSubaction.serialize»
+		Â«FOR xStsSubaction : action.actions.filter[!it.unnecessaryAction] SEPARATOR ' else ' Â»
+			if (Â«xStsSubaction.condition.serializeÂ») {
+				Â«xStsSubaction.serializeÂ»
 			}
-		«ENDFOR»
+		Â«ENDFORÂ»
 	'''
 	
 	def dispatch CharSequence serialize(SequentialAction action) '''
-		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
+		Â«FOR xStsSubaction : action.actionsÂ»Â«xStsSubaction.serializeÂ»Â«ENDFORÂ»
 	'''
 
 	def dispatch CharSequence serialize(AssumeAction action) ''''''
 	
 //	def dispatch CharSequence serialize(AssumeAction action) '''
-//		assert «action.assumption.serialize»;
+//		assert Â«action.assumption.serializeÂ»;
 //	'''
 	
 	def dispatch CharSequence serialize(AssignmentAction action) {
@@ -68,7 +68,15 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 			return ''''''
 		}
 		return '''
-			«action.lhs.serialize» = «action.rhs.serialize»;
+			Â«action.lhs.serializeÂ» = Â«action.rhs.serializeÂ»;
+		'''
+	}
+	
+	def dispatch CharSequence serialize(VariableDeclarationAction action) {
+		val variable = action.variableDeclaration
+		val intialValue = variable.expression
+		return '''
+			Â«variable.type.serializeÂ» Â«variable.nameÂ»Â«IF intialValue !== nullÂ» = Â«intialValue.serializeÂ»Â«ENDIFÂ»;
 		'''
 	}
 	
@@ -105,7 +113,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	}
 	
 	protected def dispatch Expression getCondition(AssumeAction action) {
-		return action.assumption.clone(true, true)
+		return action.assumption.clone
 	}
 	
 	// Optimization: for deleting unnecessary branches

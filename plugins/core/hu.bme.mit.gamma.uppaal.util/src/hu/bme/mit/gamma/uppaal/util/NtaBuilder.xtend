@@ -122,7 +122,7 @@ class NtaBuilder {
 			val block = function.block
 			for (statement : block.statement) {
 				if (statement instanceof ExpressionStatement) {
-					val expression = statement.expression.clone(true, true)
+					val expression = statement.expression.clone
 					container.add(reference, expression)
 				}
 			}
@@ -317,7 +317,7 @@ class NtaBuilder {
 				it.firstExpr = createCompareExpression => [
 					it.firstExpr = guard.createIdentifierExpression
 					it.operator = CompareOperator.UNEQUAL
-					it.secondExpr = notEqual.clone(true, true)
+					it.secondExpr = notEqual.clone
 				]
 				it.operator = operator
 				it.secondExpr = oldGuard

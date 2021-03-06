@@ -12,14 +12,14 @@ package hu.bme.mit.gamma.uppaal.util
 
 import hu.bme.mit.gamma.expression.model.NamedElement
 
-class XSTSNamings {
+class XstsNamings {
 	
 	static int locationId = 0
 	
 	def static void resetCommittedLocationName() {locationId = 0}
-	def static String getNextCommittedLocationName() '''_«locationId++»_'''
+	def static String getNextCommittedLocationName() '''_Â«locationId++Â»_'''
 	
-	def static String getUppaalId(NamedElement element) '''«element.name»'''
+	def static String getUppaalId(NamedElement element) '''Â«element.nameÂ»'''
 	
 	def static String getTemplateName() '''System'''
 	def static String getStableLocationName() '''_StableLocation_'''

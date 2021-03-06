@@ -281,9 +281,9 @@ class AnnotationNamings {
 	
 	int id = 0
 	
-	def String getVariableName(Transition transition) '''«PREFIX»«transition.sourceState.name»_«id++»_«transition.targetState.name»«POSTFIX»'''
-	def String getReceivingVariableName(SynchronousComponentInstance instance) '''«PREFIX»_rec_«instance.name»«id++»«POSTFIX»'''
-	def String getSendingVariableName(SynchronousComponentInstance instance) '''«PREFIX»_send_«instance.name»«id++»«POSTFIX»'''
-	def String getParameterName(Event event) '''«PREFIX»«event.name»«POSTFIX»'''
+	def String getVariableName(Transition transition) '''Â«PREFIXÂ»Â«transition.sourceState.nameÂ»_Â«id++Â»_Â«transition.targetState.nameÂ»Â«POSTFIXÂ»'''
+	def String getReceivingVariableName(SynchronousComponentInstance instance) '''Â«PREFIXÂ»_rec_Â«instance.nameÂ»Â«id++Â»Â«POSTFIXÂ»'''
+	def String getSendingVariableName(SynchronousComponentInstance instance) '''Â«PREFIXÂ»_send_Â«instance.nameÂ»Â«id++Â»Â«POSTFIXÂ»'''
+	def String getParameterName(Event event) '''Â«PREFIXÂ»Â«event.nameÂ»Â«POSTFIXÂ»'''
 	
 }

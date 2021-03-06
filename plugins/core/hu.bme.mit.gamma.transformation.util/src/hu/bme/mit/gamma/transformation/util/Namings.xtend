@@ -8,8 +8,8 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class Namings {
 	
-	def static String getFQN(List<ComponentInstance> instances) '''«FOR instance : instances SEPARATOR '_'»«instance.name»«ENDFOR»'''
-	def static String getFQN(ComponentInstanceReference instance) '''«instance.componentInstanceHierarchy.FQN»'''
-	def static String getFQN(ComponentInstance instance) '''«instance.componentInstanceChain.FQN»'''
+	def static String getFQN(List<ComponentInstance> instances) '''Â«FOR instance : instances SEPARATOR '_'Â»Â«instance.nameÂ»Â«ENDFORÂ»'''
+	def static String getFQN(ComponentInstanceReference instance) '''Â«instance.componentInstanceHierarchy.FQNÂ»'''
+	def static String getFQN(ComponentInstance instance) '''Â«instance.componentInstanceChain.FQNÂ»'''
 	
 }

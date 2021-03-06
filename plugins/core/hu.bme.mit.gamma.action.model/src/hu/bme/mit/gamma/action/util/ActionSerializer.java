@@ -118,7 +118,7 @@ public class ActionSerializer {
 		StringBuilder builder = new StringBuilder();
 		for (Branch branch : statement.getConditionals()) {
 			builder.append(
-					"[" + expressionSerializer.serialize(branch.getGuard()) + "]" + serialize(branch.getAction()));
+					"if (" + expressionSerializer.serialize(branch.getGuard()) + ") " + serialize(branch.getAction()));
 		}
 		return builder.toString();
 	}

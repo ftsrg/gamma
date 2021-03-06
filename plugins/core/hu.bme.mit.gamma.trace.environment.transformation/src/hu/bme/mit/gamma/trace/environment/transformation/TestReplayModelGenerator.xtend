@@ -92,7 +92,7 @@ class TestReplayModelGenerator {
 		return component.allPorts.map[it.interface.containingPackage].toList 
 	}
 	
-	protected def String getSystemModelName(Component environmentModel, Component testModel) '''«environmentModel.name»On«testModel.name»'''
+	protected def String getSystemModelName(Component environmentModel, Component testModel) '''Â«environmentModel.nameÂ»OnÂ«testModel.nameÂ»'''
 	
 	@Data
 	static class Result {

@@ -20,7 +20,7 @@ class PathEscaper {
 	
 	def String escapePath(String path) {
 		if (isWindows) {
-			return '''"«path»"'''
+			return '''"Â«pathÂ»"'''
 		}
 		else {
 			// Unix

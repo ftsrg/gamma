@@ -31,7 +31,7 @@ class TypeSerializer {
 		throw new IllegalArgumentException("Not supported expression: " + type)
 	}
 	
-	def dispatch String serialize(TypeReference type) '''«IF type.reference.type.isPrimitive»«type.reference.type.serialize»«ELSE»«type.reference.name»«ENDIF»'''
+	def dispatch String serialize(TypeReference type) '''Â«IF type.reference.type.isPrimitiveÂ»Â«type.reference.type.serializeÂ»Â«ELSEÂ»Â«type.reference.nameÂ»Â«ENDIFÂ»'''
 	
 	def dispatch String serialize(BooleanTypeDefinition type) '''boolean'''
 	
@@ -41,7 +41,7 @@ class TypeSerializer {
 	
 	def dispatch String serialize(RationalTypeDefinition type) '''double'''
 	
-	def dispatch String serialize(ArrayTypeDefinition type) '''«type.elementType.serialize»[]'''
+	def dispatch String serialize(ArrayTypeDefinition type) '''Â«type.elementType.serializeÂ»[]'''
 	
 	def dispatch String serialize(EnumerationTypeDefinition type) {
 		throw new IllegalArgumentException("Anonymous enumeration types are not supported: " + type)

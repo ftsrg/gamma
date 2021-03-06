@@ -19,6 +19,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -28,8 +29,24 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	new(Package gammaPackage) {
+		this(gammaPackage, false)
+	}
+	
+	new(Package gammaPackage, boolean createAdvancedEngine) {
 		val resourceSet = gammaPackage.eResource.resourceSet
-		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
+		val scope = new EMFScope(resourceSet)
+		if (createAdvancedEngine) {
+			super.engine = AdvancedViatraQueryEngine.createUnmanagedEngine(scope)
+		}
+		else {
+			super.engine = ViatraQueryEngine.on(scope)
+		}
+	}
+	
+	override close() {
+		if (engine instanceof AdvancedViatraQueryEngine) {
+			engine.dispose
+		}
 	}
 	
 	override parseRegularQuery(String text, TemporalOperator operator) {
@@ -51,15 +68,15 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
+		return '''Â«state.getSingleTargetStateName(parentRegion, instance)Â»Â«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "Â»Â«parent.getSingleTargetStateName(parent.parentRegion, instance)Â»Â«ENDFORÂ»'''
 	}
 	
 	def protected getSingleTargetStateName(State state, Region parentRegion, SynchronousComponentInstance instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
+		return '''Â«parentRegion.customizeName(instance)Â» == Â«state.customizeNameÂ»'''
 	}
 	
 	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
-		return variable.customizeName(instance)
+		return variable.customizeNames(instance)
 	}
 	
 	override protected getTargetOutEventName(Event event, Port port, SynchronousComponentInstance instance) {
@@ -67,7 +84,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	override protected getTargetOutEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
-		return parameter.customizeOutName(port, instance)
+		return parameter.customizeOutNames(port, instance)
 	}
 	
 	def protected getTargetInEventName(Event event, Port port, SynchronousComponentInstance instance) {
@@ -75,7 +92,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	}
 	
 	def protected getTargetInEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
-		return parameter.customizeInName(port, instance)
+		return parameter.customizeInNames(port, instance)
 	}
 	
 	// Auxiliary methods for back-annotation
@@ -150,8 +167,9 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
-			val name = getTargetVariableName(match.variable, match.instance)
-			if (name.equals(targetVariableName)) {
+			// TODO Maybe an allFields method could be used here?
+			val names = getTargetVariableName(match.variable, match.instance)
+			if (names.contains(targetVariableName)) {
 				return new Pair(match.variable, match.instance)
 			}
 		}
@@ -172,8 +190,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : systemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
-				val name = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
-				if (name.equals(targetOutEventParameterName)) {
+				val names = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
+				if (names.contains(targetOutEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}
@@ -195,8 +213,8 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : systemInEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
-				val name = getTargetInEventParameterName(event, match.port, parameter, match.instance)
-				if (name.equals(targetInEventParameterName)) {
+				val names = getTargetInEventParameterName(event, match.port, parameter, match.instance)
+				if (names.contains(targetInEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}

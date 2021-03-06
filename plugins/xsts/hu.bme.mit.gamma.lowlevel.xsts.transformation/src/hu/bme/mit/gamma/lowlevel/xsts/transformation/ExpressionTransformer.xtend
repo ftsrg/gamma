@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.BinaryExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
@@ -18,16 +19,16 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.statechart.lowlevel.model.StateReferenceExpression
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
 import static com.google.common.base.Preconditions.checkState
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class ExpressionTransformer {
 	// Trace needed for variable references
@@ -35,6 +36,7 @@ class ExpressionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -60,11 +62,21 @@ class ExpressionTransformer {
 
 	// Key method
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
-		checkState(expression.declaration instanceof VariableDeclaration)
-		val declaration = expression.declaration as VariableDeclaration
+		val declaration = expression.declaration
+		checkState(declaration instanceof VariableDeclaration, declaration)
+		val variableDeclaration = expression.declaration as VariableDeclaration
 		return expression.clone => [
-			it.declaration = trace.getXStsVariable(declaration)
+			it.declaration = trace.getXStsVariable(variableDeclaration)
 		]
+	}
+	
+	// Key method
+	def dispatch Expression transformExpression(StateReferenceExpression expression) {
+		val lowlevelRegion = expression.region
+		val lowlevelState = expression.state
+		val xStsVariable = trace.getXStsVariable(lowlevelRegion)
+		val xStsLiteral = trace.getXStsEnumLiteral(lowlevelState)
+		return xStsVariable.createEqualityExpression(xStsLiteral.wrap)
 	}
 	
 	// Key method

@@ -9,6 +9,7 @@
 package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
+import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.DefUseReferences
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.InteractionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionAnnotations
 import hu.bme.mit.gamma.transformation.util.annotations.GammaStatechartAnnotator.TransitionPairAnnotation
@@ -57,7 +59,7 @@ class PropertyGenerator {
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final CompositeModelFactory compositeFactory = CompositeModelFactory.eINSTANCE
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE
-	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 
 	new(boolean isSimpleComponentReference) {
 		this.isSimpleComponentReference = isSimpleComponentReference
@@ -84,7 +86,7 @@ class PropertyGenerator {
 					stateReference.setState(state)
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(stateReference))
 					val commentableStateFormula = propertyUtil.
-						createCommentableStateFormula('''«instance.name».«parentRegion.name».«state.name»''',
+						createCommentableStateFormula('''Â«instance.nameÂ».Â«parentRegion.nameÂ».Â«state.nameÂ»''',
 							stateFormula)
 					formulas += commentableStateFormula
 				}
@@ -105,7 +107,7 @@ class PropertyGenerator {
 							createInstanceReference(instance), port, outEvent)
 						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(eventReference))
 						val commentableStateFormula = propertyUtil.
-							createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name»''',
+							createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ»''',
 								stateFormula)
 						formulas += commentableStateFormula
 					}
@@ -119,7 +121,7 @@ class PropertyGenerator {
 									createInstanceReference(instance), port, outEvent)
 								val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(eventReference))
 								val commentableStateFormula = propertyUtil.
-									createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name»''',
+									createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ»''',
 										stateFormula)
 								formulas += commentableStateFormula
 							}
@@ -138,7 +140,7 @@ class PropertyGenerator {
 									and.operands += equalityExpression
 									val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 									val commentableStateFormula = propertyUtil.
-										createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name».«parameter.name» == «expressionSerializer.serialize(value)»''',
+										createCommentableStateFormula('''Â«instance.nameÂ».Â«port.nameÂ».Â«outEvent.nameÂ».Â«parameter.nameÂ» == Â«expressionSerializer.serialize(value)Â»''',
 											stateFormula)
 									formulas += commentableStateFormula
 								}
@@ -219,7 +221,7 @@ class PropertyGenerator {
 			]
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 			// Comment
-			var String comment = '''«getId(firstTransition)» -p- «getId(secondTransition)»'''
+			var String comment = '''Â«getId(firstTransition)Â» -p- Â«getId(secondTransition)Â»'''
 			val commentableStateFormula = propertyUtil.createCommentableStateFormula(comment, stateFormula)
 			formulas += commentableStateFormula
 		}
@@ -263,11 +265,89 @@ class PropertyGenerator {
 			val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(finalExpression))
 			// Comment
 			val commentableStateFormula = propertyUtil.
-				createCommentableStateFormula('''«senderComment» -i- «receiverComment»''', stateFormula)
+				createCommentableStateFormula('''Â«senderCommentÂ» -i- Â«receiverCommentÂ»''', stateFormula)
 			formulas += commentableStateFormula
 		}
 		return formulas
 	}
+	
+	def List<CommentableStateFormula> createDataflowReachability(DefUseReferences defs,
+			DefUseReferences uses, DataflowCoverageCriterion criterion) {
+		val List<CommentableStateFormula> formulas = newArrayList
+		if (defs.variables.nullOrEmpty || uses.variables.nullOrEmpty) {
+			return formulas
+		}
+		for (variable : defs.variables) {
+			// Def
+			val defExpressions = newArrayList
+			val auxiliaryDefReferences = defs.getAuxiliaryReferences(variable)
+			val size = auxiliaryDefReferences.size
+			for (var i = 0; i < size; i++) {
+				val defExpression = expressionFactory.createAndExpression
+				for (var j = 0; j < size; j++) {
+					val auxiliaryDefReference = auxiliaryDefReferences.get(j)
+					val auxiliaryVariable = auxiliaryDefReference.defUseVariable
+					val expression = 
+					if (i != j) {
+						expressionFactory.createNotExpression => [
+							it.operand = auxiliaryVariable.createVariableReference
+						]
+					}
+					else {
+						auxiliaryVariable.createVariableReference
+					}
+					defExpression.operands += expression
+				}
+				// Def-comment
+				val ponatedReference = auxiliaryDefReferences.get(i)
+				val originalReference = ponatedReference.originalVariableReference
+				val defComment = originalReference.id
+				defExpressions += new Pair(defExpression, defComment)
+				//
+			}
+			// Use
+			for (defExpression : defExpressions) {
+				val and = defExpression.key
+				val defComment = defExpression.value
+				val auxiliaryUseReferences = uses.getAuxiliaryReferences(variable)
+				if (criterion == DataflowCoverageCriterion.ALL_DEF) {
+					if (auxiliaryUseReferences.size > 1) {
+						val or = expressionFactory.createOrExpression
+						for (auxiliaryUseReference : auxiliaryUseReferences) {
+							val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+							or.operands += auxiliaryUseVariable.createVariableReference
+						}
+						and.operands += or
+					}
+					else {
+						val auxiliaryUseReference = auxiliaryUseReferences.head
+						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+						and.operands += auxiliaryUseVariable.createVariableReference
+					}
+					
+					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference].toSet
+					val useComment = originalUseReferences.ids
+					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
+					formulas += propertyUtil.createCommentableStateFormula(
+							'''Â«defCommentÂ» -d-u- Â«useCommentÂ»''', stateFormula)
+				}
+				else {
+					for (auxiliaryUseReference : auxiliaryUseReferences) {
+						val auxiliaryUseVariable = auxiliaryUseReference.defUseVariable
+						val clonedAnd = and.clone
+						clonedAnd.operands += auxiliaryUseVariable.createVariableReference
+						
+						val useComment = auxiliaryUseReference.originalVariableReference.id
+						val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(clonedAnd))
+						formulas += propertyUtil.createCommentableStateFormula(
+								'''Â«defCommentÂ» -d-u- Â«useCommentÂ»''', stateFormula)
+					}
+				}
+			}
+		}
+		return formulas
+	}
+	
 
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
@@ -290,24 +370,35 @@ class PropertyGenerator {
 		}
 	}
 
-	def protected String getId(RaiseEventAction action) {
+	def dispatch protected String getId(RaiseEventAction action) {
 		val transition = ecoreUtil.getContainerOfType(action, Transition)
 		if (transition === null) {
 			val state = ecoreUtil.getContainerOfType(action, State)
 			if (state === null) {
-				throw new IllegalArgumentException('''Not known raise event: «action»''')
+				throw new IllegalArgumentException('''Not known raise event: Â«actionÂ»''')
 			}
 			val containmentFeatureName = action.eContainmentFeature.name
-			return '''«getId(state)»-«containmentFeatureName»'''
+			return '''Â«getId(state)Â»-Â«containmentFeatureNameÂ»'''
 		}
 		return getId(transition)
 	}
 
-	def protected String getId(StateNode state) {
-		return '''«getInstanceId(state)».«state.parentRegion.name».«state.name»'''
+	def dispatch protected String getId(StateNode state) {
+		return '''Â«getInstanceId(state)Â».Â«state.parentRegion.nameÂ».Â«state.nameÂ»'''
 	}
 
-	def protected String getId(Transition transition) {
-		return '''«transition.sourceState.id» --> «transition.targetState.id»'''
+	def dispatch protected String getId(Transition transition) {
+		return '''Â«transition.sourceState.idÂ» --> Â«transition.targetState.idÂ»'''
 	}
+	
+	def dispatch protected String getId(DirectReferenceExpression reference) {
+		val transitionOrState = reference.containingTransitionOrState
+		val variable = reference.declaration
+		return '''Â«transitionOrState.idÂ»::Â«variable.nameÂ»'''
+	}
+	
+	def protected String getIds(Collection<DirectReferenceExpression> references) {
+		return '''Â«FOR reference : references SEPARATOR ' | 'Â»Â«reference.idÂ»Â«ENDFORÂ»'''
+	}
+	
 }

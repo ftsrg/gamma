@@ -1,14 +1,13 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
-
-import static extension com.google.common.collect.Iterables.getOnlyElement
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.SelectExpression
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
 
 class NameProvider {
+	
 	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	
 	String name = ""

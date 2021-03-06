@@ -6,10 +6,12 @@ import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeature
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
 import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
 import hu.bme.mit.gamma.uppaal.composition.transformation.AsynchronousSchedulerTemplateCreator.Scheduler
 import hu.bme.mit.gamma.uppaal.composition.transformation.CompositeToUppaalTransformer
 import hu.bme.mit.gamma.uppaal.composition.transformation.Constraint
@@ -38,6 +40,8 @@ class Gamma2UppaalTransformerSerializer {
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	protected final InteractionCoverageCriterion senderCoverageCriterion
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
+	protected final ComponentInstanceVariableReferences dataflowTestedVariables
+	protected final DataflowCoverageCriterion dataflowCoverageCriterion
 		
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -58,7 +62,8 @@ class Gamma2UppaalTransformerSerializer {
 			boolean isMinimalElementSet) {
 		this(component, arguments, targetFolderUri, fileName, constraint,
 			scheduler, isMinimalElementSet, null, null, null, null, null, null,
-			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION)
+			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
+			null, DataflowCoverageCriterion.ALL_USE)
 	}
 	
 	new(Component component, List<Expression> arguments,
@@ -72,7 +77,9 @@ class Gamma2UppaalTransformerSerializer {
 			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions,
 			InteractionCoverageCriterion senderCoverageCriterion,
-			InteractionCoverageCriterion receiverCoverageCriterion) {
+			InteractionCoverageCriterion receiverCoverageCriterion,
+			ComponentInstanceVariableReferences dataflowTestedVariables,
+			DataflowCoverageCriterion dataflowCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -90,6 +97,8 @@ class Gamma2UppaalTransformerSerializer {
 		this.testedInteractions = testedInteractions
 		this.senderCoverageCriterion = senderCoverageCriterion
 		this.receiverCoverageCriterion = receiverCoverageCriterion
+		this.dataflowTestedVariables = dataflowTestedVariables
+		this.dataflowCoverageCriterion = dataflowCoverageCriterion
 	}
 	
 	def void execute() {
@@ -108,6 +117,7 @@ class Gamma2UppaalTransformerSerializer {
 				testedComponentsForStates, testedComponentsForTransitions,
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 				testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+				dataflowTestedVariables, dataflowCoverageCriterion,
 				targetFolderUri, fileName);
 		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation

@@ -64,8 +64,9 @@ class StatechartToTestTransformer {
 			val tranistionId = transitionAnnotations.get(transition)
 			val uppaalQuery = "E<> " + modelModifier.getTransitionIdVariableName + " == " + tranistionId + " && isStable"
 			val verifier = new UppaalVerifier
-			val simpleStateExecutionTrace = verifier.verifyQuery(uppaalTraceability, queryParameters,
+			val result = verifier.verifyQuery(uppaalTraceability, queryParameters,
 				uppaalFile, uppaalQuery, true, false)
+			val simpleStateExecutionTrace = result.trace
 			
 			simpleStateExecutionTrace => [
 				it.import = adaptiveContractAnnotation.monitoredComponent.containingPackage
@@ -94,12 +95,12 @@ class StatechartToTestTransformer {
 			for (contractStatechart : contractStatecharts) {
 				val contractTraces = contractToTraceTransformer.execute(contractStatechart)
 				for (contractTrace : contractTraces) {
-					val finalTrace = simpleStateExecutionTrace.clone(true, true)
+					val finalTrace = simpleStateExecutionTrace.clone
 					finalTrace.steps += contractTrace.steps
 					finalTraces += finalTrace
 				}
 				// Generating tests
-				val className = '''«IF fileName === null»«simpleState.name.toFirstUpper»«tranistionId»«contractStatechart.name.toFirstUpper»«ELSE»«fileName»«ENDIF»'''
+				val className = '''Â«IF fileName === nullÂ»Â«simpleState.name.toFirstUpperÂ»Â«tranistionIdÂ»Â«contractStatechart.name.toFirstUpperÂ»Â«ELSEÂ»Â«fileNameÂ»Â«ENDIFÂ»'''
 				val testGenerator = new TestGenerator(finalTraces, basePackageName, className)
 				val testClass = testGenerator.execute
 				val testClassFile = getFile(testFolder, testGenerator.packageName, className)
@@ -112,7 +113,7 @@ class StatechartToTestTransformer {
 		val brokenAnnotation = newState.annotation
 		newState.annotation = null
 		for (state : statechart.allStates.filter[!it.composite]) {
-			val clonedState = state.clone(true, true) => [
+			val clonedState = state.clone => [
 				it.annotation = null
 			]
 			if (clonedState.helperEquals(newState)) {

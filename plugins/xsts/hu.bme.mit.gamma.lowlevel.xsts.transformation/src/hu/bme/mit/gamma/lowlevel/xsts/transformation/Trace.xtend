@@ -37,6 +37,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.Package
 import hu.bme.mit.gamma.statechart.lowlevel.model.Region
 import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.Transition
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -46,14 +47,17 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 
 package class Trace {
-	// Trace model factory
-	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
 	// Trace model
 	protected final L2STrace trace
 	// Tracing engine
 	protected final ViatraQueryEngine tracingEngine
+	// Trace model factory
+	protected final extension TraceabilityFactory traceabilityFactory = TraceabilityFactory.eINSTANCE
+	// Auxiliary
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	
 	new(Package _package, XSTS xSts) {
 		this.trace = createL2STrace => [
@@ -129,6 +133,15 @@ package class Trace {
 	def put(VariableDeclaration lowlevelVariable, VariableDeclaration xStsVariable) {
 		checkArgument(lowlevelVariable !== null)
 		checkArgument(xStsVariable !== null)
+		if (lowlevelVariable.hasXStsVariable) {
+			// This can happen if we transform the same action multiple times
+			// Solution: we "forget" the previously created local xSts variable
+			val container = lowlevelVariable.eContainer
+			checkState(container instanceof VariableDeclarationStatement)
+			val trace = lowlevelVariable.trace
+			trace.XStsVariable = xStsVariable
+			return
+		}
 		trace.traces += createVariableTrace => [
 			it.lowlevelVariable = lowlevelVariable
 			it.XStsVariable = xStsVariable
@@ -138,7 +151,7 @@ package class Trace {
 	def getXStsVariable(VariableDeclaration lowlevelVariable) {
 		checkArgument(lowlevelVariable !== null)
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(lowlevelVariable)
-		checkState(matches.size == 1, matches.size)
+		checkState(matches.size == 1, '''«matches.size» «lowlevelVariable»''')
 		return matches.head
 	}
 	
@@ -147,6 +160,28 @@ package class Trace {
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelVariable(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	def hasXStsVariable(VariableDeclaration lowlevelVariable) {
+		checkArgument(lowlevelVariable !== null)
+		return VariableTrace.Matcher.on(tracingEngine).hasMatch(lowlevelVariable, null)
+	}
+	
+	def getTrace(VariableDeclaration lowlevelVariable) {
+		checkArgument(lowlevelVariable !== null)
+		val traces = trace.traces.filter(hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.VariableTrace)
+			.filter[it.lowlevelVariable === lowlevelVariable].toSet
+		checkState(traces.size == 1)
+		return traces.head
+	}
+	
+	def delete(VariableDeclaration xStsVariable) {
+		checkArgument(xStsVariable !== null)
+		val traces = trace.traces.filter(hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.VariableTrace)
+			.filter[it.XStsVariable === xStsVariable].toSet
+		for (trace : traces) {
+			trace.remove
+		}
 	}
 	
 	// Region - variable

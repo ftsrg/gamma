@@ -10,11 +10,10 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
-import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XSTSDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
+import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
 	// Singleton
@@ -26,7 +25,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.Expr
 		val declaration = expression.declaration
 		if (declaration instanceof VariableDeclaration) {
 			// 'this' is important as without it, the reference would refer to the temporary variable
-			return '''this.«declaration.originalVariable.name»'''
+			return '''this.Â«declaration.originalVariable.nameÂ»'''
 		}
 		return declaration.name
 	}

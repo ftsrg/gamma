@@ -10,15 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.phase.transformation
 
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
-import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
+import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.statechart.composite.PortBinding
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateAnnotation
 import hu.bme.mit.gamma.statechart.phase.MissionPhaseStateDefinition
 import hu.bme.mit.gamma.statechart.phase.VariableBinding
+import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
@@ -27,7 +27,6 @@ import static com.google.common.base.Preconditions.checkState
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.phase.transformation.Namings.*
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 
 class PhaseStatechartTransformer {
 
@@ -49,7 +48,7 @@ class PhaseStatechartTransformer {
 				val stateDefinitions = annotation.stateDefinitions
 				for (stateDefinition : stateDefinitions) {
 					val component = stateDefinition.component
-					val inlineableStatechart = component.type.clone(true, true) as StatechartDefinition
+					val inlineableStatechart = component.type.clone as StatechartDefinition
 					for (portBinding : stateDefinition.portBindings) {
 						portBinding.inlinePorts(inlineableStatechart)
 					}

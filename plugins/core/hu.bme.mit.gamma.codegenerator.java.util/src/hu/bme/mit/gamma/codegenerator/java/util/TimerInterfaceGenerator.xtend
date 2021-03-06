@@ -21,20 +21,20 @@ class TimerInterfaceGenerator {
 	}
 	
 	def createITimerInterfaceCode() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
-		public interface «Namings.YAKINDU_TIMER_INTERFACE» {
+		public interface Â«Namings.YAKINDU_TIMER_INTERFACEÂ» {
 			
-			void setTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID, long time, boolean isPeriodic);
-			void unsetTimer(«Namings.TIMER_CALLBACK_INTERFACE» callback, int eventID);
+			void setTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID, long time, boolean isPeriodic);
+			void unsetTimer(Â«Namings.TIMER_CALLBACK_INTERFACEÂ» callback, int eventID);
 			
 		}
 	'''
 	
 	def createGammaTimerInterfaceCode() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
-		public interface «Namings.GAMMA_TIMER_INTERFACE» {
+		public interface Â«Namings.GAMMA_TIMER_INTERFACEÂ» {
 			
 			public void saveTime(Object object);
 			public long getElapsedTime(Object object, TimeUnit timeUnit);
@@ -47,9 +47,9 @@ class TimerInterfaceGenerator {
 	'''
 	
 	def createUnifiedTimerInterfaceCode() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
-		public interface «Namings.UNIFIED_TIMER_INTERFACE» extends «Namings.YAKINDU_TIMER_INTERFACE», «Namings.GAMMA_TIMER_INTERFACE» {
+		public interface Â«Namings.UNIFIED_TIMER_INTERFACEÂ» extends Â«Namings.YAKINDU_TIMER_INTERFACEÂ», Â«Namings.GAMMA_TIMER_INTERFACEÂ» {
 			
 		}
 	'''

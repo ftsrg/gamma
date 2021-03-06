@@ -162,8 +162,8 @@
         eType="#//EnumerationLiteralDefinition"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FieldAssignment">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="reference" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
+        eType="#//FieldReferenceExpression" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
@@ -179,7 +179,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="AssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//ArgumentedElement #//AssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AssignableAccessExpression">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="field" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fieldReference" lowerBound="1"
+        eType="#//FieldReferenceExpression" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FieldReferenceExpression" eSuperTypes="#//ReferenceExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fieldDeclaration" lowerBound="1"
+        eType="#//FieldDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>

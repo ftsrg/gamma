@@ -16,7 +16,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.XSTS
-import hu.bme.mit.gamma.xsts.util.XSTSActionUtil
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
@@ -27,7 +27,7 @@ class SystemReducer {
 	protected new() {}
 	// Auxiliary objects
 	protected final extension GammaEcoreUtil expressionUtil = GammaEcoreUtil.INSTANCE
-	protected final extension XSTSActionUtil xStsActionUtil = XSTSActionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE
 	
 	def void deleteUnusedPorts(XSTS xSts, CompositeComponent component) {
@@ -64,11 +64,11 @@ class SystemReducer {
 						xStsDeletableAssignmentActions += xStsOutEventVariable.getAssignments(xStsAssignmentActions)
 						// Out-parameters
 						for (parameter : outputEvent.parameterDeclarations) {
-							val inParamaterName = parameter.customizeOutName(instancePort, instance)
-							val xStsOutParameterVariable = xSts.getVariable(inParamaterName)
-							if (xStsOutParameterVariable !== null) {
-								xStsDeletableVariables += xStsOutParameterVariable
-								xStsDeletableAssignmentActions += xStsOutParameterVariable.getAssignments(xStsAssignmentActions)
+							val inParamaterNames = parameter.customizeOutNames(instancePort, instance)
+							val xStsOutParameterVariables = xSts.getVariables(inParamaterNames)
+							if (!xStsOutParameterVariables.nullOrEmpty) {
+								xStsDeletableVariables += xStsOutParameterVariables
+								xStsDeletableAssignmentActions += xStsOutParameterVariables.getAssignments(xStsAssignmentActions)
 							}
 						}
 					}

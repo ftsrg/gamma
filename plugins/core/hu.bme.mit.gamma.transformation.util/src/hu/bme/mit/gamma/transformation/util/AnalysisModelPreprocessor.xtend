@@ -101,7 +101,7 @@ class AnalysisModelPreprocessor {
 			logger.log(Level.INFO, "Saving top component argument " + argument + " for " + parameter.name)
 			annotation.arguments += argument // Saving top component expression
 			val parameterConstant =  createConstantDeclaration => [
-				it.type = parameter.type
+				it.type = parameter.type.clone
 				it.name = "__" + parameter.name + "__"
 				it.expression = argument.clone
 			]

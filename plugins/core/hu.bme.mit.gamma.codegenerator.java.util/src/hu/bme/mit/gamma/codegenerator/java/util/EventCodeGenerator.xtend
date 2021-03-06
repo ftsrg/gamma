@@ -20,9 +20,9 @@ class EventCodeGenerator {
 	}
 	
 	def createEventClass() '''
-		package «PACKAGE_NAME»;
+		package Â«PACKAGE_NAMEÂ»;
 		
-		public class «CLASS_NAME» {
+		public class Â«CLASS_NAMEÂ» {
 			private String event;
 			private Object[] value;
 			

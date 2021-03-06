@@ -30,7 +30,7 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	override getId(State state, Region parentRegion, ComponentInstanceReference instance) {
 		val processName = parentRegion.getTemplateName(instance).processName
 		val locationName = new StringBuilder
-		locationName.append('''«processName».«state.locationName»''')
+		locationName.append('''Â«processNameÂ».Â«state.locationNameÂ»''')
 		if (parentRegion.subregion) {
 			locationName.append(" && " + processName + ".isActive") 
 		}
@@ -38,7 +38,7 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	}
 	
 	override getId(VariableDeclaration variable, ComponentInstanceReference instance) {
-		return getVariableName(variable, instance)
+		return #[getVariableName(variable, instance)]
 	}
 	
 	override getId(Event event, Port port, ComponentInstanceReference instance) {
@@ -50,9 +50,9 @@ class UppaalReferenceSerializer implements AbstractReferenceSerializer {
 	
 	override getId(Event event, Port port, ParameterDeclaration parameter, ComponentInstanceReference instance) {
 		if (port.isInputEvent(event)) {
-			return getToRaiseValueOfName(event, port, parameter, instance)
+			return #[getToRaiseValueOfName(event, port, parameter, instance)]
 		}
-		return getOutValueOfName(event, port, parameter, instance)
+		return #[getOutValueOfName(event, port, parameter, instance)]
 	}
 	
 }

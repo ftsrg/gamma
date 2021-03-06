@@ -1,35 +1,23 @@
-/********************************************************************************
- * Copyright (c) 2018-2021 Contributors to the Gamma project
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * SPDX-License-Identifier: EPL-1.0
- ********************************************************************************/
-package hu.bme.mit.gamma.xsts.transformation.api
+package hu.bme.mit.gamma.composition.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.property.model.PropertyPackage
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
-import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
-import hu.bme.mit.gamma.transformation.util.ModelSlicerModelAnnotatorPropertyGenerator
+import hu.bme.mit.gamma.transformation.util.annotations.DataflowCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.InteractionCoverageCriterion
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstancePortStateTransitionReferences
 import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceReferences
-import hu.bme.mit.gamma.util.FileUtil
+import hu.bme.mit.gamma.transformation.util.annotations.ModelAnnotatorPropertyGenerator.ComponentInstanceVariableReferences
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.xsts.transformation.GammaToXSTSTransformer
-import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
-import java.io.File
+import hu.bme.mit.gamma.xsts.model.XSTS
 import java.util.List
+import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer
+import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer
 
-class Gamma2XSTSTransformerSerializer {
-	
+class Gamma2XstsUppaalTransformerSerializer {
+
 	protected final Component component
 	protected final List<Expression> arguments
 	protected final String targetFolderUri
@@ -45,17 +33,16 @@ class Gamma2XSTSTransformerSerializer {
 	protected final ComponentInstancePortStateTransitionReferences testedInteractions
 	protected final InteractionCoverageCriterion senderCoverageCriterion
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
+	protected final ComponentInstanceVariableReferences dataflowTestedVariables
+	protected final DataflowCoverageCriterion dataflowCoverageCriterion
 	
-	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
-	protected final extension ActionSerializer actionSerializer = ActionSerializer.INSTANCE
-	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	new(Component component, String targetFolderUri, String fileName) {
 		this(component, #[], targetFolderUri, fileName)
 	}
-	
+
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName) {
 		this(component, arguments, targetFolderUri, fileName, null)
@@ -66,7 +53,8 @@ class Gamma2XSTSTransformerSerializer {
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
 			null, null, null, null, null, null, InteractionCoverageCriterion.EVERY_INTERACTION,
-			InteractionCoverageCriterion.EVERY_INTERACTION)
+			InteractionCoverageCriterion.EVERY_INTERACTION,
+			null, DataflowCoverageCriterion.ALL_USE)
 	}
 	
 	new(Component component, List<Expression> arguments,
@@ -79,7 +67,9 @@ class Gamma2XSTSTransformerSerializer {
 			ComponentInstancePortReferences testedComponentsForOutEvents,
 			ComponentInstancePortStateTransitionReferences testedInteractions,
 			InteractionCoverageCriterion senderCoverageCriterion,
-			InteractionCoverageCriterion receiverCoverageCriterion) {
+			InteractionCoverageCriterion receiverCoverageCriterion,
+			ComponentInstanceVariableReferences dataflowTestedVariables,
+			DataflowCoverageCriterion dataflowCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -95,31 +85,24 @@ class Gamma2XSTSTransformerSerializer {
 		this.testedInteractions = testedInteractions
 		this.senderCoverageCriterion = senderCoverageCriterion
 		this.receiverCoverageCriterion = receiverCoverageCriterion
+		this.dataflowTestedVariables = dataflowTestedVariables
+		this.dataflowCoverageCriterion = dataflowCoverageCriterion
 	}
 	
-	def void execute() {
-		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
-		// Preprocessing
-		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
-		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
-		// Slicing and Property generation
-		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
-				newTopComponent,
-				propertyPackage,
-				testedComponentsForStates, testedComponentsForTransitions,
-				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
-				testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-				targetFolderUri, fileName)
-		slicerAnnotatorAndPropertyGenerator.execute
-		val gammaToXSTSTransformer = new GammaToXSTSTransformer(schedulingConstraint, true, true)
-		// Normal transformation
-		val xSts = gammaToXSTSTransformer.execute(newGammaPackage)
-		// EMF
-		xSts.normalSave(targetFolderUri, fileName.emfXStsFileName)
-		// String
-		val xStsFile = new File(targetFolderUri + File.separator + fileName.xtextXStsFileName)
-		val xStsString = xSts.serializeXSTS
-		xStsFile.saveString(xStsString)
+	def execute() {
+		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
+			arguments, targetFolderUri,
+			fileName, schedulingConstraint,
+			propertyPackage,
+			testedComponentsForStates, testedComponentsForTransitions,
+			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
+			testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
+				dataflowTestedVariables, dataflowCoverageCriterion)
+		xStsTransformer.execute
+		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
+		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,
+			targetFolderUri, fileName)
+		uppaalTransformer.execute
 	}
 	
 }

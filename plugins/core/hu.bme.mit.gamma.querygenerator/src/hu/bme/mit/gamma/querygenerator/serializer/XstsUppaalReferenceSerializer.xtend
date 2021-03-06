@@ -17,18 +17,18 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
-class XSTSUppaalReferenceSerializer extends ThetaReferenceSerializer {
+class XstsUppaalReferenceSerializer extends ThetaReferenceSerializer {
 	// Singleton
-	public static final XSTSUppaalReferenceSerializer INSTANCE = new XSTSUppaalReferenceSerializer
+	public static final XstsUppaalReferenceSerializer INSTANCE = new XstsUppaalReferenceSerializer
 	protected new() {}
 	//
 	
 	override getId(State state, Region parentRegion, ComponentInstanceReference instance) {
-		return '''«state.getSingleTargetStateName(parentRegion, instance)»«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "»«parent.getSingleTargetStateName(parent.parentRegion, instance)»«ENDFOR»'''
+		return '''Â«state.getSingleTargetStateName(parentRegion, instance)Â»Â«FOR parent : state.ancestors BEFORE " && " SEPARATOR " && "Â»Â«parent.getSingleTargetStateName(parent.parentRegion, instance)Â»Â«ENDFORÂ»'''
 	}
 	
 	override protected getSingleTargetStateName(State state, Region parentRegion, ComponentInstanceReference instance) {
-		return '''«parentRegion.customizeName(instance)» == «state.literalIndex»'''
+		return '''Â«parentRegion.customizeName(instance)Â» == Â«state.literalIndexÂ»'''
 	}
 	
 }
