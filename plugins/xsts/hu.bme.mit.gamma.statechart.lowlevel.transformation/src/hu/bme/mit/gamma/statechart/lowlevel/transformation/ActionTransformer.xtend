@@ -148,7 +148,7 @@ class ActionTransformer {
 		}
 	}
 	
-	protected def dispatch List<Action> transformAction(ExpressionStatement action, List<Action> following) {
+	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
 		// Create return variable
 		val result = <Action>newLinkedList
 		// Get expression precondition
@@ -195,7 +195,7 @@ class ActionTransformer {
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(IfStatement action, List<Action> following) {
+	protected def dispatch List<Action> transformAction(IfStatement action) {
 		// Create return variable
 		val result = <Action>newLinkedList
 		// Transform the guards (and their preconditions)
