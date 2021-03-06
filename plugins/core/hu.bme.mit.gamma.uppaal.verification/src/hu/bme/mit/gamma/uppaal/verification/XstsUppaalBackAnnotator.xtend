@@ -138,7 +138,7 @@ class XstsUppaalBackAnnotator extends AbstractUppaalBackAnnotator {
 									switch (localState) {
 										case STABLE: {
 											val index = Integer.parseInt(value)
-											val potentialStateString = '''�variable� == �index�'''
+											val potentialStateString = '''«variable» == «index»'''
 											if (xStsUppaalQueryGenerator.isSourceState(potentialStateString)) {
 												val instanceState = xStsUppaalQueryGenerator.getSourceState(potentialStateString)
 												val controlState = instanceState.key

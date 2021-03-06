@@ -151,7 +151,7 @@ package class Trace {
 	def getXStsVariable(VariableDeclaration lowlevelVariable) {
 		checkArgument(lowlevelVariable !== null)
 		val matches = VariableTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(lowlevelVariable)
-		checkState(matches.size == 1, '''«matches.size» «lowlevelVariable»''')
+		checkState(matches.size == 1, '''Â«matches.sizeÂ» Â«lowlevelVariableÂ»''')
 		return matches.head
 	}
 	
