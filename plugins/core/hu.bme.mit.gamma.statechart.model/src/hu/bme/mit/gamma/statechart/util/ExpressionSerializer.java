@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
+import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 
 public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSerializer {
 	// Singleton
@@ -25,10 +26,19 @@ public class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.Expre
 		return expression.getPort().getName() + "." + expression.getEvent().getName() + "::"
 				+ expression.getParameter().getName();
 	}
+	
+	protected String _serialize(StateReferenceExpression expression) {
+		return"in-state(" + expression.getRegion().getName() + "."
+				+ expression.getState().getName() + ")";
+	}
+
 
 	public String serialize(Expression expression) {
 		if (expression instanceof EventParameterReferenceExpression) {
 			return _serialize((EventParameterReferenceExpression) expression);
+		}
+		if (expression instanceof StateReferenceExpression) {
+			return _serialize((StateReferenceExpression) expression);
 		}
 		return super.serialize(expression);
 	}
