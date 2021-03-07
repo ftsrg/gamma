@@ -96,7 +96,7 @@ class ThetaVerifier extends AbstractVerifier {
 			super.result = super.result.adaptResult
 			if (!traceFile.exists) {
 				// No proof/counterexample
-				return null;
+				return new Result(result, null);
 			}
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
