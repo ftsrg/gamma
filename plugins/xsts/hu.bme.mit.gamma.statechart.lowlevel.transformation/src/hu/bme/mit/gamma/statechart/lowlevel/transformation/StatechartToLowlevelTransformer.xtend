@@ -392,8 +392,9 @@ class StatechartToLowlevelTransformer {
 	 */
 	protected def Expression transformTriggerAndGuard(Transition transition) {
 		val lowlevelGuardList = newLinkedList
-		if (transition.trigger !== null) {
-			lowlevelGuardList += transition.trigger.transformTrigger // Trigger guard
+		val gammaTrigger = transition.trigger
+		if (gammaTrigger !== null) {
+			lowlevelGuardList += gammaTrigger.transformTrigger // Trigger guard
 		}
 		var guard = transition.guard
 		if (guard !== null) {
@@ -402,18 +403,21 @@ class StatechartToLowlevelTransformer {
 				trace.designateElseGuardedTransition(transition)
 				var Expression transformedGuard
 				val source = transition.sourceState
-				val lowlevelOutgoingTransitions = source.outgoingTransitions
+				val gammaOutgoingTransitions = source.outgoingTransitions
 					.reject[it === transition]
-				if (lowlevelOutgoingTransitions.empty) {
+				if (gammaOutgoingTransitions.empty) {
 					transformedGuard = createTrueExpression
 				}
 				else {
 					// Check if there are empty transitions...
+					val gammaEmptyOutgoingTransitions = gammaOutgoingTransitions
+							.filter[!it.hasTrigger && !it.hasGuard]
+					checkState(gammaEmptyOutgoingTransitions.empty)
 					transformedGuard = createAndExpression => [
-						for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
+						for (gammaOutgoingTransition : gammaOutgoingTransitions) {
 							it.operands += createNotExpression => [
-								val otherTrigger = lowlevelOutgoingTransition.trigger
-								val otherGuard = lowlevelOutgoingTransition.guard
+								val otherTrigger = gammaOutgoingTransition.trigger
+								val otherGuard = gammaOutgoingTransition.guard
 								it.operand = createAndExpression => [
 									// By default, the transformTrigger returns false expression for null
 									if (otherTrigger !== null) {
@@ -433,17 +437,8 @@ class StatechartToLowlevelTransformer {
 				lowlevelGuardList += guard.transformExpression
 			}
 		}
-		if (lowlevelGuardList.empty) {
-			return null
-		}
-		if (lowlevelGuardList.size == 1) {
-			// Only one expression is on the transition
-			return lowlevelGuardList.head
-		}
 		// The expressions are in an AND relation
-		return createAndExpression => [
-			it.operands += lowlevelGuardList
-		]
+		return lowlevelGuardList.wrapIntoMultiaryExpression(createAndExpression)
 	}
 	
 	protected def prioritizeTransitions(StatechartDefinition statechart) {
