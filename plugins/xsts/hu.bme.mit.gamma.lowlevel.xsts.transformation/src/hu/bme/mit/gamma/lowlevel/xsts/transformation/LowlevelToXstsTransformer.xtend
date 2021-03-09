@@ -840,7 +840,8 @@ class LowlevelToXstsTransformer {
 			for (assignment : assignments) {
 				assignment.remove
 			}
-			notReadTransientXStsVariable.delete
+			// To delete the potential containing VariableDeclarationAction too
+			notReadTransientXStsVariable.deleteDeclaration 
 			trace.delete(notReadTransientXStsVariable)
 		}
 		

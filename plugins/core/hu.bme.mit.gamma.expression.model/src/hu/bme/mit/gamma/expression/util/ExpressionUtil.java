@@ -849,4 +849,17 @@ public class ExpressionUtil {
 		return potentialContainer;
 	}
 	
+	public Expression wrapIntoMultiaryExpression(Collection<Expression> expressions,
+			MultiaryExpression potentialContainer) {
+		if (expressions.isEmpty()) {
+			return null;
+		}
+		int size = expressions.size();
+		if (size == 1) {
+			return expressions.iterator().next();
+		}
+		potentialContainer.getOperands().addAll(expressions);
+		return potentialContainer;
+	}
+	
 }

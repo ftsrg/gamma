@@ -958,9 +958,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		StateNode source = transition.getSourceState();
 		StateNode target = transition.getTargetState();
 		if (source instanceof ChoiceState) {
-			if (transition.getGuard() == null) {
+			if (transition.getTrigger() == null && transition.getGuard() == null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-						"Transitions from choice nodes should have guards if deterministic behavior is expected.",
+						"Transitions from choice nodes should have a trigger or a guard if deterministic behavior is expected.",
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD, null)));
 			}
 		}

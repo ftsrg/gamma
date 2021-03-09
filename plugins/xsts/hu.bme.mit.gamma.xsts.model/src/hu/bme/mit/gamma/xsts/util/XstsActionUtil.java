@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AndExpression;
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DefaultExpression;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
@@ -36,6 +37,7 @@ import hu.bme.mit.gamma.xsts.model.CompositeAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
+import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
 
@@ -45,7 +47,7 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected XstsActionUtil() {}
 	//
 	
-	protected GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE;
+	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
@@ -53,10 +55,10 @@ public class XstsActionUtil extends ExpressionUtil {
 		EObject container = pivot.eContainer();
 		if (!(container instanceof SequentialAction)) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-			gammaEcoreUtil.replace(sequentialAction, pivot);
+			ecoreUtil.replace(sequentialAction, pivot);
 			sequentialAction.getActions().add(pivot);
 		}
-		gammaEcoreUtil.appendTo(pivot, action);
+		ecoreUtil.appendTo(pivot, action);
 	}
 	
 	public VariableDeclaration checkVariable(XSTS xSts, String name) {
@@ -317,8 +319,17 @@ public class XstsActionUtil extends ExpressionUtil {
 		throw new IllegalArgumentException("Not supported aciton: " + action);
 	}
 	
+	public void deleteDeclaration(Declaration declaration) {
+		EObject container = declaration.eContainer();
+		if (container instanceof VariableDeclarationAction) {
+			VariableDeclarationAction action = (VariableDeclarationAction) container;
+			ecoreUtil.remove(action);
+		}
+		ecoreUtil.delete(declaration);
+	}
+	
 	private <T extends EObject> T clone(T element) {
-		return gammaEcoreUtil.clone(element);
+		return ecoreUtil.clone(element);
 	}
 	
 }
