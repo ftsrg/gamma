@@ -408,6 +408,7 @@ class StatechartToLowlevelTransformer {
 					transformedGuard = createTrueExpression
 				}
 				else {
+					// Check if there are empty transitions...
 					transformedGuard = createAndExpression => [
 						for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
 							it.operands += createNotExpression => [
@@ -418,7 +419,9 @@ class StatechartToLowlevelTransformer {
 									if (otherTrigger !== null) {
 										it.operands += otherTrigger.transformTrigger
 									}
-									it.operands += otherGuard.transformExpression
+									if (otherGuard !== null) {
+										it.operands += otherGuard.transformExpression
+									}
 								]
 							]
 						}

@@ -65,10 +65,10 @@ class UppaalVerifier extends AbstractVerifier {
 			return new Result(result, traceModel)
 		} catch (EmptyTraceException e) {
 			result = handleEmptyLines(actualUppaalQuery)
-			return null
+			return new Result(result, null)
 		} catch (NotBackannotatedException e) {
 			result = e.result
-			return null
+			return new Result(result, null)
 		} catch (Exception e) {
 			throw e
 		} finally {

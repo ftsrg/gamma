@@ -27,15 +27,17 @@ public class PropertyModelValidator extends StatechartModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		super.checkComponentInstanceReferences(reference);
 		List<ComponentInstance> instances = reference.getComponentInstanceHierarchy();
-		PropertyPackage model = ecoreUtil.getContainerOfType(reference, PropertyPackage.class);
-		if (model != null) {
-			Component component = model.getComponent();
-			List<ComponentInstance> containedComponents = javaUtil.filter(component.eContents(), ComponentInstance.class);
-			ComponentInstance firstInstance = instances.get(0);
-			if (!containedComponents.contains(firstInstance) && !isUnfolded(firstInstance)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The first component instance must be the component of " + component.getName(),
-					new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)));
+		if (!instances.isEmpty()) {
+			PropertyPackage model = ecoreUtil.getContainerOfType(reference, PropertyPackage.class);
+			if (model != null) {
+				Component component = model.getComponent();
+				List<ComponentInstance> containedComponents = javaUtil.filter(component.eContents(), ComponentInstance.class);
+				ComponentInstance firstInstance = instances.get(0);
+				if (!containedComponents.contains(firstInstance) && !isUnfolded(firstInstance)) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The first component instance must be the component of " + component.getName(),
+						new ReferenceInfo(CompositeModelPackage.Literals.COMPONENT_INSTANCE_REFERENCE__COMPONENT_INSTANCE_HIERARCHY, 0)));
+				}
 			}
 		}
 		return validationResultMessages;
