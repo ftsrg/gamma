@@ -78,6 +78,16 @@ class AssignmentExpressionCreator {
 		]
 	}
 	
+	def createResetingAssignmentExpression(VariableContainer variable) {
+		return createAssignmentExpression => [
+			it.firstExpr = variable.createIdentifierExpression
+			it.operator = AssignmentOperator.EQUAL
+			it.secondExpr = createLiteralExpression => [
+				it.text = "0"
+			]
+		]
+	}
+	
 	/**
 	 * Puts an assignment expression onto the given container. The left side is the first given variable,
 	 * the right side is the second given variable". E.g.: myFirstVariable = mySecondVariable.
