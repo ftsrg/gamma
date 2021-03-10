@@ -21,8 +21,10 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.xtext.resource.XtextResourceSet;
+
 import hu.bme.mit.gamma.action.language.ActionLanguageStandaloneSetup;
-import hu.bme.mit.gamma.ui.GammaApi; //miért nem a hu.bme.mit.gamma.ui.GammaApi?
+import hu.bme.mit.gamma.ui.GammaApi; //miï¿½rt nem a hu.bme.mit.gamma.ui.GammaApi?
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.genmodel.language.GenModelStandaloneSetup;
 import hu.bme.mit.gamma.property.language.PropertyLanguageStandaloneSetup;
@@ -88,7 +90,7 @@ public class Application implements IApplication {
             }
             // The file and its containing project is in the given workspace
             GammaApi gammaApi = new GammaApi();
-            gammaApi.runHeadlessEclipse(fileWorkspaceRelativePath);
+            gammaApi.run(fileWorkspaceRelativePath, XtextResourceSet.class);
             // Saving the workspace, otherwise warnings will be printed
             workspace.save(true, progressMonitor);
             

@@ -71,7 +71,7 @@ public class GammaApi {
 	 * @throws CoreException 
 	 * @throws IOException 
 	 */
-	public void run(String fileWorkspaceRelativePath) throws Exception {
+	public void run(String fileWorkspaceRelativePath, Class<? extends ResourceSet> resourceSetType) throws Exception {
 		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
 		// Eclipse magic: URI -> IFile
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -80,7 +80,8 @@ public class GammaApi {
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
 		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
-			ResourceSet resourceSet = new ResourceSetImpl();
+			ResourceSetCreator resourceSetCreator = new ResourceSetCreator();
+			ResourceSet resourceSet = resourceSetCreator.createResourceSet(resourceSetType);
 			Resource resource = resourceSet.getResource(fileURI, true);
 			// Assume that the resource has a single object as content
 			EObject content = resource.getContents().get(0);
@@ -183,132 +184,132 @@ public class GammaApi {
 	}
 	
 	
-	public void runHeadlessEclipse(String fileWorkspaceRelativePath) throws Exception {
-		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
-		// Eclipse magic: URI -> IFile
-		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
-		IProject project = file.getProject();
-		// Xtext errors can be removed by cleaning the project in case of YakinduCompilation and TestGeneration tasks
-		boolean needsCleaning = false;
-		Injector injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
-		
-		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-		// Multiple compilations due to the dependencies between models
-		final int MAX_ITERATION_COUNT = 6;
-		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
-	
-			Resource resource = resourceSet.getResource(fileURI, true);
-			// Assume that the resource has a single object as content
-			EObject content = resource.getContents().get(0);
-			if (content instanceof GenModel) {
-				GenModel genmodel = (GenModel) content;
-				// WARNING: workspace location and imported project locations are not to be confused
-				// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
-				List<Task> tasks = orderTasks(genmodel, i);
-				for (Task task : tasks) {
-					if (task instanceof YakinduCompilation) {
-						needsCleaning = true;
-						if (task instanceof InterfaceCompilation) {
-							logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resourceSet);
-							InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
-							InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
-							handler.setTargetFolder(interfaceCompilation);
-							handler.execute(interfaceCompilation);
-							logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
-						}
-						else if (task instanceof StatechartCompilation) {
-							logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resourceSet);
-							StatechartCompilation statechartCompilation = (StatechartCompilation) task;
-							StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
-							handler.setTargetFolder(statechartCompilation);
-							handler.execute(statechartCompilation);
-							logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
-						}
-					} else {
-						final String projectName = project.getName().toLowerCase();
-						if (task instanceof CodeGeneration) {
-							CodeGeneration codeGeneration = (CodeGeneration) task;
-							logger.log(Level.INFO, "Resource set content for Java code generation: " + resourceSet);
-							CodeGenerationHandler handler = new CodeGenerationHandler(file);
-							handler.setTargetFolder(codeGeneration);
-							handler.execute(codeGeneration, projectName);
-							logger.log(Level.INFO, "The Java code generation has been finished.");
-						}
-						else if (task instanceof AnalysisModelTransformation) {
-							AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
-							AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-							handler.setTargetFolder(analysisModelTransformation);
-							handler.execute(analysisModelTransformation); 
-							logger.log(Level.INFO, "FUNCTIONALITY NOT SUPPORTED IN HEADLESS");
-						}
-						else if (task instanceof TestGeneration) {
-							needsCleaning = true;
-							TestGeneration testGeneration = (TestGeneration) task;
-							TestGenerationHandler handler = new TestGenerationHandler(file);
-							handler.setTargetFolder(testGeneration);
-							handler.execute(testGeneration, projectName);
-							logger.log(Level.INFO, "The test generation has been finished.");
-						}
-						else if (task instanceof Verification) {
-							needsCleaning = true;
-							Verification verification = (Verification) task;
-							VerificationHandler handler = new VerificationHandler(file);
-							handler.setTargetFolder(verification);
-							handler.execute(verification);
-							logger.log(Level.INFO, "The verification has been finished.");
-						}
-						else if (task instanceof Slicing) {
-							Slicing slicing = (Slicing) task;
-							SlicingHandler handler = new SlicingHandler(file);
-							// No target folder setting, that is done inside
-							handler.execute(slicing);
-							logger.log(Level.INFO, "The slicing has been finished.");
-						}
-						else if (task instanceof TestReplayModelGeneration) {
-							TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
-							TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
-							handler.setTargetFolder(testReplayModelGeneration);
-							handler.execute(testReplayModelGeneration);
-							logger.log(Level.INFO, "The test replay model generation has been finished.");
-						}
-						else if (task instanceof AdaptiveContractTestGeneration) {
-							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
-							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
-							handler.setTargetFolder(testGeneration);
-							handler.execute(testGeneration, file.getLocation().toString(), projectName);
-							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
-						}
-						else if (task instanceof EventPriorityTransformation) {
-							needsCleaning = true;
-							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
-							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
-							handler.setTargetFolder(eventPriorityTransformation);
-							handler.execute(eventPriorityTransformation);
-							logger.log(Level.INFO, "The event priority transformation has been finished.");
-						}
-						else if (task instanceof PhaseStatechartGeneration) {
-							needsCleaning = true;
-							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
-							PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
-							handler.setTargetFolder(phaseStatechartGeneration);
-							handler.execute(phaseStatechartGeneration);
-							logger.log(Level.INFO, "The phase statechart transformation has been finished.");
-						}
-					}
-				}
-			}
-			else {
-				logger.log(Level.WARNING, "The given resource does not contain a GenModel: " + resource);
-			}
-		}
-		if (needsCleaning) {
-			logger.log(Level.INFO, "Cleaning project...");
-			// To reload imports
-			project.build(IncrementalProjectBuilder.CLEAN_BUILD, null);
-			logger.log(Level.INFO, "Cleaning project finished.");
-		}
-	}	
+//	public void runHeadlessEclipse(String fileWorkspaceRelativePath) throws Exception {
+//		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
+//		// Eclipse magic: URI -> IFile
+//		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+//		IFile file = workspaceRoot.getFile(new Path(fileURI.toPlatformString(true)));
+//		IProject project = file.getProject();
+//		// Xtext errors can be removed by cleaning the project in case of YakinduCompilation and TestGeneration tasks
+//		boolean needsCleaning = false;
+//		Injector injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+//		
+////		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+//		// Multiple compilations due to the dependencies between models
+//		final int MAX_ITERATION_COUNT = 6;
+//		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
+//			XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+//			Resource resource = resourceSet.getResource(fileURI, true);
+//			// Assume that the resource has a single object as content
+//			EObject content = resource.getContents().get(0);
+//			if (content instanceof GenModel) {
+//				GenModel genmodel = (GenModel) content;
+//				// WARNING: workspace location and imported project locations are not to be confused
+//				// Sorting: InterfaceCompilation < StatechartCompilation < else does not work as the generated models are not reloaded
+//				List<Task> tasks = orderTasks(genmodel, i);
+//				for (Task task : tasks) {
+//					if (task instanceof YakinduCompilation) {
+//						needsCleaning = true;
+//						if (task instanceof InterfaceCompilation) {
+//							logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resourceSet);
+//							InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
+//							InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
+//							handler.setTargetFolder(interfaceCompilation);
+//							handler.execute(interfaceCompilation);
+//							logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
+//						}
+//						else if (task instanceof StatechartCompilation) {
+//							logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resourceSet);
+//							StatechartCompilation statechartCompilation = (StatechartCompilation) task;
+//							StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
+//							handler.setTargetFolder(statechartCompilation);
+//							handler.execute(statechartCompilation);
+//							logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
+//						}
+//					} else {
+//						final String projectName = project.getName().toLowerCase();
+//						if (task instanceof CodeGeneration) {
+//							CodeGeneration codeGeneration = (CodeGeneration) task;
+//							logger.log(Level.INFO, "Resource set content for Java code generation: " + resourceSet);
+//							CodeGenerationHandler handler = new CodeGenerationHandler(file);
+//							handler.setTargetFolder(codeGeneration);
+//							handler.execute(codeGeneration, projectName);
+//							logger.log(Level.INFO, "The Java code generation has been finished.");
+//						}
+//						else if (task instanceof AnalysisModelTransformation) {
+//							AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
+//							AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+//							handler.setTargetFolder(analysisModelTransformation);
+//							handler.execute(analysisModelTransformation); 
+//							logger.log(Level.INFO, "FUNCTIONALITY NOT SUPPORTED IN HEADLESS");
+//						}
+//						else if (task instanceof TestGeneration) {
+//							needsCleaning = true;
+//							TestGeneration testGeneration = (TestGeneration) task;
+//							TestGenerationHandler handler = new TestGenerationHandler(file);
+//							handler.setTargetFolder(testGeneration);
+//							handler.execute(testGeneration, projectName);
+//							logger.log(Level.INFO, "The test generation has been finished.");
+//						}
+//						else if (task instanceof Verification) {
+//							needsCleaning = true;
+//							Verification verification = (Verification) task;
+//							VerificationHandler handler = new VerificationHandler(file);
+//							handler.setTargetFolder(verification);
+//							handler.execute(verification);
+//							logger.log(Level.INFO, "The verification has been finished.");
+//						}
+//						else if (task instanceof Slicing) {
+//							Slicing slicing = (Slicing) task;
+//							SlicingHandler handler = new SlicingHandler(file);
+//							// No target folder setting, that is done inside
+//							handler.execute(slicing);
+//							logger.log(Level.INFO, "The slicing has been finished.");
+//						}
+//						else if (task instanceof TestReplayModelGeneration) {
+//							TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
+//							TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
+//							handler.setTargetFolder(testReplayModelGeneration);
+//							handler.execute(testReplayModelGeneration);
+//							logger.log(Level.INFO, "The test replay model generation has been finished.");
+//						}
+//						else if (task instanceof AdaptiveContractTestGeneration) {
+//							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
+//							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
+//							handler.setTargetFolder(testGeneration);
+//							handler.execute(testGeneration, file.getLocation().toString(), projectName);
+//							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
+//						}
+//						else if (task instanceof EventPriorityTransformation) {
+//							needsCleaning = true;
+//							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
+//							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
+//							handler.setTargetFolder(eventPriorityTransformation);
+//							handler.execute(eventPriorityTransformation);
+//							logger.log(Level.INFO, "The event priority transformation has been finished.");
+//						}
+//						else if (task instanceof PhaseStatechartGeneration) {
+//							needsCleaning = true;
+//							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
+//							PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
+//							handler.setTargetFolder(phaseStatechartGeneration);
+//							handler.execute(phaseStatechartGeneration);
+//							logger.log(Level.INFO, "The phase statechart transformation has been finished.");
+//						}
+//					}
+//				}
+//			}
+//			else {
+//				logger.log(Level.WARNING, "The given resource does not contain a GenModel: " + resource);
+//			}
+//		}
+//		if (needsCleaning) {
+//			logger.log(Level.INFO, "Cleaning project...");
+//			// To reload imports
+//			project.build(IncrementalProjectBuilder.CLEAN_BUILD, null);
+//			logger.log(Level.INFO, "Cleaning project finished.");
+//		}
+//	}	
 	/** 
 	 * Compilation order: interfaces <- statecharts <- event priority <- analysis model, code <- test.
 	 * As everything depends on statecharts and statecharts depend on interfaces.
@@ -349,5 +350,21 @@ public class GammaApi {
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}
 	}
+	
+	public static class ResourceSetCreator{
+		
+		ResourceSet createResourceSet(Class<? extends ResourceSet> clazz) {
+			if (clazz.isInstance(XtextResourceSet.class)) {
+				Injector injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+				XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+				return resourceSet;
+			} else {
+				ResourceSet resourceSet = new ResourceSetImpl();
+				return resourceSet;
+			}
+
+		}
+	}
+	
 	
 }
