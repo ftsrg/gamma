@@ -19,21 +19,26 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import hu.bme.mit.gamma.action.language.ActionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.ui.GammaApi; //mi�rt nem a hu.bme.mit.gamma.ui.GammaApi?
+import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.genmodel.language.GenModelStandaloneSetup;
 import hu.bme.mit.gamma.property.language.PropertyLanguageStandaloneSetup;
 import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetup;
+import hu.bme.mit.gamma.statechart.language.StatechartLanguageStandaloneSetupGenerated;
 import hu.bme.mit.gamma.trace.language.TraceLanguageStandaloneSetup;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.inject.Injector;
+
 import org.apache.commons.io.FileUtils;
 
 public class Application implements IApplication {
@@ -90,7 +95,13 @@ public class Application implements IApplication {
             }
             // The file and its containing project is in the given workspace
             GammaApi gammaApi = new GammaApi();
-            gammaApi.run(fileWorkspaceRelativePath, XtextResourceSet.class);
+            gammaApi.run(fileWorkspaceRelativePath, new ResourceSetCreator() {
+				public ResourceSet createResourceSet() {
+					Injector injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+					XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+					return resourceSet;
+				}
+			});
             // Saving the workspace, otherwise warnings will be printed
             workspace.save(true, progressMonitor);
             

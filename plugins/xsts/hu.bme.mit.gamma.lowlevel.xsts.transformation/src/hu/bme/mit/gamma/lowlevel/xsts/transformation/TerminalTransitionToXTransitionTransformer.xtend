@@ -158,8 +158,10 @@ class TerminalTransitionToXTransitionTransformer extends LowlevelTransitionToXTr
 		]
 		// Postcondition
 		for (lowlevelOutgoingTransition : lowlevelOutgoingTransitions) {
-			val lowlevelTargetGuard = lowlevelOutgoingTransition.guard.transformExpression // Here is the precondition
-			checkArgument(lowlevelTargetGuard !== null)
+			val lowlevelGuard = lowlevelOutgoingTransition.guard
+			val lowlevelTargetGuard = (lowlevelGuard !== null) ?
+				lowlevelGuard.transformExpression : // Here is the precondition
+				createTrueExpression // No guard, it can always fire
 			val lowlevelTargetNode = lowlevelOutgoingTransition.target
 			xStsChoicePostcondition.extendChoiceWithBranch(lowlevelTargetGuard,
 				lowlevelChoiceState.createRecursiveXStsForwardNodeConnection(lowlevelOutgoingTransition, lowlevelTargetNode)

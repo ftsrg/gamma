@@ -1007,8 +1007,16 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return true;
 	}
 	
+	public static boolean hasTrigger(Transition transition) {
+		return transition.getTrigger() != null;
+	}
+	
+	public static boolean hasGuard(Transition transition) {
+		return transition.getGuard() != null;
+	}
+	
 	public static boolean isEmpty(Transition transition) {
-		return transition.getTrigger() == null && transition.getGuard() == null &&
+		return !hasTrigger(transition) && !hasGuard(transition) &&
 			transition.getEffects().isEmpty();
 	}
 	
