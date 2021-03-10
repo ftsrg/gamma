@@ -48,7 +48,7 @@ class ThreadRacer<T> {
 	protected def synchronized incrementNumberOfAbortedCallables(){
 		val numberOfAborted = numberOfAbortedCallables.incrementAndGet
 		if (numberOfAborted == numberOfCallablesShouldBeRunning) {
-			// every callable has aborted
+			// Every callable has aborted, letting the main thread go
 			latch.countDown
 		}
 	}
@@ -68,8 +68,8 @@ class ThreadRacer<T> {
 					result.fillObject
 					return result
 				} catch (Exception e) {
+					// Exception, increment counter
 					incrementNumberOfAbortedCallables
-					
 					if (Thread.currentThread.isInterrupted) {
 						// The thread has been interrupted, the result is not valid
 						return null
