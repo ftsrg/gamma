@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.statechart.composite.SimpleChannel
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.StateNode
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
@@ -40,8 +39,9 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 
 class SystemReducer implements Reducer {
 	protected final ViatraQueryEngine engine
-	// To store the reduced states, so in-state expressions can be removed
-	protected final Collection<StateNode> removedStateNodes = newHashSet
+	// Storing the reduced states, so in-state expressions can be removed
+	protected final Collection<StateNode> removedUnreachableStates = newHashSet
+	protected final Collection<StateNode> removedInitialStates = newHashSet
 	//
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -71,9 +71,11 @@ class SystemReducer implements Reducer {
 			region.removeUnnecessaryRegion
 		}
 		// In-state reduction
-		while (!removedStateNodes.empty) {
-			statecharts.removeFalseInStateExpressions(removedStateNodes)
-			removedStateNodes.clear // So the next action can put new state nodes into the set
+		while (!removedUnreachableStates.empty || !removedInitialStates.empty) {
+			statecharts.removeFalseInStateExpressions(
+				removedUnreachableStates, removedInitialStates)
+			removedUnreachableStates.clear
+			removedInitialStates.clear // So the next action can put new state nodes into the set
 			statecharts.removeFalseGuardedTransitions
 		}
 		// Statechart optimizing
@@ -116,7 +118,7 @@ class SystemReducer implements Reducer {
 				}
 				log(Level.INFO, "Removing state node " + target.name)
 				target.remove
-				removedStateNodes += target
+				removedUnreachableStates += target
 			}
 		} catch (NullPointerException e) {
 			// The ancestor of the target has already been removed
@@ -125,7 +127,7 @@ class SystemReducer implements Reducer {
 	
 	private def void removeUnnecessaryRegion(Region region) {
 		val states = region.states
-		val pseudoStates = region.stateNodes.filter(PseudoState) // E.g., choice might have an incoming transition from another transition
+		val pseudoStates = region.pseudoStates // E.g., choice might have an incoming transition from another transition
 		try {
 			if (pseudoStates.forall[it.precedingStates.empty] &&
 					states.forall[!it.composite && it.outgoingTransitions.empty &&
@@ -136,8 +138,13 @@ class SystemReducer implements Reducer {
 					states.map[it.outgoingTransitions].flatten).toList
 				// Removing region
 				region.remove
-				removedStateNodes += region.stateNodes
 				log(Level.INFO, "Removing region " + region.name + " of " + statechart.name)
+				// Selecting unreachable states and always active states
+				val unreachableStates = states.filter[it.incomingTransitions.empty].toList
+				val reachedStatesStates = states.filter[it.outgoingTransitions.empty].toList
+				reachedStatesStates -= unreachableStates
+				removedUnreachableStates += unreachableStates
+				removedInitialStates += reachedStatesStates
 			}
 		} catch (NullPointerException e) {
 			// An ancestor of a state has already been removed
@@ -193,16 +200,22 @@ class SystemReducer implements Reducer {
 	}
 	
 	private def removeFalseInStateExpressions(Collection<StatechartDefinition> statecharts,
-			Collection<StateNode> removedStateNodes) {
+			Collection<StateNode> removedUnreachableStates, Collection<StateNode> removedInitialStates) {
 		for (statechart : statecharts) {
 			val inStateExpressions = statechart.getAllContentsOfType(StateReferenceExpression)
 			for (inStateExpression : inStateExpressions) {
 				val region = inStateExpression.region
 				val state = inStateExpression.state
-				if (removedStateNodes.contains(state)) {
-					val falseExpression = createFalseExpression // This should not always be false
+				val newExpression =
+				if (removedUnreachableStates.contains(state)) {
+					createFalseExpression // Unreachable state
+				}
+				else if (removedInitialStates.contains(state)) {
+					createTrueExpression // First and only active state of the region
+				}
+				if (newExpression !== null) {
 					// There should be no cross reference to the inStateExpression, hence the replace
-					falseExpression.replace(inStateExpression)
+					newExpression.replace(inStateExpression)
 					log(Level.INFO, "Removing state reference " + region.name + "." + state.name)
 				}
 			}

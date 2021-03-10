@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
@@ -652,6 +653,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return states;
+	}
+	
+	public static List<PseudoState> getPseudoStates(Region region) {
+		List<PseudoState> pseudoStates = new ArrayList<PseudoState>();
+		for (StateNode stateNode : region.getStateNodes()) {
+			if (stateNode instanceof PseudoState) {
+				PseudoState pseudoState = (PseudoState) stateNode;
+				pseudoStates.add(pseudoState);
+			}
+		}
+		return pseudoStates;
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(Region region) {
