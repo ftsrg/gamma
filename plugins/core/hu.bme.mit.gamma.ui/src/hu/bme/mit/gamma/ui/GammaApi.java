@@ -26,7 +26,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
@@ -66,7 +65,8 @@ public class GammaApi {
 	 * @throws CoreException 
 	 * @throws IOException 
 	 */
-	public void run(String fileWorkspaceRelativePath) throws Exception {
+	public void run(String fileWorkspaceRelativePath,
+			ResourceSetCreator resourceSetCreator) throws Exception {
 		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
 		// Eclipse magic: URI -> IFile
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -75,7 +75,7 @@ public class GammaApi {
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
 		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
-			ResourceSet resourceSet = new ResourceSetImpl();
+			ResourceSet resourceSet = resourceSetCreator.createResourceSet(); // To support different implementations
 			Resource resource = resourceSet.getResource(fileURI, true);
 			// Assume that the resource has a single object as content
 			EObject content = resource.getContents().get(0);
@@ -216,6 +216,12 @@ public class GammaApi {
 			default: 
 				throw new IllegalArgumentException("Not known iteration variable: " + iteration);
 		}
+	}
+	
+	public static interface ResourceSetCreator {
+		
+		ResourceSet createResourceSet();
+		
 	}
 	
 }
