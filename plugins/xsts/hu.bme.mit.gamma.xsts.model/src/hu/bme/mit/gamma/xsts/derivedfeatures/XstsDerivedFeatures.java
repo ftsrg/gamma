@@ -47,6 +47,11 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		return ecoreUtil.getSelfOrContainerOfType(object, XSTS.class);
 	}
 	
+	public static boolean isLocal(Declaration variable) {
+		EObject container = variable.eContainer();
+		return container instanceof VariableDeclarationAction;
+	}
+	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		final Action variableInitializingAction = xSts.getVariableInitializingAction();
@@ -83,7 +88,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	public static boolean isFinalPrimedVariable(VariableDeclaration variable) {
 		XSTS xSts = (XSTS) variable.eContainer();
 		return xSts.getVariableDeclarations().stream()
-				.noneMatch(it -> it instanceof PrimedVariable && ((PrimedVariable) it).getPrimedVariable() == variable);
+				.noneMatch(it -> it instanceof PrimedVariable &&
+						((PrimedVariable) it).getPrimedVariable() == variable);
 	}
 
 	public static int getPrimeCount(VariableDeclaration variable) {
@@ -99,8 +105,10 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 		if (xStsSubactions.stream().filter(it -> it instanceof AssumeAction).count() == 1
 				&& xStsSubactions.stream().filter(it -> it instanceof AssignmentAction).count() == 1) {
 			return isTrivialAssignment(
-					(AssumeAction) xStsSubactions.stream().filter(it -> it instanceof AssumeAction).findFirst().get(),
-					(AssignmentAction) xStsSubactions.stream().filter(it -> it instanceof AssignmentAction).findFirst()
+					(AssumeAction) xStsSubactions.stream()
+						.filter(it -> it instanceof AssumeAction).findFirst().get(),
+					(AssignmentAction) xStsSubactions.stream()
+						.filter(it -> it instanceof AssignmentAction).findFirst()
 							.get());
 		}
 		return false;
