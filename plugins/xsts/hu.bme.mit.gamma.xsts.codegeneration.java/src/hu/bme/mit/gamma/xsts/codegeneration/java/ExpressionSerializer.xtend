@@ -25,7 +25,9 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.Expr
 		val declaration = expression.declaration
 		if (declaration instanceof VariableDeclaration) {
 			// 'this' is important as without it, the reference would refer to the temporary variable
-			return '''this.«declaration.originalVariable.name»'''
+			// Not needed in the case of local variables though
+			val originalVariable = declaration.originalVariable
+			return '''«IF !originalVariable.local»this.«ENDIF»«originalVariable.name»'''
 		}
 		return declaration.name
 	}
