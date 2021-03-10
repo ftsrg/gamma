@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated model -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/activity/Model"
+            class="hu.bme.mit.gamma.activity.model.ActivityModelPackage"
+            genModel="model/activity.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated activity -->
+      <package
+            uri="http://www.mit.bme.hu/gamma/activity/Model"
+            class="hu.bme.mit.gamma.activity.model.ActivityPackage"
+            genModel="model/activity.genmodel"/>
+   </extension>
+
+</plugin>
