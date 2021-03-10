@@ -7,8 +7,6 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-data C:\WrapperWorkspace alma
-      </programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
