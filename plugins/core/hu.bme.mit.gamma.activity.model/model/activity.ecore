@@ -15,32 +15,25 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="dataTarget" lowerBound="1"
         eType="#//DataTarget"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Flow" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Flow" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="guard" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DataSource" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="DataTarget" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ActionNode" eSuperTypes="#//ParameterizableNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionNode" eSuperTypes="#//ActivityNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activitydeclaration" eType="#//ActivityDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Parameter" abstract="true"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InParameter" eSuperTypes="#//Parameter #//DataTarget"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OutParameter" eSuperTypes="#//Parameter #//DataSource"/>
   <eClassifiers xsi:type="ecore:EClass" name="DataConduit" abstract="true" eSuperTypes="#//DataSource #//DataTarget"/>
   <eClassifiers xsi:type="ecore:EClass" name="JoinNode" eSuperTypes="#//DataConduitNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="ForkNode" eSuperTypes="#//DataConduitNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="DecisionNode" eSuperTypes="#//DataConduitNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="MergeNode" eSuperTypes="#//DataConduitNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ParameterizableNode" abstract="true"
-      eSuperTypes="#//ActivityNode">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outParameters" upperBound="-1"
-        eType="#//OutParameter" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inParameters" upperBound="-1"
-        eType="#//InParameter" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PseudoActivityNode" abstract="true"
       eSuperTypes="#//ActivityNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="InitialNode" eSuperTypes="#//PseudoActivityNode"/>
   <eClassifiers xsi:type="ecore:EClass" name="FinalNode" eSuperTypes="#//PseudoActivityNode"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//ParameterizableNode">
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="#//Definition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="flows" upperBound="-1"
         eType="#//Flow" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="activityNodes" upperBound="-1"
@@ -49,4 +42,41 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PinReference" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="actionNode" lowerBound="1"
+        eType="#//ActionNode"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InputPin" eSuperTypes="#//Pin"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionDefinition" eSuperTypes="#//Definition">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Definition" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NamedActivityDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//ActivityDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InlineActivityDeclaration" eSuperTypes="#//ActivityDeclaration"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclaration" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="definition" lowerBound="1"
+        eType="#//Definition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="pins" upperBound="-1" eType="#//Pin"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OutputPin" eSuperTypes="#//Pin"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Pin" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Type"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InputPinReference" abstract="true" eSuperTypes="#//PinReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inputPin" lowerBound="1"
+        eType="#//InputPin"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OutputPinReference" abstract="true"
+      eSuperTypes="#//PinReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outputPin" lowerBound="1"
+        eType="#//OutputPin"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InsideInputPinReference" eSuperTypes="#//InputPinReference #//DataSource"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutsideInputPinReference" eSuperTypes="#//InputPinReference #//DataTarget"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataTarget"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataSource"/>
 </ecore:EPackage>
