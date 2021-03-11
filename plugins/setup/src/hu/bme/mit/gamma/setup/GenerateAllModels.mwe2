@@ -4,6 +4,7 @@ Workflow {
     component = @generators.models.GenerateUppaalModel {}
     component = @generators.models.GenerateExpressionModel {}
     component = @generators.models.GenerateActionModel {}
+    component = @generators.models.GenerateActivityModel {}
     component = @generators.models.GenerateStatechartModel {}
     component = @generators.models.GenerateTraceModel {}
     component = @generators.models.GeneratePropertyModel {}

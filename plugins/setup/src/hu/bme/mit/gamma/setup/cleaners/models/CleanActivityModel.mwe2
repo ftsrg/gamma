@@ -1,0 +1,19 @@
+module hu.bme.mit.gamma.setup.cleaners.models.CleanActivityModel
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+var rootPath = ".."
+var projectName = "hu.bme.mit.gamma.activity.model"
+
+Workflow {	
+    bean = ResourceSetImpl : resourceSet {}
+    bean = StandaloneSetup { resourceSet = resourceSet
+    	platformUri = "${rootPath}"
+    	scanClassPath = true
+    }
+    
+    component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+        directory = "../core/${projectName}/src-gen"
+    }
+}

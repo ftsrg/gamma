@@ -4,6 +4,7 @@ Workflow {
     component = @cleaners.models.CleanUppaalModel {}
     component = @cleaners.models.CleanExpressionModel {}
     component = @cleaners.models.CleanActionModel {}
+    component = @cleaners.models.CleanActivityModel {}
     component = @cleaners.models.CleanStatechartModel {}
     component = @cleaners.models.CleanTraceModel {}
     component = @cleaners.models.CleanUppaalTraceabilityModel {}

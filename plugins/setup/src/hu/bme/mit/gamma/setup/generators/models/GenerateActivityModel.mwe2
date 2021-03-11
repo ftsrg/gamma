@@ -1,0 +1,25 @@
+module hu.bme.mit.gamma.setup.generators.models.GenerateActivityModel
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.emf.ecore.resource.impl.*
+
+var rootPath = ".."
+var projectName = "hu.bme.mit.gamma.activity.model"
+var modelName = "activity"
+
+Workflow {	
+    bean = ResourceSetImpl : resourceSet {}
+    bean = StandaloneSetup { resourceSet = resourceSet
+    	platformUri = "${rootPath}"
+    	scanClassPath = true
+    }
+    
+    component = org.eclipse.emf.mwe.utils.DirectoryCleaner {
+        directory = "../core/${projectName}/src-gen"
+    }
+    
+    component = org.eclipse.emf.mwe2.ecore.EcoreGenerator {
+		genModel = "platform:/resource/${projectName}/model/${modelName}.genmodel"
+		srcPath = "platform:/resource/${projectName}/src-gen"
+	}
+}
