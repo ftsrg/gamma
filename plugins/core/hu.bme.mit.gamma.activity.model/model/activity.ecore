@@ -1,5 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="model" nsURI="http://www.mit.bme.hu/gamma/activity/Model" nsPrefix="hu.bme.mit.gamma.activity">
-  <eClassifiers xsi:type="ecore:EClass" name="NewEClass1"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataConduitNode" abstract="true" eSuperTypes="#//DataConduit #//PseudoActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityNode" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ControlFlow" eSuperTypes="#//Flow">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sourceNode" lowerBound="1"
+        eType="#//ActivityNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targetNode" lowerBound="1"
+        eType="#//ActivityNode"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DataFlow" eSuperTypes="#//Flow">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dataSource" lowerBound="1"
+        eType="#//DataSource"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dataTarget" lowerBound="1"
+        eType="#//DataTarget"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Flow" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataSource" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataTarget" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActionNode" eSuperTypes="#//ParameterizableNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="action" eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Parameter" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InParameter" eSuperTypes="#//Parameter #//DataTarget"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutParameter" eSuperTypes="#//Parameter #//DataSource"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DataConduit" abstract="true" eSuperTypes="#//DataSource #//DataTarget"/>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinNode" eSuperTypes="#//DataConduitNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ForkNode" eSuperTypes="#//DataConduitNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="DecisionNode" eSuperTypes="#//DataConduitNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MergeNode" eSuperTypes="#//DataConduitNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterizableNode" abstract="true"
+      eSuperTypes="#//ActivityNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outParameters" upperBound="-1"
+        eType="#//OutParameter" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inParameters" upperBound="-1"
+        eType="#//InParameter" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PseudoActivityNode" abstract="true"
+      eSuperTypes="#//ActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialNode" eSuperTypes="#//PseudoActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FinalNode" eSuperTypes="#//PseudoActivityNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDefinition" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//ParameterizableNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="flows" upperBound="-1"
+        eType="#//Flow" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNodes" upperBound="-1"
+        eType="#//ActivityNode" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

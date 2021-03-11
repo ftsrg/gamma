@@ -1,14 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hu.bme.mit.gamma.activity.model/src-gen" creationIcons="false"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/hu.bme.mit.gamma.activity.model/src-gen" creationIcons="false"
     editDirectory="/hu.bme.mit.gamma.activity.model.edit/src-gen" editorDirectory="/hu.bme.mit.gamma.activity.model.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.activity.model" modelName="Activity" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0"
-    copyrightFields="false" operationReflection="true" importOrganizing="true">
+    copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
+    operationReflection="true" importOrganizing="true">
   <foreignModel>activity.ecore</foreignModel>
   <testsDirectory xsi:nil="true"/>
   <genPackages prefix="Activity" basePackage="hu.bme.mit.gamma.activity" disposableProviderFactory="true"
       ecorePackage="activity.ecore#/">
-    <genClasses ecoreClass="activity.ecore#//NewEClass1"/>
+    <genClasses image="false" ecoreClass="activity.ecore#//DataConduitNode"/>
+    <genClasses ecoreClass="activity.ecore#//ActivityNode"/>
+    <genClasses ecoreClass="activity.ecore#//ControlFlow">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ControlFlow/sourceNode"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ControlFlow/targetNode"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//DataFlow">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataSource"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//DataFlow/dataTarget"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//Flow"/>
+    <genClasses ecoreClass="activity.ecore#//DataSource"/>
+    <genClasses ecoreClass="activity.ecore#//DataTarget"/>
+    <genClasses ecoreClass="activity.ecore#//ActionNode">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ActionNode/action"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//Parameter"/>
+    <genClasses ecoreClass="activity.ecore#//InParameter"/>
+    <genClasses ecoreClass="activity.ecore#//OutParameter"/>
+    <genClasses image="false" ecoreClass="activity.ecore#//DataConduit"/>
+    <genClasses ecoreClass="activity.ecore#//JoinNode"/>
+    <genClasses ecoreClass="activity.ecore#//ForkNode"/>
+    <genClasses ecoreClass="activity.ecore#//DecisionNode"/>
+    <genClasses ecoreClass="activity.ecore#//MergeNode"/>
+    <genClasses image="false" ecoreClass="activity.ecore#//ParameterizableNode"/>
+    <genClasses ecoreClass="activity.ecore#//PseudoActivityNode"/>
+    <genClasses ecoreClass="activity.ecore#//InitialNode"/>
+    <genClasses ecoreClass="activity.ecore#//FinalNode"/>
+    <genClasses ecoreClass="activity.ecore#//ActivityDefinition">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/flows"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/activityNodes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityDefinition/variableDeclarations"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>
