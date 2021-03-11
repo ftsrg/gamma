@@ -44,143 +44,158 @@ import org.apache.commons.io.FileUtils;
 public class Application implements IApplication {
 	
 	private static final String UNDER_OPERATION_PROPERTY = "underOperation";
-	
-    @Override
-    public Object start(final IApplicationContext context) throws Exception {
-        ExpressionLanguageStandaloneSetup.doSetup();
-        ActionLanguageStandaloneSetup.doSetup();
-        StatechartLanguageStandaloneSetup.doSetup();
-        TraceLanguageStandaloneSetup.doSetup();
-        PropertyLanguageStandaloneSetup.doSetup();        
-    	GenModelStandaloneSetup.doSetup();
-        final Map<?, ?> args = context.getArguments();
-        final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
-        if (appArgs.length >= 1) {
-            String ggenFilePath = URI.decode(appArgs[0]);
-            File ggenFile = new File(ggenFilePath);
-            String projectDescriptorPath = URI.decode(appArgs[1]);
-            File projectFolder = getContainingProject(ggenFile);
-            String projectName = projectFolder.getName();
-            String fileWorkspaceRelativePath = ggenFilePath.substring(projectFolder.getParent().length());
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IWorkspaceRoot workspaceRoot = workspace.getRoot();
-            IPath workspaceLocation = workspaceRoot.getLocation();
-            File workspaceFolder = workspaceLocation.toFile();
-            IProgressMonitor progressMonitor = new NullProgressMonitor();
-            // The file and its containing project is not in the given workspace
-            // The project has to be copied into the workspace
-            if (!contains(workspaceFolder, ggenFile)) {
-                // Note that in this case the ggen cannot refer to models outside of the project
-                IProject project = workspaceRoot.getProject(projectName);
-                try {
-                    project.create(progressMonitor);
-                } catch (CoreException creationException) {
-                    // Project with same name exists, trying to open it
-                    try {
-                        project.open(progressMonitor);
-                    } catch (CoreException openException) {
-                        // Open did not succeed, deleting and creating needed
-                        project.delete(true, progressMonitor);
-                        project.create(progressMonitor);
-                    }
-                }
-                project.open(progressMonitor);
-                //
-                IProjectDescription description = project.getDescription();
+	private Injector injector = null;
+
+	private Injector getInjector() {
+		if (injector == null) {
+			injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		}
+		return injector;
+	}
+
+	public ResourceSet getResourceSet() {
+		Injector injector = getInjector();
+		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+		return resourceSet;
+	}
+
+	@Override
+	public Object start(final IApplicationContext context) throws Exception {
+		ExpressionLanguageStandaloneSetup.doSetup();
+		ActionLanguageStandaloneSetup.doSetup();
+		StatechartLanguageStandaloneSetup.doSetup();
+		TraceLanguageStandaloneSetup.doSetup();
+		PropertyLanguageStandaloneSetup.doSetup();
+		GenModelStandaloneSetup.doSetup();
+		final Map<?, ?> args = context.getArguments();
+		final String[] appArgs = (String[]) args.get(IApplicationContext.APPLICATION_ARGS);
+		if (appArgs.length >= 1) {
+			String ggenFilePath = URI.decode(appArgs[0]);
+			File ggenFile = new File(ggenFilePath);
+			String projectDescriptorPath = URI.decode(appArgs[1]);
+			File projectFolder = getContainingProject(ggenFile);
+			String projectName = projectFolder.getName();
+			String fileWorkspaceRelativePath = ggenFilePath.substring(projectFolder.getParent().length());
+			IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			IWorkspaceRoot workspaceRoot = workspace.getRoot();
+			IPath workspaceLocation = workspaceRoot.getLocation();
+			File workspaceFolder = workspaceLocation.toFile();
+			IProgressMonitor progressMonitor = new NullProgressMonitor();
+			// The file and its containing project is not in the given workspace
+			// The project has to be copied into the workspace
+			if (!contains(workspaceFolder, ggenFile)) {
+				// Note that in this case the ggen cannot refer to models outside of the project
+				IProject project = workspaceRoot.getProject(projectName);
+				try {
+					project.create(progressMonitor);
+				} catch (CoreException creationException) {
+					// Project with same name exists, trying to open it
+					try {
+						project.open(progressMonitor);
+					} catch (CoreException openException) {
+						// Open did not succeed, deleting and creating needed
+						project.delete(true, progressMonitor);
+						project.create(progressMonitor);
+					}
+				}
+				project.open(progressMonitor);
+				//
+				IProjectDescription description = project.getDescription();
 //              description.setNatureIds(new String[] { XtextProjectHelper.NATURE_ID });
-                project.setDescription(description, progressMonitor);
-                // Not needed to add project natures like this, maybe copyDirectory does that?
-                copyDirectory(projectFolder, project);
-                workspace.save(true, progressMonitor);
-            }
-            // The file and its containing project is in the given workspace
-            GammaApi gammaApi = new GammaApi();
-            gammaApi.run(fileWorkspaceRelativePath, new ResourceSetCreator() {
+				project.setDescription(description, progressMonitor);
+				// Not needed to add project natures like this, maybe copyDirectory does that?
+				copyDirectory(projectFolder, project);
+				workspace.save(true, progressMonitor);
+			}
+			// The file and its containing project is in the given workspace
+			GammaApi gammaApi = new GammaApi();
+
+			gammaApi.run(fileWorkspaceRelativePath, new ResourceSetCreator() {
 				public ResourceSet createResourceSet() {
-					Injector injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
-					XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
+					Injector resourceInjector = getInjector();
+					XtextResourceSet resourceSet = resourceInjector.getInstance(XtextResourceSet.class);
 					return resourceSet;
 				}
 			});
-            // Saving the workspace, otherwise warnings will be printed
-            workspace.save(true, progressMonitor);
-            
-            beforeExitOperation(projectDescriptorPath);
-        }
-    	
-        return IApplication.EXIT_OK;
-    }
+			// Saving the workspace, otherwise warnings will be printed
+			workspace.save(true, progressMonitor);
+
+			beforeExitOperation(projectDescriptorPath);
+		}
+
+		return IApplication.EXIT_OK;
+	}
     
-    private boolean contains(File folder, File file) {
-        File parentFolder = file.getParentFile();
-        if (parentFolder == null) {
-            return false;
-        }
-        if (folder.equals(parentFolder)) {
-            return true;
-        }
-        return contains(folder, parentFolder);
-    }
+	private boolean contains(File folder, File file) {
+		File parentFolder = file.getParentFile();
+		if (parentFolder == null) {
+			return false;
+		}
+		if (folder.equals(parentFolder)) {
+			return true;
+		}
+		return contains(folder, parentFolder);
+	}
     
-    private void copyDirectory(File sourceFolder, IContainer destinationFolder) throws Exception {
-        for (File file : sourceFolder.listFiles()) {
-            if (file.isDirectory()) {
-                IFolder newFolder = destinationFolder.getFolder(new Path(file.getName()));
-                if (newFolder.exists()) {
-                    // Overwriting old directory
-                    newFolder.delete(true, null);
-                }
-                newFolder.create(true, true, null);
-                copyDirectory(file, newFolder);
-            }
-            else {
-                IFile newFile = destinationFolder.getFile(new Path(file.getName()));
-                if (newFile.exists()) {
-                    // Overwriting old file
-                    newFile.delete(true, null);
-                }
-                newFile.create(new FileInputStream(file), true, null);
-            }
-        }
-    }
-    private File getContainingProject(File file) {
-        File parentFolder = file.getParentFile();
-        if (Arrays.asList(parentFolder.listFiles()).stream()
-                // It is a project folder, if it contains a .project file
-                .anyMatch(it -> it.getName().equals(".project"))) {
-            return parentFolder;
-        }
-        return getContainingProject(parentFolder);
-    }
+	private void copyDirectory(File sourceFolder, IContainer destinationFolder) throws Exception {
+		for (File file : sourceFolder.listFiles()) {
+			if (file.isDirectory()) {
+				IFolder newFolder = destinationFolder.getFolder(new Path(file.getName()));
+				if (newFolder.exists()) {
+					// Overwriting old directory
+					newFolder.delete(true, null);
+				}
+				newFolder.create(true, true, null);
+				copyDirectory(file, newFolder);
+			} else {
+				IFile newFile = destinationFolder.getFile(new Path(file.getName()));
+				if (newFile.exists()) {
+					// Overwriting old file
+					newFile.delete(true, null);
+				}
+				newFile.create(new FileInputStream(file), true, null);
+			}
+		}
+	}
+
+	private File getContainingProject(File file) {
+		File parentFolder = file.getParentFile();
+		if (Arrays.asList(parentFolder.listFiles()).stream()
+				// It is a project folder, if it contains a .project file
+				.anyMatch(it -> it.getName().equals(".project"))) {
+			return parentFolder;
+		}
+		return getContainingProject(parentFolder);
+	}
+
+	@Override
+	public void stop() {
+
+	}
     
-    @Override
-    public void stop() {
-    
-    }
-    
-    private void beforeExitOperation(String projectDescriptorPath) {
-    	File descriptor = new File(projectDescriptorPath);
-    	if (descriptor != null) {
-    		try {
-    			System.out.println("ENDING");
+	private void beforeExitOperation(String projectDescriptorPath) {
+		File descriptor = new File(projectDescriptorPath);
+		if (descriptor != null) {
+			try {
+				System.out.println("ENDING");
 				updateUnderOperationStatus(descriptor.getPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	}
-    }
+		}
+	}
     
 	private void updateUnderOperationStatus(String projectDescriptorPath) throws IOException {
-        File jsonFile = new File(projectDescriptorPath);
-        String jsonString = FileUtils.readFileToString(jsonFile);
-        JsonElement jElement = new JsonParser().parse(jsonString);
-        JsonObject jObject = jElement.getAsJsonObject();
-        jObject.remove(UNDER_OPERATION_PROPERTY);
-        jObject.addProperty(UNDER_OPERATION_PROPERTY , false);
+		File jsonFile = new File(projectDescriptorPath);
+		String jsonString = FileUtils.readFileToString(jsonFile);
+		JsonElement jElement = new JsonParser().parse(jsonString);
+		JsonObject jObject = jElement.getAsJsonObject();
+		jObject.remove(UNDER_OPERATION_PROPERTY);
+		jObject.addProperty(UNDER_OPERATION_PROPERTY, false);
 
-        Gson gson = new Gson();
-        String resultingJson = gson.toJson(jElement);
-        FileUtils.writeStringToFile(jsonFile, resultingJson);
+		Gson gson = new Gson();
+		String resultingJson = gson.toJson(jElement);
+		FileUtils.writeStringToFile(jsonFile, resultingJson);
 
-    }
+	}
 }
