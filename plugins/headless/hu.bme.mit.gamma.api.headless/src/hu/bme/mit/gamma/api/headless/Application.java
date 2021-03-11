@@ -25,7 +25,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
 import hu.bme.mit.gamma.action.language.ActionLanguageStandaloneSetup;
-import hu.bme.mit.gamma.ui.GammaApi; //mi�rt nem a hu.bme.mit.gamma.ui.GammaApi?
+import hu.bme.mit.gamma.ui.GammaApi;
 import hu.bme.mit.gamma.ui.GammaApi.ResourceSetCreator;
 import hu.bme.mit.gamma.expression.language.ExpressionLanguageStandaloneSetup;
 import hu.bme.mit.gamma.genmodel.language.GenModelStandaloneSetup;
@@ -44,20 +44,7 @@ import org.apache.commons.io.FileUtils;
 public class Application implements IApplication {
 	
 	private static final String UNDER_OPERATION_PROPERTY = "underOperation";
-	private Injector injector = null;
 
-	private Injector getInjector() {
-		if (injector == null) {
-			injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
-		}
-		return injector;
-	}
-
-	public ResourceSet getResourceSet() {
-		Injector injector = getInjector();
-		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
-		return resourceSet;
-	}
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
@@ -111,10 +98,22 @@ public class Application implements IApplication {
 			GammaApi gammaApi = new GammaApi();
 
 			gammaApi.run(fileWorkspaceRelativePath, new ResourceSetCreator() {
-				public ResourceSet createResourceSet() {
-					Injector resourceInjector = getInjector();
-					XtextResourceSet resourceSet = resourceInjector.getInstance(XtextResourceSet.class);
+				private Injector injector = null;
+
+				private Injector getInjector() {
+					if (injector == null) {
+						injector = new StatechartLanguageStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+					}
+					return injector;
+				}
+
+				public ResourceSet getResourceSet() {
+					Injector injector = getInjector();
+					XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 					return resourceSet;
+				}
+				public ResourceSet createResourceSet() {
+					return getResourceSet();
 				}
 			});
 			// Saving the workspace, otherwise warnings will be printed
