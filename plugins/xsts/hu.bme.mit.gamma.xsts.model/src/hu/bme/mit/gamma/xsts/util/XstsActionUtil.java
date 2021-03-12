@@ -51,7 +51,41 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
+	public void prependToAction(Collection<? extends Action> actions, Action pivot) {
+		for (Action action : actions) {
+			prependToAction(action, pivot);
+		}
+	}
+	
+	public void prependToAction(Action action, Action pivot) {
+		if (pivot instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) pivot;
+			sequentialAction.getActions().add(0, action);
+			return;
+		}
+		// Pivot is not a sequential action
+		EObject container = pivot.eContainer();
+		if (!(container instanceof SequentialAction)) {
+			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
+			ecoreUtil.replace(sequentialAction, pivot);
+			sequentialAction.getActions().add(pivot);
+		}
+		ecoreUtil.prependTo(action, pivot);
+	}
+	
+	public void appendToAction(Collection<? extends Action> actions, Action pivot) {
+		for (Action action : actions) {
+			appendToAction(action, pivot);
+		}
+	}
+	
 	public void appendToAction(Action pivot, Action action) {
+		if (pivot instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) pivot;
+			sequentialAction.getActions().add(action);
+			return;
+		}
+		// Pivot is not a sequential action
 		EObject container = pivot.eContainer();
 		if (!(container instanceof SequentialAction)) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();

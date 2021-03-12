@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.CompositeElement
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.ForkState
+import hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation
 import hu.bme.mit.gamma.statechart.lowlevel.model.JoinState
 import hu.bme.mit.gamma.statechart.lowlevel.model.MergeState
 import hu.bme.mit.gamma.statechart.lowlevel.model.Package
@@ -54,6 +55,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
+import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -203,6 +205,7 @@ class LowlevelToXstsTransformer {
 		optimizeActions
 		eliminateNullActions
 		handleVariableAnnotations
+		handleGuardEvaluations
 		// The created EMF models are returned
 		return new SimpleEntry<XSTS, L2STrace>(xSts, trace.getTrace)
 	}
@@ -890,6 +893,39 @@ class LowlevelToXstsTransformer {
 			xSts.entryEventAction.appendToAction(assignment.clone) // Cloning is important
 		}
 		xSts.mergedAction = newMergedAction
+	}
+	
+	protected def handleGuardEvaluations() {
+		val statecharts = Statecharts.Matcher.on(engine).allValuesOfstatechart
+		checkState(statecharts.size == 1)
+		val statechart = statecharts.head
+		val guardEvaluation = statechart.guardEvaluation
+		if (guardEvaluation == GuardEvaluation.BEGINNING_OF_STEP) {
+			val consideredXstsActions = #[
+				// Not considering the init action, as the initial region values are __Inactive__
+				xSts.mergedAction
+			]
+			for (consideredXstsAction : consideredXstsActions) {
+				val localVariableDeclarationActions = newArrayList
+				val assumeActions = consideredXstsAction.getSelfAndAllContentsOfType(AssumeAction)
+				for (assumeAction : assumeActions) {
+					val assumption = assumeAction.assumption
+					val localVariableDeclarationAction = createVariableDeclarationAction
+					localVariableDeclarationActions += localVariableDeclarationAction
+					val localVariableDeclaration = createVariableDeclaration => [
+						it.name = '''_«assumeAction.hashCode»_'''
+						it.type = createBooleanTypeDefinition
+						it.expression = assumption.clone
+					]
+					localVariableDeclarationAction.variableDeclaration = localVariableDeclaration
+					val reference = createDirectReferenceExpression => [
+						it.declaration = localVariableDeclaration
+					]
+					reference.replace(assumption)
+				}
+				localVariableDeclarationActions.prependToAction(consideredXstsAction)
+			}
+		}
 	}
 	
 	def dispose() {
