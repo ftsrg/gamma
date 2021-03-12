@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.transformation.util.annotations
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.AssignmentStatement
+import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -576,13 +577,22 @@ class GammaStatechartAnnotator {
 			val containingAction = useReference.getContainerOfType(Action)
 			val assignment = useVariable.createAssignment(createTrueExpression)
 			if (containingAction === null) {
-				// p-use
+				// p-use in transition guards
 				val actionList = useReference.containingActionList
-				actionList += assignment
+				actionList.add(0, assignment)
 			}
 			else {
+				val containingBranch = useReference.getContainerOfType(Branch)
+				if (containingBranch !== null) {
+					// p-use in a branch guard
+					val guard = containingBranch.guard
+					if (guard.contains(useReference)) {
+						val action = containingBranch.action
+						assignment.prepend(action)
+					}
+				}
 				// c-use
-				containingAction.appendTo(assignment)
+				containingAction.append(assignment)
 			}
 		}
 	}

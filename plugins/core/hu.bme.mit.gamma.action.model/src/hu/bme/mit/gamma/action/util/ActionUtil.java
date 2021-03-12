@@ -34,30 +34,54 @@ public class ActionUtil extends ExpressionUtil {
 	
 	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
 	
-	public Action extend(Action originalAction, Action newAction) {
-		if (originalAction == null) {
-			return newAction;
+	public Action prepend(Action action, Action pivot) {
+		if (action == null) {
+			return pivot;
 		}
-		else if (newAction == null) {
-			return originalAction;
+		else if (pivot == null) {
+			return action;
 		}
-		else if (originalAction instanceof Block) {
-			Block block = (Block) originalAction;
-			block.getActions().add(newAction);
+		else if (pivot instanceof Block) {
+			Block block = (Block) pivot;
+			block.getActions().add(0, action);
 			return block;
 		}
 		else {
 			Block block = actionFactory.createBlock();
-			block.getActions().add(originalAction);
-			block.getActions().add(newAction);
+			// Replacing the pivot element
+			ecoreUtil.replace(block, pivot);
+			block.getActions().add(action);
+			block.getActions().add(pivot);
 			return block;
 		}
 	}
 	
-	public Action extend(Action originalAction, Collection<? extends Action> newActions) {
-		Action extensibleAction = originalAction;
-		for (Action newAction : newActions) {
-			extensibleAction = extend(extensibleAction, newAction);
+	public Action append(Action pivot, Action action) {
+		if (pivot == null) {
+			return action;
+		}
+		else if (action == null) {
+			return pivot;
+		}
+		else if (pivot instanceof Block) {
+			Block block = (Block) pivot;
+			block.getActions().add(action);
+			return block;
+		}
+		else {
+			Block block = actionFactory.createBlock();
+			// Replacing the pivot element
+			ecoreUtil.replace(block, pivot);
+			block.getActions().add(pivot);
+			block.getActions().add(action);
+			return block;
+		}
+	}
+	
+	public Action append(Action pivot, Collection<? extends Action> actions) {
+		Action extensibleAction = pivot;
+		for (Action action : actions) {
+			extensibleAction = append(extensibleAction, action);
 		}
 		return extensibleAction;
 	}

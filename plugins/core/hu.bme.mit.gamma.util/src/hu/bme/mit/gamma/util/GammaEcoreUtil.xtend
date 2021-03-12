@@ -184,6 +184,14 @@ class GammaEcoreUtil {
 		}
 		return contents
 	}
+	
+	def contains(EObject potentialContainer, EObject object) {
+		val contents = object.getAllContentsOfType(object.class)
+		if (contents.contains(object)) {
+			return true
+		}
+		return false
+	}
 
 	def EObject normalLoad(URI uri) {
 		val resourceSet = new ResourceSetImpl
