@@ -556,17 +556,13 @@ class GammaStatechartAnnotator {
 		// EVERY def variable must be created before this next loop!
 		for (defReference : defReferences) {
 			val originalVariable = defReference.declaration as VariableDeclaration
+			val originalAssignment = defReference.getContainerOfType(AssignmentStatement)
 			val defVariablePairs =  variableDefs.get(originalVariable)
 			for (defVariablePair : defVariablePairs) {
 				val reference = defVariablePair.getOriginalVariableReference
-				val originalAssignment = reference.eContainer as AssignmentStatement
 				val defVariable = defVariablePair.getDefUseVariable
-				if (defReference === reference) {
-					originalAssignment.appendTo(defVariable.createAssignment(createTrueExpression))
-				}
-				else {
-					originalAssignment.appendTo(defVariable.createAssignment(createFalseExpression))
-				}
+				val expression = defReference === reference ? createTrueExpression : createFalseExpression
+				originalAssignment.append(defVariable.createAssignment(expression))
 			}
 		}
 		// Use
