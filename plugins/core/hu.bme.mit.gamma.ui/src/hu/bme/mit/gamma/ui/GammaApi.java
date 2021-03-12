@@ -65,6 +65,7 @@ public class GammaApi {
 	 * @throws CoreException 
 	 * @throws IOException 
 	 */
+
 	public void run(String fileWorkspaceRelativePath,
 			ResourceSetCreator resourceSetCreator) throws Exception {
 		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);
@@ -75,7 +76,9 @@ public class GammaApi {
 		// Multiple compilations due to the dependencies between models
 		final int MAX_ITERATION_COUNT = 6;
 		for (int i = 0; i < MAX_ITERATION_COUNT; ++i) {
+
 			ResourceSet resourceSet = resourceSetCreator.createResourceSet(); // To support different implementations
+
 			Resource resource = resourceSet.getResource(fileURI, true);
 			// Assume that the resource has a single object as content
 			EObject content = resource.getContents().get(0);
@@ -177,6 +180,8 @@ public class GammaApi {
 		}
 	}
 	
+	
+
 	/** 
 	 * Compilation order: interfaces <- statecharts <- event priority <- analysis model, code <- test.
 	 * As everything depends on statecharts and statecharts depend on interfaces.
