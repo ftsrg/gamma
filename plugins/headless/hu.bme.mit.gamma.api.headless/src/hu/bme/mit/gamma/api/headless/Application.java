@@ -106,14 +106,10 @@ public class Application implements IApplication {
 					}
 					return injector;
 				}
-
-				public ResourceSet getResourceSet() {
+				public ResourceSet createResourceSet() {
 					Injector injector = getInjector();
 					XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 					return resourceSet;
-				}
-				public ResourceSet createResourceSet() {
-					return getResourceSet();
 				}
 			});
 			// Saving the workspace, otherwise warnings will be printed
