@@ -155,6 +155,8 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractCodeGeneration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="svgFileName" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" upperBound="-1"

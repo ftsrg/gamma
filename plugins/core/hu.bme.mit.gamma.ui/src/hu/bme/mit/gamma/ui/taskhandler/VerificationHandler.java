@@ -28,6 +28,8 @@ import org.eclipse.emf.common.util.URI;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
+import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -48,6 +50,10 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 public class VerificationHandler extends TaskHandler {
 
 	protected String testFolderUri;
+	// targetFolderUri is traceFolderUri 
+	protected String svgFileName; // Set in setVerification
+	protected final String traceFileName = "ExecutionTrace";
+	protected final String testFileName = traceFileName + "Simulation";
 	protected TraceUtil traceUtil = TraceUtil.INSTANCE;
 	
 	public VerificationHandler(IFile file) {
@@ -165,26 +171,69 @@ public class VerificationHandler extends TaskHandler {
 	protected void serializeTest(ExecutionTrace trace, String basePackage) throws IOException {
 		String traceFolder = targetFolderUri;
 		
-		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder), "ExecutionTrace", "get");
+		// Model
+		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder),
+				traceFileName, "get");
 		String fileName = fileNamePair.getKey();
 		Integer id = fileNamePair.getValue();
 		saveModel(trace, traceFolder, fileName);
 		
-		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-		className += "Simulation" + id;
+		// SVG
+		if (svgFileName != null) {
+			TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
+			String plantUmlString = transformer.execute();
+			SvgSerializer serializer = SvgSerializer.INSTANCE;
+			String svg = serializer.serialize(plantUmlString);
+			String svgFileNameWithId = svgFileName + id;
+			fileUtil.saveString(traceFolder + File.separator + svgFileNameWithId + ".svg", svg);
+		}
+		
+		// Test
+//		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+//		className += "Simulation" + id;
+		String className = testFileName + id;
+		
+		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+		String testCode = testGenerator.execute();
+		String testFolder = testFolderUri;
+		String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+		fileUtil.saveString(testFolder + File.separator + packageUri +
+			File.separator + className + ".java", testCode);
+	}
+	
+	protected void serializeSvg(ExecutionTrace trace, String basePackage) throws IOException {
+		if (svgFileName == null) {
+			return;
+		}
+		
+		String traceFolder = targetFolderUri;
+		
+		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder),
+				traceFileName, "get");
+		String fileName = fileNamePair.getKey();
+		Integer id = fileNamePair.getValue();
+		saveModel(trace, traceFolder, fileName);
+		
+//		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
+//		className += "Simulation" + id;
+		String className = testFileName + id;
+		
 		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
 		String testCode = testGenerator.execute();
 		String testFolder = testFolderUri;
 		fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
 			File.separator + className + ".java", testCode);
 	}
-
+	
 	private void setVerification(Verification verification) {
 		if (verification.getPackageName().isEmpty()) {
 			verification.getPackageName().add(file.getProject().getName().toLowerCase());
 		}
 		if (verification.getTestFolder().isEmpty()) {
 			verification.getTestFolder().add("test-gen");
+		}
+		if (!verification.getSvgFileName().isEmpty()) {
+			this.svgFileName = verification.getSvgFileName().get(0);
 		}
 		// Setting the attribute, the test folder is a RELATIVE path now from the project
 		testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
