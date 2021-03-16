@@ -139,7 +139,7 @@ class GammaEcoreUtil {
 			return newArrayList
 		}
 		val allContainers = container.allContainers
-		allContainers += object
+		allContainers += container
 		return allContainers
 	}
 	
@@ -186,11 +186,8 @@ class GammaEcoreUtil {
 	}
 	
 	def contains(EObject potentialContainer, EObject object) {
-		val contents = object.getAllContentsOfType(object.class)
-		if (contents.contains(object)) {
-			return true
-		}
-		return false
+		val containers = object.allContainers
+		return containers.contains(potentialContainer)
 	}
 
 	def EObject normalLoad(URI uri) {

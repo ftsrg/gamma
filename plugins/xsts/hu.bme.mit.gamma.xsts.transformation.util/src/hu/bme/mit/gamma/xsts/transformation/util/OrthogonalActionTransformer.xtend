@@ -75,16 +75,16 @@ class OrthogonalActionTransformer {
 					val writtenVariables = orthogonalBranch.writtenVariables
 					writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
 					for (writtenVariable : writtenVariables) {
-						val orthogonalVariable = writtenVariable.createOrthogonalVariable(consideredVariables)
-						// _var_ := var
-						setupAction.actions += orthogonalVariable.createAssignmentAction(writtenVariable)
+						val orthogonalVariableDeclarationAction = writtenVariable
+								.createOrthogonalVariableAction(consideredVariables)
+						val orthogonalVariable = orthogonalVariableDeclarationAction.variableDeclaration
+						// local _var_ := var
+						setupAction.actions += orthogonalVariableDeclarationAction
 						// Each written var is changed to _var_
 						orthogonalVariable.change(writtenVariable, orthogonalBranch)
 						mainAction.actions += orthogonalBranch
 						// var := _var_
 						commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
-						// _var_ := 0
-						commonizeAction.actions += orthogonalVariable.createAssignmentAction(orthogonalVariable.initialValue)
 					}
 				}
 			}
@@ -101,30 +101,38 @@ class OrthogonalActionTransformer {
 	
 	protected def sortAccordingToHierarchy(List<OrthogonalAction> orthogonalActions) {
 		// Orthogonal actions are sorted hierarchically: going from outside to inside,
-		//  that is, enclosing ones must precede enclosed ones (like in Gamma composition)
+		// that is, enclosing ones must precede enclosed ones (like in Gamma composition)
 		orthogonalActions.sort(
 			new Comparator<OrthogonalAction> {
 				override compare(OrthogonalAction lhs, OrthogonalAction rhs) {
-					val lhsContainerCount = lhs.allContainers.filter(OrthogonalAction).size
-					val rhsContainerCount = rhs.allContainers.filter(OrthogonalAction).size
-					return lhsContainerCount.compareTo(rhsContainerCount)
+					if (lhs.contains(rhs)) {
+						return -1
+					}
+					if (rhs.contains(lhs)) {
+						return 1
+					}
+					return 0 // Neither contains the other one
 				}
 			}
 		)
 	}
 	
-	protected def createOrthogonalVariable(VariableDeclaration variable,
+	protected def createOrthogonalVariableAction(VariableDeclaration variable,
 			Collection<VariableDeclaration> consideredVariables) {
-		val xSts = variable.root as XSTS
 		val orthogonalVariable = createVariableDeclaration => [
 			it.type = variable.type.clone
 			// If there are multiple ort variables with the same name
 			// (variables written in multiple branches), the model is faulty
 			it.name = variable.orthogonalName
+			it.expression = createDirectReferenceExpression => [
+				it.declaration = variable // local _var_ : boolean := var
+			]
 		]
-		xSts.variableDeclarations += orthogonalVariable
+		val variableDeclarationAction = createVariableDeclarationAction => [
+			it.variableDeclaration = orthogonalVariable
+		]
 		consideredVariables += orthogonalVariable // Orthogonality must be hierarchical!
-		return orthogonalVariable
+		return variableDeclarationAction
 	}
 	
 }
