@@ -4,10 +4,10 @@ import hu.bme.mit.gamma.statechart.composite.CascadeCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.InstancePortReference
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory
 import hu.bme.mit.gamma.statechart.statechart.State
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
 import org.eclipse.xtend.lib.annotations.Data
@@ -33,11 +33,12 @@ class TestReplayModelGenerator {
 	def execute() {
 		val transformer = new TraceToEnvironmentModelTransformer(executionTrace)
 		val result = transformer.execute
-		val environmentModel = result.key
-		val lastState = result.value
+		val environmentModel = result.statechart
+		val lastState = result.lastState
 		val trace = transformer.getTrace
 		
 		val testModel = executionTrace.component as SynchronousComponent
+		val testModelPackage = testModel.containingPackage
 		val systemModel = testModel.wrapSynchronousComponent => [
 			it.name = getSystemModelName(environmentModel, testModel)
 		]
@@ -80,12 +81,13 @@ class TestReplayModelGenerator {
 		// Wrapping the resulting packages
 		val environmentPackage = environmentModel.wrapIntoPackage
 		val systemPackage = systemModel.wrapIntoPackage
+		systemPackage.name = testModelPackage.name // So test generation remains simple
 		
 		environmentPackage.imports += testModel.interfaceImports // E.g., interfaces
 		systemPackage.imports += environmentPackage
-		systemPackage.imports += testModel.containingPackage
+		systemPackage.imports += testModelPackage
 				
-		return new Result(environmentModel, systemModel, lastState)
+		return new Result(environmentInstance, systemModel, lastState)
 	}
 	
 	protected def getInterfaceImports(Component component) {
@@ -96,7 +98,7 @@ class TestReplayModelGenerator {
 	
 	@Data
 	static class Result {
-		StatechartDefinition environmentModel
+		SynchronousComponentInstance environmentModelIntance
 		CascadeCompositeComponent systemModel
 		State lastState
 	}

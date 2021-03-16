@@ -82,10 +82,10 @@ class OrthogonalActionTransformer {
 						setupAction.actions += orthogonalVariableDeclarationAction
 						// Each written var is changed to _var_
 						orthogonalVariable.change(writtenVariable, orthogonalBranch)
-						mainAction.actions += orthogonalBranch
 						// var := _var_
 						commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
 					}
+					mainAction.actions += orthogonalBranch
 				}
 			}
 			else {

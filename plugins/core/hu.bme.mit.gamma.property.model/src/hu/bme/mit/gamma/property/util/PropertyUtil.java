@@ -15,7 +15,6 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.property.model.AtomicFormula;
 import hu.bme.mit.gamma.property.model.BinaryLogicalOperator;
 import hu.bme.mit.gamma.property.model.BinaryOperandLogicalPathFormula;
@@ -27,23 +26,47 @@ import hu.bme.mit.gamma.property.model.ComponentInstanceVariableReference;
 import hu.bme.mit.gamma.property.model.PathFormula;
 import hu.bme.mit.gamma.property.model.PathQuantifier;
 import hu.bme.mit.gamma.property.model.PropertyModelFactory;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.QuantifiedFormula;
 import hu.bme.mit.gamma.property.model.StateFormula;
 import hu.bme.mit.gamma.property.model.UnaryOperandPathFormula;
 import hu.bme.mit.gamma.property.model.UnaryPathOperator;
+import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-public class PropertyUtil extends ExpressionUtil {
+public class PropertyUtil extends StatechartUtil {
 	// Singleton
 	public static final PropertyUtil INSTANCE = new PropertyUtil();
 	protected PropertyUtil() {}
 	//
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected final PropertyModelFactory factory = PropertyModelFactory.eINSTANCE;
+	
+	// Wrap
+	
+	public PropertyPackage wrapFormula(Component component, StateFormula formula) {
+		CommentableStateFormula commentableStateFormula = factory.createCommentableStateFormula();
+		commentableStateFormula.setFormula(formula);
+		return wrapFormula(component, commentableStateFormula);
+	}
+	
+	public PropertyPackage wrapFormula(Component component, CommentableStateFormula formula) {
+		PropertyPackage propertyPackage = factory.createPropertyPackage();
+		Package _package = StatechartModelDerivedFeatures.getContainingPackage(component);
+		propertyPackage.getImport().add(_package);
+		propertyPackage.setComponent(component);
+		propertyPackage.getFormulas().add(formula);
+		return propertyPackage;
+	}
+	
+	//
 	
 	public AtomicFormula createAtomicFormula(Expression expression) {
 		AtomicFormula atomicFormula = factory.createAtomicFormula();
@@ -136,6 +159,19 @@ public class PropertyUtil extends ExpressionUtil {
 		reference.setEvent(event);
 		reference.setParameter(parameter);
 		return reference;
+	}
+	
+	// More complex
+	
+	public PropertyPackage createAtomicInstanceStateReachabilityProperty(
+			Component topContainer,	ComponentInstance instance, State lastState) {
+		StateFormula formula = createEF(
+			createAtomicFormula(
+				createStateReference(
+					createInstanceReference(instance), lastState)
+			)
+		);
+		return wrapFormula(topContainer, formula);
 	}
 	
 	// Getter
