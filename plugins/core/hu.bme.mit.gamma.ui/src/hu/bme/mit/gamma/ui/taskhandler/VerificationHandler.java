@@ -29,7 +29,7 @@ import org.eclipse.emf.common.util.URI;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.plantuml.serialization.SvgSerializer;
-import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.property.model.CommentableStateFormula;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.property.model.StateFormula;
@@ -142,7 +142,6 @@ public class VerificationHandler extends TaskHandler {
 		for (ExecutionTrace trace : retrievedTraces) {
 			serializeTest(trace, packageName);
 		}
-		
 	}
 
 	protected ExecutionTrace execute(AbstractVerification verificationTask, File modelFile,
@@ -180,7 +179,7 @@ public class VerificationHandler extends TaskHandler {
 		
 		// SVG
 		if (svgFileName != null) {
-			TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
+			TraceToPlantUmlTransformer transformer = new TraceToPlantUmlTransformer(trace);
 			String plantUmlString = transformer.execute();
 			SvgSerializer serializer = SvgSerializer.INSTANCE;
 			String svg = serializer.serialize(plantUmlString);
@@ -189,8 +188,6 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		// Test
-//		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-//		className += "Simulation" + id;
 		String className = testFileName + id;
 		
 		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
@@ -198,30 +195,6 @@ public class VerificationHandler extends TaskHandler {
 		String testFolder = testFolderUri;
 		String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
 		fileUtil.saveString(testFolder + File.separator + packageUri +
-			File.separator + className + ".java", testCode);
-	}
-	
-	protected void serializeSvg(ExecutionTrace trace, String basePackage) throws IOException {
-		if (svgFileName == null) {
-			return;
-		}
-		
-		String traceFolder = targetFolderUri;
-		
-		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder),
-				traceFileName, "get");
-		String fileName = fileNamePair.getKey();
-		Integer id = fileNamePair.getValue();
-		saveModel(trace, traceFolder, fileName);
-		
-//		String className = fileUtil.getExtensionlessName(fileName).replace(id.toString(), "");
-//		className += "Simulation" + id;
-		String className = testFileName + id;
-		
-		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-		String testCode = testGenerator.execute();
-		String testFolder = testFolderUri;
-		fileUtil.saveString(testFolder + File.separator + testGenerator.getPackageName().replaceAll("\\.", "/") +
 			File.separator + className + ".java", testCode);
 	}
 	
