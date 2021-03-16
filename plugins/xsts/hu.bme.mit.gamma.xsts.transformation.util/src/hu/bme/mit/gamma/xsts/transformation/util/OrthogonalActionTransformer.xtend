@@ -70,21 +70,27 @@ class OrthogonalActionTransformer {
 			
 			orthogonalBranches.clear
 			orthogonalBranches += orthogonalAction.actions
-			for (orthogonalBranch : orthogonalBranches) {
-				val writtenVariables = orthogonalBranch.writtenVariables
-				writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
-				for (writtenVariable : writtenVariables) {
-					val orthogonalVariable = writtenVariable.createOrthogonalVariable(consideredVariables)
-					// _var_ := var
-					setupAction.actions += orthogonalVariable.createAssignmentAction(writtenVariable)
-					// Each written var is changed to _var_
-					orthogonalVariable.change(writtenVariable, orthogonalBranch)
-					mainAction.actions += orthogonalBranch
-					// var := _var_
-					commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
-					// _var_ := 0
-					commonizeAction.actions += orthogonalVariable.createAssignmentAction(orthogonalVariable.initialValue)
+			if (orthogonalBranches.size > 1) {
+				for (orthogonalBranch : orthogonalBranches) {
+					val writtenVariables = orthogonalBranch.writtenVariables
+					writtenVariables.retainAll(consideredVariables) // Transforming only considered variables
+					for (writtenVariable : writtenVariables) {
+						val orthogonalVariable = writtenVariable.createOrthogonalVariable(consideredVariables)
+						// _var_ := var
+						setupAction.actions += orthogonalVariable.createAssignmentAction(writtenVariable)
+						// Each written var is changed to _var_
+						orthogonalVariable.change(writtenVariable, orthogonalBranch)
+						mainAction.actions += orthogonalBranch
+						// var := _var_
+						commonizeAction.actions += writtenVariable.createAssignmentAction(orthogonalVariable)
+						// _var_ := 0
+						commonizeAction.actions += orthogonalVariable.createAssignmentAction(orthogonalVariable.initialValue)
+					}
 				}
+			}
+			else {
+				// Only one (or zero branch), no use in orthogonizing
+				mainAction.actions += orthogonalBranches
 			}
 			// If the orthogonal action is traced, this can cause trouble
 			// (the original action is not contained in a resource)
