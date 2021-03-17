@@ -63,9 +63,11 @@ Supporters of the Gamma project:
 
 * [MTA-BME Lendület Cyber-Physical Systems Research Group](http://lendulet.inf.mit.bme.hu/),
 * [Fault Tolerant Systems Research Group](https://inf.mit.bme.hu/en), [Department of Measurement and Information Systems](https://www.mit.bme.hu/eng/), [Budapest University of Technology and Economics](http://www.bme.hu/?language=en),
-* [Új Nemzeti Kiválóság Program 2017-2018](http://www.kormany.hu/hu/emberi-eroforrasok-miniszteriuma/oktatasert-felelos-allamtitkarsag/hirek/az-uj-nemzeti-kivalosag-program-2017-2018-tanevi-palyazati-kiirasai),
-* [Új Nemzeti Kiválóság Program 2019-2020](https://www.kormany.hu/hu/innovacios-es-technologiai-miniszterium/tudas-es-innovacio-menedzsmentert-felelos-allamtitkarsag/hirek/megjelentek-az-uj-nemzeti-kivalosag-program-palyazati-kiirasai-a-2019-2020-as-tanevre),
-* [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013).
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2017-2018](http://unkp.gov.hu),
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2019-2020](http://unkp.gov.hu),
+* [Új Nemzeti Kiválóság Program (ÚNKP) 2020-2021](http://www.unkp.gov.hu/palyazatok/felsooktatasi-doktori-hallgatoi-doktorjelolti-kutatoi-osztondij/felsooktatasi-doktori),
+* [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013),
+* [NRDI Fund of Hungary](https://itea3.org/project/embrace.html) (2019-2.1.1-EUREKA-2019-00001 EMBrACE project).
 
 Special thanks to: 
 
