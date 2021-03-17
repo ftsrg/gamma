@@ -3,6 +3,7 @@ module hu.bme.mit.gamma.setup.GenerateAllLanguages
 Workflow {	
     component = @generators.languages.GenerateExpressionLanguage {}
     component = @generators.languages.GenerateActionLanguage {}
+    component = @generators.languages.GenerateActivityLanguage {}
     component = @generators.languages.GenerateStatechartLanguage {}
     component = @generators.languages.GenerateTraceLanguage {}
     component = @generators.languages.GeneratePropertyLanguage {}

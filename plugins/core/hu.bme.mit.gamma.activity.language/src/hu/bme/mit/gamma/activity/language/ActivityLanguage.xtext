@@ -1,0 +1,36 @@
+grammar hu.bme.mit.gamma.activity.language.ActivityLanguage with hu.bme.mit.gamma.action.language.ActionLanguage
+
+import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
+import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
+import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
+import "http://www.mit.bme.hu/gamma/activity/Model"
+
+Flow returns Flow:
+	ControlFlow |
+	DataFlow
+;
+
+ControlFlow returns ControlFlow:
+	"control flow"
+;
+
+DataFlow returns DataFlow:
+	"data flow"
+;
+
+ActivityNode returns ActivityNode:
+	PseudoActivityNode	
+;
+
+PseudoActivityNode returns PseudoActivityNode:
+	InitialNode |
+	FinalNode
+;
+
+InitialNode returns InitialNode:
+	'initial' name=ID
+;
+
+FinalNode returns FinalNode:
+	'final' name=ID
+;
