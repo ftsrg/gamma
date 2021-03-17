@@ -6,19 +6,12 @@
 
 <plugin>
 
-   <extension point="org.eclipse.emf.ecore.generated_package">
-      <!-- @generated model -->
-      <package
-            uri="http://www.mit.bme.hu/gamma/activity/Model"
-            class="hu.bme.mit.gamma.activity.model.ActivityModelPackage"
-            genModel="model/activity.genmodel"/>
-   </extension>
 
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated activity -->
       <package
             uri="http://www.mit.bme.hu/gamma/activity/Model"
-            class="hu.bme.mit.gamma.activity.model.ActivityPackage"
+            class="hu.bme.mit.gamma.activity.model.ActivityModelPackage"
             genModel="model/activity.genmodel"/>
    </extension>
 

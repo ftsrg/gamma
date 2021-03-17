@@ -4,12 +4,12 @@
     modelDirectory="/hu.bme.mit.gamma.activity.model/src-gen" creationIcons="false"
     editDirectory="/hu.bme.mit.gamma.activity.model.edit/src-gen" editorDirectory="/hu.bme.mit.gamma.activity.model.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.activity.model" modelName="Activity" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0"
+    codeFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0"
     copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>activity.ecore</foreignModel>
   <testsDirectory xsi:nil="true"/>
-  <genPackages prefix="Activity" basePackage="hu.bme.mit.gamma.activity" disposableProviderFactory="true"
+  <genPackages prefix="ActivityModel" basePackage="hu.bme.mit.gamma.activity" disposableProviderFactory="true"
       ecorePackage="activity.ecore#/">
     <genClasses image="false" ecoreClass="activity.ecore#//DataConduitNode"/>
     <genClasses ecoreClass="activity.ecore#//ActivityNode"/>
