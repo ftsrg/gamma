@@ -69,6 +69,7 @@
       <plugin id="hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler"/>
       <plugin id="hu.bme.mit.gamma.statechart.model"/>
       <plugin id="hu.bme.mit.gamma.statechart.phase.transformation"/>
+      <plugin id="hu.bme.mit.gamma.statechart.plantuml.transformation"/>
       <plugin id="hu.bme.mit.gamma.statechart.traverser"/>
       <plugin id="hu.bme.mit.gamma.theta.verification"/>
       <plugin id="hu.bme.mit.gamma.trace.environment.transformation"/>
@@ -100,6 +101,7 @@
       <plugin id="javax.inject"/>
       <plugin id="javax.servlet"/>
       <plugin id="javax.xml"/>
+      <plugin id="net.sourceforge.plantuml.lib"/>
       <plugin id="org.antlr.runtime"/>
       <plugin id="org.apache.ant"/>
       <plugin id="org.apache.batik.constants"/>

@@ -1106,5 +1106,8 @@
 		<plugin id="org.yakindu.sct.ui.navigator"/>
 		<plugin id="org.eclipse.jetty.util.ajax"/>
 		<plugin id="org.eclipse.jetty.util.ajax.source"/>
+		<plugin id="net.sourceforge.plantuml.lib"/>
+		<plugin id="net.sourceforge.plantuml.text"/>
+		<plugin id="net.sourceforge.plantuml.eclipse"/>
 	</includeBundles>
 </target>
