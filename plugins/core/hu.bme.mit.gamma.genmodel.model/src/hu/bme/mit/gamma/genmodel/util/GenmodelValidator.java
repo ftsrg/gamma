@@ -511,17 +511,20 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkInterfaceConformance(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(checkConformance(mapping))) {
-			switch (mapping.getRealizationMode()) {
+			RealizationMode realizationMode = mapping.getRealizationMode();
+			switch (realizationMode) {
 				case PROVIDED:
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.",
 							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+					break;
 				case REQUIRED:
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"In case of required realization mode number of in/out events must equal to the number of out/in events in the Gamma interface and vice versa",
 							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+					break;
 				default:
-					throw new IllegalArgumentException("Such interface realization mode is not supported: " + mapping.getRealizationMode());
+					throw new IllegalArgumentException("Such interface realization mode is not supported: " + realizationMode);
 			}
 		}
 		return validationResultMessages;
@@ -548,7 +551,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		RealizationMode realizationMode = mapping.getRealizationMode();
 		if (mapping.getEventMappings().size() == 0) {
 			// If the interface has in-out events, 0 event mapping is surely not acceptable
-			if (!(mapping.getGammaInterface().getEvents().stream().filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) { //TODO megkérdezni Bencét, hogy ez jó-e így empty helyett
+			if (!(mapping.getGammaInterface().getEvents().stream().filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"The Gamma interface has in-out events, thus an automatic mapping is not possible",
 						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
@@ -559,15 +562,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 						.stream().map(it -> it.getEvent())
 						.filter(it -> it.getName().equals(yakinduEvent.getName()))
 						.collect(Collectors.toList());
-				hu.bme.mit.gamma.statechart.interface_.Event gammaEvent = gammaEvents.get(0);
-				if (!(gammaEvents.size() == 1 && checkParameters(yakinduEvent, gammaEvent)
-					&& areWellDirected(realizationMode, yakinduEvent, (EventDeclaration)gammaEvent.eContainer()))) {
+				if (!(gammaEvents.size() == 1 && checkParameters(yakinduEvent, gammaEvents.get(0))
+						&& areWellDirected(realizationMode, yakinduEvent, (EventDeclaration) gammaEvents.get(0).eContainer()))) {
 					String typeName = "";
 					if (yakinduEvent.getType() != null) {
 						typeName = " : " + yakinduEvent.getType().getName();
-						} else {
+					} else {
 						typeName = "";
-						}
+					}
 						
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"Interface mapping without event mapping is only possible if the names and types of the events of the interfaces are equal. " 
@@ -680,10 +682,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"In case of provided realization mode Yakindu events must have the same direction and parameter as Gamma events.",
 							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT, null)));
+					break;
 				case REQUIRED:	
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"In case of required realization mode Yakindu events must have the opposite direction and same parameter of Gamma events.",
 							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT, null)));
+					break;
 				default:
 				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.getRealizationMode());				
 			}
