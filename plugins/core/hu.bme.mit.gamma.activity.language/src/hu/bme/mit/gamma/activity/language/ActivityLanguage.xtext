@@ -5,26 +5,60 @@ import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "http://www.mit.bme.hu/gamma/activity/Model"
 
+ActivityPackage returns ActivityPackage:
+	'package' name=ID
+	(namedActivityDeclarations+=NamedActivityDeclaration)*
+;
+
+
+
 Flow returns Flow:
 	ControlFlow |
 	DataFlow
 ;
 
 ControlFlow returns ControlFlow:
-	"control flow"
+	'control' 'flow'
+	'from' sourceNode=[ActivityNode] 
+	'to' targetNode=[ActivityNode]
+	('[' guard=Expression ']')?
 ;
 
 DataFlow returns DataFlow:
-	"data flow"
+	'data' 'flow'
+	'from' dataSource=[DataSource] 
+	'to' dataTarget=[DataTarget]
+	('[' guard=Expression ']')?
 ;
 
+
+
 ActivityNode returns ActivityNode:
+	ActionNode |
 	PseudoActivityNode	
 ;
 
+ActionNode returns ActionNode:
+	'action' name=ID
+	(
+		( ':' activityDeclarationReference=ActivityDeclarationReference )
+	)?
+;
+
+ActivityDeclarationReference returns ActivityDeclarationReference:
+	NamedActivityDeclarationReference |
+	InlineActivityDeclaration
+;
+
+NamedActivityDeclarationReference returns NamedActivityDeclarationReference:
+	namedActivityDeclaration=[NamedActivityDeclaration]
+;
+
+
 PseudoActivityNode returns PseudoActivityNode:
 	InitialNode |
-	FinalNode
+	FinalNode |
+	DataConduitNode
 ;
 
 InitialNode returns InitialNode:
@@ -34,3 +68,140 @@ InitialNode returns InitialNode:
 FinalNode returns FinalNode:
 	'final' name=ID
 ;
+
+DataConduitNode returns DataConduitNode:
+	ForkNode |
+	JoinNode |
+	DecisionNode |
+	MergeNode
+;
+
+ForkNode returns ForkNode:
+	'fork' name=ID
+;
+
+JoinNode returns JoinNode:
+	'join' name=ID
+;
+
+DecisionNode returns DecisionNode:
+	'decision' name=ID
+;
+
+MergeNode returns MergeNode:
+	'merge' name=ID
+;
+
+
+
+NamedActivityDeclaration returns NamedActivityDeclaration:
+	'activity'
+	name=ID
+	(
+		'('
+			( (pins += Pin) (',' pins += Pin)* )?
+		')'
+	)?
+	definition = Definition
+;
+
+InlineActivityDeclaration returns InlineActivityDeclaration:
+	'activity'
+ 	(
+		'('
+			( (pins += Pin) (',' pins += Pin)* )?
+		')'
+	)?
+	definition = Definition
+;
+
+
+
+Definition returns Definition:
+	ActivityDefinition |
+	ActionDefinition
+;
+
+ActivityDefinition returns ActivityDefinition:
+	{ActivityDefinition} 
+	('[' 'language' '=' 'activity' ']')?
+	(
+		'{'
+			(variableDeclarations+=VariableDeclaration)*
+			(activityNodes+=ActivityNode)*
+			(flows+=Flow)*
+		'}'
+	)?
+;
+
+ActionDefinition returns ActionDefinition:
+	'[' 'language' '=' 'action' ']'
+	'{'
+		action = Action
+	'}'
+;
+
+
+
+Pin returns Pin:
+	InputPin |
+	OutputPin
+;
+
+InputPin returns InputPin:
+	'in' name=ID ':' type=Type
+;
+
+OutputPin returns OutputPin:
+	'out' name=ID ':' type=Type
+;
+
+PinReference returns PinReference:
+	InputPinReference |
+	OutputPinReference
+;
+
+InputPinReference returns InputPinReference:
+	InsideInputPinReference |
+	OutsideInputPinReference
+;
+
+InsideInputPinReference returns InsideInputPinReference:
+	'self' '.' inputPin=[InputPin]
+;
+
+OutsideInputPinReference returns OutsideInputPinReference:
+	actionNode=[ActionNode] '.' inputPin=[InputPin]
+;
+
+OutputPinReference returns OutputPinReference:
+	InsideOutputPinReference |
+	OutsideOutputPinReference
+;
+
+InsideOutputPinReference returns InsideOutputPinReference:
+	'self' '.' outputPin=[OutputPin]
+;
+
+OutsideOutputPinReference returns OutsideOutputPinReference:
+	actionNode=[ActionNode] '.' outputPin=[OutputPin]
+;
+
+@Override
+AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
+	super |
+	InsideOutputPinReference
+;
+
+
+/*
+@Override
+PrimaryExpression returns ConstraintModel::Expression:
+	super | 
+	InsidePinReference
+;
+InsidePinReference returns InsidePinReference:
+	'self' '.'
+	( ({InsideInputPinReference} inputPin=[InputPin]) | ({InsideOutputPinReference} outputPin=[OutputPin]) )
+;
+*/

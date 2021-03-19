@@ -43,10 +43,7 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PinReference" abstract="true">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="actionNode" lowerBound="1"
-        eType="#//ActionNode"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="PinReference" abstract="true" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="InputPin" eSuperTypes="#//Pin"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionDefinition" eSuperTypes="#//Definition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
@@ -76,10 +73,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="outputPin" lowerBound="1"
         eType="#//OutputPin"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InsideInputPinReference" eSuperTypes="#//InputPinReference #//DataSource"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OutsideInputPinReference" eSuperTypes="#//InputPinReference #//DataTarget"/>
-  <eClassifiers xsi:type="ecore:EClass" name="InsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataTarget"/>
-  <eClassifiers xsi:type="ecore:EClass" name="OutsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataSource"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InsideInputPinReference" eSuperTypes="#//InputPinReference #//DataSource #//InsidePinReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutsideInputPinReference" eSuperTypes="#//InputPinReference #//DataTarget #//OutsidePinReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="InsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataTarget #//InsidePinReference"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutsideOutputPinReference" eSuperTypes="#//OutputPinReference #//DataSource #//OutsidePinReference"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclarationReference" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="NamedActivityDeclarationReference" eSuperTypes="#//ActivityDeclarationReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="namedActivityDeclaration"
@@ -88,5 +85,11 @@
   <eClassifiers xsi:type="ecore:EClass" name="ActivityPackage" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="namedActivityDeclarations"
         upperBound="-1" eType="#//NamedActivityDeclaration" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InsidePinReference" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OutsidePinReference" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="actionNode" lowerBound="1"
+        eType="#//ActionNode"/>
   </eClassifiers>
 </ecore:EPackage>
