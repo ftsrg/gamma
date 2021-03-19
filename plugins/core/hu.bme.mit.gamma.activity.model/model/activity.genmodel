@@ -27,7 +27,7 @@
     <genClasses ecoreClass="activity.ecore#//DataSource"/>
     <genClasses ecoreClass="activity.ecore#//DataTarget"/>
     <genClasses ecoreClass="activity.ecore#//ActionNode">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//ActionNode/activitydeclaration"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActionNode/activityDeclarationReference"/>
     </genClasses>
     <genClasses image="false" ecoreClass="activity.ecore#//DataConduit"/>
     <genClasses ecoreClass="activity.ecore#//JoinNode"/>
@@ -70,5 +70,12 @@
     <genClasses ecoreClass="activity.ecore#//OutsideInputPinReference"/>
     <genClasses ecoreClass="activity.ecore#//InsideOutputPinReference"/>
     <genClasses ecoreClass="activity.ecore#//OutsideOutputPinReference"/>
+    <genClasses ecoreClass="activity.ecore#//ActivityDeclarationReference"/>
+    <genClasses ecoreClass="activity.ecore#//NamedActivityDeclarationReference">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//NamedActivityDeclarationReference/namedActivityDeclaration"/>
+    </genClasses>
+    <genClasses ecoreClass="activity.ecore#//ActivityPackage">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityPackage/namedActivityDeclarations"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>
