@@ -22,17 +22,24 @@ import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
+import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LessEqualExpression;
+import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -627,7 +634,7 @@ public class ExpressionModelValidator {
 						((TypeReference) variableDeclarationType).getReference().getType() instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
 				}
-				if (arrayType != null) {
+				if (arrayType != null) {					
 					if (initialExpression instanceof ArrayLiteralExpression) {
 						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
 						for(Expression e : rhs.getOperands()) {
@@ -637,6 +644,16 @@ public class ExpressionModelValidator {
 										new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
 							}
 						}
+						
+//////////////////////////////////////////////////////////////////////
+						// Array size must equal with number of array literal's elements
+						if(rhs.getOperands().size() != expressionEvaluator.evaluateInteger(arrayType.getSize())) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+									"The number of the elements on the right hand side must be equal then the size of the array.",
+									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
+						}
+//////////////////////////////////////////////////////////////////////
+						
 					}
 					else {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -651,4 +668,75 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+//////////////////////////////////////////////////////////////////////
+	public Collection<ValidationResultMessage> checkArrayTypeDefinition(ArrayTypeDefinition arrayType){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// Array init size must greater then 0
+		if(expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The size of the array must be greater then 0.",
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE, null)));
+		}
+		return validationResultMessages;
+	}	
+	
+	public Collection<ValidationResultMessage> checkSelfComparison(PredicateExpression expression){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();		
+		// BinaryExpression
+		if(expression instanceof BinaryExpression) {
+			BinaryExpression BinaryExpression = (BinaryExpression) expression;
+			// the left and the right hand sides same
+			if(EcoreUtil.equals(BinaryExpression.getLeftOperand(), BinaryExpression.getRightOperand())) {
+				// EquivalenceExpression
+				if(expression instanceof EquivalenceExpression) {
+					EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
+					// EqualityExpression
+					if(equivalenceExpression instanceof EqualityExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This expression is always true, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+					//InequalityExpressin
+					if(equivalenceExpression instanceof InequalityExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This expression is always false, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+				}
+				// ComparisionExpression
+				else if(expression instanceof ComparisonExpression) {
+					ComparisonExpression comparisionExpression = (ComparisonExpression) expression;
+					if(comparisionExpression instanceof LessEqualExpression || comparisionExpression instanceof GreaterEqualExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This expression is always true, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+					if(comparisionExpression instanceof LessExpression || comparisionExpression instanceof GreaterExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"This expression is always false, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+				}
+			}
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkDivZero(ArithmeticExpression expression){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// BinaryExpression
+		if (expression instanceof BinaryExpression) {
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			// DivideExpression, DivExpression, ModExpression
+			if(expression instanceof DivideExpression || expression instanceof DivExpression || expression instanceof ModExpression) {
+				// right hand side is zero
+				if(expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"Can't divide by zero!",
+							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+				}
+			}
+		}
+		return validationResultMessages;
+	}
 }

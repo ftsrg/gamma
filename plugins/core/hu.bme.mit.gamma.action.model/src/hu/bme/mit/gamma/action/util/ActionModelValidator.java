@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
@@ -192,4 +193,25 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		} 
 		throw new IllegalArgumentException("Unknown container for Branch.");
 	}
+	
+//////////////////////////////////////////////////////////////////////
+	public Collection<ValidationResultMessage> checkIfStatement(IfStatement ifs){
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// all Branch
+		for(Branch branch : ifs.getConditionals()) {
+			// Branch action is a Block
+			if(branch.getAction() instanceof Block) {
+				Block block = (Block) branch.getAction();
+				// Block is empty
+				if(block.getActions().isEmpty()) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"The block of the if statement is empty!",
+							new ReferenceInfo(ActionModelPackage.Literals.IF_STATEMENT__CONDITIONALS, null)));
+				}
+			}
+		}
+		
+		return validationResultMessages;
+	}
+	
 }
