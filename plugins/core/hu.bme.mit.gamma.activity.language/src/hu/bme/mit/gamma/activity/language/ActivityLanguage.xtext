@@ -10,104 +10,10 @@ ActivityPackage returns ActivityPackage:
 	(namedActivityDeclarations+=NamedActivityDeclaration)*
 ;
 
-
-
-Flow returns Flow:
-	ControlFlow |
-	DataFlow
-;
-
-ControlFlow returns ControlFlow:
-	'control' 'flow'
-	'from' sourceNode=[ActivityNode] 
-	'to' targetNode=[ActivityNode]
-	('[' guard=Expression ']')?
-;
-
-DataFlow returns DataFlow:
-	'data' 'flow'
-	'from' dataSource=[DataSource] 
-	'to' dataTarget=[DataTarget]
-	('[' guard=Expression ']')?
-;
-
-
-
-ActivityNode returns ActivityNode:
-	ActionNode |
-	PseudoActivityNode	
-;
-
-ActionNode returns ActionNode:
-	'action' name=ID
-	(
-		( ':' activityDeclarationReference=ActivityDeclarationReference )
-	)?
-;
-
-ActivityDeclarationReference returns ActivityDeclarationReference:
-	NamedActivityDeclarationReference |
-	InlineActivityDeclaration
-;
-
-NamedActivityDeclarationReference returns NamedActivityDeclarationReference:
-	namedActivityDeclaration=[NamedActivityDeclaration]
-;
-
-
-PseudoActivityNode returns PseudoActivityNode:
-	InitialNode |
-	FinalNode |
-	DataConduitNode
-;
-
-InitialNode returns InitialNode:
-	'initial' name=ID
-;
-
-FinalNode returns FinalNode:
-	'final' name=ID
-;
-
-DataConduitNode returns DataConduitNode:
-	ForkNode |
-	JoinNode |
-	DecisionNode |
-	MergeNode
-;
-
-ForkNode returns ForkNode:
-	'fork' name=ID
-;
-
-JoinNode returns JoinNode:
-	'join' name=ID
-;
-
-DecisionNode returns DecisionNode:
-	'decision' name=ID
-;
-
-MergeNode returns MergeNode:
-	'merge' name=ID
-;
-
-
-
 NamedActivityDeclaration returns NamedActivityDeclaration:
 	'activity'
 	name=ID
 	(
-		'('
-			( (pins += Pin) (',' pins += Pin)* )?
-		')'
-	)?
-	definition = Definition
-;
-
-InlineActivityDeclaration returns InlineActivityDeclaration:
-	'activity'
- 	(
 		'('
 			( (pins += Pin) (',' pins += Pin)* )?
 		')'
@@ -143,6 +49,98 @@ ActionDefinition returns ActionDefinition:
 
 
 
+Flow returns Flow:
+	ControlFlow |
+	DataFlow
+;
+
+ControlFlow returns ControlFlow:
+	'control' 'flow'
+	'from' sourceNode=[ActivityNode] 
+	'to' targetNode=[ActivityNode]
+	('[' guard=Expression ']')?
+;
+
+DataFlow returns DataFlow:
+	'data' 'flow'
+	'from' dataSourceReference=DataSourceReference 
+	'to' dataTargetReference=DataTargetReference
+	('[' guard=Expression ']')?
+;
+
+
+
+ActivityNode returns ActivityNode:
+	ActionNode |
+	PseudoActivityNode	
+;
+
+ActionNode returns ActionNode:
+	'action' name=ID
+	(
+		( ':' activityDeclarationReference=ActivityDeclarationReference )
+	)?
+;
+
+ActivityDeclarationReference returns ActivityDeclarationReference:
+	NamedActivityDeclarationReference |
+	InlineActivityDeclaration
+;
+
+NamedActivityDeclarationReference returns NamedActivityDeclarationReference:
+	namedActivityDeclaration=[NamedActivityDeclaration]
+;
+
+InlineActivityDeclaration returns InlineActivityDeclaration:
+	'activity'
+ 	(
+		'('
+			( (pins += Pin) (',' pins += Pin)* )?
+		')'
+	)?
+	definition = Definition
+;
+
+
+PseudoActivityNode returns PseudoActivityNode:
+	InitialNode |
+	FinalNode |
+	DataNode
+;
+
+InitialNode returns InitialNode:
+	'initial' name=ID
+;
+
+FinalNode returns FinalNode:
+	'final' name=ID
+;
+
+DataNode returns DataNode:
+	ForkNode |
+	JoinNode |
+	DecisionNode |
+	MergeNode
+;
+
+ForkNode returns ForkNode:
+	'fork' name=ID
+;
+
+JoinNode returns JoinNode:
+	'join' name=ID
+;
+
+DecisionNode returns DecisionNode:
+	'decision' name=ID
+;
+
+MergeNode returns MergeNode:
+	'merge' name=ID
+;
+
+
+
 Pin returns Pin:
 	InputPin |
 	OutputPin
@@ -156,14 +154,21 @@ OutputPin returns OutputPin:
 	'out' name=ID ':' type=Type
 ;
 
-PinReference returns PinReference:
-	InputPinReference |
-	OutputPinReference
+
+DataSourceReference returns DataSourceReference:
+	DataNodeReference |
+	InsideInputPinReference |
+	OutsideOutputPinReference
 ;
 
-InputPinReference returns InputPinReference:
-	InsideInputPinReference |
-	OutsideInputPinReference
+DataTargetReference returns DataTargetReference:
+	DataNodeReference |
+	OutsideInputPinReference |
+	InsideOutputPinReference	
+;
+
+DataNodeReference returns DataNodeReference:
+	dataNode=[DataNode]
 ;
 
 InsideInputPinReference returns InsideInputPinReference:
@@ -172,11 +177,6 @@ InsideInputPinReference returns InsideInputPinReference:
 
 OutsideInputPinReference returns OutsideInputPinReference:
 	actionNode=[ActionNode] '.' inputPin=[InputPin]
-;
-
-OutputPinReference returns OutputPinReference:
-	InsideOutputPinReference |
-	OutsideOutputPinReference
 ;
 
 InsideOutputPinReference returns InsideOutputPinReference:
@@ -193,15 +193,8 @@ AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
 	InsideOutputPinReference
 ;
 
-
-/*
 @Override
 PrimaryExpression returns ConstraintModel::Expression:
 	super | 
-	InsidePinReference
+	InsideInputPinReference
 ;
-InsidePinReference returns InsidePinReference:
-	'self' '.'
-	( ({InsideInputPinReference} inputPin=[InputPin]) | ({InsideOutputPinReference} outputPin=[OutputPin]) )
-;
-*/
