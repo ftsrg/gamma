@@ -102,6 +102,7 @@
       <plugin id="javax.servlet"/>
       <plugin id="javax.xml"/>
       <plugin id="net.sourceforge.plantuml.lib"/>
+      <plugin id="net.sourceforge.plantuml.lib.jlatexmath" fragment="true"/>
       <plugin id="org.antlr.runtime"/>
       <plugin id="org.apache.ant"/>
       <plugin id="org.apache.batik.constants"/>

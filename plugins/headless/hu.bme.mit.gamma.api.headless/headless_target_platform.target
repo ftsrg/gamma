@@ -15,7 +15,7 @@
 		<plugin id="ch.qos.logback.core"/>
 		<plugin id="ch.qos.logback.slf4j"/>
 		<plugin id="com.google.gson"/>
-		<plugin id="com.google.guava" version="27.1.0.v20190517-1946"/>
+		<plugin id="com.google.guava" version="30.1.0.v20210127-2300"/>
 		<plugin id="com.google.inject"/>
 		<plugin id="com.google.inject.multibindings"/>
 		<plugin id="com.google.inject.multibindings.source"/>
@@ -112,7 +112,7 @@
 		<plugin id="org.apache.lucene.core.source"/>
 		<plugin id="org.apache.sshd.osgi"/>
 		<plugin id="org.apache.sshd.sftp"/>
-		<plugin id="org.apache.xerces"/>
+		<plugin id="org.apache.xerces" version="2.12.1.v20210115-0812"/>
 		<plugin id="org.apache.xml.resolver"/>
 		<plugin id="org.apache.xml.serializer"/>
 		<plugin id="org.apache.xmlgraphics"/>
@@ -507,8 +507,8 @@
 		<plugin id="org.eclipse.jdt"/>
 		<plugin id="org.eclipse.jdt.annotation" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.annotation" version="2.2.600.v20200408-1511"/>
-		<plugin id="org.eclipse.jdt.annotation.source" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.annotation.source" version="2.2.600.v20200408-1511"/>
+		<plugin id="org.eclipse.jdt.annotation.source" version="1.1.500.v20200407-1355"/>
 		<plugin id="org.eclipse.jdt.apt.core"/>
 		<plugin id="org.eclipse.jdt.apt.core.source"/>
 		<plugin id="org.eclipse.jdt.apt.pluggable.core"/>
@@ -573,7 +573,6 @@
 		<plugin id="org.eclipse.jgit.gpg.bc"/>
 		<plugin id="org.eclipse.jgit.http.apache"/>
 		<plugin id="org.eclipse.jgit.ssh.apache"/>
-		<plugin id="org.eclipse.jgit.ssh.jsch"/>
 		<plugin id="org.eclipse.jsch.core"/>
 		<plugin id="org.eclipse.jsch.core.source"/>
 		<plugin id="org.eclipse.jsch.ui"/>
