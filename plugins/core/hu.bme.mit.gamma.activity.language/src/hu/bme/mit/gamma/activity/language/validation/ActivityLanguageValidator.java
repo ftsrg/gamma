@@ -3,6 +3,10 @@
  */
 package hu.bme.mit.gamma.activity.language.validation;
 
+import org.eclipse.xtext.validation.Check;
+
+import hu.bme.mit.gamma.activity.util.ActivityModelValidator;
+import hu.bme.mit.gamma.expression.model.NamedElement;
 
 /**
  * This class contains custom validation rules. 
@@ -11,15 +15,17 @@ package hu.bme.mit.gamma.activity.language.validation;
  */
 public class ActivityLanguageValidator extends AbstractActivityLanguageValidator {
 	
-//	public static final String INVALID_NAME = "invalidName";
-//
-//	@Check
-//	public void checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.getName().charAt(0))) {
-//			warning("Name should start with a capital",
-//					ActivityLanguagePackage.Literals.GREETING__NAME,
-//					INVALID_NAME);
-//		}
-//	}
+	protected ActivityModelValidator activityModelValidator = ActivityModelValidator.INSTANCE;
+	
+	public ActivityLanguageValidator() {
+		super.expressionModelValidator = activityModelValidator;
+		super.actionModelValidator = activityModelValidator;
+	}
+	
+	@Check
+	@Override
+	public void checkNameUniqueness(NamedElement element) {
+		handleValidationResultMessage(activityModelValidator.checkNameUniqueness(element));
+	}
 	
 }

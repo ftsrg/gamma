@@ -13,6 +13,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-Vendor: BME-FTSRG
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Export-Package: hu.bme.mit.gamma.activity.model,
+Export-Package: hu.bme.mit.gamma.activity.derivedfeatures,
+ hu.bme.mit.gamma.activity.model,
  hu.bme.mit.gamma.activity.model.impl,
- hu.bme.mit.gamma.activity.model.util
+ hu.bme.mit.gamma.activity.model.util,
+ hu.bme.mit.gamma.activity.util

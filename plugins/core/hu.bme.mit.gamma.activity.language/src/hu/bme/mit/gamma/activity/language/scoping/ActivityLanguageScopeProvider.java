@@ -3,6 +3,18 @@
  */
 package hu.bme.mit.gamma.activity.language.scoping;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
+
+import hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures;
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
+import hu.bme.mit.gamma.activity.model.ActivityDefinition;
+import hu.bme.mit.gamma.activity.model.ActivityModelPackage;
+import hu.bme.mit.gamma.activity.model.InsidePinReference;
+import hu.bme.mit.gamma.activity.model.OutsidePinReference;
+import hu.bme.mit.gamma.activity.model.PinReference;
 
 /**
  * This class contains custom scoping description.
@@ -11,5 +23,43 @@ package hu.bme.mit.gamma.activity.language.scoping;
  * on how and when to use it.
  */
 public class ActivityLanguageScopeProvider extends AbstractActivityLanguageScopeProvider {
+	
+	@Override
+	public IScope getScope(final EObject context, final EReference reference) {
 
+		try {
+			if (context instanceof PinReference) {
+				
+				if (context instanceof InsidePinReference) {
+					ActivityDeclaration declaration = ActivityModelDerivedFeatures.getContainingActivityDeclaration(context);
+					
+					return Scopes.scopeFor(declaration.getPins());
+				}
+				else { // instanceof OutsidePinReference
+					if (reference == ActivityModelPackage.Literals.OUTSIDE_PIN_REFERENCE__ACTION_NODE) {
+						ActivityDefinition definition = ActivityModelDerivedFeatures.getContainingActivityDefinition(context);
+						
+						return Scopes.scopeFor(definition.getActivityNodes());
+					}
+					if (reference == ActivityModelPackage.Literals.OUTPUT_PIN_REFERENCE__OUTPUT_PIN) {
+						ActivityDeclaration declaration = ActivityModelDerivedFeatures.getReferencedActivityDeclaration((OutsidePinReference)context);
+						
+						return Scopes.scopeFor(declaration.getPins());
+					}
+					if (reference == ActivityModelPackage.Literals.INPUT_PIN_REFERENCE__INPUT_PIN) {
+						ActivityDeclaration declaration = ActivityModelDerivedFeatures.getReferencedActivityDeclaration((OutsidePinReference)context);
+						
+						return Scopes.scopeFor(declaration.getPins());
+					}
+					
+				} 
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+		
+		return super.getScope(context, reference);
+	}
+	
 }
