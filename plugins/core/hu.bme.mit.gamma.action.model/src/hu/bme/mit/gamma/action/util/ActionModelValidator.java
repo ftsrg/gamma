@@ -195,22 +195,14 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	}
 	
 //////////////////////////////////////////////////////////////////////
-	public Collection<ValidationResultMessage> checkIfStatement(IfStatement ifs){
+	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// all Branch
-		for(Branch branch : ifs.getConditionals()) {
-			// Branch action is a Block
-			if(branch.getAction() instanceof Block) {
-				Block block = (Block) branch.getAction();
-				// Block is empty
-				if(block.getActions().isEmpty()) {
-					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The block of the if statement is empty!",
-							new ReferenceInfo(ActionModelPackage.Literals.IF_STATEMENT__CONDITIONALS, null)));
-				}
-			}
+		// Block is empty
+		if(block.getActions().isEmpty()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"The block is empty!",
+					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));
 		}
-		
 		return validationResultMessages;
 	}
 	

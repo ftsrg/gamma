@@ -14,6 +14,7 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
@@ -62,7 +63,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 //////////////////////////////////////////////////////////////////////
 	
 	@Check
-	public void checkIfStatement(IfStatement ifs) {
-		handleValidationResultMessage(actionModelValidator.checkIfStatement(ifs));
+	public void checkBlockIsEmpty(Block block) {
+		handleValidationResultMessage(actionModelValidator.checkBlockIsEmpty(block));
 	}
 }

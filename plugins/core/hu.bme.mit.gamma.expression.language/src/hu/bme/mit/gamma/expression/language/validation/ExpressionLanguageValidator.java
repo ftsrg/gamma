@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
@@ -28,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
@@ -169,5 +171,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkDivZero(ArithmeticExpression elem) {
 		handleValidationResultMessage(expressionModelValidator.checkDivZero(elem));
+	}
+	
+	@Check
+	public void checkRecordSelfReference(TypeDeclaration typeDeclaration) {
+		handleValidationResultMessage(expressionModelValidator.checkRecordSelfReference(typeDeclaration));
 	}
 }
