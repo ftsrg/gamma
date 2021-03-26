@@ -33,9 +33,9 @@ class ActionSerializer {
 	def String serializeXSTS(XSTS xSts) '''
 		«xSts.serializeDeclarations(false)»
 		
-		trans {
-			«xSts.mergedAction.serialize»
-		}
+		trans «FOR action : xSts.actions SEPARATOR " or "»{
+			«action.action.serialize»
+		}«ENDFOR»
 		init {
 			«xSts.initializingAction.serialize»
 		}

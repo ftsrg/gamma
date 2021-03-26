@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
+import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.List
 import java.util.Map
 import org.eclipse.xtend.lib.annotations.Data
@@ -34,6 +35,16 @@ class VariableInliner {
 	//
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+
+	def inline(Iterable<XTransition> transitions) {
+		for (transition : transitions) {
+			transition.inline
+		}
+	}
+
+	def inline(XTransition transition) {
+		transition.action.inline
+	}
 
 	def inline(Action action) {
 		action.inline(newHashMap, newHashMap)

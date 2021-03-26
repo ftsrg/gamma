@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
+import hu.bme.mit.gamma.xsts.model.XTransition;
 
 public class XstsActionUtil extends ExpressionUtil {
 	// Singleton
@@ -50,6 +52,23 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
+	
+	public void changeActions(XSTS xSts, XTransition newAction) {
+		changeActions(xSts, Collections.singletonList(newAction));
+	}
+	
+	public void changeActions(XSTS xSts, Collection<XTransition> newActions) {
+		Collection<XTransition> savedActions = new ArrayList<XTransition>();
+		savedActions.addAll(newActions); // If newActions == xSts.getActions()
+		xSts.getActions().clear();
+		xSts.getActions().addAll(savedActions);
+	}
+	
+	public XTransition wrap(Action action) {
+		XTransition transition = xStsFactory.createXTransition();
+		transition.setAction(action);
+		return transition;
+	}
 	
 	public void prependToAction(Collection<? extends Action> actions, Action pivot) {
 		for (Action action : actions) {

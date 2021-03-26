@@ -54,15 +54,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		final Action variableInitializingAction = xSts.getVariableInitializingAction();
+		final Action variableInitializingAction = xSts.getVariableInitializingAction().getAction();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(variableInitializingAction));
 		}
-		final Action configurationInitializingAction = xSts.getConfigurationInitializingAction();
+		final Action configurationInitializingAction = xSts.getConfigurationInitializingAction().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(configurationInitializingAction));
 		}
-		final Action entryEventAction = xSts.getEntryEventAction();
+		final Action entryEventAction = xSts.getEntryEventAction().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(entryEventAction));
 		}
@@ -71,8 +71,8 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventAction()));
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventAction().getAction()));
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventAction().getAction()));
 		return sequentialAction;
 	}
 	

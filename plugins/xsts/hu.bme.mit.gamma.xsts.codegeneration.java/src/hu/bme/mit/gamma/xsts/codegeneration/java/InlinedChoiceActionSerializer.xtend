@@ -47,15 +47,16 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) {
 		return '''
-			«xSts.variableInitializingAction.serialize»
-			«xSts.variableInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.configurationInitializingAction.serialize»
-			«xSts.configurationInitializingAction.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.entryEventAction.serialize»
-			«xSts.entryEventAction.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.variableInitializingAction.action.serialize»
+			«xSts.variableInitializingAction.action.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.configurationInitializingAction.action.serialize»
+			«xSts.configurationInitializingAction.action.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.entryEventAction.action.serialize»
+			«xSts.entryEventAction.action.originalWrittenVariables.serializeFinalizationAssignments»
 		'''
 	}
 	
+	// Note that only the first transition is serialized
 	override CharSequence serializeChangeState(XSTS xSts) {
 		val variableDeclarations = xSts.variableDeclarations.map[it.originalVariable].filter(VariableDeclaration).toSet
 		return '''
@@ -67,7 +68,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			private void changeState() {
 				// Initializing the temporary variables - needed, as timings and clearing of in/out events come from the environment
 				«variableDeclarations.serializeInitializationAssignments»
-				«xSts.mergedAction.serialize»
+				«xSts.actions.head.action.serialize»
 				// Finalizing the actions
 				«variableDeclarations.serializeFinalizationAssignments»
 			}

@@ -43,12 +43,12 @@ class OrthogonalActionTransformer {
 			.filter[it.annotation instanceof EventGroup || it.annotation instanceof EventParameterGroup]
 			.map[it.variables].flatten.toSet
 		if (!eventVariables.empty) {
-			xSts.variableInitializingAction.transform(eventVariables)
-			xSts.configurationInitializingAction.transform(eventVariables)
-			xSts.entryEventAction.transform(eventVariables)
-			xSts.mergedAction.transform(eventVariables)
-			xSts.inEventAction.transform(eventVariables)
-			xSts.outEventAction.transform(eventVariables)
+			xSts.variableInitializingAction.action.transform(eventVariables)
+			xSts.configurationInitializingAction.action.transform(eventVariables)
+			xSts.entryEventAction.action.transform(eventVariables)
+			xSts.actions.forEach[it.action.transform(eventVariables)]
+			xSts.inEventAction.action.transform(eventVariables)
+			xSts.outEventAction.action.transform(eventVariables)
 		}
 	}
 	

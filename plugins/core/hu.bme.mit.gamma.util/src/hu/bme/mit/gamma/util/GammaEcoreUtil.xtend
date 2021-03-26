@@ -237,10 +237,40 @@ class GammaEcoreUtil {
 	def void deleteResource(EObject object) {
 		object.eResource.delete(Collections.EMPTY_MAP)
 	}
+	
+	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
+		if (lhs === null && rhs === null) {
+			return true
+		}
+		if (lhs === null && rhs !== null ||
+				lhs !== null && rhs === null ||
+				lhs.size != rhs.size) {
+			return false
+		}
+		for (var i = 0; i < lhs.size; i++) {
+			val lhsElement = lhs.get(i)
+			val rhsElement = rhs.get(i)
+			if (!lhsElement.helperEquals(rhsElement)) {
+				return false
+			}
+		}
+		return true
+	}
 
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
+	}
+	
+	def <T extends EObject> List<T> clone(List<T> objects) {
+		if (objects === null) {
+			return null
+		}
+		val list = newArrayList
+		for (object : objects) {
+			list += object.clone
+		}
+		return list
 	}
 
 	def <T extends EObject> T clone(T object) {

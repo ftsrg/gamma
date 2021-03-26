@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.XTransition
 import java.util.Collection
 import java.util.List
 
@@ -43,6 +44,21 @@ class ActionOptimizer {
 	// Model factories
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE
+	
+	def optimize(Collection<XTransition> transitions) {
+		val optimizedTransitions = newArrayList
+		for (transition : transitions) {
+			optimizedTransitions += transition.optimize
+		}
+		return optimizedTransitions
+	}
+	
+	def optimize(XTransition transition) {
+		val action = transition.action
+		return createXTransition => [
+			it.action = action.optimize
+		]
+	}
 	
 	def optimize(Action action) {
 		var Action oldXStsAction
