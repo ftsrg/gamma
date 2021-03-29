@@ -17,13 +17,19 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class TestReplayModelGenerator {
 	
 	protected final ExecutionTrace executionTrace
+	protected final String systemName
 	
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	protected final extension CompositeModelFactory statechartModelFactory = CompositeModelFactory.eINSTANCE
 	
 	new(ExecutionTrace executionTrace) {
+		this(executionTrace, null)
+	}
+	
+	new(ExecutionTrace executionTrace, String systemName) {
 		this.executionTrace = executionTrace
+		this.systemName = systemName
 	}
 	
 	/**
@@ -40,7 +46,7 @@ class TestReplayModelGenerator {
 		val testModel = executionTrace.component as SynchronousComponent
 		val testModelPackage = testModel.containingPackage
 		val systemModel = testModel.wrapSynchronousComponent => [
-			it.name = getSystemModelName(environmentModel, testModel)
+			it.name = environmentModel.getSystemModelName(testModel)
 		]
 		val componentInstance = systemModel.components.head => [
 			it.name = it.name.toFirstLower
@@ -94,7 +100,12 @@ class TestReplayModelGenerator {
 		return component.allPorts.map[it.interface.containingPackage].toList 
 	}
 	
-	protected def String getSystemModelName(Component environmentModel, Component testModel) '''«environmentModel.name»On«testModel.name»'''
+	protected def String getSystemModelName(Component environmentModel, Component testModel) {
+		if (systemName !== null) {
+			return systemName
+		}
+		return '''«environmentModel.name»On«testModel.name»'''
+	}
 	
 	@Data
 	static class Result {
