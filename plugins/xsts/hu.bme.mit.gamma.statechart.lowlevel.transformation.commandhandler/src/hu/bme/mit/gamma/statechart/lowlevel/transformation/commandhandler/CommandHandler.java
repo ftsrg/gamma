@@ -110,12 +110,12 @@ public class CommandHandler extends AbstractHandler {
 		else {
 			ActionPrimer actionPrimer = new ChoiceInliner(true);
 			javaActionSerializer = new InlinedChoiceActionSerializer();
-			xSts.setVariableInitializingAction(actionPrimer.transform(xSts.getVariableInitializingAction()));
-			xSts.setConfigurationInitializingAction(actionPrimer.transform(xSts.getConfigurationInitializingAction()));
-			xSts.setEntryEventAction(actionPrimer.transform(xSts.getEntryEventAction()));
-			actionUtil.changeActions(xSts, actionPrimer.transform(xSts.getActions()));
-			xSts.setInEventAction(actionPrimer.transform(xSts.getInEventAction()));
-			xSts.setOutEventAction(actionPrimer.transform(xSts.getOutEventAction()));
+			xSts.setVariableInitializingTransition(actionPrimer.transform(xSts.getVariableInitializingTransition()));
+			xSts.setConfigurationInitializingTransition(actionPrimer.transform(xSts.getConfigurationInitializingTransition()));
+			xSts.setEntryEventTransition(actionPrimer.transform(xSts.getEntryEventTransition()));
+			actionUtil.changeTransitions(xSts, actionPrimer.transform(xSts.getTransitions()));
+			xSts.setInEventTransition(actionPrimer.transform(xSts.getInEventTransition()));
+			xSts.setOutEventTransition(actionPrimer.transform(xSts.getOutEventTransition()));
 		}
 		// Saving the xSTS model
 		ecoreUtil.normalSave(xSts, modelFolderUri, fileNameWithoutExtenstion + ".gsts");

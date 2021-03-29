@@ -31,8 +31,6 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
-import static com.google.common.base.Preconditions.checkState
-
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
@@ -70,9 +68,7 @@ class XstsToUppaalTransformer {
 		
 		val initializingAction = xSts.initializingAction
 		val environmentalAction = xSts.environmentalAction
-		val actions = xSts.actions
-		checkState(actions.size == 1)
-		val mergedAction = actions.head.action
+		val mergedAction = xSts.mergedAction
 		
 		xSts.transformVariables
 		

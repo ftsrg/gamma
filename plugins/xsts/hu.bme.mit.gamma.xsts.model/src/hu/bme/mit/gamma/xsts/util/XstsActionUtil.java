@@ -53,15 +53,15 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
-	public void changeActions(XSTS xSts, XTransition newAction) {
-		changeActions(xSts, Collections.singletonList(newAction));
+	public void changeTransitions(XSTS xSts, XTransition newAction) {
+		changeTransitions(xSts, Collections.singletonList(newAction));
 	}
 	
-	public void changeActions(XSTS xSts, Collection<XTransition> newActions) {
+	public void changeTransitions(XSTS xSts, Collection<XTransition> newActions) {
 		Collection<XTransition> savedActions = new ArrayList<XTransition>();
 		savedActions.addAll(newActions); // If newActions == xSts.getActions()
-		xSts.getActions().clear();
-		xSts.getActions().addAll(savedActions);
+		xSts.getTransitions().clear();
+		xSts.getTransitions().addAll(savedActions);
 	}
 	
 	public XTransition wrap(Action action) {

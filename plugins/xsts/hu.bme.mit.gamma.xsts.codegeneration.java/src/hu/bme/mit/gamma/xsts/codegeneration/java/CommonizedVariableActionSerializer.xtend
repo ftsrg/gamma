@@ -36,7 +36,7 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	// Note that only the first transition is serialized
 	override CharSequence serializeChangeState(XSTS xSts) '''
 		private void changeState() {
-			«xSts.actions.head.action.serialize»
+			«xSts.mergedAction.serialize»
 		}
 	'''
 	

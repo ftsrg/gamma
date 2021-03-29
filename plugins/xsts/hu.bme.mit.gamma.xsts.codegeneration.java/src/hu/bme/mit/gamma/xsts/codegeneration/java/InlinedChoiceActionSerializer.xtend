@@ -47,12 +47,12 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 	
 	override serializeInitializingAction(XSTS xSts) {
 		return '''
-			«xSts.variableInitializingAction.action.serialize»
-			«xSts.variableInitializingAction.action.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.configurationInitializingAction.action.serialize»
-			«xSts.configurationInitializingAction.action.originalWrittenVariables.serializeFinalizationAssignments»
-			«xSts.entryEventAction.action.serialize»
-			«xSts.entryEventAction.action.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.variableInitializingTransition.action.serialize»
+			«xSts.variableInitializingTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.configurationInitializingTransition.action.serialize»
+			«xSts.configurationInitializingTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
+			«xSts.entryEventTransition.action.serialize»
+			«xSts.entryEventTransition.action.originalWrittenVariables.serializeFinalizationAssignments»
 		'''
 	}
 	
@@ -68,7 +68,7 @@ class InlinedChoiceActionSerializer extends ActionSerializer {
 			private void changeState() {
 				// Initializing the temporary variables - needed, as timings and clearing of in/out events come from the environment
 				«variableDeclarations.serializeInitializationAssignments»
-				«xSts.actions.head.action.serialize»
+				«xSts.mergedAction.serialize»
 				// Finalizing the actions
 				«variableDeclarations.serializeFinalizationAssignments»
 			}
