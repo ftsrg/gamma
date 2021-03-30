@@ -565,16 +565,18 @@ class ActionTransformer {
 		val port = action.port
 		val event = action.event
 		val lowlevelEvent = trace.get(port, event, EventDirection.OUT)
-		var i = 0
 		// Parameter setting
-		for (exp : action.arguments) {
-			val parameterDeclaration = lowlevelEvent.parameters.get(i++) // Getting the i-th parameter
-			val parameterValue = exp.transformExpression.getOnlyElement
+		val parameters = lowlevelEvent.parameters
+		val values = action.arguments.map[it.transformExpression].flatten.toList
+		checkState(parameters.size == values.size) // Record literals can be added as arguments
+		for (var i = 0; i < values.size; i++) {
+			val declaration = parameters.get(i)
+			val value = values.get(i)
 			val parameterAssignment = createAssignmentStatement => [
 				it.lhs = createDirectReferenceExpression => [
-					it.declaration = parameterDeclaration
+					it.declaration = declaration
 				]
-				it.rhs = parameterValue
+				it.rhs = value
 			]
 			result += parameterAssignment
 		}
@@ -625,4 +627,5 @@ class ActionTransformer {
 	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action, List<Action> following) {
 		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
 	}
+	
 }

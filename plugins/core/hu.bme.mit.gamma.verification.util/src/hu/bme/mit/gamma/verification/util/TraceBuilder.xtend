@@ -55,14 +55,14 @@ class TraceBuilder {
 	
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		val type = parameter.type.typeDefinition
+		val type = parameter.typeDefinition
 		val intValue = type.convertStringToInt(value)
 		return addInEvent(step, port, event, parameter, intValue)
 	}
 	
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
-		val type = parameter.type.typeDefinition
+		val type = parameter.typeDefinition
 		val intValue = type.convertStringToInt(value)
 		addInEvent(step, port, event, parameter, fieldHierarchy, intValue)
 	}
@@ -89,9 +89,7 @@ class TraceBuilder {
 			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
 		val eventRaise = addInEvent(step, port, event)
 		val arguments = eventRaise.arguments
-		val recordLiteral = arguments.getRecordLiteral(parameter)
-		val fieldAssignment = recordLiteral.getFieldAssignment(fieldHierarchy)
-		fieldAssignment.fieldAssignment = value
+		arguments.setRecordArgument(parameter, fieldHierarchy, value)
 	}
 	
 	// Time elapse
@@ -140,38 +138,51 @@ class TraceBuilder {
 	
 	// Out event
 	
-	def addOutEvent(Step step, Port port, Event event) {
-		addOutEventWithParameter(step, port, event, null, null)
-	}
-	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		val type = parameter.type.typeDefinition
+		val type = parameter.typeDefinition
 		val intValue = type.convertStringToInt(value)
 		addOutEventWithParameter(step, port, event, parameter, intValue)
 	}
 	
-	def addOutEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+	def addOutEvent(Step step, Port port, Event event) {
+		val eventRaise = createRaiseEventAct(port, event)
 		val outEventRaises = step.asserts.filter(RaiseEventAct)
 		val originalRaise = outEventRaises.findFirst[it.isOverWritten(eventRaise)]
 		if (originalRaise === null) {
 			// This is the first raise
 			step.asserts += eventRaise
+			return eventRaise
 		}
-		else if (parameter !== null) {
-			// Already a raise has been done, setting this parameter too
-			val index = parameter.index
-			originalRaise.arguments.set(index, parameter.createParameter(value))
-		}
+		return originalRaise
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = addOutEvent(step, port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, parameter.createParameter(value))
+	}
+	
+	def addOutEventWithStringParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		addOutEventWithParameter(step, port, event, parameter, fieldHierarchy, intValue)
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
+		val eventRaise = addOutEvent(step, port, event)
+		val arguments = eventRaise.arguments
+		arguments.setRecordArgument(parameter, fieldHierarchy, value)
 	}
 	
 	// Instance variables
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
-		val type = variable.type.typeDefinition
+		val type = variable.typeDefinition
 		val expression = type.createLiteral(value)
 		step.addInstanceVariableState(instance, variable, expression)
 	}
@@ -192,7 +203,7 @@ class TraceBuilder {
 		fieldAssignment.fieldAssignment = value
 	}
 	
-	def getRecordLiteral(Step step, SynchronousComponentInstance instance,
+	private def getRecordLiteral(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
 		val variableState = variableStates.filter[
@@ -250,7 +261,7 @@ class TraceBuilder {
 	// String and int parsing
 	
 	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		val type = variable.type.typeDefinition
+		val type = variable.typeDefinition
 		return type.createLiteral(value)
 	}
 	
@@ -258,7 +269,7 @@ class TraceBuilder {
 		if (parameter === null) {
 			return null
 		}
-		val paramType = parameter.type.typeDefinition
+		val paramType = parameter.typeDefinition
 		return paramType.createLiteral(value)
 	}
 	
@@ -341,6 +352,13 @@ class TraceBuilder {
 		// Type must be primitive
 		val expression = type.createLiteral(value)
 		fieldAssignment.value = expression
+	}
+	
+	private def setRecordArgument(List<Expression> arguments,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
+		val recordLiteral = arguments.getRecordLiteral(parameter)
+		val fieldAssignment = recordLiteral.getFieldAssignment(fieldHierarchy)
+		fieldAssignment.fieldAssignment = value
 	}
 	
 }
