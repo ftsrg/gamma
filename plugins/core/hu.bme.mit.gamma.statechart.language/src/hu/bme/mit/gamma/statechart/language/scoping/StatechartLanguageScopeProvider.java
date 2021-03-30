@@ -71,6 +71,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 /**
  * This class contains custom scoping description.
@@ -81,6 +82,10 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
  */
 public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageScopeProvider {
 
+	public StatechartLanguageScopeProvider() {
+		super.util = StatechartUtil.INSTANCE;
+	}
+	
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 
@@ -272,7 +277,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
 				if (gammaPackage != null) {
-					List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+					Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
 					return Scopes.scopeFor(typeDeclarations);
 				}
 			}
@@ -300,7 +305,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+				Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
 				return Scopes.scopeFor(typeDeclarations);
 			}
 		} catch (NullPointerException e) {
@@ -311,15 +316,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			e.printStackTrace();
 		} 
 		return super.getScope(context, reference);
-	}
-	
-	protected List<TypeDeclaration> collectTypeDeclarations(Package _package) {
-		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
-		for (Package _import :_package.getImports()) {
-			types.addAll(_import.getTypeDeclarations());
-		}
-		types.addAll(_package.getTypeDeclarations());
-		return types;
 	}
 	
 	protected Collection<StateNode> stateNodesForTransition(Transition transition) {

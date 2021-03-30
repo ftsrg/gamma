@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration
 import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
+import hu.bme.mit.gamma.trace.util.TraceUtil
 import java.util.Collection
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
@@ -42,6 +43,10 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
  * on how and when to use it.
  */
 class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
+
+	new() {
+		super.util = TraceUtil.INSTANCE;
+	}
 
 	override getScope(EObject context, EReference reference) {
 		if (context instanceof ExecutionTrace && reference == TraceModelPackage.Literals.EXECUTION_TRACE__COMPONENT) {

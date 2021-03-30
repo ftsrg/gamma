@@ -10,6 +10,18 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language.scoping;
 
+import java.util.Collection;
+
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.Scopes;
+
+import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
@@ -20,6 +32,22 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil;
  */
 public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageScopeProvider {
 
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected ExpressionUtil util = ExpressionUtil.INSTANCE; // Redefinable
+	
+	@Override
+	public IScope getScope(final EObject context, final EReference reference) {
+		if (reference == ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__TYPE_DECLARATION) {
+			Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(context);
+			return Scopes.scopeFor(typeDeclarations);
+		}
+		if (reference == ExpressionModelPackage.Literals.FIELD_REFERENCE_EXPRESSION__FIELD_DECLARATION) {
+			RecordLiteralExpression literal = ecoreUtil.getSelfOrContainerOfType(context, RecordLiteralExpression.class);
+			TypeDeclaration typeDeclaration = literal.getTypeDeclaration();
+			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDeclaration.getType();
+			return Scopes.scopeFor(recordType.getFieldDeclarations());
+		}
+		return super.getScope(context, reference);
+	}
 	
 }

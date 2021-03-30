@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -36,6 +37,7 @@ import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -86,6 +88,47 @@ public class ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
 	
+	public static Expression getDefaultExpression(Type type) {
+		return expressionUtil.getInitialValueOfType(type);
+	}
+	
+	public static int getIndex(ParameterDeclaration parameter) {
+		ParametricElement container = (ParametricElement) parameter.eContainer();
+		return container.getParameterDeclarations().indexOf(parameter);
+	}
+	
+	public static boolean isEvaluable(Expression expression) {
+		return ecoreUtil.getSelfAndAllContentsOfType(
+				expression, ReferenceExpression.class).isEmpty();
+	}
+	
+	// Record and array handling
+	
+	public static Collection<TypeDeclaration> getSelfAndAllTypeDeclarations(RecordTypeDefinition record) {
+		Collection<TypeDeclaration> typeDeclarations = getSelfAndAllTypeDeclarations(record);
+		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(record, TypeDeclaration.class);
+		typeDeclarations.add(typeDeclaration);
+		return typeDeclarations;
+	}
+	
+	public static Collection<TypeDeclaration> getAllTypeDeclarations(RecordTypeDefinition record) {
+		List<TypeDeclaration> typeDeclarations = new ArrayList<TypeDeclaration>();
+		for (FieldDeclaration field : record.getFieldDeclarations()) {
+			Type type = field.getType();
+			if (type instanceof TypeReference) {
+				TypeReference typeReference = (TypeReference) type;
+				TypeDeclaration typeDeclaration = typeReference.getReference();
+				typeDeclarations.add(typeDeclaration);
+				Type typeDefinition = typeDeclaration.getType();
+				if (typeDefinition instanceof RecordTypeDefinition) {
+					RecordTypeDefinition subrecord = (RecordTypeDefinition) typeDefinition;
+					typeDeclarations.addAll(getAllTypeDeclarations(subrecord));
+				}
+			}
+		}
+		return typeDeclarations;
+	}
+	
 	public static List<FieldHierarchy> getAllFieldHierarchies(RecordTypeDefinition record) {
 		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
 		for (FieldDeclaration field : record.getFieldDeclarations()) {
@@ -105,22 +148,6 @@ public class ExpressionModelDerivedFeatures {
 		}
 		return fieldHierarchies;
 	}
-	
-	public static Expression getDefaultExpression(Type type) {
-		return expressionUtil.getInitialValueOfType(type);
-	}
-	
-	public static int getIndex(ParameterDeclaration parameter) {
-		ParametricElement container = (ParametricElement) parameter.eContainer();
-		return container.getParameterDeclarations().indexOf(parameter);
-	}
-	
-	public static boolean isEvaluable(Expression expression) {
-		return ecoreUtil.getSelfAndAllContentsOfType(
-				expression, ReferenceExpression.class).isEmpty();
-	}
-	
-	// Record and array handling
 	
 	public static List<SimpleEntry<ValueDeclaration, FieldHierarchy>> exploreComplexType(
 			ValueDeclaration original) {
