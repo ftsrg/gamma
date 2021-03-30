@@ -198,7 +198,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Block is empty
-		if(block.getActions().isEmpty()) {
+		if (block.getActions().isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"The block is empty!",
 					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));

@@ -45,6 +45,7 @@ import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
@@ -690,9 +691,9 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();		
 		// BinaryExpression
 		if (expression instanceof BinaryExpression) {
-			BinaryExpression BinaryExpression = (BinaryExpression) expression;
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
 			// the left and the right hand sides same
-			if (EcoreUtil.equals(BinaryExpression.getLeftOperand(), BinaryExpression.getRightOperand())) {
+			if (ecoreUtil.helperEquals(binaryExpression.getLeftOperand(), binaryExpression.getRightOperand())) {
 				// EquivalenceExpression
 				if (expression instanceof EquivalenceExpression) {
 					EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
@@ -789,6 +790,21 @@ public class ExpressionModelValidator {
 					}
 				}
 			}
+		}
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkRationalLiteralExpression(RationalLiteralExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		try {
+			// check denominator
+			if (expression.getDenominator().intValue() == 0) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The denominator cannot be zero.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RATIONAL_LITERAL_EXPRESSION__DENOMINATOR, null)));
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
 		}
 		return validationResultMessages;
 	}
