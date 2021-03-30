@@ -34,6 +34,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	protected void configureFormatting(FormattingConfig c) {
 		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
+		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
         c.setAutoLinewrap(100);
@@ -45,6 +46,7 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getFunctionDeclarationRule());
         c.setLinewrap(1).after(f.getTypeDeclarationRule());
         c.setLinewrap(1).after(f.getSchedulingOrderRule());
+
         // Line breaks after/before these rules
         c.setLinewrap(1).after(f.getStatechartContractAnnotationRule());
         c.setLinewrap(1).after(f.getStateAnnotationRule());

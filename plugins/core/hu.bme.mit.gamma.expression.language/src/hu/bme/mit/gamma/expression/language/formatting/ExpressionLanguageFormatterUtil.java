@@ -15,8 +15,10 @@ import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
 import org.eclipse.xtext.util.Pair;
 
-public class ExpressionLanguageFormatterUtil {
+import hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess;
 
+public class ExpressionLanguageFormatterUtil {
+	
 	public void format(FormattingConfig c, AbstractGrammarElementFinder f) {
 		setBrackets(c, f);
 		setParantheses(c, f);
@@ -71,6 +73,14 @@ public class ExpressionLanguageFormatterUtil {
 			c.setLinewrap(1).before(pair.getSecond());
 			c.setLinewrap(1).after(pair.getSecond());
 		}
+	}
+	
+	public void formatExpressions(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+		setRecordLiterals(c, f);
+	}
+	
+	public void setRecordLiterals(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+		c.setNoSpace().around(f.getRecordLiteralExpressionAccess().getTypeDeclarationAssignment_1());
 	}
 
 }

@@ -13,13 +13,16 @@ package hu.bme.mit.gamma.expression.language.formatting;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 
+import hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess;
+
 public class ExpressionLanguageFormatter extends AbstractDeclarativeFormatter {
 	
 	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();
 	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess f = (hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess) getGrammarAccess();
+		hu.bme.mit.gamma.expression.language.services.ExpressionLanguageGrammarAccess f = (ExpressionLanguageGrammarAccess) getGrammarAccess();
+		expressionLanguageFormatterUtil.format(c, f);
 		expressionLanguageFormatterUtil.format(c, f);
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule());

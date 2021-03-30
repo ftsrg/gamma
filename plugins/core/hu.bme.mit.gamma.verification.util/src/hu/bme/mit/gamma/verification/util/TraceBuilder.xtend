@@ -235,16 +235,6 @@ class TraceBuilder {
 	}
 	
 	// Raise event act
-		
-	private def createRaiseEventAct(Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = port.createRaiseEventAct(event)
-		if (parameter !== null) {
-			val index = parameter.index
-			eventRaise.arguments.set(index, parameter.createParameter(value))
-		}
-		return eventRaise
-	}
 	
 	private def createRaiseEventAct(Port port, Event event) {
 		val eventRaise = createRaiseEventAct => [
