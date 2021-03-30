@@ -2,10 +2,7 @@ package hu.bme.mit.gamma.action.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -27,6 +24,7 @@ import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
@@ -77,19 +75,13 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ReferenceExpression reference = (ReferenceExpression) assignment.getLhs();
-		Set<Declaration> declarations = new HashSet<>();
-		declarations.addAll(expressionUtil.getReferredVariables(reference));
-		declarations.addAll(expressionUtil.getReferredParameters(reference));
-		declarations.addAll(expressionUtil.getReferredConstants(reference));
-		// Constant
-
-		Iterator<Declaration> iterator = declarations.iterator();	
-		Declaration declaration = iterator.next();
 		
-		if (!(declaration instanceof VariableDeclaration)) {
-			//validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,"Values can be assigned only to variables.",
-			//		new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS,null)));
+		ReferenceExpression lhs = assignment.getLhs();
+		Declaration declaration = expressionUtil.getDeclaration(lhs);
+		if (declaration instanceof ConstantDeclaration) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+				"Constants cannot be assigned new values.",
+				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS, null)));
 		}
 		
 		// Other assignment type checking

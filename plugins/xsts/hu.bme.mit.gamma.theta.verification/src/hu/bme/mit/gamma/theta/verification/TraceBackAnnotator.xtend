@@ -171,7 +171,16 @@ class TraceBackAnnotator {
 						}
 						else if (thetaQueryGenerator.isSourceVariable(id)) {
 							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
-							step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+							val instance = instanceVariable.value
+							val variable = instanceVariable.key
+							if (thetaQueryGenerator.isSourceRecordVariable(id)) {
+								val field = thetaQueryGenerator.getSourceFieldHierarchy(id)
+								step.addInstanceVariableState(instance, variable, field, value)
+							}
+							else {
+								// Primitive variable
+								step.addInstanceVariableState(instance, variable, value)
+							}
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
 							val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)

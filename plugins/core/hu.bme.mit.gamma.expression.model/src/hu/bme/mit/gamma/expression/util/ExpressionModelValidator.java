@@ -250,7 +250,8 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
+	public Collection<ValidationResultMessage> checkRecordAccessExpression(
+			RecordAccessExpression recordAccessExpression) {
 		Declaration accessedDeclaration = 
 				expressionUtil.getAccessedDeclaration(recordAccessExpression);
 		RecordTypeDefinition recordType = (RecordTypeDefinition) 
@@ -262,15 +263,13 @@ public class ExpressionModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
-		// check if the referred field exists
+		// Check if the referred field exists
 		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
 		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The record type does not contain any fields with the given name.", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
-			return validationResultMessages;
-			
 		}
 		return validationResultMessages;
 	}

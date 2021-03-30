@@ -315,6 +315,7 @@ class EnvironmentCreator {
 										val messageQueueTrace = queue.getTrace(match.instance) // Getting the owner
 										loopEdge.extendEnvironmentEdge(messageQueueTrace, match.event.getConstRepresentation(match.port), expression)
 									}
+									expression.removeGammaElementFromTrace
 								}
 							}
 						}

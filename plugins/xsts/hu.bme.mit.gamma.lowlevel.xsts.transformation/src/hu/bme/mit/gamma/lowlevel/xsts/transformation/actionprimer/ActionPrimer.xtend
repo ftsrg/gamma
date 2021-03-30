@@ -27,7 +27,9 @@ import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
+import hu.bme.mit.gamma.xsts.model.XTransition
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.Collection
 import java.util.List
 import java.util.Map
 import org.eclipse.emf.ecore.EObject
@@ -49,6 +51,21 @@ abstract class ActionPrimer {
 	
 	new(boolean inlinePrimedVariables) {
 		this.inlinePrimedVariables = inlinePrimedVariables
+	}
+	
+	def transform(Collection<XTransition> transitions) {
+		val primedTransitions = newArrayList
+		for (transition : transitions) {
+			primedTransitions += transition.transform
+		}
+		return primedTransitions
+	}
+	
+	def transform(XTransition transition) {
+		val action = transition.action
+		return createXTransition => [
+			it.action = action.transform
+		]
 	}
 	
 	def abstract Action transform(Action action);

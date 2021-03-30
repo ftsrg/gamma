@@ -112,7 +112,7 @@ class CoveredPropertyReducer {
 		for (stateConfiguration : step.instanceStateConfigurations) {
 			val stateInstance = stateConfiguration.instance
 			val stateVariable = stateConfiguration.state
-			if (instance.contains(stateInstance) && state.helperEquals(stateVariable)) {
+			if (instanceHandler.contains(instance, stateInstance) && state.helperEquals(stateVariable)) {
 				return createTrueExpression
 			}
 		}
@@ -126,7 +126,7 @@ class CoveredPropertyReducer {
 		for (variableState : step.instanceVariableStates) {
 			val stateInstance = variableState.instance
 			val stateVariable = variableState.declaration
-			if (instance.contains(stateInstance) && variable.helperEquals(stateVariable)) {
+			if (instanceHandler.contains(instance, stateInstance) && variable.helperEquals(stateVariable)) {
 				val value = variableState.value
 				return value.clone
 			}

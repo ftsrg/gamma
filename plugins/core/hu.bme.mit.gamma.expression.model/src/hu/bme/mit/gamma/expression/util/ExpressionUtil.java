@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
@@ -121,6 +122,14 @@ public class ExpressionUtil {
 	public Declaration getAccessedDeclaration(AccessExpression expression) {
 		Expression operand = expression.getOperand();
 		return getDeclaration(operand);
+	}
+	
+	/**
+	 * Worth overriding (extending) in subclasses.
+	 */
+	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
+		return _package.getTypeDeclarations();
 	}
 	
 	//
@@ -724,7 +733,12 @@ public class ExpressionUtil {
 	}
 	
 	protected Expression _getInitialValueOfType(final RecordTypeDefinition type) {
+		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
+		if (typeDeclaration == null) {
+			throw new IllegalArgumentException("Record type is not contained by declaration: " + type);
+		}
 		RecordLiteralExpression recordLiteralExpression = factory.createRecordLiteralExpression();
+		recordLiteralExpression.setTypeDeclaration(typeDeclaration);
 		for (FieldDeclaration field : type.getFieldDeclarations()) {
 			FieldAssignment assignment = factory.createFieldAssignment();
 			FieldReferenceExpression fieldReference = factory.createFieldReferenceExpression();
@@ -751,6 +765,8 @@ public class ExpressionUtil {
 			return _getInitialValueOfType((TypeReference) type);
 		} else if (type instanceof ArrayTypeDefinition) {
 			return _getInitialValueOfType((ArrayTypeDefinition) type);
+		} else if (type instanceof RecordTypeDefinition) {
+			return _getInitialValueOfType((RecordTypeDefinition) type);
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}

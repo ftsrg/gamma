@@ -38,6 +38,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
+import hu.bme.mit.gamma.xsts.model.XTransition;
 
 public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 
@@ -54,15 +55,15 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getInitializingAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		final Action variableInitializingAction = xSts.getVariableInitializingAction();
+		final Action variableInitializingAction = xSts.getVariableInitializingTransition().getAction();
 		if (!(variableInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(variableInitializingAction));
 		}
-		final Action configurationInitializingAction = xSts.getConfigurationInitializingAction();
+		final Action configurationInitializingAction = xSts.getConfigurationInitializingTransition().getAction();
 		if (!(configurationInitializingAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(configurationInitializingAction));
 		}
-		final Action entryEventAction = xSts.getEntryEventAction();
+		final Action entryEventAction = xSts.getEntryEventTransition().getAction();
 		if (!(entryEventAction instanceof EmptyAction)) {
 			sequentialAction.getActions().add(ecoreUtil.clone(entryEventAction));
 		}
@@ -71,9 +72,21 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	
 	public static SequentialAction getEnvironmentalAction(XSTS xSts) {
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventAction()));
-		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventAction()));
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getInEventTransition().getAction()));
+		sequentialAction.getActions().add(ecoreUtil.clone(xSts.getOutEventTransition().getAction()));
 		return sequentialAction;
+	}
+	
+	public static XTransition getMergedTransition(XSTS xSts) {
+		List<XTransition> transitions = xSts.getTransitions();
+		if (transitions.size() != 1) {
+			throw new IllegalArgumentException("Not one transition: " + transitions);
+		}
+		return transitions.get(0);
+	}
+	
+	public static Action getMergedAction(XSTS xSts) {
+		return getMergedTransition(xSts).getAction();
 	}
 	
 	public static Declaration getOriginalVariable(Declaration variable) {
