@@ -134,6 +134,24 @@ public class ExpressionUtil {
 	
 	//
 	
+	public FieldAssignment getFieldAssignment(
+			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
+		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
+		FieldAssignment fieldAssignment = null;
+		for (FieldDeclaration field : fieldHierarchy.getFields()) {
+			fieldAssignment = fieldAssignments.stream().filter(it -> 
+				it.getReference().getFieldDeclaration() == field).findFirst().get();
+			Expression fieldValue = fieldAssignment.getValue();
+			if (fieldValue instanceof RecordLiteralExpression) {
+				RecordLiteralExpression subrecord = (RecordLiteralExpression) fieldValue;
+				fieldAssignments = subrecord.getFieldAssignments();
+			}
+		}
+		return fieldAssignment;
+	}
+	
+	//
+	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
 		Set<Boolean> booleanValues = new HashSet<Boolean>();
