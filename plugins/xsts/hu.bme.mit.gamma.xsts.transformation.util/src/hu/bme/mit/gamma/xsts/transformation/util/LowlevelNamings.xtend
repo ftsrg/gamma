@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
@@ -12,6 +13,7 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import java.util.List
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class LowlevelNamings {
@@ -44,8 +46,11 @@ class LowlevelNamings {
 	protected static def List<String> getNamePostfixes(ValueDeclaration variable) {
 		val type = variable.typeDefinition
 		val hierarchyList = type.exploreComplexType2
-		return hierarchyList.map[it.fields.map["_" + it.name].join]
+		return hierarchyList.names
 	}
 	
+	protected static def List<String> getNames(List<FieldHierarchy> fields) {
+		return fields.map[it.fields.map["_" + it.name].join]
+	}
 	
 }

@@ -751,6 +751,8 @@ public class ExpressionUtil {
 			return _getInitialValueOfType((TypeReference) type);
 		} else if (type instanceof ArrayTypeDefinition) {
 			return _getInitialValueOfType((ArrayTypeDefinition) type);
+		} else if (type instanceof RecordTypeDefinition) {
+			return _getInitialValueOfType((RecordTypeDefinition) type);
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}

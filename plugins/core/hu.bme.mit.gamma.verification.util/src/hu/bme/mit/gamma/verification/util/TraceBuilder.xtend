@@ -14,11 +14,15 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FieldAssignment
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -26,6 +30,7 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
@@ -44,6 +49,7 @@ class TraceBuilder {
 	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
 	// In event
@@ -150,11 +156,8 @@ class TraceBuilder {
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
 		val type = variable.type.typeDefinition
-		step.asserts += createInstanceVariableState => [
-			it.instance = instance
-			it.declaration = variable
-			it.value = type.createLiteral(value)
-		]
+		val expression = type.createLiteral(value)
+		step.addInstanceVariableState(instance, variable, expression)
 	}
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -164,6 +167,49 @@ class TraceBuilder {
 			it.declaration = variable
 			it.value = value
 		]
+	}
+	
+	// Record instance variables
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, String value) {
+		val literal = step.getRecordLiteral(instance, variable)
+		var fieldAssignments = literal.fieldAssignments
+		var FieldAssignment fieldAssignment
+		for (field : fieldHierarchy.fields) {
+			fieldAssignment = fieldAssignments.findFirst[it.reference.declaration === field]
+			val fieldValue = fieldAssignment.value
+			if (fieldValue instanceof RecordLiteralExpression) {
+				fieldAssignments = fieldValue.fieldAssignments
+			}
+		}
+		val declaration = fieldAssignment.reference.declaration
+		val type = declaration.typeDefinition
+		// Type must be primitive
+		val expression = type.createLiteral(value)
+		fieldAssignment.value = expression
+	}
+	
+	def getRecordLiteral(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable) {
+		val variableStates = step.asserts.filter(InstanceVariableState)
+		val variableState = variableStates.filter[it.instance === instance &&
+			it.declaration === variable
+		].head
+		var RecordLiteralExpression value
+		if (variableState === null) {
+			// Creating the literal, similar to "getInstance" in singletons
+			val recordLiteral = variable.initialValue as RecordLiteralExpression
+			step.asserts += createInstanceVariableState => [
+				it.instance = instance
+				it.declaration = variable
+				it.value = recordLiteral
+			]
+			value = recordLiteral
+		}
+		else {
+			value = variableState.value as RecordLiteralExpression
+		}
+		return value 
 	}
 	
 	// Instance states
@@ -237,7 +283,9 @@ class TraceBuilder {
 	 */
 	private def Expression createLiteral(Type paramType, Integer value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(value)]
+			IntegerTypeDefinition: createIntegerLiteralExpression => [
+				it.value = BigInteger.valueOf(value)
+			]
 			BooleanTypeDefinition: {
 				if (value == 0) {
 					createFalseExpression
@@ -247,7 +295,9 @@ class TraceBuilder {
 				}
 			}
 			EnumerationTypeDefinition:
-				return createEnumerationLiteralExpression => [ it.reference = paramType.literals.get(value) ]
+				return createEnumerationLiteralExpression => [
+					it.reference = paramType.literals.get(value)
+				]
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}

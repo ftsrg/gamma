@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -23,6 +24,7 @@ import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
@@ -117,6 +119,17 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
+	///
+	def isSourceRecordVariable(String targetVariableName) {
+		try {
+			val variable = targetVariableName.getSourceVariable
+			val type = variable.key.typeDefinition
+			return type instanceof RecordTypeDefinition
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
 	def isSourceOutEvent(String targetOutEventName) {
 		try {
 			targetOutEventName.getSourceOutEvent
@@ -167,10 +180,29 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
-			// TODO Maybe an allFields method could be used here?
 			val names = getTargetVariableName(match.variable, match.instance)
 			if (names.contains(targetVariableName)) {
 				return new Pair(match.variable, match.instance)
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	///
+	def getSourceFieldHierarchy(String targetVariableName) {
+		for (match : instanceVariables) {
+			val names = getTargetVariableName(match.variable, match.instance)
+			if (names.contains(targetVariableName)) {
+				val variable = match.variable
+				val type = variable.typeDefinition
+				val fields = type.exploreComplexType2
+				for (var i = 0; i < names.size; i++) {
+					val name = names.get(i)
+					if (name == targetVariableName) {
+						return fields.get(i) // If ith name is equal, it is the ith field
+						// See LowlevelNamings.getNames
+					}
+				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
