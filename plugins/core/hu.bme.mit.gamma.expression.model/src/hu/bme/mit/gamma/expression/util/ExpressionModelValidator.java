@@ -29,7 +29,9 @@ import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
@@ -47,17 +49,16 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.model.impl.RecordTypeDefinitionImpl;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
 
@@ -804,6 +805,41 @@ public class ExpressionModelValidator {
 			}
 		} catch (Exception exception) {
 			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		// find RecordTypeDefinition
+		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
+		Type type = typeDeclaration.getType();
+		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
+		
+		// check all FieldDeclaration and all FieldAssignment
+		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
+			int counter = 0;
+			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
+				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
+				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
+				// same field names
+				if (fieldDeclaration.getName() == rTypeField.getName()) {
+					counter++;
+				}
+			}
+			// this field has no value
+			if (counter == 0) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"All fields in the definition must have a value!",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS, null)));
+			}
+			// this field has more than once value
+			if (counter >= 2) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"You cannot add value to a field more than once!",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS, null)));
+			}
 		}
 		return validationResultMessages;
 	}
