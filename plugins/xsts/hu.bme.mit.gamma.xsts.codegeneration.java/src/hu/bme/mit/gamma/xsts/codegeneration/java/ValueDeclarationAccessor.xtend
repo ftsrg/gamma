@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.List
 import java.util.Queue
@@ -16,6 +17,8 @@ class ValueDeclarationAccessor {
 	public static final ValueDeclarationAccessor INSTANCE = new ValueDeclarationAccessor
 	protected new() {}
 	//
+	
+	// Read
 	
 	def access(String objectId, VariableDeclaration declaration) {
 		return objectId.access(declaration, declaration.customizeNames)
@@ -41,17 +44,44 @@ class ValueDeclarationAccessor {
 			return '''«objectId».get«fieldNames.remove.toFirstUpper»()'''
 		}
 		if (type instanceof RecordTypeDefinition) {
-			return '''«objectId.serializeAccess(type, fieldNames)»'''
+			return '''«objectId.access(type, fieldNames)»'''
 		}
 	}
 	
-	protected def String serializeAccess(String objectId,
+	protected def String access(String objectId,
 			RecordTypeDefinition type, Queue<String> fieldNames) '''
 		new «type.typeDeclaration.name»(
 			«FOR field : type.fieldDeclarations SEPARATOR ", "»
 				«objectId.access(field, fieldNames)»
 			«ENDFOR»
 		)
+	'''
+	
+	// Write
+	
+	def writeIn(String objectId, Port port, ParameterDeclaration declaration, String valueId) {
+		val type = declaration.typeDefinition
+		val fieldNames = declaration.customizeInNames(port)
+		if (type.isNativelySupported) {
+			return '''«objectId».set«fieldNames.get(0).toFirstUpper»(«valueId»);'''
+		}
+		if (type instanceof RecordTypeDefinition) {
+			val fields = type.exploreComplexType2
+			return '''«objectId.write(fieldNames, valueId, fields)»'''
+		}
+	}
+	
+	protected def String write(String objectId, List<String> fieldNames,
+			String valueId, List<FieldHierarchy> fields) '''
+		«FOR i : 0 ..< fieldNames.size»
+			«objectId.write(fieldNames.get(i), valueId, fields.get(i))»
+		«ENDFOR»
+	'''
+	
+	protected def String write(String objectId, String fieldName,
+			String valueId, FieldHierarchy field) '''
+		«objectId».set«fieldName.toFirstUpper»(«valueId»«field.fields
+			.map['''.get«it.name.toFirstUpper»()'''].join»);
 	'''
 	
 }

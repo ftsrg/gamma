@@ -134,14 +134,14 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
 		val result = <Expression>newArrayList
 		
-		var originalDeclaration = expression.accessedDeclaration
-		if (originalDeclaration instanceof ValueDeclaration) {
-			val originalLhsVariables = exploreComplexType(originalDeclaration)
+		val operandDeclaration = expression.accessedDeclaration
+		if (operandDeclaration instanceof ValueDeclaration) {
+			val originalLhsVariables = exploreComplexType(operandDeclaration)
 			val recordAccessList = expression.collectRecordAccessList
 	
 			for (elem : originalLhsVariables) {
 				val fieldHierarchy = elem.value
-				if (isSameAccessTree(fieldHierarchy, recordAccessList)) {	//filter according to the access list
+				if (isSameAccessTree(fieldHierarchy, recordAccessList)) { // Filter according to the access list
 					// Create references
 					result += createDirectReferenceExpression => [
 						it.declaration = trace.get(elem)
@@ -150,7 +150,7 @@ class ExpressionTransformer {
 			}
 		}
 		// Function return variables do not exist on the high-level
-		else if (originalDeclaration instanceof FunctionDeclaration) {
+		else if (operandDeclaration instanceof FunctionDeclaration) {
 			var currentAccess = expression.operand as AccessExpression
 			while (!(currentAccess instanceof FunctionAccessExpression)) {
 				currentAccess = currentAccess.operand as AccessExpression
@@ -176,7 +176,7 @@ class ExpressionTransformer {
 		val result = <Expression>newArrayList
 		
 		// find original declaration and get the keys of the transformation
-		var originalDeclaration = expression.declaration
+		var originalDeclaration = expression.accessedDeclaration
 		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
 			exploreComplexType(originalDeclaration)
 		}
@@ -193,7 +193,8 @@ class ExpressionTransformer {
 			for (op : transformedOperands) {
 				result += createArrayAccessExpression => [
 					it.operand = op
-					it.arguments += expression.arguments.onlyElement.transformExpression.onlyElement
+					it.arguments += expression.arguments.onlyElement
+							.transformExpression.onlyElement
 				]
 			}	
 		} 

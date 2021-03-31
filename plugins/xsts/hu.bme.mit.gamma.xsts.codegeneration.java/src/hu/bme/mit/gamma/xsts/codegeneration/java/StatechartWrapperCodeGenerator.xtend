@@ -170,7 +170,7 @@ class StatechartWrapperCodeGenerator {
 								case "«port.name».«event.name»": 
 									«CLASS_NAME.toFirstLower».set«event.getInputName(port).toFirstUpper»(true);
 									«FOR parameter : event.parameterDeclarations»
-										«CLASS_NAME.toFirstLower».set«parameter.getInName(port).toFirstUpper»((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»]);
+										«CLASS_NAME.toFirstLower.writeIn(port, parameter, '''((«parameter.type.serialize») event.getValue()[«event.parameterDeclarations.indexOf(parameter)»])''')»
 									«ENDFOR»
 								break;
 							«ENDFOR»

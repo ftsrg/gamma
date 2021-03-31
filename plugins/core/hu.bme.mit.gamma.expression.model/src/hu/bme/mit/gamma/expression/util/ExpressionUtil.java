@@ -94,18 +94,16 @@ public class ExpressionUtil {
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
-			Declaration declaration = reference.getDeclaration();
-			return declaration;
-		}
-		if (expression instanceof FieldReferenceExpression) {
-			FieldReferenceExpression reference = (FieldReferenceExpression) expression;
-			FieldDeclaration declaration = reference.getFieldDeclaration();
-			return declaration;
+			return reference.getDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression access = (RecordAccessExpression) expression;
 			FieldReferenceExpression reference = access.getFieldReference();
 			return getDeclaration(reference);
+		}
+		if (expression instanceof FieldReferenceExpression) {
+			FieldReferenceExpression reference = (FieldReferenceExpression) expression;
+			return reference.getFieldDeclaration();
 		}
 		if (expression instanceof ArrayAccessExpression) {
 			// ?
@@ -119,9 +117,16 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	public Declaration getAccessedDeclaration(AccessExpression expression) {
-		Expression operand = expression.getOperand();
-		return getDeclaration(operand);
+	public Declaration getAccessedDeclaration(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			return reference.getDeclaration();
+		}
+		if (expression instanceof AccessExpression) {
+			AccessExpression access = (AccessExpression) expression;
+			return getAccessedDeclaration(access.getOperand());
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
 	/**
