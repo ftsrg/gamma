@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.codegenerator.java.util
 import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -36,13 +37,15 @@ import hu.bme.mit.gamma.expression.model.MultiplyExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
 import hu.bme.mit.gamma.expression.model.OrExpression
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
-import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionSerializer {
 	// Singleton
@@ -76,6 +79,10 @@ class ExpressionSerializer {
 		return result
 	}
 	
+	def dispatch String serialize(RecordLiteralExpression expression) {
+		return '''new «expression.typeDeclaration.name»(«FOR value : expression.fieldValues SEPARATOR ", "»«value.serialize»«ENDFOR»)'''
+	}
+	
 	def dispatch String serialize(IntegerLiteralExpression expression) {
 		return expression.value.toString
 	}
@@ -96,8 +103,7 @@ class ExpressionSerializer {
 		return "false"
 	}
 	
-	def dispatch String serialize(DirectReferenceExpression expression
-	) {		
+	def dispatch String serialize(DirectReferenceExpression expression) {		
 		if (expression.declaration instanceof ConstantDeclaration) {
 			val constant = expression.declaration as ConstantDeclaration
 			return constant.expression.serialize	

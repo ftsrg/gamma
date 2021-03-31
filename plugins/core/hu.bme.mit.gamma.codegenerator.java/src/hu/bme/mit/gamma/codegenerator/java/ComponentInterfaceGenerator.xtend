@@ -40,7 +40,7 @@ class ComponentInterfaceGenerator {
 	/**
 	 * Generates the Java interface code (implemented by the component) of the given component.
 	 */
-	protected def generateComponentInterface(Component component) {
+	def generateComponentInterface(Component component) {
 		var ports = new HashSet<Port>
 		if (component instanceof CompositeComponent) {
 			val composite = component as CompositeComponent

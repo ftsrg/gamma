@@ -31,6 +31,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
@@ -113,6 +114,19 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	// Record and array handling
+	
+	public static List<Expression> getFieldValues(RecordLiteralExpression record) {
+		TypeDeclaration typeDeclaration = record.getTypeDeclaration();
+		RecordTypeDefinition recordType = (RecordTypeDefinition) getTypeDefinition(typeDeclaration.getType());
+		List<Expression> values = new ArrayList<Expression>();
+		for (FieldDeclaration fieldDeclaration : recordType.getFieldDeclarations()) {
+			Expression value = record.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == fieldDeclaration).findFirst().get()
+				.getValue();
+			values.add(value);
+		}
+		return values;
+	}
 	
 	public static int countAllFields(RecordTypeDefinition record) {
 		return exploreComplexType2(record).size();
