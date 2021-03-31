@@ -155,8 +155,8 @@ class ExpressionTransformer {
 			while (!(currentAccess instanceof FunctionAccessExpression)) {
 				currentAccess = currentAccess.operand as AccessExpression
 			}
-			var functionAccess = currentAccess as FunctionAccessExpression
-			var functionReturnVariables = if (trace.isMapped(functionAccess)) {
+			val functionAccess = currentAccess as FunctionAccessExpression
+			val functionReturnVariables = if (trace.isMapped(functionAccess)) {
 				trace.get(functionAccess)
 			}
 			else {
@@ -176,20 +176,20 @@ class ExpressionTransformer {
 		val result = <Expression>newArrayList
 		
 		// find original declaration and get the keys of the transformation
-		var originalDeclaration = expression.accessedDeclaration
-		var originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
+		val originalDeclaration = expression.accessedDeclaration
+		val originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
 			exploreComplexType(originalDeclaration)
 		}
 		else {
 			throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration)
 		}
 		// explore the chain of access expressions
-		var arrayAccessList = expression.collectAccessList
-		var recordAccessList = expression.collectRecordAccessList
+		val arrayAccessList = expression.collectAccessList
+		val recordAccessList = expression.collectRecordAccessList
 		
 		// if 'simple' array
 		if (recordAccessList.empty) {
-			var transformedOperands = expression.operand.transformExpression
+			val transformedOperands = expression.operand.transformExpression
 			for (op : transformedOperands) {
 				result += createArrayAccessExpression => [
 					it.operand = op
@@ -327,6 +327,8 @@ class ExpressionTransformer {
 		return result
 	}
 	
+	// Auxiliary
+	
 	protected def Type createTransformedRecordType(List<ArrayTypeDefinition> arrayStack,
 			Type innerType) {
 		if (arrayStack.size > 0) {
@@ -342,111 +344,6 @@ class ExpressionTransformer {
 			return innerType.transformType
 		}
 	}
-	
-//	protected def List<Pair<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original) {
-//		val typeDefinition = original.typeDefinition
-//		original.exploreComplexType(typeDefinition, new FieldHierarchy)
-//	}
-//	
-//	protected def List<Pair<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original, TypeDefinition type) {
-//		original.exploreComplexType(type, new FieldHierarchy)
-//	}
-//	
-//	protected def List<Pair<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original, TypeDefinition type, FieldHierarchy currentField) {
-//		// Returns each possible valid(!) variable_field(_field...) combinations: the resulting decomposed variables
-//		// e.g. rec_r1_rr1, rec_r1_rr2, rec_r2 (so rec_r1 not returned, as it is not the end of the list)
-//		val exploredTypes = type.exploreComplexType2(currentField)
-//		val result = newArrayList
-//		for (exploredType : exploredTypes) {
-//			result += new Pair(original, exploredType)
-//		}
-//		return result
-//	}
-//	
-//	protected def List<FieldHierarchy> exploreComplexType2(
-//			TypeDefinition type, FieldHierarchy currentField) {
-//		val List<FieldHierarchy> result = newArrayList
-//		// Experimental
-//		if (type instanceof RecordTypeDefinition) {
-//			// In case of records go into each field
-//			for (field : type.fieldDeclarations) {
-//				// Get current field by extending the previous (~current) with the one to explore
-//				val newCurrent = new FieldHierarchy
-//				newCurrent.add(currentField)
-//				newCurrent.add(field)
-//				//Explore
-//				result += exploreComplexType2(field.type.typeDefinition, newCurrent)
-//			}
-//		}
-//		else if (type instanceof ArrayTypeDefinition) {
-//			// In the case of arrays, jump to the inner type
-//			result += exploreComplexType2(type.elementType.typeDefinition, currentField)
-//		}
-//		else {	// Simple
-//			// In the case of simple types, create a result element
-//			result += currentField
-//		}
-//		return result
-//	}
-//	
-//	protected def List<Expression> collectAccessList(ReferenceExpression exp) {
-//		// Returns the operands of (chained) access expression(s)
-//		// e.g. a.r1[2].r2 returns [r1, 2, r2]
-//		val result = newArrayList
-//		if (exp instanceof ArrayAccessExpression) {
-//			// if possible, add inner
-//			val inner = exp.operand
-//			if (inner instanceof ReferenceExpression) {
-//				result += collectAccessList(inner)
-//			}
-//			// add own
-//			result += exp.arguments.onlyElement
-//		}
-//		else if (exp instanceof RecordAccessExpression) {
-//			// if possible, add inner
-//			val inner = exp.operand
-//			if (inner instanceof ReferenceExpression) {
-//				result += collectAccessList(inner)
-//			}
-//			// add own
-//			result += exp.fieldReference
-//		}
-//		else if (exp instanceof SelectExpression){
-//			// if possible, jump over (as it returns a value with the same access list)
-//			val inner = exp.operand
-//			if (inner instanceof ReferenceExpression) {
-//				result += collectAccessList(inner)
-//			}
-//		}
-//		else {
-//			// function access and direct reference signal the end of the chain: let return with empty
-//		}
-//		return result
-//	}
-//	
-//	protected def List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
-//		return exp.collectAccessList
-//			.filter(FieldReferenceExpression).toList
-//	}
-//	
-//	protected def boolean isSameAccessTree(FieldHierarchy fieldHierarchy,
-//			List<FieldReferenceExpression> currentAccessList) {
-//		val fieldsList = fieldHierarchy.fields
-//		if (fieldsList.size < currentAccessList.size) {
-//			return false
-//		}
-//		for (var i = 0; i < currentAccessList.size; i++) {
-//			val access = currentAccessList.get(i).fieldDeclaration
-//			val field = fieldsList.get(i)
-//			if (access !== field) {
-//				return false
-//			}
-//		}
-//		return true
-//	}
 	
 	protected def dispatch List<Expression> enumerateExpression(Expression expression) {
 		// DOES NOT TRANSFORM
