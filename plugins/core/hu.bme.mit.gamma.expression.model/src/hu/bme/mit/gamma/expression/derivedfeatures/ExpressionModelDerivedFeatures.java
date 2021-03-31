@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -22,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
@@ -65,11 +65,13 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isPrimitive(Type type) {
-		if (type instanceof BooleanTypeDefinition || type instanceof IntegerTypeDefinition ||
-				type instanceof DecimalTypeDefinition || type instanceof RationalTypeDefinition) {
-			return true;
-		}
-		return false;
+		return type instanceof BooleanTypeDefinition || type instanceof IntegerTypeDefinition ||
+				type instanceof DecimalTypeDefinition || type instanceof RationalTypeDefinition;
+	}
+	
+	public static boolean isNativelySupported(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return isPrimitive(type) || typeDefinition instanceof EnumerationTypeDefinition;
 	}
 	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {
@@ -88,6 +90,14 @@ public class ExpressionModelDerivedFeatures {
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
 	
+	public static TypeDeclaration getTypeDeclaration(Type type) {
+		TypeDeclaration declaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
+		if (declaration == null) {
+			throw new IllegalArgumentException("No type declaration: " + type);
+		}
+		return declaration;
+	}
+	
 	public static Expression getDefaultExpression(Type type) {
 		return expressionUtil.getInitialValueOfType(type);
 	}
@@ -104,14 +114,18 @@ public class ExpressionModelDerivedFeatures {
 	
 	// Record and array handling
 	
-	public static Collection<TypeDeclaration> getSelfAndAllTypeDeclarations(RecordTypeDefinition record) {
-		Collection<TypeDeclaration> typeDeclarations = getSelfAndAllTypeDeclarations(record);
+	public static int countAllFields(RecordTypeDefinition record) {
+		return exploreComplexType2(record).size();
+	}
+	
+	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(RecordTypeDefinition record) {
+		List<TypeDeclaration> typeDeclarations = getSelfAndAllTypeDeclarations(record);
 		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(record, TypeDeclaration.class);
-		typeDeclarations.add(typeDeclaration);
+		typeDeclarations.add(0, typeDeclaration);
 		return typeDeclarations;
 	}
 	
-	public static Collection<TypeDeclaration> getAllTypeDeclarations(RecordTypeDefinition record) {
+	public static List<TypeDeclaration> getAllTypeDeclarations(RecordTypeDefinition record) {
 		List<TypeDeclaration> typeDeclarations = new ArrayList<TypeDeclaration>();
 		for (FieldDeclaration field : record.getFieldDeclarations()) {
 			Type type = field.getType();

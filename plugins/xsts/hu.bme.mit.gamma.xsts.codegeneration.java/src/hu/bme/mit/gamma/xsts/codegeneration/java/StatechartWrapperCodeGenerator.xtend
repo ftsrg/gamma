@@ -11,8 +11,8 @@
 package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.xsts.model.XSTS
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
@@ -31,6 +31,8 @@ class StatechartWrapperCodeGenerator {
 	
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	final extension PortDiagnoser portDiagnoser = PortDiagnoser.INSTANCE
+	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
+	
 	
 	new(String basePackageName, String interfacePackageName, String statechartPackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts) {
@@ -134,7 +136,7 @@ class StatechartWrapperCodeGenerator {
 						«FOR parameter : event.parameterDeclarations»
 							@Override
 							public «parameter.type.serialize» get«parameter.name.toFirstUpper»() {
-								return «CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»();
+								return «CLASS_NAME.toFirstLower.accessOut(port, parameter)»;
 							}
 						«ENDFOR»
 					«ENDFOR»
@@ -200,7 +202,7 @@ class StatechartWrapperCodeGenerator {
 					«FOR event : port.getEvents(EventDirection.OUT)»
 						if («port.name.toFirstLower».isRaised«event.name.toFirstUpper»()) {
 							for («port.interfaceRealization.interface.name.toFirstUpper»Interface.Listener.«port.interfaceRealization.realizationMode.literal.toLowerCase.toFirstUpper» listener : «port.name.toFirstLower».getRegisteredListeners()) {
-								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower».get«parameter.getOutName(port).toFirstUpper»()«ENDFOR»);
+								listener.raise«event.name.toFirstUpper»(«FOR parameter : event.parameterDeclarations SEPARATOR ", "»«CLASS_NAME.toFirstLower.accessOut(port, parameter)»«ENDFOR»);
 							}
 						}
 					«ENDFOR»
@@ -223,7 +225,7 @@ class StatechartWrapperCodeGenerator {
 			
 			«FOR plainVariable : gammaStatechart.variableDeclarations SEPARATOR System.lineSeparator»
 				public «plainVariable.type.serialize» get«plainVariable.name.toFirstUpper»() {
-					return «CLASS_NAME.toFirstLower».get«plainVariable.name.toFirstUpper»();
+					return «CLASS_NAME.toFirstLower.access(plainVariable)»;
 				}
 			«ENDFOR»
 			
