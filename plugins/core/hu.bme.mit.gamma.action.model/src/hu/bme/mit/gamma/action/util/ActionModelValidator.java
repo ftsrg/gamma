@@ -27,6 +27,7 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
@@ -184,4 +185,17 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		} 
 		throw new IllegalArgumentException("Unknown container for Branch.");
 	}
+	
+//////////////////////////////////////////////////////////////////////
+	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// Block is empty
+		if (block.getActions().isEmpty()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"The block is empty!",
+					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));
+		}
+		return validationResultMessages;
+	}
+	
 }
