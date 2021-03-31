@@ -740,7 +740,7 @@ public class ExpressionModelValidator {
 					// right hand side is zero
 					if (expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-								"Can't divide by zero!",
+								"Division by zero is not allowed.",
 								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
 					}
 				}
@@ -811,20 +811,18 @@ public class ExpressionModelValidator {
 
 	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		// find RecordTypeDefinition
 		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
 		Type type = typeDeclaration.getType();
 		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
-		
 		// check all FieldDeclaration and all FieldAssignment
 		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
 			int counter = 0;
 			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
 				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
 				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
-				// same field names
-				if (fieldDeclaration.getName() == rTypeField.getName()) {
+				// same fields
+				if (fieldDeclaration == rTypeField) {
 					counter++;
 				}
 			}
