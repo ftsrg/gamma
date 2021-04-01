@@ -20,7 +20,6 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivideExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.EqualityExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.FalseExpression
@@ -40,7 +39,6 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.SubtractExpression
 import hu.bme.mit.gamma.expression.model.TrueExpression
-import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
@@ -64,8 +62,7 @@ class ExpressionSerializer {
 	
 	def dispatch String serialize(EnumerationLiteralExpression expression) {
 		val definition = expression.reference
-		val enumerationType = definition.eContainer as EnumerationTypeDefinition
-		val typeDeclaration = enumerationType.eContainer as TypeDeclaration
+		val typeDeclaration = definition.typeDeclaration
 		return typeDeclaration.name + "." + definition.name
 	}
 	

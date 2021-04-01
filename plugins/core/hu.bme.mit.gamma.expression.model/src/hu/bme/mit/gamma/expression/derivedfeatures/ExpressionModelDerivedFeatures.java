@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
@@ -95,6 +96,14 @@ public class ExpressionModelDerivedFeatures {
 		TypeDeclaration declaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
 		if (declaration == null) {
 			throw new IllegalArgumentException("No type declaration: " + type);
+		}
+		return declaration;
+	}
+	
+	public static TypeDeclaration getTypeDeclaration(EnumerationLiteralDefinition literal) {
+		TypeDeclaration declaration = ecoreUtil.getContainerOfType(literal, TypeDeclaration.class);
+		if (declaration == null) {
+			throw new IllegalArgumentException("No type declaration: " + literal);
 		}
 		return declaration;
 	}
