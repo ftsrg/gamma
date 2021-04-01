@@ -28,6 +28,8 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
@@ -52,7 +54,17 @@ public class TraceUtil extends ExpressionUtil {
 		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
 		Package _package = trace.getImport();
 		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
-		for (TypeReference reference : ecoreUtil.getAllContentsOfType(_package, TypeReference.class)) {
+		Collection<TypeReference> references = new ArrayList<TypeReference>();
+		// Native references
+		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
+		// Events and parameters
+		for (InterfaceRealization realization :
+				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+			Interface _interface = realization.getInterface();
+			references.addAll(ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
+		}
+		// Collecting the type declarations
+		for (TypeReference reference : references) {
 			TypeDeclaration typeDeclaration = reference.getReference();
 			types.add(typeDeclaration);
 			Type type = typeDeclaration.getType();
