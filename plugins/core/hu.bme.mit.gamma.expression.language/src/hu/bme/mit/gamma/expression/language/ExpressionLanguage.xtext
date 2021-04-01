@@ -309,7 +309,7 @@ FalseExpression returns FalseExpression:
 ;
 
 RecordLiteralExpression:
-	'#' typeDeclaration=[TypeDeclaration] '(' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* ')'
+	'#' typeDeclaration=[TypeDeclaration] '{' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '}'
 ;
 
 FieldAssignment:

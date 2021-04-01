@@ -80,7 +80,8 @@ public class ExpressionLanguageFormatterUtil {
 	}
 	
 	public void setRecordLiterals(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
-		c.setNoSpace().around(f.getRecordLiteralExpressionAccess().getTypeDeclarationAssignment_1());
+		c.setLinewrap(1).before(f.getRecordTypeDefinitionAccess().getFieldDeclarationsAssignment_3_1());
+		c.setNoSpace().before(f.getRecordLiteralExpressionAccess().getTypeDeclarationAssignment_1());
 	}
 
 }
