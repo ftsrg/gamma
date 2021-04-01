@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.statechart.interface_.RealizationMode
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class CompositeToPlantUMLTransformer {
+class CompositeToPlantUmlTransformer {
 	
 	protected final CompositeComponent composite
 	

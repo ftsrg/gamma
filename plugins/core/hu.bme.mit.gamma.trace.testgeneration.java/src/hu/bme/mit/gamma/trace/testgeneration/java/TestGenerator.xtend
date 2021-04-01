@@ -117,7 +117,8 @@ class TestGenerator {
 		val name = gammaPackage.getName().toLowerCase();
 		if (name.endsWith(suffix)) {
 			finalName = name.substring(0, name.length() - suffix.length());
-		} else {
+		}
+		else {
 			finalName = name;
 		}
 		return BASE_PACKAGE + "." + finalName
@@ -286,6 +287,10 @@ class TestGenerator {
 	
 	protected def getParent(ComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
+		if (instance.isTopInstance) {
+			// Needed due to resource set issues: component can be referenced from other composite systems
+			return null
+		}
 		val parents = InstanceContainer.Matcher.on(engine).getAllValuesOfcontainerInstace(instance)
 		if (parents.size > 1) {
 			throw new IllegalArgumentException("More than one parent: " + parents)
@@ -295,11 +300,19 @@ class TestGenerator {
 	
 	protected def getAsyncParent(SynchronousComponentInstance instance) {
 		checkArgument(instance !== null, "The instance is a null value.")
+		if (instance.isTopInstance) {
+			// Needed due to resource set issues: component can be referenced from other composite systems
+			return null
+		}
 		val parents = WrapperInstanceContainer.Matcher.on(engine).getAllValuesOfwrapperInstance(instance)
 		if (parents.size > 1) {
 			throw new IllegalArgumentException("More than one parent: " + parents)
 		}
 		return parents.head
+	}
+	
+	private def isTopInstance(ComponentInstance instance) {
+		return component.instances.contains(instance)
 	}
 	
 	/**
@@ -311,7 +324,8 @@ class TestGenerator {
 		var String parentName
 		var int startIndex
 		if (parent === null) {
-			if (instance instanceof SynchronousComponentInstance && component instanceof AsynchronousCompositeComponent) {
+			if (instance instanceof SynchronousComponentInstance &&
+					component instanceof AsynchronousCompositeComponent) {
 				// An async-sync step is needed
 				val syncInstance = instance as SynchronousComponentInstance
 				val wrapperParent = syncInstance.asyncParent

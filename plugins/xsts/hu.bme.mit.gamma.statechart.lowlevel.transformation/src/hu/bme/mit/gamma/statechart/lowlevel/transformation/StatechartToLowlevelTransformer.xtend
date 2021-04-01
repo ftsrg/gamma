@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
@@ -243,15 +244,11 @@ class StatechartToLowlevelTransformer {
 		trace.put(timeout, lowlevelTimeout)
 		return lowlevelTimeout
 	}
-
-	protected def getEvents(Port port) {
-		return port.interfaceRealization.interface.events
-	}
-
+	
 	protected def dispatch Component transformComponent(hu.bme.mit.gamma.statechart.interface_.Component component) {
 		throw new IllegalArgumentException("Not known component: " + component)
 	}
-
+	
 	protected def dispatch Component transformComponent(StatechartDefinition statechart) {
 		if (trace.isMapped(statechart)) {
 			// It is already transformed
@@ -260,6 +257,7 @@ class StatechartToLowlevelTransformer {
 		val lowlevelStatechart = createStatechartDefinition => [
 			it.name = getName(statechart)
 			it.schedulingOrder = statechart.schedulingOrder.transform
+			it.guardEvaluation = statechart.guardEvaluation.transform
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
@@ -295,7 +293,7 @@ class StatechartToLowlevelTransformer {
 		}
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
-			for (eventDecl : port.events) {
+			for (eventDecl : port.allEventDeclarations) {
 				lowlevelStatechart.eventDeclarations += eventDecl.transform(port)
 			}
 		}
@@ -313,7 +311,7 @@ class StatechartToLowlevelTransformer {
 		return lowlevelStatechart
 	}
 
-	protected def hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder transform(SchedulingOrder order) {
+	protected def transform(SchedulingOrder order) {
 		switch (order) {
 			case SchedulingOrder.BOTTOM_UP: {
 				return hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder.BOTTOM_UP
@@ -323,6 +321,20 @@ class StatechartToLowlevelTransformer {
 			}
 			default: {
 				throw new IllegalArgumentException("Not known scheduling order: " + order)
+			}
+		}
+	}
+	
+	protected def transform(GuardEvaluation guardEvaluation) {
+		switch (guardEvaluation) {
+			case GuardEvaluation.ON_THE_FLY: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+			}
+			case GuardEvaluation.BEGINNING_OF_STEP: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.BEGINNING_OF_STEP
+			}
+			default: {
+				throw new IllegalArgumentException("Not known guard evaluation: " + guardEvaluation)
 			}
 		}
 	}

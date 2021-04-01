@@ -593,23 +593,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 		EObject container = elseExpression.eContainer();
 		if (!(container instanceof Transition) && !(container instanceof Branch)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Else expressions must be an atomic guard in the expression."
-					, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+					"Else expressions must be atomic guards in the expression.",
+					new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 		}
 		if (container instanceof Transition) {
 			Transition transition = (Transition) container;
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Else expressions cannot be used with triggers."
-						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+						"Else expressions cannot be used with triggers.",
+						new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 			StateNode node = transition.getSourceState();
 			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 			outgoingTransitions.remove(transition);
 			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Only a single transition with and else expression can go out of a certain node."
-						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+						"Only a single transition with and else expression can go out of a certain node.",
+						new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 		}
 		return validationResultMessages;

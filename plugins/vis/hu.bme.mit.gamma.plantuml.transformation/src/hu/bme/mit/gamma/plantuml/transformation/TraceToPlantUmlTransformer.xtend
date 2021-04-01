@@ -11,7 +11,7 @@ import hu.bme.mit.gamma.trace.model.TimeElapse
 
 import static extension hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures.*
 
-class TraceToPlantUMLTransformer {
+class TraceToPlantUmlTransformer {
 	
 	protected final ExecutionTrace trace
 	// Utility

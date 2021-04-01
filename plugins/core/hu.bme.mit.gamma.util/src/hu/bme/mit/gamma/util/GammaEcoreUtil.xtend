@@ -103,6 +103,21 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void prependTo(EObject object, EObject pivot) {
+		val container = pivot.eContainer
+		val reference = pivot.eContainmentFeature
+		// "Many" cardinality is mandatory
+		val list = container.eGet(reference) as List<EObject>
+		val index = pivot.index
+		list.add(index, object)
+	}
+	
+	def void prependTo(List<? extends EObject> objects, EObject pivot) {
+		for (object : objects) {
+			object.prependTo(pivot)
+		}
+	}
+	
 	def void appendTo(EObject pivot, EObject object) {
 		val container = pivot.eContainer
 		val reference = pivot.eContainmentFeature
@@ -124,7 +139,7 @@ class GammaEcoreUtil {
 			return newArrayList
 		}
 		val allContainers = container.allContainers
-		allContainers += object
+		allContainers += container
 		return allContainers
 	}
 	
@@ -168,6 +183,11 @@ class GammaEcoreUtil {
 			contents += object as T
 		}
 		return contents
+	}
+	
+	def contains(EObject potentialContainer, EObject object) {
+		val containers = object.allContainers
+		return containers.contains(potentialContainer)
 	}
 
 	def EObject normalLoad(URI uri) {

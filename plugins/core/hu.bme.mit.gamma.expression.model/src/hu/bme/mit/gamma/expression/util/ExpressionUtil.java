@@ -795,6 +795,10 @@ public class ExpressionUtil {
 			not.setOperand(reference);
 			and.getOperands().add(not);
 		}
+		if (and.getOperands().isEmpty()) {
+			// If collection is empty, the expression is always true
+			and.getOperands().add(factory.createTrueExpression());
+		}
 		return and;
 	}
 	

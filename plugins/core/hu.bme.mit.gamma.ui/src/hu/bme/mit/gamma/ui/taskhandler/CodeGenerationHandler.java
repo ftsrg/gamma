@@ -16,16 +16,17 @@ import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 import hu.bme.mit.gamma.codegenerator.java.GlueCodeGenerator;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
-import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
-import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.lowlevel.transformation.commandhandler.CommandHandler;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
@@ -80,8 +81,10 @@ public class CodeGenerationHandler extends TaskHandler {
 			}
 		}
 		else {
+			Resource resource = component.eResource();
+			URI platformUri = ecoreUtil.getPlatformUri(resource);
+			String statechartUri = platformUri.trimFileExtension().toPlatformString(true);
 			// E.g., /hu.bme.mit.gamma.tutorial.extra/model/TrafficLight/TrafficLightCtrl
-			String statechartUri = component.eResource().getURI().trimFileExtension().toPlatformString(true);
 			String statechartFileName = statechartUri.substring(statechartUri.lastIndexOf("/") + 1);
 			String traceUri = statechartUri.substring(0, statechartUri.lastIndexOf("/") + 1) + "." + statechartFileName + ".y2g";
 			if (resourceSet.getResources().stream().noneMatch(it -> it.getURI().toString().equals(traceUri))) {

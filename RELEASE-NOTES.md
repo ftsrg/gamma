@@ -173,3 +173,19 @@
 * The statechart.ecore file has been split into multiple ecore files.
 * Test generation for covering transitions and interactions in composite models has been redesigned.
 * Bugs in system optimization algorithms during the transformation to verification back-ends have been fixed.
+
+## 2021.03.17. - Version 2.5.0
+
+### What is New
+
+* New transition-pair, interaction and dataflow coverage metrics have been introduced for test generation.
+* State reference expressions have been introduced in the Gamma State Language.
+* A guard evaluation semantic variant has been introduced in the Gamma Statechart Language.
+* Local variables have been introduced in the Gamma Action Language.
+* The possibility of starting multiple Theta model checking instances with different parameters has been introduced.
+* And, Or, Xor and Not expressions have been introduced in the assert part of steps in the Gamma Test Language.
+
+### Improvements
+
+* The transformations from Gamma to XSTS have been optimized to enable faster verification.
+* System optimization bugs in the transformations have been fixed.

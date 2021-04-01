@@ -139,9 +139,9 @@ class PropertyGenerator {
 									and.operands += eventReference
 									and.operands += equalityExpression
 									val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
-									val commentableStateFormula = propertyUtil.
-										createCommentableStateFormula('''«instance.name».«port.name».«outEvent.name».«parameter.name» == «expressionSerializer.serialize(value)»''',
-											stateFormula)
+									val commentableStateFormula = propertyUtil.createCommentableStateFormula(
+										'''«instance.name».«port.name».«outEvent.name».«parameter.name» == «expressionSerializer.serialize(value)»''',
+										stateFormula)
 									formulas += commentableStateFormula
 								}
 							}
@@ -283,23 +283,28 @@ class PropertyGenerator {
 			val auxiliaryDefReferences = defs.getAuxiliaryReferences(variable)
 			val size = auxiliaryDefReferences.size
 			for (var i = 0; i < size; i++) {
-				val defExpression = expressionFactory.createAndExpression
-				for (var j = 0; j < size; j++) {
-					val auxiliaryDefReference = auxiliaryDefReferences.get(j)
-					val auxiliaryVariable = auxiliaryDefReference.defUseVariable
-					val expression = 
-					if (i != j) {
-						expressionFactory.createNotExpression => [
-							it.operand = auxiliaryVariable.createVariableReference
-						]
-					}
-					else {
-						auxiliaryVariable.createVariableReference
-					}
-					defExpression.operands += expression
-				}
-				// Def-comment
 				val ponatedReference = auxiliaryDefReferences.get(i)
+				val auxiliaryVariable = ponatedReference.defUseVariable
+				val defExpression = expressionFactory.createAndExpression => [
+					it.operands += auxiliaryVariable.createVariableReference
+				]
+				// Not necessary as the annotated assignments ensure that only one is true
+//				val defExpression = expressionFactory.createAndExpression
+//				for (var j = 0; j < size; j++) {
+//					val auxiliaryDefReference = auxiliaryDefReferences.get(j)
+//					val auxiliaryVariable = auxiliaryDefReference.defUseVariable
+//					val expression = 
+//					if (i != j) {
+//						expressionFactory.createNotExpression => [
+//							it.operand = auxiliaryVariable.createVariableReference
+//						]
+//					}
+//					else {
+//						auxiliaryVariable.createVariableReference
+//					}
+//					defExpression.operands += expression
+//				}
+				// Def-comment
 				val originalReference = ponatedReference.originalVariableReference
 				val defComment = originalReference.id
 				defExpressions += new Pair(defExpression, defComment)
@@ -348,7 +353,6 @@ class PropertyGenerator {
 		return formulas
 	}
 	
-
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		if (isSimpleComponentReference) {
 			val reference = compositeFactory.createComponentInstanceReference

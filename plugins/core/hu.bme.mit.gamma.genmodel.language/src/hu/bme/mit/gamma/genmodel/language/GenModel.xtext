@@ -261,8 +261,9 @@ enum DataflowCoverageCriterion returns DataflowCoverageCriterion:
 Verification returns Verification:
 	{Verification} 'verification' '{'
 		(
-			'trace-folder' ':' targetFolder+=STRING |	// Trace folder
-			'file' ':' fileName+=STRING | // Analysis model
+			'trace-folder' ':' targetFolder+=STRING | // Trace folder
+			'file' ':' fileName+=STRING | // Trace model
+			'svg-file' ':' svgFileName+=STRING | // Trace model
 			'language' ':' languages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
