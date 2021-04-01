@@ -21,7 +21,6 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -129,30 +128,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (element instanceof VariableDeclaration) {
-			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
-					element, VariableDeclarationStatement.class);
-			if (statement != null) {
-				// No op - Action language validator is used here
-				return validationResultMessages;
-			}
-		}
 		if (element instanceof Event) {
 			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
-			validationResultMessages.addAll(checkNames(_interface, Collections.singleton(Event.class), name));
+			validationResultMessages.addAll(checkNames(_interface, Event.class, name));
 			return validationResultMessages;
 		}
 		if (element instanceof ParameterDeclaration) {
 			EObject container = element.eContainer();
 			if (container instanceof Event) {
-				validationResultMessages.addAll(checkNames(container, Collections.singleton(ParameterDeclaration.class), name));
+				validationResultMessages.addAll(checkNames(container, ParameterDeclaration.class, name));
 				return validationResultMessages;
 			}
 		}
 		if (element instanceof TransitionIdAnnotation) {
 			StatechartDefinition statechart = StatechartModelDerivedFeatures
 					.getContainingStatechart(element);
-			validationResultMessages.addAll(checkNames(statechart, List.of(TransitionIdAnnotation.class, Declaration.class), name));
+			validationResultMessages.addAll(checkNames(statechart,
+					List.of(TransitionIdAnnotation.class, Declaration.class), name));
 			return validationResultMessages;
 		}
 		validationResultMessages.addAll(super.checkNameUniqueness(element));

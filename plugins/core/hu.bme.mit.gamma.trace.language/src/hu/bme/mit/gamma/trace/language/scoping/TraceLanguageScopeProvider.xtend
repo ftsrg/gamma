@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage
 import hu.bme.mit.gamma.trace.model.ExecutionTrace
@@ -26,7 +25,6 @@ import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TraceModelPackage
 import hu.bme.mit.gamma.trace.util.TraceUtil
-import java.util.Collection
 import java.util.HashSet
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
@@ -120,34 +118,9 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			return Scopes.scopeFor(variables)
 		}
 		if (context instanceof EnumerationLiteralExpression) {
-			var Collection<EnumerationTypeDefinition> enumTypes
-			val raiseEventAct = ecoreUtil.getContainerOfType(context, RaiseEventAction)
-			if (raiseEventAct !== null) {
-				val event = raiseEventAct.event
-				val parameterDeclarations = event.parameterDeclarations
-				if (!parameterDeclarations.empty) {
-					enumTypes = parameterDeclarations.map[it.type.typeDefinition]
-							.filter(EnumerationTypeDefinition).toSet
-				}
-			}
-			else {
-				val instanceVariableState = ecoreUtil.getContainerOfType(context, InstanceVariableState)
-				if (instanceVariableState !== null) {
-					val declaration = instanceVariableState.declaration
-					val type = declaration.type
-					val typeDefinition = type.typeDefinition
-					if (typeDefinition instanceof EnumerationTypeDefinition) {
-						enumTypes = #[typeDefinition]
-					}
-				}
-				else {
-					throw new IllegalArgumentException("Not known enumeration use!")
-				}
-			}
-			val literals = newArrayList
-			for (enumType : enumTypes) {
-				literals += enumType.literals
-			}
+			val typeDeclarations = util.getTypeDeclarations(context)
+			val enumTypes = typeDeclarations.map[it.typeDefinition].filter(EnumerationTypeDefinition)
+			val literals = enumTypes.map[it.literals].flatten
 			return Scopes.scopeFor(literals)
 		}
 		super.getScope(context, reference)

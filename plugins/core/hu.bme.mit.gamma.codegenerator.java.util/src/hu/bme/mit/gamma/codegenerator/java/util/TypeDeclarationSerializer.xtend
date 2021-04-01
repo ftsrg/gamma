@@ -11,9 +11,12 @@
 package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeDeclarationSerializer {
 	// Singleton
@@ -54,6 +57,26 @@ class TypeDeclarationSerializer {
 				«FOR field : type.fieldDeclarations»
 					this.«field.name» = «field.name»;
 				«ENDFOR»
+			}
+			
+			@Override
+			public boolean equals(Object object) {
+				if (this == object) {
+					return true;
+				}
+				if (object == null) {
+					return false;
+				}
+				if (this.getClass() != object.getClass()) {
+					return false;
+				}
+				«name» record = («name») object;
+				«FOR field : type.fieldDeclarations»
+					if («IF field.type.isPrimitive»this.«field.name» != record.«field.name»«ELSE»!this.«field.name».equals(record.«field.name»)«ENDIF») {
+						return false;
+					}
+				«ENDFOR»
+				return true;
 			}
 			
 		}

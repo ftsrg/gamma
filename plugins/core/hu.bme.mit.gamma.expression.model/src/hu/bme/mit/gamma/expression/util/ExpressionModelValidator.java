@@ -160,6 +160,11 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkNames(EObject root,
+			Class<? extends NamedElement> clazz, String name) {
+		return checkNames(root, List.of(clazz), name);
+	}
+	
+	public Collection<ValidationResultMessage> checkNames(EObject root,
 			Collection<Class<? extends NamedElement>> classes, String name) {
 		int nameCount = 0;
 		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
@@ -189,8 +194,8 @@ public class ExpressionModelValidator {
 			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
 			if (typeDeclaration == referencedTypeDeclaration) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A type declaration cannot reference itself as a type definition."
-						, new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
+						"A type declaration cannot reference itself as a type definition.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
 			}
 		}
 		return validationResultMessages;
@@ -211,7 +216,6 @@ public class ExpressionModelValidator {
 				Expression argument = arguments.get(i);
 				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, 
 						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS));
-			
 			}
 		}
 		return validationResultMessages;

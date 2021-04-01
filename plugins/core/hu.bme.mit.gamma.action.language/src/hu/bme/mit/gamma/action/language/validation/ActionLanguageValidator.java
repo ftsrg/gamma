@@ -55,7 +55,7 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 
 	@Check
 	public void CheckReturnStatementType(ReturnStatement rs) {
-		handleValidationResultMessage(actionModelValidator.CheckReturnStatementType(rs));
+		handleValidationResultMessage(actionModelValidator.checkReturnStatementType(rs));
 	}
 	
 //////////////////////////////////////////////////////////////////////
