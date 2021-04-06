@@ -241,13 +241,13 @@ public class ExpressionModelDerivedFeatures {
 		return result;
 	}
 		
-	public static List<Expression> collectAccessList(final ReferenceExpression exp) {
+	public static List<Expression> collectAccessList(ReferenceExpression exp) {
 		final List<Expression> result = new ArrayList<Expression>();
 		if (exp instanceof ArrayAccessExpression) {
 			final ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) exp;
 			final Expression inner = arrayAccessExpression.getOperand();
 			if (inner instanceof ReferenceExpression) {
-				List<Expression> _collectAccessList = collectAccessList(((ReferenceExpression)inner));
+				List<Expression> _collectAccessList = collectAccessList((ReferenceExpression)inner);
 				result.addAll(_collectAccessList);
 			}
 			Expression _onlyElement = javaUtil.getOnlyElement(arrayAccessExpression.getIndexes());
@@ -257,7 +257,7 @@ public class ExpressionModelDerivedFeatures {
 			if (exp instanceof RecordAccessExpression) {
 				final Expression inner_1 = ((RecordAccessExpression)exp).getOperand();
 				if (inner_1 instanceof ReferenceExpression) {
-					List<Expression> _collectAccessList_1 = collectAccessList(((ReferenceExpression)inner_1));
+					List<Expression> _collectAccessList_1 = collectAccessList((ReferenceExpression)inner_1);
 					result.addAll(_collectAccessList_1);
 				}
 				FieldReferenceExpression _fieldReference = ((RecordAccessExpression)exp).getFieldReference();
@@ -267,7 +267,7 @@ public class ExpressionModelDerivedFeatures {
 				if (exp instanceof SelectExpression) {
 					final Expression inner_2 = ((SelectExpression)exp).getOperand();
 					if (inner_2 instanceof ReferenceExpression) {
-						List<Expression> _collectAccessList_2 = collectAccessList(((ReferenceExpression)inner_2));
+						List<Expression> _collectAccessList_2 = collectAccessList((ReferenceExpression)inner_2);
 						result.addAll(_collectAccessList_2);
 					}
 				}
@@ -279,16 +279,16 @@ public class ExpressionModelDerivedFeatures {
 		return result;
 	}
 		
-	public static List<FieldReferenceExpression> collectRecordAccessList(final ReferenceExpression exp) {
+	public static List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
 		return javaUtil.filter(collectAccessList(exp), FieldReferenceExpression.class);
 	}
 		
-	public static boolean isSameAccessTree(FieldHierarchy fieldHierarchy, List<FieldReferenceExpression> currentAccessList) {
+	public static boolean isSameAccessTree(FieldHierarchy fieldHierarchy,
+			List<FieldReferenceExpression> currentAccessList) {
 		final List<FieldDeclaration> fieldsList = fieldHierarchy.getFields();
 		int _size = fieldsList.size();
 		int _size_1 = currentAccessList.size();
-		boolean _lessThan = (_size < _size_1);
-		if (_lessThan) {
+		if (_size < _size_1) {
 			return false;
 		}
 		for (int i = 0; i < currentAccessList.size(); i++) {

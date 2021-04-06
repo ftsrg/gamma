@@ -190,9 +190,9 @@ class ExpressionTransformer {
 		// if 'simple' array
 		if (recordAccessList.empty) {
 			val transformedOperands = expression.operand.transformExpression
-			for (op : transformedOperands) {
+			for (operand : transformedOperands) {
 				result += createArrayAccessExpression => [
-					it.operand = op
+					it.operand = operand
 					it.indexes += expression.indexes.onlyElement
 							.transformExpression.onlyElement
 				]

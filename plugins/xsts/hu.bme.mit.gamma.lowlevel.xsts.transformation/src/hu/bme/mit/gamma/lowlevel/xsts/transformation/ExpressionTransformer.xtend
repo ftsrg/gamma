@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -41,17 +42,7 @@ class ExpressionTransformer {
 	new(Trace trace) {
 		this.trace = trace
 	}
-	
-	def dispatch Expression transformExpression(NullaryExpression expression) {
-		return expression.clone
-	}
-	
-	def dispatch Expression transformExpression(UnaryExpression expression) {
-		return expression.clone => [
-			it.operand = expression.operand.transformExpression
-		]
-	}
-	
+
 	def dispatch Expression transformExpression(IfThenElseExpression expression) {
 		return createIfThenElseExpression => [
 			it.condition = expression.condition.transformExpression
@@ -60,17 +51,24 @@ class ExpressionTransformer {
 		]
 	}
 
-	// Key method
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
 		checkState(declaration instanceof VariableDeclaration, declaration)
 		val variableDeclaration = expression.declaration as VariableDeclaration
-		return expression.clone => [
+		return createDirectReferenceExpression => [
 			it.declaration = trace.getXStsVariable(variableDeclaration)
 		]
 	}
 	
-	// Key method
+	def dispatch Expression transformExpression(ArrayAccessExpression expression) {
+		val operand = expression.operand
+		val indexes = expression.indexes
+		return createArrayAccessExpression => [
+			it.operand = operand.transformExpression
+			it.indexes += indexes.map[it.transformExpression]
+		]
+	}
+	
 	def dispatch Expression transformExpression(StateReferenceExpression expression) {
 		val lowlevelRegion = expression.region
 		val lowlevelState = expression.state
@@ -79,7 +77,6 @@ class ExpressionTransformer {
 		return xStsVariable.createEqualityExpression(xStsLiteral.wrap)
 	}
 	
-	// Key method
 	def dispatch Expression transformExpression(EnumerationLiteralExpression expression) {
 		val lowlevelEnumLiteral = expression.reference
 		val index = lowlevelEnumLiteral.index
@@ -88,6 +85,18 @@ class ExpressionTransformer {
 		val xStsEnumTypeDefinition = xStsEnumTypeDeclaration.type as EnumerationTypeDefinition
 		return createEnumerationLiteralExpression => [
 			it.reference = xStsEnumTypeDefinition.literals.get(index)
+		]
+	}
+	
+	// Clonable expressions
+	
+	def dispatch Expression transformExpression(NullaryExpression expression) {
+		return expression.clone
+	}
+	
+	def dispatch Expression transformExpression(UnaryExpression expression) {
+		return expression.clone => [
+			it.operand = expression.operand.transformExpression
 		]
 	}
 	

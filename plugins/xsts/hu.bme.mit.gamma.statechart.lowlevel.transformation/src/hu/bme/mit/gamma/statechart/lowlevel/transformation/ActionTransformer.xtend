@@ -441,33 +441,26 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		// Get the referred high-level declaration (assuming a single, assignable element)
 		val actionLhs = action.lhs
-		val referredDeclaration = actionLhs.referredValues.getOnlyElement
+		val referredDeclaration = actionLhs.accessedDeclaration as ValueDeclaration
 		checkState(referredDeclaration instanceof VariableDeclaration ||
-			referredDeclaration instanceof ParameterDeclaration) //transformed to assignable type (=variable)
+			referredDeclaration instanceof ParameterDeclaration) // Transformed to assignable type (=variable)
 		// Transform lhs
 		val List<ReferenceExpression> lowlevelLhs = newArrayList
-		val typeToAssign = referredDeclaration.type.typeDefinition
-		if (!(typeToAssign instanceof CompositeTypeDefinition)) {
-			lowlevelLhs += createDirectReferenceExpression => [
-				if (trace.isMapped(referredDeclaration)) {
-					it.declaration = trace.get(referredDeclaration)
-				}
-			]
-		}
-		else {
-			var originalLhsFields = exploreComplexType(referredDeclaration)			
+		val typeToAssign = referredDeclaration.typeDefinition
+		if (typeToAssign instanceof CompositeTypeDefinition) {
+			val originalLhsFields = referredDeclaration.exploreComplexType
 			// access expressions
 			val recordAccessList = actionLhs.collectRecordAccessList
 			for (elem : originalLhsFields) {
 				val key = elem.key
 				val value = elem.value
-				if (isSameAccessTree(value, recordAccessList)) {	//filter according to the access list
+				if (isSameAccessTree(value, recordAccessList)) { // Filter according to the access list
 					// Create lhs
 					lowlevelLhs += createDirectReferenceExpression => [
-						if (trace.isMapped(elem)) {	//mapped as complex type
+						if (trace.isMapped(elem)) {	// Mapped as complex type
 							it.declaration = trace.get(elem)
 						}
-						else if (trace.isMapped(key)) {	//simple arrays are mapped as a simple type (either var or par)
+						else if (trace.isMapped(key)) {	// Simple arrays are mapped as a simple type (either var or par)
 							it.declaration = trace.get(key)
 						}
 						else {
@@ -477,12 +470,19 @@ class ActionTransformer {
 				}
 			}
 		}
+		else {
+			lowlevelLhs += createDirectReferenceExpression => [
+				if (trace.isMapped(referredDeclaration)) {
+					it.declaration = trace.get(referredDeclaration)
+				}
+			]
+		}
 		val actionRhs = action.rhs
 		// Get rhs precondition
 		val lowlevelPrecondition = actionRhs.transformPrecondition
 		result += lowlevelPrecondition
 		// Transform rhs and create action
-		val List<Expression> lowlevelRhs = <Expression>newArrayList
+		val lowlevelRhs = newArrayList
 		lowlevelRhs += actionRhs.transformExpression
 		if (lowlevelLhs.size != lowlevelRhs.size) {
 			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
