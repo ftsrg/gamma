@@ -147,6 +147,7 @@
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//Component">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Component/ports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Component/functionDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="interface.ecore#//Clock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Clock/timeSpecification"/>

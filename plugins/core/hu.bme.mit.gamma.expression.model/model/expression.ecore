@@ -178,7 +178,10 @@
         eType="#//Expression" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//ArgumentedElement #//AssignableAccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//AssignableAccessExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="indexes" upperBound="-1"
+        eType="#//Expression" containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AssignableAccessExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldReference" lowerBound="1"
         eType="#//FieldReferenceExpression" containment="true"/>
@@ -188,6 +191,7 @@
         eType="#//FieldDeclaration"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NonAssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="SelectExpression" eSuperTypes="#//NonAssignableAccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="IfThenElseExpression" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
@@ -222,7 +226,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModExpression" eSuperTypes="#//ArithmeticExpression #//BinaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryMinusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="UnaryPlusExpression" eSuperTypes="#//ArithmeticExpression #//UnaryExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="FunctionAccessExpression" eSuperTypes="#//NonAssignableAccessExpression #//ArgumentedElement"/>
   <eClassifiers xsi:type="ecore:EClass" name="VariableDeclarationAnnotation" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="TransientVariableDeclarationAnnotation"
       eSuperTypes="#//VariableDeclarationAnnotation"/>

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
@@ -41,6 +42,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(DivExpression expression) '''(«expression.leftOperand.serialize» / «expression.rightOperand.serialize»)'''
 	
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
+	
+	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«FOR index : expression.indexes»«index.serialize»]«ENDFOR»'''
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration

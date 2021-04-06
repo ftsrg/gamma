@@ -193,7 +193,7 @@ class ExpressionTransformer {
 			for (op : transformedOperands) {
 				result += createArrayAccessExpression => [
 					it.operand = op
-					it.arguments += expression.arguments.onlyElement
+					it.indexes += expression.indexes.onlyElement
 							.transformExpression.onlyElement
 				]
 			}	
@@ -211,7 +211,7 @@ class ExpressionTransformer {
 						val argumentConst = argument
 						current = createArrayAccessExpression => [
 							it.operand = currentConst
-							it.arguments += argumentConst
+							it.indexes += argumentConst
 						]
 					}
 					result += current
@@ -358,12 +358,12 @@ class ExpressionTransformer {
 		if (type instanceof ArrayTypeDefinition) {
 			// Create an access expression for each of the array elements (based on its size)
 			for (var i = 0; i < type.size.value.intValue; i++) {
-				val temp = i	//(constant to use inside a lambda)
+				val temp = i	// Constant to use inside a lambda
 				result += createArrayAccessExpression => [
 					it.operand = createDirectReferenceExpression => [
 						it.declaration = expression.declaration
 					]
-					it.arguments += createIntegerLiteralExpression => [
+					it.indexes += createIntegerLiteralExpression => [
 						it.value = BigInteger.valueOf(temp)
 					]
 				]
@@ -407,7 +407,7 @@ class ExpressionTransformer {
 			val temp = j	//to use inside a lambda
 			result += createArrayAccessExpression => [
 				it.operand = expression.clone	//DOES NOT TRANSFORM
-				it.arguments += createIntegerLiteralExpression => [
+				it.indexes += createIntegerLiteralExpression => [
 					it.value = BigInteger.valueOf(temp)
 				]
 			]

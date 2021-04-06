@@ -250,7 +250,7 @@ public class ExpressionModelDerivedFeatures {
 				List<Expression> _collectAccessList = collectAccessList(((ReferenceExpression)inner));
 				result.addAll(_collectAccessList);
 			}
-			Expression _onlyElement = javaUtil.getOnlyElement(arrayAccessExpression.getArguments());
+			Expression _onlyElement = javaUtil.getOnlyElement(arrayAccessExpression.getIndexes());
 			result.add(_onlyElement);
 		}
 		else {

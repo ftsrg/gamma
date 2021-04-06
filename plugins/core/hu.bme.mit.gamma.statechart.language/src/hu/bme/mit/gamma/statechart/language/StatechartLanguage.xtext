@@ -114,7 +114,7 @@ UnaryTrigger returns InterfaceModel::Trigger:
 ;
 
 NotTrigger returns UnaryTrigger:
-	((type=Not) (operand=ParenthesesTrigger))
+	type=Not operand=ParenthesesTrigger
 ;
 
 ParenthesesTrigger returns InterfaceModel::Trigger:
@@ -182,8 +182,7 @@ StatechartDefinition returns StatechartDefinition:
 	)
 	'statechart' name=ID 
 	('(' ((parameterDeclarations+=ParameterDeclaration)(',' parameterDeclarations+=ParameterDeclaration)*)? ')')?
-		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')?
-		'{'
+		('[' ((ports+=Port)((',')? ports+=Port)*)? ']')? '{'
 			(
 				variableDeclarations+=VariableDeclaration |
 				timeoutDeclarations+=TimeoutDeclaration |
@@ -196,7 +195,8 @@ StatechartDefinition returns StatechartDefinition:
 				transitions+=Transition |
 				regions+=Region
 			)*
-		'}'
+		(functionDeclarations+=FunctionDeclaration)*
+	'}'
 ;
 
 enum SchedulingOrder returns SchedulingOrder:
@@ -552,23 +552,22 @@ EventParameterReferenceExpression returns InterfaceModel::EventParameterReferenc
 
 @Override 
 InlineStatement returns ActionModel::Statement:
-	(VariableDeclarationStatement |
-	ConstantDeclarationStatement |
-	
-	ReturnStatement |
-	BreakStatement |
-	
-	=>AssignmentStatement |
-	
-	//Extensions:
-	RaiseEventAction |
-	SetTimeoutAction |
-	
-	AssertionStatement |
-	ExpressionStatement
-	)
-	
-	';'
+	(
+		VariableDeclarationStatement |
+		ConstantDeclarationStatement |
+		
+		ReturnStatement |
+		BreakStatement |
+		
+		=> AssignmentStatement |
+		
+		//Extensions:
+		RaiseEventAction |
+		SetTimeoutAction |
+		
+		AssertionStatement |
+		ExpressionStatement
+	)';'
 ;
 
 RaiseEventAction returns RaiseEventAction:
@@ -582,5 +581,3 @@ SetTimeoutAction returns SetTimeoutAction:
 DeactivateTimeoutAction returns DeactivateTimeoutAction:
 	'deactivate' timeoutDeclaration=[TimeoutDeclaration]
 ;
-
-	

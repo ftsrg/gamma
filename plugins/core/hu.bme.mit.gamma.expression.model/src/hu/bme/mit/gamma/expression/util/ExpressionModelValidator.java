@@ -334,7 +334,7 @@ public class ExpressionModelValidator {
 			
 		}
 		// check if the argument expression can be evaluated as integer
-		if (!typeDeterminator.isInteger(expression.getArguments().get(0))) {
+		if (!typeDeterminator.isInteger(expression.getIndexes().get(0))) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The index of the accessed element must be of type integer!", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));

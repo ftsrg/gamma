@@ -347,7 +347,7 @@ public class ExpressionSerializer {
 
 	protected String _serialize(final ArrayAccessExpression arrayAccessExpression) {
 		String string = "";
-		EList<Expression> _arguments = arrayAccessExpression.getArguments();
+		EList<Expression> _arguments = arrayAccessExpression.getIndexes();
 		for (final Expression expression : _arguments) {
 			string = string.concat(this.serialize(expression).toString());
 		}

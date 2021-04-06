@@ -22,6 +22,7 @@ public class ExpressionLanguageFormatterUtil {
 	public void format(FormattingConfig c, AbstractGrammarElementFinder f) {
 		setBrackets(c, f);
 		setParantheses(c, f);
+		setSquareBrackets(c, f);
 		setDots(c, f);
 		setExclamationMarks(c, f);
 		setCommas(c, f);
@@ -61,6 +62,14 @@ public class ExpressionLanguageFormatterUtil {
 
 	public void setParantheses(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
+			c.setNoSpace().after(p.getFirst());
+			c.setNoSpace().before(p.getSecond());
+		}
+	}
+	
+	public void setSquareBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
+		for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
+			c.setNoSpace().before(p.getFirst());
 			c.setNoSpace().after(p.getFirst());
 			c.setNoSpace().before(p.getSecond());
 		}

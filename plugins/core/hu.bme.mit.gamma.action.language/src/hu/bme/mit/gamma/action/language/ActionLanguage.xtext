@@ -159,7 +159,7 @@ AssertionStatement returns ActionModel::AssertionStatement:
 
 AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
 	AssignablePrimaryExpression(
-		{ConstraintModel::ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{ConstraintModel::ArrayAccessExpression.operand=current} '[' indexes+=Expression ']' |
 		{ConstraintModel::RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression
 	)* 
 ;
