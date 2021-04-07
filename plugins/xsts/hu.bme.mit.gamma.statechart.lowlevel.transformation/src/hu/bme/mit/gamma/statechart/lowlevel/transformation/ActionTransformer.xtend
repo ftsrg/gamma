@@ -93,8 +93,7 @@ class ActionTransformer {
 		
 		val following = <Action>newLinkedList
 		following += actions
-		val next = following.removeFirst
-		block.actions += next.transformAction(following)
+		following.transformNext(block.actions)
 		 
 		if (block.actions.size == 1) {
 			return block.actions.head
@@ -118,12 +117,7 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		result += createEmptyStatement
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -134,12 +128,8 @@ class ActionTransformer {
 		// Create new following-context variable and do the transformations
 		val newFollowing = <Action>newLinkedList
 		newFollowing += action.actions
-
 		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		newFollowing.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -151,12 +141,7 @@ class ActionTransformer {
 		
 		variableDeclaration.transformValueDeclarationAction(result)
 		// Create new following-context variable and transform the following-context
-		var newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += next.transformAction(newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -167,12 +152,7 @@ class ActionTransformer {
 		
 		constantDeclaration.transformValueDeclarationAction(result)
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -209,12 +189,7 @@ class ActionTransformer {
 			throw new IllegalArgumentException("Non-inlined functions currently not allowed: " + action)
 		}
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -255,22 +230,23 @@ class ActionTransformer {
 		val List<Expression> guardExpressions = <Expression>newArrayList
 		val List<Action> guardPreconditions = <Action>newArrayList
 		for (conditional : action.conditionals) {
-			guardPreconditions += conditional.guard.transformPrecondition
-			guardExpressions += conditional.guard.transformExpression.getOnlyElement
-			if (conditional.guard instanceof ElseExpression) {
+			val guard = conditional.guard
+			guardPreconditions += guard.transformPrecondition
+			guardExpressions += guard.transformExpression.getOnlyElement
+			if (guard instanceof ElseExpression) {
 				elseFlag = true
 			}
 		}
 		result += guardPreconditions
 		// Transform the statement itself (including the following-context)
 		val transformedAction = createIfStatement => [
-			for (i : 0 .. action.conditionals.size - 1) {
+			val conditionals = action.conditionals
+			for (i : 0 .. conditionals.size - 1) {
 				it.conditionals += createBranch => [
 					it.guard = guardExpressions.get(i)
+					val oldAction = conditionals.get(i).action
 					it.action = createBlock => [
-						val newFollowing = <Action>newLinkedList
-						newFollowing += following
-						it.actions += action.conditionals.get(i).action.transformAction(newFollowing)
+						oldAction.transformNext(following, it.actions)
 					]
 				]
 			}
@@ -279,12 +255,7 @@ class ActionTransformer {
 			transformedAction.conditionals += createBranch => [
 				it.guard = createElseExpression
 				it.action = createBlock => [
-					val newFollowing = <Action>newLinkedList
-					newFollowing += following
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
+					following.transformNext(it.actions)
 				]
 			]
 		}
@@ -314,15 +285,15 @@ class ActionTransformer {
 		// Transform the statement itself (including the following-context)
 		val transformedAction = createIfStatement => [
 			for (i : 0 .. action.cases.size - 1) {
+				val caze = action.cases.get(i)
+				val oldAction = caze.action
 				it.conditionals += createBranch => [
 					it.guard = createEqualityExpression => [
 						it.leftOperand = controlExpression.transformExpression.getOnlyElement
 						it.rightOperand = guardExpressions.get(i)
 					]
 					it.action = createBlock => [
-						val newFollowing = <Action>newLinkedList
-						newFollowing += following
-						it.actions += action.cases.get(i).action.transformAction(newFollowing)
+						oldAction.transformNext(following, it.actions)
 					]
 				]
 			}
@@ -331,12 +302,7 @@ class ActionTransformer {
 			transformedAction.conditionals += createBranch => [
 				it.guard = createElseExpression
 				it.action = createBlock => [
-					val newFollowing = <Action>newLinkedList
-					newFollowing += following
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
+					following.transformNext(it.actions)
 				]
 			]
 		}
@@ -375,12 +341,7 @@ class ActionTransformer {
 		val first = unrolledFor.removeFirst
 		result += first.transformAction(unrolledFor)
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -406,13 +367,13 @@ class ActionTransformer {
 				]
 				it.action = createBlock => [
 					it.actions += createChoiceStatement => [
-						for (i : 0 .. action.branches.size - 1) {
+						val branches = action.branches
+						for (i : 0 .. branches.size - 1) {
 							it.branches += createBranch => [
 								it.guard = guardExpressions.get(i)
+								val oldAction = branches.get(i).action
 								it.action = createBlock => [
-									val newFollowing = <Action>newLinkedList
-									newFollowing += following
-									it.actions += action.branches.get(i).action.transformAction(newFollowing)
+									oldAction.transformNext(following, it.actions)
 								]
 							]
 						}
@@ -422,12 +383,7 @@ class ActionTransformer {
 			it.conditionals += createBranch => [
 				it.guard = createElseExpression
 				it.action = createBlock => [
-					val newFollowing = <Action>newLinkedList
-					newFollowing += following
-					if (newFollowing.size > 0) {
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
-					}
+					following.transformNext(it.actions)
 				]
 			]
 		]
@@ -495,14 +451,8 @@ class ActionTransformer {
 				it.rhs = rhs
 			]
 		}
-
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -525,34 +475,22 @@ class ActionTransformer {
 							]
 							it.rhs = createTrueExpression
 						]
-						val newFollowing = <Action>newLinkedList
-						newFollowing += following
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
+						following.transformNext(it.actions)
 					]
 				]
 				it.conditionals += createBranch => [
 					it.guard = createElseExpression
 					it.action = createBlock => [
-						val newFollowing = <Action>newLinkedList
-						newFollowing += following
-						val next = newFollowing.removeFirst
-						it.actions += next.transformAction(newFollowing)
+						following.transformNext(it.actions)
 					]
 				]
 			]
 			
 		}
-		else {	// ignore assertion and continue
+		else {	// Ignore assertion and continue
 			// Create new following-context variable and transform the following-context
-			val newFollowing = <Action>newLinkedList
-			newFollowing += following
-			if (newFollowing.size > 0) {
-				val next = newFollowing.removeFirst
-				result += transformAction(next, newFollowing)
-			}
+			following.transformNext(result)
 		}
-		
 		// Return the result
 		return result
 	}
@@ -589,12 +527,7 @@ class ActionTransformer {
 		]
 		result += flagRaising
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
@@ -614,18 +547,28 @@ class ActionTransformer {
 		]
 		result += clockInit
 		// Create new following-context variable and transform the following-context
-		val newFollowing = <Action>newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			var next = newFollowing.removeFirst
-			result += transformAction(next, newFollowing)
-		}
+		following.transformNext(result)
 		// Return the result
 		return result
 	}
 
 	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action, List<Action> following) {
 		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
+	}
+	
+	private def transformNext(List<Action> following, List<Action> result) {
+		val newFollowing = newLinkedList
+		newFollowing += following
+		if (newFollowing.size > 0) {
+			val next = newFollowing.removeFirst
+			result += next.transformAction(newFollowing)
+		}
+	}
+	
+	private def transformNext(Action action, List<Action> following, List<Action> result) {
+		val newFollowing = newArrayList
+		newFollowing += following
+		result += action.transformAction(newFollowing)
 	}
 	
 }

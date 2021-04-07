@@ -206,7 +206,8 @@ public class ExpressionModelDerivedFeatures {
 		final List<FieldHierarchy> exploredTypes = exploreComplexType2(type, currentField);
 		final List<SimpleEntry<ValueDeclaration, FieldHierarchy>> result = new ArrayList<>();
 		for (FieldHierarchy exploredType : exploredTypes) {
-			SimpleEntry<ValueDeclaration, FieldHierarchy> _pair = new SimpleEntry<ValueDeclaration, FieldHierarchy>(original, exploredType);
+			SimpleEntry<ValueDeclaration, FieldHierarchy> _pair =
+					new SimpleEntry<ValueDeclaration, FieldHierarchy>(original, exploredType);
 			result.add(_pair);
 		}
 		return result;
@@ -225,13 +226,16 @@ public class ExpressionModelDerivedFeatures {
 				final FieldHierarchy newCurrent = new FieldHierarchy();
 				newCurrent.add(currentField);
 				newCurrent.add(field);
-				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(ExpressionModelDerivedFeatures.getTypeDefinition(field.getType()), newCurrent);
+				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(
+						ExpressionModelDerivedFeatures.getTypeDefinition(field.getType()), newCurrent);
 				result.addAll(_exploreComplexType2);
 			}
 		}
 		else {
 			if (type instanceof ArrayTypeDefinition) {
-				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(ExpressionModelDerivedFeatures.getTypeDefinition(((ArrayTypeDefinition)type).getElementType()), currentField);
+				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(
+						ExpressionModelDerivedFeatures.getTypeDefinition(
+								((ArrayTypeDefinition)type).getElementType()), currentField);
 				result.addAll(_exploreComplexType2);
 			}
 			else {
