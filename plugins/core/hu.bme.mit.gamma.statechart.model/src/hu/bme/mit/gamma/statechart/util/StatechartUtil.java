@@ -77,6 +77,14 @@ public class StatechartUtil extends ActionUtil {
 	}
 	
 	@Override
+	public ReferenceExpression getAccessReference(Expression expression) {
+		if (expression instanceof EventParameterReferenceExpression) {
+			return (EventParameterReferenceExpression) expression;
+		}
+		return super.getAccessReference(expression);
+	}
+	
+	@Override
 	public Declaration getAccessedDeclaration(Expression expression) {
 		if (expression instanceof EventParameterReferenceExpression) {
 			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) expression;

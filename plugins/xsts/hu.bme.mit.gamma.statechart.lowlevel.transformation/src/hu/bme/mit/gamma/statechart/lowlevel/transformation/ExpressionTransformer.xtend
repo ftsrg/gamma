@@ -16,7 +16,6 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BinaryExpression
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
@@ -24,25 +23,21 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
-import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
-import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
@@ -131,93 +126,113 @@ class ExpressionTransformer {
 		return result
 	}
 	
+	def transformReferenceExpression(ReferenceExpression expression) {
+		val fieldAccess = expression.fieldAccess
+		val indexes = expression.indexAccess
+		val lowlevelIndexes = indexes.map[it.transformExpression.onlyElement].toList
+		
+		val reference = expression.accessReference
+		var VariableDeclaration lowlevelVariable = null
+		if (reference instanceof DirectReferenceExpression) {
+			val declaration = reference.declaration as ValueDeclaration
+			lowlevelVariable = trace.get(declaration -> fieldAccess)
+		}
+		else if (reference instanceof EventParameterReferenceExpression) {
+			val port = reference.port
+			val event = reference.event
+			val parameter = reference.parameter
+			lowlevelVariable = trace.getInParameter(port, event, parameter -> fieldAccess)
+		}
+		
+		return lowlevelVariable.index(lowlevelIndexes) // Simple reference if indexes are empty
+	}
+	
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
 		val result = <Expression>newArrayList
 		
-		val operandDeclaration = expression.accessedDeclaration
-		if (operandDeclaration instanceof ValueDeclaration) {
-			val originalLhsVariables = exploreComplexType(operandDeclaration)
-			val recordAccessList = expression.collectRecordAccessList
-	
-			for (elem : originalLhsVariables) {
-				val fieldHierarchy = elem.value
-				if (isSameAccessTree(fieldHierarchy, recordAccessList)) { // Filter according to the access list
-					// Create references
-					result += createDirectReferenceExpression => [
-						it.declaration = trace.get(elem)
-					]
-				}
-			}
-		}
+		result += expression.transformReferenceExpression
+			
+//			val originalLhsVariables = exploreComplexType(operandDeclaration)
+//			val recordAccessList = expression.collectRecordAccessList
+//	
+//			for (elem : originalLhsVariables) {
+//				val fieldHierarchy = elem.value
+//				if (isSameAccessTree(fieldHierarchy, recordAccessList)) { // Filter according to the access list
+//					// Create references
+//					result += createDirectReferenceExpression => [
+//						it.declaration = trace.get(elem)
+//					]
+//				}
+//			}
 		// Function return variables do not exist on the high-level
-		else if (operandDeclaration instanceof FunctionDeclaration) {
-			var currentAccess = expression.operand as AccessExpression
-			while (!(currentAccess instanceof FunctionAccessExpression)) {
-				currentAccess = currentAccess.operand as AccessExpression
-			}
-			val functionAccess = currentAccess as FunctionAccessExpression
-			val functionReturnVariables = if (trace.isMapped(functionAccess)) {
-				trace.get(functionAccess)
-			}
-			else {
-				newArrayList
-			}
-			// FIXME is this correct? it is a variable declaration, whereas the rhs is a field declaration
-			val returnVariable = functionReturnVariables.filter[
-					it == expression.fieldReference.fieldDeclaration].onlyElement
-			result += createDirectReferenceExpression => [
-				it.declaration = returnVariable
-			]
-		}
+//		else if (operandDeclaration instanceof FunctionDeclaration) {
+//			var currentAccess = expression.operand as AccessExpression
+//			while (!(currentAccess instanceof FunctionAccessExpression)) {
+//				currentAccess = currentAccess.operand as AccessExpression
+//			}
+//			val functionAccess = currentAccess as FunctionAccessExpression
+//			val functionReturnVariables = if (trace.isMapped(functionAccess)) {
+//				trace.get(functionAccess)
+//			}
+//			else {
+//				newArrayList
+//			}
+//			// FIXME is this correct? it is a variable declaration, whereas the rhs is a field declaration
+//			val returnVariable = functionReturnVariables.filter[
+//					it == expression.fieldReference.fieldDeclaration].onlyElement
+//			result += createDirectReferenceExpression => [
+//				it.declaration = returnVariable
+//			]
+//		}
 		return result
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
 		val result = <Expression>newArrayList
 		
-		// find original declaration and get the keys of the transformation
-		val originalDeclaration = expression.accessedDeclaration
-		val originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
-			exploreComplexType(originalDeclaration)
-		}
-		else {
-			throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration)
-		}
-		// explore the chain of access expressions
-		val arrayAccessList = expression.collectAccessList
-		val recordAccessList = expression.collectRecordAccessList
-		
-		// if 'simple' array
-		if (recordAccessList.empty) {
-			val transformedOperands = expression.operand.transformExpression
-			for (operand : transformedOperands) {
-				result += createArrayAccessExpression => [
-					it.operand = operand
-					it.indexes += expression.indexes.onlyElement
-							.transformExpression.onlyElement
-				]
-			}	
-		} 
-		else {
-			// else filter based on the corresponding subtree
-			for (elem : originalLhsVariables) {	
-				if (isSameAccessTree(elem.value, recordAccessList)) { //filter according to the access list
-					// Create references
-					var ReferenceExpression current = createDirectReferenceExpression => [
-						it.declaration = trace.get(elem)
-					]
-					for (argument : arrayAccessList) {
-						val currentConst = current
-						val argumentConst = argument
-						current = createArrayAccessExpression => [
-							it.operand = currentConst
-							it.indexes += argumentConst
-						]
-					}
-					result += current
-				}
-			}
-		}
+		result += expression.transformReferenceExpression
+			
+//		val originalLhsVariables = if (originalDeclaration instanceof ValueDeclaration) {
+//			exploreComplexType(originalDeclaration)
+//		}
+//		else {
+//			throw new IllegalArgumentException("Not an accessible value type: " + originalDeclaration)
+//		}
+//		// explore the chain of access expressions
+//		val arrayAccessList = expression.collectAccessList
+//		val recordAccessList = expression.collectRecordAccessList
+//		
+//		// if 'simple' array
+//		if (recordAccessList.empty) {
+//			val transformedOperands = expression.operand.transformExpression
+//			for (operand : transformedOperands) {
+//				result += createArrayAccessExpression => [
+//					it.operand = operand
+//					it.indexes += expression.indexes.onlyElement
+//							.transformExpression.onlyElement
+//				]
+//			}	
+//		} 
+//		else {
+//			// else filter based on the corresponding subtree
+//			for (elem : originalLhsVariables) {	
+//				if (isSameAccessTree(elem.value, recordAccessList)) { //filter according to the access list
+//					// Create references
+//					var ReferenceExpression current = createDirectReferenceExpression => [
+//						it.declaration = trace.get(elem)
+//					]
+//					for (argument : arrayAccessList) {
+//						val currentConst = current
+//						val argumentConst = argument
+//						current = createArrayAccessExpression => [
+//							it.operand = currentConst
+//							it.indexes += argumentConst
+//						]
+//					}
+//					result += current
+//				}
+//			}
+//		}
 		return result		
 	}
 	
@@ -252,25 +267,26 @@ class ExpressionTransformer {
 
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
 		val result = <Expression>newArrayList
-		val declaration = expression.declaration
-		if (declaration instanceof ValueDeclaration) {
-			checkState(declaration instanceof VariableDeclaration || 
-				declaration instanceof ParameterDeclaration ||
-				declaration instanceof ConstantDeclaration, declaration)
-			if (trace.isMapped(declaration)) {	// If mapped as simple
-				result += createDirectReferenceExpression => [
-					it.declaration = trace.get(declaration)
-				]	
-			}
-			else { // If not as simple, try as complex
-				var mapKeys = exploreComplexType(declaration)
-				for (key : mapKeys) {
-					result += createDirectReferenceExpression => [
-						it.declaration = trace.get(key)
-					]
-				}
-			}
-		}
+//		val declaration = expression.declaration
+//		if (declaration instanceof ValueDeclaration) {
+//			checkState(declaration instanceof VariableDeclaration || 
+//				declaration instanceof ParameterDeclaration ||
+//				declaration instanceof ConstantDeclaration, declaration)
+		result += expression.transformReferenceExpression
+//			if (trace.isMapped(declaration)) {	// If mapped as simple
+//				result += createDirectReferenceExpression => [
+//					it.declaration = trace.get(declaration)
+//				]	
+//			}
+//			else { // If not as simple, try as complex
+//				var mapKeys = exploreComplexType(declaration)
+//				for (key : mapKeys) {
+//					result += createDirectReferenceExpression => [
+//						it.declaration = trace.get(key)
+//					]
+//				}
+//			}
+//		}
 		return result
 	}
 	
@@ -278,7 +294,7 @@ class ExpressionTransformer {
 		val result = <Expression>newArrayList
 		val gammaEnumLiteral = expression.reference
 		val index = gammaEnumLiteral.index
-		val gammaEnumTypeDeclaration = gammaEnumLiteral.getContainerOfType(TypeDeclaration)
+		val gammaEnumTypeDeclaration = gammaEnumLiteral.typeDeclaration
 		checkState(trace.isMapped(gammaEnumTypeDeclaration))
 		val lowlevelEnumTypeDeclaration = trace.get(gammaEnumTypeDeclaration)
 		val lowlevelEnumTypeDefinition = lowlevelEnumTypeDeclaration.type as EnumerationTypeDefinition
@@ -299,12 +315,11 @@ class ExpressionTransformer {
 	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		val result = <Expression>newArrayList
-		val port = expression.port
-		val event = expression.event
-		val parameter = expression.parameter
-		result +=  createDirectReferenceExpression => [
-			it.declaration = trace.get(port, event, parameter).get(EventDirection.IN)
-		]
+//		val port = expression.port
+//		val event = expression.event
+//		val parameter = expression.parameter
+//		result += trace.get(port, event, parameter).get(EventDirection.IN).createReferenceExpression
+		result += expression.transformReferenceExpression
 		return result
 	}
 	
@@ -387,21 +402,22 @@ class ExpressionTransformer {
 		var randomElemKey = randomElem.key	//equals referredDeclaration
 		var int i = 0	// number of the array elements 
 		// if mapped as complex and is an array
-		if (trace.isMapped(randomElem)) {
-			val element = trace.get(randomElem)
-			val type = element.typeDefinition
-			if (type instanceof ArrayTypeDefinition) {
-				i = type.size.value.intValue
-			}
-		} 
-		// if mapped as simple variable and is an array
-		if (trace.isMapped(randomElemKey)) {
-			val lowlevelDeclaration = trace.get(randomElemKey)
-			val typeDefinition = lowlevelDeclaration.typeDefinition
-			if (typeDefinition instanceof ArrayTypeDefinition) {
-				i = typeDefinition.size.value.intValue
-			}
-		}
+		// TODO I do not know what this does
+//		if (trace.isMapped(randomElem)) {
+//			val element = trace.get(randomElem)
+//			val type = element.typeDefinition
+//			if (type instanceof ArrayTypeDefinition) {
+//				i = type.size.value.intValue
+//			}
+//		} 
+//		// if mapped as simple variable and is an array
+//		if (trace.isMapped(randomElemKey)) {
+//			val lowlevelDeclaration = trace.get(randomElemKey)
+//			val typeDefinition = lowlevelDeclaration.typeDefinition
+//			if (typeDefinition instanceof ArrayTypeDefinition) {
+//				i = typeDefinition.size.value.intValue
+//			}
+//		}
 		
 		for (var j = 0; j < i; j++) {	// running variable for the array indices
 			val temp = j	//to use inside a lambda

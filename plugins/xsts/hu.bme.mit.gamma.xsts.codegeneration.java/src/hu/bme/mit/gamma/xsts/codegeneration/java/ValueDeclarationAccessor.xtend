@@ -40,7 +40,7 @@ class ValueDeclarationAccessor {
 	
 	protected def access(String objectId, ValueDeclaration declaration, Queue<String> fieldNames) {
 		val type = declaration.typeDefinition
-		if (type.isNativelySupported) {
+		if (type.native) {
 			return '''«objectId».get«fieldNames.remove.toFirstUpper»()'''
 		}
 		if (type instanceof RecordTypeDefinition) {
@@ -62,7 +62,7 @@ class ValueDeclarationAccessor {
 	def writeIn(String objectId, Port port, ParameterDeclaration declaration, String valueId) {
 		val type = declaration.typeDefinition
 		val fieldNames = declaration.customizeInNames(port)
-		if (type.isNativelySupported) {
+		if (type.native) {
 			return '''«objectId».set«fieldNames.get(0).toFirstUpper»(«valueId»);'''
 		}
 		if (type instanceof RecordTypeDefinition) {

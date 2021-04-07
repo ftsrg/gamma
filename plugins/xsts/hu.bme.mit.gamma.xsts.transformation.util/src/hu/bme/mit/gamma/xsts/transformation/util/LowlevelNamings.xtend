@@ -1,5 +1,6 @@
 package hu.bme.mit.gamma.xsts.transformation.util
 
+import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
@@ -43,9 +44,14 @@ class LowlevelNamings {
 		return variable.namePostfixes.map['''«variable.getName»«it»''']
 	}
 	
+	static def List<String> getNames(ConstantDeclaration variable) {
+		return variable.namePostfixes.map['''«variable.getName»«it»''']
+	}
+	
 	protected static def List<String> getNamePostfixes(ValueDeclaration variable) {
 		val type = variable.typeDefinition
-		val hierarchyList = type.exploreComplexType2
+//		val hierarchyList = type.exploreComplexType2
+		val hierarchyList = type.fieldHierarchies
 		return hierarchyList.names
 	}
 	

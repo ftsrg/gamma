@@ -89,7 +89,7 @@ public class ExpressionUtil {
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	/**
-	 * Worth overriding (extending) in subclasses.
+	 * Worth extending in subclasses.
 	 */
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
@@ -117,6 +117,23 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
+	/**
+	 * Worth extending in subclasses.
+	 */
+	public ReferenceExpression getAccessReference(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			return (DirectReferenceExpression) expression;
+		}
+		if (expression instanceof AccessExpression) {
+			AccessExpression access = (AccessExpression) expression;
+			return getAccessReference(access.getOperand());
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
+	}
+	
+	/**
+	 * Worth extending in subclasses.
+	 */
 	public Declaration getAccessedDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
@@ -130,7 +147,7 @@ public class ExpressionUtil {
 	}
 	
 	/**
-	 * Worth overriding (extending) in subclasses.
+	 * Worth extending in subclasses.
 	 */
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
@@ -853,7 +870,7 @@ public class ExpressionUtil {
 		return integerLiteral;
 	}
 	
-	public ReferenceExpression createReferenceExpression(VariableDeclaration variable) {
+	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);
 		return reference;
@@ -903,6 +920,17 @@ public class ExpressionUtil {
 		}
 		potentialContainer.getOperands().addAll(expressions);
 		return potentialContainer;
+	}
+	
+	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {
+		ReferenceExpression referenceExpression = createReferenceExpression(declaration);
+		if (indexes.isEmpty()) {
+			return referenceExpression;
+		}
+		ArrayAccessExpression access = factory.createArrayAccessExpression();
+		access.setOperand(referenceExpression);
+		access.getIndexes().addAll(ecoreUtil.clone(indexes));
+		return access;
 	}
 	
 }

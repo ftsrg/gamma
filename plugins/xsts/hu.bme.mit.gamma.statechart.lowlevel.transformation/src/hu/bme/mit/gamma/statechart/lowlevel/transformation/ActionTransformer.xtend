@@ -25,14 +25,12 @@ import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.CompositeTypeDefinition
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -50,7 +48,6 @@ import java.util.Stack
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -164,7 +161,7 @@ class ActionTransformer {
 			initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
 		
-		val lowlevelVariableDeclarations = valueDeclaration.transformValue
+		val lowlevelVariableDeclarations = valueDeclaration.transform
 		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = lowlevelVariableDeclaration
@@ -317,7 +314,7 @@ class ActionTransformer {
 		// enumerate parameter values
 		val parameterValues = action.range.enumerateExpression
 		// TRANSFORM parameter variable and add to the result
-		val parameterVariableDeclarations = action.parameter.transformValue
+		val parameterVariableDeclarations = action.parameter.transformFunctionParameter
 		result += parameterVariableDeclarations.map[vari |
 			createVariableDeclarationStatement => [
 				it.variableDeclaration = vari
@@ -397,42 +394,43 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		// Get the referred high-level declaration (assuming a single, assignable element)
 		val actionLhs = action.lhs
-		val referredDeclaration = actionLhs.accessedDeclaration as ValueDeclaration
-		checkState(referredDeclaration instanceof VariableDeclaration ||
-			referredDeclaration instanceof ParameterDeclaration) // Transformed to assignable type (=variable)
-		// Transform lhs
 		val List<ReferenceExpression> lowlevelLhs = newArrayList
-		val typeToAssign = referredDeclaration.typeDefinition
-		if (typeToAssign instanceof CompositeTypeDefinition) {
-			val originalLhsFields = referredDeclaration.exploreComplexType
-			// access expressions
-			val recordAccessList = actionLhs.collectRecordAccessList
-			for (elem : originalLhsFields) {
-				val key = elem.key
-				val value = elem.value
-				if (isSameAccessTree(value, recordAccessList)) { // Filter according to the access list
-					// Create lhs
-					lowlevelLhs += createDirectReferenceExpression => [
-						if (trace.isMapped(elem)) {	// Mapped as complex type
-							it.declaration = trace.get(elem)
-						}
-						else if (trace.isMapped(key)) {	// Simple arrays are mapped as a simple type (either var or par)
-							it.declaration = trace.get(key)
-						}
-						else {
-							throw new IllegalArgumentException("Transformed variable declaration not found!")
-						}
-					]
-				}
-			}
-		}
-		else {
-			lowlevelLhs += createDirectReferenceExpression => [
-				if (trace.isMapped(referredDeclaration)) {
-					it.declaration = trace.get(referredDeclaration)
-				}
-			]
-		}
+		lowlevelLhs += actionLhs.transformReferenceExpression
+//		val referredDeclaration = actionLhs.accessedDeclaration as ValueDeclaration
+//		checkState(referredDeclaration instanceof VariableDeclaration ||
+//			referredDeclaration instanceof ParameterDeclaration) // Transformed to assignable type (=variable)
+//		// Transform lhs
+//		val typeToAssign = referredDeclaration.typeDefinition
+//		if (typeToAssign instanceof CompositeTypeDefinition) {
+//			val originalLhsFields = referredDeclaration.exploreComplexType
+//			// access expressions
+//			val recordAccessList = actionLhs.collectRecordAccessList
+//			for (elem : originalLhsFields) {
+//				val key = elem.key
+//				val value = elem.value
+//				if (isSameAccessTree(value, recordAccessList)) { // Filter according to the access list
+//					// Create lhs
+//					lowlevelLhs += createDirectReferenceExpression => [
+//						if (trace.isMapped(elem)) {	// Mapped as complex type
+//							it.declaration = trace.get(elem)
+//						}
+//						else if (trace.isMapped(key)) {	// Simple arrays are mapped as a simple type (either var or par)
+//							it.declaration = trace.get(key)
+//						}
+//						else {
+//							throw new IllegalArgumentException("Transformed variable declaration not found!")
+//						}
+//					]
+//				}
+//			}
+//		}
+//		else {
+//			lowlevelLhs += createDirectReferenceExpression => [
+//				if (trace.isMapped(referredDeclaration)) {
+//					it.declaration = trace.get(referredDeclaration)
+//				}
+//			]
+//		}
 		val actionRhs = action.rhs
 		// Get rhs precondition
 		val lowlevelPrecondition = actionRhs.transformPrecondition

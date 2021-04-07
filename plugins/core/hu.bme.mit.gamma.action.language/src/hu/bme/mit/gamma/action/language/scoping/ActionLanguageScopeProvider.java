@@ -24,6 +24,8 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -128,16 +130,29 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				return getFieldDeclarations(declaration);
 			}
 		}
+		if (operand instanceof ArrayAccessExpression) {
+			ArrayAccessExpression reference = (ArrayAccessExpression) operand;
+			Expression accessedExpression = reference.getOperand();
+			return getFieldDeclarations(accessedExpression);
+		}
 		return Collections.emptyList();
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Declaration declaration) {
 		Type type = declaration.getType();
+		return getFieldDeclarations(type);
+	}
+	
+	protected List<FieldDeclaration> getFieldDeclarations(Type type) {
 		if (type != null) {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
 			if (typeDefinition instanceof RecordTypeDefinition) {
 				RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
 				return record.getFieldDeclarations();
+			}
+			if (typeDefinition instanceof ArrayTypeDefinition) {
+				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+				return getFieldDeclarations(array.getElementType());
 			}
 		}
 		return Collections.emptyList();

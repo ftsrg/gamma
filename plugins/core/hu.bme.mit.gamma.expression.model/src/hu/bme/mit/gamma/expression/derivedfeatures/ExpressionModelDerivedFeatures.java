@@ -13,9 +13,11 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 
+import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
@@ -67,13 +69,29 @@ public class ExpressionModelDerivedFeatures {
 	}
 	
 	public static boolean isPrimitive(Type type) {
-		return type instanceof BooleanTypeDefinition || type instanceof IntegerTypeDefinition ||
-				type instanceof DecimalTypeDefinition || type instanceof RationalTypeDefinition;
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return typeDefinition instanceof BooleanTypeDefinition || typeDefinition instanceof IntegerTypeDefinition ||
+				typeDefinition instanceof DecimalTypeDefinition || typeDefinition instanceof RationalTypeDefinition;
 	}
 	
-	public static boolean isNativelySupported(Type type) {
+	public static boolean isNative(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
-		return isPrimitive(type) || typeDefinition instanceof EnumerationTypeDefinition;
+		return isPrimitive(typeDefinition) || typeDefinition instanceof EnumerationTypeDefinition;
+	}
+	
+	public static boolean isArray(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return typeDefinition instanceof ArrayTypeDefinition;
+	}
+	
+	public static boolean isRecord(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return typeDefinition instanceof RecordTypeDefinition;
+	}
+	
+	public static boolean isComplex(Type type) {
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		return isRecord(typeDefinition) || isArray(typeDefinition);
 	}
 	
 	public static TypeDefinition getTypeDefinition(Declaration declaration) {
@@ -137,33 +155,144 @@ public class ExpressionModelDerivedFeatures {
 		return values;
 	}
 	
-	public static int countAllFields(RecordTypeDefinition record) {
-		return exploreComplexType2(record).size();
-	}
-	
-	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(RecordTypeDefinition record) {
-		List<TypeDeclaration> typeDeclarations = getSelfAndAllTypeDeclarations(record);
-		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(record, TypeDeclaration.class);
-		typeDeclarations.add(0, typeDeclaration);
+	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(Type type) {
+		List<TypeDeclaration> typeDeclarations = getAllTypeDeclarations(type);
+		if (type instanceof TypeDefinition) {
+			TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
+			typeDeclarations.add(0, typeDeclaration);
+		}
 		return typeDeclarations;
 	}
 	
-	public static List<TypeDeclaration> getAllTypeDeclarations(RecordTypeDefinition record) {
+	public static List<TypeDeclaration> getAllTypeDeclarations(Type type) {
 		List<TypeDeclaration> typeDeclarations = new ArrayList<TypeDeclaration>();
-		for (FieldDeclaration field : record.getFieldDeclarations()) {
-			Type type = field.getType();
-			if (type instanceof TypeReference) {
-				TypeReference typeReference = (TypeReference) type;
-				TypeDeclaration typeDeclaration = typeReference.getReference();
-				typeDeclarations.add(typeDeclaration);
-				Type typeDefinition = typeDeclaration.getType();
-				if (typeDefinition instanceof RecordTypeDefinition) {
-					RecordTypeDefinition subrecord = (RecordTypeDefinition) typeDefinition;
-					typeDeclarations.addAll(getAllTypeDeclarations(subrecord));
+		if (type instanceof TypeReference) {
+			TypeReference typeReference = (TypeReference) type;
+			TypeDeclaration typeDeclaration = typeReference.getReference();
+			typeDeclarations.add(typeDeclaration);
+			Type typeDefinition = typeDeclaration.getType();
+			if (typeDefinition instanceof RecordTypeDefinition) {
+				RecordTypeDefinition subrecord = (RecordTypeDefinition) typeDefinition;
+				for (FieldDeclaration field : subrecord.getFieldDeclarations()) {
+					Type fieldType = field.getType();
+					typeDeclarations.addAll(getAllTypeDeclarations(fieldType));
 				}
+			}
+			else if (typeDefinition instanceof ArrayTypeDefinition) {
+				ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+				Type elementType = array.getElementType();
+				typeDeclarations.addAll(getAllTypeDeclarations(elementType));
 			}
 		}
 		return typeDeclarations;
+	}
+	
+	public static List<FieldHierarchy> getFieldHierarchies(Type type) {
+		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof RecordTypeDefinition) {
+			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+			for (FieldDeclaration field : record.getFieldDeclarations()) {
+				Type fieldType = field.getType();
+				List<FieldHierarchy> hierarchies = getFieldHierarchies(fieldType);
+				for (FieldHierarchy hierarchy : hierarchies) {
+					hierarchy.prepend(field);
+					fieldHierarchies.add(hierarchy);
+				}
+			}
+		}
+		else if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+			Type arrayType = array.getElementType();
+			fieldHierarchies.addAll(getFieldHierarchies(arrayType));
+		}
+		else {
+			// Primitive type
+			fieldHierarchies.add(new FieldHierarchy());
+		}
+		return fieldHierarchies;
+	}
+	
+	/**
+	 * To every field hierarchy (getFieldHierarchies), a single native type
+	 * (possibly a multidimensional array) belongs.
+	 */
+	public static List<Type> getNativeTypes(Type type) {
+		List<Type> nativeTypes = new ArrayList<Type>();
+		TypeDefinition typeDefinition = getTypeDefinition(type);
+		if (typeDefinition instanceof RecordTypeDefinition) {
+			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
+			for (FieldDeclaration field : record.getFieldDeclarations()) {
+				Type fieldType = field.getType();
+				nativeTypes.addAll(getNativeTypes(fieldType));
+			}
+		}
+		else if (typeDefinition instanceof ArrayTypeDefinition) {
+			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
+			Type arrayType = array.getElementType();
+			for (Type nativeType : getNativeTypes(arrayType)) {
+				ArrayTypeDefinition newArrayType = ecoreUtil.clone(array);
+				newArrayType.setElementType(ecoreUtil.clone(nativeType));
+				nativeTypes.add(newArrayType);
+			}
+		}
+		else {
+			// Primitive types or enum (not type definition, as enum needs a type declaration)
+			nativeTypes.add(type);
+		}
+		return nativeTypes;
+	}
+	
+	public static List<Expression> getAccesses(Expression expression) {
+		List<Expression> accesses = new ArrayList<Expression>();
+		if (expression instanceof ArrayAccessExpression) {
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Expression operand = arrayAccessExpression.getOperand();
+			if (operand instanceof AccessExpression) {
+				accesses.addAll(getAccesses(operand));
+			}
+			accesses.addAll(arrayAccessExpression.getIndexes());
+		}
+		else if (expression instanceof RecordAccessExpression) {
+			RecordAccessExpression recordAccess = (RecordAccessExpression) expression;
+			Expression operand = recordAccess.getOperand();
+			if (operand instanceof AccessExpression) {
+				accesses.addAll(getAccesses(operand));
+			}
+			accesses.add(recordAccess.getFieldReference());
+		}
+		else if (expression instanceof SelectExpression) {
+			SelectExpression select = (SelectExpression) expression;
+			Expression operand = select.getOperand();
+			if (operand instanceof AccessExpression) {
+				accesses.addAll(getAccesses(operand));
+			}
+		}
+		return accesses;
+	}
+	
+	public static FieldHierarchy getFieldAccess(Expression expression) {
+		List<FieldReferenceExpression> fieldAccesses =
+				javaUtil.filter(getAccesses(expression), FieldReferenceExpression.class);
+		List<FieldDeclaration> fieldDeclarations = fieldAccesses.stream()
+				.map(it -> it.getFieldDeclaration()).collect(Collectors.toList());
+		return new FieldHierarchy(fieldDeclarations);
+	}
+	
+	public static List<Expression> getIndexAccess(Expression expression) {
+		List<Expression> accesses = getAccesses(expression);
+		List<FieldReferenceExpression> recordAccesses =
+				javaUtil.filter(accesses, FieldReferenceExpression.class);
+		accesses.removeAll(recordAccesses);
+		return accesses;
+	}
+	
+	///////////////
+	// Deprecated old array and record handling
+	///////////////
+	
+	public static List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
+		return javaUtil.filter(collectAccessList(exp), FieldReferenceExpression.class);
 	}
 	
 	public static List<FieldHierarchy> getAllFieldHierarchies(RecordTypeDefinition record) {
@@ -259,12 +388,13 @@ public class ExpressionModelDerivedFeatures {
 		}
 		else {
 			if (exp instanceof RecordAccessExpression) {
-				final Expression inner_1 = ((RecordAccessExpression)exp).getOperand();
+				RecordAccessExpression recordAccess = (RecordAccessExpression) exp;
+				final Expression inner_1 = recordAccess.getOperand();
 				if (inner_1 instanceof ReferenceExpression) {
 					List<Expression> _collectAccessList_1 = collectAccessList((ReferenceExpression)inner_1);
 					result.addAll(_collectAccessList_1);
 				}
-				FieldReferenceExpression _fieldReference = ((RecordAccessExpression)exp).getFieldReference();
+				FieldReferenceExpression _fieldReference = recordAccess.getFieldReference();
 				result.add(_fieldReference);
 			}
 			else {
@@ -281,10 +411,6 @@ public class ExpressionModelDerivedFeatures {
 			}
 		}
 		return result;
-	}
-		
-	public static List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
-		return javaUtil.filter(collectAccessList(exp), FieldReferenceExpression.class);
 	}
 		
 	public static boolean isSameAccessTree(FieldHierarchy fieldHierarchy,

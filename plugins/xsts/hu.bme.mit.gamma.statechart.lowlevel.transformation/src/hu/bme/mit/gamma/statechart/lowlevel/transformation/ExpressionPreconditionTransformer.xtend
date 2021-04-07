@@ -241,7 +241,7 @@ class ExpressionPreconditionTransformer {
 				val List<VariableDeclarationStatement> parameterVariables = newLinkedList
 				val parameterDeclarations = function.parameterDeclarations
 				for (i : 0 .. parameterDeclarations.size - 1) {
-					var parameterVariableDeclarations = parameterDeclarations.get(i).transformValue
+					var parameterVariableDeclarations = parameterDeclarations.get(i).transformFunctionParameter
 					parameterVariables += parameterVariableDeclarations.map[vari |
 						createVariableDeclarationStatement => [
 							it.variableDeclaration = vari
