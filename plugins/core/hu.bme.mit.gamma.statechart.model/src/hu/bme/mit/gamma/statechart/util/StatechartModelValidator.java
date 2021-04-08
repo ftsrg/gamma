@@ -178,7 +178,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkUnsupportedVariableTypes(VariableDeclaration variable) {
-		Type type = expressionUtil.findTypeDefinitionOfType(variable.getType());
+		Type type = StatechartModelDerivedFeatures.getTypeDefinition(variable.getType());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(type instanceof IntegerTypeDefinition ||
 			  type instanceof BooleanTypeDefinition || 

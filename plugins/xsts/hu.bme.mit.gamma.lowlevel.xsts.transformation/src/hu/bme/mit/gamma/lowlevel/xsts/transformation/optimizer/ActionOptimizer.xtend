@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
@@ -26,6 +25,7 @@ import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.model.XTransition
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.Collection
 import java.util.List
 
@@ -38,7 +38,7 @@ class ActionOptimizer {
 	public static final ActionOptimizer INSTANCE =  new ActionOptimizer
 	protected new() {}
 	// Auxiliary objects
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	// Model factories
 	protected final ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE
@@ -564,10 +564,7 @@ class ActionOptimizer {
 			val firstAction = branch.firstAtomicAction
 			if (firstAction instanceof AssumeAction) {
 				if (firstAction.isDefinitelyFalseAssumeAction) {
-					val falseAssume = createAssumeAction => [
-						it.assumption = expressionFactory.createFalseExpression
-					]
-					branch.replace(falseAssume)
+					branch.remove
 				}
 				else {
 					branch.deleteDefinitelyFalseBranches

@@ -58,6 +58,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
+import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
@@ -71,7 +72,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -88,9 +88,7 @@ public class ExpressionUtil {
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
-	/**
-	 * Worth extending in subclasses.
-	 */
+	// Worth extending in subclasses
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
@@ -117,9 +115,7 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	/**
-	 * Worth extending in subclasses.
-	 */
+	// Worth extending in subclasses
 	public ReferenceExpression getAccessReference(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			return (DirectReferenceExpression) expression;
@@ -131,9 +127,7 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	/**
-	 * Worth extending in subclasses.
-	 */
+	// Worth extending in subclasses
 	public Declaration getAccessedDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
@@ -146,33 +140,13 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	/**
-	 * Worth extending in subclasses.
-	 */
+	// Worth extending in subclasses
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
 		return _package.getTypeDeclarations();
 	}
 	
-	//
-	
-	public FieldAssignment getFieldAssignment(
-			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
-		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
-		FieldAssignment fieldAssignment = null;
-		for (FieldDeclaration field : fieldHierarchy.getFields()) {
-			fieldAssignment = fieldAssignments.stream().filter(it -> 
-				it.getReference().getFieldDeclaration() == field).findFirst().get();
-			Expression fieldValue = fieldAssignment.getValue();
-			if (fieldValue instanceof RecordLiteralExpression) {
-				RecordLiteralExpression subrecord = (RecordLiteralExpression) fieldValue;
-				fieldAssignments = subrecord.getFieldAssignments();
-			}
-		}
-		return fieldAssignment;
-	}
-	
-	//
+	// Expression optimization
 	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
@@ -455,6 +429,15 @@ public class ExpressionUtil {
 	public Expression subtract(Expression expression, int value) {
 		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
 		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) - value));
+		return integerLiteralExpression;
+	}
+	
+	public Expression wrapIntoMultiply(Expression expression, int value) {
+		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
+		multiplyExpression.getOperands().add(expression);
+		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
+		integerLiteralExpression.setValue(BigInteger.valueOf(value));
+		multiplyExpression.getOperands().add(integerLiteralExpression);
 		return integerLiteralExpression;
 	}
 
@@ -812,19 +795,7 @@ public class ExpressionUtil {
 		}
 	}
 	
-	// Types
-	
-	public TypeDefinition findTypeDefinitionOfType(Type type) {
-		if (type instanceof TypeDefinition) {
-			return (TypeDefinition) type;
-		}
-		else {
-			// type instanceof TypeReference
-			TypeReference typeReference = (TypeReference) type;
-			TypeDeclaration typeDeclaration = typeReference.getReference();
-			return findTypeDefinitionOfType(typeDeclaration.getType());
-		}
-	}
+	// Variable handling
 	
 	public TypeDeclaration wrapIntoDeclaration(Type type, String name) {
 		TypeDeclaration declaration = factory.createTypeDeclaration();
@@ -932,6 +903,26 @@ public class ExpressionUtil {
 		access.setOperand(index(declaration, indexes.subList(0, index)));
 		access.setIndex(lastIndex);
 		return access;
+	}
+	
+	// Unwrapper
+	
+	public Expression unwrapIfPossible(Expression expression) {
+		if (expression instanceof MultiaryExpression) {
+			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
+			List<Expression> operands = multiaryExpression.getOperands();
+			int size = operands.size();
+			if (size >= 2) {
+				return multiaryExpression;
+			}
+			if (size == 1) {
+				return unwrapIfPossible(operands.get(0));
+			}
+			else {
+				throw new IllegalStateException("Empty expression" + expression + " " + size);
+			}
+		}
+		return expression;
 	}
 	
 }

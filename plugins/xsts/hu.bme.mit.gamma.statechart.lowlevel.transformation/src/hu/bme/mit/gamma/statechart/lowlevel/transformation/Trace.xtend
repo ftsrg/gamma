@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
+import hu.bme.mit.gamma.util.Triple
 import java.util.AbstractMap.SimpleEntry
 import java.util.List
 import java.util.Map
@@ -44,7 +45,6 @@ package class Trace {
 	// Map is needed as a value because an INOUT is transformed to an IN and an OUT event
 	final Map<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = newHashMap
 	final Map<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = newHashMap
-//	final Map<Triple<Port, Event, ParameterDeclaration>, Map<EventDirection, VariableDeclaration>> paramMappings = newHashMap
 	//
 	final Map<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component> componentMappings = newHashMap
 	// Event parameters
@@ -53,9 +53,7 @@ package class Trace {
 	// Simple and complex variable mappings
 	final Map<Pair<ValueDeclaration, FieldHierarchy>, VariableDeclaration> valDeclMappings = newHashMap
 	final Map<TimeoutDeclaration, VariableDeclaration> timeoutDeclMappings = newHashMap
-//	final Map<ParameterDeclaration, VariableDeclaration> parDeclMappings = newHashMap
-//	final Map<VariableDeclaration, VariableDeclaration> varDeclMappings = newHashMap
-//	final Map<ConstantDeclaration, VariableDeclaration> constDeclMappings = newHashMap
+	
 	final Map<Region, hu.bme.mit.gamma.statechart.lowlevel.model.Region> regionMappings = newHashMap
 	final Map<State, hu.bme.mit.gamma.statechart.lowlevel.model.State> stateMappings = newHashMap
 	final Map<PseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState> pseudoStateMappings = newHashMap
@@ -112,7 +110,8 @@ package class Trace {
 	}
 	
 	// EventDeclaration
-	def put(Port gammaPort, EventDeclaration gammaEventDecl, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration lowlevelEventDecl) {
+	def put(Port gammaPort, EventDeclaration gammaEventDecl,
+			hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration lowlevelEventDecl) {
 		checkNotNull(gammaPort)
 		checkNotNull(gammaEventDecl)
 		checkNotNull(lowlevelEventDecl)
@@ -154,13 +153,15 @@ package class Trace {
 		checkNotNull(gammaEventDecl)
 		val possibleEvent = get(gammaPort, gammaEventDecl).get(direction)
 		if (possibleEvent === null) {
-			throw new IllegalArgumentException("No entry for such parameters: " + gammaPort + " " + gammaEventDecl + " " + direction)
+			throw new IllegalArgumentException(
+				"No entry for such parameters: " + gammaPort + " " + gammaEventDecl + " " + direction)
 		}
 		return possibleEvent
 	}
 	
 	// Event
-	def put(Port gammaPort, Event gammaEvent, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration lowlevelEvent) {
+	def put(Port gammaPort, Event gammaEvent,
+			hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration lowlevelEvent) {
 		checkNotNull(gammaPort)
 		checkNotNull(gammaEvent)
 		checkNotNull(lowlevelEvent)
@@ -202,7 +203,8 @@ package class Trace {
 		checkNotNull(gammaEvent)
 		val possibleEvent = get(gammaPort, gammaEvent).get(direction)
 		if (possibleEvent === null) {
-			throw new IllegalArgumentException("No entry for such parameters: " + gammaPort + " " + gammaEvent + " " + direction)
+			throw new IllegalArgumentException(
+				"No entry for such parameters: " + gammaPort + " " + gammaEvent + " " + direction)
 		}
 		return possibleEvent
 	}
@@ -234,57 +236,6 @@ package class Trace {
 		return allLowlevelEvents.map[it.get(direction)].toList
 	}
 	
-	// Parameter
-//	def put(Port gammaPort, Event gammaEvent, ParameterDeclaration gammaParam, EventDirection direction, VariableDeclaration lowlevelParam) {
-//		checkNotNull(gammaPort)
-//		checkNotNull(gammaEvent)
-//		checkNotNull(gammaParam)
-//		checkNotNull(lowlevelParam)
-//		if (isMapped(gammaPort, gammaEvent, gammaParam)) {
-//			val map = get(gammaPort, gammaEvent, gammaParam)
-//			checkState(map.size == 1)
-//			map.put(direction, lowlevelParam)
-//		}
-//		else {
-//			paramMappings.put(Triple.of(gammaPort, gammaEvent, gammaParam), newHashMap(direction -> lowlevelParam))
-//		}
-//	}
-//
-//	def isMapped(Port gammaPort, Event gammaEvent, ParameterDeclaration gammaParam) {
-//		checkNotNull(gammaPort)
-//		checkNotNull(gammaEvent)
-//		checkNotNull(gammaParam)
-//		for (entry : paramMappings.keySet) {
-//			if (entry.first == gammaPort && entry.second == gammaEvent && entry.third == gammaParam) {
-//				return true
-//			}
-//		}
-//		return false
-//	}
-//
-//	def get(Port gammaPort, Event gammaEvent, ParameterDeclaration gammaParam) {
-//		checkNotNull(gammaPort)
-//		checkNotNull(gammaEvent)
-//		checkNotNull(gammaParam)
-//		for (entry : paramMappings.keySet) {
-//			if (entry.first == gammaPort && entry.second == gammaEvent && entry.third == gammaParam) {
-//				return paramMappings.get(entry).unmodifiableView
-//			}
-//		}
-//		throw new IllegalArgumentException("No entry for such parameters: " + gammaPort + " " + gammaEvent + " " + gammaParam)
-//	}
-//	
-//	def get(Port gammaPort, Event gammaEvent, ParameterDeclaration gammaParam, EventDirection direction) {
-//		checkNotNull(gammaPort)
-//		checkNotNull(gammaEvent)
-//		checkNotNull(gammaParam)
-//		val possibleParam = get(gammaPort, gammaEvent, gammaParam).get(direction) // Possible params of IN and OUT event 
-//		if (possibleParam === null) {
-//			throw new IllegalArgumentException("No entry for such parameters: " + gammaPort + " " + gammaEvent + " " + gammaParam + " " + direction)
-//		}
-//		return possibleParam
-//	}
-	
 	// Component
 	def put(Component gammaComponent, hu.bme.mit.gamma.statechart.lowlevel.model.Component lowlevelComponent) {
 		checkNotNull(gammaComponent)
@@ -302,57 +253,6 @@ package class Trace {
 		componentMappings.get(gammaComponent)
 	}
 	
-//	// Parameter declaration of components
-//	def put(ParameterDeclaration gammaParameter, VariableDeclaration lowlevelVariable) {
-//		checkNotNull(gammaParameter)
-//		checkNotNull(lowlevelVariable)
-//		parDeclMappings.put(gammaParameter, lowlevelVariable)
-//	}
-//
-//	def isMapped(ParameterDeclaration gammaParameter) {
-//		checkNotNull(gammaParameter)
-//		parDeclMappings.containsKey(gammaParameter)
-//	}
-//
-//	def get(ParameterDeclaration gammaParameter) {
-//		checkNotNull(gammaParameter)
-//		parDeclMappings.get(gammaParameter)
-//	}
-//	
-//	// Variable declaration
-//	def put(VariableDeclaration gammaVariable, VariableDeclaration lowlevelVariable) {
-//		checkNotNull(gammaVariable)
-//		checkNotNull(lowlevelVariable)
-//		varDeclMappings.put(gammaVariable, lowlevelVariable)
-//	}
-//
-//	def isMapped(VariableDeclaration gammaVariable) {
-//		checkNotNull(gammaVariable)
-//		varDeclMappings.containsKey(gammaVariable)
-//	}
-//	
-//	def get(VariableDeclaration gammaVariable) {
-//		checkNotNull(gammaVariable)
-//		varDeclMappings.get(gammaVariable)
-//	}
-//	
-//	// Constant declaration
-//	def put(ConstantDeclaration gammaConstant, VariableDeclaration lowlevelVariable) {
-//		checkNotNull(gammaConstant)
-//		checkNotNull(lowlevelVariable)
-//		constDeclMappings.put(gammaConstant, lowlevelVariable)
-//	}
-//
-//	def isMapped(ConstantDeclaration gammaConstant) {
-//		checkNotNull(gammaConstant)
-//		constDeclMappings.containsKey(gammaConstant)
-//	}
-//
-//	def get(ConstantDeclaration gammaConstant) {
-//		checkNotNull(gammaConstant)
-//		constDeclMappings.get(gammaConstant)
-//	}
-
 	// Event parameters
 	
 	def putInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
@@ -362,7 +262,7 @@ package class Trace {
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
 		checkNotNull(lowLevelVariable)
-		inParDeclMappings.put(Triple.of(port, event, recordField), lowLevelVariable)
+		inParDeclMappings.put(new Triple(port, event, recordField), lowLevelVariable)
 	} 
 
 	def getInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
@@ -389,7 +289,7 @@ package class Trace {
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
 		checkNotNull(lowLevelVariable)
-		outParDeclMappings.put(Triple.of(port, event, recordField), lowLevelVariable)
+		outParDeclMappings.put(new Triple(port, event, recordField), lowLevelVariable)
 	} 
 
 	def getOutParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
@@ -444,48 +344,6 @@ package class Trace {
 		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
-//	// Dispatch for value declaration
-//	def put(ValueDeclaration gammaValue, VariableDeclaration lowlevelVariable) {
-//		if (gammaValue instanceof VariableDeclaration) {
-//			put(gammaValue, lowlevelVariable)
-//		}
-//		else if (gammaValue instanceof ParameterDeclaration) {
-//			put(gammaValue, lowlevelVariable)
-//		}
-//		else if (gammaValue instanceof ConstantDeclaration) {
-//			put(gammaValue, lowlevelVariable)
-//		}
-//		else {
-//			throw new IllegalArgumentException("Not known type: " + lowlevelVariable)
-//		}
-//	}
-//	
-//	def isMapped(ValueDeclaration gammaValue) {
-//		if (gammaValue instanceof VariableDeclaration) {
-//			return isMapped(gammaValue)
-//		}
-//		else if (gammaValue instanceof ParameterDeclaration) {
-//			return isMapped(gammaValue)
-//		}
-//		else if (gammaValue instanceof ConstantDeclaration) {
-//			return isMapped(gammaValue)
-//		}
-//		throw new IllegalArgumentException("Not known type: " + gammaValue)
-//	}
-//	
-//	def get(ValueDeclaration gammaValue) {
-//		if (gammaValue instanceof VariableDeclaration) {
-//			return get(gammaValue)
-//		}
-//		else if (gammaValue instanceof ParameterDeclaration) {
-//			return get(gammaValue)
-//		}
-//		else if (gammaValue instanceof ConstantDeclaration) {
-//			return get(gammaValue)
-//		}
-//		throw new IllegalArgumentException("Not known type: " + gammaValue)
-//	}
-	
 	// Timeout declaration
 	def put(TimeoutDeclaration gammaTimeout, VariableDeclaration lowlevelTimeout) {
 		checkNotNull(gammaTimeout)
@@ -538,7 +396,8 @@ package class Trace {
 	}
 	
 	// Pseudo states
-	def put(PseudoState gammaPseudoState, hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState lowlevelPseudoState) {
+	def put(PseudoState gammaPseudoState,
+			hu.bme.mit.gamma.statechart.lowlevel.model.PseudoState lowlevelPseudoState) {
 		checkNotNull(gammaPseudoState)
 		checkNotNull(lowlevelPseudoState)
 		pseudoStateMappings.put(gammaPseudoState, lowlevelPseudoState)
@@ -555,7 +414,8 @@ package class Trace {
 	}
 	
 	// Regular transition
-	def put(Transition gammaTransition, hu.bme.mit.gamma.statechart.lowlevel.model.Transition lowlevelTransition) {
+	def put(Transition gammaTransition,
+			hu.bme.mit.gamma.statechart.lowlevel.model.Transition lowlevelTransition) {
 		checkNotNull(gammaTransition)
 		checkNotNull(lowlevelTransition)
 		transitionMappings.put(gammaTransition, lowlevelTransition)
@@ -648,34 +508,5 @@ package class Trace {
 		checkNotNull(name)
 		assertionVariableMappings.get(name)
 	}
-	
-	private static class Triple<K, V, T> {
-		K first;
-		V second;
-		T third;
-		
-		private new(K first, V second, T third) {
-			this.first = first;
-			this.second = second;
-			this.third = third;
-		}
-		
-		def static <K, V, T> of(K first, V second, T third) {
-			return new Triple(first, second, third)
-		}
-		
-		def getFirst() {
-			return first;
-		}
-		
-		def getSecond() {
-			return second;
-		}
-		
-		def getThird() {
-			return third;
-		}
-		
-	} 
 	
 }

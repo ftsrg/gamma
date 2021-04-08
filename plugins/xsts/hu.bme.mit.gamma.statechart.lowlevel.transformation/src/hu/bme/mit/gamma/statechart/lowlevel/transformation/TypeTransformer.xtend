@@ -58,13 +58,14 @@ class TypeTransformer {
 	}
 	
 	protected def dispatch Type transformType(ArrayTypeDefinition type) {
-		//FIXME this only copies
+		// ExpressionModelDerivedFeatures.getNativeTypes creates the correct types, cloning is enough
 		return type.clone
 	}
 	
 	protected def dispatch Type transformType(RecordTypeDefinition type) {
-		//FIXME this only copies
-		return type.clone
+		// Due to the transformation and usage of ExpressionModelDerivedFeatures.getNativeTypes,
+		// this situation must never occur
+		throw new IllegalArgumentException("Record types cannot be transformed like this: " + type)
 	}
 	
 	protected def dispatch Type transformType(TypeReference type) {
@@ -90,7 +91,7 @@ class TypeTransformer {
 	}
 	
 	protected def transformTypeDeclaration(TypeDeclaration typeDeclaration) {
-		val newTypeDeclaration = constraintFactory.create(typeDeclaration.eClass) as TypeDeclaration => [
+		val newTypeDeclaration = constraintFactory.createTypeDeclaration => [
 			it.name = getName(typeDeclaration)
 			it.type = typeDeclaration.type.transformType
 		]

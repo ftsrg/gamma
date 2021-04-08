@@ -251,11 +251,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchAction(List<Expression> conditions, List<Action> actions) {
+	public NonDeterministicAction createIfElseAction(List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
 		}
+		boolean foundElseBranch = false;
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
 		for (int i = 0; i < conditions.size(); ++i) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
@@ -272,7 +273,10 @@ public class XstsActionUtil extends ExpressionUtil {
 				// This condition is true
 				andExpression.getOperands().add(actualCondition);
 			}
-			AssumeAction assumeAction = createAssumeAction(andExpression);
+			else {
+				foundElseBranch = true;
+			}
+			AssumeAction assumeAction = createAssumeAction(unwrapIfPossible(andExpression));
 			sequentialAction.getActions().add(assumeAction);
 			sequentialAction.getActions().add(actions.get(i));
 			// Merging into the main action
@@ -282,10 +286,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		if (conditions.size() + 1 == actions.size()) {
 			extendChoiceWithDefaultBranch(switchAction, actions.get(actions.size() - 1));
 		}
+		else if (!foundElseBranch) {
+			// Otherwise a deadlock could happen if no branch is true
+			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+		}
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchActionWithControlExpression(
+	public NonDeterministicAction createSwitchAction(
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
@@ -298,7 +306,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			equalityExpression.setRightOperand(condition);
 			newConditions.add(equalityExpression);
 		}
-		return createSwitchAction(newConditions, actions);
+		return createIfElseAction(newConditions, actions);
 	}
 
 	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
@@ -307,7 +315,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		OrExpression orExpression = expressionFactory.createOrExpression();
-		negatedCondition.setOperand(orExpression);
 		List<SequentialAction> sequentialActions = switchAction.getActions().stream()
 				.filter(it -> it instanceof SequentialAction)
 				.map(it -> (SequentialAction) it)
@@ -319,14 +326,15 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Collecting atomic assumptions too
 		switchAction.getActions().stream()
 			.filter(it -> it instanceof AssumeAction)
-			.map(it -> ((AssumeAction) it).getAssumption()).
-			forEach(it -> conditions.add(it));
+			.map(it -> ((AssumeAction) it).getAssumption())
+			.forEach(it -> conditions.add(it));
 		if (conditions.isEmpty()) {
 			return;
 		}
 		for (Expression condition : conditions) {
 			orExpression.getOperands().add(clone(condition));
 		}
+		negatedCondition.setOperand(unwrapIfPossible(orExpression));
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction assumeAction = createAssumeAction(negatedCondition);
 		sequentialAction.getActions().add(assumeAction);

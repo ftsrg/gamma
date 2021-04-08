@@ -47,34 +47,33 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNaming
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
-	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
+	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace object for storing the mappings
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining = true
-	protected final int maxRecursionDepth = 10
-	protected final String assertionVariableName = "__assertionFailed"
 
 	new() {
+		this(true, 10)
+	}
+
+	new(boolean functionInlining, int maxRecursionDepth) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
-			this.maxRecursionDepth, this.assertionVariableName)
-		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
+		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	
@@ -250,16 +249,6 @@ class StatechartToLowlevelTransformer {
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
-		// Create assertion variable if not yet created
-		if (!trace.isAssertionVariableMapped(assertionVariableName)) {
-			var assertionVariable = createVariableDeclaration => [
-				it.name = assertionVariableName
-				it.type = createBooleanTypeDefinition
-				it.expression = createFalseExpression
-			]
-			lowlevelStatechart.variableDeclarations += assertionVariable
-			trace.put(assertionVariableName, assertionVariable)
-		}
 		// Constants
 		val gammaPackage = statechart.containingPackage
 		for (constantDeclaration : gammaPackage.constantDeclarations) {

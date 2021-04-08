@@ -34,6 +34,12 @@ public class ActionUtil extends ExpressionUtil {
 	
 	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
 	
+	public Block wrap(Collection<? extends Action> actions) {
+		Block block = actionFactory.createBlock();
+		block.getActions().addAll(actions);
+		return block;
+	}
+	
 	public Action prepend(Action action, Action pivot) {
 		if (action == null) {
 			return pivot;

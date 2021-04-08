@@ -15,6 +15,7 @@ import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.AssertionStatement
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.action.model.Block
+import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.BreakStatement
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
@@ -25,16 +26,11 @@ import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.ReturnStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
-import hu.bme.mit.gamma.expression.model.DefaultExpression
-import hu.bme.mit.gamma.expression.model.ElseExpression
-import hu.bme.mit.gamma.expression.model.Expression
+import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -43,11 +39,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.Collection
 import java.util.List
-import java.util.Stack
 
 import static com.google.common.base.Preconditions.checkState
-
-import static extension com.google.common.collect.Iterables.getOnlyElement
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -55,392 +48,183 @@ class ActionTransformer {
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ExpressionPreconditionTransformer preconditionTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
+	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	// Transformation parameters
-	protected final String assertionVariableName
 	protected final boolean functionInlining
 	protected final int maxRecursionDepth
-	// Etc
-	protected Stack<List<VariableDeclaration>> returnStack = new Stack<List<VariableDeclaration>>
 	
-	new(Trace trace, boolean functionInlining, int maxRecursionDepth, String assertionVariableName) {
+	new(Trace trace) {
+		this(trace, true, 10)
+	}
+	
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
 		this.functionInlining = functionInlining
 		this.maxRecursionDepth = maxRecursionDepth
 		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.assertionVariableName = assertionVariableName
-		this.preconditionTransformer = new ExpressionPreconditionTransformer(this.trace,
-			this.expressionTransformer, this.valueDeclarationTransformer,
-			new TypeTransformer(trace), this, assertionVariableName,
-			functionInlining, maxRecursionDepth
-		)
+		this.preconditionTransformer = new ExpressionPreconditionTransformer(
+			this.trace, this, functionInlining, maxRecursionDepth)
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
-		if (actions.empty) {
+		if (actions.nullOrEmpty) {
 			return createEmptyStatement
 		}
-		val block = createBlock
-		
-		val following = <Action>newLinkedList
-		following += actions
-		following.transformNext(block.actions)
-		 
-		if (block.actions.size == 1) {
-			return block.actions.head
+		val result = newArrayList
+		for (action : actions) {
+			result += action.transformAction
 		}
-		else if (block.actions.size == 0) {
-			return createEmptyStatement
-		}
-		return block
+		return result.wrap
 	}
 	
-	// Gamma action language
+	// In order to support function inlining, before every expression transformation,
+	// a transformPrecondition call must be made to create the potential inlining!
 	
-	// action (trivially) must not be nullf
-	// following (by definition) must not be null (but may be empty)
-	protected def dispatch List<Action> transformAction(Action action, List<Action> following) {
+	protected def dispatch List<Action> transformAction(Action action) {
 		throw new IllegalArgumentException("Not known action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(EmptyStatement action, List<Action> following) {
-		// Create return variable and transform the current action
+	protected def dispatch List<Action> transformAction(EmptyStatement action) {
+		return #[
+			createEmptyStatement
+		]
+	}
+	
+	protected def dispatch List<Action> transformAction(Block action) {
 		val result = <Action>newLinkedList
-		result += createEmptyStatement
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
+		for (subaction : action.actions) {
+			result += subaction.transformAction
+		}
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(Block action, List<Action> following) {
-		// Create return variable
-		val result = <Action>newLinkedList
-		// Create new following-context variable and do the transformations
-		val newFollowing = <Action>newLinkedList
-		newFollowing += action.actions
-		newFollowing += following
-		newFollowing.transformNext(result)
-		// Return the result
-		return result
-	}
-	
-	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action, List<Action> following) {
-		// Create return variable and transform the current action
-		val result = <Action>newLinkedList
+	protected def dispatch List<Action> transformAction(VariableDeclarationStatement action) {
 		val variableDeclaration = action.variableDeclaration
-		
-		variableDeclaration.transformValueDeclarationAction(result)
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
-		return result
+		return variableDeclaration.transformValueDeclarationAction
 	}
 	
-	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action, List<Action> following) {
-		val result = <Action>newLinkedList
+	protected def dispatch List<Action> transformAction(ConstantDeclarationStatement action) {
 		val constantDeclaration = action.constantDeclaration
-		
-		constantDeclaration.transformValueDeclarationAction(result)
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
-		return result
+		return constantDeclaration.transformValueDeclarationAction
 	}
 	
 	private def <T extends ValueDeclaration & InitializableElement> transformValueDeclarationAction(
-			T valueDeclaration, List<Action> result) {
+			T valueDeclaration) {
+		val result = newArrayList
 		val initalExpression = valueDeclaration.expression
 		var lowlevelPrecondition = initalExpression !== null ?
 			initalExpression.transformPrecondition : <Action>newLinkedList
 		result += lowlevelPrecondition
 		
 		val lowlevelVariableDeclarations = valueDeclaration.transform
+		// Variables are traced in the transform call
 		for (lowlevelVariableDeclaration : lowlevelVariableDeclarations) {
 			result += createVariableDeclarationStatement => [
 				it.variableDeclaration = lowlevelVariableDeclaration
 			]	
 		}
-	}
-	
-	protected def dispatch List<Action> transformAction(ExpressionStatement action, List<Action> following) {
-		// Create return variable
-		val result = <Action>newLinkedList
-		// Get expression precondition
-		var lowlevelPrecondition = action.expression.transformPrecondition
-		result += lowlevelPrecondition
-		// Transform expression if it has side-effects
-		if (!(action.expression instanceof FunctionAccessExpression)) {
-			result += createEmptyStatement
-		}
-		else if (functionInlining) {	//if function access
-			result += createEmptyStatement
-		}
-		else {	//if function access without inlining
-			throw new IllegalArgumentException("Non-inlined functions currently not allowed: " + action)
-		}
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(BreakStatement action, List<Action> following) {
-		return <Action>newLinkedList
+	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
+		throw new UnsupportedOperationException("Not supported action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(ReturnStatement action, List<Action> following) {
-		// Create return variable and transform the current action (discard the following-context)
-		val result = <Action>newLinkedList
-		if (action.expression !== null) {
-			val precondition = action.expression.transformPrecondition
-			result += precondition
-			
-			val transformExpression = action.expression.transformExpression
-			val returnVariableDeclarations = returnStack.peek
-			for (var i = 0; i < returnVariableDeclarations.size; i++) {
-				val index = i
-				val transformedAction = createAssignmentStatement => [
-					it.lhs = createDirectReferenceExpression => [
-						it.declaration = returnVariableDeclarations.get(index)
-					]
-					it.rhs = transformExpression.get(index)
-				]
-				result += transformedAction
-			}
-		}
-		// Return the result (branch terminates, so following discarded)
-		return result
+	protected def dispatch List<Action> transformAction(BreakStatement action) {
+		throw new UnsupportedOperationException("Not supported action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(IfStatement action, List<Action> following) {
-		// Create return variable
-		val result = <Action>newLinkedList
-		// Transform the guards (and their preconditions)
-		var elseFlag = false
-		val List<Expression> guardExpressions = <Expression>newArrayList
-		val List<Action> guardPreconditions = <Action>newArrayList
-		for (conditional : action.conditionals) {
-			val guard = conditional.guard
-			guardPreconditions += guard.transformPrecondition
-			guardExpressions += guard.transformExpression.getOnlyElement
-			if (guard instanceof ElseExpression) {
-				elseFlag = true
-			}
+	protected def dispatch List<Action> transformAction(ReturnStatement action) {
+		throw new UnsupportedOperationException("Not supported action: " + action)
+	}
+	
+	protected def dispatch List<Action> transformAction(IfStatement action) {
+		val actions = <Action>newArrayList
+		
+		val branches = action.conditionals
+		val ifStatement = createIfStatement
+		for (branch : branches) {
+			ifStatement.conditionals += branch.transformBranch(actions)
 		}
-		result += guardPreconditions
-		// Transform the statement itself (including the following-context)
-		val transformedAction = createIfStatement => [
-			val conditionals = action.conditionals
-			for (i : 0 .. conditionals.size - 1) {
-				it.conditionals += createBranch => [
-					it.guard = guardExpressions.get(i)
-					val oldAction = conditionals.get(i).action
-					it.action = createBlock => [
-						oldAction.transformNext(following, it.actions)
-					]
-				]
-			}
+		// It is important that the statement is added AFTER the loop
+		actions += ifStatement
+		
+		return actions
+	}
+	
+	protected def dispatch List<Action> transformAction(SwitchStatement action) {
+		val actions = <Action>newArrayList
+		
+		val controlExpression = action.controlExpression
+		val branches = action.cases
+		val switchStatement = createSwitchStatement
+		actions += controlExpression.transformPrecondition
+		switchStatement.controlExpression = controlExpression.transformSimpleExpression
+		for (branch : branches) {
+			switchStatement.cases += branch.transformBranch(actions)
+		}
+		// It is important that the statement is added AFTER the loop
+		actions += switchStatement
+		
+		return actions
+	}
+	
+	protected def dispatch List<Action> transformAction(ChoiceStatement action) {
+		val actions = <Action>newArrayList
+		
+		val branches = action.branches
+		val choiceStatement = createChoiceStatement
+		for (branch : branches) {
+			choiceStatement.branches += branch.transformBranch(actions)
+		}
+		// It is important that the statement is added AFTER the loop
+		actions += choiceStatement
+		
+		return actions
+	}
+	
+	private def Branch transformBranch(Branch branch, List<Action> preconditions) {
+		val guard = branch.guard
+		val action = branch.action
+		
+		preconditions += guard.transformPrecondition
+		
+		return createBranch => [
+			it.guard = guard.transformSimpleExpression
+			it.action = action.transformAction.wrap
 		]
-		if (!elseFlag) {
-			transformedAction.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					following.transformNext(it.actions)
-				]
-			]
-		}
-		result += transformedAction
-		// Return the result
-		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(SwitchStatement action, List<Action> following) {
-		// No fall-through functionality!
-		// Create return variable
-		val result = <Action>newLinkedList
-		// Transform the guards (and their preconditions)
-		var defaultFlag = false
-		val List<Expression> guardExpressions = <Expression>newArrayList
-		val List<Action> guardPreconditions = <Action>newArrayList
-		guardPreconditions += action.controlExpression.transformPrecondition
-		val controlExpression = action.controlExpression.transformExpression.getOnlyElement
-		for (conditional : action.cases) {
-			guardPreconditions += conditional.guard.transformPrecondition
-			guardExpressions += conditional.guard.transformExpression.getOnlyElement
-			if (conditional.guard instanceof DefaultExpression) {
-				defaultFlag = true
-			}
-		}
-		result += guardPreconditions
-		// Transform the statement itself (including the following-context)
-		val transformedAction = createIfStatement => [
-			for (i : 0 .. action.cases.size - 1) {
-				val caze = action.cases.get(i)
-				val oldAction = caze.action
-				it.conditionals += createBranch => [
-					it.guard = createEqualityExpression => [
-						it.leftOperand = controlExpression.transformExpression.getOnlyElement
-						it.rightOperand = guardExpressions.get(i)
-					]
-					it.action = createBlock => [
-						oldAction.transformNext(following, it.actions)
-					]
-				]
-			}
-		]
-		if (!defaultFlag) {
-			transformedAction.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					following.transformNext(it.actions)
-				]
-			]
-		}
-		result += transformedAction
-		// Return the result
-		return result
+	protected def dispatch List<Action> transformAction(ForStatement action) {
+		throw new UnsupportedOperationException("Not supported action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(ForStatement action, List<Action> following) {
-		// Create return variable and transform the current action
-		val result = <Action>newLinkedList
-		// enumerate parameter values
-		val parameterValues = action.range.enumerateExpression
-		// TRANSFORM parameter variable and add to the result
-		val parameterVariableDeclarations = action.parameter.transformFunctionParameter
-		result += parameterVariableDeclarations.map[vari |
-			createVariableDeclarationStatement => [
-				it.variableDeclaration = vari
-			]
-		]
-		// create 'unrolled for' (TO BE TRANSFORMED)
-		val unrolledFor = <Action>newLinkedList
-		for (parameterValue : parameterValues) {
-			unrolledFor += createAssignmentStatement => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = action.parameter
-				]
-				it.rhs = parameterValue
-			]
-			unrolledFor += action.body
-		}
-		if (action.then !== null) {
-			unrolledFor += action.then
-		}
-		// call TRANSFORM on the 'unrolled for' and add to the transformed for
-		val first = unrolledFor.removeFirst
-		result += first.transformAction(unrolledFor)
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
-		return result
+	protected def dispatch List<Action> transformAction(AssertionStatement action) {
+		throw new UnsupportedOperationException("Not supported action: " + action)
 	}
 	
-	protected def dispatch List<Action> transformAction(ChoiceStatement action, List<Action> following) {
-		// Create return variable
+	protected def dispatch List<Action> transformAction(AssignmentStatement action) {
 		val result = <Action>newLinkedList
-		// Transform the guards (and their preconditions)
-		val List<Expression> guardExpressions = newArrayList
-		val List<Action> guardPreconditions = newArrayList
-		for (conditional : action.branches) {
-			guardPreconditions += conditional.guard.transformPrecondition
-			guardExpressions += conditional.guard.transformExpression.getOnlyElement
-		}
-		result += guardPreconditions
-		// Transform the statement itself (including the following-context)
-		val transformedAction = createIfStatement => [
-			it.conditionals += createBranch => [
-				it.guard = createOrExpression => [
-					for (guard : guardExpressions) {
-						it.operands += guard		// the expressions are already transformed
-					}
-				]
-				it.action = createBlock => [
-					it.actions += createChoiceStatement => [
-						val branches = action.branches
-						for (i : 0 .. branches.size - 1) {
-							it.branches += createBranch => [
-								it.guard = guardExpressions.get(i)
-								val oldAction = branches.get(i).action
-								it.action = createBlock => [
-									oldAction.transformNext(following, it.actions)
-								]
-							]
-						}
-					]
-				]
-			]
-			it.conditionals += createBranch => [
-				it.guard = createElseExpression
-				it.action = createBlock => [
-					following.transformNext(it.actions)
-				]
-			]
-		]
-		result += transformedAction
-		// Return the result
-		return result
-	}
-	
-	protected def dispatch List<Action> transformAction(AssignmentStatement action, List<Action> following) {
-		// Create return variable and transform the current action
-		val result = <Action>newLinkedList
-		// Get the referred high-level declaration (assuming a single, assignable element)
+		
 		val actionLhs = action.lhs
 		val List<ReferenceExpression> lowlevelLhs = newArrayList
-		lowlevelLhs += actionLhs.transformReferenceExpression
-//		val referredDeclaration = actionLhs.accessedDeclaration as ValueDeclaration
-//		checkState(referredDeclaration instanceof VariableDeclaration ||
-//			referredDeclaration instanceof ParameterDeclaration) // Transformed to assignable type (=variable)
-//		// Transform lhs
-//		val typeToAssign = referredDeclaration.typeDefinition
-//		if (typeToAssign instanceof CompositeTypeDefinition) {
-//			val originalLhsFields = referredDeclaration.exploreComplexType
-//			// access expressions
-//			val recordAccessList = actionLhs.collectRecordAccessList
-//			for (elem : originalLhsFields) {
-//				val key = elem.key
-//				val value = elem.value
-//				if (isSameAccessTree(value, recordAccessList)) { // Filter according to the access list
-//					// Create lhs
-//					lowlevelLhs += createDirectReferenceExpression => [
-//						if (trace.isMapped(elem)) {	// Mapped as complex type
-//							it.declaration = trace.get(elem)
-//						}
-//						else if (trace.isMapped(key)) {	// Simple arrays are mapped as a simple type (either var or par)
-//							it.declaration = trace.get(key)
-//						}
-//						else {
-//							throw new IllegalArgumentException("Transformed variable declaration not found!")
-//						}
-//					]
-//				}
-//			}
-//		}
-//		else {
-//			lowlevelLhs += createDirectReferenceExpression => [
-//				if (trace.isMapped(referredDeclaration)) {
-//					it.declaration = trace.get(referredDeclaration)
-//				}
-//			]
-//		}
+		lowlevelLhs += actionLhs.transformReferenceExpression // Now only one reference is expected
+		// This has to be addressed if record1 := record2 like assignments are needed
+		
 		val actionRhs = action.rhs
-		// Get rhs precondition
-		val lowlevelPrecondition = actionRhs.transformPrecondition
-		result += lowlevelPrecondition
-		// Transform rhs and create action
-		val lowlevelRhs = newArrayList
-		lowlevelRhs += actionRhs.transformExpression
-		if (lowlevelLhs.size != lowlevelRhs.size) {
-			throw new IllegalArgumentException("Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
-		}
+		// Precondition (function inlining)
+		result += actionRhs.transformPrecondition
+		// Transform rhs and create actions
+		val lowlevelRhs = actionRhs.transformExpression
+		checkState(lowlevelLhs.size == lowlevelRhs.size,
+				"Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
+				
 		for (var i = 0; i < lowlevelLhs.size; i++) {
 			val lhs = lowlevelLhs.get(i)
 			val rhs = lowlevelRhs.get(i)
@@ -449,58 +233,17 @@ class ActionTransformer {
 				it.rhs = rhs
 			]
 		}
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
+		
 		return result
 	}
 	
-	protected def dispatch List<Action> transformAction(AssertionStatement action, List<Action> following) {
-		// Create return variable and transform the current action
+	protected def dispatch List<Action> transformAction(RaiseEventAction action) {
 		val result = <Action>newLinkedList
-		var lowlevelPrecondition = action.assertion.transformPrecondition
-		result += lowlevelPrecondition
-		// If there is an assertion variable, branch and assign, otherwise discard
-		val lhsVariable = trace.getAssertionVariable(assertionVariableName)
-		if (lhsVariable !== null) {	// if there is an assertion variable
-			result += createIfStatement => [
-				it.conditionals += createBranch => [
-					it.guard = action.assertion.transformExpression.getOnlyElement
-					it.action = createBlock => [
-						it.actions += createAssignmentStatement => [
-							it.lhs = createDirectReferenceExpression => [
-								it.declaration = lhsVariable
-							]
-							it.rhs = createTrueExpression
-						]
-						following.transformNext(it.actions)
-					]
-				]
-				it.conditionals += createBranch => [
-					it.guard = createElseExpression
-					it.action = createBlock => [
-						following.transformNext(it.actions)
-					]
-				]
-			]
-			
-		}
-		else {	// Ignore assertion and continue
-			// Create new following-context variable and transform the following-context
-			following.transformNext(result)
-		}
-		// Return the result
-		return result
-	}
-	
-	// Gamma statechart elements
-
-	protected def dispatch List<Action> transformAction(RaiseEventAction action, List<Action> following) {
-		// Create return variable and transform the current action
-		val result = <Action>newLinkedList
+		
 		val port = action.port
 		val event = action.event
 		val lowlevelEvent = trace.get(port, event, EventDirection.OUT)
+		
 		// Parameter setting
 		val parameters = lowlevelEvent.parameters
 		val values = action.arguments.map[it.transformExpression].flatten.toList
@@ -508,65 +251,39 @@ class ActionTransformer {
 		for (var i = 0; i < values.size; i++) {
 			val declaration = parameters.get(i)
 			val value = values.get(i)
-			val parameterAssignment = createAssignmentStatement => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = declaration
-				]
+			result += createAssignmentStatement => [
+				it.lhs = declaration.createReferenceExpression
 				it.rhs = value
 			]
-			result += parameterAssignment
 		}
 		// Setting IsRaised flag to true
-		val flagRaising = createAssignmentStatement => [
+		result += createAssignmentStatement => [
 			it.lhs = createDirectReferenceExpression => [
 				it.declaration = lowlevelEvent.isRaised
 			]
 			it.rhs = createTrueExpression
 		]
-		result += flagRaising
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
+		
 		return result
 	}
 
-	protected def dispatch List<Action> transformAction(SetTimeoutAction action, List<Action> following) {
-		// Create return variable and transform the current action
-		val result = <Action>newLinkedList
+	protected def dispatch List<Action> transformAction(SetTimeoutAction action) {
 		val lowlevelTimeout = trace.get(action.timeoutDeclaration)
 		// Setting the clock to 0 as contrary to Gamma, in the lowlevel language time elapses from 0 to infinity
-		val clockInit = createAssignmentStatement => [
-			it.lhs = createDirectReferenceExpression => [
-				it.declaration = lowlevelTimeout
-			]
-			it.rhs = createIntegerLiteralExpression => [
-				it.value = BigInteger.ZERO
+		return #[
+			createAssignmentStatement => [
+				it.lhs = createDirectReferenceExpression => [
+					it.declaration = lowlevelTimeout
+				]
+				it.rhs = createIntegerLiteralExpression => [
+					it.value = BigInteger.ZERO
+				]
 			]
 		]
-		result += clockInit
-		// Create new following-context variable and transform the following-context
-		following.transformNext(result)
-		// Return the result
-		return result
 	}
 
-	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action, List<Action> following) {
-		throw new UnsupportedOperationException("DeactivateTimeoutActions are not yet transformed: " + action)
-	}
-	
-	private def transformNext(List<Action> following, List<Action> result) {
-		val newFollowing = newLinkedList
-		newFollowing += following
-		if (newFollowing.size > 0) {
-			val next = newFollowing.removeFirst
-			result += next.transformAction(newFollowing)
-		}
-	}
-	
-	private def transformNext(Action action, List<Action> following, List<Action> result) {
-		val newFollowing = newArrayList
-		newFollowing += following
-		result += action.transformAction(newFollowing)
+	protected def dispatch List<Action> transformAction(DeactivateTimeoutAction action) {
+		throw new UnsupportedOperationException("DeactivateTimeoutActions are not supported: " + action)
 	}
 	
 }

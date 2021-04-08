@@ -6,8 +6,10 @@ import hu.bme.mit.gamma.expression.model.InitializableElement
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclarationAnnotation
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
@@ -18,9 +20,10 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
 class ValueDeclarationTransformer {
-	// Auxiliary object
+	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension TypeTransformer typeTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	// Expression factory
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace needed for variable mappings
@@ -136,7 +139,7 @@ class ValueDeclarationTransformer {
 		if (gammaValue instanceof ConstantDeclaration) {
 			return gammaValue.transform
 		}
-		throw new IllegalArgumentException("Not known: " + gammaValue)
+		throw new IllegalArgumentException("Not known value declaration: " + gammaValue)
 	}
 	
 	private def List<VariableDeclaration> transformValue(ValueDeclaration variable, Tracer tracer) {
@@ -148,7 +151,7 @@ class ValueDeclarationTransformer {
 		val lowlevelVariables = newArrayList
 		for (var i = 0; i < size; i++) {
 			val fieldHierarchy = fieldHierarchies.get(i)
-			val nativeType = nativeTypes.get(i).transformType
+			val nativeType = nativeTypes.get(i).transformType // Only native and arrays
 			val lowlevelVariable = createVariableDeclaration => [
 				// Name added later
 				it.type = nativeType
@@ -168,188 +171,14 @@ class ValueDeclarationTransformer {
 		return lowlevelVariables
 	}
 	
+	private def transformAnnotation(VariableDeclarationAnnotation annotation) {
+		return annotation.clone
+	}
+	
 	interface Tracer {
 		// Maybe it could contain the namings too
 		def void trace(ValueDeclaration value, FieldHierarchy fieldHierarchy,
 			VariableDeclaration lowlevelVariable)
 	}
-	
-	///////////////
-	// Deprecated old array and record handling
-	///////////////
-	
-//	def List<VariableDeclaration> transformValue2(ValueDeclaration variable) {
-//		val List<VariableDeclaration> transformed = newArrayList
-//		val TypeDefinition variableType = variable.typeDefinition
-//		// Records are broken up into separate variables
-//		if (variableType instanceof RecordTypeDefinition) {
-//			for (field : variableType.fieldDeclarations) {
-//				val innerField = new FieldHierarchy
-//				innerField.add(field)
-//				transformed += transformValueField(variable, innerField, newArrayList)
-//			}
-//			return transformed
-//		}
-//		else if (variableType instanceof ArrayTypeDefinition) {
-//			val arrayStack = <ArrayTypeDefinition>newArrayList
-//			arrayStack += variableType
-//			transformed += transformValueArray(variable, variableType, arrayStack)
-//			return transformed
-//		}
-//		else {	// Simple variables and arrays of simple types are simply transformed
-//			val newVariable = createVariableDeclaration => [
-//				it.name = variable.name
-//				it.type = variable.type.transformType
-//				if (variable instanceof InitializableElement) {
-//					it.expression = variable.expression?.transformExpression?.onlyElement
-//				}
-//				if (variable instanceof VariableDeclaration) {
-//					for (annotation : variable.annotations) {
-//						it.annotations += annotation.transformAnnotation
-//					}
-//				}
-//			]
-//			transformed += newVariable
-//			trace.put(variable, transformed.head)
-//			return transformed
-//		}
-//	}
-//	
-//	private def List<VariableDeclaration> transformValueField(ValueDeclaration variable,
-//			FieldHierarchy currentField, List<ArrayTypeDefinition> arrayStack) {
-//		val List<VariableDeclaration> transformed = newArrayList
-//		
-//		val typeDef = currentField.last.typeDefinition
-//		if (typeDef instanceof RecordTypeDefinition) { // if another record
-//			for (field : typeDef.fieldDeclarations) {
-//				val innerField = new FieldHierarchy
-//				innerField.add(currentField)
-//				innerField.add(field)
-//				val innerStack = <ArrayTypeDefinition>newArrayList
-//				innerStack += arrayStack
-//				transformed += transformValueField(variable, innerField, innerStack)
-//			}
-//		}
-//		else {	// if simple type
-//			val transformedField = createVariableDeclaration => [
-//				it.name = variable.name + "_" + currentField.last.name	// TODO name provider
-//				it.type = createTransformedRecordType(arrayStack, currentField.last.type)
-//				if (variable instanceof InitializableElement) {
-//					val initial = variable.expression
-//					if (initial !== null) {
-//						if (initial instanceof RecordLiteralExpression) {
-//							it.expression = getExpressionFromRecordLiteral(
-//								initial, currentField).transformExpression.onlyElement
-//						} 
-//						else if (initial instanceof ArrayLiteralExpression) {
-//							it.expression = constraintFactory.createArrayLiteralExpression
-//							for (op : initial.operands) {
-//								if (op instanceof RecordLiteralExpression) {
-//									(it.expression as ArrayLiteralExpression).operands += 
-//										getExpressionFromRecordLiteral(op, currentField).transformExpression.onlyElement
-//								}
-//							}
-//						} 
-//						else if (initial instanceof FunctionAccessExpression) {
-//							if (trace.isMapped(initial)) {
-//								var possibleValues = trace.get(initial)
-//								var VariableDeclaration currentValue = null
-//								for (value : possibleValues) {
-//									if (value.name.contains(currentField.last.name)) { // TODO nameprovider
-//										currentValue = value
-//									}
-//								}
-//								if (currentValue !== null) {
-//									val currentValueConst = currentValue
-//									it.expression = createDirectReferenceExpression => [
-//										it.declaration = currentValueConst
-//									]
-//								}
-//							}
-//							else {
-//								throw new IllegalArgumentException("Error when transforming function access expression: " +
-//									initial + " was not yet transformed.")
-//							}
-//						} 
-//						else {
-//							throw new IllegalArgumentException("Cannot transform initial value: " + initial)
-//						}
-//					}
-//				}
-//				if (variable instanceof VariableDeclaration) {
-//					for (annotation : variable.annotations) {
-//						it.annotations += annotation.transformAnnotation
-//					}
-//				}
-//			]
-//			transformed += transformedField
-//			trace.put(new Pair(variable, currentField), transformedField)
-//		}
-//		
-//		return transformed	
-//	}
-//	
-//	private def List<VariableDeclaration> transformValueArray(ValueDeclaration variable,
-//			ArrayTypeDefinition currentType, List<ArrayTypeDefinition> arrayStack) {
-//		val List<VariableDeclaration> transformed = newArrayList
-//		
-//		val TypeDefinition innerType = currentType.elementType.typeDefinition
-//		if (innerType instanceof ArrayTypeDefinition) {
-//			val innerStack = <ArrayTypeDefinition>newArrayList
-//			innerStack += arrayStack
-//			innerStack += innerType
-//			transformed += transformValueArray(variable, innerType, innerStack)
-//		}
-//		else if (innerType instanceof RecordTypeDefinition) {
-//			for (field : innerType.fieldDeclarations) {
-//				val innerField = new FieldHierarchy
-//				innerField.add(field)
-//				val innerStack = <ArrayTypeDefinition>newArrayList
-//				innerStack += arrayStack
-//				transformed += transformValueField(variable, innerField, innerStack)
-//			}
-//			return transformed
-//		}
-//		else {	// Simple
-//			transformed += createVariableDeclaration => [
-//				it.name = variable.name
-//				it.type = variable.type.transformType
-//				if (variable instanceof InitializableElement) {
-//					it.expression = variable.expression?.transformExpression?.getOnlyElement
-//				}
-//				if (variable instanceof VariableDeclaration) {
-//					for (annotation : variable.annotations) {
-//						it.annotations += annotation.transformAnnotation
-//					}
-//				}
-//			]
-//			trace.put(variable, transformed.head)
-//		}
-//		return transformed
-//	}
-//	
-//	private def Expression getExpressionFromRecordLiteral(RecordLiteralExpression initial,
-//			FieldHierarchy currentFieldHierarchy) {
-//		val currentField = currentFieldHierarchy.fields
-//		for (assignment : initial.fieldAssignments) {
-//			val value = assignment.value
-//			if (currentField.head.name == assignment.reference) {
-//				if (currentField.size == 1) {
-//					return value
-//				}
-//				else {
-//					if (assignment.value instanceof RecordLiteralExpression) {
-//						val innerField = new FieldHierarchy
-//						innerField.add(currentField.subList(1, currentField.size))
-//						return getExpressionFromRecordLiteral(
-//							value as RecordLiteralExpression, innerField)
-//					}
-//					else {
-//						throw new IllegalArgumentException("Invalid expression!")
-//					}
-//				}
-//			}
-//		}
-//	}
 	
 }

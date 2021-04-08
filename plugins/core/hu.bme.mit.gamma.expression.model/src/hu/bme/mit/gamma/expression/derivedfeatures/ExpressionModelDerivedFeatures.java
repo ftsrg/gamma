@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
@@ -101,7 +102,7 @@ public class ExpressionModelDerivedFeatures {
 		}
 		if (type instanceof TypeReference) {
 			TypeReference typeReference = (TypeReference) type;
-			return (TypeDefinition) typeReference.getReference().getType();
+			return getTypeDefinition(typeReference.getReference().getType());
 		}
 		throw new IllegalArgumentException("Not known type: " + type);
 	}
@@ -136,21 +137,6 @@ public class ExpressionModelDerivedFeatures {
 				expression, ReferenceExpression.class).isEmpty();
 	}
 	
-	// Record and array handling
-	
-	public static List<Expression> getFieldValues(RecordLiteralExpression record) {
-		TypeDeclaration typeDeclaration = record.getTypeDeclaration();
-		RecordTypeDefinition recordType = (RecordTypeDefinition) getTypeDefinition(typeDeclaration.getType());
-		List<Expression> values = new ArrayList<Expression>();
-		for (FieldDeclaration fieldDeclaration : recordType.getFieldDeclarations()) {
-			Expression value = record.getFieldAssignments().stream()
-				.filter(it -> it.getReference().getFieldDeclaration() == fieldDeclaration).findFirst().get()
-				.getValue();
-			values.add(value);
-		}
-		return values;
-	}
-	
 	public static List<TypeDeclaration> getSelfAndAllTypeDeclarations(Type type) {
 		List<TypeDeclaration> typeDeclarations = getAllTypeDeclarations(type);
 		if (type instanceof TypeDefinition) {
@@ -182,6 +168,8 @@ public class ExpressionModelDerivedFeatures {
 		}
 		return typeDeclarations;
 	}
+	
+	// Record and array handling - high-level expression and action transformers should build on these
 	
 	public static List<FieldHierarchy> getFieldHierarchies(Type type) {
 		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
@@ -239,6 +227,35 @@ public class ExpressionModelDerivedFeatures {
 		return nativeTypes;
 	}
 	
+	public static List<Expression> getFieldValues(RecordLiteralExpression record) {
+		TypeDeclaration typeDeclaration = record.getTypeDeclaration();
+		RecordTypeDefinition recordType = (RecordTypeDefinition) getTypeDefinition(typeDeclaration.getType());
+		List<Expression> values = new ArrayList<Expression>();
+		for (FieldDeclaration fieldDeclaration : recordType.getFieldDeclarations()) {
+			Expression value = record.getFieldAssignments().stream()
+				.filter(it -> it.getReference().getFieldDeclaration() == fieldDeclaration).findFirst().get()
+				.getValue();
+			values.add(value);
+		}
+		return values;
+	}
+	
+	public static FieldAssignment getFieldAssignment(
+			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
+		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
+		FieldAssignment fieldAssignment = null;
+		for (FieldDeclaration field : fieldHierarchy.getFields()) {
+			fieldAssignment = fieldAssignments.stream().filter(it -> 
+				it.getReference().getFieldDeclaration() == field).findFirst().get();
+			Expression fieldValue = fieldAssignment.getValue();
+			if (fieldValue instanceof RecordLiteralExpression) {
+				RecordLiteralExpression subrecord = (RecordLiteralExpression) fieldValue;
+				fieldAssignments = subrecord.getFieldAssignments();
+			}
+		}
+		return fieldAssignment;
+	}
+	
 	public static List<Expression> getAccesses(Expression expression) {
 		List<Expression> accesses = new ArrayList<Expression>();
 		if (expression instanceof ArrayAccessExpression) {
@@ -282,149 +299,5 @@ public class ExpressionModelDerivedFeatures {
 		accesses.removeAll(recordAccesses);
 		return accesses;
 	}
-	
-	///////////////
-	// Deprecated old array and record handling
-	///////////////
-	
-//	public static List<FieldReferenceExpression> collectRecordAccessList(ReferenceExpression exp) {
-//		return javaUtil.filter(collectAccessList(exp), FieldReferenceExpression.class);
-//	}
-//	
-//	public static List<FieldHierarchy> getAllFieldHierarchies(RecordTypeDefinition record) {
-//		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
-//		for (FieldDeclaration field : record.getFieldDeclarations()) {
-//			Type type = field.getType();
-//			if (type instanceof RecordTypeDefinition) {
-//				RecordTypeDefinition subrecord = (RecordTypeDefinition) type;
-//				List<FieldHierarchy> hierarchies = getAllFieldHierarchies(subrecord);
-//				for (FieldHierarchy hierarchy : hierarchies) {
-//					hierarchy.prepend(field);
-//					fieldHierarchies.add(hierarchy);
-//				}
-//			}
-//			else {
-//				// Primitive type
-//				fieldHierarchies.add(new FieldHierarchy(field));
-//			}
-//		}
-//		return fieldHierarchies;
-//	}
-//	
-//	public static List<SimpleEntry<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original) {
-//		List<SimpleEntry<ValueDeclaration, FieldHierarchy>> _xblockexpression = null;
-//		final TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(original);
-//		FieldHierarchy _fieldHierarchy = new FieldHierarchy();
-//		_xblockexpression = exploreComplexType(original, typeDefinition, _fieldHierarchy);
-//		return _xblockexpression;
-//	}
-//		
-//	public static List<SimpleEntry<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original, TypeDefinition type) {
-//		FieldHierarchy _fieldHierarchy = new FieldHierarchy();
-//		return exploreComplexType(original, type, _fieldHierarchy);
-//	}
-//		
-//	public static List<SimpleEntry<ValueDeclaration, FieldHierarchy>> exploreComplexType(
-//			ValueDeclaration original, TypeDefinition type, FieldHierarchy currentField) {
-//		final List<FieldHierarchy> exploredTypes = exploreComplexType2(type, currentField);
-//		final List<SimpleEntry<ValueDeclaration, FieldHierarchy>> result = new ArrayList<>();
-//		for (FieldHierarchy exploredType : exploredTypes) {
-//			SimpleEntry<ValueDeclaration, FieldHierarchy> _pair =
-//					new SimpleEntry<ValueDeclaration, FieldHierarchy>(original, exploredType);
-//			result.add(_pair);
-//		}
-//		return result;
-//	}
-//	
-//	public static List<FieldHierarchy> exploreComplexType2(TypeDefinition type) {
-//		return exploreComplexType2(type, new FieldHierarchy());
-//	}
-//		
-//	public static List<FieldHierarchy> exploreComplexType2(
-//			TypeDefinition type, FieldHierarchy currentField) {
-//		final List<FieldHierarchy> result = new ArrayList<FieldHierarchy>();
-//		if (type instanceof RecordTypeDefinition) {
-//			EList<FieldDeclaration> _fieldDeclarations = ((RecordTypeDefinition)type).getFieldDeclarations();
-//			for (FieldDeclaration field : _fieldDeclarations) {
-//				final FieldHierarchy newCurrent = new FieldHierarchy();
-//				newCurrent.add(currentField);
-//				newCurrent.add(field);
-//				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(
-//						ExpressionModelDerivedFeatures.getTypeDefinition(field.getType()), newCurrent);
-//				result.addAll(_exploreComplexType2);
-//			}
-//		}
-//		else {
-//			if (type instanceof ArrayTypeDefinition) {
-//				List<FieldHierarchy> _exploreComplexType2 = exploreComplexType2(
-//						ExpressionModelDerivedFeatures.getTypeDefinition(
-//								((ArrayTypeDefinition)type).getElementType()), currentField);
-//				result.addAll(_exploreComplexType2);
-//			}
-//			else {
-//				result.add(currentField);
-//			}
-//		}
-//		return result;
-//	}
-//		
-//	public static List<Expression> collectAccessList(ReferenceExpression exp) {
-//		final List<Expression> result = new ArrayList<Expression>();
-//		if (exp instanceof ArrayAccessExpression) {
-//			final ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) exp;
-//			final Expression inner = arrayAccessExpression.getOperand();
-//			if (inner instanceof ReferenceExpression) {
-//				List<Expression> _collectAccessList = collectAccessList((ReferenceExpression)inner);
-//				result.addAll(_collectAccessList);
-//			}
-//			Expression _onlyElement = javaUtil.getOnlyElement(arrayAccessExpression.getIndexes());
-//			result.add(_onlyElement);
-//		}
-//		else {
-//			if (exp instanceof RecordAccessExpression) {
-//				RecordAccessExpression recordAccess = (RecordAccessExpression) exp;
-//				final Expression inner_1 = recordAccess.getOperand();
-//				if (inner_1 instanceof ReferenceExpression) {
-//					List<Expression> _collectAccessList_1 = collectAccessList((ReferenceExpression)inner_1);
-//					result.addAll(_collectAccessList_1);
-//				}
-//				FieldReferenceExpression _fieldReference = recordAccess.getFieldReference();
-//				result.add(_fieldReference);
-//			}
-//			else {
-//				if (exp instanceof SelectExpression) {
-//					final Expression inner_2 = ((SelectExpression)exp).getOperand();
-//					if (inner_2 instanceof ReferenceExpression) {
-//						List<Expression> _collectAccessList_2 = collectAccessList((ReferenceExpression)inner_2);
-//						result.addAll(_collectAccessList_2);
-//					}
-//				}
-//				else {
-//					// Simple
-//				}
-//			}
-//		}
-//		return result;
-//	}
-//		
-//	public static boolean isSameAccessTree(FieldHierarchy fieldHierarchy,
-//			List<FieldReferenceExpression> currentAccessList) {
-//		final List<FieldDeclaration> fieldsList = fieldHierarchy.getFields();
-//		int _size = fieldsList.size();
-//		int _size_1 = currentAccessList.size();
-//		if (_size < _size_1) {
-//			return false;
-//		}
-//		for (int i = 0; i < currentAccessList.size(); i++) {
-//			final FieldDeclaration access = currentAccessList.get(i).getFieldDeclaration();
-//			final FieldDeclaration field = fieldsList.get(i);
-//			if (access != field) {
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
 	
 }
