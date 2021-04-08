@@ -158,9 +158,7 @@ public class ExpressionUtil {
 				int value = evaluator.evaluateInteger(expression);
 				if (!integerValues.contains(value)) {
 					integerValues.add(value);
-					IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-					integerLiteralExpression.setValue(BigInteger.valueOf(value));
-					evaluatedExpressions.add(integerLiteralExpression);
+					evaluatedExpressions.add(toIntegerLiteral(value));
 				}
 			} catch (Exception e) {}
 			// Excluding branches
@@ -421,24 +419,18 @@ public class ExpressionUtil {
 	// Arithmetic: for now, integers only
 
 	public Expression add(Expression expression, int value) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) + value));
-		return integerLiteralExpression;
+		return toIntegerLiteral(evaluator.evaluate(expression) + value);
 	}
 
 	public Expression subtract(Expression expression, int value) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) - value));
-		return integerLiteralExpression;
+		return toIntegerLiteral(evaluator.evaluate(expression) - value);
 	}
 	
 	public Expression wrapIntoMultiply(Expression expression, int value) {
 		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
 		multiplyExpression.getOperands().add(expression);
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.valueOf(value));
-		multiplyExpression.getOperands().add(integerLiteralExpression);
-		return integerLiteralExpression;
+		multiplyExpression.getOperands().add(toIntegerLiteral(value));
+		return multiplyExpression;
 	}
 
 	// Declaration references
@@ -721,9 +713,7 @@ public class ExpressionUtil {
 	}
 
 	protected Expression _getInitialValueOfType(final IntegerTypeDefinition type) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.ZERO);
-		return integerLiteralExpression;
+		return toIntegerLiteral(0);
 	}
 
 	protected Expression _getInitialValueOfType(final DecimalTypeDefinition type) {
