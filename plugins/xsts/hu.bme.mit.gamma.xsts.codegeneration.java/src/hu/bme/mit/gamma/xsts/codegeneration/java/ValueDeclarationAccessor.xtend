@@ -66,7 +66,7 @@ class ValueDeclarationAccessor {
 			return '''«objectId».set«fieldNames.get(0).toFirstUpper»(«valueId»);'''
 		}
 		if (type instanceof RecordTypeDefinition) {
-			val fields = type.exploreComplexType2
+			val fields = type.fieldHierarchies
 			return '''«objectId.write(fieldNames, valueId, fields)»'''
 		}
 	}

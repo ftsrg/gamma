@@ -923,13 +923,14 @@ public class ExpressionUtil {
 	}
 	
 	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {
-		ReferenceExpression referenceExpression = createReferenceExpression(declaration);
 		if (indexes.isEmpty()) {
-			return referenceExpression;
+			return createReferenceExpression(declaration);
 		}
+		int index = indexes.size() - 1;
+		Expression lastIndex = indexes.get(index);
 		ArrayAccessExpression access = factory.createArrayAccessExpression();
-		access.setOperand(referenceExpression);
-		access.getIndexes().addAll(ecoreUtil.clone(indexes));
+		access.setOperand(index(declaration, indexes.subList(0, index)));
+		access.setIndex(lastIndex);
 		return access;
 	}
 	

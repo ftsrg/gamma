@@ -303,7 +303,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	// Record specific auxiliary method
 	
 	protected def getSourceFieldHierarchy(TypeDefinition type, List<String> names, String targetName) {
-		val fields = type.exploreComplexType2
+		val fields = type.fieldHierarchies
 		for (var i = 0; i < names.size; i++) {
 			val name = names.get(i)
 			if (name == targetName) {

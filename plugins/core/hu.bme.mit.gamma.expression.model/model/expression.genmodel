@@ -146,7 +146,7 @@
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//AssignableAccessExpression"/>
     <genClasses ecoreClass="expression.ecore#//ArrayAccessExpression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ArrayAccessExpression/indexes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//ArrayAccessExpression/index"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//RecordAccessExpression">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordAccessExpression/fieldReference"/>

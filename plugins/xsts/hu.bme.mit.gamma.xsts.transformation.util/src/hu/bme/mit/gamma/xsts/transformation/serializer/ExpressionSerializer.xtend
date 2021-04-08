@@ -43,7 +43,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
 	
-	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«FOR index : expression.indexes»«index.serialize»]«ENDFOR»'''
+	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«expression.index.serialize»]'''
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration

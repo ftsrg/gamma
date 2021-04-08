@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.TypeReferenceExpression
-import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
@@ -127,8 +126,9 @@ class ExpressionTransformer {
 	}
 	
 	def transformReferenceExpression(ReferenceExpression expression) {
-		val fieldAccess = expression.fieldAccess
-		val indexes = expression.indexAccess
+		// a[0].b.c[1].d
+		val fieldAccess = expression.fieldAccess // .b and .c
+		val indexes = expression.indexAccess // [0] and [1]
 		val lowlevelIndexes = indexes.map[it.transformExpression.onlyElement].toList
 		
 		val reference = expression.accessReference
@@ -143,7 +143,9 @@ class ExpressionTransformer {
 			val parameter = reference.parameter
 			lowlevelVariable = trace.getInParameter(port, event, parameter -> fieldAccess)
 		}
-		
+		else if (reference instanceof FunctionAccessExpression) {
+			// FunctionAccess?
+		}
 		return lowlevelVariable.index(lowlevelIndexes) // Simple reference if indexes are empty
 	}
 	
@@ -378,7 +380,7 @@ class ExpressionTransformer {
 					it.operand = createDirectReferenceExpression => [
 						it.declaration = expression.declaration
 					]
-					it.indexes += createIntegerLiteralExpression => [
+					it.index = createIntegerLiteralExpression => [
 						it.value = BigInteger.valueOf(temp)
 					]
 				]
@@ -390,17 +392,17 @@ class ExpressionTransformer {
 		return result
 	}
 	
-	protected def dispatch List<Expression> enumerateExpression(AccessExpression expression) {
-		// array-in-array, array-in-record, (array-from-function, array-from-select TODO) DOES NOT TRANSFORM
-		val List<Expression> result = newArrayList
-		
-		val referredDeclaration = expression.referredValues.onlyElement
-		var originalLhsFields = exploreComplexType(referredDeclaration)			
-	
-		// if array type
-		var randomElem = originalLhsFields.get(0) //equals a random accessible element
-		var randomElemKey = randomElem.key	//equals referredDeclaration
-		var int i = 0	// number of the array elements 
+//	protected def dispatch List<Expression> enumerateExpression(AccessExpression expression) {
+//		// array-in-array, array-in-record, (array-from-function, array-from-select TODO) DOES NOT TRANSFORM
+//		val List<Expression> result = newArrayList
+//		
+//		val referredDeclaration = expression.referredValues.onlyElement
+//		var originalLhsFields = exploreComplexType(referredDeclaration)			
+//	
+//		// if array type
+//		var randomElem = originalLhsFields.get(0) //equals a random accessible element
+//		var randomElemKey = randomElem.key	//equals referredDeclaration
+//		var int i = 0	// number of the array elements 
 		// if mapped as complex and is an array
 		// TODO I do not know what this does
 //		if (trace.isMapped(randomElem)) {
@@ -419,18 +421,18 @@ class ExpressionTransformer {
 //			}
 //		}
 		
-		for (var j = 0; j < i; j++) {	// running variable for the array indices
-			val temp = j	//to use inside a lambda
-			result += createArrayAccessExpression => [
-				it.operand = expression.clone	//DOES NOT TRANSFORM
-				it.indexes += createIntegerLiteralExpression => [
-					it.value = BigInteger.valueOf(temp)
-				]
-			]
-		}
-
-		return result	
-	}
+//		for (var j = 0; j < i; j++) {	// running variable for the array indices
+//			val temp = j	//to use inside a lambda
+//			result += createArrayAccessExpression => [
+//				it.operand = expression.clone	//DOES NOT TRANSFORM
+//				it.indexes += createIntegerLiteralExpression => [
+//					it.value = BigInteger.valueOf(temp)
+//				]
+//			]
+//		}
+//
+//		return result	
+//	}
 	
 	protected def dispatch List<Expression> enumerateExpression(ArrayLiteralExpression expression) {
 		return new ArrayList<Expression>(expression.operands)

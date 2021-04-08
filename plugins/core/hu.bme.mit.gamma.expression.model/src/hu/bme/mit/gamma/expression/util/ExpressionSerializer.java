@@ -346,15 +346,7 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final ArrayAccessExpression arrayAccessExpression) {
-		String string = "";
-		EList<Expression> _arguments = arrayAccessExpression.getIndexes();
-		for (final Expression expression : _arguments) {
-			string = string.concat(this.serialize(expression).toString());
-		}
-		String serialize = this.serialize(arrayAccessExpression.getOperand());
-		String _plus = (serialize + "[");
-		String _plus_1 = (_plus + string);
-		return (_plus_1 + "]");
+		return serialize(arrayAccessExpression.getOperand()) + "[" + serialize(arrayAccessExpression.getIndex())  + "]";
 	}
 
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {

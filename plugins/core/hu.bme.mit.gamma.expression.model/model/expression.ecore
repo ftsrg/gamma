@@ -179,8 +179,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AssignableAccessExpression" eSuperTypes="#//AccessExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="ArrayAccessExpression" eSuperTypes="#//AssignableAccessExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="indexes" upperBound="-1"
-        eType="#//Expression" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="index" lowerBound="1" eType="#//Expression"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RecordAccessExpression" eSuperTypes="#//AssignableAccessExpression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fieldReference" lowerBound="1"

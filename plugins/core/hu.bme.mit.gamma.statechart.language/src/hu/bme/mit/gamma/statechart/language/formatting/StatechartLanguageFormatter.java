@@ -15,7 +15,7 @@ import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.util.Pair;
 
-import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
+import hu.bme.mit.gamma.action.language.formatting.ActionLanguageFormatterUtil;
 import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAccess;
 
 /**
@@ -28,13 +28,14 @@ import hu.bme.mit.gamma.statechart.language.services.StatechartLanguageGrammarAc
  */
 public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
 	
-	private final ExpressionLanguageFormatterUtil expressionLanguageFormatterUtil = new ExpressionLanguageFormatterUtil();
+	private final ActionLanguageFormatterUtil actionLanguageFormatterUtil =
+			new ActionLanguageFormatterUtil();
 
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
 		StatechartLanguageGrammarAccess f = (StatechartLanguageGrammarAccess) getGrammarAccess();
-		expressionLanguageFormatterUtil.format(c, f);
-		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
+		actionLanguageFormatterUtil.format(c, f);
+		actionLanguageFormatterUtil.formatExpressions(c, f.getActionLanguageGrammarAccess());
 		c.setWrappedLineIndentation(1);
 		// Setting the maximum size of lines
         c.setAutoLinewrap(100);
@@ -113,9 +114,9 @@ public class StatechartLanguageFormatter extends AbstractDeclarativeFormatter {
         c.setNoSpace().before(f.getRaiseEventActionAccess().getGroup_4());
         c.setNoSpace().before(f.getNotTriggerAccess().getOperandParenthesesTriggerParserRuleCall_1_0());
         // Space before [
-        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
-        	c.setSpace(" ").before(p.getFirst());
-        }
+//        for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
+//        	c.setSpace(" ").before(p.getFirst());
+//        }
         // Interface events
         c.setLinewrap(1).after(f.getEventDeclarationRule());
         // Comments

@@ -21,8 +21,11 @@ public class ExpressionLanguageFormatterUtil {
 	
 	public void format(FormattingConfig c, AbstractGrammarElementFinder f) {
 		setBrackets(c, f);
+		formatBracketLess(c, f);
+	}
+	
+	public void formatBracketLess(FormattingConfig c, AbstractGrammarElementFinder f) {
 		setParantheses(c, f);
-		setSquareBrackets(c, f);
 		setDots(c, f);
 		setExclamationMarks(c, f);
 		setCommas(c, f);
@@ -30,52 +33,44 @@ public class ExpressionLanguageFormatterUtil {
 		setDoubleColons(c, f);
 	}
 
-	public void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword dot : f.findKeywords("::")) {
 			c.setNoSpace().after(dot);
 		}
 	}
 
-	public void setCommas(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setCommas(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword comma : f.findKeywords(",")) {
 			c.setNoSpace().before(comma);
 		}
 	}
 	
-	public void setSemicolons(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setSemicolons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword comma : f.findKeywords(";")) {
 			c.setNoSpace().before(comma);
 		}
 	}
 
-	public void setExclamationMarks(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setExclamationMarks(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword exclamationMark : f.findKeywords("!")) {
 			c.setNoSpace().after(exclamationMark);
 		}
 	}
 
-	public void setDots(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setDots(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword dot : f.findKeywords(".")) {
 			c.setNoSpace().around(dot);
 		}
 	}
 
-	public void setParantheses(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setParantheses(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Pair<Keyword, Keyword> p : f.findKeywordPairs("(", ")")) {
 			c.setNoSpace().after(p.getFirst());
 			c.setNoSpace().before(p.getSecond());
 		}
 	}
-	
-	public void setSquareBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
-		for (Pair<Keyword, Keyword> p : f.findKeywordPairs("[", "]")) {
-			c.setNoSpace().before(p.getFirst());
-			c.setNoSpace().after(p.getFirst());
-			c.setNoSpace().before(p.getSecond());
-		}
-	}
 
-	public void setBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
+	protected void setBrackets(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Pair<Keyword, Keyword> pair : f.findKeywordPairs("{", "}")) {
 			c.setIndentation(pair.getFirst(), pair.getSecond());
 			c.setLinewrap(1).after(pair.getFirst());
@@ -86,11 +81,21 @@ public class ExpressionLanguageFormatterUtil {
 	
 	public void formatExpressions(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
 		setRecordLiterals(c, f);
+		setSquareBrackets(c, f);
 	}
 	
-	public void setRecordLiterals(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+	protected void setRecordLiterals(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
 		c.setLinewrap(1).before(f.getRecordTypeDefinitionAccess().getFieldDeclarationsAssignment_3_1());
 		c.setNoSpace().before(f.getRecordLiteralExpressionAccess().getTypeDeclarationAssignment_1());
+	}
+	
+	protected void setSquareBrackets(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+		// Index
+		c.setNoSpace().before(f.getAccessExpressionAccess().getLeftSquareBracketKeyword_1_0_1());
+		c.setNoSpace().around(f.getAccessExpressionAccess().getIndexAssignment_1_0_2());
+		// Type
+		c.setNoSpace().before(f.getArrayTypeDefinitionAccess().getLeftSquareBracketKeyword_2());
+		c.setNoSpace().around(f.getArrayTypeDefinitionAccess().getSizeAssignment_3());
 	}
 
 }

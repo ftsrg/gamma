@@ -62,10 +62,10 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transformExpression(ArrayAccessExpression expression) {
 		val operand = expression.operand
-		val indexes = expression.indexes
+		val index = expression.index
 		return createArrayAccessExpression => [
 			it.operand = operand.transformExpression
-			it.indexes += indexes.map[it.transformExpression]
+			it.index = index.transformExpression
 		]
 	}
 	
@@ -115,6 +115,8 @@ class ExpressionTransformer {
 		}
 		return newExpression
 	}
+	
+	// Types
 	
 	def dispatch Type transformType(Type type) {
 		return type.clone

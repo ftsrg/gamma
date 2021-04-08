@@ -28,7 +28,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.List
 import java.util.Map
 
-import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionPreconditionTransformer {
@@ -103,66 +102,66 @@ class ExpressionPreconditionTransformer {
 		}
 		else if (innerExpression instanceof ReferenceExpression) {
 			// get variable type
-			val originalType = innerExpression.referredValues.onlyElement.typeDefinition
-			val accessList = innerExpression.collectAccessList
-			
-			var currentType = originalType	//TODO extract this (~with other sameAccessTree code blocks)
-			val currentList = accessList
-			while (currentList.size > 0) {
-				var currentElem = currentList.remove(0)
-				// if record access
-				if (currentType instanceof RecordTypeDefinition) {
-					if (currentElem instanceof DirectReferenceExpression) {
-						var fieldDeclarations = currentType.fieldDeclarations
-						for (field : fieldDeclarations) {
-							if (field.name == currentElem) {
-								currentType = field.type.typeDefinition
-							}
-						}
-					}
-				}
-				// if array access
-				else if (currentType instanceof ArrayTypeDefinition) {
-					if (currentElem instanceof Expression) {
-						currentType = currentType.elementType.typeDefinition
-					}
-				}
-				else {
-					throw new IllegalArgumentException("Access list and type hierarchy do not match!")
-				}
-			}
-			// check if select-able
-			var TypeDefinition tempVariableOriginalType = null
-			if (currentType instanceof ArrayTypeDefinition) {
-				tempVariableOriginalType = currentType.elementType.typeDefinition
-			}
-			else {
-				throw new IllegalArgumentException("Cannot select from expression of type: " + tempVariableOriginalType)
-			}
-			
-			// set temporary variables
-			val tempVariableOriginalTypeConst = tempVariableOriginalType // const to be used inside a lambda
-			
-			if (!(tempVariableOriginalType instanceof CompositeTypeDefinition)) {	//TODO simplify this and the following 2 branches
-				val tempVariable = createVariableDeclaration => [
-					it.name = new NameProvider(expression).name
-					it.type = tempVariableOriginalTypeConst.transformType
-				]
-				tempVariableDeclarations += tempVariable
-				trace.put(expression, tempVariableDeclarations)
-				tempVariables += createVariableDeclarationStatement => [
-					it.variableDeclaration = tempVariable
-				]
-			}
-			else {
-				tempVariableDeclarations += tempVariableOriginalType.createVariablesFromType(new NameProvider(expression))
-				trace.put(expression, tempVariableDeclarations)
-				tempVariables += tempVariableDeclarations.map[decl | 
-					createVariableDeclarationStatement => [
-						it.variableDeclaration = decl
-					]
-				].toList			
-			}		
+//			val originalType = innerExpression.referredValues.onlyElement.typeDefinition
+//			val accessList = innerExpression.collectAccessList
+//			
+//			var currentType = originalType	//TODO extract this (~with other sameAccessTree code blocks)
+//			val currentList = accessList
+//			while (currentList.size > 0) {
+//				var currentElem = currentList.remove(0)
+//				// if record access
+//				if (currentType instanceof RecordTypeDefinition) {
+//					if (currentElem instanceof DirectReferenceExpression) {
+//						var fieldDeclarations = currentType.fieldDeclarations
+//						for (field : fieldDeclarations) {
+//							if (field.name == currentElem) {
+//								currentType = field.type.typeDefinition
+//							}
+//						}
+//					}
+//				}
+//				// if array access
+//				else if (currentType instanceof ArrayTypeDefinition) {
+//					if (currentElem instanceof Expression) {
+//						currentType = currentType.elementType.typeDefinition
+//					}
+//				}
+//				else {
+//					throw new IllegalArgumentException("Access list and type hierarchy do not match!")
+//				}
+//			}
+//			// check if select-able
+//			var TypeDefinition tempVariableOriginalType = null
+//			if (currentType instanceof ArrayTypeDefinition) {
+//				tempVariableOriginalType = currentType.elementType.typeDefinition
+//			}
+//			else {
+//				throw new IllegalArgumentException("Cannot select from expression of type: " + tempVariableOriginalType)
+//			}
+//			
+//			// set temporary variables
+//			val tempVariableOriginalTypeConst = tempVariableOriginalType // const to be used inside a lambda
+//			
+//			if (!(tempVariableOriginalType instanceof CompositeTypeDefinition)) {	//TODO simplify this and the following 2 branches
+//				val tempVariable = createVariableDeclaration => [
+//					it.name = new NameProvider(expression).name
+//					it.type = tempVariableOriginalTypeConst.transformType
+//				]
+//				tempVariableDeclarations += tempVariable
+//				trace.put(expression, tempVariableDeclarations)
+//				tempVariables += createVariableDeclarationStatement => [
+//					it.variableDeclaration = tempVariable
+//				]
+//			}
+//			else {
+//				tempVariableDeclarations += tempVariableOriginalType.createVariablesFromType(new NameProvider(expression))
+//				trace.put(expression, tempVariableDeclarations)
+//				tempVariables += tempVariableDeclarations.map[decl | 
+//					createVariableDeclarationStatement => [
+//						it.variableDeclaration = decl
+//					]
+//				].toList			
+//			}		
 		} 
 		else if (innerExpression instanceof IntegerRangeLiteralExpression) {
 			tempVariableDeclarations += createIntegerTypeDefinition.createVariablesFromType(new NameProvider(expression))
