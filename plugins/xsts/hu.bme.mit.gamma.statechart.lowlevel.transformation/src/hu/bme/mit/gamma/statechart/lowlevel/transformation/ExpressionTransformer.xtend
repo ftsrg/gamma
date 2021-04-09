@@ -27,7 +27,6 @@ import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.UnaryExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
@@ -85,15 +84,11 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return #[
-			expression.transformReferenceExpression
-		]
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return #[
-			expression.transformReferenceExpression
-		]
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
@@ -126,9 +121,7 @@ class ExpressionTransformer {
 	}
 
 	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return #[
-			expression.transformReferenceExpression
-		]
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
@@ -155,9 +148,7 @@ class ExpressionTransformer {
 	}
 	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
-		return #[
-			expression.transformReferenceExpression
-		]
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
@@ -181,30 +172,34 @@ class ExpressionTransformer {
 	
 	// Key method: reference expression
 	
-	def transformReferenceExpression(ReferenceExpression expression) {
+	def List<ReferenceExpression> transformReferenceExpression(ReferenceExpression expression) {
 		// a[0].b.c[1].d
-		val fieldAccess = expression.fieldAccess // .b and .c
+		val fieldAccess = expression.fieldAccess // .b .c
 		val indexes = expression.indexAccess // [0] and [1]
-		val lowlevelIndexes = indexes.map[it.transformExpression.onlyElement].toList
+		// It is the callers responsibility to make sure the original expression contains all necessary indexes
+		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
 		val reference = expression.accessReference
-		var VariableDeclaration lowlevelVariable = null
+		val lowlevelVariables = newArrayList
 		
+		// If original is not a full access, other potential fields are explored, that is,
+		// fieldAccess can be an extensible field access 
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
-			lowlevelVariable = trace.get(declaration -> fieldAccess)
+			lowlevelVariables += trace.getAll(declaration -> fieldAccess)
 		}
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port
 			val event = reference.event
 			val parameter = reference.parameter
-			lowlevelVariable = trace.getInParameter(port, event, parameter -> fieldAccess)
+			lowlevelVariables += trace.getAllInParameters(port, event, parameter -> fieldAccess)
 		}
 		else if (reference instanceof FunctionAccessExpression) {
 			// FunctionAccess?
 		}
 		
-		return lowlevelVariable.index(lowlevelIndexes) // Simple reference is returned if indexes are empty
+		// Simple references are returned if indexes are empty
+		return lowlevelVariables.map[it.index(lowlevelIndexes)]
 	}
 	
 	// Function access

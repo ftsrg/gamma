@@ -29,7 +29,6 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.action.util.ActionUtil
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
-import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.EventDirection
 import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
@@ -213,14 +212,13 @@ class ActionTransformer {
 		val result = <Action>newLinkedList
 		
 		val actionLhs = action.lhs
-		val List<ReferenceExpression> lowlevelLhs = newArrayList
-		lowlevelLhs += actionLhs.transformReferenceExpression // Now only one reference is expected
-		// This has to be addressed if record1 := record2 like assignments are needed
+		val lowlevelLhs = actionLhs.transformReferenceExpression // Potentially more references are expected
+		// This addresses record1 := record2 like assignments
 		
 		val actionRhs = action.rhs
 		// Precondition (function inlining)
 		result += actionRhs.transformPrecondition
-		// Transform rhs and create actions
+		// Transform right hand side and create actions
 		val lowlevelRhs = actionRhs.transformExpression
 		checkState(lowlevelLhs.size == lowlevelRhs.size,
 				"Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)

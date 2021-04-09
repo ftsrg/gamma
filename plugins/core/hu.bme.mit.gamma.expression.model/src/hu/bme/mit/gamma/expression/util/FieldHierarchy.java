@@ -58,6 +58,9 @@ public class FieldHierarchy {
 	}
 
 	public List<FieldHierarchy> getExtensions() {
+		if (fields.isEmpty()) {
+			return List.of(this);
+		}
 		// Possible hierarchies: a.b.c and a.b.d
 		// This: a.b
 		FieldDeclaration last = getLast(); // b
