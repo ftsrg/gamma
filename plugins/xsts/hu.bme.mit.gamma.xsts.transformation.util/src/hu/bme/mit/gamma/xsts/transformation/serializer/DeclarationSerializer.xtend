@@ -70,9 +70,9 @@ class DeclarationSerializer {
 	
 	def dispatch String serializeType(SubrangeTypeDefinition type) '''«type.lowerBound.serialize» : «type.upperBound.serialize»'''
 	
-	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}'''
+	def dispatch String serializeType(EnumerationTypeDefinition type) '''{ «FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR» }'''
 
-	def dispatch String serializeType(ArrayTypeDefinition type) '''array «type.elementType.serializeType» [«type.size.serialize»]'''
+	def dispatch String serializeType(ArrayTypeDefinition type) '''[integer] -> «type.elementType.serializeType»'''
 
 	// Variable
 

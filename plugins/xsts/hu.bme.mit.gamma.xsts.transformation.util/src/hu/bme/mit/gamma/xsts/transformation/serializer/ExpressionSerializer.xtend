@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.xsts.transformation.serializer
 
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
@@ -44,6 +45,8 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
 	
 	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«expression.index.serialize»]'''
+	
+	override String _serialize(ArrayLiteralExpression expression) '''[«FOR i : 0 ..< expression.operands.size SEPARATOR ', '»«i» <- «expression.operands.get(i).serialize»«ENDFOR», default <- «expression.operands.get(0).serialize»]'''
 	
 	override String _serialize(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
