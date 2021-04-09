@@ -94,8 +94,8 @@ public class ExpressionLanguageFormatterUtil {
 		c.setNoSpace().before(f.getAccessExpressionAccess().getLeftSquareBracketKeyword_1_0_1());
 		c.setNoSpace().around(f.getAccessExpressionAccess().getIndexAssignment_1_0_2());
 		// Type
-		c.setNoSpace().before(f.getArrayTypeDefinitionAccess().getLeftSquareBracketKeyword_2());
-		c.setNoSpace().around(f.getArrayTypeDefinitionAccess().getSizeAssignment_3());
+		c.setNoSpace().before(f.getArrayTypeDefinitionAccess().getLeftSquareBracketKeyword_0());
+		c.setNoSpace().around(f.getArrayTypeDefinitionAccess().getSizeAssignment_1());
 	}
 
 }

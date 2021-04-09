@@ -5,6 +5,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -18,7 +19,9 @@ import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionMo
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class LowlevelNamings {
-	
+	//
+	protected static final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	//
 	static def String getName(StatechartDefinition statechart) '''«statechart.name»'''
 	static def String getStateName(State state) '''«state.name»'''
 	static def String getRegionName(Region region) '''«region.name»'''
@@ -50,7 +53,6 @@ class LowlevelNamings {
 	
 	protected static def List<String> getNamePostfixes(ValueDeclaration variable) {
 		val type = variable.typeDefinition
-//		val hierarchyList = type.exploreComplexType2
 		val hierarchyList = type.fieldHierarchies
 		return hierarchyList.names
 	}

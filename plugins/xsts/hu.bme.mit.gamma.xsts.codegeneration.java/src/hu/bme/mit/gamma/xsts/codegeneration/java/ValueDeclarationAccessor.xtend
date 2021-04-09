@@ -4,6 +4,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.List
@@ -17,6 +18,7 @@ class ValueDeclarationAccessor {
 	public static final ValueDeclarationAccessor INSTANCE = new ValueDeclarationAccessor
 	protected new() {}
 	//
+	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	
 	// Read
 	

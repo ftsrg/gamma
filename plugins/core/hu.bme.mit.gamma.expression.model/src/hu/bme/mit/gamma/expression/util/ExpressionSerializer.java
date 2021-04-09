@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
-import java.math.BigInteger;
 import java.util.Objects;
 
 import org.eclipse.emf.common.util.EList;
@@ -93,10 +92,7 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final RationalLiteralExpression rationalLiteralExpression) {
-		BigInteger _numerator = rationalLiteralExpression.getNumerator();
-		String _plus = (_numerator + " % ");
-		BigInteger _denominator = rationalLiteralExpression.getDenominator();
-		return (_plus + _denominator);
+		return rationalLiteralExpression.getNumerator() + " % " + rationalLiteralExpression.getDenominator();
 	}
 
 	protected String _serialize(final OpaqueExpression opaqueExpression) {
@@ -346,7 +342,7 @@ public class ExpressionSerializer {
 	}
 
 	protected String _serialize(final ArrayAccessExpression arrayAccessExpression) {
-		return serialize(arrayAccessExpression.getOperand()) + "[" + serialize(arrayAccessExpression.getIndex())  + "]";
+		return serialize(arrayAccessExpression.getOperand()) + "[" + serialize(arrayAccessExpression.getIndex()) + "]";
 	}
 
 	protected String _serialize(final FunctionAccessExpression functionAccessExpression) {
@@ -437,7 +433,7 @@ public class ExpressionSerializer {
 				string = string.concat(", ");
 			}
 		}
-		return ((("[]" + "{") + string) + "} ");
+		return "{ " + string + " }";
 	}
 
 	protected String _serialize(final EnumerationLiteralExpression enumerationLiteralExpression) {

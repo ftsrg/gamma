@@ -105,7 +105,7 @@ RationalTypeDefinition returns RationalTypeDefinition:
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' elementType=Type '[' size=IntegerLiteralExpression ']'
+	'[' size=Expression ']' elementType=Type
 ;
 
 IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
@@ -125,7 +125,7 @@ RecordTypeDefinition returns RecordTypeDefinition:
 ;
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
-	{SubrangeTypeDefinition} '[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
+	{SubrangeTypeDefinition} '#[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
 ;
 
 FunctionTypeDefinition returns FunctionTypeDefinition:
@@ -325,7 +325,7 @@ OpaqueExpression:
 ;
 
 ArrayLiteralExpression:
-	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
+	'[' operands+=Expression (',' operands+=Expression)* ']'
 ;
 
 IntegerRangeLiteralExpression:

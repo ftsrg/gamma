@@ -12,10 +12,7 @@ package hu.bme.mit.gamma.expression.derivedfeatures;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import hu.bme.mit.gamma.expression.model.AccessExpression;
-import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition;
@@ -24,19 +21,14 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
-import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
-import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
-import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
-import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ResetableVariableDeclarationAnnotation;
-import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.TransientVariableDeclarationAnnotation;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -44,15 +36,12 @@ import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
-import hu.bme.mit.gamma.expression.util.FieldHierarchy;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
-import hu.bme.mit.gamma.util.JavaUtil;
 
 public class ExpressionModelDerivedFeatures {
 	
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
-	protected static final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
 	public static boolean isTransient(VariableDeclaration variable) {
@@ -167,137 +156,6 @@ public class ExpressionModelDerivedFeatures {
 			}
 		}
 		return typeDeclarations;
-	}
-	
-	// Record and array handling - high-level expression and action transformers should build on these
-	
-	public static List<FieldHierarchy> getFieldHierarchies(Type type) {
-		List<FieldHierarchy> fieldHierarchies = new ArrayList<FieldHierarchy>();
-		TypeDefinition typeDefinition = getTypeDefinition(type);
-		if (typeDefinition instanceof RecordTypeDefinition) {
-			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-			for (FieldDeclaration field : record.getFieldDeclarations()) {
-				Type fieldType = field.getType();
-				List<FieldHierarchy> hierarchies = getFieldHierarchies(fieldType);
-				for (FieldHierarchy hierarchy : hierarchies) {
-					hierarchy.prepend(field);
-					fieldHierarchies.add(hierarchy);
-				}
-			}
-		}
-		else if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
-			Type arrayType = array.getElementType();
-			fieldHierarchies.addAll(getFieldHierarchies(arrayType));
-		}
-		else {
-			// Primitive type
-			fieldHierarchies.add(new FieldHierarchy());
-		}
-		return fieldHierarchies;
-	}
-	
-	/**
-	 * To every field hierarchy (getFieldHierarchies), a single native type
-	 * (possibly a multidimensional array) belongs.
-	 */
-	public static List<Type> getNativeTypes(Type type) {
-		List<Type> nativeTypes = new ArrayList<Type>();
-		TypeDefinition typeDefinition = getTypeDefinition(type);
-		if (typeDefinition instanceof RecordTypeDefinition) {
-			RecordTypeDefinition record = (RecordTypeDefinition) typeDefinition;
-			for (FieldDeclaration field : record.getFieldDeclarations()) {
-				Type fieldType = field.getType();
-				nativeTypes.addAll(getNativeTypes(fieldType));
-			}
-		}
-		else if (typeDefinition instanceof ArrayTypeDefinition) {
-			ArrayTypeDefinition array = (ArrayTypeDefinition) typeDefinition;
-			Type arrayType = array.getElementType();
-			for (Type nativeType : getNativeTypes(arrayType)) {
-				ArrayTypeDefinition newArrayType = ecoreUtil.clone(array);
-				newArrayType.setElementType(ecoreUtil.clone(nativeType));
-				nativeTypes.add(newArrayType);
-			}
-		}
-		else {
-			// Primitive types or enum (not type definition, as enum needs a type declaration)
-			nativeTypes.add(type);
-		}
-		return nativeTypes;
-	}
-	
-	public static List<Expression> getFieldValues(RecordLiteralExpression record) {
-		TypeDeclaration typeDeclaration = record.getTypeDeclaration();
-		RecordTypeDefinition recordType = (RecordTypeDefinition) getTypeDefinition(typeDeclaration.getType());
-		List<Expression> values = new ArrayList<Expression>();
-		for (FieldDeclaration fieldDeclaration : recordType.getFieldDeclarations()) {
-			Expression value = record.getFieldAssignments().stream()
-				.filter(it -> it.getReference().getFieldDeclaration() == fieldDeclaration).findFirst().get()
-				.getValue();
-			values.add(value);
-		}
-		return values;
-	}
-	
-	public static FieldAssignment getFieldAssignment(
-			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
-		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
-		FieldAssignment fieldAssignment = null;
-		for (FieldDeclaration field : fieldHierarchy.getFields()) {
-			fieldAssignment = fieldAssignments.stream().filter(it -> 
-				it.getReference().getFieldDeclaration() == field).findFirst().get();
-			Expression fieldValue = fieldAssignment.getValue();
-			if (fieldValue instanceof RecordLiteralExpression) {
-				RecordLiteralExpression subrecord = (RecordLiteralExpression) fieldValue;
-				fieldAssignments = subrecord.getFieldAssignments();
-			}
-		}
-		return fieldAssignment;
-	}
-	
-	public static List<Expression> getAccesses(Expression expression) {
-		List<Expression> accesses = new ArrayList<Expression>();
-		if (expression instanceof ArrayAccessExpression) {
-			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
-			Expression operand = arrayAccessExpression.getOperand();
-			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
-			}
-			accesses.add(arrayAccessExpression.getIndex());
-		}
-		else if (expression instanceof RecordAccessExpression) {
-			RecordAccessExpression recordAccess = (RecordAccessExpression) expression;
-			Expression operand = recordAccess.getOperand();
-			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
-			}
-			accesses.add(recordAccess.getFieldReference());
-		}
-		else if (expression instanceof SelectExpression) {
-			SelectExpression select = (SelectExpression) expression;
-			Expression operand = select.getOperand();
-			if (operand instanceof AccessExpression) {
-				accesses.addAll(getAccesses(operand));
-			}
-		}
-		return accesses;
-	}
-	
-	public static FieldHierarchy getFieldAccess(Expression expression) {
-		List<FieldReferenceExpression> fieldAccesses =
-				javaUtil.filter(getAccesses(expression), FieldReferenceExpression.class);
-		List<FieldDeclaration> fieldDeclarations = fieldAccesses.stream()
-				.map(it -> it.getFieldDeclaration()).collect(Collectors.toList());
-		return new FieldHierarchy(fieldDeclarations);
-	}
-	
-	public static List<Expression> getIndexAccess(Expression expression) {
-		List<Expression> accesses = getAccesses(expression);
-		List<FieldReferenceExpression> recordAccesses =
-				javaUtil.filter(accesses, FieldReferenceExpression.class);
-		accesses.removeAll(recordAccesses);
-		return accesses;
 	}
 	
 }

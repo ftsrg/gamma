@@ -737,7 +737,7 @@ public class ExpressionUtil {
 	
 	protected Expression _getInitialValueOfType(final ArrayTypeDefinition type) {
 		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
-		int arraySize = type.getSize().getValue().intValue();
+		int arraySize = evaluator.evaluateInteger(type.getSize());
 		for (int i = 0; i < arraySize; ++i) {
 			Expression elementDefaultValue = getInitialValueOfType(type.getElementType());
 			arrayLiteralExpression.getOperands().add(elementDefaultValue);

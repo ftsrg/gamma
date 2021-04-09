@@ -6,8 +6,11 @@ import java.util.List;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 
 public class FieldHierarchy {
-
+	//
+	protected final ComplexTypeUtil util = ComplexTypeUtil.INSTANCE;
+	//
 	private List<FieldDeclaration> fields = new ArrayList<FieldDeclaration>();
+	//
 	
 	public FieldHierarchy(FieldHierarchy fields) {
 		this.fields.addAll(fields.getFields());
@@ -22,6 +25,8 @@ public class FieldHierarchy {
 	}
 	
 	public FieldHierarchy() {}
+	
+	//
 	
 	public List<FieldDeclaration> getFields() {
 		return fields;
@@ -52,6 +57,18 @@ public class FieldHierarchy {
 		return fields.get(size - 1);
 	}
 
+	public List<FieldHierarchy> getExtensions() {
+		// Possible hierarchies: a.b.c and a.b.d
+		// This: a.b
+		FieldDeclaration last = getLast(); // b
+		List<FieldHierarchy> extensions = util.getFieldHierarchies(last); // c and d
+		for (FieldHierarchy extension : extensions) {
+			extension.prepend(this);
+		}
+		// a.b.c and a.b.d
+		return extensions;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

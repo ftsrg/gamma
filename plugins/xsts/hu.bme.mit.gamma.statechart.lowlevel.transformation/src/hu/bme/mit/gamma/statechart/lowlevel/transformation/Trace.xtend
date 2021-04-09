@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.SelectExpression
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -29,7 +28,6 @@ import hu.bme.mit.gamma.statechart.statechart.State
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.Transition
 import hu.bme.mit.gamma.util.Triple
-import java.util.AbstractMap.SimpleEntry
 import java.util.List
 import java.util.Map
 import java.util.Set
@@ -43,8 +41,8 @@ package class Trace {
 	final Map<TypeDeclaration, TypeDeclaration> typeDeclarationMappings = newHashMap
 	// An event has to be connected to a port
 	// Map is needed as a value because an INOUT is transformed to an IN and an OUT event
-	final Map<SimpleEntry<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = newHashMap
-	final Map<SimpleEntry<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = newHashMap
+	final Map<Pair<Port, EventDeclaration>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventDeclMappings = newHashMap
+	final Map<Pair<Port, Event>, Map<EventDirection, hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration>> eventMappings = newHashMap
 	//
 	final Map<Component, hu.bme.mit.gamma.statechart.lowlevel.model.Component> componentMappings = newHashMap
 	// Event parameters
@@ -64,10 +62,6 @@ package class Trace {
 	final Set<Transition> elseGuardedTransitions = newHashSet
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
-	// Select temporary variables
-	final Map<SelectExpression, List<VariableDeclaration>> selectVariableMappings = newHashMap
-	// Assertion variables
-	final Map<String, VariableDeclaration> assertionVariableMappings = newHashMap
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -121,7 +115,7 @@ package class Trace {
 			map.put(lowlevelEventDecl.direction, lowlevelEventDecl)
 		}
 		else {
-			eventDeclMappings.put(new SimpleEntry(gammaPort, gammaEventDecl),
+			eventDeclMappings.put(gammaPort -> gammaEventDecl,
 				newHashMap(lowlevelEventDecl.direction -> lowlevelEventDecl))
 		}
 	}
@@ -171,7 +165,7 @@ package class Trace {
 			map.put(lowlevelEvent.direction, lowlevelEvent)
 		}
 		else {
-			eventMappings.put(new SimpleEntry(gammaPort, gammaEvent),
+			eventMappings.put(gammaPort -> gammaEvent,
 				newHashMap(lowlevelEvent.direction -> lowlevelEvent))
 		}
 	}
@@ -253,26 +247,31 @@ package class Trace {
 		componentMappings.get(gammaComponent)
 	}
 	
-	// Event parameters
+	// Value declarations with fields
 	
-	def putInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
+	// Auxiliary
+	private def putParameter(
+			Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> mappings,
+			Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
 			VariableDeclaration lowLevelVariable) {
 		checkNotNull(port)
 		checkNotNull(event)
 		checkNotNull(recordField.key)
 		checkNotNull(recordField.value)
 		checkNotNull(lowLevelVariable)
-		inParDeclMappings.put(new Triple(port, event, recordField), lowLevelVariable)
-	} 
-
-	def getInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
+		mappings.put(new Triple(port, event, recordField), lowLevelVariable)
+	}
+	
+	private def getParameter(
+			Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> mappings,
+			Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
 		val key = recordField.key
 		val value = recordField.value
 		checkNotNull(port)
 		checkNotNull(event)
 		checkNotNull(key)
 		checkNotNull(value)
-		for (entry : inParDeclMappings.entrySet) {
+		for (entry : mappings.entrySet) {
 			val triple = entry.key
 			if (triple.first.equals(port) && triple.second.equals(event) &&
 					triple.third.key.equals(key) && triple.third.value.equals(value)) {
@@ -282,31 +281,45 @@ package class Trace {
 		throw new IllegalArgumentException("Not found: " + recordField)
 	}
 	
-	def putOutParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
+	private def getAllParameters(
+			Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> mappings,
+			Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
+		val lowlevelVariables = newArrayList
+		val parameter = recordField.key
+		val fieldHierarchy = recordField.value
+		val extensions = fieldHierarchy.extensions
+		for (^extension : extensions) {
+			lowlevelVariables += mappings.getParameter(port, event, parameter -> ^extension)
+		}
+		return lowlevelVariables
+	}
+	
+	// In-event parameters	
+	def putInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
 			VariableDeclaration lowLevelVariable) {
-		checkNotNull(port)
-		checkNotNull(event)
-		checkNotNull(recordField.key)
-		checkNotNull(recordField.value)
-		checkNotNull(lowLevelVariable)
-		outParDeclMappings.put(new Triple(port, event, recordField), lowLevelVariable)
+		inParDeclMappings.putParameter(port, event, recordField, lowLevelVariable)
 	} 
 
+	def getInParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
+		return inParDeclMappings.getParameter(port, event, recordField)
+	}
+	
+	def getAllInParameters(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
+		return inParDeclMappings.getAllParameters(port, event, recordField)
+	}
+	
+	// Out-event parameters
+	def putOutParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField,
+			VariableDeclaration lowLevelVariable) {
+		outParDeclMappings.putParameter(port, event, recordField, lowLevelVariable)
+	}
+
 	def getOutParameter(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
-		val key = recordField.key
-		val value = recordField.value
-		checkNotNull(port)
-		checkNotNull(event)
-		checkNotNull(key)
-		checkNotNull(value)
-		for (entry : outParDeclMappings.entrySet) {
-			val triple = entry.key
-			if (triple.first.equals(port) && triple.second.equals(event) &&
-					triple.third.key.equals(key) && triple.third.value.equals(value)) {
-				return entry.value
-			}
-		}
-		throw new IllegalArgumentException("Not found: " + recordField)
+		return outParDeclMappings.getParameter(port, event, recordField)
+	}
+	
+	def getAllOutParameters(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
+		return outParDeclMappings.getAllParameters(port, event, recordField)
 	}
 	
 	// Values
@@ -330,8 +343,9 @@ package class Trace {
 		}
 		return false
 	}
-
+	
 	def get(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		// Returns only a single value, the field hierarchy must match concretely
 		val key = recordField.key
 		val value = recordField.value
 		checkNotNull(key)
@@ -342,6 +356,18 @@ package class Trace {
 			}
 		}
 		throw new IllegalArgumentException("Not found: " + recordField)
+	}
+	
+	def getAll(Pair<ValueDeclaration, FieldHierarchy> recordField) {
+		// Returns potentially multiple values, that can be retrieved by extending the given field hierarchy
+		val lowlevelVariables = newArrayList
+		val value = recordField.key
+		val fieldHierarchy = recordField.value
+		val extensions = fieldHierarchy.extensions
+		for (^extension : extensions) {
+			lowlevelVariables += get(value -> ^extension)
+		}
+		return lowlevelVariables
 	}
 	
 	// Timeout declaration
@@ -473,40 +499,6 @@ package class Trace {
 	def get(FunctionAccessExpression functionAccessExpression) {
 		checkNotNull(functionAccessExpression)
 		returnVariableMappings.get(functionAccessExpression)
-	}
-	
-	// Select temporary variable
-	def put(SelectExpression selectExpression, List<VariableDeclaration> selectVariable) {
-		checkNotNull(selectExpression)
-		checkNotNull(selectVariable)
-		selectVariableMappings.put(selectExpression, selectVariable)
-	}
-
-	def isMapped(SelectExpression selectExpression) {
-		checkNotNull(selectExpression)
-		selectVariableMappings.containsKey(selectExpression)
-	}
-
-	def get(SelectExpression selectExpression) {
-		checkNotNull(selectExpression)
-		selectVariableMappings.get(selectExpression)
-	}
-	
-	// Assertion
-	def put(String name, VariableDeclaration assertionVariable) {
-		checkNotNull(name)
-		checkNotNull(assertionVariable)
-		assertionVariableMappings.put(name, assertionVariable)
-	}
-	
-	def isAssertionVariableMapped(String name) {
-		checkNotNull(name)
-		assertionVariableMappings.containsKey(name)
-	}
-	
-	def getAssertionVariable(String name) {
-		checkNotNull(name)
-		assertionVariableMappings.get(name)
 	}
 	
 }
