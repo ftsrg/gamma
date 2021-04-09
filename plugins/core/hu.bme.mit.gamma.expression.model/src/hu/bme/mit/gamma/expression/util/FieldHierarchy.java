@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.expression.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 
 public class FieldHierarchy {
@@ -55,6 +56,15 @@ public class FieldHierarchy {
 	public FieldDeclaration getLast() {
 		int size = fields.size();
 		return fields.get(size - 1);
+	}
+	
+	public List<FieldHierarchy> getExtensions(Declaration declaration) {
+		if (fields.isEmpty()) {
+			// If this is empty, we return all field hierarchies
+			return util.getFieldHierarchies(declaration);
+		}
+		// Otherwise we return the extensions
+		return this.getExtensions();
 	}
 
 	public List<FieldHierarchy> getExtensions() {

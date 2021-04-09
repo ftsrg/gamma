@@ -287,7 +287,7 @@ package class Trace {
 		val lowlevelVariables = newArrayList
 		val parameter = recordField.key
 		val fieldHierarchy = recordField.value
-		val extensions = fieldHierarchy.extensions
+		val extensions = fieldHierarchy.getExtensions(parameter)
 		for (^extension : extensions) {
 			lowlevelVariables += mappings.getParameter(port, event, parameter -> ^extension)
 		}
@@ -363,7 +363,7 @@ package class Trace {
 		val lowlevelVariables = newArrayList
 		val value = recordField.key
 		val fieldHierarchy = recordField.value
-		val extensions = fieldHierarchy.extensions
+		val extensions = fieldHierarchy.getExtensions(value)
 		for (^extension : extensions) {
 			lowlevelVariables += get(value -> ^extension)
 		}
