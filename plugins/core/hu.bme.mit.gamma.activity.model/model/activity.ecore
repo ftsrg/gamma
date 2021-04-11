@@ -44,7 +44,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="InputPin" eSuperTypes="#//Pin"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionDefinition" eSuperTypes="#//Definition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="action" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Action"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.action.model/model/action.ecore#//Block"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Definition" abstract="true"/>
