@@ -10,16 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
-
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -118,7 +114,7 @@ class ReflectiveComponentCodeGenerator {
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»()«IF outEvent.parameterDeclarations.get(i).toBeConvertedToString».toString()«ENDIF»)
+										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
 									«ENDFOR»
 									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
 								}
@@ -216,7 +212,7 @@ class ReflectiveComponentCodeGenerator {
 				«IF component instanceof StatechartDefinition»
 					«FOR variable : component.variableDeclarations»
 						case "«variable.name»":
-							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»()«IF variable.toBeConvertedToString».toString()«ENDIF»;
+							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»
 				«ENDIF»
 			}
@@ -259,33 +255,10 @@ class ReflectiveComponentCodeGenerator {
 	'''
 	
 	protected def generateParameterCast(Type type, String parameter) {
-		if (type instanceof TypeReference) {
-			val typeDeclaration = type.reference
-			if (typeDeclaration.type instanceof EnumerableTypeDefinition) {
-				return '''«typeDeclaration.name».valueOf(«parameter».toString())'''
-			}
-		}
 		return '''(«type.transformType») «parameter»'''
 	}
 	
 	protected def transformType(Type type) '''«type.serialize»'''
-	
-	/**
-	 * Enums are returned as strings.
-	 */
-	protected def toBeConvertedToString(Declaration variable) {
-		val type = variable.type
-		if (type instanceof EnumerableTypeDefinition) {
-			return true
-		}
-		if (type instanceof TypeReference) {
-			val reference = type.reference
-			if (reference.type instanceof EnumerableTypeDefinition) {
-				return true
-			}
-		}
-		return false
-	}
 	
 	def getClassName() {
 		return component.reflectiveClassName

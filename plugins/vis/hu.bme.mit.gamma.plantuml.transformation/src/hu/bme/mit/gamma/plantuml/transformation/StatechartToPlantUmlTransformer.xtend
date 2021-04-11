@@ -42,7 +42,7 @@ import hu.bme.mit.gamma.statechart.util.ExpressionSerializer
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-class StatechartToPlantUMLTransformer {
+class StatechartToPlantUmlTransformer {
 	
 	protected final StatechartDefinition statechart
 	

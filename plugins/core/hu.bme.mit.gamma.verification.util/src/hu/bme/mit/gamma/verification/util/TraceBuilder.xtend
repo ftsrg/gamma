@@ -14,11 +14,15 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.FieldAssignment
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
+import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -26,12 +30,14 @@ import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.State
+import hu.bme.mit.gamma.trace.model.InstanceVariableState
 import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import java.math.BigInteger
+import java.util.List
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -43,6 +49,7 @@ class TraceBuilder {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
+	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
@@ -50,27 +57,41 @@ class TraceBuilder {
 	
 	def addInEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		val type = parameter.type.typeDefinition
-		return addInEvent(step, port, event, parameter, type.convertStringToInt(value))
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		return addInEvent(step, port, event, parameter, intValue)
+	}
+	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		addInEvent(step, port, event, parameter, fieldHierarchy, intValue)
 	}
 	
 	def addInEvent(Step step, Port port, Event event) {
-		addInEvent(step, port, event, null, null)		
-	}
-	
-	private def addInEvent(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+		val eventRaise = createRaiseEventAct(port, event)
 		val originalRaise = step.actions.filter(RaiseEventAct).findFirst[it.isOverWritten(eventRaise)]
 		if (originalRaise === null) {
 			// This is the first raise
 			step.actions += eventRaise
+			return eventRaise
 		}
-		else if (parameter !== null) {
-			// Already a raise has been done, setting this parameter too
-			val index = parameter.index
-			originalRaise.arguments.set(index, parameter.createParameter(value))
-		}
+		return originalRaise
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = addInEvent(step, port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, parameter.createParameter(value))
+	}
+	
+	private def addInEvent(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
+		val eventRaise = addInEvent(step, port, event)
+		val arguments = eventRaise.arguments
+		arguments.setRecordArgument(parameter, fieldHierarchy, value)
 	}
 	
 	// Time elapse
@@ -119,42 +140,53 @@ class TraceBuilder {
 	
 	// Out event
 	
-	def addOutEvent(Step step, Port port, Event event) {
-		addOutEventWithParameter(step, port, event, null, null)
-	}
-	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, String value) {
-		val type = parameter.type.typeDefinition
-		addOutEventWithParameter(step, port, event, parameter, type.convertStringToInt(value))
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		addOutEventWithParameter(step, port, event, parameter, intValue)
 	}
 	
-	def addOutEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, Integer value) {
-		val eventRaise = createRaiseEventAct(port, event, parameter, value)
+	def addOutEvent(Step step, Port port, Event event) {
+		val eventRaise = createRaiseEventAct(port, event)
 		val outEventRaises = step.asserts.filter(RaiseEventAct)
 		val originalRaise = outEventRaises.findFirst[it.isOverWritten(eventRaise)]
 		if (originalRaise === null) {
 			// This is the first raise
 			step.asserts += eventRaise
+			return eventRaise
 		}
-		else if (parameter !== null) {
-			// Already a raise has been done, setting this parameter too
-			val index = parameter.index
-			originalRaise.arguments.set(index, parameter.createParameter(value))
-		}
+		return originalRaise
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, Integer value) {
+		val eventRaise = addOutEvent(step, port, event)
+		val index = parameter.index
+		eventRaise.arguments.set(index, parameter.createParameter(value))
+	}
+	
+	def addOutEventWithStringParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		addOutEventWithParameter(step, port, event, parameter, fieldHierarchy, intValue)
+	}
+	
+	def addOutEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
+		val eventRaise = addOutEvent(step, port, event)
+		val arguments = eventRaise.arguments
+		arguments.setRecordArgument(parameter, fieldHierarchy, value)
 	}
 	
 	// Instance variables
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable, String value) {
-		val type = variable.type.typeDefinition
-		step.asserts += createInstanceVariableState => [
-			it.instance = instance
-			it.declaration = variable
-			it.value = type.createLiteral(value)
-		]
+		val type = variable.typeDefinition
+		val expression = type.createLiteral(value)
+		step.addInstanceVariableState(instance, variable, expression)
 	}
 	
 	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
@@ -164,6 +196,35 @@ class TraceBuilder {
 			it.declaration = variable
 			it.value = value
 		]
+	}
+	
+	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, String value) {
+		val literal = step.getRecordLiteral(instance, variable)
+		val fieldAssignment = literal.getFieldAssignment(fieldHierarchy)
+		fieldAssignment.fieldAssignment = value
+	}
+	
+	private def getRecordLiteral(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable) {
+		val variableStates = step.asserts.filter(InstanceVariableState)
+		val variableState = variableStates.filter[
+			it.instance === instance &&	it.declaration === variable].head
+		var RecordLiteralExpression value
+		if (variableState === null) {
+			// Creating the literal, similar to "getInstance" in singletons
+			val recordLiteral = variable.initialValue as RecordLiteralExpression
+			step.asserts += createInstanceVariableState => [
+				it.instance = instance
+				it.declaration = variable
+				it.value = recordLiteral
+			]
+			value = recordLiteral
+		}
+		else {
+			value = variableState.value as RecordLiteralExpression
+		}
+		return value 
 	}
 	
 	// Instance states
@@ -176,9 +237,9 @@ class TraceBuilder {
 	}
 	
 	// Raise event act
-		
-	private def createRaiseEventAct(Port port, Event event, ParameterDeclaration parameter, Integer value) {
-		val RaiseEventAct eventRaise = createRaiseEventAct => [
+	
+	private def createRaiseEventAct(Port port, Event event) {
+		val eventRaise = createRaiseEventAct => [
 			it.port = port
 			it.event = event
 		]
@@ -186,17 +247,13 @@ class TraceBuilder {
 		for (dummyParameter : parameters) {
 			eventRaise.arguments += createFalseExpression
 		}
-		if (parameter !== null) {
-			val index = parameter.index
-			eventRaise.arguments.set(index, parameter.createParameter(value))
-		}
 		return eventRaise
 	}
 	
 	// String and int parsing
 	
 	def createVariableLiteral(VariableDeclaration variable, Integer value) {
-		val type = variable.type.typeDefinition
+		val type = variable.typeDefinition
 		return type.createLiteral(value)
 	}
 	
@@ -204,7 +261,7 @@ class TraceBuilder {
 		if (parameter === null) {
 			return null
 		}
-		val paramType = parameter.type.typeDefinition
+		val paramType = parameter.typeDefinition
 		return paramType.createLiteral(value)
 	}
 	
@@ -237,7 +294,9 @@ class TraceBuilder {
 	 */
 	private def Expression createLiteral(Type paramType, Integer value) {
 		val literal = switch (paramType) {
-			IntegerTypeDefinition: createIntegerLiteralExpression => [it.value = BigInteger.valueOf(value)]
+			IntegerTypeDefinition: createIntegerLiteralExpression => [
+				it.value = BigInteger.valueOf(value)
+			]
 			BooleanTypeDefinition: {
 				if (value == 0) {
 					createFalseExpression
@@ -247,11 +306,51 @@ class TraceBuilder {
 				}
 			}
 			EnumerationTypeDefinition:
-				return createEnumerationLiteralExpression => [ it.reference = paramType.literals.get(value) ]
+				return createEnumerationLiteralExpression => [
+					it.reference = paramType.literals.get(value)
+				]
 			default: 
 				throw new IllegalArgumentException("Not known type definition: " + paramType)
 		}
 		return literal
+	}
+	
+	// Record handling
+		
+	private def getRecordLiteral(List<Expression> arguments, ParameterDeclaration parameter) {
+		val index = parameter.index
+		val argument = arguments.get(index)
+		if (argument instanceof RecordLiteralExpression) {
+			// "Singleton"
+			return argument as RecordLiteralExpression
+		}
+		val type = parameter.typeDefinition
+		val recordLiteral = type.initialValueOfType as RecordLiteralExpression
+		// Creating the singleton
+		arguments.set(index, recordLiteral)
+		return recordLiteral
+	}
+	
+	private def setFieldAssignment(FieldAssignment fieldAssignment, String value) {
+		val declaration = fieldAssignment.reference.declaration
+		val type = declaration.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		fieldAssignment.fieldAssignment = intValue
+	}
+	
+	private def setFieldAssignment(FieldAssignment fieldAssignment, Integer value) {
+		val declaration = fieldAssignment.reference.declaration
+		val type = declaration.typeDefinition
+		// Type must be primitive
+		val expression = type.createLiteral(value)
+		fieldAssignment.value = expression
+	}
+	
+	private def setRecordArgument(List<Expression> arguments,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
+		val recordLiteral = arguments.getRecordLiteral(parameter)
+		val fieldAssignment = recordLiteral.getFieldAssignment(fieldHierarchy)
+		fieldAssignment.fieldAssignment = value
 	}
 	
 }

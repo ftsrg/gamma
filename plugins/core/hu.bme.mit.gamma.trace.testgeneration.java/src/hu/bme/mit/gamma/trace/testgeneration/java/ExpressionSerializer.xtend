@@ -10,7 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.testgeneration.java
 
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression
 
 class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.ExpressionSerializer {
@@ -18,10 +17,6 @@ class ExpressionSerializer extends hu.bme.mit.gamma.codegenerator.java.util.Expr
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
-	
-	override dispatch String serialize(EnumerationLiteralExpression expression) {
-		return  "\"" + expression.reference.name + "\"";
-	}
 	
 	override dispatch String serialize(IntegerLiteralExpression expression) {
 		return "(long) " + expression.value.toString

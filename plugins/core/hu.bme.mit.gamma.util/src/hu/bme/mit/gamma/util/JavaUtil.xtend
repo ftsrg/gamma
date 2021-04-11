@@ -20,7 +20,7 @@ class JavaUtil {
 	}
 	
 	def <T> Iterable<T> flatten(Iterable<? extends Iterable<? extends T>> inputs) {
-		return inputs.flatten
+		return IterableExtensions.flatten(inputs)
 	}
 	
 	def <T> T getOnlyElement(Collection<T> collection) {

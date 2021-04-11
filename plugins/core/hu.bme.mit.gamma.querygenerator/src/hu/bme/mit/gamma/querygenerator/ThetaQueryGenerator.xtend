@@ -11,7 +11,11 @@
 package hu.bme.mit.gamma.querygenerator
 
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
+import hu.bme.mit.gamma.expression.model.TypeDefinition
+import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.querygenerator.operators.TemporalOperator
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -19,15 +23,19 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.State
+import java.util.List
 import org.eclipse.viatra.query.runtime.api.AdvancedViatraQueryEngine
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.Namings.*
 
 class ThetaQueryGenerator extends AbstractQueryGenerator {
-	
+	//
+	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	//
 	new(Package gammaPackage) {
 		this(gammaPackage, false)
 	}
@@ -75,7 +83,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return '''«parentRegion.customizeName(instance)» == «state.customizeName»'''
 	}
 	
-	override protected getTargetVariableName(VariableDeclaration variable, SynchronousComponentInstance instance) {
+	override protected getTargetVariableNames(VariableDeclaration variable, SynchronousComponentInstance instance) {
 		return variable.customizeNames(instance)
 	}
 	
@@ -83,7 +91,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		return event.customizeOutputName(port, instance)
 	}
 	
-	override protected getTargetOutEventParameterName(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
+	override protected getTargetOutEventParameterNames(Event event, Port port, ParameterDeclaration parameter, SynchronousComponentInstance instance) {
 		return parameter.customizeOutNames(port, instance)
 	}
 	
@@ -117,6 +125,17 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
+	// Record
+	def isSourceRecordVariable(String targetVariableName) {
+		try {
+			val variable = targetVariableName.getSourceVariable
+			val type = variable.key.typeDefinition
+			return type instanceof RecordTypeDefinition
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
 	def isSourceOutEvent(String targetOutEventName) {
 		try {
 			targetOutEventName.getSourceOutEvent
@@ -130,6 +149,17 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		try {
 			targetOutEventParameterName.getSourceOutEventParamater
 			return true
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
+	def isSourceRecordOutEventParamater(String targetOutEventParameterName) {
+		try {
+			val array = targetOutEventParameterName.getSourceOutEventParamater
+			val parameter = array.get(2) as ValueDeclaration
+			val type = parameter.typeDefinition
+			return type instanceof RecordTypeDefinition
 		} catch (IllegalArgumentException e) {
 			return false
 		}
@@ -153,6 +183,17 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		}
 	}
 	
+	def isSourceRecordInEventParamater(String targetInEventParameterName) {
+		try {
+			val array = targetInEventParameterName.getSourceInEventParamater
+			val parameter = array.get(2) as ValueDeclaration
+			val type = parameter.typeDefinition
+			return type instanceof RecordTypeDefinition
+		} catch (IllegalArgumentException e) {
+			return false
+		}
+	}
+	
 	// Getters
 	
 	def getSourceState(String targetStateName) {
@@ -167,13 +208,24 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 	
 	def getSourceVariable(String targetVariableName) {
 		for (match : instanceVariables) {
-			// TODO Maybe an allFields method could be used here?
-			val names = getTargetVariableName(match.variable, match.instance)
+			val names = getTargetVariableNames(match.variable, match.instance)
 			if (names.contains(targetVariableName)) {
 				return new Pair(match.variable, match.instance)
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
+	}
+	
+	// Record
+	def getSourceVariableFieldHierarchy(String targetVariableName) {
+		for (match : instanceVariables) {
+			val variable = match.variable
+			val type = variable.typeDefinition
+			val names = getTargetVariableNames(match.variable, match.instance)
+			if (names.contains(targetVariableName)) {
+				return type.getSourceFieldHierarchy(names, targetVariableName)
+			}
+		}
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
@@ -190,13 +242,27 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 		for (match : systemOutEvents) {
 			val event = match.event
 			for (parameter : event.parameterDeclarations) {
-				val names = getTargetOutEventParameterName(event, match.port, parameter, match.instance)
+				val names = getTargetOutEventParameterNames(event, match.port, parameter, match.instance)
 				if (names.contains(targetOutEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
 			}
 		}
 		throw new IllegalArgumentException("Not known id")
+	}
+	
+	// Record
+	def getSourceOutEventParamaterFieldHierarchy(String targetOutEventParameterName) {
+		for (match : systemOutEvents) {
+			val event = match.event
+			for (parameter : event.parameterDeclarations) {
+				val type = parameter.typeDefinition
+				val names = getTargetOutEventParameterNames(event, match.port, parameter, match.instance)
+				if (names.contains(targetOutEventParameterName)) {
+					return type.getSourceFieldHierarchy(names, targetOutEventParameterName)
+				}
+			}
+		}
 	}
 	
 	def getSourceInEvent(String targetInEventName) {
@@ -217,6 +283,35 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				if (names.contains(targetInEventParameterName)) {
 					return #[event, match.port, parameter, match.instance]
 				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	// Record
+	def getSourceInEventParamaterFieldHierarchy(String targetInEventParameterName) {
+		for (match : systemInEvents) {
+			val event = match.event
+			for (parameter : event.parameterDeclarations) {
+				val type = parameter.typeDefinition
+				val names = getTargetInEventParameterName(event, match.port, parameter, match.instance)
+				if (names.contains(targetInEventParameterName)) {
+					return type.getSourceFieldHierarchy(names, targetInEventParameterName)
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known id")
+	}
+	
+	// Record specific auxiliary method
+	
+	protected def getSourceFieldHierarchy(TypeDefinition type, List<String> names, String targetName) {
+		val fields = type.fieldHierarchies
+		for (var i = 0; i < names.size; i++) {
+			val name = names.get(i)
+			if (name == targetName) {
+				return fields.get(i) // If ith name is equal, it is the ith field
+				// See LowlevelNamings.getNames
 			}
 		}
 		throw new IllegalArgumentException("Not known id")

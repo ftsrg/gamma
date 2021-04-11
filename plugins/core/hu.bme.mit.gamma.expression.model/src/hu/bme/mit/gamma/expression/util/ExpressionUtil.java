@@ -44,6 +44,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.ExpressionPackage;
 import hu.bme.mit.gamma.expression.model.FalseExpression;
 import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
@@ -57,6 +58,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
+import hu.bme.mit.gamma.expression.model.MultiplyExpression;
 import hu.bme.mit.gamma.expression.model.NotExpression;
 import hu.bme.mit.gamma.expression.model.NullaryExpression;
 import hu.bme.mit.gamma.expression.model.OrExpression;
@@ -70,7 +72,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -87,24 +88,20 @@ public class ExpressionUtil {
 	protected final ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
-	/**
-	 * Worth overriding (extending) in subclasses.
-	 */
+	// Worth extending in subclasses
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
-			Declaration declaration = reference.getDeclaration();
-			return declaration;
-		}
-		if (expression instanceof FieldReferenceExpression) {
-			FieldReferenceExpression reference = (FieldReferenceExpression) expression;
-			FieldDeclaration declaration = reference.getFieldDeclaration();
-			return declaration;
+			return reference.getDeclaration();
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression access = (RecordAccessExpression) expression;
 			FieldReferenceExpression reference = access.getFieldReference();
 			return getDeclaration(reference);
+		}
+		if (expression instanceof FieldReferenceExpression) {
+			FieldReferenceExpression reference = (FieldReferenceExpression) expression;
+			return reference.getFieldDeclaration();
 		}
 		if (expression instanceof ArrayAccessExpression) {
 			// ?
@@ -118,12 +115,38 @@ public class ExpressionUtil {
 		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	public Declaration getAccessedDeclaration(AccessExpression expression) {
-		Expression operand = expression.getOperand();
-		return getDeclaration(operand);
+	// Worth extending in subclasses
+	public ReferenceExpression getAccessReference(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			return (DirectReferenceExpression) expression;
+		}
+		if (expression instanceof AccessExpression) {
+			AccessExpression access = (AccessExpression) expression;
+			return getAccessReference(access.getOperand());
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
 	}
 	
-	//
+	// Worth extending in subclasses
+	public Declaration getAccessedDeclaration(Expression expression) {
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			return reference.getDeclaration();
+		}
+		if (expression instanceof AccessExpression) {
+			AccessExpression access = (AccessExpression) expression;
+			return getAccessedDeclaration(access.getOperand());
+		}
+		throw new IllegalArgumentException("Not known declaration: " + expression);
+	}
+	
+	// Worth extending in subclasses
+	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
+		return _package.getTypeDeclarations();
+	}
+	
+	// Expression optimization
 	
 	public Set<Expression> removeDuplicatedExpressions(Collection<Expression> expressions) {
 		Set<Integer> integerValues = new HashSet<Integer>();
@@ -135,9 +158,7 @@ public class ExpressionUtil {
 				int value = evaluator.evaluateInteger(expression);
 				if (!integerValues.contains(value)) {
 					integerValues.add(value);
-					IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-					integerLiteralExpression.setValue(BigInteger.valueOf(value));
-					evaluatedExpressions.add(integerLiteralExpression);
+					evaluatedExpressions.add(toIntegerLiteral(value));
 				}
 			} catch (Exception e) {}
 			// Excluding branches
@@ -398,15 +419,18 @@ public class ExpressionUtil {
 	// Arithmetic: for now, integers only
 
 	public Expression add(Expression expression, int value) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) + value));
-		return integerLiteralExpression;
+		return toIntegerLiteral(evaluator.evaluate(expression) + value);
 	}
 
 	public Expression subtract(Expression expression, int value) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.valueOf(evaluator.evaluate(expression) - value));
-		return integerLiteralExpression;
+		return toIntegerLiteral(evaluator.evaluate(expression) - value);
+	}
+	
+	public Expression wrapIntoMultiply(Expression expression, int value) {
+		MultiplyExpression multiplyExpression = factory.createMultiplyExpression();
+		multiplyExpression.getOperands().add(expression);
+		multiplyExpression.getOperands().add(toIntegerLiteral(value));
+		return multiplyExpression;
 	}
 
 	// Declaration references
@@ -689,9 +713,7 @@ public class ExpressionUtil {
 	}
 
 	protected Expression _getInitialValueOfType(final IntegerTypeDefinition type) {
-		IntegerLiteralExpression integerLiteralExpression = factory.createIntegerLiteralExpression();
-		integerLiteralExpression.setValue(BigInteger.ZERO);
-		return integerLiteralExpression;
+		return toIntegerLiteral(0);
 	}
 
 	protected Expression _getInitialValueOfType(final DecimalTypeDefinition type) {
@@ -715,7 +737,7 @@ public class ExpressionUtil {
 	
 	protected Expression _getInitialValueOfType(final ArrayTypeDefinition type) {
 		ArrayLiteralExpression arrayLiteralExpression = factory.createArrayLiteralExpression();
-		int arraySize = type.getSize().getValue().intValue();
+		int arraySize = evaluator.evaluateInteger(type.getSize());
 		for (int i = 0; i < arraySize; ++i) {
 			Expression elementDefaultValue = getInitialValueOfType(type.getElementType());
 			arrayLiteralExpression.getOperands().add(elementDefaultValue);
@@ -724,7 +746,12 @@ public class ExpressionUtil {
 	}
 	
 	protected Expression _getInitialValueOfType(final RecordTypeDefinition type) {
+		TypeDeclaration typeDeclaration = ecoreUtil.getContainerOfType(type, TypeDeclaration.class);
+		if (typeDeclaration == null) {
+			throw new IllegalArgumentException("Record type is not contained by declaration: " + type);
+		}
 		RecordLiteralExpression recordLiteralExpression = factory.createRecordLiteralExpression();
+		recordLiteralExpression.setTypeDeclaration(typeDeclaration);
 		for (FieldDeclaration field : type.getFieldDeclarations()) {
 			FieldAssignment assignment = factory.createFieldAssignment();
 			FieldReferenceExpression fieldReference = factory.createFieldReferenceExpression();
@@ -751,24 +778,14 @@ public class ExpressionUtil {
 			return _getInitialValueOfType((TypeReference) type);
 		} else if (type instanceof ArrayTypeDefinition) {
 			return _getInitialValueOfType((ArrayTypeDefinition) type);
+		} else if (type instanceof RecordTypeDefinition) {
+			return _getInitialValueOfType((RecordTypeDefinition) type);
 		} else {
 			throw new IllegalArgumentException("Unhandled parameter types: " + type);
 		}
 	}
 	
-	// Types
-	
-	public TypeDefinition findTypeDefinitionOfType(Type type) {
-		if (type instanceof TypeDefinition) {
-			return (TypeDefinition) type;
-		}
-		else {
-			// type instanceof TypeReference
-			TypeReference typeReference = (TypeReference) type;
-			TypeDeclaration typeDeclaration = typeReference.getReference();
-			return findTypeDefinitionOfType(typeDeclaration.getType());
-		}
-	}
+	// Variable handling
 	
 	public TypeDeclaration wrapIntoDeclaration(Type type, String name) {
 		TypeDeclaration declaration = factory.createTypeDeclaration();
@@ -795,6 +812,10 @@ public class ExpressionUtil {
 			not.setOperand(reference);
 			and.getOperands().add(not);
 		}
+		if (and.getOperands().isEmpty()) {
+			// If collection is empty, the expression is always true
+			and.getOperands().add(factory.createTrueExpression());
+		}
 		return and;
 	}
 	
@@ -810,7 +831,7 @@ public class ExpressionUtil {
 		return integerLiteral;
 	}
 	
-	public ReferenceExpression createReferenceExpression(VariableDeclaration variable) {
+	public DirectReferenceExpression createReferenceExpression(ValueDeclaration variable) {
 		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
 		reference.setDeclaration(variable);
 		return reference;
@@ -860,6 +881,38 @@ public class ExpressionUtil {
 		}
 		potentialContainer.getOperands().addAll(expressions);
 		return potentialContainer;
+	}
+	
+	public ReferenceExpression index(ValueDeclaration declaration, List<Expression> indexes) {
+		if (indexes.isEmpty()) {
+			return createReferenceExpression(declaration);
+		}
+		int index = indexes.size() - 1;
+		Expression lastIndex = indexes.get(index);
+		ArrayAccessExpression access = factory.createArrayAccessExpression();
+		access.setOperand(index(declaration, indexes.subList(0, index)));
+		access.setIndex(lastIndex);
+		return access;
+	}
+	
+	// Unwrapper
+	
+	public Expression unwrapIfPossible(Expression expression) {
+		if (expression instanceof MultiaryExpression) {
+			MultiaryExpression multiaryExpression = (MultiaryExpression) expression;
+			List<Expression> operands = multiaryExpression.getOperands();
+			int size = operands.size();
+			if (size >= 2) {
+				return multiaryExpression;
+			}
+			if (size == 1) {
+				return unwrapIfPossible(operands.get(0));
+			}
+			else {
+				throw new IllegalStateException("Empty expression" + expression + " " + size);
+			}
+		}
+		return expression;
 	}
 	
 }

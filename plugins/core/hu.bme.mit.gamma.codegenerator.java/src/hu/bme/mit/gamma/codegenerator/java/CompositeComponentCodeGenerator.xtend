@@ -43,7 +43,7 @@ class CompositeComponentCodeGenerator {
 	/**
 	 * Generates the needed Java imports in case of the given composite component.
 	 */
-	protected def generateCompositeSystemImports(CompositeComponent component) '''
+	def generateCompositeSystemImports(CompositeComponent component) '''
 		import java.util.List;
 		import java.util.LinkedList;
 		

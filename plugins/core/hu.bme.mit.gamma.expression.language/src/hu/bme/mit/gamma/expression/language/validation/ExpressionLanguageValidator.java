@@ -16,6 +16,7 @@ import org.eclipse.xtext.validation.Check;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -23,7 +24,9 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
@@ -151,4 +154,35 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		handleValidationResultMessage(expressionModelValidator.checkInitializableElement(elem));
 	}
 	
+//////////////////////////////////////////////////////////////////////
+	
+	@Check
+	public void checkArrayTypeDefinition(ArrayTypeDefinition elem) {
+		handleValidationResultMessage(expressionModelValidator.checkArrayTypeDefinition(elem));
+	}
+	
+	@Check
+	public void checkSelfComparison(PredicateExpression elem) {
+		handleValidationResultMessage(expressionModelValidator.checkSelfComparison(elem));
+	}
+	
+	@Check
+	public void checkDivZero(ArithmeticExpression elem) {
+		handleValidationResultMessage(expressionModelValidator.checkDivZero(elem));
+	}
+	
+	@Check
+	public void checkRecordSelfReference(TypeDeclaration typeDeclaration) {
+		handleValidationResultMessage(expressionModelValidator.checkRecordSelfReference(typeDeclaration));
+	}
+	
+	@Check
+	public void checkRationalLiteralExpression(RationalLiteralExpression expression) {
+		handleValidationResultMessage(expressionModelValidator.checkRationalLiteralExpression(expression));
+	}
+	
+	@Check
+	public void checkRecordLiteralExpression(RecordLiteralExpression expression) {
+		handleValidationResultMessage(expressionModelValidator.checkRecordLiteralExpression(expression));
+	}
 }

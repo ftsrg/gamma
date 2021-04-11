@@ -171,7 +171,16 @@ class TraceBackAnnotator {
 						}
 						else if (thetaQueryGenerator.isSourceVariable(id)) {
 							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
-							step.addInstanceVariableState(instanceVariable.value, instanceVariable.key, value)
+							val instance = instanceVariable.value
+							val variable = instanceVariable.key
+							if (thetaQueryGenerator.isSourceRecordVariable(id)) {
+								val field = thetaQueryGenerator.getSourceVariableFieldHierarchy(id)
+								step.addInstanceVariableState(instance, variable, field, value)
+							}
+							else {
+								// Primitive variable
+								step.addInstanceVariableState(instance, variable, value)
+							}
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
 							val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
@@ -190,11 +199,17 @@ class TraceBackAnnotator {
 							val port = systemOutEvent.get(1) as Port
 							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							val parameter = systemOutEvent.get(2) as ParameterDeclaration
-							step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+							if (thetaQueryGenerator.isSourceRecordOutEventParamater(id)) {
+								val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
+								step.addOutEventWithStringParameter(systemPort, event, parameter, field, value)
+							}
+							else {
+								// Primitive variable
+								step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+							}
 						}
 					}
 					case ENVIRONMENT_CHECK: {
-						// TODO delays
 						if (thetaQueryGenerator.isSourceInEvent(id)) {
 							val systemInEvent = thetaQueryGenerator.getSourceInEvent(id)
 							if (value.equals("true")) {
@@ -212,7 +227,14 @@ class TraceBackAnnotator {
 							val port = systemInEvent.get(1) as Port
 							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
-							step.addInEventWithParameter(systemPort, event, parameter, value)
+							if (thetaQueryGenerator.isSourceRecordInEventParamater(id)) {
+								val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)
+								step.addInEventWithParameter(systemPort, event, parameter, field, value)
+							}
+							else {
+								// Primitive variable
+								step.addInEventWithParameter(systemPort, event, parameter, value)
+							}
 						}
 					}
 					default:

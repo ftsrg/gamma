@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.genmodel.language.formatting;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
+import hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess;
 
 import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 
@@ -22,8 +23,9 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
 	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess f = (hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess) getGrammarAccess();
+		hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess f = (GenModelGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
+		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		// Setting the maximum size of lines
         c.setAutoLinewrap(110);
         // Line break after these rules
@@ -107,15 +109,16 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getTargetFolderAssignment_7_0_2());
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getFileNameAssignment_7_1_2());
         // Verification
-        c.setLinewrap(1).after(f.getVerificationAccess().getLanguageAssignment_3_6_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getLanguageAssignment_3_7_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getTargetFolderAssignment_3_0_2());
         c.setLinewrap(1).after(f.getVerificationAccess().getFileNameAssignment_3_1_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_3_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_4_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_8_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getLanguagesAssignment_3_2_2());
-        c.setLinewrap(1).after(f.getVerificationAccess().getOptimizeAssignment_3_7_2_1());
-        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getSvgFileNameAssignment_3_2_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getQueryFilesAssignment_3_4_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPropertyPackagesAssignment_3_5_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getTestFolderAssignment_3_9_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getLanguagesAssignment_3_3_2());
+        c.setLinewrap(1).after(f.getVerificationAccess().getOptimizeAssignment_3_8_2_1());
+        c.setLinewrap(1).after(f.getVerificationAccess().getPackageNameAssignment_3_6_2());
         // Interface mapping
         c.setLinewrap(1).after(f.getInterfaceMappingRule());
 		for (Keyword comma: f.findKeywords(",")) {

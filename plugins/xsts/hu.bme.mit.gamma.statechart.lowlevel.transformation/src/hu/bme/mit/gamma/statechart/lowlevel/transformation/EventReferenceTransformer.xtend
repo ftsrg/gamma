@@ -23,8 +23,8 @@ import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -36,12 +36,17 @@ class EventReferenceTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
 	// Transformation parameters
 	protected final boolean functionInlining
+	
+	new(Trace trace) {
+		this(trace, true)
+	}
 	
 	new(Trace trace, boolean functionInlining) {
 		this.trace = trace
@@ -146,12 +151,7 @@ class EventReferenceTransformer {
 		switch (timeUnit) {
 			case TimeUnit.SECOND: {
 				// S = 1000 MS
-				return createMultiplyExpression => [
-					it.operands += createIntegerLiteralExpression => [
-						it.value = BigInteger.valueOf(1000)
-					]
-					it.operands += plainValue
-				]
+				return plainValue.wrapIntoMultiply(1000)
 			}
 			default: {
 				// MS is base

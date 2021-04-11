@@ -22,23 +22,34 @@ import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
+import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
+import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.FieldAssignment;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.FunctionDeclaration;
+import hu.bme.mit.gamma.expression.model.GreaterEqualExpression;
+import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
+import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.LessEqualExpression;
+import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
@@ -149,6 +160,11 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkNames(EObject root,
+			Class<? extends NamedElement> clazz, String name) {
+		return checkNames(root, List.of(clazz), name);
+	}
+	
+	public Collection<ValidationResultMessage> checkNames(EObject root,
 			Collection<Class<? extends NamedElement>> classes, String name) {
 		int nameCount = 0;
 		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
@@ -178,8 +194,8 @@ public class ExpressionModelValidator {
 			TypeDeclaration referencedTypeDeclaration = typeReference.getReference();
 			if (typeDeclaration == referencedTypeDeclaration) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"A type declaration cannot reference itself as a type definition."
-						, new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
+						"A type declaration cannot reference itself as a type definition.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
 			}
 		}
 		return validationResultMessages;
@@ -200,7 +216,6 @@ public class ExpressionModelValidator {
 				Expression argument = arguments.get(i);
 				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, 
 						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS));
-			
 			}
 		}
 		return validationResultMessages;
@@ -240,7 +255,8 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
+	public Collection<ValidationResultMessage> checkRecordAccessExpression(
+			RecordAccessExpression recordAccessExpression) {
 		Declaration accessedDeclaration = 
 				expressionUtil.getAccessedDeclaration(recordAccessExpression);
 		RecordTypeDefinition recordType = (RecordTypeDefinition) 
@@ -252,15 +268,13 @@ public class ExpressionModelValidator {
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
-		// check if the referred field exists
+		// Check if the referred field exists
 		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
 		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The record type does not contain any fields with the given name.", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
-			return validationResultMessages;
-			
 		}
 		return validationResultMessages;
 	}
@@ -320,7 +334,7 @@ public class ExpressionModelValidator {
 			
 		}
 		// check if the argument expression can be evaluated as integer
-		if (!typeDeterminator.isInteger(expression.getArguments().get(0))) {
+		if (!typeDeterminator.isInteger(expression.getIndex())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The index of the accessed element must be of type integer!", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
@@ -627,7 +641,7 @@ public class ExpressionModelValidator {
 						((TypeReference) variableDeclarationType).getReference().getType() instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
 				}
-				if (arrayType != null) {
+				if (arrayType != null) {					
 					if (initialExpression instanceof ArrayLiteralExpression) {
 						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
 						for(Expression e : rhs.getOperands()) {
@@ -637,6 +651,16 @@ public class ExpressionModelValidator {
 										new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
 							}
 						}
+						
+//////////////////////////////////////////////////////////////////////
+						// Array size must equal with number of array literal's elements
+						if (rhs.getOperands().size() != expressionEvaluator.evaluateInteger(arrayType.getSize())) {
+							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+									"The number of the elements on the right hand side must be equal then the size of the array.",
+									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
+						}
+//////////////////////////////////////////////////////////////////////
+						
 					}
 					else {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -651,4 +675,174 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
+//////////////////////////////////////////////////////////////////////
+	public Collection<ValidationResultMessage> checkArrayTypeDefinition(ArrayTypeDefinition arrayType) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		try {
+			// Array init size must be greater then 0
+			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The size of the array must be greater then 0.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE, null)));
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkSelfComparison(PredicateExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();		
+		// BinaryExpression
+		if (expression instanceof BinaryExpression) {
+			BinaryExpression binaryExpression = (BinaryExpression) expression;
+			// the left and the right hand sides same
+			if (ecoreUtil.helperEquals(binaryExpression.getLeftOperand(), binaryExpression.getRightOperand())) {
+				// EquivalenceExpression
+				if (expression instanceof EquivalenceExpression) {
+					EquivalenceExpression equivalenceExpression = (EquivalenceExpression) expression;
+					// EqualityExpression
+					if (equivalenceExpression instanceof EqualityExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+								"This expression is always true, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+					//InequalityExpressin
+					if (equivalenceExpression instanceof InequalityExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+								"This expression is always false, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+				}
+				// ComparisionExpression
+				else if (expression instanceof ComparisonExpression) {
+					ComparisonExpression comparisionExpression = (ComparisonExpression) expression;
+					if (comparisionExpression instanceof LessEqualExpression || comparisionExpression instanceof GreaterEqualExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+								"This expression is always true, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+					if (comparisionExpression instanceof LessExpression || comparisionExpression instanceof GreaterExpression) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO,
+								"This expression is always false, because the left and right hand sides are same!",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+				}
+			}
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkDivZero(ArithmeticExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		try {
+			// BinaryExpression
+			if (expression instanceof BinaryExpression) {
+				BinaryExpression binaryExpression = (BinaryExpression) expression;
+				// DivideExpression, DivExpression, ModExpression
+				if (expression instanceof DivideExpression || expression instanceof DivExpression || expression instanceof ModExpression) {
+					// right hand side is zero
+					if (expressionEvaluator.evaluateInteger(binaryExpression.getRightOperand()) == 0) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"Division by zero is not allowed.",
+								new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
+					}
+				}
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkRecordSelfReference(TypeDeclaration typeDeclaration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// visited TypeDeclaration
+		List<TypeDeclaration> visitedNodes = new ArrayList<TypeDeclaration>();
+		visitedNodes.add(typeDeclaration);
+		// search for self-reference
+		validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
+
+		return validationResultMessages;
+	}
+	
+	private Collection<ValidationResultMessage> checkRecordSelfReferenceHelp(TypeDeclaration typeDeclaration, List<TypeDeclaration> visitedNodes) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// RecordTypeDefinition
+		Type type = visitedNodes.get(0).getType();
+		if (type instanceof RecordTypeDefinition) {
+			// check all FieldDeclarations
+			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
+			for (FieldDeclaration fieldDeclaration : recordTypeDefinition.getFieldDeclarations()) {
+				// TypeReference
+				Type fieldType = (Type) fieldDeclaration.getType();
+				if (fieldType instanceof TypeReference) {
+					TypeReference fieldTypeReference = (TypeReference) fieldType;
+					TypeDeclaration fieldReferencedTypeDeclaration = fieldTypeReference.getReference();
+					// equal with checked record
+					if (fieldReferencedTypeDeclaration == typeDeclaration) {
+						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+								"Record cannot store itself either directly or indirectly! " +
+								visitedNodes.get(0).getName().toUpperCase() + " stores " +
+								typeDeclaration.getName().toUpperCase(),
+								new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
+					}
+					// check - if it doesn't equal with checked record and if it isn't visited record
+					else if (!visitedNodes.contains(fieldReferencedTypeDeclaration)) {
+						visitedNodes.add(0, fieldReferencedTypeDeclaration);
+						validationResultMessages.addAll(checkRecordSelfReferenceHelp(typeDeclaration, visitedNodes));
+					}
+				}
+			}
+		}
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkRationalLiteralExpression(RationalLiteralExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		try {
+			// check denominator
+			if (expression.getDenominator().intValue() == 0) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The denominator cannot be zero.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RATIONAL_LITERAL_EXPRESSION__DENOMINATOR, null)));
+			}
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
+		}
+		return validationResultMessages;
+	}
+
+	public Collection<ValidationResultMessage> checkRecordLiteralExpression(RecordLiteralExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// find RecordTypeDefinition
+		TypeDeclaration typeDeclaration = expression.getTypeDeclaration();
+		Type type = typeDeclaration.getType();
+		RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
+		// check all FieldDeclaration and all FieldAssignment
+		for (FieldDeclaration rTypeField : recordTypeDefinition.getFieldDeclarations()) {
+			int counter = 0;
+			for (FieldAssignment rLiFieldAssignment : expression.getFieldAssignments()) {
+				FieldReferenceExpression fieldReferenceExpression = rLiFieldAssignment.getReference();
+				FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
+				// same fields
+				if (fieldDeclaration == rTypeField) {
+					counter++;
+				}
+			}
+			// this field has no value
+			if (counter == 0) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"All fields in the definition must have a value!",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS, null)));
+			}
+			// this field has more than once value
+			if (counter >= 2) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"You cannot add value to a field more than once!",
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS, null)));
+			}
+		}
+		return validationResultMessages;
+	}
 }

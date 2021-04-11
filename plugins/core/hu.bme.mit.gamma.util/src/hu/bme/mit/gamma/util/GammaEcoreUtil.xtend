@@ -103,6 +103,21 @@ class GammaEcoreUtil {
 		}
 	}
 	
+	def void prependTo(EObject object, EObject pivot) {
+		val container = pivot.eContainer
+		val reference = pivot.eContainmentFeature
+		// "Many" cardinality is mandatory
+		val list = container.eGet(reference) as List<EObject>
+		val index = pivot.index
+		list.add(index, object)
+	}
+	
+	def void prependTo(List<? extends EObject> objects, EObject pivot) {
+		for (object : objects) {
+			object.prependTo(pivot)
+		}
+	}
+	
 	def void appendTo(EObject pivot, EObject object) {
 		val container = pivot.eContainer
 		val reference = pivot.eContainmentFeature
@@ -124,7 +139,7 @@ class GammaEcoreUtil {
 			return newArrayList
 		}
 		val allContainers = container.allContainers
-		allContainers += object
+		allContainers += container
 		return allContainers
 	}
 	
@@ -168,6 +183,11 @@ class GammaEcoreUtil {
 			contents += object as T
 		}
 		return contents
+	}
+	
+	def contains(EObject potentialContainer, EObject object) {
+		val containers = object.allContainers
+		return containers.contains(potentialContainer)
 	}
 
 	def EObject normalLoad(URI uri) {
@@ -217,10 +237,40 @@ class GammaEcoreUtil {
 	def void deleteResource(EObject object) {
 		object.eResource.delete(Collections.EMPTY_MAP)
 	}
+	
+	def boolean helperEquals(List<? extends EObject> lhs, List<? extends EObject> rhs) {
+		if (lhs === null && rhs === null) {
+			return true
+		}
+		if (lhs === null && rhs !== null ||
+				lhs !== null && rhs === null ||
+				lhs.size != rhs.size) {
+			return false
+		}
+		for (var i = 0; i < lhs.size; i++) {
+			val lhsElement = lhs.get(i)
+			val rhsElement = rhs.get(i)
+			if (!lhsElement.helperEquals(rhsElement)) {
+				return false
+			}
+		}
+		return true
+	}
 
 	def boolean helperEquals(EObject lhs, EObject rhs) {
 		val helper = new EqualityHelper
 		return helper.equals(lhs, rhs)
+	}
+	
+	def <T extends EObject> List<T> clone(List<T> objects) {
+		if (objects === null) {
+			return null
+		}
+		val list = newArrayList
+		for (object : objects) {
+			list += object.clone
+		}
+		return list
 	}
 
 	def <T extends EObject> T clone(T object) {

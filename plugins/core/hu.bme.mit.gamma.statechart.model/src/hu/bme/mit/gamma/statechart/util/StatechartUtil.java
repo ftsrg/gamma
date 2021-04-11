@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -64,13 +67,41 @@ public class StatechartUtil extends ActionUtil {
 	
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 
+	@Override
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof EventParameterReferenceExpression) {
 			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) expression;
-			Declaration declaration = reference.getParameter();
-			return declaration;
+			return reference.getParameter();
 		}
 		return super.getDeclaration(expression);
+	}
+	
+	@Override
+	public ReferenceExpression getAccessReference(Expression expression) {
+		if (expression instanceof EventParameterReferenceExpression) {
+			return (EventParameterReferenceExpression) expression;
+		}
+		return super.getAccessReference(expression);
+	}
+	
+	@Override
+	public Declaration getAccessedDeclaration(Expression expression) {
+		if (expression instanceof EventParameterReferenceExpression) {
+			EventParameterReferenceExpression reference = (EventParameterReferenceExpression) expression;
+			return reference.getParameter();
+		}
+		return super.getAccessedDeclaration(expression);
+	}
+	
+	@Override
+	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		Package _package = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
+		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
+		for (Package _import :_package.getImports()) {
+			types.addAll(_import.getTypeDeclarations());
+		}
+		types.addAll(_package.getTypeDeclarations());
+		return types;
 	}
 	
 	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {

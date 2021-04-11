@@ -17,7 +17,7 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.util.AbstractMap.SimpleEntry
+import org.eclipse.xtend.lib.annotations.Data
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -79,7 +79,7 @@ class TraceToEnvironmentModelTransformer {
 		actualTransition.targetState.delete
 		actualTransition.delete
 		
-		return new SimpleEntry(statechart, lastState)
+		return new Result(statechart, lastState)
 	}
 	
 	protected def transformPorts(StatechartDefinition statechart, Trace trace) {
@@ -169,5 +169,13 @@ class TraceToEnvironmentModelTransformer {
 	
 	protected def String getStateName() '''_«stateId++»'''
 	protected def String getTimeoutDeclarationName() '''Timeout«timeoutId++»'''
+	
+	// Result class
+	
+	@Data
+	static class Result {
+		StatechartDefinition statechart
+		State lastState
+	}
 	
 }

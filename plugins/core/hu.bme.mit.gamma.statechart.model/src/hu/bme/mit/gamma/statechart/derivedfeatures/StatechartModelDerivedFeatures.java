@@ -28,7 +28,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
-import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -71,6 +70,7 @@ import hu.bme.mit.gamma.statechart.statechart.DeepHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.EntryState;
 import hu.bme.mit.gamma.statechart.statechart.InitialState;
 import hu.bme.mit.gamma.statechart.statechart.PortEventReference;
+import hu.bme.mit.gamma.statechart.statechart.PseudoState;
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
@@ -100,8 +100,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		if (element instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
-			DirectReferenceExpression functionDeclarationReference = (DirectReferenceExpression) functionAccess.getOperand();
-			FunctionDeclaration functionDeclaration = (FunctionDeclaration) functionDeclarationReference.getDeclaration();
+			FunctionDeclaration functionDeclaration = (FunctionDeclaration) expressionUtil.getDeclaration(functionAccess);
 			return functionDeclaration.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
@@ -652,6 +651,17 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return states;
+	}
+	
+	public static List<PseudoState> getPseudoStates(Region region) {
+		List<PseudoState> pseudoStates = new ArrayList<PseudoState>();
+		for (StateNode stateNode : region.getStateNodes()) {
+			if (stateNode instanceof PseudoState) {
+				PseudoState pseudoState = (PseudoState) stateNode;
+				pseudoStates.add(pseudoState);
+			}
+		}
+		return pseudoStates;
 	}
 	
 	public static Collection<StateNode> getAllStateNodes(Region region) {

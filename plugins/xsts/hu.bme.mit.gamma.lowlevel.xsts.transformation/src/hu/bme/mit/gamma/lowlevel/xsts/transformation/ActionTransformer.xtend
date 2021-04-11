@@ -102,7 +102,7 @@ class ActionTransformer {
 			guards += branch.guard.transformExpression
 			actions += branch.action.transformAction
 		}
-		return createSwitchAction(guards, actions)
+		return createIfElseAction(guards, actions)
 	}
 	
 	def dispatch Action transformAction(SwitchStatement action) {
@@ -113,7 +113,7 @@ class ActionTransformer {
 			actions += branch.action.transformAction
 		}
 		// In this case it is assumed that each case contains a break at the end
-		return createSwitchActionWithControlExpression(action.controlExpression, guards, actions)
+		return createSwitchAction(action.controlExpression, guards, actions)
 	}
 	
 	def dispatch Action transformAction(ChoiceStatement action) {

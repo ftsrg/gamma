@@ -18,12 +18,15 @@ import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
 import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class StatechartToJavaCodeGenerator {
 
@@ -52,6 +55,7 @@ class StatechartToJavaCodeGenerator {
 	
 	// Auxiliary objects
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	
 	new(String targetFolderUri, String basePackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts, ActionSerializer actionSerializer) {
@@ -138,6 +142,11 @@ class StatechartToJavaCodeGenerator {
 	}
 	
 	def generateTypeDeclarations() {
+		// Adding record types, so they can be serialized too
+		val typeDeclarations = gammaStatechart.typeDeclarations
+		val recordTypeDeclarations = typeDeclarations.filter[it.typeDefinition instanceof RecordTypeDefinition]
+		xSts.publicTypeDeclarations += recordTypeDeclarations
+		//
 		for (typeDeclaration : xSts.publicTypeDeclarations) {
 			val componentUri = BASE_FOLDER_URI + File.separator + typeDeclaration.name + ".java"
 			val code = typeDeclarationSerializer.generateTypeDeclarationCode(typeDeclaration)

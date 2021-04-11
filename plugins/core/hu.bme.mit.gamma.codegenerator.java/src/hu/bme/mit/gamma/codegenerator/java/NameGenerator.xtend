@@ -84,14 +84,14 @@ class NameGenerator {
 	/**
 	 * Returns the interface name (implemented by the component) of the given component.
 	 */
-	protected def generatePortOwnerInterfaceName(Component component) {
+	def generatePortOwnerInterfaceName(Component component) {
 		return component.generateComponentClassName + "Interface";
 	}
 	
 	/**
 	 * Returns the type name of the interface of the wrapped Yakindu statemachine.
 	 */
-	protected def getYakinduInterfaceName(Port port) {
+	def getYakinduInterfaceName(Port port) {
 		 if (port.name === null) {
 		 	return "SCInterface"
 		 }
@@ -101,7 +101,7 @@ class NameGenerator {
 	/**
 	 * Returns the containing package of a component.
 	 */
-	protected def getContainingPackage(Component component) {
+	def getContainingPackage(Component component) {
 		return component.eContainer as Package
 	}
 	

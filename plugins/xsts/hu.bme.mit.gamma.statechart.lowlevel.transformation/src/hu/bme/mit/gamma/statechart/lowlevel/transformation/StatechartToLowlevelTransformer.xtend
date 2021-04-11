@@ -12,11 +12,9 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.util.ActionUtil
-import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.interface_.Event
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
@@ -28,6 +26,7 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.EventDeclaration
 import hu.bme.mit.gamma.statechart.lowlevel.model.StateNode
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartModelFactory
 import hu.bme.mit.gamma.statechart.statechart.ChoiceState
+import hu.bme.mit.gamma.statechart.statechart.GuardEvaluation
 import hu.bme.mit.gamma.statechart.statechart.PseudoState
 import hu.bme.mit.gamma.statechart.statechart.Region
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder
@@ -48,34 +47,33 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNaming
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
-	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
-	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
+	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
+	protected final extension ActionUtil actionUtil = ActionUtil.INSTANCE
+	protected final extension EventAttributeTransformer eventAttributeTransformer = EventAttributeTransformer.INSTANCE
 	// Low-level statechart model factory
 	protected final extension StatechartModelFactory factory = StatechartModelFactory.eINSTANCE
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace object for storing the mappings
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining = true
-	protected final int maxRecursionDepth = 10
-	protected final String assertionVariableName = "__assertionFailed"
 
 	new() {
+		this(true, 10)
+	}
+
+	new(boolean functionInlining, int maxRecursionDepth) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.actionTransformer = new ActionTransformer(this.trace, this.functionInlining,
-			this.maxRecursionDepth, this.assertionVariableName)
-		this.triggerTransformer = new TriggerTransformer(this.trace, this.functionInlining)
+		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	
@@ -101,38 +99,38 @@ class StatechartToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
-		val lowlevelVariables = gammaParameter.transformValue
-		// Traced in transformValue
-		val lowlevelVariableNames = gammaParameter.componentParameterNames
-		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		return lowlevelVariables
-	}
-
-	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
-		val lowlevelVariables = gammaConstant.transformValue
-		// Constant variable names do not really matter in terms of traceability
-		return lowlevelVariables
-	}
-	
-	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
-		val lowlevelVariables = gammaVariable.transformValue
-		// Traced in transformValue
-		val lowlevelVariableNames = gammaVariable.names
-		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-		return lowlevelVariables
-	}
-	
-	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
-			List<String> lowlevelVariableNames) {
-		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
-		val size = lowlevelVariables.size
-		for (var i = 0; i < size; i++) {
-			val lowlevelVariable = lowlevelVariables.get(i)
-			val lowlevelVariableName = lowlevelVariableNames.get(i)
-			lowlevelVariable.name = lowlevelVariableName
-		}
-	}
+//	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
+//		val lowlevelVariables = gammaParameter.transformValue
+//		// Traced in transformValue
+//		val lowlevelVariableNames = gammaParameter.componentParameterNames
+//		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+//		return lowlevelVariables
+//	}
+//
+//	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
+//		val lowlevelVariables = gammaConstant.transformValue
+//		// Constant variable names do not really matter in terms of traceability
+//		return lowlevelVariables
+//	}
+//	
+//	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
+//		val lowlevelVariables = gammaVariable.transformValue
+//		// Traced in transformValue
+//		val lowlevelVariableNames = gammaVariable.names
+//		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
+//		return lowlevelVariables
+//	}
+//	
+//	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
+//			List<String> lowlevelVariableNames) {
+//		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
+//		val size = lowlevelVariables.size
+//		for (var i = 0; i < size; i++) {
+//			val lowlevelVariable = lowlevelVariables.get(i)
+//			val lowlevelVariableName = lowlevelVariableNames.get(i)
+//			lowlevelVariable.name = lowlevelVariableName
+//		}
+//	}
 
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
@@ -187,19 +185,10 @@ class StatechartToLowlevelTransformer {
 		trace.put(gammaPort, gammaEvent, lowlevelEvent)
 		// Transforming the parameters
 		for (gammaParameter : gammaEvent.parameterDeclarations) {
-			val lowlevelParameters = gammaParameter.transformValue
-			val lowlevelVariableNames = (direction == EventDirection.IN) ?
-				gammaParameter.getInNames(gammaPort) : 
-				gammaParameter.getOutNames(gammaPort)
-			lowlevelParameters.nameLowlevelVariables(lowlevelVariableNames)
+			val lowlevelParameters = (direction == EventDirection.IN) ?
+				gammaParameter.transformInParameter(gammaPort) : 
+				gammaParameter.transformOutParameter(gammaPort)
 			lowlevelEvent.parameters += lowlevelParameters
-			if (lowlevelParameters.size == 1) {
-				// TODO Is this tracing good?
-				val lowlevelParameter = lowlevelParameters.head
-				trace.put(gammaPort, gammaEvent, gammaParameter,
-					lowlevelEvent.direction, lowlevelParameter)
-			
-			}
 		}
 		return lowlevelEvent
 	}
@@ -243,15 +232,11 @@ class StatechartToLowlevelTransformer {
 		trace.put(timeout, lowlevelTimeout)
 		return lowlevelTimeout
 	}
-
-	protected def getEvents(Port port) {
-		return port.interfaceRealization.interface.events
-	}
-
+	
 	protected def dispatch Component transformComponent(hu.bme.mit.gamma.statechart.interface_.Component component) {
 		throw new IllegalArgumentException("Not known component: " + component)
 	}
-
+	
 	protected def dispatch Component transformComponent(StatechartDefinition statechart) {
 		if (trace.isMapped(statechart)) {
 			// It is already transformed
@@ -260,19 +245,10 @@ class StatechartToLowlevelTransformer {
 		val lowlevelStatechart = createStatechartDefinition => [
 			it.name = getName(statechart)
 			it.schedulingOrder = statechart.schedulingOrder.transform
+			it.guardEvaluation = statechart.guardEvaluation.transform
 		]
 		trace.put(statechart, lowlevelStatechart) // Saving in trace
 		
-		// Create assertion variable if not yet created
-		if (!trace.isAssertionVariableMapped(assertionVariableName)) {
-			var assertionVariable = createVariableDeclaration => [
-				it.name = assertionVariableName
-				it.type = createBooleanTypeDefinition
-				it.expression = createFalseExpression
-			]
-			lowlevelStatechart.variableDeclarations += assertionVariable
-			trace.put(assertionVariableName, assertionVariable)
-		}
 		// Constants
 		val gammaPackage = statechart.containingPackage
 		for (constantDeclaration : gammaPackage.constantDeclarations) {
@@ -295,7 +271,7 @@ class StatechartToLowlevelTransformer {
 		}
 		for (port : statechart.ports) {
 			// Both in and out events are transformed to a boolean VarDecl with additional parameters
-			for (eventDecl : port.events) {
+			for (eventDecl : port.allEventDeclarations) {
 				lowlevelStatechart.eventDeclarations += eventDecl.transform(port)
 			}
 		}
@@ -313,7 +289,7 @@ class StatechartToLowlevelTransformer {
 		return lowlevelStatechart
 	}
 
-	protected def hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder transform(SchedulingOrder order) {
+	protected def transform(SchedulingOrder order) {
 		switch (order) {
 			case SchedulingOrder.BOTTOM_UP: {
 				return hu.bme.mit.gamma.statechart.lowlevel.model.SchedulingOrder.BOTTOM_UP
@@ -323,6 +299,20 @@ class StatechartToLowlevelTransformer {
 			}
 			default: {
 				throw new IllegalArgumentException("Not known scheduling order: " + order)
+			}
+		}
+	}
+	
+	protected def transform(GuardEvaluation guardEvaluation) {
+		switch (guardEvaluation) {
+			case GuardEvaluation.ON_THE_FLY: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.ON_THE_FLY
+			}
+			case GuardEvaluation.BEGINNING_OF_STEP: {
+				return hu.bme.mit.gamma.statechart.lowlevel.model.GuardEvaluation.BEGINNING_OF_STEP
+			}
+			default: {
+				throw new IllegalArgumentException("Not known guard evaluation: " + guardEvaluation)
 			}
 		}
 	}

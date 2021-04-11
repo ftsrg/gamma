@@ -17,16 +17,12 @@ import org.eclipse.xtext.formatting.impl.FormattingConfig
 
 class PropertyLanguageFormatter extends AbstractDeclarativeFormatter {
 	
-	extension ExpressionLanguageFormatterUtil formatterUtil = new ExpressionLanguageFormatterUtil
+	final ExpressionLanguageFormatterUtil formatterUtil = new ExpressionLanguageFormatterUtil
 	
 	protected override void configureFormatting(FormattingConfig c) {
 		val f = grammarAccess as PropertyLanguageGrammarAccess
 		// Using the basic expression language formatting
-		setParantheses(c, f)
-		setDots(c, f)
-		setExclamationMarks(c, f)
-		setCommas(c, f)
-		setDoubleColons(c, f)
+		formatterUtil.formatBracketLess(c, f)
 		c.setWrappedLineIndentation(1);
 		c.setAutoLinewrap(105);
 		// Setting the maximum size of lines

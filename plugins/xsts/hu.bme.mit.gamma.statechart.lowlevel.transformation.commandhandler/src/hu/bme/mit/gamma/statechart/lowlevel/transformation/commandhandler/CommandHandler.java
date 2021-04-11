@@ -43,11 +43,13 @@ import hu.bme.mit.gamma.xsts.codegeneration.java.InlinedChoiceActionSerializer;
 import hu.bme.mit.gamma.xsts.codegeneration.java.StatechartToJavaCodeGenerator;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
+import hu.bme.mit.gamma.xsts.util.XstsActionUtil;
 
 public class CommandHandler extends AbstractHandler {
 
-	protected Logger logger = Logger.getLogger("GammaLogger");
-	protected GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final Logger logger = Logger.getLogger("GammaLogger");
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final XstsActionUtil actionUtil = XstsActionUtil.INSTANCE;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -108,12 +110,12 @@ public class CommandHandler extends AbstractHandler {
 		else {
 			ActionPrimer actionPrimer = new ChoiceInliner(true);
 			javaActionSerializer = new InlinedChoiceActionSerializer();
-			xSts.setVariableInitializingAction(actionPrimer.transform(xSts.getVariableInitializingAction()));
-			xSts.setConfigurationInitializingAction(actionPrimer.transform(xSts.getConfigurationInitializingAction()));
-			xSts.setEntryEventAction(actionPrimer.transform(xSts.getEntryEventAction()));
-			xSts.setMergedAction(actionPrimer.transform(xSts.getMergedAction()));
-			xSts.setInEventAction(actionPrimer.transform(xSts.getInEventAction()));
-			xSts.setOutEventAction(actionPrimer.transform(xSts.getOutEventAction()));
+			xSts.setVariableInitializingTransition(actionPrimer.transform(xSts.getVariableInitializingTransition()));
+			xSts.setConfigurationInitializingTransition(actionPrimer.transform(xSts.getConfigurationInitializingTransition()));
+			xSts.setEntryEventTransition(actionPrimer.transform(xSts.getEntryEventTransition()));
+			actionUtil.changeTransitions(xSts, actionPrimer.transform(xSts.getTransitions()));
+			xSts.setInEventTransition(actionPrimer.transform(xSts.getInEventTransition()));
+			xSts.setOutEventTransition(actionPrimer.transform(xSts.getOutEventTransition()));
 		}
 		// Saving the xSTS model
 		ecoreUtil.normalSave(xSts, modelFolderUri, fileNameWithoutExtenstion + ".gsts");

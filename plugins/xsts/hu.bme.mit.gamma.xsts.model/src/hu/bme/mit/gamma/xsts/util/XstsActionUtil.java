@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.xsts.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction;
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction;
 import hu.bme.mit.gamma.xsts.model.XSTS;
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory;
+import hu.bme.mit.gamma.xsts.model.XTransition;
 
 public class XstsActionUtil extends ExpressionUtil {
 	// Singleton
@@ -51,7 +53,58 @@ public class XstsActionUtil extends ExpressionUtil {
 	protected ExpressionModelFactory expressionFactory = ExpressionModelFactory.eINSTANCE;
 	protected XSTSModelFactory xStsFactory = XSTSModelFactory.eINSTANCE;
 	
+	public void changeTransitions(XSTS xSts, XTransition newAction) {
+		changeTransitions(xSts, Collections.singletonList(newAction));
+	}
+	
+	public void changeTransitions(XSTS xSts, Collection<XTransition> newActions) {
+		Collection<XTransition> savedActions = new ArrayList<XTransition>();
+		savedActions.addAll(newActions); // If newActions == xSts.getActions()
+		xSts.getTransitions().clear();
+		xSts.getTransitions().addAll(savedActions);
+	}
+	
+	public XTransition wrap(Action action) {
+		XTransition transition = xStsFactory.createXTransition();
+		transition.setAction(action);
+		return transition;
+	}
+	
+	public void prependToAction(Collection<? extends Action> actions, Action pivot) {
+		for (Action action : actions) {
+			prependToAction(action, pivot);
+		}
+	}
+	
+	public void prependToAction(Action action, Action pivot) {
+		if (pivot instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) pivot;
+			sequentialAction.getActions().add(0, action);
+			return;
+		}
+		// Pivot is not a sequential action
+		EObject container = pivot.eContainer();
+		if (!(container instanceof SequentialAction)) {
+			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
+			ecoreUtil.replace(sequentialAction, pivot);
+			sequentialAction.getActions().add(pivot);
+		}
+		ecoreUtil.prependTo(action, pivot);
+	}
+	
+	public void appendToAction(Collection<? extends Action> actions, Action pivot) {
+		for (Action action : actions) {
+			appendToAction(action, pivot);
+		}
+	}
+	
 	public void appendToAction(Action pivot, Action action) {
+		if (pivot instanceof SequentialAction) {
+			SequentialAction sequentialAction = (SequentialAction) pivot;
+			sequentialAction.getActions().add(action);
+			return;
+		}
+		// Pivot is not a sequential action
 		EObject container = pivot.eContainer();
 		if (!(container instanceof SequentialAction)) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
@@ -198,11 +251,12 @@ public class XstsActionUtil extends ExpressionUtil {
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchAction(List<Expression> conditions, List<Action> actions) {
+	public NonDeterministicAction createIfElseAction(List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
 		}
+		boolean foundElseBranch = false;
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
 		for (int i = 0; i < conditions.size(); ++i) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
@@ -219,7 +273,10 @@ public class XstsActionUtil extends ExpressionUtil {
 				// This condition is true
 				andExpression.getOperands().add(actualCondition);
 			}
-			AssumeAction assumeAction = createAssumeAction(andExpression);
+			else {
+				foundElseBranch = true;
+			}
+			AssumeAction assumeAction = createAssumeAction(unwrapIfPossible(andExpression));
 			sequentialAction.getActions().add(assumeAction);
 			sequentialAction.getActions().add(actions.get(i));
 			// Merging into the main action
@@ -229,10 +286,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		if (conditions.size() + 1 == actions.size()) {
 			extendChoiceWithDefaultBranch(switchAction, actions.get(actions.size() - 1));
 		}
+		else if (!foundElseBranch) {
+			// Otherwise a deadlock could happen if no branch is true
+			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+		}
 		return switchAction;
 	}
 	
-	public NonDeterministicAction createSwitchActionWithControlExpression(
+	public NonDeterministicAction createSwitchAction(
 			Expression controlExpresion, List<Expression> conditions, List<Action> actions) {
 		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
@@ -245,7 +306,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			equalityExpression.setRightOperand(condition);
 			newConditions.add(equalityExpression);
 		}
-		return createSwitchAction(newConditions, actions);
+		return createIfElseAction(newConditions, actions);
 	}
 
 	public void extendChoiceWithDefaultBranch(NonDeterministicAction switchAction, Action action) {
@@ -254,7 +315,6 @@ public class XstsActionUtil extends ExpressionUtil {
 		}
 		NotExpression negatedCondition = expressionFactory.createNotExpression();
 		OrExpression orExpression = expressionFactory.createOrExpression();
-		negatedCondition.setOperand(orExpression);
 		List<SequentialAction> sequentialActions = switchAction.getActions().stream()
 				.filter(it -> it instanceof SequentialAction)
 				.map(it -> (SequentialAction) it)
@@ -266,14 +326,15 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Collecting atomic assumptions too
 		switchAction.getActions().stream()
 			.filter(it -> it instanceof AssumeAction)
-			.map(it -> ((AssumeAction) it).getAssumption()).
-			forEach(it -> conditions.add(it));
+			.map(it -> ((AssumeAction) it).getAssumption())
+			.forEach(it -> conditions.add(it));
 		if (conditions.isEmpty()) {
 			return;
 		}
 		for (Expression condition : conditions) {
 			orExpression.getOperands().add(clone(condition));
 		}
+		negatedCondition.setOperand(unwrapIfPossible(orExpression));
 		SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 		AssumeAction assumeAction = createAssumeAction(negatedCondition);
 		sequentialAction.getActions().add(assumeAction);

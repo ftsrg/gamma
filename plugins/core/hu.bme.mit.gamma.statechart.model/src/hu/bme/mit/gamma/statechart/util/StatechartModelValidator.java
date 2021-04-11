@@ -21,7 +21,6 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -129,30 +128,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (element instanceof VariableDeclaration) {
-			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
-					element, VariableDeclarationStatement.class);
-			if (statement != null) {
-				// No op - Action language validator is used here
-				return validationResultMessages;
-			}
-		}
 		if (element instanceof Event) {
 			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
-			validationResultMessages.addAll(checkNames(_interface, Collections.singleton(Event.class), name));
+			validationResultMessages.addAll(checkNames(_interface, Event.class, name));
 			return validationResultMessages;
 		}
 		if (element instanceof ParameterDeclaration) {
 			EObject container = element.eContainer();
 			if (container instanceof Event) {
-				validationResultMessages.addAll(checkNames(container, Collections.singleton(ParameterDeclaration.class), name));
+				validationResultMessages.addAll(checkNames(container, ParameterDeclaration.class, name));
 				return validationResultMessages;
 			}
 		}
 		if (element instanceof TransitionIdAnnotation) {
 			StatechartDefinition statechart = StatechartModelDerivedFeatures
 					.getContainingStatechart(element);
-			validationResultMessages.addAll(checkNames(statechart, List.of(TransitionIdAnnotation.class, Declaration.class), name));
+			validationResultMessages.addAll(checkNames(statechart,
+					List.of(TransitionIdAnnotation.class, Declaration.class), name));
 			return validationResultMessages;
 		}
 		validationResultMessages.addAll(super.checkNameUniqueness(element));
@@ -186,7 +178,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkUnsupportedVariableTypes(VariableDeclaration variable) {
-		Type type = expressionUtil.findTypeDefinitionOfType(variable.getType());
+		Type type = StatechartModelDerivedFeatures.getTypeDefinition(variable.getType());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(type instanceof IntegerTypeDefinition ||
 			  type instanceof BooleanTypeDefinition || 
@@ -593,23 +585,23 @@ public class StatechartModelValidator extends ActionModelValidator {
 		EObject container = elseExpression.eContainer();
 		if (!(container instanceof Transition) && !(container instanceof Branch)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Else expressions must be an atomic guard in the expression."
-					, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+					"Else expressions must be atomic guards in the expression.",
+					new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 		}
 		if (container instanceof Transition) {
 			Transition transition = (Transition) container;
 			if (transition.getTrigger() != null) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Else expressions cannot be used with triggers."
-						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+						"Else expressions cannot be used with triggers.",
+						new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 			StateNode node = transition.getSourceState();
 			List<Transition> outgoingTransitions = StatechartModelDerivedFeatures.getOutgoingTransitions(node);
 			outgoingTransitions.remove(transition);
 			if (outgoingTransitions.stream().anyMatch(it -> it.getGuard() instanceof ElseExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Only a single transition with and else expression can go out of a certain node."
-						, new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
+						"Only a single transition with and else expression can go out of a certain node.",
+						new ReferenceInfo(elseExpression.eContainingFeature(), null, container)));
 			}
 		}
 		return validationResultMessages;

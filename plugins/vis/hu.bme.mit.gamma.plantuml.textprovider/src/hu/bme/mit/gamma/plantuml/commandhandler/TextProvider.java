@@ -27,9 +27,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ide.ResourceUtil;
 
-import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUMLTransformer;
-import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUMLTransformer;
-import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUMLTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.CompositeToPlantUmlTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.StatechartToPlantUmlTransformer;
+import hu.bme.mit.gamma.plantuml.transformation.TraceToPlantUmlTransformer;
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -78,11 +78,11 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 				Component component = components.get(0);
 				if (component instanceof StatechartDefinition) {
 					StatechartDefinition statechartDefinition = (StatechartDefinition) component;
-					StatechartToPlantUMLTransformer transformer = new StatechartToPlantUMLTransformer(statechartDefinition);
+					StatechartToPlantUmlTransformer transformer = new StatechartToPlantUmlTransformer(statechartDefinition);
 					plantumlModel = transformer.execute();
 				} else if (component instanceof CompositeComponent) {
 					CompositeComponent composite = (CompositeComponent) component;
-					CompositeToPlantUMLTransformer transformer = new CompositeToPlantUMLTransformer(composite);
+					CompositeToPlantUmlTransformer transformer = new CompositeToPlantUmlTransformer(composite);
 					plantumlModel = transformer.execute();
 				}
 			}
@@ -92,7 +92,7 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 	private void getTracePlantUMLCode(Resource resource) {
 		if (!resource.getContents().isEmpty()) {
 			ExecutionTrace trace = (ExecutionTrace) resource.getContents().get(0);
-			TraceToPlantUMLTransformer transformer = new TraceToPlantUMLTransformer(trace);
+			TraceToPlantUmlTransformer transformer = new TraceToPlantUmlTransformer(trace);
 			plantumlModel = transformer.execute();
 		}
 	}

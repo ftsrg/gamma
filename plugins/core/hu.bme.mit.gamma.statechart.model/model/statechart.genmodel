@@ -147,6 +147,7 @@
     </genClasses>
     <genClasses image="false" ecoreClass="interface.ecore#//Component">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Component/ports"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Component/functionDeclarations"/>
     </genClasses>
     <genClasses ecoreClass="interface.ecore#//Clock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference interface.ecore#//Clock/timeSpecification"/>
@@ -210,6 +211,10 @@
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/ORDER_BASED"/>
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//TransitionPriority/VALUE_BASED"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//GuardEvaluation">
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//GuardEvaluation/ON_THE_FLY"/>
+      <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//GuardEvaluation/BEGINNING_OF_STEP"/>
+    </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="statechart.ecore#//BinaryType">
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//BinaryType/AND"/>
       <genEnumLiterals ecoreEnumLiteral="statechart.ecore#//BinaryType/OR"/>
@@ -227,6 +232,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/schedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/orthogonalRegionSchedulingOrder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/transitionPriority"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute statechart.ecore#//StatechartDefinition/guardEvaluation"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference statechart.ecore#//StatechartDefinition/annotation"/>
     </genClasses>
     <genClasses ecoreClass="statechart.ecore#//TimeoutDeclaration"/>

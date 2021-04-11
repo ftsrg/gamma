@@ -3,14 +3,20 @@ package hu.bme.mit.gamma.util
 import java.util.Collection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 class ThreadRacer<T> {
 	
 	final CountDownLatch latch = new CountDownLatch(1)
 	volatile T object
 
+	int numberOfCallablesShouldBeRunning = 0
+	final AtomicInteger numberOfAbortedCallables = new AtomicInteger
+
 	def T execute(Collection<InterruptableCallable<T>> callables) {
 		val size = callables.size
+		numberOfCallablesShouldBeRunning = size
+		
 		val executor = Executors.newFixedThreadPool(size)
 		val futures = newArrayList
 		val wrappedCallables = newArrayList
@@ -39,6 +45,14 @@ class ThreadRacer<T> {
 		}
 	}
 	
+	protected def synchronized incrementNumberOfAbortedCallables(){
+		val numberOfAborted = numberOfAbortedCallables.incrementAndGet
+		if (numberOfAborted == numberOfCallablesShouldBeRunning) {
+			// Every callable has aborted, letting the main thread go
+			latch.countDown
+		}
+	}
+	
 	protected def wrap(InterruptableCallable<T> callable) {
 		return new InterruptableCallable<T> {
 			override cancel() {
@@ -54,6 +68,8 @@ class ThreadRacer<T> {
 					result.fillObject
 					return result
 				} catch (Exception e) {
+					// Exception, increment counter
+					incrementNumberOfAbortedCallables
 					if (Thread.currentThread.isInterrupted) {
 						// The thread has been interrupted, the result is not valid
 						return null
