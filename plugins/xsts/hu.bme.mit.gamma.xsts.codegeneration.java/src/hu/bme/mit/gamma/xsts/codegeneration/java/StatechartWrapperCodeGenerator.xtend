@@ -22,7 +22,6 @@ import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNaming
 class StatechartWrapperCodeGenerator {
 
 	final String BASE_PACKAGE_NAME
-	final String INTERFACE_PACKAGE_NAME
 	final String STATECHART_PACKAGE_NAME
 	final String CLASS_NAME
 	
@@ -34,10 +33,9 @@ class StatechartWrapperCodeGenerator {
 	final extension ValueDeclarationAccessor valueDeclarationAccessor = ValueDeclarationAccessor.INSTANCE
 	
 	
-	new(String basePackageName, String interfacePackageName, String statechartPackageName,
+	new(String basePackageName, String statechartPackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts) {
 		this.BASE_PACKAGE_NAME = basePackageName
-		this.INTERFACE_PACKAGE_NAME = interfacePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
 		this.CLASS_NAME = gammaStatechart.componentClassName
 		this.gammaStatechart = gammaStatechart
@@ -52,7 +50,9 @@ class StatechartWrapperCodeGenerator {
 		import java.util.LinkedList;
 		import «BASE_PACKAGE_NAME».*;
 		import «BASE_PACKAGE_NAME».«GAMMA_TIMER_INTERFACE».*;
-		import «INTERFACE_PACKAGE_NAME».*;
+		«FOR _package : gammaStatechart.containingPackage.imports.toSet»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
 		import «STATECHART_PACKAGE_NAME».«gammaStatechart.wrappedStatemachineClassName».*;
 		
 		public class «CLASS_NAME» implements «CLASS_NAME»Interface {

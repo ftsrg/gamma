@@ -12,8 +12,12 @@ package hu.bme.mit.gamma.xsts.codegeneration.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationSerializer
 import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
-import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
+import hu.bme.mit.gamma.xsts.model.XSTS
+
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartCodeGenerator {
 	
@@ -21,6 +25,7 @@ class StatechartCodeGenerator {
 	final String STATECHART_PACKAGE_NAME
 	final String CLASS_NAME
 	
+	final StatechartDefinition gammaStatechart // Needed for the type declarations 
 	final XSTS xSts
 	
 	final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
@@ -32,10 +37,11 @@ class StatechartCodeGenerator {
 	final extension ActionSerializer actionSerializer
 	
 	new(String basePackageName, String statechartPackageName, String className,
-			XSTS xSts, ActionSerializer actionSerializer) {
+			StatechartDefinition gammaStatechart, XSTS xSts, ActionSerializer actionSerializer) {
 		this.BASE_PACKAGE_NAME = basePackageName
 		this.STATECHART_PACKAGE_NAME = statechartPackageName
 		this.CLASS_NAME = className
+		this.gammaStatechart = gammaStatechart
 		this.xSts = xSts
 		this.actionSerializer = actionSerializer
 	}
@@ -43,7 +49,9 @@ class StatechartCodeGenerator {
 	protected def createStatechartClass() '''
 		package «STATECHART_PACKAGE_NAME»;
 		
-		import «BASE_PACKAGE_NAME».*; ««« Needed for the type declarations 
+		«FOR _package : gammaStatechart.containingPackage.imports.toSet»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*; ««« Needed for the type declarations 
+		«ENDFOR»
 		
 		public class «CLASS_NAME» {
 			

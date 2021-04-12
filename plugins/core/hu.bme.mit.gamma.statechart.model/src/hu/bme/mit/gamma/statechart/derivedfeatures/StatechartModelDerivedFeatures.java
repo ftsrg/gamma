@@ -421,6 +421,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return getOutputEvents(port).contains(event);
 	}
 	
+	public static Set<Interface> getInterfaces(Component component) {
+		return component.getPorts().stream()
+				.map(it -> getInterface(it)).collect(Collectors.toSet());
+	}
+	
 	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {
 		List<Port> allPorts = new ArrayList<Port>(wrapper.getPorts());
 		allPorts.addAll(wrapper.getWrappedComponent().getType().getPorts());

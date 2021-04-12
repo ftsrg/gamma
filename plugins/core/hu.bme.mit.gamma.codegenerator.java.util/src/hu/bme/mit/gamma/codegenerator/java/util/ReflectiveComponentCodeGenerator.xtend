@@ -148,14 +148,17 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateReflectiveImports(Component component) '''
 		import «BASE_PACKAGE_NAME».*;
-		«IF component instanceof CompositeComponent»
-			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
-				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
-			«ENDFOR»
-		«ELSEIF component instanceof AsynchronousAdapter»
-			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
-			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
-		«ENDIF»
+		«FOR _package : component.containingPackage.imports.toSet»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
+«««		«IF component instanceof CompositeComponent»
+«««			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
+«««				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
+«««			«ENDFOR»
+«««		«ELSEIF component instanceof AsynchronousAdapter»
+«««			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
+«««			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
+«««		«ENDIF»
 	'''
 	
 	protected def generateScheduling(Component component) '''

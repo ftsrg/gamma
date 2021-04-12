@@ -10,16 +10,20 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.statechart.interface_.Package
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Interface
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.util.GammaEcoreUtil
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 
 class NameGenerator {
-
+	//
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
+	//
 	protected final String PACKAGE_NAME
 
 	new(String packageName) {
@@ -30,7 +34,8 @@ class NameGenerator {
 	 * Returns the Java package name of the class generated from the component.
 	 */
 	def generateComponentPackageName (Component component) '''«PACKAGE_NAME».«component.containingPackage.name.toLowerCase»'''
- 
+	def generateObjectPackageName (EObject object) '''«PACKAGE_NAME».«object.getContainerOfType(Package).name.toLowerCase»'''
+
 	/**
 	 * Returns the name of the Java channel interface generated from the given Gamma interface. 
 	 */

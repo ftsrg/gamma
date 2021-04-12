@@ -32,7 +32,7 @@ class ChannelCodeGenerator {
 	protected def createChannelClassCode(Interface _interface) '''
 		package «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX»;
 		
-		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«_interface.implementationName»;
+		import «_interface.getPackageString(PACKAGE_NAME)».«_interface.implementationName»;
 		import java.util.List;
 		import java.util.LinkedList;
 		
