@@ -226,6 +226,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				return type.getSourceFieldHierarchy(names, targetVariableName)
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 	def getSourceOutEvent(String targetOutEventName) {
@@ -263,6 +264,7 @@ class ThetaQueryGenerator extends AbstractQueryGenerator {
 				}
 			}
 		}
+		throw new IllegalArgumentException("Not known id")
 	}
 	
 	def getSourceInEvent(String targetInEventName) {

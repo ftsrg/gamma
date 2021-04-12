@@ -26,7 +26,9 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
+import java.util.List
 import java.util.NoSuchElementException
+import java.util.Queue
 import java.util.Scanner
 import java.util.Set
 import java.util.logging.Level
@@ -155,8 +157,8 @@ class TraceBackAnnotator {
 					}
 				}
 				// We parse in every turn
-				line = thetaQueryGenerator.unwrap(line)
-				val split = line.split(" ")
+				line = thetaQueryGenerator.unwrapAll(line)
+				val split = line.split(" ", 2) // Only the first " " is checked
 				val id = split.get(0)
 				val value = split.get(1)
 				switch (state) {
@@ -173,14 +175,19 @@ class TraceBackAnnotator {
 							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
 							val instance = instanceVariable.value
 							val variable = instanceVariable.key
-							if (thetaQueryGenerator.isSourceRecordVariable(id)) {
+//							if (type.isComplex) {
 								val field = thetaQueryGenerator.getSourceVariableFieldHierarchy(id)
-								step.addInstanceVariableState(instance, variable, field, value)
-							}
-							else {
-								// Primitive variable
-								step.addInstanceVariableState(instance, variable, value)
-							}
+								val indexPairs = value.parseArray
+								for (indexPair : indexPairs) {
+									val index = indexPair.key
+									val parsedValue = indexPair.value
+									step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+								}
+//							}
+//							else {
+//								// Primitive variable
+//								step.addInstanceVariableState(instance, variable, value)
+//							}
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
 							val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
@@ -283,6 +290,62 @@ class TraceBackAnnotator {
 			}
 		}
 		raisedInEvents.clear
+	}
+	
+	protected def List<Pair<Queue<Integer>, String>> parseArray(String value) {
+		// (array (0 10) (1 11) (default 0))
+		val values = <Pair<Queue<Integer>, String>>newArrayList
+		if (value.isArray) {
+			val unwrapped = thetaQueryGenerator.unwrap(value).substring("array ".length) // (0 10) (default 0)
+			val splits = unwrapped.parseAlongParentheses // 0 10, default array
+			for (split : splits) {
+				val splitPair = split.split(" ") // 0, 10
+				val index = splitPair.get(0) // 0
+				if (!index.equals("default")) {
+					val parsedIndex = Integer.parseInt(index)
+					val storedValue = splitPair.get(1) // 10
+					val parsedValues = storedValue.parseArray
+					for (parsedValue : parsedValues) {
+						val Queue<Integer> newIndexes = newLinkedList
+						newIndexes += parsedIndex // So the higher value will be retrieved earlier
+						val indexes = parsedValue.key
+						newIndexes += indexes
+						val stringValue = parsedValue.value
+						values += newIndexes -> stringValue
+					}
+				}
+			}
+			return values
+		}
+		else {
+			return #[newLinkedList -> value]
+		}
+	}
+	
+	protected def parseAlongParentheses(String line) {
+		val result = newArrayList
+		var unclosedParanthesisCount = 0
+		var firstParanthesisIndex = 0
+		for (var i = 0; i < line.length; i++) {
+			val character = line.charAt(i).toString
+			if (character == "(") {
+				unclosedParanthesisCount++
+				if (unclosedParanthesisCount == 1) {
+					firstParanthesisIndex = i
+				}
+			}
+			else if (character == ")") {
+				unclosedParanthesisCount--
+				if (unclosedParanthesisCount == 0) {
+					result += line.substring(firstParanthesisIndex + 1, i)
+				}
+			}
+		}
+		return result
+	}
+	
+	protected def boolean isArray(String value) {
+		return value.startsWith("(array ")
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}

@@ -1,12 +1,15 @@
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -177,6 +180,11 @@ public class ComplexTypeUtil {
 		return values;
 	}
 	
+	public FieldAssignment getFieldAssignment(RecordLiteralExpression literal,
+			FieldHierarchy fieldHierarchy, Queue<Integer> indexes) {
+		return getFieldAssignment(literal, fieldHierarchy);
+	}
+	
 	public FieldAssignment getFieldAssignment(
 			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
 		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
@@ -191,6 +199,29 @@ public class ComplexTypeUtil {
 			}
 		}
 		return fieldAssignment;
+	}
+	
+	public Expression getValue(Expression literal /* Has to contain valid expression in each field or index */, 
+			FieldHierarchy fieldHierarchy, Queue<Integer> indexes) {
+		if (literal instanceof RecordLiteralExpression) {
+			RecordLiteralExpression record = (RecordLiteralExpression) literal;
+			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
+			FieldDeclaration field = clonedHierarchy.getFirst();
+			Expression value = record.getFieldAssignments().stream().filter(it -> 
+				it.getReference().getFieldDeclaration() == field).findFirst().get().getValue();
+			clonedHierarchy.removeFirst(); // Found this field
+			return getValue(value, clonedHierarchy, indexes);
+		}
+		else if (literal instanceof ArrayLiteralExpression) {
+			ArrayLiteralExpression array = (ArrayLiteralExpression) literal;
+			Queue<Integer> clonedIndexes = new LinkedList<>(indexes);
+			int index = clonedIndexes.remove();
+			Expression value = array.getOperands().get(index);
+			return getValue(value, fieldHierarchy, clonedIndexes);
+		}
+		else {
+			return literal;
+		}
 	}
 	
 	public List<Expression> getAccesses(Expression expression) {

@@ -36,8 +36,12 @@ import hu.bme.mit.gamma.trace.model.Step
 import hu.bme.mit.gamma.trace.model.TimeElapse
 import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
 import java.util.List
+import java.util.Queue
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -50,6 +54,7 @@ class TraceBuilder {
 	protected final extension TraceModelFactory traceFactory = TraceModelFactory.eINSTANCE
 	
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	
@@ -205,24 +210,45 @@ class TraceBuilder {
 		fieldAssignment.fieldAssignment = value
 	}
 	
+	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, Queue<Integer> indexes, String value) {
+		val type = variable.typeDefinition
+		if (type.native) {
+			addInstanceVariableState(step, instance, variable, value)
+		}
+		else {
+			checkState(type.complex)
+			val innerType = fieldHierarchy.last.typeDefinition
+			val literal = step.getOrCreateLiteral(instance, variable)
+			val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+			val newValue = innerType.createLiteral(value)
+			newValue.replace(valueToBeChanged)
+		}
+	}
+	
 	private def getRecordLiteral(Step step, SynchronousComponentInstance instance,
+			VariableDeclaration variable) {
+		return step.getOrCreateLiteral(instance, variable) as RecordLiteralExpression
+	}
+	
+	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
 			VariableDeclaration variable) {
 		val variableStates = step.asserts.filter(InstanceVariableState)
 		val variableState = variableStates.filter[
 			it.instance === instance &&	it.declaration === variable].head
-		var RecordLiteralExpression value
+		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
-			val recordLiteral = variable.initialValue as RecordLiteralExpression
+			val initialValue = variable.initialValue
 			step.asserts += createInstanceVariableState => [
 				it.instance = instance
 				it.declaration = variable
-				it.value = recordLiteral
+				it.value = initialValue
 			]
-			value = recordLiteral
+			value = initialValue
 		}
 		else {
-			value = variableState.value as RecordLiteralExpression
+			value = variableState.value
 		}
 		return value 
 	}

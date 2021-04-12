@@ -53,9 +53,21 @@ public class FieldHierarchy {
 		fields.addAll(fieldHierarchy.getFields());
 	}
 	
+	public FieldDeclaration getFirst() {
+		return fields.get(0);
+	}
+	
 	public FieldDeclaration getLast() {
 		int size = fields.size();
 		return fields.get(size - 1);
+	}
+	
+	public boolean isEmpty() {
+		return fields.isEmpty();
+	}
+	
+	public void removeFirst() {
+		fields.remove(0);
 	}
 	
 	public List<FieldHierarchy> getExtensions(Declaration declaration) {
@@ -80,6 +92,10 @@ public class FieldHierarchy {
 		}
 		// a.b.c and a.b.d
 		return extensions;
+	}
+	
+	public FieldHierarchy clone() {
+		return new FieldHierarchy(this);
 	}
 	
 	@Override
