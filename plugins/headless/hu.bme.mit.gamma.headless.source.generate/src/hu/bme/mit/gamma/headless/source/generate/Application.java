@@ -36,6 +36,7 @@ public class Application implements IApplication{
 		IProject newProject = workspace.getRoot().getProject(projectName);
 		newProject.create(newProjectDescription, null);
 		newProject.open(null);
+		//ZipFile srcZipFile = new ZipFile(workspace.getRoot().getLocation() + "/" + projectName + ".zip");
 		ZipFile srcZipFile = new ZipFile(workspace.getRoot().getLocation() + "/" + projectName + ".zip");
 		IOverwriteQuery overwriteQuery = new IOverwriteQuery() {
 			public String queryOverwrite(String file) {
