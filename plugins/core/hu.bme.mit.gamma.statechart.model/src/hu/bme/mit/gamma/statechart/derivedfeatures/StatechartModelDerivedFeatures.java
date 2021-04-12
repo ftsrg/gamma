@@ -422,7 +422,7 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	}
 	
 	public static Set<Interface> getInterfaces(Component component) {
-		return component.getPorts().stream()
+		return getAllPorts(component).stream()
 				.map(it -> getInterface(it)).collect(Collectors.toSet());
 	}
 	

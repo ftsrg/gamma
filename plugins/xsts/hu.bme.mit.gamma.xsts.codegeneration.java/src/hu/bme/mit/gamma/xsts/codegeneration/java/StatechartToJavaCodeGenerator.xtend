@@ -25,6 +25,7 @@ import hu.bme.mit.gamma.xsts.model.XSTS
 import java.io.File
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartToJavaCodeGenerator {
@@ -147,7 +148,7 @@ class StatechartToJavaCodeGenerator {
 //		publicTypeDeclarations += xSts.publicTypeDeclarations
 		// Type declarations must be contained by the original package due to package import
 		// Therefore, xSts.publicTypeDeclarations cannot be used
-		for (typeDeclaration : typeDeclarations) {
+		for (typeDeclaration : typeDeclarations.filter[!it.typeDefinition.primitive]) {
 			val packageName = typeDeclaration.getPackageString(BASE_PACKAGE_NAME) 
 			val DECLARATION_FOLDER_URI = SRC_FOLDER_URI.generateUri(packageName)
 			val componentUri = DECLARATION_FOLDER_URI + File.separator + typeDeclaration.name + ".java"

@@ -49,16 +49,14 @@ class CompositeComponentCodeGenerator {
 		import java.util.LinkedList;
 		
 		import «PACKAGE_NAME».*;
-		«FOR _package : component.containingPackage.imports.toSet»
+		«FOR _package : (component.containingPackage.imports +
+				/* For type declarations */ component.allInstances.map[it.derivedType].toSet
+					.map[it.containingPackage.imports].flatten).toSet»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		«IF component instanceof AsynchronousCompositeComponent»
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;
 		«ENDIF»
-		«FOR containedComponent : component.derivedComponents.map[it.derivedType]
-				.filter[!it.generateComponentPackageName.equals(component.generateComponentPackageName)].toSet»
-			import «containedComponent.generateComponentPackageName».*;
-		«ENDFOR»
 	'''
 	
 	/**

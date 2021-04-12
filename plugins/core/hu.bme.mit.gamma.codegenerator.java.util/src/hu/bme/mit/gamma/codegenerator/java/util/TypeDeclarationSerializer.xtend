@@ -27,7 +27,7 @@ class TypeDeclarationSerializer {
 	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	def String serialize(TypeDeclaration type) {
-		val declaredType = type.type
+		val declaredType = type.typeDefinition // So transitive references are solved
 		return declaredType.serialize(type.name)
 	}
 	
