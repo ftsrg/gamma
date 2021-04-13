@@ -99,39 +99,6 @@ class StatechartToLowlevelTransformer {
 		return lowlevelPackage
 	}
 	
-//	protected def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
-//		val lowlevelVariables = gammaParameter.transformValue
-//		// Traced in transformValue
-//		val lowlevelVariableNames = gammaParameter.componentParameterNames
-//		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-//		return lowlevelVariables
-//	}
-//
-//	protected def List<VariableDeclaration> transform(ConstantDeclaration gammaConstant) {
-//		val lowlevelVariables = gammaConstant.transformValue
-//		// Constant variable names do not really matter in terms of traceability
-//		return lowlevelVariables
-//	}
-//	
-//	protected def List<VariableDeclaration> transform(VariableDeclaration gammaVariable) {
-//		val lowlevelVariables = gammaVariable.transformValue
-//		// Traced in transformValue
-//		val lowlevelVariableNames = gammaVariable.names
-//		lowlevelVariables.nameLowlevelVariables(lowlevelVariableNames)
-//		return lowlevelVariables
-//	}
-//	
-//	protected def nameLowlevelVariables(List<VariableDeclaration> lowlevelVariables,
-//			List<String> lowlevelVariableNames) {
-//		checkState(lowlevelVariables.size == lowlevelVariableNames.size)
-//		val size = lowlevelVariables.size
-//		for (var i = 0; i < size; i++) {
-//			val lowlevelVariable = lowlevelVariables.get(i)
-//			val lowlevelVariableName = lowlevelVariableNames.get(i)
-//			lowlevelVariable.name = lowlevelVariableName
-//		}
-//	}
-
 	/**
 	 * Returns a list, as an INOUT declaration is mapped to an IN and an OUT declaration.
 	 */
