@@ -14,15 +14,14 @@ import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
-import hu.bme.mit.gamma.expression.model.FieldAssignment
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
-import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
+import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
@@ -38,8 +37,6 @@ import hu.bme.mit.gamma.trace.model.TraceModelFactory
 import hu.bme.mit.gamma.trace.util.TraceUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.math.BigInteger
-import java.util.List
-import java.util.Queue
 
 import static com.google.common.base.Preconditions.checkState
 
@@ -60,20 +57,6 @@ class TraceBuilder {
 	
 	// In event
 	
-	def addInEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, String value) {
-		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		return addInEvent(step, port, event, parameter, intValue)
-	}
-	
-	def addInEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
-		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		addInEvent(step, port, event, parameter, fieldHierarchy, intValue)
-	}
-	
 	def addInEvent(Step step, Port port, Event event) {
 		val eventRaise = createRaiseEventAct(port, event)
 		val originalRaise = step.actions.filter(RaiseEventAct).findFirst[it.isOverWritten(eventRaise)]
@@ -85,6 +68,13 @@ class TraceBuilder {
 		return originalRaise
 	}
 	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, String value) {
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		return addInEvent(step, port, event, parameter, intValue)
+	}
+	
 	private def addInEvent(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = addInEvent(step, port, event)
@@ -92,11 +82,24 @@ class TraceBuilder {
 		eventRaise.arguments.set(index, parameter.createParameter(value))
 	}
 	
+	def addInEventWithParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
+		addInEvent(step, port, event, parameter, fieldHierarchy, indexes, value)
+	}
+	
 	private def addInEvent(Step step, Port port, Event event,
-			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
-		val eventRaise = addInEvent(step, port, event)
-		val arguments = eventRaise.arguments
-		arguments.setRecordArgument(parameter, fieldHierarchy, value)
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
+		val type = parameter.typeDefinition
+		if (type.native) {
+			addInEventWithParameter(step, port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = addInEvent(step, port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
 	}
 	
 	// Time elapse
@@ -145,13 +148,6 @@ class TraceBuilder {
 	
 	// Out event
 	
-	def addOutEventWithStringParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, String value) {
-		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		addOutEventWithParameter(step, port, event, parameter, intValue)
-	}
-	
 	def addOutEvent(Step step, Port port, Event event) {
 		val eventRaise = createRaiseEventAct(port, event)
 		val outEventRaises = step.asserts.filter(RaiseEventAct)
@@ -164,6 +160,13 @@ class TraceBuilder {
 		return originalRaise
 	}
 	
+	def addOutEventWithStringParameter(Step step, Port port, Event event,
+			ParameterDeclaration parameter, String value) {
+		val type = parameter.typeDefinition
+		val intValue = type.convertStringToInt(value)
+		addOutEventWithParameter(step, port, event, parameter, intValue)
+	}
+	
 	def addOutEventWithParameter(Step step, Port port, Event event,
 			ParameterDeclaration parameter, Integer value) {
 		val eventRaise = addOutEvent(step, port, event)
@@ -172,17 +175,18 @@ class TraceBuilder {
 	}
 	
 	def addOutEventWithStringParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, String value) {
+			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = parameter.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		addOutEventWithParameter(step, port, event, parameter, fieldHierarchy, intValue)
-	}
-	
-	def addOutEventWithParameter(Step step, Port port, Event event,
-			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
-		val eventRaise = addOutEvent(step, port, event)
-		val arguments = eventRaise.arguments
-		arguments.setRecordArgument(parameter, fieldHierarchy, value)
+		if (type.native) {
+			addOutEventWithStringParameter(step, port, event, parameter, value)
+		}
+		else {
+			checkState(type.complex)
+			val eventRaise = addOutEvent(step, port, event)
+			val arguments = eventRaise.arguments // Filled with dummy default literals
+			val literal = arguments.get(parameter.index)
+			literal.changeValue(fieldHierarchy, indexes, value)
+		}
 	}
 	
 	// Instance variables
@@ -203,32 +207,17 @@ class TraceBuilder {
 		]
 	}
 	
-	def addInstanceVariableState(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable, FieldHierarchy fieldHierarchy, String value) {
-		val literal = step.getRecordLiteral(instance, variable)
-		val fieldAssignment = literal.getFieldAssignment(fieldHierarchy)
-		fieldAssignment.fieldAssignment = value
-	}
-	
 	def void addInstanceVariableState(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable, FieldHierarchy fieldHierarchy, Queue<Integer> indexes, String value) {
+			VariableDeclaration variable, FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
 		val type = variable.typeDefinition
 		if (type.native) {
 			addInstanceVariableState(step, instance, variable, value)
 		}
 		else {
 			checkState(type.complex)
-			val innerType = fieldHierarchy.last.typeDefinition
 			val literal = step.getOrCreateLiteral(instance, variable)
-			val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
-			val newValue = innerType.createLiteral(value)
-			newValue.replace(valueToBeChanged)
+			literal.changeValue(fieldHierarchy, indexes, value)
 		}
-	}
-	
-	private def getRecordLiteral(Step step, SynchronousComponentInstance instance,
-			VariableDeclaration variable) {
-		return step.getOrCreateLiteral(instance, variable) as RecordLiteralExpression
 	}
 	
 	private def getOrCreateLiteral(Step step, SynchronousComponentInstance instance,
@@ -239,7 +228,8 @@ class TraceBuilder {
 		var Expression value
 		if (variableState === null) {
 			// Creating the literal, similar to "getInstance" in singletons
-			val initialValue = variable.initialValue
+			val type = variable.typeDefinition
+			val initialValue = type.initialValueOfType
 			step.asserts += createInstanceVariableState => [
 				it.instance = instance
 				it.declaration = variable
@@ -271,7 +261,8 @@ class TraceBuilder {
 		]
 		val parameters = event.parameterDeclarations
 		for (dummyParameter : parameters) {
-			eventRaise.arguments += createFalseExpression
+			val type = dummyParameter.typeDefinition
+			eventRaise.arguments += type.initialValueOfType // Filling with default values
 		}
 		return eventRaise
 	}
@@ -342,41 +333,13 @@ class TraceBuilder {
 	}
 	
 	// Record handling
-		
-	private def getRecordLiteral(List<Expression> arguments, ParameterDeclaration parameter) {
-		val index = parameter.index
-		val argument = arguments.get(index)
-		if (argument instanceof RecordLiteralExpression) {
-			// "Singleton"
-			return argument as RecordLiteralExpression
-		}
-		val type = parameter.typeDefinition
-		val recordLiteral = type.initialValueOfType as RecordLiteralExpression
-		// Creating the singleton
-		arguments.set(index, recordLiteral)
-		return recordLiteral
-	}
 	
-	private def setFieldAssignment(FieldAssignment fieldAssignment, String value) {
-		val declaration = fieldAssignment.reference.declaration
-		val type = declaration.typeDefinition
-		val intValue = type.convertStringToInt(value)
-		fieldAssignment.fieldAssignment = intValue
-	}
-	
-	private def setFieldAssignment(FieldAssignment fieldAssignment, Integer value) {
-		val declaration = fieldAssignment.reference.declaration
-		val type = declaration.typeDefinition
-		// Type must be primitive
-		val expression = type.createLiteral(value)
-		fieldAssignment.value = expression
-	}
-	
-	private def setRecordArgument(List<Expression> arguments,
-			ParameterDeclaration parameter, FieldHierarchy fieldHierarchy, Integer value) {
-		val recordLiteral = arguments.getRecordLiteral(parameter)
-		val fieldAssignment = recordLiteral.getFieldAssignment(fieldHierarchy)
-		fieldAssignment.fieldAssignment = value
+	private def changeValue(Expression literal,
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexes, String value) {
+		val innerType = fieldHierarchy.last.typeDefinition
+		val valueToBeChanged = literal.getValue(fieldHierarchy, indexes)
+		val newValue = innerType.createLiteral(value)
+		newValue.replace(valueToBeChanged)
 	}
 	
 }

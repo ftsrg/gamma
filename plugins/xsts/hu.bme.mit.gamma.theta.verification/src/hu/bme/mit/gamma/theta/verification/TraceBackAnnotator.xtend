@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.theta.verification
 
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.querygenerator.ThetaQueryGenerator
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -28,7 +29,6 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.verification.util.TraceBuilder
 import java.util.List
 import java.util.NoSuchElementException
-import java.util.Queue
 import java.util.Scanner
 import java.util.Set
 import java.util.logging.Level
@@ -82,10 +82,6 @@ class TraceBackAnnotator {
 	}
 	
 	def ExecutionTrace execute() {
-		//
-//		try (val thetaQueryGenerator = new ThetaQueryGenerator(gammaPackage,
-//				true /* As ThetaVerification calls this on separate threads */)) {
-		
 		// Creating the trace component
 		val trace = createExecutionTrace => [
 			it.component = this.component
@@ -175,19 +171,16 @@ class TraceBackAnnotator {
 							val instanceVariable = thetaQueryGenerator.getSourceVariable(id)
 							val instance = instanceVariable.value
 							val variable = instanceVariable.key
-//							if (type.isComplex) {
-								val field = thetaQueryGenerator.getSourceVariableFieldHierarchy(id)
-								val indexPairs = value.parseArray
-								for (indexPair : indexPairs) {
-									val index = indexPair.key
-									val parsedValue = indexPair.value
-									step.addInstanceVariableState(instance, variable, field, index, parsedValue)
-								}
-//							}
-//							else {
-//								// Primitive variable
-//								step.addInstanceVariableState(instance, variable, value)
-//							}
+							// Getting fields and indexes regardless of primitive or complex types
+							// In the case of primitive types, these hierarchies will be empty
+							val field = thetaQueryGenerator.getSourceVariableFieldHierarchy(id)
+							val indexPairs = value.parseArray
+							//
+							for (indexPair : indexPairs) {
+								val index = indexPair.key
+								val parsedValue = indexPair.value
+								step.addInstanceVariableState(instance, variable, field, index, parsedValue)
+							}
 						}
 						else if (thetaQueryGenerator.isSourceOutEvent(id)) {
 							val systemOutEvent = thetaQueryGenerator.getSourceOutEvent(id)
@@ -206,13 +199,14 @@ class TraceBackAnnotator {
 							val port = systemOutEvent.get(1) as Port
 							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							val parameter = systemOutEvent.get(2) as ParameterDeclaration
-							if (thetaQueryGenerator.isSourceRecordOutEventParamater(id)) {
-								val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
-								step.addOutEventWithStringParameter(systemPort, event, parameter, field, value)
-							}
-							else {
-								// Primitive variable
-								step.addOutEventWithStringParameter(systemPort, event, parameter, value)
+							// Getting fields and indexes regardless of primitive or complex types
+							val field = thetaQueryGenerator.getSourceOutEventParamaterFieldHierarchy(id)
+							val indexPairs = value.parseArray
+							//
+							for (indexPair : indexPairs) {
+								val index = indexPair.key
+								val parsedValue = indexPair.value
+								step.addOutEventWithStringParameter(systemPort, event, parameter, field, index, parsedValue)
 							}
 						}
 					}
@@ -234,13 +228,14 @@ class TraceBackAnnotator {
 							val port = systemInEvent.get(1) as Port
 							val systemPort = port.connectedTopComponentPort // Back-tracking to the system port
 							val parameter = systemInEvent.get(2) as ParameterDeclaration
-							if (thetaQueryGenerator.isSourceRecordInEventParamater(id)) {
-								val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)
-								step.addInEventWithParameter(systemPort, event, parameter, field, value)
-							}
-							else {
-								// Primitive variable
-								step.addInEventWithParameter(systemPort, event, parameter, value)
+							// Getting fields and indexes regardless of primitive or complex types
+							val field = thetaQueryGenerator.getSourceInEventParamaterFieldHierarchy(id)
+							val indexPairs = value.parseArray
+							//
+							for (indexPair : indexPairs) {
+								val index = indexPair.key
+								val parsedValue = indexPair.value
+								step.addInEventWithParameter(systemPort, event, parameter, field, index, parsedValue)
 							}
 						}
 					}
@@ -259,7 +254,6 @@ class TraceBackAnnotator {
 			step.actions += createReset
 		}
 		return trace
-//		}
 	}
 	
 	protected def void checkStates(Step step, Set<Pair<Port, Event>> raisedOutEvents,
@@ -292,33 +286,31 @@ class TraceBackAnnotator {
 		raisedInEvents.clear
 	}
 	
-	protected def List<Pair<Queue<Integer>, String>> parseArray(String value) {
+	protected def List<Pair<IndexHierarchy, String>> parseArray(String value) {
 		// (array (0 10) (1 11) (default 0))
-		val values = <Pair<Queue<Integer>, String>>newArrayList
+		val values = newArrayList
 		if (value.isArray) {
 			val unwrapped = thetaQueryGenerator.unwrap(value).substring("array ".length) // (0 10) (default 0)
 			val splits = unwrapped.parseAlongParentheses // 0 10, default array
 			for (split : splits) {
 				val splitPair = split.split(" ") // 0, 10
 				val index = splitPair.get(0) // 0
-				if (!index.equals("default")) {
-					val parsedIndex = Integer.parseInt(index)
+				if (!index.equals("default")) { // Not parsing default values
+					val parsedIndex = Integer.parseInt(index) // 0
 					val storedValue = splitPair.get(1) // 10
 					val parsedValues = storedValue.parseArray
 					for (parsedValue : parsedValues) {
-						val Queue<Integer> newIndexes = newLinkedList
-						newIndexes += parsedIndex // So the higher value will be retrieved earlier
-						val indexes = parsedValue.key
-						newIndexes += indexes
+						val indexHierarchy = parsedValue.key
+						indexHierarchy.prepend(parsedIndex) // So the "parent index" will be retrieved earlier
 						val stringValue = parsedValue.value
-						values += newIndexes -> stringValue
+						values += indexHierarchy -> stringValue
 					}
 				}
 			}
 			return values
 		}
 		else {
-			return #[newLinkedList -> value]
+			return #[new IndexHierarchy -> value]
 		}
 	}
 	

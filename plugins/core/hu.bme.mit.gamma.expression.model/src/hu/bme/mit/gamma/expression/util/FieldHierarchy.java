@@ -66,8 +66,8 @@ public class FieldHierarchy {
 		return fields.isEmpty();
 	}
 	
-	public void removeFirst() {
-		fields.remove(0);
+	public FieldDeclaration removeFirst() {
+		return fields.remove(0);
 	}
 	
 	public List<FieldHierarchy> getExtensions(Declaration declaration) {
@@ -122,7 +122,8 @@ public class FieldHierarchy {
 			if (other.fields != null) {
 				return false;
 			}
-		} else if (!fields.equals(other.fields)) {
+		}
+		else if (!fields.equals(other.fields)) {
 			return false;
 		}
 		return true;

@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -143,6 +144,34 @@ class ExpressionTransformer {
 		val result = newArrayList
 		for (assignment : expression.fieldAssignments) {
 			result += assignment.value.transformExpression
+		}
+		return result
+	}
+	
+	def dispatch List<Expression> transformExpression(ArrayLiteralExpression expression) {
+		// Currently the field assignment position has to match the field declaration position
+		val transformedExpressions = <List<Expression>>newArrayList
+		for (operand : expression.operands) {
+			transformedExpressions += operand.transformExpression
+		}
+		val result = <Expression>newArrayList
+		val sizeOfTransformedExpressions = transformedExpressions.head.size
+		if (sizeOfTransformedExpressions == 1) {
+			// if sizeOfTransformedExpressions == 1: primitive types, no record
+			// else there is a wrapped record
+			result += createArrayLiteralExpression => [
+				it.operands += transformedExpressions.flatten
+			]
+		}
+		else {
+			// There is a wrapped record
+			for (var i = 0; i < sizeOfTransformedExpressions; i++) {
+				val arrayLiteral = createArrayLiteralExpression
+				result += arrayLiteral
+				for (transformedExpression : transformedExpressions) {
+					arrayLiteral.operands += transformedExpression.get(i)
+				}
+			}
 		}
 		return result
 	}

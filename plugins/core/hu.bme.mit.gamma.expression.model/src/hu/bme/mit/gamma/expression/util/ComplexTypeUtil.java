@@ -1,9 +1,7 @@
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
@@ -180,11 +178,6 @@ public class ComplexTypeUtil {
 		return values;
 	}
 	
-	public FieldAssignment getFieldAssignment(RecordLiteralExpression literal,
-			FieldHierarchy fieldHierarchy, Queue<Integer> indexes) {
-		return getFieldAssignment(literal, fieldHierarchy);
-	}
-	
 	public FieldAssignment getFieldAssignment(
 			RecordLiteralExpression literal, FieldHierarchy fieldHierarchy) {
 		List<FieldAssignment> fieldAssignments = literal.getFieldAssignments();
@@ -202,22 +195,21 @@ public class ComplexTypeUtil {
 	}
 	
 	public Expression getValue(Expression literal /* Has to contain valid expression in each field or index */, 
-			FieldHierarchy fieldHierarchy, Queue<Integer> indexes) {
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
 		if (literal instanceof RecordLiteralExpression) {
 			RecordLiteralExpression record = (RecordLiteralExpression) literal;
 			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
-			FieldDeclaration field = clonedHierarchy.getFirst();
+			FieldDeclaration field = clonedHierarchy.removeFirst();
 			Expression value = record.getFieldAssignments().stream().filter(it -> 
 				it.getReference().getFieldDeclaration() == field).findFirst().get().getValue();
-			clonedHierarchy.removeFirst(); // Found this field
-			return getValue(value, clonedHierarchy, indexes);
+			return getValue(value, clonedHierarchy, indexHierarchy);
 		}
 		else if (literal instanceof ArrayLiteralExpression) {
 			ArrayLiteralExpression array = (ArrayLiteralExpression) literal;
-			Queue<Integer> clonedIndexes = new LinkedList<>(indexes);
-			int index = clonedIndexes.remove();
+			IndexHierarchy clonedIndexHierarchy = indexHierarchy.clone();
+			int index = clonedIndexHierarchy.removeFirst();
 			Expression value = array.getOperands().get(index);
-			return getValue(value, fieldHierarchy, clonedIndexes);
+			return getValue(value, fieldHierarchy, clonedIndexHierarchy);
 		}
 		else {
 			return literal;

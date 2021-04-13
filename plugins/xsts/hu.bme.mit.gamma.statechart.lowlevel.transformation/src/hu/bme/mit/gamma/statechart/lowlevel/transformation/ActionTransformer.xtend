@@ -245,7 +245,7 @@ class ActionTransformer {
 		// Parameter setting
 		val parameters = lowlevelEvent.parameters
 		val values = action.arguments.map[it.transformExpression].flatten.toList
-		checkState(parameters.size == values.size) // Record literals can be added as arguments
+		checkState(parameters.size == values.size, parameters.size + " " + values.size) // Record literals can be added as arguments
 		for (var i = 0; i < values.size; i++) {
 			val declaration = parameters.get(i)
 			val value = values.get(i)
