@@ -111,14 +111,34 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
+	public AssignmentStatement createAssignment(ReferenceExpression reference,
 			Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
-		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
+	}
+	
+	public AssignmentStatement createAssignment(VariableDeclaration variable,
+			Expression expression) {
+		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+		reference.setDeclaration(variable);
+		return createAssignment(reference, expression);
+	}
+	
+	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
+			List<Expression> right) {
+		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
+		int size = left.size();
+		if (size != right.size()) {
+			throw new IllegalArgumentException("Different number of arguments: " + size + " " + right.size());
+		}
+		for (int i = 0; i < size; i++) {
+			ReferenceExpression lhs = left.get(i);
+			Expression rhs = right.get(i);
+			assignments.add(createAssignment(lhs, rhs));
+		}
+		return assignments;
 	}
 	
 }
