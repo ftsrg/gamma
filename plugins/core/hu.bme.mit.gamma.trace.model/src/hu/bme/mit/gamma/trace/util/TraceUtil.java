@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -51,11 +52,15 @@ public class TraceUtil extends ExpressionUtil {
 	
 	@Override
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
 		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
 		Package _package = trace.getImport();
-		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
+		// Explicit imports
+		for (Package importedPackage : StatechartModelDerivedFeatures.getAllImports(_package)) {
+			types.addAll(importedPackage.getTypeDeclarations());
+		}
+		// Native references in the case the unfolded packages
 		Collection<TypeReference> references = new ArrayList<TypeReference>();
-		// Native references
 		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
 		// Events and parameters
 		for (InterfaceRealization realization :
@@ -67,7 +72,7 @@ public class TraceUtil extends ExpressionUtil {
 		for (TypeReference reference : references) {
 			TypeDeclaration typeDeclaration = reference.getReference();
 			types.add(typeDeclaration);
-			Type type = typeDeclaration.getType();
+			Type type = ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration.getType());
 			if (type instanceof RecordTypeDefinition) {
 				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
 				Collection<TypeDeclaration> containedTypeDeclarations =

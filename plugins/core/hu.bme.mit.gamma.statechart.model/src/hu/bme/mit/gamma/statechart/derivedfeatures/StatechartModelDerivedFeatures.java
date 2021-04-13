@@ -167,6 +167,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				it -> it instanceof UnfoldedPackageAnnotation);
 	}
 	
+	public static Set<Package> getAllImports(Package gammaPackage) {
+		Set<Package> imports = new HashSet<Package>();
+		imports.addAll(gammaPackage.getImports());
+		for (Component component : gammaPackage.getComponents()) {
+			for (ComponentInstance componentInstance : getAllInstances(component)) {
+				Component type = getDerivedType(componentInstance);
+				Package referencedPackage = getContainingPackage(type);
+				imports.add(referencedPackage);
+				imports.addAll(referencedPackage.getImports());
+			}
+		}
+		return imports;
+	}
+	
 	public static Set<Component> getAllComponents(Package parentPackage) {
 		Set<Component> types = new HashSet<Component>();
 		for (Package importedPackage : parentPackage.getImports()) {

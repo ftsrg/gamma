@@ -320,9 +320,7 @@ class AsynchronousAdapterCodeGenerator {
 		import lbmq.*; 
 		import «PACKAGE_NAME».*;
 
-		«FOR _package : (component.containingPackage.imports +
-				/* For type declarations */ component.allInstances.map[it.derivedType].toSet
-					.map[it.containingPackage.imports].flatten).toSet»
+		«FOR _package : component.containingPackage.allImports /* For type declarations */»
 			import «_package.getPackageString(PACKAGE_NAME)».*;
 		«ENDFOR»
 		
