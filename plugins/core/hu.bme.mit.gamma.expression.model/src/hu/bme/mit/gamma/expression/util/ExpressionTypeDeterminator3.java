@@ -12,17 +12,31 @@ import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
+import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionTypeDeterminator3 {
 	// Singleton
 	public static final ExpressionTypeDeterminator3 INSTANCE = new ExpressionTypeDeterminator3();
 	protected ExpressionTypeDeterminator3() {}
 	//
-	
-	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 
-	public TypeDefinition getType(Expression expression) {
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	
+	
+	public TypeDefinition getTypeDefinition(Expression expression) {
+		Type type = getType(expression);
+		for (TypeReference reference : ecoreUtil.getAllContentsOfType(type, TypeReference.class)) {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(reference);
+			ecoreUtil.replace(typeDefinition, reference);
+		}
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type);
+	}
+
+	public Type getType(Expression expression) {
 		if (expression instanceof BooleanLiteralExpression) {
 			return getType((BooleanLiteralExpression) expression);
 		}
@@ -44,11 +58,11 @@ public class ExpressionTypeDeterminator3 {
 		throw new IllegalArgumentException();
 	}
 	
-	protected TypeDefinition getType(Declaration declaration) {
+	protected Type getType(Declaration declaration) {
 		return ExpressionModelDerivedFeatures.getTypeDefinition(declaration);
 	}
 
-	protected TypeDefinition getType(ArrayLiteralExpression literal) {
+	protected Type getType(ArrayLiteralExpression literal) {
 		List<Expression> operands = literal.getOperands();
 		if (operands.isEmpty()) {
 			throw new IllegalArgumentException();
@@ -59,22 +73,24 @@ public class ExpressionTypeDeterminator3 {
 		return arrayTypeDefinition;
 	}
 	
-	protected TypeDefinition getType(RecordLiteralExpression literal) {
-		return ExpressionModelDerivedFeatures
-				.getTypeDefinition(literal.getTypeDeclaration());
+	protected Type getType(RecordLiteralExpression literal) {
+		TypeReference typeReference = factory.createTypeReference();
+		typeReference.setReference(literal.getTypeDeclaration());
+		return typeReference;
 	}
 
-	protected TypeDefinition getType(BooleanLiteralExpression literal) {
+	protected Type getType(BooleanLiteralExpression literal) {
 		return factory.createBooleanTypeDefinition();
 	}
 
-	protected TypeDefinition getType(IntegerLiteralExpression literal) {
+	protected Type getType(IntegerLiteralExpression literal) {
 		return factory.createIntegerTypeDefinition();
 	}
 
-	protected TypeDefinition getType(EnumerationLiteralExpression literal) {
-		return ExpressionModelDerivedFeatures
-				.getTypeDefinition(ExpressionModelDerivedFeatures.getTypeDeclaration(literal.getReference()));
+	protected Type getType(EnumerationLiteralExpression literal) {
+		TypeReference typeReference = factory.createTypeReference();
+		typeReference.setReference(ExpressionModelDerivedFeatures.getTypeDeclaration(literal.getReference()));
+		return typeReference;
 	}
 
 }

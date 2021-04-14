@@ -90,6 +90,8 @@ class InterfaceCodeGenerator {
 	def createReflectiveInterface() '''
 		package «BASE_PACKAGE_NAME»;
 		
+		import java.util.Objects;
+		
 		public interface «Namings.REFLECTIVE_INTERFACE» {
 			
 			void reset();
@@ -115,7 +117,7 @@ class InterfaceCodeGenerator {
 			Object getValue(String variable);
 			
 			default boolean checkVariableValue(String variable, Object expectedValue) {
-				return getValue(variable).equals(expectedValue);
+				return Objects.deepEquals(getValue(variable), expectedValue);
 			}
 			
 			String[] getComponents();
