@@ -44,12 +44,8 @@ class TypeSerializer {
 	
 	def dispatch String serialize(ArrayTypeDefinition type) '''«type.elementType.serialize»[]'''
 	
-	def dispatch String serialize(EnumerationTypeDefinition type) {
-		throw new IllegalArgumentException("Anonymous enumeration types are not supported: " + type)
-	}
+	def dispatch String serialize(EnumerationTypeDefinition type) '''«type.typeDeclaration.name»'''
 	
-	def dispatch String serialize(RecordTypeDefinition type) {
-		throw new IllegalArgumentException("Anonymous record types are not supported: " + type)
-	}
+	def dispatch String serialize(RecordTypeDefinition type) '''«type.typeDeclaration.name»'''
 
 }
