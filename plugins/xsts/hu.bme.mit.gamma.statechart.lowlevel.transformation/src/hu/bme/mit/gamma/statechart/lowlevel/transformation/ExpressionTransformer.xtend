@@ -156,8 +156,8 @@ class ExpressionTransformer {
 		}
 		val result = <Expression>newArrayList
 		val sizeOfTransformedExpressions = transformedExpressions.head.size
-		// If sizeOfTransformedExpressions == 1: primitive types, no record
-		// Else there is a wrapped record
+		// If sizeOfTransformedExpressions == 1: primitive type or array type, no record, one literal is returned
+		// Else there is a wrapped record: array of records is transformed into record of arrays
 		// Transforming { [1, 2],  [3, 4], [5, 6] } into { [1, 3, 5],  [2, 4, 6] }
 		for (var i = 0; i < sizeOfTransformedExpressions; i++) {
 			val arrayLiteral = createArrayLiteralExpression
