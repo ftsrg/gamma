@@ -47,13 +47,8 @@ class ValueDeclarationAccessor {
 	
 	def protected access(String objectId, ValueDeclaration declaration, List<String> fieldNames) {
 		val type = declaration.typeDefinition
-		val fieldHierachies = type.fieldHierarchies
-		checkState(fieldHierachies.size == fieldNames.size)
-		val fields = newArrayList
-		for (var i = 0; i < fieldHierachies.size; i++) {
-			fields += fieldHierachies.get(i) -> fieldNames.get(i)
-		}
-		return objectId.access(type, fields, new IndexHierarchy)
+		val fieldPairs = type.formFieldPairs(fieldNames)
+		return objectId.access(type, fieldPairs, new IndexHierarchy)
 	}
 	
 	protected def String access(String id, TypeDefinition type,
@@ -64,7 +59,7 @@ class ValueDeclarationAccessor {
 			val name = field.value
 			return '''«id».get«name.toFirstUpper»()«indexes.access»'''
 		}
-		if (type instanceof RecordTypeDefinition) {
+		else if (type instanceof RecordTypeDefinition) {
 			return '''
 				new «type.typeDeclaration.name»(
 					«FOR field : type.fieldDeclarations SEPARATOR ", "»
@@ -79,7 +74,7 @@ class ValueDeclarationAccessor {
 					«ENDFOR»
 				)'''
 		}
-		if (type instanceof ArrayTypeDefinition) {
+		else if (type instanceof ArrayTypeDefinition) {
 			val elementType = type.elementType.typeDefinition
 			if (elementType.native) {
 				return id.access(elementType, fields, indexes)
@@ -100,36 +95,68 @@ class ValueDeclarationAccessor {
 		}
 	}
 	
+	private def formFieldPairs(TypeDefinition type, List<String> fieldNames) {
+		val fieldHierachies = type.fieldHierarchies
+		checkState(fieldHierachies.size == fieldNames.size)
+		val fieldPairs = newArrayList
+		for (var i = 0; i < fieldHierachies.size; i++) {
+			fieldPairs += fieldHierachies.get(i) -> fieldNames.get(i)
+		}
+		return fieldPairs
+	}
+	
 	private def String access(IndexHierarchy indexes) '''«FOR index : indexes.indexes»[«index»]«ENDFOR»'''
 	
 	// Write
-	
-	def writeIn(String objectId, Port port, ParameterDeclaration declaration, String valueId) {
+
+	def writeIn(String id, Port port, ParameterDeclaration declaration, String valueId) {
 		val type = declaration.typeDefinition
-		val fieldNames = declaration.customizeInNames(port)
+		val names = declaration.customizeInNames(port)
+		val accesses = type.accessIn(valueId)
+		checkState(names.size == accesses.size)
+		return '''
+			«FOR i : 0 ..< names.size»
+				«id».set«names.get(i).toFirstUpper»(«accesses.get(i)»);
+			«ENDFOR»
+		'''
+	}	
+	
+	def List<String> accessIn(TypeDefinition type, String valueId) {
 		if (type.native) {
-			return '''«objectId».set«fieldNames.get(0).toFirstUpper»(«valueId»);'''
+			return #['''«valueId»''']
 		}
-		if (type instanceof RecordTypeDefinition) {
-			val fields = type.fieldHierarchies
-			return '''«objectId.write(fieldNames, valueId, fields)»'''
+		else if (type instanceof RecordTypeDefinition) {
+			val fields = type.fieldDeclarations
+			val results = newArrayList
+			for (field : fields) {
+				val fieldType = field.typeDefinition
+				results += fieldType.accessIn('''«valueId».get«field.name.toFirstUpper»()''')
+			}
+			return results
 		}
-		if (type instanceof ArrayTypeDefinition) {
-			return '''throw new UnsupportedOperationException()'''
+		else if (type instanceof ArrayTypeDefinition) {
+			val elementType = type.elementType.typeDefinition
+			val result = <String>newArrayList
+			val size = type.size.evaluateInteger
+			val temporaryAccesses = <List<String>>newArrayList
+			for (var j = 0; j < size; j++) {
+				temporaryAccesses += elementType.accessIn('''«valueId»[«j»]''' )
+			}
+			val sizeOfAccesses = temporaryAccesses.head.size
+			// If sizeOfTransformedExpressions == 1: primitive type or array type, no record, one literal is returned
+			// Else there is a wrapped record: array of records is transformed into record of arrays
+			// Transforming { [1, 2],  [3, 4], [5, 6] } into { [1, 3, 5],  [2, 4, 6] }
+			val nativeTypes = type.nativeTypes
+			for (var i = 0; i < sizeOfAccesses; i++) {
+				result += 
+					''' new «nativeTypes.get(i).serialize» {
+						«FOR temporaryAccess : temporaryAccesses SEPARATOR ', '»
+							«temporaryAccess.get(i)»
+						«ENDFOR»
+					}'''
+			}
+			return result
 		}
 	}
-	
-	protected def String write(String objectId, List<String> fieldNames,
-			String valueId, List<FieldHierarchy> fields) '''
-		«FOR i : 0 ..< fieldNames.size»
-			«objectId.write(fieldNames.get(i), valueId, fields.get(i))»
-		«ENDFOR»
-	'''
-	
-	protected def String write(String objectId, String fieldName,
-			String valueId, FieldHierarchy field) '''
-		«objectId».set«fieldName.toFirstUpper»(«valueId»«field.fields
-			.map['''.get«it.name.toFirstUpper»()'''].join»);
-	'''
 	
 }
