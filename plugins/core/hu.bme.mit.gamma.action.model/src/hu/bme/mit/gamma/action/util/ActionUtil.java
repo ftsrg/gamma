@@ -18,11 +18,13 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -90,6 +92,21 @@ public class ActionUtil extends ExpressionUtil {
 			extensibleAction = append(extensibleAction, action);
 		}
 		return extensibleAction;
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
+		return createDeclarationStatement(type, name, null);
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type,
+			String name, Expression initialExpression) {
+		VariableDeclarationStatement statement = actionFactory.createVariableDeclarationStatement();
+		VariableDeclaration variable = factory.createVariableDeclaration();
+		statement.setVariableDeclaration(variable);
+		variable.setType(type);
+		variable.setName(name);
+		variable.setExpression(initialExpression);
+		return statement;
 	}
 	
 	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,

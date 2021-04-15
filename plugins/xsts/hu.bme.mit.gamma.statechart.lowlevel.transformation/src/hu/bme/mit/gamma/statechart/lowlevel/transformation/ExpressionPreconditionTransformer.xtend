@@ -3,8 +3,10 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Block
+import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration
 import hu.bme.mit.gamma.action.model.ReturnStatement
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
 import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.Declaration
@@ -92,13 +94,10 @@ class ExpressionPreconditionTransformer {
 		if (functionInlining) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion
-				val type = function.type
-				val localDefaultDeclaration = createVariableDeclaration => [
-					it.type = type.clone
-					it.name = '''_defaultValueOf«function.name.toFirstUpper»«it.hashCode.abs»_'''
-				]
-				val localStatement = createVariableDeclarationStatement
-				localStatement.variableDeclaration = localDefaultDeclaration
+				val functionType = function.type.clone
+				val localStatement = functionType.createDeclarationStatement(
+					'''_defaultValueOf_«function.name»_«expression.hashCode.abs»_''')
+				val localDefaultDeclaration = localStatement.variableDeclaration
 				
 				val lowlevelStatement = localStatement.transformAction
 				val lowlevelReturnDeclarations = trace.getAll(localDefaultDeclaration -> new FieldHierarchy)
@@ -136,32 +135,41 @@ class ExpressionPreconditionTransformer {
 		
 		val inlinedActions = <Action>newArrayList
 		val clonedBlock = procedure.body.clone
-		// Create local declarations
+		
+		// Rename local declarations
+		val declarations = clonedBlock.getSelfAndAllContentsOfType(VariableDeclarationStatement)
+				.map[it.variableDeclaration] + 
+			clonedBlock.getSelfAndAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
+		for (declaration : declarations) {
+			val name = declaration.name
+			declaration.name = '''«name»_«declaration.hashCode.abs»_'''
+		}
+		
+		// Create local parameter declarations
 		for (var i = 0; i < size; i++) {
 			val argument = arguments.get(i)
 			val parameterDeclaration = parameterDeclarations.get(i)
-			val localVariableDeclaration = createVariableDeclaration => [
-				it.type = parameterDeclaration.type.clone
-				it.name = parameterDeclaration.name
-				it.expression = argument.clone
-			]
-			val localStatement = createVariableDeclarationStatement => [
-				it.variableDeclaration = localVariableDeclaration
-			]
+			
+			val parameterType = parameterDeclaration.type.clone
+			val localStatement = parameterType.createDeclarationStatement(
+				'''_«parameterDeclaration.name»_«expression.hashCode.abs»_''', argument.clone)
+			val localParameterDeclaration = localStatement.variableDeclaration
+			
 			inlinedActions += localStatement
-			localVariableDeclaration.change(parameterDeclaration, clonedBlock)
+			localParameterDeclaration.change(parameterDeclaration, clonedBlock)
 		}
+		
+		// Create local return declarations
 		val type = procedure.typeDefinition
 		var VariableDeclaration localReturnDeclaration
 		val isVoid = type instanceof VoidTypeDefinition
 		if (!isVoid) {
-			localReturnDeclaration = createVariableDeclaration => [
-				it.type = type.clone
-				it.name = '''_returnValueOf«procedure.name.toFirstUpper»«it.hashCode.abs»_'''
-			]
-			val localStatement = createVariableDeclarationStatement
-			localStatement.variableDeclaration = localReturnDeclaration
+			val procedureType = type.clone
+			val localStatement = procedureType.createDeclarationStatement(
+				'''_returnValueOf_«procedure.name»_«expression.hashCode.abs»_''')
+			localReturnDeclaration = localStatement.variableDeclaration
 			inlinedActions += localStatement
+			
 			for (returnStatement : clonedBlock.getSelfAndAllContentsOfType(ReturnStatement)) {
 				val returnExpression = returnStatement.expression
 				if (returnExpression !== null) {
@@ -177,8 +185,10 @@ class ExpressionPreconditionTransformer {
 		}
 		inlinedActions += clonedBlock
 		
+		// Transforming local paramaters, local return declarations and the block
 		val lowlevelAction = inlinedActions.transformActions
 		if (localReturnDeclaration !== null) {
+			// Tracing the function access expression to the return declarations 
 			val lowlevelReturnDeclarations = trace.getAll(localReturnDeclaration -> new FieldHierarchy)
 			trace.put(expression, lowlevelReturnDeclarations)
 		}
