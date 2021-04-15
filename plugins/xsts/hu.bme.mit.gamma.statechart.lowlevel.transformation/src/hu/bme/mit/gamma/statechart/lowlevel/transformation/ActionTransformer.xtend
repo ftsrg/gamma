@@ -129,7 +129,8 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		val expression = action.expression
+		return expression.transformPrecondition
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {
