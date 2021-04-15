@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
@@ -51,18 +52,6 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 		// Records
-//		RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-//		if (recordAccess != null) {
-//			Expression operand = recordAccess.getOperand();
-//			if (operand == null) {
-//				EObject container = context.eContainer();
-//				// NOT '.super'
-//				return getScope(container, reference); // Still looking for a record variable
-//			}
-//			// Looking for the fields in the operand
-//			Collection<FieldDeclaration> fieldDeclarations = getFieldDeclarations(operand);
-//			return Scopes.scopeFor(fieldDeclarations);
-//		}
 		if (reference == ExpressionModelPackage.Literals.FIELD_REFERENCE_EXPRESSION__FIELD_DECLARATION) {
 			RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
 			if (recordAccess != null) {
@@ -74,8 +63,8 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 		// Local declarations
 		if (context instanceof Action &&
 				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			IScope parentScope = getParentScope(context, reference);
 			EObject container = context.eContainer();
-			IScope parentScope = getScope(container, reference);
 			if (container instanceof Block) {
 				Block block = (Block) container;
 				Action action = (Action) context;
@@ -83,35 +72,12 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 						ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, action);
 				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
 			}
-//			else if (context instanceof Block) {
-//				// In Xtext, when editing, the assignment statement is NOT the context, but the block
-//				Block block = (Block) context;
-//				List<VariableDeclaration> localDeclaratations =
-//						actionUtil.getVariableDeclarations(block);
-//				return Scopes.scopeFor(localDeclaratations, parentScope);
-//			}
 			return parentScope;
 		}
-//		else if (reference == 
-//				ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-//			// The context is NOT an Action
-//			Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
-//			if (actionContainer instanceof Block) {
-//				// First action container is a block, not an assignment
-//				// This means that the Xtext code is being edited
-//				// Let us return every local variable in the block and the parent scopes too
-//				Block block = (Block) actionContainer;
-//				IScope parentScope = getScope(block, reference);
-//				List<VariableDeclaration> localDeclaratations =
-//						actionUtil.getVariableDeclarations(block);
-//				return Scopes.scopeFor(localDeclaratations, parentScope);
-//			}
-//		}
 		return super.getScope(context, reference);
 	}
 	
 	protected List<FieldDeclaration> getFieldDeclarations(Expression operand) {
-		// TODO extend with recordLiterals too, e.g., ExpressionTypeDeterminator.getType(operand) method is needed
 		if (operand instanceof DirectReferenceExpression) {
 			DirectReferenceExpression reference = (DirectReferenceExpression) operand;
 			Declaration declaration = reference.getDeclaration();
@@ -129,6 +95,10 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				Declaration declaration = fieldReference.getFieldDeclaration();
 				return getFieldDeclarations(declaration);
 			}
+		}
+		if (operand instanceof RecordLiteralExpression) {
+			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) operand;
+			return getFieldDeclarations(recordLiteralExpression.getTypeDeclaration());
 		}
 		if (operand instanceof ArrayAccessExpression) {
 			ArrayAccessExpression reference = (ArrayAccessExpression) operand;

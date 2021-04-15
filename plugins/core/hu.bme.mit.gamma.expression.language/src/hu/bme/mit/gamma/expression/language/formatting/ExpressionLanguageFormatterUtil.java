@@ -80,8 +80,16 @@ public class ExpressionLanguageFormatterUtil {
 	}
 	
 	public void formatExpressions(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+		setFunctions(c, f);
 		setRecordLiterals(c, f);
 		setSquareBrackets(c, f);
+	}
+	
+	protected void setFunctions(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
+		c.setNoSpace().around(f.getFunctionTypeDefinitionAccess().getLeftParenthesisKeyword_1());
+		c.setNoSpace().before(f.getFunctionTypeDefinitionAccess().getRightParenthesisKeyword_3());
+		c.setNoSpace().around(f.getAccessExpressionAccess().getLeftParenthesisKeyword_1_1_1());
+		c.setNoSpace().before(f.getAccessExpressionAccess().getRightParenthesisKeyword_1_1_3());
 	}
 	
 	protected void setRecordLiterals(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
@@ -94,7 +102,7 @@ public class ExpressionLanguageFormatterUtil {
 		c.setNoSpace().before(f.getAccessExpressionAccess().getLeftSquareBracketKeyword_1_0_1());
 		c.setNoSpace().around(f.getAccessExpressionAccess().getIndexAssignment_1_0_2());
 		// Type
-		c.setNoSpace().before(f.getArrayTypeDefinitionAccess().getLeftSquareBracketKeyword_0());
+		c.setNoSpace().after(f.getArrayTypeDefinitionAccess().getRightSquareBracketKeyword_2());
 		c.setNoSpace().around(f.getArrayTypeDefinitionAccess().getSizeAssignment_1());
 	}
 

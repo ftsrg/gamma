@@ -55,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -259,22 +260,24 @@ public class ExpressionModelValidator {
 			RecordAccessExpression recordAccessExpression) {
 		Declaration accessedDeclaration = 
 				expressionUtil.getAccessedDeclaration(recordAccessExpression);
-		RecordTypeDefinition recordType = (RecordTypeDefinition) 
-				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();;
-		if (!(accessedDeclaration instanceof ValueDeclaration)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as a record!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
-			return validationResultMessages;
-		}
-		// Check if the referred field exists
-		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
-		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
-		if (!fieldDeclarations.contains(referredField)){
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The record type does not contain any fields with the given name.", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (typeDefinition instanceof RecordTypeDefinition) {
+			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDefinition;
+			if (!(accessedDeclaration instanceof ValueDeclaration)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The referred declaration is not accessible as a record!", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+				return validationResultMessages;
+			}
+			// Check if the referred field exists
+			List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
+			Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
+			if (!fieldDeclarations.contains(referredField)){
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The record type does not contain any fields with the given name.", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+			}
 		}
 		return validationResultMessages;
 	}

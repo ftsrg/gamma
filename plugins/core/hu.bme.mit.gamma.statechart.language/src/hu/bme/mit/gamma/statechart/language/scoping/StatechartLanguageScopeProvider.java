@@ -23,7 +23,6 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
-import org.eclipse.xtext.scoping.impl.SimpleScope;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
@@ -33,6 +32,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -282,26 +282,27 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				}
 			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				// Global declarations
-				Collection<Declaration> declarations = new ArrayList<Declaration>();
-				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
-				declarations.addAll(gammaPackage.getConstantDeclarations());
-				StatechartDefinition gammaStatechart = ecoreUtil.getSelfOrContainerOfType(context, StatechartDefinition.class);
-				declarations.addAll(gammaStatechart.getParameterDeclarations());
-				declarations.addAll(gammaStatechart.getVariableDeclarations());
-				IScope statechartDeclarations = Scopes.scopeFor(declarations);
-				// 1. Record fields
-//				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-//				if (recordAccess != null) {
-//					return super.getScope(recordAccess, reference);
-//				}
-				// 2. Actions and local declarations
+				// 1. Local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
 				if (actionContainer != null) {
-					IScope actionDeclarations = super.getScope(actionContainer, reference);
-					return new SimpleScope(statechartDeclarations, actionDeclarations.getAllElements());
+					return super.getScope(actionContainer, reference);
+					// Super takes care of the parent scopes
 				}
-				return statechartDeclarations;
+				// 2. Variable declarations < parameter declarations < constant declarations - function declarations
+				ParametricElement element = ecoreUtil.getSelfOrContainerOfType(context, ParametricElement.class);
+				if (element != null) {
+					IScope parentScope = super.getScope(context, reference); // Parameters and constants
+					if (element instanceof StatechartDefinition) {
+						StatechartDefinition statechart = (StatechartDefinition) element;
+						Collection<Declaration> declarations = new ArrayList<Declaration>();
+						declarations.addAll(statechart.getVariableDeclarations());
+						declarations.addAll(statechart.getFunctionDeclarations());
+						return Scopes.scopeFor(declarations, parentScope);
+					}
+					else {
+						return parentScope;
+					}
+				}
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);

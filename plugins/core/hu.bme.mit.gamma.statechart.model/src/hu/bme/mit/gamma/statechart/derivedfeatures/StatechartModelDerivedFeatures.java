@@ -100,7 +100,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		if (element instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
-			FunctionDeclaration functionDeclaration = (FunctionDeclaration) expressionUtil.getDeclaration(functionAccess);
+			FunctionDeclaration functionDeclaration = (FunctionDeclaration)
+					expressionUtil.getDeclaration(functionAccess.getOperand());
 			return functionDeclaration.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
