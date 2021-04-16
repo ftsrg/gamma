@@ -94,6 +94,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkUnsupportedVariableTypes(variable));
 	}
 	
+	// We could check if the expression is of type void (warning)
 //	@Check
 //	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
 //	}

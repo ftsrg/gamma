@@ -123,35 +123,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	//
 	
-	// Some elements can have the same name
+	// Some elements must have globally unique names
 
-//	@Override
-//	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-//		String name = element.getName();
-//		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-//		if (element instanceof Event) {
-//			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
-//			validationResultMessages.addAll(checkNames(_interface, Event.class, name));
-//			return validationResultMessages;
-//		}
-//		if (element instanceof ParameterDeclaration) {
-//			EObject container = element.eContainer();
-//			if (container instanceof Event) {
-//				validationResultMessages.addAll(checkNames(container, ParameterDeclaration.class, name));
-//				return validationResultMessages;
-//			}
-//		}
-//		if (element instanceof TransitionIdAnnotation) {
-//			StatechartDefinition statechart = StatechartModelDerivedFeatures
-//					.getContainingStatechart(element);
-//			validationResultMessages.addAll(checkNames(statechart,
-//					List.of(TransitionIdAnnotation.class, Declaration.class), name));
-//			return validationResultMessages;
-//		}
-//		validationResultMessages.addAll(super.checkNameUniqueness(element));
-//		return validationResultMessages;
-//	}
-	
 	public Collection<ValidationResultMessage> checkStateNameUniqueness(StatechartDefinition statechart) {
 		List<State> states = ecoreUtil.getAllContentsOfType(statechart, State.class);
 		return checkNameUniqueness(states);

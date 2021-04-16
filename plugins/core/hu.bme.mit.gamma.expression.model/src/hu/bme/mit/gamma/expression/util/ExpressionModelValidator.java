@@ -165,34 +165,6 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	
-//	public Collection<ValidationResultMessage> checkNamesTransitively(EObject root,
-//			Class<? extends NamedElement> clazz, String name) {
-//		return checkNames(root, List.of(clazz), name);
-//	}
-//	
-//	public Collection<ValidationResultMessage> checkNamesTransitively(EObject root,
-//			Collection<Class<? extends NamedElement>> classes, String name) {
-//		int nameCount = 0;
-//		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
-//		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-//		for (Class<? extends NamedElement> clazz : classes) {
-//			List<? extends NamedElement> elements = ecoreUtil.getAllContentsOfType(root, clazz);
-//			namedElements.addAll(elements);
-//		}
-//		for (NamedElement otherElement : namedElements) {
-//			if (name.equals(otherElement.getName())) {
-//				++nameCount;
-//			}
-//			if (nameCount > 1) {
-//				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-//						"In a Gamma model, these identifiers must be unique.",
-//						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
-//			}
-//		}
-//		return validationResultMessages;
-//	}
-	
 	public Collection<ValidationResultMessage> checkTypeDeclaration(TypeDeclaration typeDeclaration) {
 		Type type = typeDeclaration.getType();
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
