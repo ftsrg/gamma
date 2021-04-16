@@ -40,17 +40,15 @@ class EventReferenceTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining
 	
 	new(Trace trace) {
-		this(trace, true)
+		this(trace, true, 10)
 	}
 	
-	new(Trace trace, boolean functionInlining) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(
+				this.trace, functionInlining, maxRecursionDepth)
 	}
 	
 	protected def transformToLowlevelGuard(EventDeclaration lowlevelEvent) {

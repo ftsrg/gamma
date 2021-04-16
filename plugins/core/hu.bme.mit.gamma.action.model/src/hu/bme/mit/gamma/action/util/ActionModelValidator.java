@@ -123,7 +123,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
+	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(
+			VariableDeclarationStatement statement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject container = statement.eContainer();
 		if (container instanceof Block) {
@@ -180,6 +181,24 @@ public class ActionModelValidator extends ExpressionModelValidator {
 					+ ") does not match the declared type of the procedure (" 
 					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
 					null));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkReturnStatementPosition(ReturnStatement statement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Currently return statements must be final actions in every possible path.", null));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkReturnStatementPositions(ProcedureDeclaration procedure) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Block block = procedure.getBody();
+		for (ReturnStatement statement : ecoreUtil.getAllContentsOfType(block, ReturnStatement.class)) {
+			validationResultMessages.addAll(checkReturnStatementPosition(statement));
 		}
 		return validationResultMessages;
 	}

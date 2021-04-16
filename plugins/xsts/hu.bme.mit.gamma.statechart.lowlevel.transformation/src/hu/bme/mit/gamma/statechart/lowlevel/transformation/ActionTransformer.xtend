@@ -50,9 +50,6 @@ class ActionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining
-	protected final int maxRecursionDepth
 	
 	new(Trace trace) {
 		this(trace, true, 10)
@@ -60,12 +57,11 @@ class ActionTransformer {
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
-		this.maxRecursionDepth = maxRecursionDepth
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+		this.expressionTransformer = new ExpressionTransformer(this.trace,
+				functionInlining, maxRecursionDepth)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
 			this.trace, this, functionInlining, maxRecursionDepth)
+		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {

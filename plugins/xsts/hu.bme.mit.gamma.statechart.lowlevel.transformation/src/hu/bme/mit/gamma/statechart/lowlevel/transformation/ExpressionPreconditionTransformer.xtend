@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension java.lang.Math.abs
+import hu.bme.mit.gamma.action.util.ActionModelValidator
 
 class ExpressionPreconditionTransformer {
 	// 
@@ -41,10 +42,10 @@ class ExpressionPreconditionTransformer {
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Transformation parameters
-	protected final boolean functionInlining
+	protected final boolean FUNCTION_INLINING
 	protected final int MAX_RECURSION_DEPTH
 	
-	protected int currentRecursionDepth
+	protected int currentRecursionDepth // For procedures
 	
 	new(Trace trace, ActionTransformer actionTransformer) {
 		this(trace, actionTransformer, true, 10)
@@ -56,7 +57,7 @@ class ExpressionPreconditionTransformer {
 		this.actionTransformer = actionTransformer
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
-		this.functionInlining = functionInlining
+		this.FUNCTION_INLINING = functionInlining
 		this.MAX_RECURSION_DEPTH = maxRecursionDepth
 		this.currentRecursionDepth = MAX_RECURSION_DEPTH
 	}
@@ -91,7 +92,7 @@ class ExpressionPreconditionTransformer {
 	def dispatch List<Action> transformPrecondition(FunctionAccessExpression expression) {
 		val actions = newArrayList
 		val function = expression.accessedDeclaration
-		if (functionInlining) {
+		if (FUNCTION_INLINING) {
 			if (currentRecursionDepth <= 0) {
 				// Reached max recursion
 				val functionType = function.type.clone
@@ -108,10 +109,12 @@ class ExpressionPreconditionTransformer {
 			}
 			else {
 				currentRecursionDepth--
+				
 				// Bind the parameter values to the arguments copied into local variables (look out for arrays and records)
 				// Transform block (look out for multiple transformations in trace)
 				// Trace the return expression (filter the return statements and save them in the return variable)
 				actions += function.transformFunction(expression)
+				
 				currentRecursionDepth++
 			}
 		}
@@ -128,6 +131,7 @@ class ExpressionPreconditionTransformer {
 	
 	protected def dispatch List<Action> transformFunction(ProcedureDeclaration procedure,
 			FunctionAccessExpression expression) {
+		procedure.checkProcedure
 		val arguments = expression.arguments
 		val parameterDeclarations = procedure.parameterDeclarations
 		val size = arguments.size
@@ -137,9 +141,9 @@ class ExpressionPreconditionTransformer {
 		val clonedBlock = procedure.body.clone
 		
 		// Rename local declarations
-		val declarations = clonedBlock.getSelfAndAllContentsOfType(VariableDeclarationStatement)
+		val declarations = clonedBlock.getAllContentsOfType(VariableDeclarationStatement)
 				.map[it.variableDeclaration] + 
-			clonedBlock.getSelfAndAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
+			clonedBlock.getAllContentsOfType(ConstantDeclarationStatement).map[it.constantDeclaration]
 		for (declaration : declarations) {
 			val name = declaration.name
 			declaration.name = '''«name»_«declaration.hashCode.abs»_'''
@@ -199,9 +203,15 @@ class ExpressionPreconditionTransformer {
 		return #[lowlevelAction]
 	}
 	
+	protected def checkProcedure(ProcedureDeclaration procedure) {
+		val extension validator = ActionModelValidator.INSTANCE
+		val messages = procedure.checkReturnStatementPositions
+		checkState(messages.empty, messages.map[it.resultText].join(" "))
+	}
+	
 	protected def dispatch List<Action> transformFunction(LambdaDeclaration procedure,
 			FunctionAccessExpression arguments) {
-		
+		// Lambdas must be side effect-free, so no pre-transformation is necessary 
 		return #[]
 	}
 	

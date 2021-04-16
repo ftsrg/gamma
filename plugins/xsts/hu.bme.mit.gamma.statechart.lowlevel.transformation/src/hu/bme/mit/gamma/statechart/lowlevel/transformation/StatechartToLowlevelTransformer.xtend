@@ -70,10 +70,10 @@ class StatechartToLowlevelTransformer {
 	new(boolean functionInlining, int maxRecursionDepth) {
 		this.trace = new Trace
 		this.typeTransformer = new TypeTransformer(this.trace)
-		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
-		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining)
+		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
 	

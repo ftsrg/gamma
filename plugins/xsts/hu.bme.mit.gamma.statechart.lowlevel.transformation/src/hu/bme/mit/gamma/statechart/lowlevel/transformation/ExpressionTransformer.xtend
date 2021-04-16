@@ -21,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
@@ -52,15 +53,20 @@ class ExpressionTransformer {
 	protected final StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
-	protected final boolean functionInlining
+	protected final boolean FUNCTION_INLINING
+	protected final int MAX_RECURSION_DEPTH
+	
+	protected int currentRecursionDepth // For lambdas
 	
 	new(Trace trace) {
-		this(trace, true)
+		this(trace, true, 10)
 	}
 	
-	new(Trace trace, boolean functionInlining) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
+		this.FUNCTION_INLINING = functionInlining
+		this.MAX_RECURSION_DEPTH = maxRecursionDepth
+		currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
@@ -228,20 +234,45 @@ class ExpressionTransformer {
 	
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		val result = <Expression>newArrayList
-		if (functionInlining) {
+		if (FUNCTION_INLINING) {
 			if (trace.isMapped(expression)) {
-				// By now, the function call must be inlined by ExpressionPreconditionTransformer
+				// By now, the procedure call must be inlined by ExpressionPreconditionTransformer
 				for (returnVariable : trace.get(expression)) {
 					result += returnVariable.createReferenceExpression
 				}
 			}
 			else {
-				throw new IllegalArgumentException(
-					"Error transforming function access expression: element not found in trace!")
+				val function = expression.declaration
+				val lambda = function as LambdaDeclaration // Lambda is expected
+				if (currentRecursionDepth <= 0) {
+					// We return with a defaultValue
+					result += lambda.type.initialValueOfType
+				}
+				else {
+					currentRecursionDepth--
+					
+					val arguments = expression.arguments
+					val size = arguments.size
+					val parameters = lambda.parameterDeclarations
+					checkState(size == parameters.size)
+					val clonedBody = lambda.expression.clone
+					for (var i = 0; i < size; i++) {
+						val argument = arguments.get(i)
+						val parameter = parameters.get(i)
+						// Precondition: here parameters can be referenced only via DirectReferenceExpressions
+						for (directReference : clonedBody.getAllContentsOfType(DirectReferenceExpression)
+								.filter[it.declaration === parameter]) {
+							argument.replace(directReference) // Inlining the argument
+						}
+					}
+					result += clonedBody.transformSimpleExpression // Possible recursion
+					
+					currentRecursionDepth++
+				}
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible!")
+			throw new IllegalArgumentException("Currently only function inlining is possible.")
 		}
 		return result
 	}
