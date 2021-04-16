@@ -23,6 +23,9 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
+
+import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
@@ -289,6 +292,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 					// Super takes care of the parent scopes
 				}
 				// 2. Variable declarations < parameter declarations < constant declarations - function declarations
+				IScope scope = IScope.NULLSCOPE;
 				ParametricElement element = ecoreUtil.getSelfOrContainerOfType(context, ParametricElement.class);
 				if (element != null) {
 					IScope parentScope = super.getScope(context, reference); // Parameters and constants
@@ -297,12 +301,20 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						Collection<Declaration> declarations = new ArrayList<Declaration>();
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
-						return Scopes.scopeFor(declarations, parentScope);
+						scope = Scopes.scopeFor(declarations, parentScope);
 					}
 					else {
-						return parentScope;
+						scope = parentScope;
 					}
 				}
+				// 3. Imports
+				Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
+				List<Package> imports = Lists.reverse(containingPackage.getImports()); // Latter imports are stronger
+				for (Package _import : imports) {
+					IScope parent = super.getScope(_import, reference);
+					scope = new SimpleScope(parent, scope.getAllElements());
+				}
+				return scope;
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
@@ -311,7 +323,7 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty
-			// This can be due to modeling error of the user, e.g., there no in events on the specified ports
+			// This can be due to modeling error of the user, e.g., there are no in events on the specified ports
 			return super.getScope(context, reference);
 		} catch (Exception e) {
 			e.printStackTrace();
