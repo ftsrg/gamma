@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -605,19 +604,17 @@ public class ExpressionModelValidator {
 			}
 			// The declaration has an initial value
 			EObject container = elem.eContainer();
-			if (elem instanceof Declaration) {
-				Declaration declaration = (Declaration) elem;
+			if (elem instanceof ValueDeclaration) {
+				ValueDeclaration declaration = (ValueDeclaration) elem;
 				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
 					if (container == variableDeclaration.eContainer()) {
-						final EList<EObject> eContents = container.eContents();
+						List<EObject> eContents = container.eContents();
 						int elemIndex = eContents.indexOf(elem);
 						int variableIndex = eContents.indexOf(variableDeclaration);
 						if (variableIndex >= elemIndex) {
-							
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 									"The declarations referenced in the initial value must be declared before the variable declaration.", 
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
-							
 							return validationResultMessages;
 						}
 					}

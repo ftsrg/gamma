@@ -28,11 +28,24 @@ public class ActionLanguageFormatterUtil {
 	public void formatExpressions(FormattingConfig c, ActionLanguageGrammarAccess f) {
 		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		setSquareBrackets(c, f);
+		setFunctionDefinitions(c, f);
+		setStatements(c, f);
 	}
 	
 	protected void setSquareBrackets(FormattingConfig c, ActionLanguageGrammarAccess f) {
 		c.setNoSpace().before(f.getAssignableAccessExpressionAccess().getLeftSquareBracketKeyword_1_0_1());
 		c.setNoSpace().around(f.getAssignableAccessExpressionAccess().getIndexAssignment_1_0_2());
+	}
+	
+	protected void setFunctionDefinitions(FormattingConfig c, ActionLanguageGrammarAccess f) {
+		c.setNoSpace().around(f.getProcedureDeclarationAccess().getLeftParenthesisKeyword_2_0());
+		c.setNoSpace().before(f.getProcedureDeclarationAccess().getRightParenthesisKeyword_2_2());
+		c.setNoSpace().around(f.getLambdaDeclarationAccess().getLeftParenthesisKeyword_2_0());
+		c.setNoSpace().before(f.getLambdaDeclarationAccess().getRightParenthesisKeyword_2_2());
+	}
+
+	protected void setStatements(FormattingConfig c, ActionLanguageGrammarAccess f) {
+		c.setLinewrap(1).before(f.getStatementRule());
 	}
 
 }

@@ -86,8 +86,6 @@ public class ExpressionLanguageFormatterUtil {
 	}
 	
 	protected void setFunctions(FormattingConfig c, ExpressionLanguageGrammarAccess f) {
-		c.setNoSpace().around(f.getFunctionTypeDefinitionAccess().getLeftParenthesisKeyword_1());
-		c.setNoSpace().before(f.getFunctionTypeDefinitionAccess().getRightParenthesisKeyword_3());
 		c.setNoSpace().around(f.getAccessExpressionAccess().getLeftParenthesisKeyword_1_1_1());
 		c.setNoSpace().before(f.getAccessExpressionAccess().getRightParenthesisKeyword_1_1_3());
 	}
