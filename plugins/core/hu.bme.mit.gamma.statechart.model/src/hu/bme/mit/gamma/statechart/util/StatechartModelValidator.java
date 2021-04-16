@@ -35,7 +35,6 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
@@ -105,6 +104,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -125,31 +125,42 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	// Some elements can have the same name
 
-	@Override
-	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-		String name = element.getName();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (element instanceof Event) {
-			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
-			validationResultMessages.addAll(checkNames(_interface, Event.class, name));
-			return validationResultMessages;
-		}
-		if (element instanceof ParameterDeclaration) {
-			EObject container = element.eContainer();
-			if (container instanceof Event) {
-				validationResultMessages.addAll(checkNames(container, ParameterDeclaration.class, name));
-				return validationResultMessages;
-			}
-		}
-		if (element instanceof TransitionIdAnnotation) {
-			StatechartDefinition statechart = StatechartModelDerivedFeatures
-					.getContainingStatechart(element);
-			validationResultMessages.addAll(checkNames(statechart,
-					List.of(TransitionIdAnnotation.class, Declaration.class), name));
-			return validationResultMessages;
-		}
-		validationResultMessages.addAll(super.checkNameUniqueness(element));
-		return validationResultMessages;
+//	@Override
+//	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
+//		String name = element.getName();
+//		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+//		if (element instanceof Event) {
+//			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
+//			validationResultMessages.addAll(checkNames(_interface, Event.class, name));
+//			return validationResultMessages;
+//		}
+//		if (element instanceof ParameterDeclaration) {
+//			EObject container = element.eContainer();
+//			if (container instanceof Event) {
+//				validationResultMessages.addAll(checkNames(container, ParameterDeclaration.class, name));
+//				return validationResultMessages;
+//			}
+//		}
+//		if (element instanceof TransitionIdAnnotation) {
+//			StatechartDefinition statechart = StatechartModelDerivedFeatures
+//					.getContainingStatechart(element);
+//			validationResultMessages.addAll(checkNames(statechart,
+//					List.of(TransitionIdAnnotation.class, Declaration.class), name));
+//			return validationResultMessages;
+//		}
+//		validationResultMessages.addAll(super.checkNameUniqueness(element));
+//		return validationResultMessages;
+//	}
+	
+	public Collection<ValidationResultMessage> checkStateNameUniqueness(StatechartDefinition statechart) {
+		List<State> states = ecoreUtil.getAllContentsOfType(statechart, State.class);
+		return checkNameUniqueness(states);
+	}
+	
+	public Collection<ValidationResultMessage> checkTransitionNameUniqueness(StatechartDefinition statechart) {
+		List<TransitionIdAnnotation> transitionIdAnnotations = ecoreUtil.getAllContentsOfType(
+				statechart, TransitionIdAnnotation.class);
+		return checkNameUniqueness(transitionIdAnnotations);
 	}
 	
 	// Not supported elements

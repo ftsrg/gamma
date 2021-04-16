@@ -27,10 +27,7 @@ import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.FieldDeclaration;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
-import hu.bme.mit.gamma.expression.model.NamedElement;
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
@@ -44,27 +41,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
 	//
-	
-	@Override
-	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-		String name = element.getName();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (element instanceof VariableDeclaration) {
-			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
-					element, VariableDeclarationStatement.class);
-			if (statement != null) {
-				// No op - other method is used here
-				return validationResultMessages;
-			}
-		}
-		if (element instanceof FieldDeclaration) {
-			RecordTypeDefinition record = ecoreUtil.getContainerOfType(element, RecordTypeDefinition.class);
-			validationResultMessages.addAll(checkNames(record, FieldDeclaration.class, name));
-			return validationResultMessages;
-		}
-		validationResultMessages.addAll(super.checkNameUniqueness(element));
-		return validationResultMessages;
-	}
 	
 	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
