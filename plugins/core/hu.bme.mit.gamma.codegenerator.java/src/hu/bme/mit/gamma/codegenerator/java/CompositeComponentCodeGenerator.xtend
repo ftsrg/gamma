@@ -12,10 +12,11 @@ package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
+import hu.bme.mit.gamma.statechart.interface_.Port
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class CompositeComponentCodeGenerator {
@@ -48,14 +49,12 @@ class CompositeComponentCodeGenerator {
 		import java.util.LinkedList;
 		
 		import «PACKAGE_NAME».*;
-		import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».*;
+		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+			import «_package.getPackageString(PACKAGE_NAME)».*;
+		«ENDFOR»
 		«IF component instanceof AsynchronousCompositeComponent»
 			import «PACKAGE_NAME».«Namings.CHANNEL_PACKAGE_POSTFIX».*;
 		«ENDIF»
-		«FOR containedComponent : component.derivedComponents.map[it.derivedType]
-				.filter[!it.generateComponentPackageName.equals(component.generateComponentPackageName)].toSet»
-			import «containedComponent.generateComponentPackageName».*;
-		«ENDFOR»
 	'''
 	
 	/**

@@ -10,17 +10,15 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
-import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
+import hu.bme.mit.gamma.codegenerator.java.util.TypeSerializer
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeReference
-
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeTransformer {
 	
 	protected final extension Trace trace
+	
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(Trace trace) {
 		this.trace = trace
@@ -71,18 +69,8 @@ class TypeTransformer {
 					return "long"
 				}
 			}				
-			BooleanTypeDefinition: 
-				return "boolean"
-			DecimalTypeDefinition: 
-				return "double"
-			TypeReference: {
-				if (type.reference.type.primitive) {
-					return type.reference.type.transformType
-				}
-				return type.reference.name
-			}
 			default:
-				throw new IllegalArgumentException("Not known type: " + type)
+				return type.serialize
 		}
 	}
 }

@@ -53,9 +53,21 @@ public class FieldHierarchy {
 		fields.addAll(fieldHierarchy.getFields());
 	}
 	
+	public FieldDeclaration getFirst() {
+		return fields.get(0);
+	}
+	
 	public FieldDeclaration getLast() {
 		int size = fields.size();
 		return fields.get(size - 1);
+	}
+	
+	public boolean isEmpty() {
+		return fields.isEmpty();
+	}
+	
+	public FieldDeclaration removeFirst() {
+		return fields.remove(0);
 	}
 	
 	public List<FieldHierarchy> getExtensions(Declaration declaration) {
@@ -82,6 +94,10 @@ public class FieldHierarchy {
 		return extensions;
 	}
 	
+	public FieldHierarchy clone() {
+		return new FieldHierarchy(this);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -106,7 +122,8 @@ public class FieldHierarchy {
 			if (other.fields != null) {
 				return false;
 			}
-		} else if (!fields.equals(other.fields)) {
+		}
+		else if (!fields.equals(other.fields)) {
 			return false;
 		}
 		return true;

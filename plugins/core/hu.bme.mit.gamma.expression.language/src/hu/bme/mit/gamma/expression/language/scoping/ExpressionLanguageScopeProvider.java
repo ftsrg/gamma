@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.expression.language.scoping;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.emf.ecore.EObject;
@@ -17,7 +18,10 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 
+import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
+import hu.bme.mit.gamma.expression.model.ExpressionPackage;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -47,7 +51,37 @@ public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageS
 			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDeclaration.getType();
 			return Scopes.scopeFor(recordType.getFieldDeclarations());
 		}
+		if (context instanceof ExpressionPackage &&
+				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			ExpressionPackage expressionPackage = (ExpressionPackage) context;
+			Collection<Declaration> declarations = new ArrayList<Declaration>();
+			declarations.addAll(expressionPackage.getConstantDeclarations());
+			declarations.addAll(expressionPackage.getFunctionDeclarations());
+			// Parameter declarations could be added too, but what for?
+			return Scopes.scopeFor(declarations);
+		} // Order is important, as ExpressionPackage is a ParametricElement
+		if (context instanceof ParametricElement &&
+				reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			IScope parentScope = getParentScope(context, reference);
+			ParametricElement parametricElement = (ParametricElement) context;
+			return Scopes.scopeFor(parametricElement.getParameterDeclarations(), parentScope);
+		}
+		if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
+			// Right now, this might not be necessary as parametric elements are contained directly by packages
+			return getParentScope(context, reference);
+		}
 		return super.getScope(context, reference);
+	}
+	
+	protected IScope getParentScope(EObject context, EReference reference) {
+		if (context == null) {
+			return IScope.NULLSCOPE;
+		}
+		EObject container = context.eContainer();
+		if (container == null) {
+			return IScope.NULLSCOPE;
+		}
+		return getScope(container, reference);
 	}
 	
 }

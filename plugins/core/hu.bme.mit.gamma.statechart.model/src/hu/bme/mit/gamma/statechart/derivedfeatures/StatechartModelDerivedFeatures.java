@@ -100,7 +100,8 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		}
 		if (element instanceof FunctionAccessExpression) {
 			FunctionAccessExpression functionAccess = (FunctionAccessExpression) element;
-			FunctionDeclaration functionDeclaration = (FunctionDeclaration) expressionUtil.getDeclaration(functionAccess);
+			FunctionDeclaration functionDeclaration = (FunctionDeclaration)
+					expressionUtil.getDeclaration(functionAccess.getOperand());
 			return functionDeclaration.getParameterDeclarations();
 		}
 		throw new IllegalArgumentException("Not supported element: " + element);
@@ -165,6 +166,20 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	public static boolean isUnfolded(Package gammaPackage) {
 		return gammaPackage.getAnnotations().stream().anyMatch(
 				it -> it instanceof UnfoldedPackageAnnotation);
+	}
+	
+	public static Set<Package> getAllImports(Package gammaPackage) {
+		Set<Package> imports = new HashSet<Package>();
+		imports.addAll(gammaPackage.getImports());
+		for (Component component : gammaPackage.getComponents()) {
+			for (ComponentInstance componentInstance : getAllInstances(component)) {
+				Component type = getDerivedType(componentInstance);
+				Package referencedPackage = getContainingPackage(type);
+				imports.add(referencedPackage);
+				imports.addAll(referencedPackage.getImports());
+			}
+		}
+		return imports;
 	}
 	
 	public static Set<Component> getAllComponents(Package parentPackage) {
@@ -419,6 +434,11 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 	
 	public static boolean isOutputEvent(Port port, Event event) {
 		return getOutputEvents(port).contains(event);
+	}
+	
+	public static Set<Interface> getInterfaces(Component component) {
+		return getAllPorts(component).stream()
+				.map(it -> getInterface(it)).collect(Collectors.toSet());
 	}
 	
 	public static List<Port> getAllPorts(AsynchronousAdapter wrapper) {

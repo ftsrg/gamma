@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.codegenerator.java.util.TimerInterfaceGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TimerServiceCodeGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.TypeDeclarationGenerator
 import hu.bme.mit.gamma.codegenerator.java.util.VirtualTimerServiceCodeGenerator
-import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.FileUtil
@@ -27,15 +26,15 @@ import java.io.File
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class StatechartToJavaCodeGenerator {
 
 	final String BASE_PACKAGE_NAME
-	final String INTERFACE_PACKAGE_NAME
 	final String STATECHART_PACKAGE_NAME
-	
+
+	final String SRC_FOLDER_URI
 	final String BASE_FOLDER_URI
-	final String INTERFACE_FOLDER_URI
 	final String STATECHART_FOLDER_URI
 	
 	final EventCodeGenerator eventCodeGenerator
@@ -51,7 +50,7 @@ class StatechartToJavaCodeGenerator {
 	final ReflectiveComponentCodeGenerator reflectiveComponentCodeGenerator
 	
 	final StatechartDefinition gammaStatechart 
-	final XSTS xSts 
+	final XSTS xSts
 	
 	// Auxiliary objects
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
@@ -59,12 +58,13 @@ class StatechartToJavaCodeGenerator {
 	
 	new(String targetFolderUri, String basePackageName,
 			StatechartDefinition gammaStatechart, XSTS xSts, ActionSerializer actionSerializer) {
+		this.gammaStatechart = gammaStatechart
+		this.xSts = xSts
 		this.BASE_PACKAGE_NAME = basePackageName
-		this.BASE_FOLDER_URI = targetFolderUri + "/" + BASE_PACKAGE_NAME.replaceAll("\\.", "/")
-		this.INTERFACE_PACKAGE_NAME = BASE_PACKAGE_NAME.interfacePackageString
-		this.INTERFACE_FOLDER_URI = targetFolderUri + "/" + INTERFACE_PACKAGE_NAME.replaceAll("\\.", "/")
+		this.SRC_FOLDER_URI = targetFolderUri
+		this.BASE_FOLDER_URI = targetFolderUri.generateUri(BASE_PACKAGE_NAME)
 		this.STATECHART_PACKAGE_NAME = gammaStatechart.getPackageString(BASE_PACKAGE_NAME)
-		this.STATECHART_FOLDER_URI = targetFolderUri + "/" + STATECHART_PACKAGE_NAME.replaceAll("\\.", "/")
+		this.STATECHART_FOLDER_URI = targetFolderUri.generateUri(STATECHART_PACKAGE_NAME)
 		// Classes
 		this.eventCodeGenerator = new EventCodeGenerator(BASE_PACKAGE_NAME)
 		this.typeDeclarationSerializer = new TypeDeclarationGenerator(BASE_PACKAGE_NAME)
@@ -73,15 +73,13 @@ class StatechartToJavaCodeGenerator {
 		this.timerServiceCodeGenerator = new TimerServiceCodeGenerator(BASE_PACKAGE_NAME)
 		this.virtualTimerServiceCodeGenerator = new VirtualTimerServiceCodeGenerator(BASE_PACKAGE_NAME)
 		this.interfaceGenerator = new InterfaceCodeGenerator(BASE_PACKAGE_NAME)
-		this.statechartInterfaceGenerator = new StatechartInterfaceCodeGenerator(INTERFACE_PACKAGE_NAME,
+		this.statechartInterfaceGenerator = new StatechartInterfaceCodeGenerator(BASE_PACKAGE_NAME,
 			STATECHART_PACKAGE_NAME, gammaStatechart)
 		this.statechartWrapperCodeGenerator = new StatechartWrapperCodeGenerator(BASE_PACKAGE_NAME,
-			INTERFACE_PACKAGE_NAME, STATECHART_PACKAGE_NAME, gammaStatechart, xSts)
+			STATECHART_PACKAGE_NAME, gammaStatechart, this.xSts)
 		this.statechartCodeGenerator = new StatechartCodeGenerator(BASE_PACKAGE_NAME, STATECHART_PACKAGE_NAME,
-			gammaStatechart.wrappedStatemachineClassName, xSts, actionSerializer)
+			gammaStatechart.wrappedStatemachineClassName, gammaStatechart, xSts, actionSerializer)
 		this.reflectiveComponentCodeGenerator = new ReflectiveComponentCodeGenerator(BASE_PACKAGE_NAME, gammaStatechart)
-		this.gammaStatechart = gammaStatechart
-		this.xSts = xSts
 	}
 	
 	def execute() {
@@ -144,18 +142,25 @@ class StatechartToJavaCodeGenerator {
 	def generateTypeDeclarations() {
 		// Adding record types, so they can be serialized too
 		val typeDeclarations = gammaStatechart.typeDeclarations
-		val recordTypeDeclarations = typeDeclarations.filter[it.typeDefinition instanceof RecordTypeDefinition]
-		xSts.publicTypeDeclarations += recordTypeDeclarations
-		//
-		for (typeDeclaration : xSts.publicTypeDeclarations) {
-			val componentUri = BASE_FOLDER_URI + File.separator + typeDeclaration.name + ".java"
+//		val recordTypeDeclarations = typeDeclarations.filter[it.typeDefinition instanceof RecordTypeDefinition]
+//		val publicTypeDeclarations = newArrayList
+//		publicTypeDeclarations += recordTypeDeclarations
+//		publicTypeDeclarations += xSts.publicTypeDeclarations
+		// Type declarations must be contained by the original package due to package import
+		// Therefore, xSts.publicTypeDeclarations cannot be used
+		for (typeDeclaration : typeDeclarations.filter[!it.typeDefinition.primitive]) {
+			val packageName = typeDeclaration.getPackageString(BASE_PACKAGE_NAME) 
+			val DECLARATION_FOLDER_URI = SRC_FOLDER_URI.generateUri(packageName)
+			val componentUri = DECLARATION_FOLDER_URI + File.separator + typeDeclaration.name + ".java"
 			val code = typeDeclarationSerializer.generateTypeDeclarationCode(typeDeclaration)
 			code.saveCode(componentUri)
 		}
 	}
 	
 	def generateInterfaces() {
-		for (interface : gammaStatechart.ports.map[it.interfaceRealization.interface].toSet) {
+		for (interface : gammaStatechart.interfaces) {
+			val interfacePackageName = interface.getPackageString(BASE_PACKAGE_NAME)
+			val INTERFACE_FOLDER_URI = SRC_FOLDER_URI.generateUri(interfacePackageName)
 			val componentUri = INTERFACE_FOLDER_URI + File.separator + interface.implementationName + ".java"
 			val code = interfaceGenerator.createInterface(interface)
 			code.saveCode(componentUri)

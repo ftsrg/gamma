@@ -54,7 +54,7 @@ class ActionOptimizer {
 	
 	def optimize(XTransition transition) {
 		if (transition === null) {
-			return null // Can be null, if. e.g., there are not out-events
+			return null // Can be null, if. e.g., there are no out-events
 		}
 		val action = transition.action
 		return createXTransition => [

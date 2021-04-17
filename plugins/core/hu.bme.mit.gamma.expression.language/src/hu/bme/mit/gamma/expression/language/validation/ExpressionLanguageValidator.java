@@ -10,7 +10,9 @@
 package hu.bme.mit.gamma.expression.language.validation;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
@@ -32,6 +34,7 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -39,7 +42,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResul
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
-	
+
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelValidator expressionModelValidator = ExpressionModelValidator.INSTANCE;
 	
 	protected void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
@@ -90,8 +94,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	}
 	
 	@Check
-	public void checkNameUniqueness(NamedElement element) {
-		handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(element));
+	public void checkNameUniqueness(EObject element) {
+		List<NamedElement> namedElements = ecoreUtil.getContentsOfType(element, NamedElement.class);
+		if (!namedElements.isEmpty()) { // checkNameUniqueness(EObject ) would do this - this way it may be faster
+			handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(namedElements));
+		}
 	}
 
 	@Check

@@ -26,13 +26,11 @@ class TriggerTransformer {
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining
 	
-	new(Trace trace, boolean functionInlining) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
-		this.eventReferenceTransformer = new EventReferenceTransformer(this.trace, this.functionInlining)
+		this.eventReferenceTransformer = new EventReferenceTransformer(
+				this.trace, functionInlining, maxRecursionDepth)
 	}
 	
 	protected def dispatch Expression transformTrigger(BinaryTrigger trigger) {

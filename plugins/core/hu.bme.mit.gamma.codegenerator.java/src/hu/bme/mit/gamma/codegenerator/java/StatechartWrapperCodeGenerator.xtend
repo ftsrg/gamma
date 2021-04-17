@@ -13,10 +13,10 @@ package hu.bme.mit.gamma.codegenerator.java
 import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.codegenerator.java.util.TimingDeterminer
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Persistency
+import hu.bme.mit.gamma.statechart.interface_.Port
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import org.yakindu.base.types.Direction
 import org.yakindu.base.types.Event
 import org.yakindu.sct.model.sgraph.Statechart
@@ -285,7 +285,9 @@ class StatechartWrapperCodeGenerator {
 			import java.lang.reflect.Field;
 		«ENDIF»
 		
-		import «PACKAGE_NAME».interfaces.*;
+		«FOR _package : component.containingPackage.imports.toSet»
+			import «_package.getPackageString(PACKAGE_NAME)».*;
+		«ENDFOR»
 		// Yakindu listeners
 		import «YAKINDU_PACKAGE_NAME».«component.yakinduStatemachineName.toLowerCase».I«component.statemachineClassName».*;
 		import «PACKAGE_NAME».*;

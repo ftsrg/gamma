@@ -26,9 +26,10 @@ class ThetaVerification extends AbstractVerification {
 	
 	override Result execute(File modelFile, File queryFile) {
 		this.execute(modelFile, queryFile, #[
-			"",
-			"--domain EXPL --refinement SEQ_ITP --maxenum 250"
-		])
+				"",
+				"--domain EXPL --refinement SEQ_ITP --maxenum 250"
+			]
+		)
 		// --domain PRED_CART --refinement SEQ_ITP // default
 		// --domain EXPL --refinement SEQ_ITP --maxenum 250
 	}

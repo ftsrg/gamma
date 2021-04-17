@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -191,6 +192,28 @@ public class ComplexTypeUtil {
 			}
 		}
 		return fieldAssignment;
+	}
+	
+	public Expression getValue(Expression literal /* Has to contain valid expression in each field or index */, 
+			FieldHierarchy fieldHierarchy, IndexHierarchy indexHierarchy) {
+		if (literal instanceof RecordLiteralExpression) {
+			RecordLiteralExpression record = (RecordLiteralExpression) literal;
+			FieldHierarchy clonedHierarchy = fieldHierarchy.clone();
+			FieldDeclaration field = clonedHierarchy.removeFirst();
+			Expression value = record.getFieldAssignments().stream().filter(it -> 
+				it.getReference().getFieldDeclaration() == field).findFirst().get().getValue();
+			return getValue(value, clonedHierarchy, indexHierarchy);
+		}
+		else if (literal instanceof ArrayLiteralExpression) {
+			ArrayLiteralExpression array = (ArrayLiteralExpression) literal;
+			IndexHierarchy clonedIndexHierarchy = indexHierarchy.clone();
+			int index = clonedIndexHierarchy.removeFirst();
+			Expression value = array.getOperands().get(index);
+			return getValue(value, fieldHierarchy, clonedIndexHierarchy);
+		}
+		else {
+			return literal;
+		}
 	}
 	
 	public List<Expression> getAccesses(Expression expression) {

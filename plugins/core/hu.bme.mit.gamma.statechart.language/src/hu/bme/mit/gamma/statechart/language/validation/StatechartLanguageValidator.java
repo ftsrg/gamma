@@ -14,7 +14,6 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.BroadcastChannel;
@@ -71,9 +70,13 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	}
 	
 	@Check
-	@Override
-	public void checkNameUniqueness(NamedElement element) {
-		handleValidationResultMessage(statechartModelValidator.checkNameUniqueness(element));
+	public void checkStateNameUniqueness(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkStateNameUniqueness(statechart));
+	}
+	
+	@Check
+	public void checkTransitionNameUniqueness(StatechartDefinition statechart) {
+		handleValidationResultMessage(statechartModelValidator.checkTransitionNameUniqueness(statechart));
 	}
 	
 	@Check
@@ -91,6 +94,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkUnsupportedVariableTypes(variable));
 	}
 	
+	// We could check if the expression is of type void (warning)
 //	@Check
 //	public void checkUnsupportedExpressionStatements(ExpressionStatement expressionStatement) {
 //	}
