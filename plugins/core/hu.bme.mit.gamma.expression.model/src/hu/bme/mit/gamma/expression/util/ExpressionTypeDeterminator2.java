@@ -77,7 +77,7 @@ public class ExpressionTypeDeterminator2 {
 	protected ExpressionTypeDeterminator2() {}
 	
 	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
-	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;	
+	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public Type getType(Expression expression) {
 		if (expression instanceof BooleanLiteralExpression) {
@@ -106,14 +106,14 @@ public class ExpressionTypeDeterminator2 {
 		}
 		if (expression instanceof DirectReferenceExpression) {
 			Type declarationType = ((DirectReferenceExpression) expression).getDeclaration().getType(); 
-			return expressionUtil.findTypeDefinitionOfType(declarationType);
+			return ExpressionModelDerivedFeatures.getTypeDefinition(declarationType);
 		}
 		if (expression instanceof ElseExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
 		if (expression instanceof BooleanExpression) {
 			Type declarationType = expressionUtil.getDeclaration(expression).getType();
-			return expressionUtil.findTypeDefinitionOfType(declarationType);
+			return ExpressionModelDerivedFeatures.getTypeDefinition(declarationType);
 		}
 		if (expression instanceof PredicateExpression) {
 			return factory.createBooleanTypeDefinition();
@@ -165,7 +165,7 @@ public class ExpressionTypeDeterminator2 {
 					fields.add(0, recordAccessExpression.getFieldReference().getFieldDeclaration());
 					ref = (ReferenceExpression) recordAccessExpression.getOperand();
 				} else if (ref instanceof DirectReferenceExpression) {
-					type = expressionUtil.findTypeDefinitionOfType(((DirectReferenceExpression)ref).getDeclaration().getType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((DirectReferenceExpression)ref).getDeclaration().getType());
 					break;
 				} else {
 					throw new IllegalArgumentException("Array access expression contains forbidden elements: " + ref.getClass());
@@ -173,19 +173,19 @@ public class ExpressionTypeDeterminator2 {
 			}
 			while (depth >= 0 || !fields.isEmpty()) {
 				if (type instanceof ArrayTypeDefinition) {
-					type = expressionUtil.findTypeDefinitionOfType(((ArrayTypeDefinition)type).getElementType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((ArrayTypeDefinition)type).getElementType());
 					depth--;
 				} else if (type instanceof RecordTypeDefinition) {
-					type = expressionUtil.findTypeDefinitionOfType(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.equals(fields.remove(0))).findFirst().get().getType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.equals(fields.remove(0))).findFirst().get().getType());
 				} else {
 					throw new IllegalArgumentException("Type contains forbidden elements: " + type.getClass());
 				}
 			}
-			return expressionUtil.findTypeDefinitionOfType(type);
+			return ExpressionModelDerivedFeatures.getTypeDefinition(type);
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			Type declarationType = expressionUtil.getDeclaration(expression).getType();
-			return expressionUtil.findTypeDefinitionOfType(declarationType);
+			return ExpressionModelDerivedFeatures.getTypeDefinition(declarationType);
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
@@ -217,7 +217,7 @@ public class ExpressionTypeDeterminator2 {
 		if (parameter.isPresent()) {
 			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
 			Type declarationType = parameterDeclaration.getType();
-			return expressionUtil.findTypeDefinitionOfType(declarationType);
+			return ExpressionModelDerivedFeatures.getTypeDefinition(declarationType);
 		}
 		throw new IllegalArgumentException("Unknown type!");
 	}
@@ -338,17 +338,60 @@ public class ExpressionTypeDeterminator2 {
 	
 	// Type equal (in the case of complex types, only shallow comparison)
 	
-	public boolean equals(Type type, ExpressionType expressionType) {
-		return type instanceof BooleanTypeDefinition && expressionType == ExpressionType.BOOLEAN ||
-			type instanceof IntegerTypeDefinition && expressionType == ExpressionType.INTEGER ||
-			type instanceof RationalTypeDefinition && expressionType == ExpressionType.RATIONAL ||
-			type instanceof DecimalTypeDefinition && expressionType == ExpressionType.DECIMAL ||
-			type instanceof EnumerationTypeDefinition && expressionType == ExpressionType.ENUMERATION ||
-			type instanceof ArrayTypeDefinition  && expressionType == ExpressionType.ARRAY ||
-			type instanceof IntegerRangeTypeDefinition && expressionType == ExpressionType.INTEGER_RANGE ||
-			type instanceof RecordTypeDefinition && expressionType == ExpressionType.RECORD ||
-			type instanceof VoidTypeDefinition && expressionType == ExpressionType.VOID ||
-			type instanceof TypeReference && equals(((TypeReference) type).getReference().getType(), expressionType);
+	public boolean equals(Expression expOne, Expression expTwo) {
+		Type typeOne = getType(expOne);
+		Type typeTwo = getType(expTwo);
+		return equals(typeOne, typeTwo);
+	}
+	
+	public boolean equals(Type typeOne, Type typeTwo) {
+		return typeOne instanceof BooleanTypeDefinition && typeTwo instanceof BooleanTypeDefinition ||
+				typeOne instanceof IntegerTypeDefinition && typeTwo instanceof IntegerTypeDefinition ||
+				typeOne instanceof RationalTypeDefinition && typeTwo instanceof RationalTypeDefinition ||
+				typeOne instanceof DecimalTypeDefinition && typeTwo instanceof DecimalTypeDefinition ||
+				typeOne instanceof EnumerationTypeDefinition && typeTwo instanceof EnumerationTypeDefinition ||
+				typeOne instanceof ArrayTypeDefinition  && typeTwo instanceof ArrayTypeDefinition ||
+				typeOne instanceof IntegerRangeTypeDefinition && typeTwo instanceof IntegerRangeTypeDefinition ||
+				typeOne instanceof RecordTypeDefinition && typeTwo instanceof RecordTypeDefinition ||
+				typeOne instanceof VoidTypeDefinition && typeTwo instanceof VoidTypeDefinition;
+	}
+	
+	public boolean isBoolean(Expression expression) {
+		if (getType(expression) instanceof BooleanTypeDefinition) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public boolean isInteger(Expression expression) {
+		if (getType(expression) instanceof IntegerTypeDefinition) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public EnumerationTypeDefinition getEnumerationType(Type type) {
+		EnumerationTypeDefinition enumType = null;
+		if (type instanceof EnumerationTypeDefinition) {
+			enumType = (EnumerationTypeDefinition) type;
+		}
+		else if (type instanceof TypeReference){
+			final TypeReference typeReference = (TypeReference) type;
+			final Type referencedType = typeReference.getReference().getType();
+			if (referencedType instanceof EnumerationTypeDefinition) {
+				enumType = (EnumerationTypeDefinition) referencedType;
+			}
+		}
+		return enumType;
+	}
+	
+	public EnumerationTypeDefinition getEnumerationType(Expression expression) {
+		Type type = getType(expression);
+		return getEnumerationType(type);
 	}
 	
 	/*
