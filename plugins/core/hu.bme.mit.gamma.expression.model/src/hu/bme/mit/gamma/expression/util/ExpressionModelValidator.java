@@ -2,13 +2,13 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -18,7 +18,6 @@ import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BinaryExpression;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
-import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ComparisonExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
@@ -41,7 +40,6 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
-import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
@@ -57,7 +55,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
-import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -149,43 +146,22 @@ public class ExpressionModelValidator {
 	
 	protected ExpressionTypeDeterminator2 typeDeterminator2 = ExpressionTypeDeterminator2.INSTANCE;
 	
-	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-		String name = element.getName();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Class<? extends NamedElement> clazz = null;
-		if (element instanceof Declaration) {
-			clazz = Declaration.class;
-		}
-		else {
-			clazz = element.getClass();
-		}
-		EObject root = EcoreUtil.getRootContainer(element);
-		validationResultMessages.addAll(checkNames(root, Collections.singleton(clazz), name));
-		return validationResultMessages;
+	public Collection<ValidationResultMessage> checkNameUniqueness(EObject root) {
+		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
 	}
 	
-	public Collection<ValidationResultMessage> checkNames(EObject root,
-			Class<? extends NamedElement> clazz, String name) {
-		return checkNames(root, List.of(clazz), name);
-	}
-	
-	public Collection<ValidationResultMessage> checkNames(EObject root,
-			Collection<Class<? extends NamedElement>> classes, String name) {
-		int nameCount = 0;
-		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
+	public Collection<ValidationResultMessage> checkNameUniqueness(List<? extends NamedElement> elements) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (Class<? extends NamedElement> clazz : classes) {
-			List<? extends NamedElement> elements = ecoreUtil.getAllContentsOfType(root, clazz);
-			namedElements.addAll(elements);
-		}
-		for (NamedElement otherElement : namedElements) {
-			if (name.equals(otherElement.getName())) {
-				++nameCount;
+		Set<String> names = new HashSet<String>();
+		for (NamedElement element : elements) {
+			String name = element.getName();
+			if (names.contains(name)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Identifiers in a scope must be unique.", new ReferenceInfo(
+								ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null, element)));
 			}
-			if (nameCount > 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"In a Gamma model, these identifiers must be unique.",
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+			else {
+				names.add(name);
 			}
 		}
 		return validationResultMessages;
