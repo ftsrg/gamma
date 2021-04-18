@@ -161,8 +161,6 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		handleValidationResultMessage(expressionModelValidator.checkInitializableElement(elem));
 	}
 	
-//////////////////////////////////////////////////////////////////////
-	
 	@Check
 	public void checkArrayTypeDefinition(ArrayTypeDefinition elem) {
 		handleValidationResultMessage(expressionModelValidator.checkArrayTypeDefinition(elem));

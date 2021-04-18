@@ -66,7 +66,6 @@ public class ExpressionModelValidator {
 	// Singleton
 	public static final ExpressionModelValidator INSTANCE = new ExpressionModelValidator();
 	protected ExpressionModelValidator() {}
-	//
 	
 	public enum ValidationResult{
 		// Enum literals that determine the type of the message: error, info, warning.
@@ -203,11 +202,10 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkIfThenElseExpression(IfThenElseExpression expression) {
-		Type expressionType = typeDeterminator2.getType(expression.getCondition());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator2.isBoolean(expression)) {
+		if (!typeDeterminator2.isBoolean(expression.getCondition())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The condition of the if-then-else expression must be of type boolean, currently it is: " + expressionType.toString().toLowerCase(), 
+					"The condition of the if-then-else expression must be of type boolean, currently it is: " + typeDeterminator2.getType(expression.getCondition()).toString().toLowerCase(), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION, null)));
 		}
 		if (!typeDeterminator2.equals(expression.getThen(), expression.getElse())) {
@@ -243,7 +241,7 @@ public class ExpressionModelValidator {
 				expressionUtil.getAccessedDeclaration(recordAccessExpression);
 		RecordTypeDefinition recordType = (RecordTypeDefinition) 
 				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();;
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(accessedDeclaration instanceof ValueDeclaration)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The referred declaration is not accessible as a record!", 
@@ -440,8 +438,6 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeAndTypeConformance(Type lhs, Type rhs, EStructuralFeature feature) {
-		//ExpressionType leftHandSideExpressionType = typeDeterminator.transform(lhs);
-		//ExpressionType rightHandSideExpressionType = typeDeterminator.transform(rhs);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator2.equals(lhs, rhs)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -509,7 +505,8 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (lhs != rhs) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The right hand side is not the same type of enumeration as the left hand side.", 
+					"The right hand side is not the same type of enumeration as the left hand side."
+					+ lhs.toString() + " " + rhs.toString(), 
 					new ReferenceInfo(feature, null)));
 		}
 		return validationResultMessages;
@@ -602,15 +599,14 @@ public class ExpressionModelValidator {
 				Type variableDeclarationType = declaration.getType();
 				Type initialExpressionType = typeDeterminator2.getType(elem.getExpression());
 				if (!typeDeterminator2.equals(variableDeclarationType, initialExpressionType)) {
-					
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The types of the declaration and the right hand side expression are not the same: " +
 											variableDeclarationType.toString().toLowerCase() + " and " +
 											initialExpressionType.toString().toLowerCase() + ".", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
-				} 
+				}
 				// Additional checks for enumerations
-				checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION);
+				validationResultMessages.addAll(checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION));
 				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
 				if (variableDeclarationType instanceof ArrayTypeDefinition) {

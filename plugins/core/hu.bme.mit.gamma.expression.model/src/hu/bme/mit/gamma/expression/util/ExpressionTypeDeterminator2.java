@@ -70,16 +70,25 @@ import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.UnaryMinusExpression;
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class ExpressionTypeDeterminator2 {
-	// Singleton
 	public static final ExpressionTypeDeterminator2 INSTANCE = new ExpressionTypeDeterminator2();
 	protected ExpressionTypeDeterminator2() {}
 	
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public Type getType(Expression expression) {
+		if (expression instanceof TypeReference) {
+			Type type = getType(expression);
+			for (TypeReference reference : ecoreUtil.getAllContentsOfType(type, TypeReference.class)) {
+				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(reference);
+				ecoreUtil.replace(typeDefinition, reference);
+			}
+			return ExpressionModelDerivedFeatures.getTypeDefinition(type);
+		}
 		if (expression instanceof BooleanLiteralExpression) {
 			return factory.createBooleanTypeDefinition();
 		}
@@ -206,12 +215,12 @@ public class ExpressionTypeDeterminator2 {
 				return typeDefinition;
 			}
 			else {
-				throw new IllegalArgumentException("The type of the operand  of the select expression is not an enumerable type: " + expressionUtil.getDeclaration(selectExpression));
+				throw new IllegalArgumentException("The type of the operand of the select expression is not an enumerable type: " + expressionUtil.getDeclaration(selectExpression));
 			}
 		}
-		if (expression == null) {
+		/*if (expression == null) {
 			return factory.createVoidTypeDefinition();
-		}
+		}*/
 		// EventParameterReferences: they are contained in StatechartModelPackage (they cannot be imported)
 		Optional<EObject> parameter = getParameter(expression);
 		if (parameter.isPresent()) {
@@ -291,32 +300,7 @@ public class ExpressionTypeDeterminator2 {
 		return getArithmeticType(types);
 	}
 	
-	/*
-	// Easy determination of boolean and number types
-	
-	public boolean isBoolean(Expression	expression) {
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression referenceExpression = (DirectReferenceExpression) expression;
-			Declaration declaration = referenceExpression.getDeclaration();
-			Type declarationType = declaration.getType();
-			return transform(declarationType) == ExpressionType.BOOLEAN;
-		} else if (expression instanceof AccessExpression) {
-			Declaration declaration = expressionUtil.getDeclaration(expression);
-			Type declarationType = declaration.getType();
-			return transform(declarationType) == ExpressionType.BOOLEAN;
-		}
-		return expression instanceof BooleanExpression || expression instanceof PredicateExpression ||
-			expression instanceof ElseExpression;
-	}
-	
-	private boolean isInteger(ExpressionType type) {
-		return type == ExpressionType.INTEGER;
-	}
-	
-	public boolean isInteger(Expression expression) {
-		return isInteger(getType(expression));
-	}
-	*/
+	// Type is number.
 	
 	private boolean isNumber(Type type) {
 		return type instanceof DecimalTypeDefinition ||
@@ -345,16 +329,34 @@ public class ExpressionTypeDeterminator2 {
 	}
 	
 	public boolean equals(Type typeOne, Type typeTwo) {
+		if (typeOne instanceof TypeReference) {
+			typeOne = getDefinition(typeOne);
+		}
+		if (typeTwo instanceof TypeReference) {
+			typeTwo = getDefinition(typeTwo);
+		}
 		return typeOne instanceof BooleanTypeDefinition && typeTwo instanceof BooleanTypeDefinition ||
 				typeOne instanceof IntegerTypeDefinition && typeTwo instanceof IntegerTypeDefinition ||
 				typeOne instanceof RationalTypeDefinition && typeTwo instanceof RationalTypeDefinition ||
 				typeOne instanceof DecimalTypeDefinition && typeTwo instanceof DecimalTypeDefinition ||
 				typeOne instanceof EnumerationTypeDefinition && typeTwo instanceof EnumerationTypeDefinition ||
-				typeOne instanceof ArrayTypeDefinition  && typeTwo instanceof ArrayTypeDefinition ||
+				typeOne instanceof ArrayTypeDefinition && typeTwo instanceof ArrayTypeDefinition ||
 				typeOne instanceof IntegerRangeTypeDefinition && typeTwo instanceof IntegerRangeTypeDefinition ||
 				typeOne instanceof RecordTypeDefinition && typeTwo instanceof RecordTypeDefinition ||
 				typeOne instanceof VoidTypeDefinition && typeTwo instanceof VoidTypeDefinition;
 	}
+	
+	// Equals, TypeReference
+	
+	private Type getDefinition(Type type) {
+		for (TypeReference reference : ecoreUtil.getAllContentsOfType(type, TypeReference.class)) {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(reference);
+			ecoreUtil.replace(typeDefinition, reference);
+		}
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type);
+	}
+	
+	// Type is boolean.
 	
 	public boolean isBoolean(Expression expression) {
 		if (getType(expression) instanceof BooleanTypeDefinition) {
@@ -364,6 +366,8 @@ public class ExpressionTypeDeterminator2 {
 			return false;
 		}
 	}
+
+	// Type is integer.
 	
 	public boolean isInteger(Expression expression) {
 		if (getType(expression) instanceof IntegerTypeDefinition) {
@@ -373,6 +377,8 @@ public class ExpressionTypeDeterminator2 {
 			return false;
 		}
 	}
+	
+
 	
 	public EnumerationTypeDefinition getEnumerationType(Type type) {
 		EnumerationTypeDefinition enumType = null;
@@ -393,41 +399,4 @@ public class ExpressionTypeDeterminator2 {
 		Type type = getType(expression);
 		return getEnumerationType(type);
 	}
-	
-	/*
-	public EnumerationTypeDefinition getEnumerationType(Type type) {
-		EnumerationTypeDefinition enumType = null;
-		if (type instanceof EnumerationTypeDefinition) {
-			enumType = (EnumerationTypeDefinition) type;
-		}
-		else if (type instanceof TypeReference){
-			final TypeReference typeReference = (TypeReference) type;
-			final Type referencedType = typeReference.getReference().getType();
-			if (referencedType instanceof EnumerationTypeDefinition) {
-				enumType = (EnumerationTypeDefinition) referencedType;
-			}
-		}
-		return enumType;
-	}
-	
-	
-	public EnumerationTypeDefinition getEnumerationType(Expression expression) {
-		if (expression instanceof EnumerationLiteralExpression) {
-			EnumerationLiteralExpression literal = (EnumerationLiteralExpression) expression;
-			return (EnumerationTypeDefinition) literal.getReference().eContainer();
-		}
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
-			Type type = reference.getDeclaration().getType();
-			return getEnumerationType(type);
-		}
-		Optional<EObject> parameter = getParameter(expression);
-		if (parameter.isPresent()) {
-			ParameterDeclaration parameterDeclaration = (ParameterDeclaration) parameter.get();
-			Type type = parameterDeclaration.getType();
-			return getEnumerationType(type);
-		}
-		throw new IllegalArgumentException("Not known expression: " + expression);
-	}
-	*/
 }
