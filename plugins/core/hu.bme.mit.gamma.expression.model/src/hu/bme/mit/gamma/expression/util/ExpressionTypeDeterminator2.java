@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
-import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -63,7 +62,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
@@ -81,6 +79,9 @@ public class ExpressionTypeDeterminator2 {
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
 	
 	public Type getType(Expression expression) {
+		if (expression instanceof Declaration) {
+			return ExpressionModelDerivedFeatures.getTypeDefinition((Declaration)expression);
+		}
 		if (expression instanceof TypeReference) {
 			Type type = getType(expression);
 			for (TypeReference reference : ecoreUtil.getAllContentsOfType(type, TypeReference.class)) {
