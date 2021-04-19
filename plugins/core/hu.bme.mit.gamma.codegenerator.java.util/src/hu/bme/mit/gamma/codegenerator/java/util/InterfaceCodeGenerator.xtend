@@ -19,17 +19,15 @@ import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartMo
 class InterfaceCodeGenerator {
 	
 	final String BASE_PACKAGE_NAME
-	final String INTERFACE_PACKAGE_NAME
 	
 	final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
 	
 	new(String basePackageName) {
 		this.BASE_PACKAGE_NAME = basePackageName
-		this.INTERFACE_PACKAGE_NAME = basePackageName + "." + Namings.INTERFACE_PACKAGE_POSTFIX
 	}
 	
 	def createInterface(Interface _interface) '''
-		package «INTERFACE_PACKAGE_NAME»;
+		package «_interface.getPackageString(BASE_PACKAGE_NAME)»;
 		
 		import java.util.List;
 		import «BASE_PACKAGE_NAME».*;
@@ -92,6 +90,8 @@ class InterfaceCodeGenerator {
 	def createReflectiveInterface() '''
 		package «BASE_PACKAGE_NAME»;
 		
+		import java.util.Objects;
+		
 		public interface «Namings.REFLECTIVE_INTERFACE» {
 			
 			void reset();
@@ -117,7 +117,7 @@ class InterfaceCodeGenerator {
 			Object getValue(String variable);
 			
 			default boolean checkVariableValue(String variable, Object expectedValue) {
-				return getValue(variable).equals(expectedValue);
+				return Objects.deepEquals(getValue(variable), expectedValue);
 			}
 			
 			String[] getComponents();

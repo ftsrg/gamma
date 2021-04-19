@@ -14,6 +14,7 @@ import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
+import hu.bme.mit.gamma.action.model.Block;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
@@ -54,7 +55,13 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 
 	@Check
 	public void CheckReturnStatementType(ReturnStatement rs) {
-		handleValidationResultMessage(actionModelValidator.CheckReturnStatementType(rs));
+		handleValidationResultMessage(actionModelValidator.checkReturnStatementType(rs));
 	}
 	
+//////////////////////////////////////////////////////////////////////
+	
+	@Check
+	public void checkBlockIsEmpty(Block block) {
+		handleValidationResultMessage(actionModelValidator.checkBlockIsEmpty(block));
+	}
 }

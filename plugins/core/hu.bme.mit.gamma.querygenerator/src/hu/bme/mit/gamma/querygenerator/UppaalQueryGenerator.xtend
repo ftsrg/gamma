@@ -78,7 +78,7 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return locationNames.toString
 	}
 	
-	override protected getTargetVariableName(VariableDeclaration variable,
+	override protected getTargetVariableNames(VariableDeclaration variable,
 			SynchronousComponentInstance instance) {
 		return #[getVariableName(variable, instance)]
 	}
@@ -88,7 +88,7 @@ class UppaalQueryGenerator extends AbstractQueryGenerator {
 		return getOutEventName(event, port, instance)
 	}
 	
-	override protected getTargetOutEventParameterName(Event event, Port port,
+	override protected getTargetOutEventParameterNames(Event event, Port port,
 			ParameterDeclaration parameter, SynchronousComponentInstance instance) {
 		return #[getOutValueOfName(event, port, parameter, instance)]
 	}

@@ -25,6 +25,8 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.SimpleScope;
 
+import com.google.common.collect.Lists;
+
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.expression.model.Declaration;
@@ -33,6 +35,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.ParametricElement;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -71,6 +74,7 @@ import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
+import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
 /**
  * This class contains custom scoping description.
@@ -81,6 +85,10 @@ import hu.bme.mit.gamma.statechart.statechart.Transition;
  */
 public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageScopeProvider {
 
+	public StatechartLanguageScopeProvider() {
+		super.util = StatechartUtil.INSTANCE;
+	}
+	
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
 
@@ -272,54 +280,55 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			if (reference == ExpressionModelPackage.Literals.TYPE_REFERENCE__REFERENCE) {
 				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
 				if (gammaPackage != null) {
-					List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+					Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
 					return Scopes.scopeFor(typeDeclarations);
 				}
 			}
 			if (reference == ExpressionModelPackage.Literals.DIRECT_REFERENCE_EXPRESSION__DECLARATION) {
-				// Global declarations
-				Collection<Declaration> declarations = new ArrayList<Declaration>();
-				Package gammaPackage = ecoreUtil.getSelfOrContainerOfType(context, Package.class);
-				declarations.addAll(gammaPackage.getConstantDeclarations());
-				StatechartDefinition gammaStatechart = ecoreUtil.getSelfOrContainerOfType(context, StatechartDefinition.class);
-				declarations.addAll(gammaStatechart.getParameterDeclarations());
-				declarations.addAll(gammaStatechart.getVariableDeclarations());
-				IScope statechartDeclarations = Scopes.scopeFor(declarations);
-				// 1. Record fields
-//				RecordAccessExpression recordAccess = ecoreUtil.getSelfOrContainerOfType(context, RecordAccessExpression.class);
-//				if (recordAccess != null) {
-//					return super.getScope(recordAccess, reference);
-//				}
-				// 2. Actions and local declarations
+				// 1. Local declarations
 				Action actionContainer = ecoreUtil.getSelfOrContainerOfType(context, Action.class);
 				if (actionContainer != null) {
-					IScope actionDeclarations = super.getScope(actionContainer, reference);
-					return new SimpleScope(statechartDeclarations, actionDeclarations.getAllElements());
+					return super.getScope(actionContainer, reference);
+					// Super takes care of the parent scopes
 				}
-				return statechartDeclarations;
+				// 2. Variable declarations < parameter declarations < constant declarations - function declarations
+				IScope scope = IScope.NULLSCOPE;
+				ParametricElement element = ecoreUtil.getSelfOrContainerOfType(context, ParametricElement.class);
+				if (element != null) {
+					IScope parentScope = super.getScope(context, reference); // Parameters and constants
+					if (element instanceof StatechartDefinition) {
+						StatechartDefinition statechart = (StatechartDefinition) element;
+						Collection<Declaration> declarations = new ArrayList<Declaration>();
+						declarations.addAll(statechart.getVariableDeclarations());
+						declarations.addAll(statechart.getFunctionDeclarations());
+						scope = Scopes.scopeFor(declarations, parentScope);
+					}
+					else {
+						scope = parentScope;
+					}
+				}
+				// 3. Imports
+				Package containingPackage = StatechartModelDerivedFeatures.getContainingPackage(context);
+				List<Package> imports = Lists.reverse(containingPackage.getImports()); // Latter imports are stronger
+				for (Package _import : imports) {
+					IScope parent = super.getScope(_import, reference);
+					scope = new SimpleScope(parent, scope.getAllElements());
+				}
+				return scope;
 			}
 			if (reference == ActionModelPackage.Literals.TYPE_REFERENCE_EXPRESSION__DECLARATION) {
 				Package gammaPackage = (Package) EcoreUtil2.getRootContainer(context, true);
-				List<TypeDeclaration> typeDeclarations = collectTypeDeclarations(gammaPackage);
+				Collection<TypeDeclaration> typeDeclarations = util.getTypeDeclarations(gammaPackage);
 				return Scopes.scopeFor(typeDeclarations);
 			}
 		} catch (NullPointerException e) {
 			// Nullptr exception is thrown if the scope turns out to be empty
-			// This can be due to modeling error of the user, e.g., there no in events on the specified ports
+			// This can be due to modeling error of the user, e.g., there are no in events on the specified ports
 			return super.getScope(context, reference);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
 		return super.getScope(context, reference);
-	}
-	
-	protected List<TypeDeclaration> collectTypeDeclarations(Package _package) {
-		List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
-		for (Package _import :_package.getImports()) {
-			types.addAll(_import.getTypeDeclarations());
-		}
-		types.addAll(_package.getTypeDeclarations());
-		return types;
 	}
 	
 	protected Collection<StateNode> stateNodesForTransition(Transition transition) {

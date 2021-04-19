@@ -54,9 +54,9 @@ class GlueCodeGenerator {
 	protected final ViatraQueryEngine engine
 	protected Component topComponent
 	// File URIs where the classes need to be saved
+	protected final String BASE_FOLDER_URI
 	protected final String BASE_PACKAGE_URI
 	protected final String CHANNEL_URI
-	protected final String INTERFACE_URI
 	// The base of the package name, e.g.,: hu.bme.mit.gamma.tutorial.start
 	protected final String BASE_PACKAGE_NAME
 	// The base of the package name of the generated Yakindu components, not org.yakindu.scr anymore
@@ -95,9 +95,9 @@ class GlueCodeGenerator {
 		this.YAKINDU_PACKAGE_NAME = basePackageName
 		resourceSet.loadModels
 		this.engine = ViatraQueryEngine.on(new EMFScope(resourceSet))
-		this.BASE_PACKAGE_URI = srcGenFolderUri + File.separator + basePackageName.replaceAll("\\.", "/");
-		this.CHANNEL_URI = this.BASE_PACKAGE_URI + File.separator + Namings.CHANNEL_PACKAGE_POSTFIX
-		this.INTERFACE_URI = this.BASE_PACKAGE_URI + File.separator + Namings.INTERFACE_PACKAGE_POSTFIX
+		this.BASE_FOLDER_URI = srcGenFolderUri
+		this.BASE_PACKAGE_URI = this.BASE_FOLDER_URI  + File.separator + basePackageName.replaceAll("\\.", "/")
+		this.CHANNEL_URI = BASE_PACKAGE_URI + File.separator + Namings.CHANNEL_PACKAGE_POSTFIX
 		//
 		val trace = new Trace(this.engine)
 		this.nameGenerator = new NameGenerator(this.BASE_PACKAGE_NAME)
@@ -238,8 +238,10 @@ class GlueCodeGenerator {
 		if (typeDeclarationRule === null) {
 			 typeDeclarationRule = createRule(TypeDeclarations.instance).action [
 			 	if (!it.typeDeclaration.type.primitive) {
+ 					val packageName = typeDeclaration.getPackageString(BASE_PACKAGE_NAME)
+					val TYPE_FOLDER_URI = BASE_FOLDER_URI.generateUri(packageName)
 					val code = it.typeDeclaration.generateTypeDeclarationCode
-					code.saveCode(BASE_PACKAGE_URI + File.separator + it.typeDeclaration.name + ".java")
+					code.saveCode(TYPE_FOLDER_URI + File.separator + it.typeDeclaration.name + ".java")
 				}
 			].build		
 		}
@@ -252,8 +254,10 @@ class GlueCodeGenerator {
 	protected def getPortInterfaceRule() {
 		if (portInterfaceRule === null) {
 			 portInterfaceRule = createRule(Interfaces.instance).action [
+ 				val interfacePackageName = interface.getPackageString(BASE_PACKAGE_NAME)
+				val INTERFACE_FOLDER_URI = BASE_FOLDER_URI.generateUri(interfacePackageName)
 				val code = it.interface.generatePortInterfaces
-				code.saveCode(BASE_PACKAGE_URI + File.separator + Namings.INTERFACE_PACKAGE_POSTFIX + File.separator + it.interface.implementationName + ".java")
+				code.saveCode(INTERFACE_FOLDER_URI + File.separator + it.interface.implementationName + ".java")
 			].build		
 		}
 		return portInterfaceRule

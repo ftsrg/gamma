@@ -18,11 +18,13 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelFactory;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.AccessExpression;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 
@@ -33,6 +35,12 @@ public class ActionUtil extends ExpressionUtil {
 	//
 	
 	protected ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE;
+	
+	public Block wrap(Collection<? extends Action> actions) {
+		Block block = actionFactory.createBlock();
+		block.getActions().addAll(actions);
+		return block;
+	}
 	
 	public Action prepend(Action action, Action pivot) {
 		if (action == null) {
@@ -86,6 +94,21 @@ public class ActionUtil extends ExpressionUtil {
 		return extensibleAction;
 	}
 	
+	public VariableDeclarationStatement createDeclarationStatement(Type type, String name) {
+		return createDeclarationStatement(type, name, null);
+	}
+	
+	public VariableDeclarationStatement createDeclarationStatement(Type type,
+			String name, Expression initialExpression) {
+		VariableDeclarationStatement statement = actionFactory.createVariableDeclarationStatement();
+		VariableDeclaration variable = factory.createVariableDeclaration();
+		statement.setVariableDeclaration(variable);
+		variable.setType(type);
+		variable.setName(name);
+		variable.setExpression(initialExpression);
+		return statement;
+	}
+	
 	public List<AssignmentStatement> getAssignments(VariableDeclaration variable,
 			Collection<AssignmentStatement> assignments) {
 		List<AssignmentStatement> assignmentsOfVariable = new ArrayList<>();
@@ -105,14 +128,34 @@ public class ActionUtil extends ExpressionUtil {
 		return assignmentsOfVariable;
 	}
 	
-	public AssignmentStatement createAssignment(VariableDeclaration variable,
+	public AssignmentStatement createAssignment(ReferenceExpression reference,
 			Expression expression) {
 		AssignmentStatement assignmentStatement = actionFactory.createAssignmentStatement();
-		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
-		reference.setDeclaration(variable);
 		assignmentStatement.setLhs(reference);
 		assignmentStatement.setRhs(expression);
 		return assignmentStatement;
+	}
+	
+	public AssignmentStatement createAssignment(VariableDeclaration variable,
+			Expression expression) {
+		DirectReferenceExpression reference = factory.createDirectReferenceExpression();
+		reference.setDeclaration(variable);
+		return createAssignment(reference, expression);
+	}
+	
+	public List<AssignmentStatement> createAssignments(List<? extends ReferenceExpression> left,
+			List<Expression> right) {
+		List<AssignmentStatement> assignments = new ArrayList<AssignmentStatement>();
+		int size = left.size();
+		if (size != right.size()) {
+			throw new IllegalArgumentException("Different number of arguments: " + size + " " + right.size());
+		}
+		for (int i = 0; i < size; i++) {
+			ReferenceExpression lhs = left.get(i);
+			Expression rhs = right.get(i);
+			assignments.add(createAssignment(lhs, rhs));
+		}
+		return assignments;
 	}
 	
 }

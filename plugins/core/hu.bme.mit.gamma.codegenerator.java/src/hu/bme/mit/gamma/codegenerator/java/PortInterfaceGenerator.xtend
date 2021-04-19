@@ -10,11 +10,11 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java
 
-import hu.bme.mit.gamma.codegenerator.java.util.Namings
 import hu.bme.mit.gamma.statechart.interface_.EventDirection
 import hu.bme.mit.gamma.statechart.interface_.Interface
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class PortInterfaceGenerator {
 	
@@ -32,9 +32,12 @@ class PortInterfaceGenerator {
 	}
 	
 	def generatePortInterfaces(Interface anInterface) '''
-		package «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX»;
+		package «anInterface.generateObjectPackageName»;
 		
 		import «PACKAGE_NAME».*;
+		«FOR _package : anInterface.containingPackage.imports.toSet»
+			import «_package.getPackageString(PACKAGE_NAME)».*;
+		«ENDFOR»
 		import java.util.List;
 		
 		public interface «anInterface.implementationName» {

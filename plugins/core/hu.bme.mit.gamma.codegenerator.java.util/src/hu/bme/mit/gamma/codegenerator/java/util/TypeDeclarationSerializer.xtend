@@ -11,8 +11,12 @@
 package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
+
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
+
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class TypeDeclarationSerializer {
 	// Singleton
@@ -20,8 +24,10 @@ class TypeDeclarationSerializer {
 	protected new() {}
 	//
 	
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	
 	def String serialize(TypeDeclaration type) {
-		val declaredType = type.type
+		val declaredType = type.typeDefinition // So transitive references are solved
 		return declaredType.serialize(type.name)
 	}
 	
@@ -32,4 +38,48 @@ class TypeDeclarationSerializer {
 	def dispatch String serialize(EnumerationTypeDefinition type, String name) '''
 		enum «name» {«FOR literal : type.literals SEPARATOR ', '»«literal.name»«ENDFOR»}
 	'''
+	
+	def dispatch String serialize(RecordTypeDefinition type, String name) '''
+		class «name» {
+			«FOR field : type.fieldDeclarations»
+				protected «field.type.serialize» «field.name»;
+				
+				public «field.type.serialize» get«field.name.toFirstUpper»() {
+					return this.«field.name»;
+				}
+				
+				public void set«field.name.toFirstUpper»(«field.type.serialize» «field.name») {
+					this.«field.name» = «field.name»;
+				}
+				
+			«ENDFOR»
+			public «name»(«FOR field : type.fieldDeclarations SEPARATOR ', '»«field.type.serialize» «field.name»«ENDFOR») {
+				«FOR field : type.fieldDeclarations»
+					this.«field.name» = «field.name»;
+				«ENDFOR»
+			}
+			
+			@Override
+			public boolean equals(Object object) {
+				if (this == object) {
+					return true;
+				}
+				if (object == null) {
+					return false;
+				}
+				if (this.getClass() != object.getClass()) {
+					return false;
+				}
+				«name» record = («name») object;
+				«FOR field : type.fieldDeclarations»
+					if («IF field.type.isPrimitive»this.«field.name» != record.«field.name»«ELSE»!this.«field.name».equals(record.«field.name»)«ENDIF») {
+						return false;
+					}
+				«ENDFOR»
+				return true;
+			}
+			
+		}
+	'''
+	
 }

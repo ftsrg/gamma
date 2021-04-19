@@ -10,12 +10,15 @@
 package hu.bme.mit.gamma.expression.language.validation;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import hu.bme.mit.gamma.expression.model.ArithmeticExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.BooleanExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
@@ -23,12 +26,15 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
+import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
+import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResult;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResultMessage;
+import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 /**
  * This class contains custom validation rules. 
@@ -36,7 +42,8 @@ import hu.bme.mit.gamma.expression.util.ExpressionModelValidator.ValidationResul
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
 public class ExpressionLanguageValidator extends AbstractExpressionLanguageValidator {
-	
+
+	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected ExpressionModelValidator expressionModelValidator = ExpressionModelValidator.INSTANCE;
 	
 	protected void handleValidationResultMessage(Collection<ValidationResultMessage> collection) {
@@ -87,8 +94,11 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	}
 	
 	@Check
-	public void checkNameUniqueness(NamedElement element) {
-		handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(element));
+	public void checkNameUniqueness(EObject element) {
+		List<NamedElement> namedElements = ecoreUtil.getContentsOfType(element, NamedElement.class);
+		if (!namedElements.isEmpty()) { // checkNameUniqueness(EObject ) would do this - this way it may be faster
+			handleValidationResultMessage(expressionModelValidator.checkNameUniqueness(namedElements));
+		}
 	}
 
 	@Check
@@ -151,4 +161,35 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 		handleValidationResultMessage(expressionModelValidator.checkInitializableElement(elem));
 	}
 	
+//////////////////////////////////////////////////////////////////////
+	
+	@Check
+	public void checkArrayTypeDefinition(ArrayTypeDefinition elem) {
+		handleValidationResultMessage(expressionModelValidator.checkArrayTypeDefinition(elem));
+	}
+	
+	@Check
+	public void checkSelfComparison(PredicateExpression elem) {
+		handleValidationResultMessage(expressionModelValidator.checkSelfComparison(elem));
+	}
+	
+	@Check
+	public void checkDivZero(ArithmeticExpression elem) {
+		handleValidationResultMessage(expressionModelValidator.checkDivZero(elem));
+	}
+	
+	@Check
+	public void checkRecordSelfReference(TypeDeclaration typeDeclaration) {
+		handleValidationResultMessage(expressionModelValidator.checkRecordSelfReference(typeDeclaration));
+	}
+	
+	@Check
+	public void checkRationalLiteralExpression(RationalLiteralExpression expression) {
+		handleValidationResultMessage(expressionModelValidator.checkRationalLiteralExpression(expression));
+	}
+	
+	@Check
+	public void checkRecordLiteralExpression(RecordLiteralExpression expression) {
+		handleValidationResultMessage(expressionModelValidator.checkRecordLiteralExpression(expression));
+	}
 }

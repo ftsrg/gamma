@@ -43,7 +43,16 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	def unwrap(String id) {
-		return id.replaceAll("\\(", "").replaceAll("\\)", "")
+//		return id.replaceAll("\\(", "").replaceAll("\\)", "")
+		return id.substring(1, id.length - 1)
+	}
+	
+	def unwrapAll(String id) {
+		var i = 0
+		for ( ; id.charAt(i).toString == "("; i++) {}
+		var j = id.length - 1
+		for ( ; id.charAt(j).toString == ")"; j--) {}
+		return id.substring(i, j + 1)
 	}
 	
 	// Gamma identifiers
@@ -182,7 +191,7 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 		for (instancesMatch : getInstanceVariables) {
 			val name = getVariableName(instancesMatch.instance, instancesMatch.variable)
 			if (variableName.equals(name)) {
-				val ids =  getTargetVariableName(instancesMatch.variable, instancesMatch.instance)
+				val ids =  getTargetVariableNames(instancesMatch.variable, instancesMatch.instance)
 				// TODO complex types?
 				return ids.head
 			}
@@ -205,8 +214,10 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 			val systemPort = eventsMatch.systemPort
 			val event = eventsMatch.event
 			for (ParameterDeclaration parameter : event.parameterDeclarations) {
-				if (portEventParameterName.equals(getSystemOutEventParameterName(systemPort, event, parameter))) {
-					val ids = getTargetOutEventParameterName(event, eventsMatch.port, parameter, eventsMatch.instance)
+				if (portEventParameterName.equals(
+						getSystemOutEventParameterName(systemPort, event, parameter))) {
+					val ids = getTargetOutEventParameterNames(
+						event, eventsMatch.port, parameter, eventsMatch.instance)
 					// TODO what about complex types
 					return ids.head
 				}
@@ -218,13 +229,13 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	protected abstract def String getTargetStateName(State state, Region parentRegion,
 		SynchronousComponentInstance instance)
 	
-	protected abstract def List<String> getTargetVariableName(VariableDeclaration variable,
+	protected abstract def List<String> getTargetVariableNames(VariableDeclaration variable,
 		SynchronousComponentInstance instance)
 	
 	protected abstract def String getTargetOutEventName(Event event, Port port,
 		SynchronousComponentInstance instance)
 	
-	protected abstract def List<String> getTargetOutEventParameterName(Event event, Port port,
+	protected abstract def List<String> getTargetOutEventParameterNames(Event event, Port port,
 		ParameterDeclaration parameter, SynchronousComponentInstance instance)
 	
 }

@@ -5,17 +5,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"
+        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableDeclarations" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
-        eType="#//XTransition" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="mergedAction" lowerBound="1"
-        eType="#//Action" containment="true">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-        <details key="documentation" value="This reference denotes a single transition merged from all contained XTransitions."/>
-      </eAnnotations>
-    </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
@@ -27,18 +21,18 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="variableGroups" upperBound="-1"
         eType="#//VariableGroup" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingAction"
-        lowerBound="1" eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="configurationInitializingAction"
-        lowerBound="1" eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="entryEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="inEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="outEventAction" lowerBound="1"
-        eType="#//Action" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="publicTypeDeclarations"
-        upperBound="-1" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="variableInitializingTransition"
+        lowerBound="1" eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="configurationInitializingTransition"
+        lowerBound="1" eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entryEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="transitions" upperBound="-1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="inEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outEventTransition" lowerBound="1"
+        eType="#//XTransition" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="XTransition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="reads" upperBound="-1"

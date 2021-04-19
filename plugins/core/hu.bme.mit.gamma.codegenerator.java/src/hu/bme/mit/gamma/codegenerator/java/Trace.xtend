@@ -26,6 +26,10 @@ class Trace {
 		this.engine = engine
 	}
 	
+	def getEngine() {
+		return this.engine
+	}
+	
 	/**
 	 * Returns a Set of EObjects that are created of the given "from" object.
 	 */

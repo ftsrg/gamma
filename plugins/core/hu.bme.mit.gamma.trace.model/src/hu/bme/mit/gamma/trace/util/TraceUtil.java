@@ -11,7 +11,9 @@
 package hu.bme.mit.gamma.trace.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
@@ -19,8 +21,17 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil.EqualityHelper;
 
+import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
+import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeReference;
+import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Interface;
+import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
+import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.Act;
 import hu.bme.mit.gamma.trace.model.Assert;
@@ -31,13 +42,46 @@ import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Reset;
 import hu.bme.mit.gamma.trace.model.Step;
 
-public class TraceUtil {
+public class TraceUtil extends ExpressionUtil {
 	// Singleton
 	public static final TraceUtil INSTANCE = new TraceUtil();
 	protected TraceUtil() {}
 	//
 	
 	public static final AssertSorter assertSorter = new AssertSorter();
+	
+	@Override
+	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
+		Collection<TypeDeclaration> types = new HashSet<TypeDeclaration>();
+		ExecutionTrace trace = ecoreUtil.getSelfOrContainerOfType(context, ExecutionTrace.class);
+		Package _package = trace.getImport();
+		// Explicit imports
+		for (Package importedPackage : StatechartModelDerivedFeatures.getAllImports(_package)) {
+			types.addAll(importedPackage.getTypeDeclarations());
+		}
+		// Native references in the case the unfolded packages
+		Collection<TypeReference> references = new ArrayList<TypeReference>();
+		references.addAll(ecoreUtil.getAllContentsOfType(_package, TypeReference.class));
+		// Events and parameters
+		for (InterfaceRealization realization :
+				ecoreUtil.getAllContentsOfType(_package, InterfaceRealization.class)) {
+			Interface _interface = realization.getInterface();
+			references.addAll(ecoreUtil.getAllContentsOfType(_interface, TypeReference.class));
+		}
+		// Collecting the type declarations
+		for (TypeReference reference : references) {
+			TypeDeclaration typeDeclaration = reference.getReference();
+			types.add(typeDeclaration);
+			Type type = ExpressionModelDerivedFeatures.getTypeDefinition(typeDeclaration.getType());
+			if (type instanceof RecordTypeDefinition) {
+				RecordTypeDefinition recordType = (RecordTypeDefinition) type;
+				Collection<TypeDeclaration> containedTypeDeclarations =
+						TraceModelDerivedFeatures.getAllTypeDeclarations(recordType);
+				types.addAll(containedTypeDeclarations);
+			}
+		}
+		return types;
+	}
 	
 	// Step sorter
 	

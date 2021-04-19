@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.genmodel.language.formatting;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
+import hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess;
 
 import hu.bme.mit.gamma.expression.language.formatting.ExpressionLanguageFormatterUtil;
 
@@ -22,8 +23,9 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
 	
 	@Override
 	protected void configureFormatting(FormattingConfig c) {
-		hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess f = (hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess) getGrammarAccess();
+		hu.bme.mit.gamma.genmodel.language.services.GenModelGrammarAccess f = (GenModelGrammarAccess) getGrammarAccess();
 		expressionLanguageFormatterUtil.format(c, f);
+		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		// Setting the maximum size of lines
         c.setAutoLinewrap(110);
         // Line break after these rules

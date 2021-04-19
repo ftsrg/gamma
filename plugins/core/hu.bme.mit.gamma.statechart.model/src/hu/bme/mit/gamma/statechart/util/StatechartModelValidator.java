@@ -21,7 +21,6 @@ import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.ExpressionStatement;
-import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
@@ -36,12 +35,12 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
-import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
@@ -105,6 +104,7 @@ import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction;
 import hu.bme.mit.gamma.statechart.statechart.Region;
 import hu.bme.mit.gamma.statechart.statechart.SchedulingOrder;
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction;
+import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -123,40 +123,17 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	//
 	
-	// Some elements can have the same name
+	// Some elements must have globally unique names
 
-	@Override
-	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-		String name = element.getName();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (element instanceof VariableDeclaration) {
-			VariableDeclarationStatement statement = ecoreUtil.getContainerOfType(
-					element, VariableDeclarationStatement.class);
-			if (statement != null) {
-				// No op - Action language validator is used here
-				return validationResultMessages;
-			}
-		}
-		if (element instanceof Event) {
-			Interface _interface = ecoreUtil.getContainerOfType(element, Interface.class);
-			validationResultMessages.addAll(checkNames(_interface, Collections.singleton(Event.class), name));
-			return validationResultMessages;
-		}
-		if (element instanceof ParameterDeclaration) {
-			EObject container = element.eContainer();
-			if (container instanceof Event) {
-				validationResultMessages.addAll(checkNames(container, Collections.singleton(ParameterDeclaration.class), name));
-				return validationResultMessages;
-			}
-		}
-		if (element instanceof TransitionIdAnnotation) {
-			StatechartDefinition statechart = StatechartModelDerivedFeatures
-					.getContainingStatechart(element);
-			validationResultMessages.addAll(checkNames(statechart, List.of(TransitionIdAnnotation.class, Declaration.class), name));
-			return validationResultMessages;
-		}
-		validationResultMessages.addAll(super.checkNameUniqueness(element));
-		return validationResultMessages;
+	public Collection<ValidationResultMessage> checkStateNameUniqueness(StatechartDefinition statechart) {
+		List<State> states = ecoreUtil.getAllContentsOfType(statechart, State.class);
+		return checkNameUniqueness(states);
+	}
+	
+	public Collection<ValidationResultMessage> checkTransitionNameUniqueness(StatechartDefinition statechart) {
+		List<TransitionIdAnnotation> transitionIdAnnotations = ecoreUtil.getAllContentsOfType(
+				statechart, TransitionIdAnnotation.class);
+		return checkNameUniqueness(transitionIdAnnotations);
 	}
 	
 	// Not supported elements
@@ -186,19 +163,21 @@ public class StatechartModelValidator extends ActionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkUnsupportedVariableTypes(VariableDeclaration variable) {
-		Type type = expressionUtil.findTypeDefinitionOfType(variable.getType());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!(type instanceof IntegerTypeDefinition ||
-			  type instanceof BooleanTypeDefinition || 
-			  type instanceof RationalTypeDefinition ||
-			  type instanceof DecimalTypeDefinition ||
-			  type instanceof EnumerationTypeDefinition ||
-			  type instanceof ArrayTypeDefinition ||
-			  type instanceof RecordTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"This type is not supported in the GSL."
-					,new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
-			
+		Type type = variable.getType();
+		if (type != null) {
+			TypeDefinition typeDefinition = StatechartModelDerivedFeatures.getTypeDefinition(type);
+			if (!(typeDefinition instanceof IntegerTypeDefinition ||
+					typeDefinition instanceof BooleanTypeDefinition || 
+					typeDefinition instanceof RationalTypeDefinition ||
+					typeDefinition instanceof DecimalTypeDefinition ||
+					typeDefinition instanceof EnumerationTypeDefinition ||
+					typeDefinition instanceof ArrayTypeDefinition ||
+					typeDefinition instanceof RecordTypeDefinition)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
+						"This type is not supported in the GSL.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.DECLARATION__TYPE, null)));
+			}
 		}
 		return validationResultMessages;
 	}
@@ -542,7 +521,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		if (transition.getPriority() != null && !transition.getPriority().equals(BigInteger.ZERO) &&
 				statechart.getTransitionPriority() != TransitionPriority.VALUE_BASED) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-					"The transition priority setting is not set to value-based, it is set to "  + statechart.getTransitionPriority() +
+					"The transition priority setting is not set to value-based, it is set to " + statechart.getTransitionPriority() +
 					" therefore this priority specification has no effect.", 
 					new ReferenceInfo(CompositeModelPackage.Literals.PRIORITIZED_ELEMENT__PRIORITY, null)));
 		}
@@ -1584,7 +1563,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkSimpleChannelOutput(SimpleChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (channel.getRequiredPort().getPort().getInterfaceRealization().getRealizationMode()  != RealizationMode.REQUIRED) {
+		if (channel.getRequiredPort().getPort().getInterfaceRealization().getRealizationMode()	!= RealizationMode.REQUIRED) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A port requiring an interface is needed here!",
 					new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT, null)));
@@ -1643,7 +1622,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public Collection<ValidationResultMessage> checkCascadeLoopChannels(BroadcastChannel channel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ComponentInstance instance = channel.getProvidedPort().getInstance();
-		if (StatechartModelDerivedFeatures.getDerivedType(instance)  instanceof AbstractSynchronousCompositeComponent &&
+		if (StatechartModelDerivedFeatures.getDerivedType(instance)	instanceof AbstractSynchronousCompositeComponent &&
 				channel.getRequiredPorts().stream().anyMatch(it -> it.getInstance() == instance)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
 					"Verification cannot be executed if different ports of a synchronous component are connected.",
@@ -1861,7 +1840,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	public boolean isContainedInQueue(Port port, Event event, AsynchronousAdapter wrapper) {
 		for (MessageQueue queue : wrapper.getMessageQueues()) {
 			for (EventReference eventReference : queue.getEventReference()) {
-				if (StatechartModelDerivedFeatures.getEventSource(eventReference)  == port) {
+				if (StatechartModelDerivedFeatures.getEventSource(eventReference) == port) {
 					if (eventReference instanceof AnyPortEventReference) {
 						return true;
 					}
@@ -1895,7 +1874,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Map<Port, Collection<Event>> usedEvents = new HashMap<Port, Collection<Event>>();
 		for (ControlSpecification controlSpecification : adapter.getControlSpecifications()) {
 			Trigger trigger = controlSpecification.getTrigger();
-			int index =  adapter.getControlSpecifications().indexOf(controlSpecification);
+			int index =	adapter.getControlSpecifications().indexOf(controlSpecification);
 			if (trigger instanceof AnyTrigger) {
 				if (adapter.getControlSpecifications().size() > 1) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 

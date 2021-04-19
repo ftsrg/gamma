@@ -11,14 +11,13 @@
 package hu.bme.mit.gamma.codegenerator.java
 
 import hu.bme.mit.gamma.codegenerator.java.util.InterfaceCodeGenerator
-import hu.bme.mit.gamma.codegenerator.java.util.Namings
-import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.Port
 import java.util.HashSet
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
@@ -40,7 +39,7 @@ class ComponentInterfaceGenerator {
 	/**
 	 * Generates the Java interface code (implemented by the component) of the given component.
 	 */
-	protected def generateComponentInterface(Component component) {
+	def generateComponentInterface(Component component) {
 		var ports = new HashSet<Port>
 		if (component instanceof CompositeComponent) {
 			val composite = component as CompositeComponent
@@ -56,8 +55,8 @@ class ComponentInterfaceGenerator {
 			package «component.generateComponentPackageName»;
 			
 			import «PACKAGE_NAME».*;
-			«FOR interfaceName : ports.map[it.interfaceRealization.interface.implementationName].toSet»
-				import «PACKAGE_NAME».«Namings.INTERFACE_PACKAGE_POSTFIX».«interfaceName»;
+			«FOR _interface : component.interfaces»
+				import «_interface.getPackageString(PACKAGE_NAME)».«_interface.implementationName»;
 			«ENDFOR»
 			
 			public interface «component.generatePortOwnerInterfaceName» {

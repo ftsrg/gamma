@@ -158,7 +158,7 @@ public class ExpressionTypeDeterminator {
 					fields.add(0, recordAccessExpression.getFieldReference().getFieldDeclaration());
 					ref = (ReferenceExpression) recordAccessExpression.getOperand();
 				} else if (ref instanceof DirectReferenceExpression) {
-					type = expressionUtil.findTypeDefinitionOfType(((DirectReferenceExpression)ref).getDeclaration().getType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((DirectReferenceExpression)ref).getDeclaration().getType());
 					break;
 				} else {
 					throw new IllegalArgumentException("Array access expression contains forbidden elements: " + ref.getClass());
@@ -166,15 +166,15 @@ public class ExpressionTypeDeterminator {
 			}
 			while (depth >= 0 || !fields.isEmpty()) {
 				if (type instanceof ArrayTypeDefinition) {
-					type = expressionUtil.findTypeDefinitionOfType(((ArrayTypeDefinition)type).getElementType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((ArrayTypeDefinition)type).getElementType());
 					depth--;
 				} else if (type instanceof RecordTypeDefinition) {
-					type = expressionUtil.findTypeDefinitionOfType(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.equals(fields.remove(0))).findFirst().get().getType());
+					type = ExpressionModelDerivedFeatures.getTypeDefinition(((RecordTypeDefinition)type).getFieldDeclarations().stream().filter(e -> e.equals(fields.remove(0))).findFirst().get().getType());
 				} else {
 					throw new IllegalArgumentException("Type contains forbidden elements: " + type.getClass());
 				}
 			}
-			return transform(expressionUtil.findTypeDefinitionOfType(type));
+			return transform(ExpressionModelDerivedFeatures.getTypeDefinition(type));
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			return transform(expressionUtil.getDeclaration(((FunctionAccessExpression) expression)).getType());

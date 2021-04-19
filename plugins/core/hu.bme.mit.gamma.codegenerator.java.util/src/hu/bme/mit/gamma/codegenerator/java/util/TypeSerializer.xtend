@@ -10,16 +10,17 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.DecimalTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition
+import hu.bme.mit.gamma.expression.model.RecordTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeReference
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
-import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 
 class TypeSerializer {
 	// Singleton
@@ -43,8 +44,8 @@ class TypeSerializer {
 	
 	def dispatch String serialize(ArrayTypeDefinition type) '''«type.elementType.serialize»[]'''
 	
-	def dispatch String serialize(EnumerationTypeDefinition type) {
-		throw new IllegalArgumentException("Anonymous enumeration types are not supported: " + type)
-	}
+	def dispatch String serialize(EnumerationTypeDefinition type) '''«type.typeDeclaration.name»'''
+	
+	def dispatch String serialize(RecordTypeDefinition type) '''«type.typeDeclaration.name»'''
 
 }

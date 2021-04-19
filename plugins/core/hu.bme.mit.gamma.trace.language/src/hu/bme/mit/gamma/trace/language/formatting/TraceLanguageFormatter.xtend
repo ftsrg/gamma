@@ -23,15 +23,19 @@ class TraceLanguageFormatter extends AbstractDeclarativeFormatter {
 		val f = grammarAccess as TraceLanguageGrammarAccess
 		// Using the basic expression language formatting
 		expressionLanguageFormatterUtil.format(c, f)
+		expressionLanguageFormatterUtil.formatExpressions(c, f.getExpressionLanguageGrammarAccess());
 		// Setting the maximum size of lines
         c.setAutoLinewrap(110)
         // Line break between import and component keywords
-        c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1, f.executionTraceAccess.traceKeyword_2)
+        c.setLinewrap(0, 1, 2).between(f.executionTraceAccess.importAssignment_1,
+        	f.executionTraceAccess.traceKeyword_2)
         // Line breaks after these rules
   		c.setLinewrap(1).after(f.executionTraceAccess.group_5)
         c.setLinewrap(1).after(f.actRule)
         c.setLinewrap(1).after(f.raiseEventActRule)
         c.setLinewrap(1).after(f.instanceStateRule)
+        // Rules
+        c.setNoSpace.before(f.raiseEventActAccess.group_4)
         // Comments
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule()) 
 		c.setLinewrap(0, 1, 2).before(f.getML_COMMENTRule()) 

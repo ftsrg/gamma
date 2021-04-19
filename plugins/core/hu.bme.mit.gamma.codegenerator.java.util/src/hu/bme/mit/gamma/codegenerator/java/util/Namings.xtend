@@ -10,11 +10,13 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
-import hu.bme.mit.gamma.statechart.interface_.Port
-import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
 import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.interface_.Interface
-import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
+import hu.bme.mit.gamma.statechart.interface_.Package
+import hu.bme.mit.gamma.statechart.interface_.Port
+import java.io.File
+import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -32,17 +34,17 @@ class Namings {
 	public static final String GAMMA_TIMER_CLASS = "OneThreadedTimer"
 	public static final String UNIFIED_TIMER_CLASS = "UnifiedTimer"
 	
-	public static final String INTERFACE_PACKAGE_POSTFIX = "interfaces"
-	public static final String CHANNEL_PACKAGE_POSTFIX = "channels"
-	
 	public static final String REFLECTIVE_WRAPPED_COMPONENT = "wrappedComponent"
 	public static final String REFLECTIVE_INTERFACE = "ReflectiveComponentInterface"
+	
+	public static final String CHANNEL_PACKAGE_POSTFIX = "channels"
 	
 	static def String getPackageString(Package _package, String base) '''«base».«_package.name.toLowerCase»'''
 	
 	static def String getPackageString(Component component, String base) '''«component.containingPackage.getPackageString(base)»'''
+	static def String getPackageString(EObject object, String base) '''«object.containingPackage.getPackageString(base)»'''
 	
-	static def String getInterfacePackageString(String base) '''«base».«INTERFACE_PACKAGE_POSTFIX»'''
+	static def String generateUri(String targetFolderUri, String packageName) '''«targetFolderUri + File.separator + packageName.replaceAll("\\.", "/")»'''
 	
 	/**
 	 * Returns the name of the Java interface generated from the given Gamma interface, e.g., PortInterface. 
@@ -73,5 +75,5 @@ class Namings {
 	 * Returns the name of the Java object of the wrapped synchronous component.
 	 */
 	static def String getWrappedComponentName(AsynchronousAdapter component) '''«component.wrappedComponent.name»'''
-	
+
 }

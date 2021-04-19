@@ -23,12 +23,11 @@ import hu.bme.mit.gamma.statechart.statechart.PortEventReference
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference
+import hu.bme.mit.gamma.statechart.util.StatechartUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class EventReferenceTransformer {
@@ -36,25 +35,25 @@ class EventReferenceTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
 	// Factory objects
 	protected final extension ExpressionModelFactory constraintFactory = ExpressionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining
 	
-	new(Trace trace, boolean functionInlining) {
+	new(Trace trace) {
+		this(trace, true, 10)
+	}
+	
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
+		this.expressionTransformer = new ExpressionTransformer(
+				this.trace, functionInlining, maxRecursionDepth)
 	}
 	
 	protected def transformToLowlevelGuard(EventDeclaration lowlevelEvent) {
-		val refExpr = createDirectReferenceExpression => [
-			it.declaration = lowlevelEvent.isRaised
-		] 
 		return createEqualityExpression => [
-			it.leftOperand = refExpr
+			it.leftOperand = lowlevelEvent.isRaised.createReferenceExpression
 			it.rightOperand = createTrueExpression
 		]
 	}
@@ -118,9 +117,7 @@ class EventReferenceTransformer {
 			// [500 <= timeoutClock]
 			return createLessEqualExpression => [
 				it.leftOperand = value
-				it.rightOperand = createDirectReferenceExpression => [
-					it.declaration = lowlevelTimeoutVar
-				]
+				it.rightOperand = lowlevelTimeoutVar.createReferenceExpression
 			]
 		} catch (IllegalArgumentException e) {
 			// Timeout declaration is not started, always true
@@ -142,16 +139,11 @@ class EventReferenceTransformer {
 	}
 
 	protected def Expression transform(Expression timeValue, TimeUnit timeUnit) {
-		val plainValue = timeValue.transformExpression.getOnlyElement
+		val plainValue = timeValue.transformSimpleExpression
 		switch (timeUnit) {
 			case TimeUnit.SECOND: {
 				// S = 1000 MS
-				return createMultiplyExpression => [
-					it.operands += createIntegerLiteralExpression => [
-						it.value = BigInteger.valueOf(1000)
-					]
-					it.operands += plainValue
-				]
+				return plainValue.wrapIntoMultiply(1000)
 			}
 			default: {
 				// MS is base

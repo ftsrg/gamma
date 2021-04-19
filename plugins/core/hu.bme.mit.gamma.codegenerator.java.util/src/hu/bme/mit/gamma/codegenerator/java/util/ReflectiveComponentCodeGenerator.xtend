@@ -10,16 +10,12 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
-
-import hu.bme.mit.gamma.expression.model.Declaration
-import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition
 import hu.bme.mit.gamma.expression.model.Type
-import hu.bme.mit.gamma.expression.model.TypeReference
-import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter
-import hu.bme.mit.gamma.statechart.interface_.Component
 import hu.bme.mit.gamma.statechart.composite.CompositeComponent
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent
+import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
@@ -118,7 +114,7 @@ class ReflectiveComponentCodeGenerator {
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»()«IF outEvent.parameterDeclarations.get(i).toBeConvertedToString».toString()«ENDIF»)
+										 Objects.deepEquals(parameters[«i»], «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
 									«ENDFOR»
 									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
 								}
@@ -152,14 +148,10 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateReflectiveImports(Component component) '''
 		import «BASE_PACKAGE_NAME».*;
-		«IF component instanceof CompositeComponent»
-			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
-				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
-			«ENDFOR»
-		«ELSEIF component instanceof AsynchronousAdapter»
-			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
-			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
-		«ENDIF»
+		import java.util.Objects;
+		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
 	'''
 	
 	protected def generateScheduling(Component component) '''
@@ -216,7 +208,7 @@ class ReflectiveComponentCodeGenerator {
 				«IF component instanceof StatechartDefinition»
 					«FOR variable : component.variableDeclarations»
 						case "«variable.name»":
-							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»()«IF variable.toBeConvertedToString».toString()«ENDIF»;
+							return «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«variable.name.toFirstUpper»();
 					«ENDFOR»
 				«ENDIF»
 			}
@@ -259,33 +251,10 @@ class ReflectiveComponentCodeGenerator {
 	'''
 	
 	protected def generateParameterCast(Type type, String parameter) {
-		if (type instanceof TypeReference) {
-			val typeDeclaration = type.reference
-			if (typeDeclaration.type instanceof EnumerableTypeDefinition) {
-				return '''«typeDeclaration.name».valueOf(«parameter».toString())'''
-			}
-		}
 		return '''(«type.transformType») «parameter»'''
 	}
 	
 	protected def transformType(Type type) '''«type.serialize»'''
-	
-	/**
-	 * Enums are returned as strings.
-	 */
-	protected def toBeConvertedToString(Declaration variable) {
-		val type = variable.type
-		if (type instanceof EnumerableTypeDefinition) {
-			return true
-		}
-		if (type instanceof TypeReference) {
-			val reference = type.reference
-			if (reference.type instanceof EnumerableTypeDefinition) {
-				return true
-			}
-		}
-		return false
-	}
 	
 	def getClassName() {
 		return component.reflectiveClassName

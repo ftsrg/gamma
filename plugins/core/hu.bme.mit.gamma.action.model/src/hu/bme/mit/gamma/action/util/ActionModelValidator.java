@@ -99,7 +99,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
+	public Collection<ValidationResultMessage> checkDuplicateVariableDeclarationStatements(
+			VariableDeclarationStatement statement) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		EObject container = statement.eContainer();
 		if (container instanceof Block) {
@@ -141,7 +142,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> CheckReturnStatementType(ReturnStatement rs) {
+	public Collection<ValidationResultMessage> checkReturnStatementType(ReturnStatement rs) {
 		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
@@ -156,6 +157,24 @@ public class ActionModelValidator extends ExpressionModelValidator {
 					+ ") does not match the declared type of the procedure (" 
 					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
 					null));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkReturnStatementPosition(ReturnStatement statement) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Currently return statements must be final actions in every possible path.", null));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkReturnStatementPositions(ProcedureDeclaration procedure) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		Block block = procedure.getBody();
+		for (ReturnStatement statement : ecoreUtil.getAllContentsOfType(block, ReturnStatement.class)) {
+			validationResultMessages.addAll(checkReturnStatementPosition(statement));
 		}
 		return validationResultMessages;
 	}
@@ -184,4 +203,17 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		} 
 		throw new IllegalArgumentException("Unknown container for Branch.");
 	}
+	
+//////////////////////////////////////////////////////////////////////
+	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// Block is empty
+		if (block.getActions().isEmpty()) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
+					"The block is empty!",
+					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));
+		}
+		return validationResultMessages;
+	}
+	
 }

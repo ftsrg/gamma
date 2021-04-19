@@ -105,7 +105,7 @@ RationalTypeDefinition returns RationalTypeDefinition:
 ;
 
 ArrayTypeDefinition returns ArrayTypeDefinition:
-	'array' elementType=Type '[' size=IntegerLiteralExpression ']'
+	'[' size=Expression ']' elementType=Type
 ;
 
 IntegerRangeTypeDefinition returns IntegerRangeTypeDefinition:
@@ -125,7 +125,7 @@ RecordTypeDefinition returns RecordTypeDefinition:
 ;
 
 SubrangeTypeDefinition returns SubrangeTypeDefinition:
-	{SubrangeTypeDefinition} '[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
+	{SubrangeTypeDefinition} '#[' ('-' 'inf' | lowerBound=Expression) 'to' ('inf' | upperBound=Expression) ']'
 ;
 
 FunctionTypeDefinition returns FunctionTypeDefinition:
@@ -251,7 +251,7 @@ SignumExpression returns Expression:
 
 AccessExpression returns Expression:
 	PrimaryExpression(
-		{ArrayAccessExpression.operand=current} '[' arguments+=Expression ']' |
+		{ArrayAccessExpression.operand=current} '[' index=Expression ']' |
 		{FunctionAccessExpression.operand=current} '(' ((arguments+=Expression)(',' arguments+=Expression)*)? ')' |
 		{RecordAccessExpression.operand=current} '.' fieldReference=FieldReferenceExpression |
 		{SelectExpression.operand=current} '->' 'select'
@@ -309,7 +309,7 @@ FalseExpression returns FalseExpression:
 ;
 
 RecordLiteralExpression:
-	'#(' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* ')'
+	'#' typeDeclaration=[TypeDeclaration] '{' (fieldAssignments+=FieldAssignment)(',' fieldAssignments+=FieldAssignment)* '}'
 ;
 
 FieldAssignment:
@@ -325,7 +325,7 @@ OpaqueExpression:
 ;
 
 ArrayLiteralExpression:
-	'[' ']' '{' operands+=Expression (',' operands+=Expression)* '}'
+	'#[' operands+=Expression (',' operands+=Expression)* ']'
 ;
 
 IntegerRangeLiteralExpression:
