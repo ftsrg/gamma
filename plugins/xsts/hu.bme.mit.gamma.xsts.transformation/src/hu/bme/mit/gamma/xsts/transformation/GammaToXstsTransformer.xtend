@@ -433,7 +433,7 @@ class GammaToXstsTransformer {
 					}
 				}
 			}
-			return values.max
+			return (values.empty) ? null : values.max
 		} catch (IllegalArgumentException e) {
 			// A variable is referenced
 			return null
