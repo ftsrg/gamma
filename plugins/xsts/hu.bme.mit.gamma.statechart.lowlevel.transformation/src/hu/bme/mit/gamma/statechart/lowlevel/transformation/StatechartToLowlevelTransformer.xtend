@@ -218,7 +218,8 @@ class StatechartToLowlevelTransformer {
 		
 		// Constants
 		val gammaPackage = statechart.containingPackage
-		for (constantDeclaration : gammaPackage.constantDeclarations) {
+		for (constantDeclaration : gammaPackage.selfAndImports // During code generation, imported constants can be referenced
+				.map[it.constantDeclarations].flatten) {
 			lowlevelStatechart.variableDeclarations += constantDeclaration.transform
 		}
 		// No parameter declarations mapping
@@ -360,8 +361,7 @@ class StatechartToLowlevelTransformer {
 				trace.designateElseGuardedTransition(transition)
 				var Expression transformedGuard
 				val source = transition.sourceState
-				val gammaOutgoingTransitions = source.outgoingTransitions
-					.reject[it === transition]
+				val gammaOutgoingTransitions = source.outgoingTransitions.reject[it === transition]
 				if (gammaOutgoingTransitions.empty) {
 					transformedGuard = createTrueExpression
 				}

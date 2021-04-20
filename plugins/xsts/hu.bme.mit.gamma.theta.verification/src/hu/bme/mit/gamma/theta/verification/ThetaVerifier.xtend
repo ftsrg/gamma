@@ -78,7 +78,6 @@ class ThetaVerifier extends AbstractVerifier {
 				// (SafetyResult Safe) or (SafetyResult Unsafe)
 				line = resultReader.nextLine
 				if (log) {
-					println(line)
 					logger.log(Level.INFO, line)
 				}
 			}
