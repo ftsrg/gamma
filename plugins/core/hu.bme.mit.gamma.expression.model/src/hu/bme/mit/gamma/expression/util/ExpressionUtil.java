@@ -859,8 +859,21 @@ public class ExpressionUtil {
 		if (addition == null) {
 			return original;
 		}
-		potentialContainer.getOperands().add(original);
-		potentialContainer.getOperands().add(addition);
+		List<Expression> operands = potentialContainer.getOperands();
+		operands.add(original);
+		operands.add(addition);
+		return potentialContainer;
+	}
+	
+	public Expression wrapIntoMultiaryExpression(Expression original,
+			Collection<? extends Expression> additions, MultiaryExpression potentialContainer) {
+		List<Expression> operands = potentialContainer.getOperands();
+		operands.add(original);
+		operands.addAll(additions);
+		operands.removeIf(it -> it == null);
+		if (operands.isEmpty()) {
+			return null;
+		}
 		return potentialContainer;
 	}
 	

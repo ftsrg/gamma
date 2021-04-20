@@ -252,13 +252,14 @@ public class XstsActionUtil extends ExpressionUtil {
 	}
 	
 	public NonDeterministicAction createIfElseAction(List<Expression> conditions, List<Action> actions) {
-		if (conditions.size() != actions.size() && conditions.size() + 1 != actions.size()) {
+		int conditionsSize = conditions.size();
+		if (conditionsSize != actions.size() && conditionsSize + 1 != actions.size()) {
 			throw new IllegalArgumentException("The two lists must be of same size or the size of"
 				+ "the action list must be the size of the condition list + 1: " + conditions + " " + actions);
 		}
-		boolean foundElseBranch = false;
+//		boolean foundElseBranch = false;
 		NonDeterministicAction switchAction = xStsFactory.createNonDeterministicAction();
-		for (int i = 0; i < conditions.size(); ++i) {
+		for (int i = 0; i < conditionsSize; ++i) {
 			SequentialAction sequentialAction = xStsFactory.createSequentialAction();
 			AndExpression andExpression = expressionFactory.createAndExpression();
 			for (int j = 0; j < i; ++j) {
@@ -268,14 +269,17 @@ public class XstsActionUtil extends ExpressionUtil {
 				andExpression.getOperands().add(notExpression);
 			}
 			Expression actualCondition = conditions.get(i);
-			if (!(actualCondition instanceof ElseExpression ||
-					actualCondition instanceof DefaultExpression)) {
-				// This condition is true
-				andExpression.getOperands().add(actualCondition);
+			if (actualCondition instanceof ElseExpression ||
+					actualCondition instanceof DefaultExpression) {
+				throw new IllegalArgumentException("Cannot process else expressions here");
 			}
-			else {
-				foundElseBranch = true;
-			}
+			andExpression.getOperands().add(actualCondition);
+//			else {
+//				if (i != conditionsSize - 1) {
+//					throw new IllegalArgumentException("The else branch is not in the last index!");
+//				}
+//				foundElseBranch = true;
+//			}
 			AssumeAction assumeAction = createAssumeAction(unwrapIfPossible(andExpression));
 			sequentialAction.getActions().add(assumeAction);
 			sequentialAction.getActions().add(actions.get(i));
@@ -283,13 +287,13 @@ public class XstsActionUtil extends ExpressionUtil {
 			switchAction.getActions().add(sequentialAction);
 		}
 		// Else branch if needed
-		if (conditions.size() + 1 == actions.size()) {
+		if (conditionsSize + 1 == actions.size()) {
 			extendChoiceWithDefaultBranch(switchAction, actions.get(actions.size() - 1));
 		}
-		else if (!foundElseBranch) {
-			// Otherwise a deadlock could happen if no branch is true
-			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
-		}
+//		else if (!foundElseBranch) {
+//			// Otherwise a deadlock could happen if no branch is true
+//			extendChoiceWithDefaultBranch(switchAction, xStsFactory.createEmptyAction());
+//		}
 		return switchAction;
 	}
 	

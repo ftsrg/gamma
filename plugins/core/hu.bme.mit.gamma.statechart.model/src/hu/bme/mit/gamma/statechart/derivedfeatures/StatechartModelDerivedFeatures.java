@@ -168,6 +168,13 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 				it -> it instanceof UnfoldedPackageAnnotation);
 	}
 	
+	public static Set<Package> getSelfAndImports(Package gammaPackage) {
+		Set<Package> imports = new HashSet<Package>();
+		imports.add(gammaPackage);
+		imports.addAll(gammaPackage.getImports());
+		return imports;
+	}
+	
 	public static Set<Package> getAllImports(Package gammaPackage) {
 		Set<Package> imports = new HashSet<Package>();
 		imports.addAll(gammaPackage.getImports());
@@ -1163,6 +1170,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			return (EntryState) entryState.get();
 		}
 		throw new IllegalArgumentException("Not known initial states in the region. " + region.getName() + ": " + entryStates);
+	}
+	
+	public static Transition getInitialTransition(Region region) {
+		EntryState entryState = getEntryState(region);
+		List<Transition> outgoingTransitions = getOutgoingTransitions(entryState);
+		if (outgoingTransitions.size() != 1) {
+			throw new IllegalArgumentException(outgoingTransitions.toString());
+		}
+		return outgoingTransitions.get(0);
 	}
 	
 	public static Set<State> getPrecedingStates(StateNode node) {
