@@ -38,6 +38,8 @@ import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.Collection
 import java.util.List
 
+import static extension com.google.common.collect.Iterables.getOnlyElement
+
 class ActionTransformer {
 	// Auxiliary objects
 	protected final extension ExpressionTransformer expressionTransformer
@@ -73,6 +75,10 @@ class ActionTransformer {
 			result += action.transformAction
 		}
 		return result.wrap
+	}
+	
+	protected def transformSimpleAction(Action action) {
+		return action.transformAction.onlyElement
 	}
 	
 	// In order to support function inlining, before every expression transformation,
@@ -195,11 +201,21 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ForStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		return #[
+			createForStatement => [
+				it.parameter = action.parameter.transformForParameter
+				it.range = action.range.transformSimpleExpression
+				it.body = action.body.transformAction.wrap
+			]
+		]
 	}
 	
 	protected def dispatch List<Action> transformAction(AssertionStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		return #[
+			createAssertionStatement => [
+				it.assertion = action.assertion.transformSimpleExpression
+			]
+		]
 	}
 	
 	protected def dispatch List<Action> transformAction(AssignmentStatement action) {

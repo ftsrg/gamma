@@ -48,6 +48,8 @@ package class Trace {
 	// Event parameters
 	final Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> inParDeclMappings = newHashMap
 	final Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> outParDeclMappings = newHashMap
+	// For parameters
+	final Map<ParameterDeclaration, ParameterDeclaration> forParDeclMappings = newHashMap
 	// Simple and complex variable mappings
 	final Map<Pair<ValueDeclaration, FieldHierarchy>, VariableDeclaration> valDeclMappings = newHashMap
 	final Map<TimeoutDeclaration, VariableDeclaration> timeoutDeclMappings = newHashMap
@@ -321,6 +323,25 @@ package class Trace {
 	def getAllOutParameters(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
 		return outParDeclMappings.getAllParameters(port, event, recordField)
 	}
+	
+	// For parameters
+	def put(ParameterDeclaration gammaParameter, ParameterDeclaration lowLevelParameter) {
+		checkNotNull(gammaParameter)
+		checkNotNull(lowLevelParameter)
+		forParDeclMappings.put(gammaParameter, lowLevelParameter)
+	}
+	
+	def isMapped(ParameterDeclaration gammaParameter) {
+		checkNotNull(gammaParameter)
+		return forParDeclMappings.containsKey(gammaParameter)
+	} 
+	
+	def get(ParameterDeclaration gammaParameter) {
+		checkNotNull(gammaParameter)
+		val lowlevelParameter = forParDeclMappings.get(gammaParameter)
+		checkNotNull(lowlevelParameter)
+		return lowlevelParameter
+	} 
 	
 	// Values
 	def put(Pair<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {

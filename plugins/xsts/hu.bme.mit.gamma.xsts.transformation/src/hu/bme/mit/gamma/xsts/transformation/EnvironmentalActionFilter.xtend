@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -242,15 +244,20 @@ class EnvironmentalActionFilter {
 	}
 	
 	private def void delete(CompositeAction action, Set<String> necessaryNames) {
-		val xStsSubactions = action.actions
 		val copyXStsSubactions = newArrayList
-		copyXStsSubactions += xStsSubactions
+		if (action instanceof LoopAction) {
+			copyXStsSubactions += action.action
+		}
+		else {
+			val xStsMultiaryAction = action as MultiaryAction
+			copyXStsSubactions += xStsMultiaryAction.actions
+		}
 		for (xStsSubaction : copyXStsSubactions) {
 			if (xStsSubaction instanceof AssignmentAction) {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting
-					xStsSubactions -= xStsSubaction
+					xStsSubaction.replace(createEmptyAction) // Remove might leave a null in LoopAction
 				}
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
@@ -258,7 +265,7 @@ class EnvironmentalActionFilter {
 				val variables = assumption.referredVariables
 				if (!variables.exists[necessaryNames.contains(it.name)]) {
 					// Deleting the assume action
-					xStsSubactions -= xStsSubaction
+					xStsSubaction.replace(createEmptyAction)
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {

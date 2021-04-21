@@ -16,6 +16,7 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
@@ -44,6 +45,17 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	
 	def dispatch CharSequence serialize(Action action) {
 		throw new IllegalArgumentException("Not supported action: " + action)
+	}
+	
+	def dispatch CharSequence serialize(LoopAction action) {
+		val name = action.iterationParameterDeclaration.name
+		val left = action.range.getLeft(true)
+		val right = action.range.getRight(false)
+		return '''
+			for (int «name» = «left.serialize»; «name» < «right.serialize»; ++i) {
+				«action.action.serialize»
+			}
+		'''
 	}
 	
 	def dispatch CharSequence serialize(NonDeterministicAction action) '''

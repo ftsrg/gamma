@@ -21,9 +21,11 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
@@ -90,18 +92,40 @@ class ExpressionTransformer {
 		]
 	}
 	
-	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
-	}
-	
-	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
-	}
-	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
 		return #[
 			create(expression.eClass) as UnaryExpression => [
 				it.operand = expression.operand.transformSimpleExpression
+			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
+		return #[
+			create(expression.eClass) as BinaryExpression => [
+				it.leftOperand = expression.leftOperand.transformSimpleExpression
+				it.rightOperand = expression.rightOperand.transformSimpleExpression
+			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
+		val multiaryExpression = create(expression.eClass) as MultiaryExpression
+		for (containedExpression : expression.operands) {
+			multiaryExpression.operands += containedExpression.transformSimpleExpression
+		}
+		return #[
+			multiaryExpression
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(IntegerRangeLiteralExpression expression) {
+		return #[
+			createIntegerRangeLiteralExpression => [
+				it.leftInclusive = expression.leftInclusive
+				it.leftOperand = expression.leftOperand.transformSimpleExpression
+				it.rightInclusive = expression.rightInclusive
+				it.rightOperand = expression.rightOperand.transformSimpleExpression
 			]
 		]
 	}
@@ -125,10 +149,6 @@ class ExpressionTransformer {
 				it.^else = expression.^else.transformSimpleExpression
 			]
 		]
-	}
-
-	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
@@ -178,24 +198,17 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
-	
-	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
-		return #[
-			create(expression.eClass) as BinaryExpression => [
-				it.leftOperand = expression.leftOperand.transformSimpleExpression
-				it.rightOperand = expression.rightOperand.transformSimpleExpression
-			]
-		]
+		
+	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
-	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
-		val multiaryExpression = create(expression.eClass) as MultiaryExpression
-		for (containedExpression : expression.operands) {
-			multiaryExpression.operands += containedExpression.transformSimpleExpression
-		}
-		return #[
-			multiaryExpression
-		]
+	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+	}
+
+	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	// Key method: reference expression
@@ -208,13 +221,22 @@ class ExpressionTransformer {
 		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
 		val reference = expression.accessReference
-		val lowlevelVariables = newArrayList
+		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
 		// If original is not a full access, other potential fields are explored, that is,
 		// fieldAccess can be an extensible field access 
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
-			lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+			if (declaration instanceof ParameterDeclaration) {
+				if (trace.isMapped(declaration)) {
+					// For parameter statement
+					lowlevelVariables += trace.get(declaration)
+				}
+			}
+			else {
+				// Normal value
+				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+			}
 		}
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port

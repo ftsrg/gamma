@@ -35,6 +35,7 @@ import hu.bme.mit.gamma.xsts.model.Action;
 import hu.bme.mit.gamma.xsts.model.AssignmentAction;
 import hu.bme.mit.gamma.xsts.model.AssumeAction;
 import hu.bme.mit.gamma.xsts.model.CompositeAction;
+import hu.bme.mit.gamma.xsts.model.MultiaryAction;
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction;
 import hu.bme.mit.gamma.xsts.model.ParallelAction;
 import hu.bme.mit.gamma.xsts.model.SequentialAction;
@@ -355,9 +356,14 @@ public class XstsActionUtil extends ExpressionUtil {
 		// Checking for all composite actions: if it is empty,
 		// we return null, and the caller decides what needs to be done
 		if (action instanceof CompositeAction) {
-			CompositeAction compositeAction = (CompositeAction) action;
-			if (compositeAction.getActions().isEmpty()) {
-				return null;
+			if (action instanceof MultiaryAction) {
+				MultiaryAction multiaryAction = (MultiaryAction) action;
+				if (multiaryAction.getActions().isEmpty()) {
+					throw new IllegalArgumentException("Empty multiary action");
+				}
+			}
+			else {
+				throw new IllegalArgumentException("Not supported action: " + action);
 			}
 		}
 		//
@@ -381,7 +387,7 @@ public class XstsActionUtil extends ExpressionUtil {
 			}
 			return orExpression;
 		}
-		throw new IllegalArgumentException("Not supported aciton: " + action);
+		throw new IllegalArgumentException("Not supported action: " + action);
 	}
 	
 	public void deleteDeclaration(Declaration declaration) {
