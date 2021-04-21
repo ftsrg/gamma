@@ -10,10 +10,14 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.transformation
 
+import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.PredicateExpression
 import hu.bme.mit.gamma.expression.model.TypeReference
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.LowlevelToXstsTransformer
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.optimizer.ActionOptimizer
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent
@@ -43,7 +47,6 @@ import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer
 import hu.bme.mit.gamma.xsts.transformation.util.OrthogonalActionTransformer
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
-import java.math.BigInteger
 import java.util.Collections
 import java.util.List
 import java.util.logging.Level
@@ -74,6 +77,7 @@ class GammaToXstsTransformer {
 	protected final extension XSTSModelFactory xStsModelFactory = XSTSModelFactory.eINSTANCE
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension StatechartUtil statechartUtil = StatechartUtil.INSTANCE
+	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
 	// Transformation settings
 	protected final Integer schedulingConstraint
 	protected boolean transformOrthogonalActions
@@ -202,9 +206,7 @@ class GammaToXstsTransformer {
 		// Setting the referenced event variables to false
 		for (xStsEventVariable : xStsReferencedEventVariables) {
 			newInEventAction.actions += createAssignmentAction => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = xStsEventVariable
-				]
+				it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
 				it.rhs = createFalseExpression
 			]
 		}
@@ -216,9 +218,7 @@ class GammaToXstsTransformer {
 			val branch = createIfActionBranch(
 				xStsActionUtil.connectThroughNegations(negatedVariables),
 				createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [
-						it.declaration = xStsEventVariable
-					]
+					it.lhs = statechartUtil.createReferenceExpression(xStsEventVariable)
 					it.rhs = createTrueExpression
 				]
 			)
@@ -388,18 +388,23 @@ class GammaToXstsTransformer {
 		val xStsClockSettingAction = createSequentialAction => [
 			// Increasing the clock variables
 			for (xStsClockVariable : xSts.clockVariables) {
+				val maxValue = xStsClockVariable.greatestComparison
+				val incrementExpression = createAddExpression => [
+					it.operands += statechartUtil.createReferenceExpression(xStsClockVariable)
+					it.operands += statechartUtil.toIntegerLiteral(schedulingConstraint)
+				]
+				val rhs = (maxValue === null) ? incrementExpression :
+					createIfThenElseExpression => [
+						it.condition = createLessExpression => [
+							it.leftOperand = statechartUtil.createReferenceExpression(xStsClockVariable)
+							it.rightOperand = statechartUtil.toIntegerLiteral(maxValue)
+						]
+						it.then = incrementExpression
+						it.^else = statechartUtil.createReferenceExpression(xStsClockVariable)
+					]
 				it.actions += createAssignmentAction => [
-					it.lhs = createDirectReferenceExpression => [
-						it.declaration = xStsClockVariable
-					]
-					it.rhs = createAddExpression => [
-						it.operands += createDirectReferenceExpression => [
-							it.declaration = xStsClockVariable
-						]
-						it.operands += createIntegerLiteralExpression => [
-							it.value = BigInteger.valueOf(schedulingConstraint)
-						]
-					]
+					it.lhs = statechartUtil.createReferenceExpression(xStsClockVariable)
+					it.rhs = rhs
 				]
 			}
 			// Putting it in merged transition as it does not work in environment action
@@ -407,6 +412,32 @@ class GammaToXstsTransformer {
 		]
 		xSts.changeTransitions(xStsClockSettingAction.wrap)
 		xSts.clockVariables.clear // Clearing the clock variables, as they are handled like normal ones from now on
+	}
+	
+	protected def Integer getGreatestComparison(VariableDeclaration variable) {
+		val root = variable.root
+		val values = newHashSet
+		val comparisons = root.getAllContentsOfType(PredicateExpression).filter(BinaryExpression)
+		try {
+			for (comparison : comparisons) {
+				val left = comparison.leftOperand
+				val right = comparison.rightOperand
+				if (left instanceof DirectReferenceExpression) {
+					if (left.declaration === variable) {
+						values += right.evaluateInteger
+					}
+				}
+				else if (right instanceof DirectReferenceExpression) {
+					if (right.declaration === variable) {
+						values += left.evaluateInteger
+					}
+				}
+			}
+			return (values.empty) ? null : values.max
+		} catch (IllegalArgumentException e) {
+			// A variable is referenced
+			return null
+		}
 	}
 	
 	protected def void setSchedulingAnnotation(

@@ -114,7 +114,7 @@ class ReflectiveComponentCodeGenerator {
 							case "«port.name».«outEvent.name»":
 								if («Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().isRaised«outEvent.name.toFirstUpper»()) {
 									«FOR i : 0..< outEvent.parameterDeclarations.size BEFORE "return " SEPARATOR " && " AFTER ";"»
-										 parameters[«i»].equals(«Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
+										 Objects.deepEquals(parameters[«i»], «Namings.REFLECTIVE_WRAPPED_COMPONENT».get«port.name.toFirstUpper»().get«outEvent.parameterDeclarations.get(i).name.toFirstUpper»())
 									«ENDFOR»
 									«IF outEvent.parameterDeclarations.empty»return true;«ENDIF»
 								}
@@ -148,14 +148,10 @@ class ReflectiveComponentCodeGenerator {
 	
 	protected def generateReflectiveImports(Component component) '''
 		import «BASE_PACKAGE_NAME».*;
-		«IF component instanceof CompositeComponent»
-			«FOR containedComponentType : component.derivedComponents.map[it.derivedType].toSet»
-				import «containedComponentType.getPackageString(BASE_PACKAGE_NAME)».*;
-			«ENDFOR»
-		«ELSEIF component instanceof AsynchronousAdapter»
-			import «component.wrappedComponent.type.getPackageString(BASE_PACKAGE_NAME)».*;
-			import «component.getPackageString(BASE_PACKAGE_NAME)».*;
-		«ENDIF»
+		import java.util.Objects;
+		«FOR _package : component.containingPackage.allImports /* For type declarations */»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
 	'''
 	
 	protected def generateScheduling(Component component) '''

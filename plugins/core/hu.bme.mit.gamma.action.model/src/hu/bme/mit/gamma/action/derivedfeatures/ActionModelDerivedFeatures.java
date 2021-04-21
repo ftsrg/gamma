@@ -8,6 +8,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -69,6 +70,35 @@ public class ActionModelDerivedFeatures extends ExpressionModelDerivedFeatures {
 					precedingVariableDeclarationStatement.getVariableDeclaration());
 		}
 		return localVariableDeclarations;
+	}
+	
+	public static boolean isFinalAction(Action action) {
+		EObject container = action.eContainer();
+		if (container instanceof Block) {
+			Block block = (Block) container;
+			int size = block.getActions().size();
+			int actionIndex = ecoreUtil.getIndex(action);
+			return actionIndex == size - 1;
+		}
+		return true;
+	}
+	
+	public static boolean isRecursivelyFinalAction(Action action) {
+		EObject container = action.eContainer();
+		if (!isFinalAction(action)) {
+			return false;
+		}
+		if (container != null) {
+			if (container instanceof Action) {
+				Action block = (Action) container;
+				return isRecursivelyFinalAction(block);
+			}
+			else if (container instanceof Branch) {
+				Action brancher = (Action) container.eContainer();
+				return isRecursivelyFinalAction(brancher);
+			}
+		}
+		return true;
 	}
 	
 }

@@ -124,20 +124,14 @@ public class ExpressionUtil {
 			AccessExpression access = (AccessExpression) expression;
 			return getAccessReference(access.getOperand());
 		}
-		throw new IllegalArgumentException("Not known declaration: " + expression);
+		// Could be extended to literals too
+		throw new IllegalArgumentException("Not supported reference: " + expression);
 	}
 	
 	// Worth extending in subclasses
 	public Declaration getAccessedDeclaration(Expression expression) {
-		if (expression instanceof DirectReferenceExpression) {
-			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
-			return reference.getDeclaration();
-		}
-		if (expression instanceof AccessExpression) {
-			AccessExpression access = (AccessExpression) expression;
-			return getAccessedDeclaration(access.getOperand());
-		}
-		throw new IllegalArgumentException("Not known declaration: " + expression);
+		DirectReferenceExpression reference = (DirectReferenceExpression) getAccessReference(expression);
+		return reference.getDeclaration();
 	}
 	
 	// Worth extending in subclasses
@@ -865,8 +859,21 @@ public class ExpressionUtil {
 		if (addition == null) {
 			return original;
 		}
-		potentialContainer.getOperands().add(original);
-		potentialContainer.getOperands().add(addition);
+		List<Expression> operands = potentialContainer.getOperands();
+		operands.add(original);
+		operands.add(addition);
+		return potentialContainer;
+	}
+	
+	public Expression wrapIntoMultiaryExpression(Expression original,
+			Collection<? extends Expression> additions, MultiaryExpression potentialContainer) {
+		List<Expression> operands = potentialContainer.getOperands();
+		operands.add(original);
+		operands.addAll(additions);
+		operands.removeIf(it -> it == null);
+		if (operands.isEmpty()) {
+			return null;
+		}
 		return potentialContainer;
 	}
 	

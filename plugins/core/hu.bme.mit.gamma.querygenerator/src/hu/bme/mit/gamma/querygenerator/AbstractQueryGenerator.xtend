@@ -43,7 +43,16 @@ abstract class AbstractQueryGenerator implements AutoCloseable {
 	}
 	
 	def unwrap(String id) {
-		return id.replaceAll("\\(", "").replaceAll("\\)", "")
+//		return id.replaceAll("\\(", "").replaceAll("\\)", "")
+		return id.substring(1, id.length - 1)
+	}
+	
+	def unwrapAll(String id) {
+		var i = 0
+		for ( ; id.charAt(i).toString == "("; i++) {}
+		var j = id.length - 1
+		for ( ; id.charAt(j).toString == ")"; j--) {}
+		return id.substring(i, j + 1)
 	}
 	
 	// Gamma identifiers

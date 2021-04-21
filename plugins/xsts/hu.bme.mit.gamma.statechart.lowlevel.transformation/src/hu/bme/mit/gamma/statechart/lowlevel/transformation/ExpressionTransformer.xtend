@@ -11,6 +11,7 @@
 package hu.bme.mit.gamma.statechart.lowlevel.transformation
 
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.BinaryExpression
 import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
@@ -20,6 +21,7 @@ import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
@@ -51,15 +53,20 @@ class ExpressionTransformer {
 	protected final StatechartModelFactory statechartModelFactory = StatechartModelFactory.eINSTANCE
 	// Trace needed for variable mappings
 	protected final Trace trace
-	protected final boolean functionInlining
+	protected final boolean FUNCTION_INLINING
+	protected final int MAX_RECURSION_DEPTH
+	
+	protected int currentRecursionDepth // For lambdas
 	
 	new(Trace trace) {
-		this(trace, true)
+		this(trace, true, 10)
 	}
 	
-	new(Trace trace, boolean functionInlining) {
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
+		this.FUNCTION_INLINING = functionInlining
+		this.MAX_RECURSION_DEPTH = maxRecursionDepth
+		currentRecursionDepth = maxRecursionDepth
 		this.typeTransformer = new TypeTransformer(trace)
 	}
 	
@@ -147,6 +154,27 @@ class ExpressionTransformer {
 		return result
 	}
 	
+	def dispatch List<Expression> transformExpression(ArrayLiteralExpression expression) {
+		// Currently the field assignment position has to match the field declaration position
+		val transformedExpressions = <List<Expression>>newArrayList
+		for (operand : expression.operands) {
+			transformedExpressions += operand.transformExpression
+		}
+		val result = <Expression>newArrayList
+		val sizeOfTransformedExpressions = transformedExpressions.head.size
+		// If sizeOfTransformedExpressions == 1: primitive type or array type, no record, one literal is returned
+		// Else there is a wrapped record: array of records is transformed into record of arrays
+		// Transforming { [1, 2],  [3, 4], [5, 6] } into { [1, 3, 5],  [2, 4, 6] }
+		for (var i = 0; i < sizeOfTransformedExpressions; i++) {
+			val arrayLiteral = createArrayLiteralExpression
+			result += arrayLiteral
+			for (transformedExpression : transformedExpressions) {
+				arrayLiteral.operands += transformedExpression.get(i)
+			}
+		}
+		return result
+	}
+	
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
@@ -206,20 +234,45 @@ class ExpressionTransformer {
 	
 	def dispatch List<Expression> transformExpression(FunctionAccessExpression expression) {
 		val result = <Expression>newArrayList
-		if (functionInlining) {
+		if (FUNCTION_INLINING) {
 			if (trace.isMapped(expression)) {
-				// By now, the function call must be inlined by ExpressionPreconditionTransformer
+				// By now, the procedure call must be inlined by ExpressionPreconditionTransformer
 				for (returnVariable : trace.get(expression)) {
 					result += returnVariable.createReferenceExpression
 				}
 			}
 			else {
-				throw new IllegalArgumentException(
-					"Error transforming function access expression: element not found in trace!")
+				val function = expression.declaration
+				val lambda = function as LambdaDeclaration // Lambda is expected
+				if (currentRecursionDepth <= 0) {
+					// We return with a defaultValue
+					result += lambda.type.initialValueOfType
+				}
+				else {
+					currentRecursionDepth--
+					
+					val arguments = expression.arguments
+					val size = arguments.size
+					val parameters = lambda.parameterDeclarations
+					checkState(size == parameters.size)
+					val clonedBody = lambda.expression.clone
+					for (var i = 0; i < size; i++) {
+						val argument = arguments.get(i)
+						val parameter = parameters.get(i)
+						// Precondition: here parameters can be referenced only via DirectReferenceExpressions
+						for (directReference : clonedBody.getAllContentsOfType(DirectReferenceExpression)
+								.filter[it.declaration === parameter]) {
+							argument.replace(directReference) // Inlining the argument
+						}
+					}
+					result += clonedBody.transformSimpleExpression // Possible recursion
+					
+					currentRecursionDepth++
+				}
 			}
 		}
 		else {
-			throw new IllegalArgumentException("Currently only function inlining is possible!")
+			throw new IllegalArgumentException("Currently only function inlining is possible.")
 		}
 		return result
 	}

@@ -12,18 +12,26 @@ package hu.bme.mit.gamma.codegenerator.java.util
 
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 
+import static extension hu.bme.mit.gamma.codegenerator.java.util.Namings.*
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 class TypeDeclarationGenerator {
 	
-	protected final String PACKAGE_NAME
+	protected final String BASE_PACKAGE_NAME
 	
 	protected final extension TypeDeclarationSerializer typeDeclarationSerializer = TypeDeclarationSerializer.INSTANCE
 	
-	new(String packageName) {
-		this.PACKAGE_NAME = packageName
+	new(String basePackageName) {
+		this.BASE_PACKAGE_NAME = basePackageName
 	}
 	
 	def String generateTypeDeclarationCode(TypeDeclaration type) '''
-		package «PACKAGE_NAME»;
+		package «type.getPackageString(BASE_PACKAGE_NAME)»;
+		
+		«FOR _package : type.containingPackage.imports.toSet»
+			import «_package.getPackageString(BASE_PACKAGE_NAME)».*;
+		«ENDFOR»
+		
 		public «type.serialize»
 	'''
 	

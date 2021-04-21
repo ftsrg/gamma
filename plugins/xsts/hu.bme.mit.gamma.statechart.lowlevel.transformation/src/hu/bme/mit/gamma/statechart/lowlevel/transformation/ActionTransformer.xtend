@@ -35,11 +35,8 @@ import hu.bme.mit.gamma.statechart.statechart.DeactivateTimeoutAction
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
 import hu.bme.mit.gamma.statechart.statechart.SetTimeoutAction
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import java.math.BigInteger
 import java.util.Collection
 import java.util.List
-
-import static com.google.common.base.Preconditions.checkState
 
 class ActionTransformer {
 	// Auxiliary objects
@@ -53,9 +50,6 @@ class ActionTransformer {
 	protected final extension ActionModelFactory actionFactory = ActionModelFactory.eINSTANCE
 	// Trace
 	protected final Trace trace
-	// Transformation parameters
-	protected final boolean functionInlining
-	protected final int maxRecursionDepth
 	
 	new(Trace trace) {
 		this(trace, true, 10)
@@ -63,12 +57,11 @@ class ActionTransformer {
 	
 	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
 		this.trace = trace
-		this.functionInlining = functionInlining
-		this.maxRecursionDepth = maxRecursionDepth
-		this.expressionTransformer = new ExpressionTransformer(this.trace, this.functionInlining)
-		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
+		this.expressionTransformer = new ExpressionTransformer(this.trace,
+				functionInlining, maxRecursionDepth)
 		this.preconditionTransformer = new ExpressionPreconditionTransformer(
 			this.trace, this, functionInlining, maxRecursionDepth)
+		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 	}
 	
 	protected def transformActions(Collection<? extends Action> actions) {
@@ -132,7 +125,8 @@ class ActionTransformer {
 	}
 	
 	protected def dispatch List<Action> transformAction(ExpressionStatement action) {
-		throw new UnsupportedOperationException("Not supported action: " + action)
+		val expression = action.expression
+		return expression.transformPrecondition
 	}
 	
 	protected def dispatch List<Action> transformAction(BreakStatement action) {
@@ -220,17 +214,8 @@ class ActionTransformer {
 		result += actionRhs.transformPrecondition
 		// Transform right hand side and create actions
 		val lowlevelRhs = actionRhs.transformExpression
-		checkState(lowlevelLhs.size == lowlevelRhs.size,
-				"Impossible assignment: " + lowlevelRhs.size + " elements to " + lowlevelLhs.size)
-				
-		for (var i = 0; i < lowlevelLhs.size; i++) {
-			val lhs = lowlevelLhs.get(i)
-			val rhs = lowlevelRhs.get(i)
-			result += createAssignmentStatement => [
-				it.lhs = lhs
-				it.rhs = rhs
-			]
-		}
+		
+		result += lowlevelLhs.createAssignments(lowlevelRhs)
 		
 		return result
 	}
@@ -243,24 +228,13 @@ class ActionTransformer {
 		val lowlevelEvent = trace.get(port, event, EventDirection.OUT)
 		
 		// Parameter setting
-		val parameters = lowlevelEvent.parameters
-		val values = action.arguments.map[it.transformExpression].flatten.toList
-		checkState(parameters.size == values.size) // Record literals can be added as arguments
-		for (var i = 0; i < values.size; i++) {
-			val declaration = parameters.get(i)
-			val value = values.get(i)
-			result += createAssignmentStatement => [
-				it.lhs = declaration.createReferenceExpression
-				it.rhs = value
-			]
-		}
+		val lowlevelLhs = lowlevelEvent.parameters.map[it.createReferenceExpression].toList
+		val lowlevelRhs = action.arguments.map[it.transformExpression].flatten.toList
+		result += lowlevelLhs.createAssignments(lowlevelRhs)
+		
 		// Setting IsRaised flag to true
-		result += createAssignmentStatement => [
-			it.lhs = createDirectReferenceExpression => [
-				it.declaration = lowlevelEvent.isRaised
-			]
-			it.rhs = createTrueExpression
-		]
+		result += lowlevelEvent.isRaised.createReferenceExpression
+			.createAssignment(createTrueExpression)
 		
 		return result
 	}
@@ -269,14 +243,8 @@ class ActionTransformer {
 		val lowlevelTimeout = trace.get(action.timeoutDeclaration)
 		// Setting the clock to 0 as contrary to Gamma, in the lowlevel language time elapses from 0 to infinity
 		return #[
-			createAssignmentStatement => [
-				it.lhs = createDirectReferenceExpression => [
-					it.declaration = lowlevelTimeout
-				]
-				it.rhs = createIntegerLiteralExpression => [
-					it.value = BigInteger.ZERO
-				]
-			]
+			lowlevelTimeout.createReferenceExpression
+				.createAssignment(0.toIntegerLiteral)
 		]
 	}
 

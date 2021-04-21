@@ -10,9 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.codegenerator.java.util
 
-import hu.bme.mit.gamma.expression.model.AccessExpression
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DecimalLiteralExpression
@@ -43,6 +43,7 @@ import hu.bme.mit.gamma.expression.model.UnaryMinusExpression
 import hu.bme.mit.gamma.expression.model.UnaryPlusExpression
 import hu.bme.mit.gamma.expression.model.XorExpression
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator3
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
@@ -52,6 +53,8 @@ class ExpressionSerializer {
 	protected new() {}
 	//
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
+	protected final extension TypeSerializer typeSerializer = TypeSerializer.INSTANCE
+	protected final extension ExpressionTypeDeterminator3 expressionTypeDeterminator3 = ExpressionTypeDeterminator3.INSTANCE
 	//
 	
 	def dispatch String serialize(Expression expression) {
@@ -70,13 +73,9 @@ class ExpressionSerializer {
 	}
 	
 	def dispatch String serialize(ArrayLiteralExpression expression) {
-		var result = "{"
-		for (var i = 0; i < expression.operands.size ; i++) {
-			result += expression.operands.get(i).serialize
-			if (i != expression.operands.size - 1) result += ", "
-		}
-		result += "}"
-		return result
+		// TODO casting should be here if the type determinator is finished
+		val casting = '''new «expression.type.serialize»'''
+		return '''«casting» { «FOR operand : expression.operands SEPARATOR ', '»«operand.serialize»«ENDFOR» }'''
 	}
 	
 	def dispatch String serialize(RecordLiteralExpression expression) {
@@ -111,8 +110,8 @@ class ExpressionSerializer {
 		return expression.declaration.name
 	}
 	
-	def dispatch String serialize(AccessExpression expression) {
-		//TODO handle access expressions
+	def dispatch String serialize(ArrayAccessExpression expression) {
+		return '''«expression.operand.serialize»[«expression.index.serialize»]'''
 	}		
 	
 	def dispatch String serialize(NotExpression expression) {

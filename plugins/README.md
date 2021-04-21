@@ -27,6 +27,8 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 
 _Tip: It is advised to turn on automatic refreshing for the _runtime workspace_. The other option is to refresh it manually with F5 after every Gamma command._
 
+Make sure to set the text file encoding of your Eclipse workspace to **UTF-8**: _Window > Preferences..._ Start typing `workspace` in the left upper textfield (in the place of `type filter text`). Select _General > Workspace_ from the filtered item list and check the `Text file encoding` setting at the bottom of the window.
+
 ## Plugin setup
 
 The plugins can be setup using the plugin in the `setup` folder or manually.
@@ -84,9 +86,9 @@ The manual plugin setup procedure should be done as follows:
 | `hu.bme.mit.gamma.trace.language` | `/src/hu/bme/mit/gamma/trace/language/GenerateTraceLanguage.mwe2` |
 | `hu.bme.mit.gamma.genmodel.language` | `/src/hu/bme/mit/gamma/genmodel/language/GenerateGenModel.mwe2` |
 
-## Using Gamma
+## Using Gamma functionalities
 
 Hopefully, now you have an Eclipse with the necessary plugins installed and ready to use the Gamma framework.
 
-Now you can use the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.
+Now you can use the functionalities of the framework in one of the following ways: you either run a runtime Eclipse and work in that or install the plugins into your host Eclipse.
 

@@ -832,7 +832,7 @@ class LowlevelToXstsTransformer {
 	protected def deleteNotReadTransientVariables() {
 		val variableMacher = NotReadVariables.Matcher.on(targetEngine)
 		val notReadTransientXStsVariables = variableMacher.allValuesOfvariable
-				.filter[it.transient]
+				.filter[it.transient || it.local]
 		val assignmentMatcher = AssignmentActions.Matcher.on(targetEngine)
 		for (notReadTransientXStsVariable : notReadTransientXStsVariables) {
 			val assignments = assignmentMatcher.getAllValuesOfaction(null, notReadTransientXStsVariable)

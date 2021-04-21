@@ -2,13 +2,12 @@ package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArgumentedElement;
@@ -55,6 +54,7 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -100,7 +100,7 @@ public class ExpressionModelValidator {
 		
 	}
 	
-	static public class ReferenceInfo{
+	static public class ReferenceInfo {
 		
 		private EStructuralFeature reference;
 		private EObject source;
@@ -144,43 +144,22 @@ public class ExpressionModelValidator {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	
-	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
-		String name = element.getName();
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Class<? extends NamedElement> clazz = null;
-		if (element instanceof Declaration) {
-			clazz = Declaration.class;
-		}
-		else {
-			clazz = element.getClass();
-		}
-		EObject root = EcoreUtil.getRootContainer(element);
-		validationResultMessages.addAll(checkNames(root, Collections.singleton(clazz), name));
-		return validationResultMessages;
+	public Collection<ValidationResultMessage> checkNameUniqueness(EObject root) {
+		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
 	}
 	
-	public Collection<ValidationResultMessage> checkNames(EObject root,
-			Class<? extends NamedElement> clazz, String name) {
-		return checkNames(root, List.of(clazz), name);
-	}
-	
-	public Collection<ValidationResultMessage> checkNames(EObject root,
-			Collection<Class<? extends NamedElement>> classes, String name) {
-		int nameCount = 0;
-		Collection<NamedElement> namedElements = new ArrayList<NamedElement>();
+	public Collection<ValidationResultMessage> checkNameUniqueness(List<? extends NamedElement> elements) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for (Class<? extends NamedElement> clazz : classes) {
-			List<? extends NamedElement> elements = ecoreUtil.getAllContentsOfType(root, clazz);
-			namedElements.addAll(elements);
-		}
-		for (NamedElement otherElement : namedElements) {
-			if (name.equals(otherElement.getName())) {
-				++nameCount;
+		Set<String> names = new HashSet<String>();
+		for (NamedElement element : elements) {
+			String name = element.getName();
+			if (names.contains(name)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Identifiers in a scope must be unique.", new ReferenceInfo(
+								ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null, element)));
 			}
-			if (nameCount > 1) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"In a Gamma model, these identifiers must be unique.",
-						new ReferenceInfo(ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME, null)));
+			else {
+				names.add(name);
 			}
 		}
 		return validationResultMessages;
@@ -259,22 +238,24 @@ public class ExpressionModelValidator {
 			RecordAccessExpression recordAccessExpression) {
 		Declaration accessedDeclaration = 
 				expressionUtil.getAccessedDeclaration(recordAccessExpression);
-		RecordTypeDefinition recordType = (RecordTypeDefinition) 
-				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();;
-		if (!(accessedDeclaration instanceof ValueDeclaration)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as a record!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
-			return validationResultMessages;
-		}
-		// Check if the referred field exists
-		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
-		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
-		if (!fieldDeclarations.contains(referredField)){
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The record type does not contain any fields with the given name.", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+		TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		if (typeDefinition instanceof RecordTypeDefinition) {
+			RecordTypeDefinition recordType = (RecordTypeDefinition) typeDefinition;
+			if (!(accessedDeclaration instanceof ValueDeclaration)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The referred declaration is not accessible as a record!", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+				return validationResultMessages;
+			}
+			// Check if the referred field exists
+			List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
+			Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
+			if (!fieldDeclarations.contains(referredField)){
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The record type does not contain any fields with the given name.", 
+						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+			}
 		}
 		return validationResultMessages;
 	}
@@ -602,19 +583,17 @@ public class ExpressionModelValidator {
 			}
 			// The declaration has an initial value
 			EObject container = elem.eContainer();
-			if (elem instanceof Declaration) {
-				Declaration declaration = (Declaration) elem;
+			if (elem instanceof ValueDeclaration) {
+				ValueDeclaration declaration = (ValueDeclaration) elem;
 				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
 					if (container == variableDeclaration.eContainer()) {
-						final EList<EObject> eContents = container.eContents();
+						List<EObject> eContents = container.eContents();
 						int elemIndex = eContents.indexOf(elem);
 						int variableIndex = eContents.indexOf(variableDeclaration);
 						if (variableIndex >= elemIndex) {
-							
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 									"The declarations referenced in the initial value must be declared before the variable declaration.", 
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
-							
 							return validationResultMessages;
 						}
 					}
