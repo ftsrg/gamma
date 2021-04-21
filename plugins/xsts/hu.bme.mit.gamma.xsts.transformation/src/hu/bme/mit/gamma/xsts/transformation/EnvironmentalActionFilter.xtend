@@ -257,7 +257,7 @@ class EnvironmentalActionFilter {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting
-					xStsSubaction.replace(createEmptyAction) // Remove might leave a null in LoopAction
+					createEmptyAction.replace(xStsSubaction) // Remove might leave a null in LoopAction
 				}
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
@@ -265,7 +265,7 @@ class EnvironmentalActionFilter {
 				val variables = assumption.referredVariables
 				if (!variables.exists[necessaryNames.contains(it.name)]) {
 					// Deleting the assume action
-					xStsSubaction.replace(createEmptyAction)
+					createEmptyAction.replace(xStsSubaction)
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {

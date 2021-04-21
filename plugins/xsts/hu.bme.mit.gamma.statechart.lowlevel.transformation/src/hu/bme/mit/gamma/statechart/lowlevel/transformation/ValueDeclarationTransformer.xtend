@@ -16,7 +16,6 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension com.google.common.collect.Iterables.getOnlyElement
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
@@ -167,9 +166,6 @@ class ValueDeclarationTransformer {
 			val lowlevelVariable = createVariableDeclaration => [
 				// Name added later
 				it.type = nativeType
-				if (variable instanceof InitializableElement) {
-					it.expression = variable.expression?.transformExpression?.onlyElement
-				}
 				if (variable instanceof VariableDeclaration) {
 					for (annotation : variable.annotations) {
 						it.annotations += annotation.transformAnnotation
@@ -180,6 +176,21 @@ class ValueDeclarationTransformer {
 			// Abstract tracing
 			tracer.trace(variable, fieldHierarchy, lowlevelVariable)
 		}
+		// Initial values - must come after variable transformation due to the lazy type transformation
+		val initialValues = newArrayList
+		if (variable instanceof InitializableElement) {
+			val initalExpression = variable.expression
+			if (initalExpression !== null) {
+				initialValues += initalExpression.transformExpression
+			}
+		}
+		checkState(initialValues.size == 0 || initialValues.size == lowlevelVariables.size)
+		for (var i = 0; i < initialValues.size; i++) {
+			val initialValue = initialValues.get(i)
+			val lowlevelVariable = lowlevelVariables.get(i)
+			lowlevelVariable.expression = initialValue
+		}
+		
 		return lowlevelVariables
 	}
 	

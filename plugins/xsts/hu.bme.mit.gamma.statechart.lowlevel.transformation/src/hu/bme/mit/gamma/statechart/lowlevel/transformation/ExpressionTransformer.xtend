@@ -227,11 +227,10 @@ class ExpressionTransformer {
 		// fieldAccess can be an extensible field access 
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
-			if (declaration instanceof ParameterDeclaration) {
-				if (trace.isMapped(declaration)) {
-					// For parameter statement
-					lowlevelVariables += trace.get(declaration)
-				}
+			if (trace.isForStatementParameterMapped(declaration)) {
+				// For statement parameter declaration
+				val forLoopParameter = declaration as ParameterDeclaration
+				lowlevelVariables += trace.get(forLoopParameter)
 			}
 			else {
 				// Normal value

@@ -331,7 +331,7 @@ package class Trace {
 		forParDeclMappings.put(gammaParameter, lowLevelParameter)
 	}
 	
-	def isMapped(ParameterDeclaration gammaParameter) {
+	def isForStatementParameterMapped(ValueDeclaration gammaParameter) {
 		checkNotNull(gammaParameter)
 		return forParDeclMappings.containsKey(gammaParameter)
 	} 
