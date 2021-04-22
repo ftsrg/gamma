@@ -265,6 +265,7 @@ class ExpressionTransformer {
 			else {
 				val function = expression.declaration
 				val lambda = function as LambdaDeclaration // Lambda is expected
+				// TODO, if procedure can be interpreted as a lambda, it is also good (e.g., in a transition guard)
 				if (currentRecursionDepth <= 0) {
 					// We return with a defaultValue
 					result += lambda.type.initialValueOfType
@@ -276,14 +277,20 @@ class ExpressionTransformer {
 					val size = arguments.size
 					val parameters = lambda.parameterDeclarations
 					checkState(size == parameters.size)
-					val clonedBody = lambda.expression.clone
+					var clonedBody = lambda.expression.clone
 					for (var i = 0; i < size; i++) {
 						val argument = arguments.get(i)
 						val parameter = parameters.get(i)
 						// Precondition: here parameters can be referenced only via DirectReferenceExpressions
-						for (directReference : clonedBody.getAllContentsOfType(DirectReferenceExpression)
+						for (directReference : clonedBody.getSelfAndAllContentsOfType(DirectReferenceExpression)
 								.filter[it.declaration === parameter]) {
-							argument.replace(directReference) // Inlining the argument
+							val clonedArgument = argument.clone
+							if (directReference === clonedBody) {
+								clonedBody = clonedArgument // A body consisting of a single reference
+							}
+							else {
+								clonedArgument.replace(directReference) // Inlining the argument
+							}
 						}
 					}
 					result += clonedBody.transformSimpleExpression // Possible recursion
