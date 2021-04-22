@@ -343,6 +343,9 @@
       <genClasses ecoreClass="uppaal.ecore#//expressions/LiteralExpression">
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/LiteralExpression/text"/>
       </genClasses>
+      <genClasses ecoreClass="uppaal.ecore#//expressions/ArrayLiteralExpression">
+        <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uppaal.ecore#//expressions/ArrayLiteralExpression/elements"/>
+      </genClasses>
       <genClasses ecoreClass="uppaal.ecore#//expressions/ArithmeticExpression">
         <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uppaal.ecore#//expressions/ArithmeticExpression/operator"/>
       </genClasses>
