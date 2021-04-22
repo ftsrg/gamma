@@ -903,11 +903,16 @@ public class ExpressionUtil {
 	public Expression wrapIntoMultiaryExpression(Expression original,
 			Collection<? extends Expression> additions, MultiaryExpression potentialContainer) {
 		List<Expression> operands = potentialContainer.getOperands();
-		operands.add(original);
+		if (original != null) {
+			operands.add(original);
+		}
 		operands.addAll(additions);
 		operands.removeIf(it -> it == null);
 		if (operands.isEmpty()) {
 			return null;
+		}
+		if (operands.size() == 1) {
+			return operands.get(0);
 		}
 		return potentialContainer;
 	}

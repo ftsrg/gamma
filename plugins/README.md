@@ -19,7 +19,7 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 - Install the following two packages. The _Install_ window can be opened via the _Help > Install New Software..._ menu item. In the _Install_ window click _Add..._, and paste the necessary URL in the _Location_ text field. 
  - Install VIATRA 2.5.0 from update site: http://download.eclipse.org/viatra/updates/release/2.5.0.
     - Choose the whole _VIATRA Query and Transformation SDK_ package.
- - Intall the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
+ - Install the Yakindu Statechart Tools 3.5.13. from update site: http://updates.yakindu.com/statecharts/releases/3.5.13. From the  _YAKINDU Statechart Tools Standard Edition_ package choose
 	- _YAKINDU Statechart Tools_,
 	- _YAKINDU Statechart Tools Base_,
 	- _YAKINDU Statechart Tools Java Code Generator_ and
