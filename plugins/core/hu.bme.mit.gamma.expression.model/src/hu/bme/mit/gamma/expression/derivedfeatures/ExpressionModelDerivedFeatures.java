@@ -44,7 +44,7 @@ public class ExpressionModelDerivedFeatures {
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-
+	
 	public static Expression getLeft(IntegerRangeLiteralExpression expression, boolean isInclusive) {
 		Expression leftOperand = expression.getLeftOperand();
 		boolean isLeftInclusive = expression.isLeftInclusive();

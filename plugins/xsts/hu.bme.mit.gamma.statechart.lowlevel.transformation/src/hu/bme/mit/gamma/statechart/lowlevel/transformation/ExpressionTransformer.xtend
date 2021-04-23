@@ -20,9 +20,9 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
-import hu.bme.mit.gamma.expression.model.LambdaDeclaration
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
@@ -42,6 +42,7 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionTransformer {
@@ -263,21 +264,21 @@ class ExpressionTransformer {
 				}
 			}
 			else {
-				val function = expression.declaration
-				val lambda = function as LambdaDeclaration // Lambda is expected
-				// TODO, if procedure can be interpreted as a lambda, it is also good (e.g., in a transition guard)
+				val function = expression.declaration as FunctionDeclaration
+				checkState(function.lambda)
+				val type = function.type
 				if (currentRecursionDepth <= 0) {
 					// We return with a defaultValue
-					result += lambda.type.initialValueOfType
+					result += type.initialValueOfType
 				}
 				else {
 					currentRecursionDepth--
 					
 					val arguments = expression.arguments
 					val size = arguments.size
-					val parameters = lambda.parameterDeclarations
+					val parameters = function.parameterDeclarations
 					checkState(size == parameters.size)
-					var clonedBody = lambda.expression.clone
+					var clonedBody = function.lambdaExpression.clone
 					for (var i = 0; i < size; i++) {
 						val argument = arguments.get(i)
 						val parameter = parameters.get(i)
