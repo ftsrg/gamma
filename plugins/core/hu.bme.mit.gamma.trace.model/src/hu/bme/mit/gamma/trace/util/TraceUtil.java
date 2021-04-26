@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceRealization;
 import hu.bme.mit.gamma.statechart.interface_.Package;
@@ -204,6 +205,10 @@ public class TraceUtil extends ExpressionUtil {
 			}
 			actualSteps.add(step);
 		}
+		// Add the last list of steps after the last reset
+		if (!stepsList.contains(actualSteps)) {
+			stepsList.add(actualSteps);
+		}
 		return stepsList;
 	}
 	
@@ -272,6 +277,68 @@ public class TraceUtil extends ExpressionUtil {
 					return false;
 				}
 			}
+			return true;
+		}
+		return false;
+	}
+	
+	public void setupExecutionTrace(ExecutionTrace trace, List<Step> steps,
+			String name, Component component, Package imports) {
+		if (name != null) {
+			trace.setName(name);
+		}
+		if (steps != null) {
+			trace.getSteps().clear();
+			trace.getSteps().addAll(steps);
+		}
+		if (component != null) {
+			trace.setComponent(component);
+		}
+		if (imports != null) {
+			trace.setImport(imports);
+		}
+	}
+
+	public boolean isCoveredByStates(ExecutionTrace covered, ExecutionTrace covering) {
+		List<Step> coveredTrace = covered.getSteps();
+		List<Step> coveringTrace = covering.getSteps();
+		if (isCoveredByStates(coveredTrace, coveringTrace)) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isCoveredByStates(List<Step> covered, List<Step> covering) {
+		if (covering.size() < covered.size()) {
+			return false;
+		}
+		for (int i = 0; i < covered.size(); i++) {
+			if (!isCoveredByState(covered.get(i), covering.get(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isCoveredByState(Step covered, Step covering) {
+		EList<Assert> coveredAsserts = covered.getAsserts();
+		EList<Assert> coveringAsserts = covering.getAsserts();
+		InstanceStateConfiguration stateCovered = null;
+		InstanceStateConfiguration stateCovering = null;
+		for (Assert asser : coveringAsserts) {
+			if (asser instanceof InstanceStateConfiguration) {
+				stateCovering = (InstanceStateConfiguration) asser;
+			}
+		}
+		for (Assert asser : coveredAsserts) {
+			if (asser instanceof InstanceStateConfiguration) {
+				stateCovered = (InstanceStateConfiguration) asser;
+			}
+		}
+		if (stateCovered == null || stateCovering == null) {
+			return false;
+		}
+		if (ecoreUtil.helperEquals(stateCovered.getState(), stateCovering.getState())) {
 			return true;
 		}
 		return false;

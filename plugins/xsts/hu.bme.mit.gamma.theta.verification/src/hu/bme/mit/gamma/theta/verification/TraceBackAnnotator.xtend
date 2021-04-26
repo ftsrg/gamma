@@ -54,7 +54,7 @@ class TraceBackAnnotator {
 	protected final Expression schedulingConstraint
 	
 	protected final boolean sortTrace
-	// Auxiliary objects	
+	// Auxiliary objects
 	protected final extension TraceModelFactory trFact = TraceModelFactory.eINSTANCE
 	protected final extension TraceUtil traceUtil = TraceUtil.INSTANCE
 	protected final extension TraceBuilder traceBuilder = TraceBuilder.INSTANCE
@@ -115,6 +115,14 @@ class TraceBackAnnotator {
 							if (line.startsWith(EXPL_STATE)) {
 								countedExplicitState++
 							}
+						}
+						// Needed to create a new step for reset if there are multiple in the trace
+						if (trace.steps.size > 1) {
+							if (!trace.steps.contains(step)) {
+								trace.steps += step
+							}
+							step = createStep
+							trace.steps += step
 						}
 						// Adding reset
 						step.actions += createReset
