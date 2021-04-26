@@ -16,12 +16,14 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.EmptyAction
 import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
 
 /**
@@ -69,7 +71,9 @@ class CommonizedVariableActionSerializer extends ActionSerializer {
 	def dispatch CharSequence serialize(SequentialAction action) '''
 		«FOR xStsSubaction : action.actions»«xStsSubaction.serialize»«ENDFOR»
 	'''
-
+	
+	def dispatch CharSequence serialize(EmptyAction action) ''''''
+	
 	def dispatch CharSequence serialize(AssumeAction action) ''''''
 	
 //	def dispatch CharSequence serialize(AssumeAction action) '''
