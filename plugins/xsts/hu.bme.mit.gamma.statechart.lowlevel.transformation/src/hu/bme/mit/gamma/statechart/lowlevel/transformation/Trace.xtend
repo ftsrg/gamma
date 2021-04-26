@@ -34,6 +34,7 @@ import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 package class Trace {
 
@@ -222,14 +223,14 @@ package class Trace {
 	
 	def getAllLowlevelEvents(Port port) {
 		val events = newLinkedList
-		for (event : port.interfaceRealization.interface.events) {
+		for (event : port.allEventDeclarations) {
 			events += get(port, event)
 		}
 		return events
 	}
 	
 	def getAllLowlevelEvents(Port port, EventDirection direction) {
-		return allLowlevelEvents.map[it.get(direction)].toList
+		return port.allLowlevelEvents.map[it.get(direction)].filterNull.toList
 	}
 	
 	// Component
