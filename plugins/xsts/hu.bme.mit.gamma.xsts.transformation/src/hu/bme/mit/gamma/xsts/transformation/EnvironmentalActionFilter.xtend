@@ -56,19 +56,14 @@ class EnvironmentalActionFilter {
 				necessaryNames += customizeOutputName(event, port, instance)
 				for (parameter : event.parameterDeclarations) {
 					necessaryNames += customizeInNames(parameter, port, instance)
-					if (event.persistency == Persistency.PERSISTENT) {
+					if (event.persistency == Persistency.TRANSIENT) {
+						// If event is transient, than the original resetting of the variable has to be KEPT
 						necessaryNames += customizeOutNames(parameter, port, instance)
 					}
 				}
 			}
 		}
 		// Clock variable settings are retained too - not necessary as the timeouts are in the merged action now
-//		for (simpleInstance : component.allSimpleInstances) {
-//			val statechart = simpleInstance.type as StatechartDefinition
-//			for (timeoutDelcaration : statechart.timeoutDeclarations) {
-//				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
-//			}
-//		}
 		action.delete(necessaryNames)
 	}
 	

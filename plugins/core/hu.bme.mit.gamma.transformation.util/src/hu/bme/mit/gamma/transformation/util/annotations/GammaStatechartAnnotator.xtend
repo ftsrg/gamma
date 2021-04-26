@@ -443,7 +443,7 @@ class GammaStatechartAnnotator {
 				it.type = createIntegerTypeDefinition
 				it.name = annotationNamings.getParameterName(event)
 			]
-			event.parameterDeclarations += newParameter
+			event.parameterDeclarations += newParameter // It is always the last
 			newEventParameters += newParameter
 		}
 		
@@ -557,8 +557,8 @@ class GammaStatechartAnnotator {
 		for (defReference : defReferences) {
 			val originalVariable = defReference.declaration as VariableDeclaration
 			val originalAssignment = defReference.getContainerOfType(AssignmentStatement)
-			val defVariablePairs =  variableDefs.get(originalVariable)
-			for (defVariablePair : defVariablePairs) {
+			val defVariablePairList =  variableDefs.get(originalVariable)
+			for (defVariablePair : defVariablePairList) {
 				val reference = defVariablePair.getOriginalVariableReference
 				val defVariable = defVariablePair.getDefUseVariable
 				val expression = defReference === reference ? createTrueExpression : createFalseExpression
