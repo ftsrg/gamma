@@ -116,6 +116,14 @@ class TraceBackAnnotator {
 								countedExplicitState++
 							}
 						}
+						//Needed to create new step for reset
+						if (trace.steps.size > 1) {
+							if (!trace.steps.contains(step)) {
+								trace.steps += step
+							}
+							step = createStep
+							trace.steps += step
+						}
 						// Adding reset
 						step.actions += createReset
 						line = traceScanner.nextLine.trim
