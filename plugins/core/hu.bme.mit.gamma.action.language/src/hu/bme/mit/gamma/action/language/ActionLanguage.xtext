@@ -124,10 +124,8 @@ SwitchStatement returns ActionModel::SwitchStatement:
 ;
 
 ForStatement returns ActionModel::ForStatement:
-	'for' '(' parameter=ParameterDeclaration'in' range=(Expression | TypeReferenceExpression)
-		 ')'
+	'for' '(' parameter=ParameterDeclaration 'in' range=(Expression | TypeReferenceExpression) ')'
 	(=> body=Action)
-	(=> 'then' then=Action)?
 ;
 
 ReturnStatement returns ActionModel::ReturnStatement:
