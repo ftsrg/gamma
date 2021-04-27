@@ -12,6 +12,7 @@ package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.action.model.Block
+import hu.bme.mit.gamma.action.model.Branch
 import hu.bme.mit.gamma.action.model.BreakStatement
 import hu.bme.mit.gamma.action.model.ChoiceStatement
 import hu.bme.mit.gamma.action.model.EmptyStatement
@@ -19,9 +20,10 @@ import hu.bme.mit.gamma.action.model.ForStatement
 import hu.bme.mit.gamma.action.model.IfStatement
 import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.expression.model.DefaultExpression
+import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -35,7 +37,6 @@ class ActionTransformer {
 	// Action utility
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
@@ -96,38 +97,59 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(IfStatement action) {
-		val guards = newLinkedList
-		val actions = newLinkedList
-		for (branch : action.conditionals) {
-			guards += branch.guard.transformExpression
-			actions += branch.action.transformAction
-		}
+		val branches = action.conditionals.transformBranches
+		val guards = branches.key
+		val actions = branches.value
+		
 		return createIfElseAction(guards, actions)
 	}
 	
 	def dispatch Action transformAction(SwitchStatement action) {
-		val guards = newLinkedList
-		val actions = newLinkedList
-		for (branch : action.cases) {
-			guards += branch.guard.transformExpression
-			actions += branch.action.transformAction
-		}
+		val branches = action.cases.transformBranches
+		val guards = branches.key
+		val actions = branches.value
+		
 		// In this case it is assumed that each case contains a break at the end
 		return createSwitchAction(action.controlExpression, guards, actions)
 	}
 	
 	def dispatch Action transformAction(ChoiceStatement action) {
-		val guards = newLinkedList
-		val actions = newLinkedList
-		for (branch : action.branches) {
-			guards += branch.guard.transformExpression
-			actions += branch.action.transformAction
-		}
+		val branches = action.branches.transformBranches
+		val guards = branches.key
+		val actions = branches.value
+		
 		return createChoiceAction(guards, actions)
 	}
 	
+	protected def transformBranches(Collection<Branch> branches) {
+		var Action elseAction = createEmptyAction // If we found one in the collection, we change this
+		val expressions = newArrayList
+		val actions = newArrayList
+		for (branch : branches) {
+			val guard = branch.guard
+			val action = branch.action
+			val xStsAction = action.transformAction
+			if (guard instanceof ElseExpression || guard instanceof DefaultExpression) {
+				elseAction = xStsAction // Found an else action, no need for the empty action
+			}
+			else {
+				expressions += guard.transformExpression
+				actions += xStsAction
+			}
+		}
+		actions += elseAction // Else actions must be at the end
+		// If we did not find an else expression, we add plus one empty action at the end
+		
+		return expressions -> actions
+	}
+	
 	def dispatch Action transformAction(ForStatement action) {
-		throw new UnsupportedOperationException("For statements are not supported yet")
+		val loopAction = createLoopAction => [
+			it.iterationParameterDeclaration = action.parameter.transformParameterDeclaration
+			it.range = action.range.transformExpression.integerRangeLiteralExpression
+			it.action = action.body.transformAction
+		]
+		return loopAction
 	}
 	
 }

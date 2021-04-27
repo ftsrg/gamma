@@ -1,9 +1,10 @@
 package hu.bme.mit.gamma.lowlevel.xsts.transformation
 
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
-import hu.bme.mit.gamma.expression.model.VariableDeclaration
 
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
 
@@ -21,6 +22,12 @@ class VariableDeclarationTransformer {
 	new(Trace trace) {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(this.trace)
+	}
+	
+	def transformParameterDeclaration(ParameterDeclaration lowlevelParameter) {
+		val xStsParameter = lowlevelParameter.clone
+		trace.put(lowlevelParameter, xStsParameter) // Tracing
+		return xStsParameter
 	}
 	
 	def transformVariableDeclaration(VariableDeclaration lowlevelVariable) {

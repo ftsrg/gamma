@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.ParametricElement;
@@ -43,7 +44,31 @@ public class ExpressionModelDerivedFeatures {
 	protected static final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected static final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected static final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
-
+	
+	public static Expression getLeft(IntegerRangeLiteralExpression expression, boolean isInclusive) {
+		Expression leftOperand = expression.getLeftOperand();
+		boolean isLeftInclusive = expression.isLeftInclusive();
+		if (isInclusive == isLeftInclusive) {
+			return leftOperand;
+		}
+		if (isLeftInclusive) { // Literal is inclusive, but caller wants exclusive
+			return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(leftOperand), 1);
+		}
+		return expressionUtil.wrapIntoAdd(ecoreUtil.clone(leftOperand), 1); // Literal is exclusive, but caller wants inclusive
+	}
+	
+	public static Expression getRight(IntegerRangeLiteralExpression expression, boolean isInclusive) {
+		Expression rightOperand = expression.getRightOperand();
+		boolean isRightInclusive = expression.isRightInclusive();
+		if (isInclusive == isRightInclusive) {
+			return rightOperand;
+		}
+		if (isRightInclusive) { // Literal is inclusive, but caller wants exclusive
+			return expressionUtil.wrapIntoAdd(ecoreUtil.clone(rightOperand), 1);
+		}
+		return expressionUtil.wrapIntoSubtract(ecoreUtil.clone(rightOperand), 1); // Literal is exclusive, but caller wants inclusive
+	}
+	
 	public static boolean isTransient(VariableDeclaration variable) {
 		return variable.getAnnotations().stream()
 				.anyMatch(it -> it instanceof TransientVariableDeclarationAnnotation);

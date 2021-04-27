@@ -757,7 +757,8 @@ pattern expressionToExpression(from : Expression, to : Expression) {
 }
 
 pattern variableDefs(reference : DirectReferenceExpression, variable : VariableDeclaration) {
-	AssignmentStatement.lhs(_assignment, reference);
+	AssignmentStatement.lhs(_assignment, lhs);
+	find expressionToExpression*(lhs, reference); // For potential record and array access
 	DirectReferenceExpression.declaration(reference, variable);
 }
 

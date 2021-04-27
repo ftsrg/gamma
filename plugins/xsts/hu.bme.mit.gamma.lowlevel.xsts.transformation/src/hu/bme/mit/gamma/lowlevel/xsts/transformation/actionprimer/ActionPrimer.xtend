@@ -22,7 +22,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.XSTS
@@ -208,7 +209,12 @@ abstract class ActionPrimer {
 		// No operation
 	}
 	
-	protected def dispatch void deleteUnnecessaryAssumeActions(CompositeAction action) {
+	protected def dispatch void deleteUnnecessaryAssumeActions(LoopAction action) {
+		val xStsSubaction = action.action
+		xStsSubaction.deleteUnnecessaryAssumeActions
+	}
+	
+	protected def dispatch void deleteUnnecessaryAssumeActions(MultiaryAction action) {
 		val xStsSubactions = action.actions
 		for (var i = 0; i < xStsSubactions.size; i++) {
 			val xStsSubaction = xStsSubactions.get(i)

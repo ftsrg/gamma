@@ -12,6 +12,8 @@ package hu.bme.mit.gamma.xsts.uppaal.transformation
 
 import hu.bme.mit.gamma.expression.model.AddExpression
 import hu.bme.mit.gamma.expression.model.AndExpression
+import hu.bme.mit.gamma.expression.model.ArrayAccessExpression
+import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.DivExpression
@@ -44,6 +46,7 @@ import uppaal.expressions.ArithmeticOperator
 import uppaal.expressions.CompareOperator
 import uppaal.expressions.Expression
 import uppaal.expressions.ExpressionsFactory
+import uppaal.expressions.IdentifierExpression
 import uppaal.expressions.LogicalOperator
 
 import static com.google.common.base.Preconditions.checkState
@@ -71,6 +74,21 @@ class ExpressionTransformer {
 	
 	def dispatch Expression transform(FalseExpression expression) {
 		return createLiteralExpression => [it.text = false.toString]
+	}
+	
+	def dispatch Expression transform(ArrayAccessExpression expression) {
+		val operand = expression.operand.transform
+		if (operand instanceof IdentifierExpression) {
+			operand.index += expression.index.transform
+			return operand
+		}
+		throw new IllegalArgumentException("Uppaal supports the indexing of array variables only: " + operand)
+	}
+	
+	def dispatch Expression transform(ArrayLiteralExpression expression) {
+		return createArrayLiteralExpression => [
+			it.elements += expression.operands.map[it.transform]
+		]
 	}
 	
 	def dispatch Expression transform(EnumerationLiteralExpression expression) {

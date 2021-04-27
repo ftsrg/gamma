@@ -3,6 +3,7 @@ package hu.bme.mit.gamma.statechart.lowlevel.transformation
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.InitializableElement
+import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
@@ -15,7 +16,7 @@ import java.util.List
 
 import static com.google.common.base.Preconditions.checkState
 
-import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
 
@@ -34,6 +35,15 @@ class ValueDeclarationTransformer {
 		this.trace = trace
 		this.expressionTransformer = new ExpressionTransformer(trace)
 		this.typeTransformer = new TypeTransformer(trace)
+	}
+	
+	def transformForParameter(ParameterDeclaration gammaParameter) {
+		// This must be an integer parameter
+		val typeDefinition = gammaParameter.typeDefinition
+		checkState(typeDefinition instanceof IntegerTypeDefinition)
+		val lowlevelParameter = gammaParameter.clone
+		trace.put(gammaParameter, lowlevelParameter)
+		return lowlevelParameter
 	}
 	
 	def List<VariableDeclaration> transformComponentParameter(ParameterDeclaration gammaParameter) {
@@ -156,9 +166,6 @@ class ValueDeclarationTransformer {
 			val lowlevelVariable = createVariableDeclaration => [
 				// Name added later
 				it.type = nativeType
-				if (variable instanceof InitializableElement) {
-					it.expression = variable.expression?.transformExpression?.onlyElement
-				}
 				if (variable instanceof VariableDeclaration) {
 					for (annotation : variable.annotations) {
 						it.annotations += annotation.transformAnnotation
@@ -169,6 +176,21 @@ class ValueDeclarationTransformer {
 			// Abstract tracing
 			tracer.trace(variable, fieldHierarchy, lowlevelVariable)
 		}
+		// Initial values - must come after variable transformation due to the lazy type transformation
+		val initialValues = newArrayList
+		if (variable instanceof InitializableElement) {
+			val initalExpression = variable.expression
+			if (initalExpression !== null) {
+				initialValues += initalExpression.transformExpression
+			}
+		}
+		checkState(initialValues.size == 0 || initialValues.size == lowlevelVariables.size)
+		for (var i = 0; i < initialValues.size; i++) {
+			val initialValue = initialValues.get(i)
+			val lowlevelVariable = lowlevelVariables.get(i)
+			lowlevelVariable.expression = initialValue
+		}
+		
 		return lowlevelVariables
 	}
 	

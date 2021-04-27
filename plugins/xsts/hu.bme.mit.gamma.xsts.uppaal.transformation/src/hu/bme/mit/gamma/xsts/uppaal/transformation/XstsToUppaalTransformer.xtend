@@ -10,6 +10,8 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.xsts.uppaal.transformation
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
+import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.uppaal.util.AssignmentExpressionCreator
 import hu.bme.mit.gamma.uppaal.util.NtaBuilder
@@ -23,8 +25,10 @@ import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableDeclarationAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.util.XstsActionUtil
+import java.util.List
 import java.util.Set
 import uppaal.NTA
+import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
 import uppaal.expressions.Expression
 import uppaal.templates.Edge
@@ -33,6 +37,7 @@ import uppaal.templates.LocationKind
 
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
+import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 
 class XstsToUppaalTransformer {
 	
@@ -122,15 +127,31 @@ class XstsToUppaalTransformer {
 	}
 	
 	protected def transformVariable(VariableDeclaration variable) {
+		val type = variable.type
 		val uppaalType =
 		if (xSts.clockVariables.contains(variable)) {
 			nta.clock.createTypeReference
 		}
 		else {
-			variable.type.transformType
+			type.transformType
 		}
 		val uppaalVariable = uppaalType.createVariable(variable.uppaalId)
+		// In UPPAAL, array sizes are stuck to variables
+		uppaalVariable.onlyVariable.index += type.transformArrayIndexes
+		
 		return uppaalVariable
+	}
+	
+	protected def List<ValueIndex> transformArrayIndexes(Type type) {
+		val indexes = newArrayList
+		val typeDefinition = type.typeDefinition
+		if (typeDefinition instanceof ArrayTypeDefinition) {
+			val size = typeDefinition.size
+			val elementType = typeDefinition.elementType
+			indexes += size.transform.createIndex
+			indexes += elementType.transformArrayIndexes
+		}
+		return indexes
 	}
 	
 	// Action dispatch

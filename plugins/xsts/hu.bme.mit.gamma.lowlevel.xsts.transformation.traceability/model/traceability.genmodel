@@ -23,6 +23,10 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//VariableTrace/lowlevelVariable"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//VariableTrace/xStsVariable"/>
     </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ParameterTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ParameterTrace/lowlevelParameter"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ParameterTrace/xStsParameter"/>
+    </genClasses>
     <genClasses ecoreClass="traceability.ecore#//EventTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//EventTrace/lowlevelEvent"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//EventTrace/xStsVariable"/>

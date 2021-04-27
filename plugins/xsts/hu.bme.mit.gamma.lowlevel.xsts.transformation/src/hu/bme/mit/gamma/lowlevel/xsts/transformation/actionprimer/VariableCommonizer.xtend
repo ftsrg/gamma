@@ -16,7 +16,8 @@ import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
@@ -232,7 +233,12 @@ class VariableCommonizer extends ActionPrimer {
 		// No operation
 	}
 	
-	protected def dispatch void deleteDeadBranches(CompositeAction action) {
+	protected def dispatch void deleteDeadBranches(LoopAction action) {
+		val xStsSubaction = action.action
+		xStsSubaction.deleteDeadBranches
+	}
+	
+	protected def dispatch void deleteDeadBranches(MultiaryAction action) {
 		val xStsSubactions = action.actions
 		for (var i = 0; i < xStsSubactions.size; i++) {
 			val xStsSubaction = xStsSubactions.get(i)

@@ -13,6 +13,7 @@ package hu.bme.mit.gamma.xsts.transformation.serializer
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.EmptyAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.OrthogonalAction
 import hu.bme.mit.gamma.xsts.model.ParallelAction
@@ -58,6 +59,17 @@ class ActionSerializer {
 	
 	// nop cannot be parsed by Theta
 	def dispatch String serialize(EmptyAction action) ''''''
+	
+	def dispatch String serialize(LoopAction action) {
+		val name = action.iterationParameterDeclaration.name
+		val left = action.range.getLeft(true)
+		val right = action.range.getRight(true)
+		return '''
+			for «name» from «left.serialize» to «right.serialize» do {
+				«action.action.serialize»
+			}
+		'''
+	}
 	
 	def dispatch String serialize(NonDeterministicAction action) '''
 		choice «FOR subaction : action.actions SEPARATOR " or "»{
