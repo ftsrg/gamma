@@ -34,6 +34,11 @@ import java.util.Set
 
 import static com.google.common.base.Preconditions.checkNotNull
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.activity.model.Pin
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration
+import hu.bme.mit.gamma.activity.model.Definition
+import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.activity.model.ActivityNode
 
 package class Trace {
 
@@ -62,6 +67,12 @@ package class Trace {
 	final Set<Transition> elseGuardedTransitions = newHashSet
 	// Function return variables
 	final Map<FunctionAccessExpression, List<VariableDeclaration>> returnVariableMappings = newHashMap
+	// Activity variables
+	final Map<ActivityDeclaration, ActivityDeclaration> activityDeclarationMappings = newHashMap
+	final Map<Pin, Pin> pinMappings = newHashMap
+	final Map<Definition, Definition> definitionMappings = newHashMap
+	final Map<Flow, Flow> flowMappings = newHashMap
+	final Map<ActivityNode, ActivityNode> activityNodeMappings = newHashMap
 	
 	// Package
 	def put(Package gammaPackage, hu.bme.mit.gamma.statechart.lowlevel.model.Package lowlevelPackage) {
@@ -499,6 +510,87 @@ package class Trace {
 	def get(FunctionAccessExpression functionAccessExpression) {
 		checkNotNull(functionAccessExpression)
 		returnVariableMappings.get(functionAccessExpression)
+	}
+	
+	// Activity 
+	def put(ActivityDeclaration activityDeclaration, ActivityDeclaration newActivityDeclaration) {
+		checkNotNull(activityDeclaration)
+		checkNotNull(newActivityDeclaration)
+		activityDeclarationMappings.put(activityDeclaration, newActivityDeclaration)
+	}
+
+	def isMapped(ActivityDeclaration activityDeclaration) {
+		checkNotNull(activityDeclaration)
+		activityDeclarationMappings.containsKey(activityDeclaration)
+	}
+
+	def get(ActivityDeclaration activityDeclaration) {
+		checkNotNull(activityDeclaration)
+		activityDeclarationMappings.get(activityDeclaration)
+	}
+	
+	def put(Pin pin, Pin newPin) {
+		checkNotNull(pin)
+		checkNotNull(newPin)
+		pinMappings.put(pin, newPin)
+	}
+
+	def isMapped(Pin pin) {
+		checkNotNull(pin)
+		pinMappings.containsKey(pin)
+	}
+
+	def get(Pin pin) {
+		checkNotNull(pin)
+		pinMappings.get(pin)
+	}
+	
+	def put(Definition definition, Definition newDefinition) {
+		checkNotNull(definition)
+		checkNotNull(newDefinition)
+		definitionMappings.put(definition, newDefinition)
+	}
+
+	def isMapped(Definition definition) {
+		checkNotNull(definition)
+		definitionMappings.containsKey(definition)
+	}
+
+	def get(Definition definition) {
+		checkNotNull(definition)
+		definitionMappings.get(definition)
+	}
+	
+	def put(Flow flow, Flow newFlow) {
+		checkNotNull(flow)
+		checkNotNull(newFlow)
+		flowMappings.put(flow, newFlow)
+	}
+
+	def isMapped(Flow flow) {
+		checkNotNull(flow)
+		flowMappings.containsKey(flow)
+	}
+
+	def get(Flow flow) {
+		checkNotNull(flow)
+		flowMappings.get(flow)
+	}
+	
+	def put(ActivityNode node, ActivityNode newNode) {
+		checkNotNull(node)
+		checkNotNull(newNode)
+		activityNodeMappings.put(node, newNode)
+	}
+
+	def isMapped(ActivityNode node) {
+		checkNotNull(node)
+		activityNodeMappings.containsKey(node)
+	}
+
+	def get(ActivityNode node) {
+		checkNotNull(node)
+		activityNodeMappings.get(node)
 	}
 	
 }

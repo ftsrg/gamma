@@ -14,6 +14,7 @@ import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 
 import static com.google.common.base.Preconditions.checkState
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration
 
 class GammaToLowlevelTransformer {
 	
@@ -26,6 +27,9 @@ class GammaToLowlevelTransformer {
 		for (statechart : _package.components.filter(StatechartDefinition)) {
 			lowlevelPackage.components += statechart.transform
 		}
+		for (activity : _package.activities) {
+			lowlevelPackage.activities += activity.transform
+		}
 		return lowlevelPackage
 	}
 	
@@ -35,6 +39,10 @@ class GammaToLowlevelTransformer {
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {
 		return statechart.execute
+	}
+	
+	def ActivityDeclaration transform(ActivityDeclaration activity) {
+		return activity.execute
 	}
 	
 }

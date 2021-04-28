@@ -44,6 +44,7 @@ import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.xsts.transformation.util.LowlevelNamings.*
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration
 
 class StatechartToLowlevelTransformer {
 	// Auxiliary objects
@@ -51,6 +52,7 @@ class StatechartToLowlevelTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
+	protected final extension ActivityTransformer activityTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
@@ -73,6 +75,7 @@ class StatechartToLowlevelTransformer {
 		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+		this.activityTransformer = new ActivityTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
@@ -83,6 +86,10 @@ class StatechartToLowlevelTransformer {
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(StatechartDefinition statechart) {
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
+	}
+	
+	def ActivityDeclaration execute(ActivityDeclaration activity) {
+		return activity.transform
 	}
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
