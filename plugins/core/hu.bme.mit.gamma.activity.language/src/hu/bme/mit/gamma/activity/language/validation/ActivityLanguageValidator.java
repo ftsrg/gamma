@@ -23,7 +23,6 @@ public class ActivityLanguageValidator extends AbstractActivityLanguageValidator
 	}
 	
 	@Check
-	@Override
 	public void checkNameUniqueness(NamedElement element) {
 		handleValidationResultMessage(activityModelValidator.checkNameUniqueness(element));
 	}

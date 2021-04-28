@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.action.util.ActionModelValidator;
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.ActivityDefinition;
 import hu.bme.mit.gamma.activity.model.ActivityNode;
-import hu.bme.mit.gamma.activity.model.ActivityPackage;
+//import hu.bme.mit.gamma.activity.model.ActivityPackage;
 import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration;
 import hu.bme.mit.gamma.activity.model.Pin;
 import hu.bme.mit.gamma.activity.model.PinReference;
@@ -25,7 +25,6 @@ public class ActivityModelValidator extends ActionModelValidator {
 	}
 	//
 	
-	@Override
 	public Collection<ValidationResultMessage> checkNameUniqueness(NamedElement element) {
 		String name = element.getName();
 		
@@ -39,11 +38,11 @@ public class ActivityModelValidator extends ActionModelValidator {
 			
 			return checkDirectNames(activityDeclaration.getPins(), name);
 		}
-		if (element instanceof NamedActivityDeclaration) {
+		/*if (element instanceof NamedActivityDeclaration) {
 			ActivityPackage activityPackage = ecoreUtil.getContainerOfType(element, ActivityPackage.class);
 			
 			return checkDirectNames(activityPackage.getNamedActivityDeclarations(), name);
-		}
+		}*/
 		
 		return super.checkNameUniqueness(element);
 	}
