@@ -74,4 +74,15 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsTypeDeclaration" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityNodeTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activityNode" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//ActivityNode"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="FlowTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="flow" lowerBound="1" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//Flow"/>
+  </eClassifiers>
 </ecore:EPackage>

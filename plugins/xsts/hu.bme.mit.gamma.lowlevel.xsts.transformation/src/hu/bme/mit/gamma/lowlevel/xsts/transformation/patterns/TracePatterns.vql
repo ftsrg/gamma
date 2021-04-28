@@ -14,6 +14,7 @@ import epackage "http://www.mit.bme.hu/gamma/lowlevel/xsts/transformation/tracea
 import epackage "http://www.mit.bme.hu/gamma/xSTS/Model"
 import epackage "http://www.mit.bme.hu/gamma/statechart/lowlevel/Model"
 import epackage "http://www.mit.bme.hu/gamma/expression/Model"
+import epackage "http://www.mit.bme.hu/gamma/activity/Model"
 
 pattern typeDeclarationTrace(lowlevelTypeDeclaration : TypeDeclaration, xStsTypeDeclaration : TypeDeclaration) {
 	TypeDeclarationTrace.lowlevelTypeDeclaration(trace, lowlevelTypeDeclaration);
@@ -38,6 +39,16 @@ pattern regionTrace(lowlevelRegion : Region, xStsVariable : VariableDeclaration)
 pattern stateTrace(lowlevelState : State, xStsEnumLiteral : EnumerationLiteralDefinition) {
 	StateTrace.lowlevelState(trace, lowlevelState);
 	StateTrace.xStsEnumLiteral(trace, xStsEnumLiteral);
+}
+
+pattern activityNodeTrace(activityNode : ActivityNode, xStsVariable : VariableDeclaration) {
+	ActivityNodeTrace.activityNode(trace, activityNode);
+	ActivityNodeTrace.xStsVariable(trace, xStsVariable);
+}
+
+pattern flowTrace(flow : Flow, xStsVariable : VariableDeclaration) {
+	FlowTrace.flow(trace, flow);
+	FlowTrace.xStsVariable(trace, xStsVariable);
 }
 
 pattern simpleTransitionTrace(lowlevelSimpleTransition : Transition, xStsTransition : XTransition, 

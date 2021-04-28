@@ -48,6 +48,10 @@ import org.eclipse.viatra.query.runtime.emf.EMFScope
 import static com.google.common.base.Preconditions.checkArgument
 import static com.google.common.base.Preconditions.checkState
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement
+import hu.bme.mit.gamma.activity.model.ActivityNode
+import hu.bme.mit.gamma.activity.model.Flow
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
 
 package class Trace {
 	// Trace model
@@ -472,6 +476,64 @@ package class Trace {
 	
 	def getTrace() {
 		return trace;
+	}
+	
+	// ActivityNode - variable
+	def put(ActivityNode activityNode, VariableDeclaration xStsVariable) {
+		checkArgument(activityNode !== null)
+		checkArgument(xStsVariable !== null)
+		trace.traces += createActivityNodeTrace => [
+			it.activityNode = activityNode
+			it.XStsVariable = xStsVariable
+		]
+	}
+	
+	def isTraced(ActivityNode activityNode) {
+		checkArgument(activityNode !== null)
+		return ActivityNodeTrace.Matcher.on(tracingEngine).hasMatch(activityNode, null)
+	}
+	
+	def getXStsVariable(ActivityNode activityNode) {
+		checkArgument(activityNode !== null)
+		val matches = ActivityNodeTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(activityNode)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getActivityNode(VariableDeclaration xStsVariable) {
+		checkArgument(xStsVariable !== null)
+		val matches = ActivityNodeTrace.Matcher.on(tracingEngine).getAllValuesOfactivityNode(xStsVariable)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	// Flow - variable
+	def put(Flow flow, VariableDeclaration xStsVariable) {
+		checkArgument(flow !== null)
+		checkArgument(xStsVariable !== null)
+		trace.traces += createFlowTrace => [
+			it.flow = flow
+			it.XStsVariable = xStsVariable
+		]
+	}
+	
+	def isTraced(Flow flow) {
+		checkArgument(flow !== null)
+		return FlowTrace.Matcher.on(tracingEngine).hasMatch(flow, null)
+	}
+	
+	def getXStsVariable(Flow flow) {
+		checkArgument(flow !== null)
+		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfxStsVariable(flow)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
+	}
+	
+	def getFlow(VariableDeclaration xStsVariable) {
+		checkArgument(xStsVariable !== null)
+		val matches = FlowTrace.Matcher.on(tracingEngine).getAllValuesOfflow(xStsVariable)
+		checkState(matches.size == 1, matches.size)
+		return matches.head
 	}
 	
 }

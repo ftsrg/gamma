@@ -4,7 +4,7 @@
     editorDirectory="/hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.editor/src-gen"
     modelPluginID="hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability" modelName="Traceability"
     rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" importerID="org.eclipse.emf.importer.ecore"
-    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.genmodel#//model ../../hu.bme.mit.gamma.xsts.model/model/model.genmodel#//model"
+    complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../hu.bme.mit.gamma.action.model/model/action.genmodel#//model ../../hu.bme.mit.gamma.expression.model/model/expression.genmodel#//model ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.genmodel#//model ../../hu.bme.mit.gamma.xsts.model/model/model.genmodel#//model ../../hu.bme.mit.gamma.activity.model/model/activity.genmodel#//model"
     operationReflection="true" importOrganizing="true">
   <foreignModel>traceability.ecore</foreignModel>
   <genPackages prefix="Traceability" basePackage="hu.bme.mit.gamma.lowlevel.xsts.transformation"
@@ -57,6 +57,14 @@
     <genClasses ecoreClass="traceability.ecore#//TypeDeclarationTrace">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TypeDeclarationTrace/lowlevelTypeDeclaration"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//TypeDeclarationTrace/xStsTypeDeclaration"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//ActivityNodeTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/activitynode"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//ActivityNodeTrace/xStsVariable"/>
+    </genClasses>
+    <genClasses ecoreClass="traceability.ecore#//FlowTrace">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/xStsVariable"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference traceability.ecore#//FlowTrace/flow"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

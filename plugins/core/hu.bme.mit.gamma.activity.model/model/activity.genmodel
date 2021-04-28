@@ -69,9 +69,6 @@
     <genClasses ecoreClass="activity.ecore#//NamedActivityDeclarationReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//NamedActivityDeclarationReference/namedActivityDeclaration"/>
     </genClasses>
-    <genClasses ecoreClass="activity.ecore#//ActivityPackage">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference activity.ecore#//ActivityPackage/namedActivityDeclarations"/>
-    </genClasses>
     <genClasses ecoreClass="activity.ecore#//InsidePinReference"/>
     <genClasses ecoreClass="activity.ecore#//OutsidePinReference">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference activity.ecore#//OutsidePinReference/actionNode"/>

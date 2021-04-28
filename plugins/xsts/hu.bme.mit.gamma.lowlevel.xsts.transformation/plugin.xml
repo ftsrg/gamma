@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityPatterns" id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.nodes"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flows"/>
+    </group>
+  </extension>
   <extension id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ComplexTransitionPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
     <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ComplexTransitionPatterns" id="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ComplexTransitionPatterns">
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.lastJoinStates"/>
@@ -52,6 +58,8 @@
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.variableTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.regionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.stateTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.activityNodeTrace"/>
+      <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.flowTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.simpleTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.choiceTransitionTrace"/>
       <query-specification fqn="hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.mergeTransitionTrace"/>
