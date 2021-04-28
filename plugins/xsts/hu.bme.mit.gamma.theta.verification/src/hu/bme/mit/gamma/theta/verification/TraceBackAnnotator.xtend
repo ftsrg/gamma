@@ -81,7 +81,7 @@ class TraceBackAnnotator {
 		}
 	}
 	
-	def ExecutionTrace execute() {
+	def synchronized ExecutionTrace execute() {
 		// Creating the trace component
 		val trace = createExecutionTrace => [
 			it.component = this.component

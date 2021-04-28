@@ -2,11 +2,12 @@ package hu.bme.mit.gamma.transformation.util.annotations
 
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
-import hu.bme.mit.gamma.action.model.AssignmentStatement
 import hu.bme.mit.gamma.action.model.Branch
+import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.expression.model.ReferenceExpression
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.interface_.Event
@@ -32,9 +33,12 @@ import java.util.List
 import java.util.Map
 import java.util.Map.Entry
 import java.util.Set
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 import org.eclipse.xtend.lib.annotations.Data
+
+import static com.google.common.base.Preconditions.checkState
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
@@ -80,6 +84,14 @@ class GammaStatechartAnnotator {
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs = newHashMap
 	protected final Map<VariableDeclaration, /* Original variable whose use is marked */
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is used */> variableUses = newHashMap
+	// Interaction data-flow coverage
+	protected boolean INTERACTION_DATAFLOW_COVERAGE
+	protected DataflowCoverageCriterion INTERACTION_DATAFLOW_COVERAGE_CRITERION
+	protected final Set<ParameterDeclaration> interactionDataflowCoverableParameters = newHashSet
+	protected final Map<ParameterDeclaration, /* Original parameter whose def is marked */
+		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original parameter is set */> parameterDefs = newHashMap
+	protected final Map<ParameterDeclaration, /* Original parameter whose use is marked */
+		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original parameter is used */> parameterUses = newHashMap
 	// Factories
 	protected final extension ExpressionModelFactory expressionModelFactory = ExpressionModelFactory.eINSTANCE
 	protected final extension ActionModelFactory actionModelFactory = ActionModelFactory.eINSTANCE
@@ -553,11 +565,42 @@ class GammaStatechartAnnotator {
 			defReference.createDefUseVariable(variableDefs,
 				annotationNamings.getDefVariableName(referredVariable), false)
 		}
-		// EVERY def variable must be created before this next loop!
+		// Use
+		for (useReference : useReferences) {
+			val referredVariable = useReference.declaration as VariableDeclaration
+			useReference.createDefUseVariable(variableUses,
+				annotationNamings.getUseVariableName(referredVariable), true)
+		}
+		
+		defReferences.annotateModelForDataflowCoverage(useReferences, 
+			new DataflowDeclarationHandler {
+				override getDefDataflowReferences(EObject defReference) {
+					val directReference = defReference as DirectReferenceExpression
+					val originalVariable = directReference.declaration as VariableDeclaration
+					return variableDefs.get(originalVariable)
+				}
+				override getUseVariable(ReferenceExpression useReference) {
+					val useDataflowReference = variableUses.values.flatten
+							.filter[it.getOriginalVariableReference === useReference]
+					checkState(useDataflowReference.size == 1)
+					return useDataflowReference.head.getDefUseVariable
+				}
+			}
+		)
+//			val originalVariable = defReference.declaration as VariableDeclaration
+//			val defVariablePairList = variableDefs.get(originalVariable)
+//			val originalAssignment = defReference.getContainerOfType(AssignmentStatement)
+		
+//			val containingAction = useReference.getContainerOfType(Action)
+//			val assignment = useVariable.createAssignment(createTrueExpression)
+	}
+	
+	protected def annotateModelForDataflowCoverage(Set<? extends EObject> defReferences,
+			Set<? extends ReferenceExpression> useReferences, DataflowDeclarationHandler handler) {
+		// Every def variable must be created before this next loop
 		for (defReference : defReferences) {
-			val originalVariable = defReference.declaration as VariableDeclaration
-			val originalAssignment = defReference.getContainerOfType(AssignmentStatement)
-			val defVariablePairList =  variableDefs.get(originalVariable)
+			val defVariablePairList = handler.getDefDataflowReferences(defReference)
+			val originalAssignment = defReference.getSelfOrContainerOfType(Action)
 			for (defVariablePair : defVariablePairList) {
 				val reference = defVariablePair.getOriginalVariableReference
 				val defVariable = defVariablePair.getDefUseVariable
@@ -565,11 +608,9 @@ class GammaStatechartAnnotator {
 				originalAssignment.append(defVariable.createAssignment(expression))
 			}
 		}
-		// Use
+		// Every use variable must be created before this next loop
 		for (useReference : useReferences) {
-			val referredVariable = useReference.declaration as VariableDeclaration
-			val useVariable = useReference.createDefUseVariable(variableUses,
-				annotationNamings.getUseVariableName(referredVariable), true)
+			val useVariable = handler.getUseVariable(useReference)
 			val containingAction = useReference.getContainerOfType(Action)
 			val assignment = useVariable.createAssignment(createTrueExpression)
 			if (containingAction === null) {
@@ -580,7 +621,7 @@ class GammaStatechartAnnotator {
 			else {
 				val containingBranch = useReference.getContainerOfType(Branch)
 				if (containingBranch !== null) {
-					// p-use in a branch guard
+					// p-use in a branch guard, TODO add action in every subsequent branch and default else branch
 					val guard = containingBranch.guard
 					if (guard.contains(useReference)) {
 						val action = containingBranch.action
@@ -591,6 +632,11 @@ class GammaStatechartAnnotator {
 				containingAction.append(assignment)
 			}
 		}
+	}
+	
+	static interface DataflowDeclarationHandler {
+		def Collection<DataflowReferenceVariable> getDefDataflowReferences(EObject defReference)
+		def VariableDeclaration getUseVariable(ReferenceExpression useReference)
 	}
 	
 	// Variable pair creators, used both by transition pair and interaction annotation
@@ -800,33 +846,34 @@ class GammaStatechartAnnotator {
 	
 	@Data
 	static class DataflowReferenceVariable {
-		DirectReferenceExpression originalVariableReference
-		VariableDeclaration defUseVariable
+		EObject originalVariableReference // EventParameterReferenceExpression, DirectReferenceExpression or RaiseEventAction
+		VariableDeclaration defUseVariable // Boolean variable denoting def or use
 	}
 	
 	static class DefUseReferences {
-		final Map<VariableDeclaration, /* Original variable whose def is marked */
-			List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original variable is set */> variableDefs
+		final Map<? extends Declaration, /* Original declaration (parameter or variable) whose def or use is marked */
+			List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original declaration is set or read */>
+				declarationDefs
 		
-		new(Map<VariableDeclaration, List<DataflowReferenceVariable>> variableDefs) {
-			this.variableDefs = variableDefs
+		new(Map<? extends Declaration, List<DataflowReferenceVariable>> declarationDefs) {
+			this.declarationDefs = declarationDefs
 		}
 		
 		def getVariables() {
-			return variableDefs.keySet
+			return declarationDefs.keySet
 		}
 		
-		def getAuxiliaryReferences(VariableDeclaration variable) {
-			if (variableDefs.containsKey(variable)) {
-				return variableDefs.get(variable)
+		def getAuxiliaryReferences(Declaration declaration) {
+			if (declarationDefs.containsKey(declaration)) {
+				return declarationDefs.get(declaration)
 			}
 			else {
 				return #[]
 			}
 		}
 		
-		def getAuxiliaryVariables(VariableDeclaration variable) {
-			return variable.getAuxiliaryReferences.map[it.getDefUseVariable].toList
+		def getAuxiliaryVariables(Declaration declaration) {
+			return declaration.getAuxiliaryReferences.map[it.getDefUseVariable].toList
 		}
 		
 	}

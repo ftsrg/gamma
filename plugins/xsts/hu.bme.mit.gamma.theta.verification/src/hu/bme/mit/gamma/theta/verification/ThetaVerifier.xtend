@@ -66,7 +66,8 @@ class ThetaVerifier extends AbstractVerifier {
 			val jar = System.getenv(ENVIRONMENT_VARIABLE_FOR_THETA_JAR)
 			// java -jar %THETA_XSTS_CLI_PATH% --model trafficlight.xsts --property red_green.prop
 			val traceFile = new File(modelFile.traceFile)
-			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one 
+			traceFile.delete // So no invalid/old cex is parsed if this actual process does not generate one
+			traceFile.deleteOnExit // So the cex with this random name does not remain on disk
 			val command = '''java -jar «jar.escapePath» «parameters» --model «modelFile.canonicalPath.escapePath» --property «queryFile.canonicalPath.escapePath» --cex «traceFile.canonicalPath.escapePath» --stacktrace'''
 			// Executing the command
 			logger.log(Level.INFO, "Executing command: " + command)
@@ -118,7 +119,8 @@ class ThetaVerifier extends AbstractVerifier {
 	}
 	
 	def getTraceFile(File modelFile) {
-		return modelFile.parent + File.separator + modelFile.extensionlessName + ".cex";
+		// Thread.currentThread.name is needed to prevent race conditions
+		return modelFile.parent + File.separator + modelFile.extensionlessName + "-" + Thread.currentThread.name + ".cex";
 	}
 	
 }

@@ -352,7 +352,7 @@ class TestGenerator {
 			val localName = instanceName.substring(startIndex)
 			return localName
 		} catch (StringIndexOutOfBoundsException e) {
-			throw new IllegalStateException("Instance " + parentName + " has a child with the same name. This makes test generation impossible.")
+			throw new IllegalArgumentException("Instance " + parentName + " has a child with the same name. This makes test generation impossible.")
 		}
 	}
 	

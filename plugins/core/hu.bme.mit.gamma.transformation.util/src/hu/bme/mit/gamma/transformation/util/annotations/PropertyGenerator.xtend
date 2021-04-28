@@ -330,7 +330,8 @@ class PropertyGenerator {
 						and.operands += auxiliaryUseVariable.createVariableReference
 					}
 					
-					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference].toSet
+					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference]
+							.filter(DirectReferenceExpression).toSet // Uses are almost DirectReferenceExpressions
 					val useComment = originalUseReferences.ids
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 					formulas += propertyUtil.createCommentableStateFormula(
