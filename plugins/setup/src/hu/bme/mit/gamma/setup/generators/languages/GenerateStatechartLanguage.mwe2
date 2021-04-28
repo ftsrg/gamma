@@ -29,6 +29,8 @@ Workflow {
     	registerGeneratedEPackage = "hu.bme.mit.gamma.expression.model.ExpressionModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.action.model/model/action.genmodel"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.action.model.ActionModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.activity.model/model/activity.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.activity.model.ActivityModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage"
@@ -59,7 +61,7 @@ Workflow {
 		}
 		language = StandardLanguage {			
 			//referencedResource = "platform:/resource/hu.bme.mit.gamma.expression.language/src/hu/bme/mit/gamma/expression/language/ExpressionLanguage.xtext"
-			referencedResource = "platform:/resource/hu.bme.mit.gamma.action.language/src/hu/bme/mit/gamma/action/language/ActionLanguage.xtext"
+			referencedResource = "platform:/resource/hu.bme.mit.gamma.activity.language/src/hu/bme/mit/gamma/activity/language/ActivityLanguage.xtext"
 			//referencedResource = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
 			name = "hu.bme.mit.gamma.statechart.language.StatechartLanguage"
 			fileExtensions = "gcd"

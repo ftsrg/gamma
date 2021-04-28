@@ -9,12 +9,13 @@
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 grammar hu.bme.mit.gamma.statechart.language.StatechartLanguage 
-	with hu.bme.mit.gamma.action.language.ActionLanguage
+	with hu.bme.mit.gamma.activity.language.ActivityLanguage
 
 import "http://www.eclipse.org/emf/2002/Ecore" as Ecore
 import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart" 
 import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel 
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
+import "http://www.mit.bme.hu/gamma/activity/Model" as ActivityModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Composite" as CompositeModel
 import "http://www.mit.bme.hu/gamma/statechart/Model/Interface" as InterfaceModel 
 import "http://www.mit.bme.hu/gamma/statechart/Model/Contract" as ContractModel 
@@ -28,7 +29,8 @@ Package returns InterfaceModel::Package:
 		functionDeclarations+=FunctionDeclaration |
 		typeDeclarations+=TypeDeclaration |
 		components+=Component |
-		interfaces+=Interface
+		interfaces+=Interface |
+		activities+=NamedActivityDeclaration
 	)*
 ;
 

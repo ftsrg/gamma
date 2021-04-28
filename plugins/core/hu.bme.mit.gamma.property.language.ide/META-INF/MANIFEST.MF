@@ -9,6 +9,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.property.language,
  hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.activity.language,
  hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.statechart.language,
  org.eclipse.xtext.ide,

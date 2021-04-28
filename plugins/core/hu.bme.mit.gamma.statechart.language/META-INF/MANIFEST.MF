@@ -15,6 +15,7 @@ Export-Package: hu.bme.mit.gamma.statechart.language,
  hu.bme.mit.gamma.statechart.language.validation
 Require-Bundle: hu.bme.mit.gamma.expression.language,
  hu.bme.mit.gamma.action.language,
+ hu.bme.mit.gamma.activity.language,
  hu.bme.mit.gamma.language.util,
  hu.bme.mit.gamma.statechart.model,
  org.eclipse.xtext,

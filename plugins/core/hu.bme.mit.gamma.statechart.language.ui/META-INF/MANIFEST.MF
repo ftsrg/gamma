@@ -17,6 +17,7 @@ Require-Bundle: hu.bme.mit.gamma.statechart.language,
  org.eclipse.compare,
  org.eclipse.xtext.builder,
  hu.bme.mit.gamma.action.language.ui,
+ hu.bme.mit.gamma.activity.language.ui,
  hu.bme.mit.gamma.expression.language.ui,
  hu.bme.mit.gamma.language.util
 Import-Package: org.apache.log4j

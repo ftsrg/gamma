@@ -5,11 +5,6 @@ import "http://www.mit.bme.hu/gamma/expression/Model" as ConstraintModel
 import "http://www.mit.bme.hu/gamma/action/Model" as ActionModel 
 import "http://www.mit.bme.hu/gamma/activity/Model"
 
-ActivityPackage returns ActivityPackage:
-	'package' name=ID
-	(namedActivityDeclarations+=NamedActivityDeclaration)*
-;
-
 NamedActivityDeclaration returns NamedActivityDeclaration:
 	'activity'
 	name=ID

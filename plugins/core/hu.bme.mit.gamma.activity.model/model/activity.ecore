@@ -79,10 +79,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="namedActivityDeclaration"
         lowerBound="1" eType="#//NamedActivityDeclaration"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ActivityPackage" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="namedActivityDeclarations"
-        upperBound="-1" eType="#//NamedActivityDeclaration" containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InsidePinReference" abstract="true"
       eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"/>
   <eClassifiers xsi:type="ecore:EClass" name="OutsidePinReference" abstract="true">

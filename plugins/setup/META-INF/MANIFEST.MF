@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.property.model,
  hu.bme.mit.gamma.genmodel.model,
  hu.bme.mit.gamma.action.language,
- hu.bme.mit.gamma.activity.model
+ hu.bme.mit.gamma.activity.model,
+ hu.bme.mit.gamma.activity.language
 Automatic-Module-Name: hu.bme.mit.gamma.setup
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: BME-FTSRG
