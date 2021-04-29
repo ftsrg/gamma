@@ -139,15 +139,3 @@ The following solutions resolved these issues:
  9. In a terminal, run a docker container from the gamma image using the `docker run -it -p 8080:8080 --network host --name gamma_container gamma:latest` command. This command will bind the localhost:8080 address of the host machine to the Docker container, forwarding commands to the webserver running inside. The container is named "gamma_container", and starts in interactive mode, allowing for CLI access. The last parameter is the image, which is `gamma:latest`, which indicates that the latest Gamma image build is used.
  
 It is possible to change the port binding if the user wishes, but the webserver listens to port 8080. In the port binding parameter, the part before the ":" stands for the host port, and the one after is the container port. So changing the parameter to "5555:8080" is valid, but "8080:5555" would result in communication failure.  Names of the image and container can also be changed.
-
-
-
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbNzg5ODYwNTQzLC0xOTA3NjE0MDEyLC0xOD
-M5Mzk0MTgzLDE3NDIyMTkzMTgsMTU5OTIxMDMzOCwtMjQ3NTQ1
-NDAxLC0xMzM1MDgwNTI4LDIwMTc4ODI0MjYsLTYzNTQyMDM5NC
-wxNzcxNDg5NiwtMTQ1MzIyODE4MSw5OTUwMDA4NDIsLTE1MDc5
-MTM3NTgsNjkwMjgxMDQ0LC05MzEyNDA5NDYsLTEyODUyODEzMT
-EsNjY2OTk5MzcsMTU3MjA1NDExMywtMzE3ODI1NjcxLC0xNjk3
-ODk0NTFdfQ==
--->

@@ -44,4 +44,5 @@ ADD generator /home/generator
 RUN mkdir workspaces
 WORKDIR "/home/server/gamma-openapi-vertx"
 RUN mvn package
-WORKDIR "/home"
+ENTRYPOINT mvn exec:java
+#WORKDIR "/home"

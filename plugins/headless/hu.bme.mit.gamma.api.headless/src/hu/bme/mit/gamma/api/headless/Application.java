@@ -113,7 +113,7 @@ public class Application implements IApplication {
 				}
 			});
 			// Saving the workspace, otherwise warnings will be printed
-			workspace.save(true, progressMonitor);
+			//workspace.save(true, progressMonitor);
 
 			beforeExitOperation(projectDescriptorPath);
 		}

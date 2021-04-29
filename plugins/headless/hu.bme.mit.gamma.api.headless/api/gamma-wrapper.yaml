@@ -4,8 +4,8 @@ info:
   title: Gamma Wrapper API
   description: 'An API that allows users to use the Gamma framework via http requests'
   contact:
-    name: Csortán Szilárd
-    email: csortan.szilard@gmail.com
+    name: Csanád Csuvarszki
+    email: csuvi98@outlook.com
 
 servers:
   - url: https://dev.gammaframework.hu/v1
