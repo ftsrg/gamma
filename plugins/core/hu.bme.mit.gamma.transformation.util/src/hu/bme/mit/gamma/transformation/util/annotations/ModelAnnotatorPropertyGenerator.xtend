@@ -121,6 +121,8 @@ class ModelAnnotatorPropertyGenerator {
 			
 			formulas += propertyGenerator.createDataflowReachability(annotator.getVariableDefs,
 							annotator.getVariableUses, annotator.dataflowCoverageCriterion)
+			formulas += propertyGenerator.createInteractionDataflowReachability(
+							annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)
