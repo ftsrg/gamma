@@ -161,7 +161,6 @@ class GammaStatechartAnnotator {
 			this.INTERACTION_DATAFLOW_COVERAGE = true
 			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = DataflowCoverageCriterion.ALL_USE
 		}
-		
 	}
 	
 	// Transition coverage
