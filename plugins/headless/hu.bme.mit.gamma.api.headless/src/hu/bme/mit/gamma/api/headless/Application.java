@@ -112,8 +112,8 @@ public class Application implements IApplication {
 					return resourceSet;
 				}
 			});
-			// Saving the workspace, otherwise warnings will be printed
-			workspace.save(true, progressMonitor);
+			// Commented due to repeatedly throwing exceptions. The application works without it.
+			//workspace.save(true, progressMonitor);
 
 			beforeExitOperation(projectDescriptorPath);
 		}
