@@ -40,6 +40,8 @@ import hu.bme.mit.gamma.activity.model.Definition
 import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.activity.model.ActivityNode
 
+import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+
 package class Trace {
 
 	final Map<Package, hu.bme.mit.gamma.statechart.lowlevel.model.Package> packageMappings = newHashMap
@@ -53,6 +55,8 @@ package class Trace {
 	// Event parameters
 	final Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> inParDeclMappings = newHashMap
 	final Map<Triple<Port, Event, Pair<ParameterDeclaration, FieldHierarchy>>, VariableDeclaration> outParDeclMappings = newHashMap
+	// For parameters
+	final Map<ParameterDeclaration, ParameterDeclaration> forParDeclMappings = newHashMap
 	// Simple and complex variable mappings
 	final Map<Pair<ValueDeclaration, FieldHierarchy>, VariableDeclaration> valDeclMappings = newHashMap
 	final Map<TimeoutDeclaration, VariableDeclaration> timeoutDeclMappings = newHashMap
@@ -231,14 +235,14 @@ package class Trace {
 	
 	def getAllLowlevelEvents(Port port) {
 		val events = newLinkedList
-		for (event : port.interfaceRealization.interface.events) {
+		for (event : port.allEventDeclarations) {
 			events += get(port, event)
 		}
 		return events
 	}
 	
 	def getAllLowlevelEvents(Port port, EventDirection direction) {
-		return allLowlevelEvents.map[it.get(direction)].toList
+		return port.allLowlevelEvents.map[it.get(direction)].filterNull.toList
 	}
 	
 	// Component
@@ -332,6 +336,25 @@ package class Trace {
 	def getAllOutParameters(Port port, Event event, Pair<ParameterDeclaration, FieldHierarchy> recordField) {
 		return outParDeclMappings.getAllParameters(port, event, recordField)
 	}
+	
+	// For parameters
+	def put(ParameterDeclaration gammaParameter, ParameterDeclaration lowLevelParameter) {
+		checkNotNull(gammaParameter)
+		checkNotNull(lowLevelParameter)
+		forParDeclMappings.put(gammaParameter, lowLevelParameter)
+	}
+	
+	def isForStatementParameterMapped(ValueDeclaration gammaParameter) {
+		checkNotNull(gammaParameter)
+		return forParDeclMappings.containsKey(gammaParameter)
+	} 
+	
+	def get(ParameterDeclaration gammaParameter) {
+		checkNotNull(gammaParameter)
+		val lowlevelParameter = forParDeclMappings.get(gammaParameter)
+		checkNotNull(lowlevelParameter)
+		return lowlevelParameter
+	} 
 	
 	// Values
 	def put(Pair<ValueDeclaration, FieldHierarchy> recordField, VariableDeclaration lowLevelVariable) {

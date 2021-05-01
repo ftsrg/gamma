@@ -54,8 +54,6 @@
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="body" lowerBound="1" eType="#//Action"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="then" eType="#//Action"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ChoiceStatement" eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="branches" lowerBound="1"

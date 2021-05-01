@@ -22,6 +22,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="xStsVariable" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//VariableDeclaration"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ParameterTrace" eSuperTypes="#//AbstractTrace">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelParameter" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="xStsParameter" lowerBound="1"
+        eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParameterDeclaration"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EventTrace" eSuperTypes="#//AbstractTrace">
     <eStructuralFeatures xsi:type="ecore:EReference" name="lowlevelEvent" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.lowlevel.model/model/model.ecore#//EventDeclaration"/>

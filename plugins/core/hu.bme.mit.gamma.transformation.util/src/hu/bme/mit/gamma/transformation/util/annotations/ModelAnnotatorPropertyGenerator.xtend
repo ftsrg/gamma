@@ -46,7 +46,7 @@ class ModelAnnotatorPropertyGenerator {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion) { // TODO parameter coverage
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForTransitions = testedComponentsForTransitions
@@ -101,7 +101,8 @@ class ModelAnnotatorPropertyGenerator {
 					testedPortsForInteractions, testedStatesForInteractions,
 					testedTransitionsForInteractions,
 					senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion)
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					#[], DataflowCoverageCriterion.ALL_USE)
 			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
@@ -112,7 +113,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
-							annotator.transitionPairAnnotations)
+							annotator.getTransitionPairAnnotations)
 			formulas += propertyGenerator.createInteractionReachability(
 							annotator.getInteractions)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
@@ -121,6 +122,8 @@ class ModelAnnotatorPropertyGenerator {
 			
 			formulas += propertyGenerator.createDataflowReachability(annotator.getVariableDefs,
 							annotator.getVariableUses, annotator.dataflowCoverageCriterion)
+			formulas += propertyGenerator.createInteractionDataflowReachability(
+							annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)

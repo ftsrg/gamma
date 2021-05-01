@@ -20,10 +20,12 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression
+import hu.bme.mit.gamma.expression.model.FunctionDeclaration
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
-import hu.bme.mit.gamma.expression.model.LambdaDeclaration
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
@@ -40,6 +42,7 @@ import java.util.List
 import static com.google.common.base.Preconditions.checkState
 
 import static extension com.google.common.collect.Iterables.getOnlyElement
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 
 class ExpressionTransformer {
@@ -90,18 +93,40 @@ class ExpressionTransformer {
 		]
 	}
 	
-	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
-	}
-	
-	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
-	}
-	
 	def dispatch List<Expression> transformExpression(UnaryExpression expression) {
 		return #[
 			create(expression.eClass) as UnaryExpression => [
 				it.operand = expression.operand.transformSimpleExpression
+			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
+		return #[
+			create(expression.eClass) as BinaryExpression => [
+				it.leftOperand = expression.leftOperand.transformSimpleExpression
+				it.rightOperand = expression.rightOperand.transformSimpleExpression
+			]
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
+		val multiaryExpression = create(expression.eClass) as MultiaryExpression
+		for (containedExpression : expression.operands) {
+			multiaryExpression.operands += containedExpression.transformSimpleExpression
+		}
+		return #[
+			multiaryExpression
+		]
+	}
+	
+	def dispatch List<Expression> transformExpression(IntegerRangeLiteralExpression expression) {
+		return #[
+			createIntegerRangeLiteralExpression => [
+				it.leftInclusive = expression.leftInclusive
+				it.leftOperand = expression.leftOperand.transformSimpleExpression
+				it.rightInclusive = expression.rightInclusive
+				it.rightOperand = expression.rightOperand.transformSimpleExpression
 			]
 		]
 	}
@@ -125,10 +150,6 @@ class ExpressionTransformer {
 				it.^else = expression.^else.transformSimpleExpression
 			]
 		]
-	}
-
-	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
-		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	def dispatch List<Expression> transformExpression(EnumerationLiteralExpression expression) {
@@ -178,24 +199,17 @@ class ExpressionTransformer {
 	def dispatch List<Expression> transformExpression(EventParameterReferenceExpression expression) {
 		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
-	
-	def dispatch List<Expression> transformExpression(BinaryExpression expression) {
-		return #[
-			create(expression.eClass) as BinaryExpression => [
-				it.leftOperand = expression.leftOperand.transformSimpleExpression
-				it.rightOperand = expression.rightOperand.transformSimpleExpression
-			]
-		]
+		
+	def dispatch List<Expression> transformExpression(RecordAccessExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
-	def dispatch List<Expression> transformExpression(MultiaryExpression expression) {
-		val multiaryExpression = create(expression.eClass) as MultiaryExpression
-		for (containedExpression : expression.operands) {
-			multiaryExpression.operands += containedExpression.transformSimpleExpression
-		}
-		return #[
-			multiaryExpression
-		]
+	def dispatch List<Expression> transformExpression(ArrayAccessExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
+	}
+
+	def dispatch List<Expression> transformExpression(DirectReferenceExpression expression) {
+		return expression.transformReferenceExpression.filter(Expression).toList // "Cast" to List<Expression>
 	}
 	
 	// Key method: reference expression
@@ -208,13 +222,21 @@ class ExpressionTransformer {
 		val lowlevelIndexes = indexes.map[it.transformSimpleExpression].toList
 		
 		val reference = expression.accessReference
-		val lowlevelVariables = newArrayList
+		val lowlevelVariables = <ValueDeclaration>newArrayList
 		
 		// If original is not a full access, other potential fields are explored, that is,
 		// fieldAccess can be an extensible field access 
 		if (reference instanceof DirectReferenceExpression) {
 			val declaration = reference.declaration as ValueDeclaration
-			lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+			if (trace.isForStatementParameterMapped(declaration)) {
+				// For statement parameter declaration
+				val forLoopParameter = declaration as ParameterDeclaration
+				lowlevelVariables += trace.get(forLoopParameter)
+			}
+			else {
+				// Normal value
+				lowlevelVariables += trace.getAll(declaration -> fieldAccess)
+			}
 		}
 		else if (reference instanceof EventParameterReferenceExpression) {
 			val port = reference.port
@@ -242,27 +264,34 @@ class ExpressionTransformer {
 				}
 			}
 			else {
-				val function = expression.declaration
-				val lambda = function as LambdaDeclaration // Lambda is expected
+				val function = expression.declaration as FunctionDeclaration
+				checkState(function.lambda)
+				val type = function.type
 				if (currentRecursionDepth <= 0) {
 					// We return with a defaultValue
-					result += lambda.type.initialValueOfType
+					result += type.initialValueOfType
 				}
 				else {
 					currentRecursionDepth--
 					
 					val arguments = expression.arguments
 					val size = arguments.size
-					val parameters = lambda.parameterDeclarations
+					val parameters = function.parameterDeclarations
 					checkState(size == parameters.size)
-					val clonedBody = lambda.expression.clone
+					var clonedBody = function.lambdaExpression.clone
 					for (var i = 0; i < size; i++) {
 						val argument = arguments.get(i)
 						val parameter = parameters.get(i)
 						// Precondition: here parameters can be referenced only via DirectReferenceExpressions
-						for (directReference : clonedBody.getAllContentsOfType(DirectReferenceExpression)
+						for (directReference : clonedBody.getSelfAndAllContentsOfType(DirectReferenceExpression)
 								.filter[it.declaration === parameter]) {
-							argument.replace(directReference) // Inlining the argument
+							val clonedArgument = argument.clone
+							if (directReference === clonedBody) {
+								clonedBody = clonedArgument // A body consisting of a single reference
+							}
+							else {
+								clonedArgument.replace(directReference) // Inlining the argument
+							}
 						}
 					}
 					result += clonedBody.transformSimpleExpression // Possible recursion

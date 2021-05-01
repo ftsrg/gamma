@@ -413,6 +413,12 @@ class NtaBuilder {
 		}
 	}
 	
+	def createIndex(Expression expression) {
+		return createValueIndex => [
+			it.sizeExpression = expression
+		]
+	} 
+	
 	def getNta() {
 		return nta
 	}

@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.expression.model.DefaultExpression
 import hu.bme.mit.gamma.expression.model.ElseExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.ReferenceExpression
-import hu.bme.mit.gamma.expression.util.ExpressionUtil
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -38,7 +37,6 @@ class ActionTransformer {
 	// Action utility
 	protected final extension XstsActionUtil xStsActionUtil = XstsActionUtil.INSTANCE
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
-	protected final extension ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE
 	// Needed for the transformation of assignment actions
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
@@ -146,7 +144,12 @@ class ActionTransformer {
 	}
 	
 	def dispatch Action transformAction(ForStatement action) {
-		throw new UnsupportedOperationException("For statements are not supported yet")
+		val loopAction = createLoopAction => [
+			it.iterationParameterDeclaration = action.parameter.transformParameterDeclaration
+			it.range = action.range.transformExpression.integerRangeLiteralExpression
+			it.action = action.body.transformAction
+		]
+		return loopAction
 	}
 	
 }

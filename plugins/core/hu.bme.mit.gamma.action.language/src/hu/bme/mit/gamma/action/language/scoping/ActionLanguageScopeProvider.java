@@ -22,6 +22,7 @@ import org.eclipse.xtext.scoping.Scopes;
 import hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.ForStatement;
 import hu.bme.mit.gamma.action.util.ActionUtil;
 import hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
@@ -71,6 +72,11 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				List<VariableDeclaration> precedingLocalDeclaratations =
 						ActionModelDerivedFeatures.getPrecedingVariableDeclarations(block, action);
 				return Scopes.scopeFor(precedingLocalDeclaratations, parentScope);
+			}
+			// For statement
+			if (container instanceof ForStatement) {
+				ForStatement forStatement = (ForStatement) container;
+				return Scopes.scopeFor(List.of(forStatement.getParameter()), parentScope);
 			}
 			return parentScope;
 		}

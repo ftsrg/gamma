@@ -55,7 +55,6 @@ import hu.bme.mit.gamma.statechart.lowlevel.model.State
 import hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 import hu.bme.mit.gamma.xsts.model.AssumeAction
-import hu.bme.mit.gamma.xsts.model.CompositeAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.SequentialAction
 import hu.bme.mit.gamma.xsts.model.VariableGroup
@@ -339,7 +338,7 @@ class LowlevelToXstsTransformer {
 			topRegionInitializationRule = createRule(Statecharts.instance).action [
 				val lowlevelStatechart = it.statechart
 				val regionInitializingAction = createParallelAction // Each region at the same time
-				configurationInitializingAction as CompositeAction => [
+				configurationInitializingAction as SequentialAction => [
 					it.actions += regionInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {
@@ -347,7 +346,7 @@ class LowlevelToXstsTransformer {
 						lowlevelTopRegion.createRecursiveXStsRegionAndSubregionActivatingAction
 				}
 				val entryEventInitializingAction = createParallelAction // Each region at the same time
-				entryEventAction as CompositeAction => [
+				entryEventAction as SequentialAction => [
 					it.actions += entryEventInitializingAction
 				]
 				for (lowlevelTopRegion : lowlevelStatechart.regions) {

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.uppaal.util
 
+import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition
 import hu.bme.mit.gamma.expression.model.BooleanTypeDefinition
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition
@@ -32,14 +33,14 @@ class TypeTransformer {
 		this.nta = nta
 	}
 	
-	// Type references) such as enums and typedefs for primitive types
-	def dispatch TypeDefinition transformType(TypeDeclaration type) {
+	// Type references, such as enums and typedefs for primitive types
+	def transformTypeDeclaration(TypeDeclaration type) {
 		return type.type.transformType
 	}
 	
 	def dispatch TypeDefinition transformType(TypeReference type) {
 		val referredType = type.reference
-		return referredType.transformType
+		return referredType.transformTypeDeclaration
 	}
 	
 	def dispatch TypeDefinition transformType(EnumerationTypeDefinition type) {
@@ -47,6 +48,11 @@ class TypeTransformer {
 		val lowerBound = createLiteralExpression => [it.text = 0.toString]
 		val upperBound = createLiteralExpression => [it.text = literalSize.toString]
 		return createRange(lowerBound, upperBound)
+	}
+	
+	def dispatch TypeDefinition transformType(ArrayTypeDefinition type) {
+		val elementType = type.elementType
+		return elementType.transformType // The variable creator has to add the indexes
 	}
 	
 	def dispatch TypeDefinition transformType(IntegerTypeDefinition type) {

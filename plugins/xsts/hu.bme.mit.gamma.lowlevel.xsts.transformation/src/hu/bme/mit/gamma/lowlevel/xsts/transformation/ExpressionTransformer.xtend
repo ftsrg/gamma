@@ -18,8 +18,10 @@ import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.Expression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression
 import hu.bme.mit.gamma.expression.model.MultiaryExpression
 import hu.bme.mit.gamma.expression.model.NullaryExpression
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
 import hu.bme.mit.gamma.expression.model.Type
 import hu.bme.mit.gamma.expression.model.TypeDeclaration
 import hu.bme.mit.gamma.expression.model.TypeReference
@@ -50,14 +52,25 @@ class ExpressionTransformer {
 			it.^else = expression.^else.transformExpression
 		]
 	}
+	
+	def dispatch Expression transformExpression(IntegerRangeLiteralExpression expression) {
+		return createIntegerRangeLiteralExpression => [
+			it.leftInclusive = expression.leftInclusive
+			it.leftOperand = expression.leftOperand.transformExpression
+			it.rightInclusive = expression.rightInclusive
+			it.rightOperand = expression.rightOperand.transformExpression
+		]
+	}
 
 	def dispatch Expression transformExpression(DirectReferenceExpression expression) {
 		val declaration = expression.declaration
+		if (declaration instanceof ParameterDeclaration) {
+			// Loop iteration parameters
+			return trace.getXStsParameter(declaration).createReferenceExpression
+		}
 		checkState(declaration instanceof VariableDeclaration, declaration)
-		val variableDeclaration = expression.declaration as VariableDeclaration
-		return createDirectReferenceExpression => [
-			it.declaration = trace.getXStsVariable(variableDeclaration)
-		]
+		val variableDeclaration = declaration as VariableDeclaration
+		return trace.getXStsVariable(variableDeclaration).createReferenceExpression
 	}
 	
 	def dispatch Expression transformExpression(ArrayAccessExpression expression) {

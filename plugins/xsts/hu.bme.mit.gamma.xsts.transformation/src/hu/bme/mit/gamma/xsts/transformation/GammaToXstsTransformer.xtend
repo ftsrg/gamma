@@ -86,7 +86,7 @@ class GammaToXstsTransformer {
 	protected final Logger logger = Logger.getLogger("GammaLogger")
 	
 	new() {
-		this(null, false, true)
+		this(null, true, true)
 	}
 	
 	new(Integer schedulingConstraint,

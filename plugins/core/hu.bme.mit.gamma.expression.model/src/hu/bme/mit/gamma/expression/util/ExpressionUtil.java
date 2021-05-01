@@ -27,6 +27,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.expression.model.AccessExpression;
+import hu.bme.mit.gamma.expression.model.AddExpression;
 import hu.bme.mit.gamma.expression.model.AndExpression;
 import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayLiteralExpression;
@@ -54,6 +55,7 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
@@ -69,6 +71,7 @@ import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
+import hu.bme.mit.gamma.expression.model.SubtractExpression;
 import hu.bme.mit.gamma.expression.model.TrueExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -138,6 +141,24 @@ public class ExpressionUtil {
 	public Collection<TypeDeclaration> getTypeDeclarations(EObject context) {
 		ExpressionPackage _package = ecoreUtil.getSelfOrContainerOfType(context, ExpressionPackage.class);
 		return _package.getTypeDeclarations();
+	}
+	
+	public IntegerRangeLiteralExpression getIntegerRangeLiteralExpression(Expression expression) {
+		if (expression instanceof IntegerRangeLiteralExpression) {
+			return (IntegerRangeLiteralExpression) expression;
+		}
+		if (expression instanceof DirectReferenceExpression) {
+			DirectReferenceExpression reference = (DirectReferenceExpression) expression;
+			Declaration declaration = reference.getDeclaration();
+			if (declaration instanceof ConstantDeclaration) {
+				ConstantDeclaration constant = (ConstantDeclaration) declaration;
+				Expression value = constant.getExpression();
+				if (value instanceof IntegerRangeLiteralExpression) {
+					return (IntegerRangeLiteralExpression) value;
+				}
+			}
+		}
+		throw new IllegalArgumentException("Not known expression: " + expression);
 	}
 	
 	// Expression optimization
@@ -418,6 +439,20 @@ public class ExpressionUtil {
 
 	public Expression subtract(Expression expression, int value) {
 		return toIntegerLiteral(evaluator.evaluate(expression) - value);
+	}
+	
+	public Expression wrapIntoAdd(Expression expression, int value) {
+		AddExpression addExpression = factory.createAddExpression();
+		addExpression.getOperands().add(expression);
+		addExpression.getOperands().add(toIntegerLiteral(value));
+		return addExpression;
+	}
+	
+	public Expression wrapIntoSubtract(Expression expression, int value) {
+		SubtractExpression subtractExpression = factory.createSubtractExpression();
+		subtractExpression.setLeftOperand(expression);
+		subtractExpression.setRightOperand(toIntegerLiteral(value));
+		return subtractExpression;
 	}
 	
 	public Expression wrapIntoMultiply(Expression expression, int value) {
@@ -868,11 +903,16 @@ public class ExpressionUtil {
 	public Expression wrapIntoMultiaryExpression(Expression original,
 			Collection<? extends Expression> additions, MultiaryExpression potentialContainer) {
 		List<Expression> operands = potentialContainer.getOperands();
-		operands.add(original);
+		if (original != null) {
+			operands.add(original);
+		}
 		operands.addAll(additions);
 		operands.removeIf(it -> it == null);
 		if (operands.isEmpty()) {
 			return null;
+		}
+		if (operands.size() == 1) {
+			return operands.get(0);
 		}
 		return potentialContainer;
 	}

@@ -57,8 +57,8 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/lhs"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssignmentAction/rhs"/>
     </genClasses>
-    <genClasses ecoreClass="model.ecore#//CompositeAction">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//CompositeAction/actions"/>
+    <genClasses ecoreClass="model.ecore#//MultiaryAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//MultiaryAction/actions"/>
     </genClasses>
     <genClasses ecoreClass="model.ecore#//TimeoutGroup"/>
     <genClasses ecoreClass="model.ecore#//ComponentParameterGroup"/>
@@ -72,6 +72,15 @@
     <genClasses ecoreClass="model.ecore#//SystemOutEventGroup"/>
     <genClasses ecoreClass="model.ecore#//VariableDeclarationAction">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//VariableDeclarationAction/variableDeclaration"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//LoopAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/action"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/iterationParameterDeclaration"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//LoopAction/range"/>
+    </genClasses>
+    <genClasses ecoreClass="model.ecore#//CompositeAction"/>
+    <genClasses ecoreClass="model.ecore#//AssertAction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference model.ecore#//AssertAction/assertion"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

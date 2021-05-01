@@ -20,6 +20,8 @@ import hu.bme.mit.gamma.xsts.model.Action
 import hu.bme.mit.gamma.xsts.model.AssignmentAction
 import hu.bme.mit.gamma.xsts.model.AssumeAction
 import hu.bme.mit.gamma.xsts.model.CompositeAction
+import hu.bme.mit.gamma.xsts.model.LoopAction
+import hu.bme.mit.gamma.xsts.model.MultiaryAction
 import hu.bme.mit.gamma.xsts.model.NonDeterministicAction
 import hu.bme.mit.gamma.xsts.model.XSTS
 import hu.bme.mit.gamma.xsts.model.XSTSModelFactory
@@ -54,19 +56,14 @@ class EnvironmentalActionFilter {
 				necessaryNames += customizeOutputName(event, port, instance)
 				for (parameter : event.parameterDeclarations) {
 					necessaryNames += customizeInNames(parameter, port, instance)
-					if (event.persistency == Persistency.PERSISTENT) {
+					if (event.persistency == Persistency.TRANSIENT) {
+						// If event is transient, than the original resetting of the variable has to be KEPT
 						necessaryNames += customizeOutNames(parameter, port, instance)
 					}
 				}
 			}
 		}
 		// Clock variable settings are retained too - not necessary as the timeouts are in the merged action now
-//		for (simpleInstance : component.allSimpleInstances) {
-//			val statechart = simpleInstance.type as StatechartDefinition
-//			for (timeoutDelcaration : statechart.timeoutDeclarations) {
-//				necessaryNames += customizeName(timeoutDelcaration, simpleInstance)
-//			}
-//		}
 		action.delete(necessaryNames)
 	}
 	
@@ -242,15 +239,20 @@ class EnvironmentalActionFilter {
 	}
 	
 	private def void delete(CompositeAction action, Set<String> necessaryNames) {
-		val xStsSubactions = action.actions
 		val copyXStsSubactions = newArrayList
-		copyXStsSubactions += xStsSubactions
+		if (action instanceof LoopAction) {
+			copyXStsSubactions += action.action
+		}
+		else {
+			val xStsMultiaryAction = action as MultiaryAction
+			copyXStsSubactions += xStsMultiaryAction.actions
+		}
 		for (xStsSubaction : copyXStsSubactions) {
 			if (xStsSubaction instanceof AssignmentAction) {
 				val name = (xStsSubaction.lhs as DirectReferenceExpression).declaration.name
 				if (!necessaryNames.contains(name)) {
 					// Deleting
-					xStsSubactions -= xStsSubaction
+					createEmptyAction.replace(xStsSubaction) // Remove might leave a null in LoopAction
 				}
 			}
 			else if (xStsSubaction instanceof AssumeAction) {
@@ -258,7 +260,7 @@ class EnvironmentalActionFilter {
 				val variables = assumption.referredVariables
 				if (!variables.exists[necessaryNames.contains(it.name)]) {
 					// Deleting the assume action
-					xStsSubactions -= xStsSubaction
+					createEmptyAction.replace(xStsSubaction)
 				}
 			}
 			else if (xStsSubaction instanceof CompositeAction) {

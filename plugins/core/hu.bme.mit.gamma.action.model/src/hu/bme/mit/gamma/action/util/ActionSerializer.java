@@ -99,7 +99,6 @@ public class ActionSerializer {
 		StringBuilder builder = new StringBuilder("for (" + statement.getParameter().getName() + " : "
 				+ expressionSerializer.serialize(statement.getRange()) + ")" + System.lineSeparator());
 		builder.append(serialize(statement.getBody()) + System.lineSeparator());
-		builder.append("then " + serialize(statement.getThen()));
 		return builder.toString();
 	}
 
