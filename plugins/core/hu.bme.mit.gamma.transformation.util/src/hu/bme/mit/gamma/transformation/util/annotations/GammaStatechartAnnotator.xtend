@@ -3,6 +3,9 @@ package hu.bme.mit.gamma.transformation.util.annotations
 import hu.bme.mit.gamma.action.model.Action
 import hu.bme.mit.gamma.action.model.ActionModelFactory
 import hu.bme.mit.gamma.action.model.Branch
+import hu.bme.mit.gamma.action.model.ChoiceStatement
+import hu.bme.mit.gamma.action.model.IfStatement
+import hu.bme.mit.gamma.action.model.SwitchStatement
 import hu.bme.mit.gamma.expression.model.Declaration
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
@@ -44,6 +47,7 @@ import org.eclipse.xtend.lib.annotations.Data
 
 import static com.google.common.base.Preconditions.checkState
 
+import static extension hu.bme.mit.gamma.action.derivedfeatures.ActionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
 class GammaStatechartAnnotator {
@@ -157,7 +161,7 @@ class GammaStatechartAnnotator {
 			this.dataflowCoverableVariables += dataflowCoverableVariables
 			this.DATAFLOW_COVERAGE_CRITERION = dataflowCoverageCriterion
 		}
-		if (true) { // TODO introduce parameters
+		if (false) { // TODO introduce parameters
 			this.INTERACTION_DATAFLOW_COVERAGE = true
 			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = DataflowCoverageCriterion.ALL_USE
 		}
@@ -614,21 +618,39 @@ class GammaStatechartAnnotator {
 		// Every use variable must be created before this next loop
 		for (useReference : useReferences) {
 			val useVariable = handler.getUseVariable(useReference)
-			val containingAction = useReference.getContainerOfType(Action)
 			val assignment = useVariable.createAssignment(createTrueExpression)
+			val containingAction = useReference.getContainerOfType(Action)
 			if (containingAction === null) {
 				// p-use in transition guards
 				val actionList = useReference.containingActionList
 				actionList.add(0, assignment)
+				// Maybe this action should rather be put in the entry action of the source state
+				// Or the previous transition in the case of a choice node to simulate non-determinism
 			}
 			else {
 				val containingBranch = useReference.getContainerOfType(Branch)
 				if (containingBranch !== null) {
-					// p-use in a branch guard, TODO add action in every subsequent branch and default else branch
+					// p-use in a branch guard
 					val guard = containingBranch.guard
 					if (guard.contains(useReference)) {
-						val action = containingBranch.action
-						assignment.prepend(action)
+						if (containingBranch.containedByChoiceStatement) {
+							val choiceStatement = containingBranch.getContainerOfType(ChoiceStatement)
+							// Nondeterministic: the declaration is used if the execution gets to the choice
+							assignment.prepend(choiceStatement)
+						}
+						else {
+							if (containingBranch.containedByIfStatement) {
+								val ifStatement = containingBranch.getContainerOfType(IfStatement)
+								// Deterministic: the declaration is used if the current or a subsequent branch is executed
+								ifStatement.getOrCreateElseBranch // An (implicit) else branch is needed
+							}
+							else if (containingBranch.containedBySwitchStatement) {
+								val switchStatement = containingBranch.getContainerOfType(SwitchStatement)
+								// Deterministic: the declaration is used if the current or a subsequent branch is executed
+								switchStatement.getOrCreateDefaultBranch // An (implicit) default branch is needed
+							}
+							containingBranch.extendThisAndNextBranches(assignment)
+						}
 					}
 				}
 				// c-use

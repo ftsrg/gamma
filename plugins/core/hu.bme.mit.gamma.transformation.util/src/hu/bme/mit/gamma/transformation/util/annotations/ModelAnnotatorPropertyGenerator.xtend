@@ -112,7 +112,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
-							annotator.transitionPairAnnotations)
+							annotator.getTransitionPairAnnotations)
 			formulas += propertyGenerator.createInteractionReachability(
 							annotator.getInteractions)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
