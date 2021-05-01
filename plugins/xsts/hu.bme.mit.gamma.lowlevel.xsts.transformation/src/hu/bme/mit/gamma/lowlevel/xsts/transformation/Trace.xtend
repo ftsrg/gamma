@@ -52,6 +52,9 @@ import hu.bme.mit.gamma.activity.model.ActivityNode
 import hu.bme.mit.gamma.activity.model.Flow
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.ActivityNodeTrace
 import hu.bme.mit.gamma.lowlevel.xsts.transformation.patterns.FlowTrace
+import hu.bme.mit.gamma.expression.model.ParameterDeclaration
+import hu.bme.mit.gamma.action.model.ForStatement
+import hu.bme.mit.gamma.lowlevel.xsts.transformation.traceability.ParameterTrace
 
 package class Trace {
 	// Trace model
@@ -131,6 +134,44 @@ package class Trace {
 		val matches = EventTrace.Matcher.on(tracingEngine).getAllValuesOflowlevelEvent(xStsVariable)
 		checkState(matches.size == 1, matches.size)
 		return matches.head
+	}
+	
+	// Parameter - parameter (for loops)
+	def put(ParameterDeclaration lowlevelParameter, ParameterDeclaration xStsParameter) {
+		checkArgument(lowlevelParameter !== null)
+		checkArgument(xStsParameter !== null)
+		if (lowlevelParameter.hasXStsParameter) {
+			// This can happen if we transform the same action multiple times
+			// Solution: we "forget" the previously created xSts parameter
+			val container = lowlevelParameter.eContainer
+			checkState(container instanceof ForStatement)
+			val trace = lowlevelParameter.XStsParameterTrace
+			trace.XStsParameter = xStsParameter
+			return
+		}
+		trace.traces += createParameterTrace => [
+			it.lowlevelParameter = lowlevelParameter
+			it.XStsParameter = xStsParameter
+		]
+	}
+
+	def hasXStsParameter(ParameterDeclaration lowlevelParameter) {
+		checkArgument(lowlevelParameter !== null)
+		val traces = trace.traces.filter(ParameterTrace).filter[it.lowlevelParameter === lowlevelParameter]
+		return !traces.isEmpty
+	}
+
+	def getXStsParameterTrace(ParameterDeclaration lowlevelParameter) {
+		checkArgument(lowlevelParameter !== null)
+		val traces = trace.traces.filter(ParameterTrace).filter[it.lowlevelParameter === lowlevelParameter]
+		checkState(traces.size == 1)
+		return traces.head
+	}
+
+	def getXStsParameter(ParameterDeclaration lowlevelParameter) {
+		val xStsParameter = lowlevelParameter.XStsParameterTrace.XStsParameter
+		checkState(xStsParameter !== null)
+		return xStsParameter
 	}
 	
 	// Variable - variable
