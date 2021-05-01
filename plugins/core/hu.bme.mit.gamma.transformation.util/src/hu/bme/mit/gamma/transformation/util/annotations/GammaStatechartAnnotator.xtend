@@ -95,7 +95,7 @@ class GammaStatechartAnnotator {
 	// Interaction data-flow coverage
 	protected boolean INTERACTION_DATAFLOW_COVERAGE
 	protected DataflowCoverageCriterion INTERACTION_DATAFLOW_COVERAGE_CRITERION
-	protected final Set<ParameterDeclaration> interactionDataflowCoverableParameters = newHashSet
+	protected final Set<Port> interactionDataflowCoverablePorts = newHashSet
 	protected final Map<Pair<Port, ParameterDeclaration>, /* Original parameter whose def is marked */
 		List<DataflowReferenceVariable> /* Reference-variable pairs denoting if the original parameter is set */> parameterDefs = newHashMap
 	protected final Map<Pair<Port, ParameterDeclaration>, /* Original parameter whose use is marked */
@@ -115,12 +115,14 @@ class GammaStatechartAnnotator {
 			Collection<SynchronousComponentInstance> transitionPairCoverableComponents,
 			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
 			Collection<Transition> interactionCoverableTransitions,
-			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion) {
+			Collection<VariableDeclaration> dataflowCoverableVariables,
+			Collection<Port> interactionDataflowCoverablePorts) {
 		this(gammaPackage, transitionCoverableComponents, transitionPairCoverableComponents,
 			interactionCoverablePorts, interactionCoverableStates,
 			interactionCoverableTransitions, InteractionCoverageCriterion.EVERY_INTERACTION,
 				InteractionCoverageCriterion.EVERY_INTERACTION,
-			dataflowCoverableVariables, dataflowCoverageCriterion)
+			dataflowCoverableVariables, DataflowCoverageCriterion.ALL_USE,
+			interactionDataflowCoverablePorts, DataflowCoverageCriterion.ALL_USE)
 	}
 	
 	new(Package gammaPackage,
@@ -129,7 +131,8 @@ class GammaStatechartAnnotator {
 			Collection<Port> interactionCoverablePorts, Collection<State> interactionCoverableStates,
 			Collection<Transition> interactionCoverableTransitions,
 			InteractionCoverageCriterion senderInteractionTuple, InteractionCoverageCriterion receiverInteractionTuple,
-			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion) {
+			Collection<VariableDeclaration> dataflowCoverableVariables, DataflowCoverageCriterion dataflowCoverageCriterion,
+			Collection<Port> interactionDataflowCoverablePorts, DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.gammaPackage = gammaPackage
 		this.engine = ViatraQueryEngine.on(new EMFScope(gammaPackage.eResource.resourceSet))
 		if (!transitionCoverableComponents.empty) {
@@ -161,9 +164,10 @@ class GammaStatechartAnnotator {
 			this.dataflowCoverableVariables += dataflowCoverableVariables
 			this.DATAFLOW_COVERAGE_CRITERION = dataflowCoverageCriterion
 		}
-		if (false) { // TODO introduce parameters
+		if (!interactionDataflowCoverablePorts.isEmpty) {
 			this.INTERACTION_DATAFLOW_COVERAGE = true
-			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = DataflowCoverageCriterion.ALL_USE
+			this.interactionDataflowCoverablePorts += interactionDataflowCoverablePorts
+			this.INTERACTION_DATAFLOW_COVERAGE_CRITERION = interactionDataflowCoverageCriterion
 		}
 	}
 	

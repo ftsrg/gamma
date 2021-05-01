@@ -46,7 +46,7 @@ class ModelAnnotatorPropertyGenerator {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion) { // TODO parameter coverage
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForTransitions = testedComponentsForTransitions
@@ -101,7 +101,8 @@ class ModelAnnotatorPropertyGenerator {
 					testedPortsForInteractions, testedStatesForInteractions,
 					testedTransitionsForInteractions,
 					senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion)
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					#[], DataflowCoverageCriterion.ALL_USE)
 			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
