@@ -220,27 +220,25 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkArrayLiteralExpression(ArrayLiteralExpression expression) {
 		Type referenceType = null;
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		for(Expression e : expression.getOperands()) {
+		for (Expression e : expression.getOperands()) {
 			Type examinedType = typeDeterminator2.getType(e);
-			if (typeDeterminator2.equals(referenceType, examinedType)) {
-				if(referenceType == null) {
+			if (!typeDeterminator2.equals(referenceType, examinedType)) {
+				if (referenceType == null) {
 					referenceType = examinedType;
 				}
 				else {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The operands of the ArrayLiteralExpression are not of the same type!", null));
+							"The operands of the ArrayLiteralExpression are not of the same type!",
+							null));
 				}
 			}
 		}
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkRecordAccessExpression(
-			RecordAccessExpression recordAccessExpression) {
-		Declaration accessedDeclaration = 
-				expressionUtil.getAccessedDeclaration(recordAccessExpression);
-		RecordTypeDefinition recordType = (RecordTypeDefinition) 
-				ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
+		Declaration accessedDeclaration = expressionUtil.getAccessedDeclaration(recordAccessExpression);
+		RecordTypeDefinition recordType = (RecordTypeDefinition) ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!(accessedDeclaration instanceof ValueDeclaration)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -295,7 +293,6 @@ public class ExpressionModelValidator {
 						"The types of the arguments and the types of the declared function parameters do not match!", 
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
 				return validationResultMessages;
-				
 			}
 			++i;
 		}
@@ -316,7 +313,7 @@ public class ExpressionModelValidator {
 		if (!typeDeterminator2.isInteger(expression.getIndex())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The index of the accessed element must be of type integer!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX, null)));
 			return validationResultMessages;
 		}
 		return validationResultMessages;
@@ -332,7 +329,6 @@ public class ExpressionModelValidator {
 					"The specified object is not selectable!", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
-			
 		}
 		if (!(expression.getOperand() instanceof IntegerLiteralExpression || expression.getOperand() instanceof ReferenceExpression)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
@@ -407,7 +403,7 @@ public class ExpressionModelValidator {
 				Expression rhs = equivalenceExpression.getRightOperand();
 				Type leftHandSideExpressionType = typeDeterminator2.getType(lhs);
 				Type rightHandSideExpressionType = typeDeterminator2.getType(rhs);
-				if (!typeDeterminator2.equals(leftHandSideExpressionType, rightHandSideExpressionType)) {
+				if (!typeDeterminator2.equals(lhs, rhs)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " + rightHandSideExpressionType, 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
@@ -586,7 +582,6 @@ public class ExpressionModelValidator {
 						int elemIndex = eContents.indexOf(elem);
 						int variableIndex = eContents.indexOf(variableDeclaration);
 						if (variableIndex >= elemIndex) {
-							
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 									"The declarations referenced in the initial value must be declared before the variable declaration.", 
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
@@ -609,18 +604,19 @@ public class ExpressionModelValidator {
 				validationResultMessages.addAll(checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION));
 				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
-				if (variableDeclarationType instanceof ArrayTypeDefinition) {
-					arrayType = (ArrayTypeDefinition) variableDeclarationType;
+				if (declaration.getType() instanceof ArrayTypeDefinition) {
+					arrayType = (ArrayTypeDefinition) declaration.getType();
 				}
-				else if (variableDeclarationType instanceof TypeReference &&
-						((TypeReference) variableDeclarationType).getReference().getType() instanceof ArrayTypeDefinition) {
-					arrayType = (ArrayTypeDefinition) ((TypeReference) variableDeclarationType).getReference().getType();
+				else if (declaration.getType() instanceof TypeReference &&
+						((TypeReference) declaration.getType()).getReference().getType() instanceof ArrayTypeDefinition) {
+					arrayType = (ArrayTypeDefinition) ((TypeReference) declaration.getType()).getReference().getType();
 				}
-				if (arrayType != null) {					
+				if (arrayType != null) {	
 					if (initialExpression instanceof ArrayLiteralExpression) {
 						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
-						for(Expression e : rhs.getOperands()) {
-							if(!typeDeterminator2.equals(arrayType.getElementType(), typeDeterminator2.getType(e))) {
+						Type elementType = typeDeterminator2.removeTypeReferences(arrayType.getElementType());
+						for (Expression e : rhs.getOperands()) {
+							if (!typeDeterminator2.equals(elementType, typeDeterminator2.getType(e))) {
 								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 										"The elements on the right hand side must be of the declared type of the array.", 
 										new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
@@ -649,6 +645,12 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkArrayTypeDefinition(ArrayTypeDefinition arrayType) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
+			// The size of the array must be given as an integer
+			if (!typeDeterminator2.isInteger(arrayType.getSize())) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"The size of the array must be given as an integer.",
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE, null)));
+			}
 			// Array init size must be greater then 0
 			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
