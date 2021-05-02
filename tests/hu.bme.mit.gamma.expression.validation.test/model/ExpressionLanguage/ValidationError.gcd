@@ -4,7 +4,7 @@ import "Types/Types.gcd"
 
 const int1 : int
 const dec1 : dec
-const rec : rec
+const rec1 : rec
 
 procedure proc (param : integer) : integer {
  	return 1;
@@ -21,13 +21,14 @@ const dir : Direction
  */
  const bool0 : boolean := 1 ? true : false
  const bool1 : boolean := int1 ? true : false
+
  
 /**
  * We expect the else-branch and the then-branch to be of the same type.
  * 
  * @Check - checkIfThenElseExpression
  */
- const bool3 : boolean := true ? 1 : 1.1
+const bool3 : boolean := true ? 1 : 1.1
 
 
 /**
@@ -35,15 +36,15 @@ const dir : Direction
  * 
  * @Check - checkArrayLiteralExpression
  */
- const array : [1] integer := #[1.1]
- const array1 : [1] integer := #[dec1]
+const array : [1] integer := #[1.1]
+const array1 : [2] integer := #[int1, dec1]
 
 /**
  * We expect the record has with a field with the given name.
  * 
  * @Check - checkRecordAccessExpression
  */
-const field3 : integer := rec.field3
+const field3 : integer := rec1.field3
 
 
 /**
@@ -59,6 +60,14 @@ const procResult0 : integer := proc(dec1)
  * @Check - checkFunctionAccessExpression
  */
 const procResult1 : integer := proc(int1, int1)
+
+
+/**
+ * we expect the index of the accessed element to be of integer type.
+ * 
+ * @Check - checkArrayAccessExpression
+ */
+const arrayAccessInt : integer := array[dec1]
 
 
 /**
@@ -80,7 +89,7 @@ const bool5 : boolean := int1 imply true
  * 
  * @Check - checkBooleanExpression
  */
-const bool6 : boolean := true or 1.1
+const bool6 : boolean := true or dec1
 const bool7 : boolean := false and 1.1
 
 /**
@@ -132,6 +141,9 @@ const int7 : integer := 1.1 + false
  */
 const int8 : integer := 1.1
 const array2 : [2] integer := #[1.1, 1]
+const array3 : [1] dec := #[int1]
+const array4 : [1] int := #[1.1]
+const dir1 : Direction := ::NORTH
 
 
 /**
@@ -139,14 +151,22 @@ const array2 : [2] integer := #[1.1, 1]
  * 
  * @Check - checkInitializableElement
  */
-const array3 : [1] integer := #[1, 1]
+const array5 : [1] integer := #[1, 1]
 
 /**
  * We expect the size of array to be greater then 0.
  * 
  * @Check - checkArrayTypeDefinition
  */
-const array4 : [0] integer
+const array6 : [0] integer
+
+/**
+ * We expect the size of the array to be an integer.
+ * 
+ * @Check - checkArrayTypeDefinition
+ */
+const array7 : [dec1] integer
+
 
 /**
  * We expect the divisor to be non-zero.
@@ -157,14 +177,12 @@ const int9 : integer := 12 / 0
 const int10 : integer := 12 mod 0
 const int11 : integer := 12 div 0
 
-
 /**
  * We expect the denominator to be non-zero.
  * 
  * @Check - checkRationalLiteralExpression
  */
 const rat : rational := 12 % 0
-
 
 /**
  * We expect all fields in the definition to have a value!
@@ -178,5 +196,7 @@ const rec0 : rec := # rec { field0 := 0 }
  * 
  * @Check - checkRecordLiteralExpression
  */
-const rec0 : rec := # rec { field0 := 0, field1 := 1, field0 := 1 }
+const rec2 : rec := # rec { field0 := 0, field1 := 1, field0 := 1 }
+
+
 

@@ -9,6 +9,10 @@ type Direction : enum {
 	LEFT, RIGHT
 }
 
+type CardianalPoints : enum {
+	NORTH, SOUTH, WEST, EAST
+}
+
 // ERROR
 
 /**

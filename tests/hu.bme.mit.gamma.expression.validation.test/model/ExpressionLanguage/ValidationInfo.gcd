@@ -1,7 +1,5 @@
 package expressionlanguage
 
-import "Types/Types.gcd"
-
 const bool0 : boolean := true
 const bool1 : boolean := false
 const int0 : integer := 0
