@@ -52,7 +52,6 @@ class StatechartToLowlevelTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension ValueDeclarationTransformer valueDeclarationTransformer
 	protected final extension ActionTransformer actionTransformer
-	protected final extension ActivityTransformer activityTransformer
 	protected final extension TriggerTransformer triggerTransformer
 	protected final extension PseudoStateTransformer pseudoStateTransformer
 	protected final extension GammaEcoreUtil gammaEcoreUtil = GammaEcoreUtil.INSTANCE
@@ -65,17 +64,16 @@ class StatechartToLowlevelTransformer {
 	// Trace object for storing the mappings
 	protected final Trace trace
 
-	new() {
-		this(true, 10)
+	new(Trace trace) {
+		this(trace, true, 10)
 	}
 
-	new(boolean functionInlining, int maxRecursionDepth) {
-		this.trace = new Trace
+	new(Trace trace, boolean functionInlining, int maxRecursionDepth) {
+		this.trace = trace
 		this.typeTransformer = new TypeTransformer(this.trace)
 		this.expressionTransformer = new ExpressionTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
-		this.activityTransformer = new ActivityTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.triggerTransformer = new TriggerTransformer(this.trace, functionInlining, maxRecursionDepth)
 		this.pseudoStateTransformer = new PseudoStateTransformer(this.trace)
 	}
@@ -86,10 +84,6 @@ class StatechartToLowlevelTransformer {
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition execute(StatechartDefinition statechart) {
 		return statechart.transformComponent as hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition
-	}
-	
-	def ActivityDeclaration execute(ActivityDeclaration activity) {
-		return activity.transform
 	}
 
 	protected def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {

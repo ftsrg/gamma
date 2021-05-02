@@ -27,8 +27,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Maps;
 
+import hu.bme.mit.gamma.activity.model.NamedActivityDeclaration;
 import hu.bme.mit.gamma.composition.xsts.uppaal.transformation.Gamma2XstsUppaalTransformerSerializer;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
+import hu.bme.mit.gamma.genmodel.model.ActivityReference;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ComponentReference;
@@ -74,6 +76,7 @@ import hu.bme.mit.gamma.uppaal.composition.transformation.api.util.UppaalModelPr
 import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.xsts.model.XSTS;
+import hu.bme.mit.gamma.xsts.transformation.api.Activity2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.api.Gamma2XstsTransformerSerializer;
 import hu.bme.mit.gamma.xsts.transformation.serializer.ActionSerializer;
 import hu.bme.mit.gamma.xsts.uppaal.transformation.api.Xsts2UppaalTransformerSerializer;
@@ -104,7 +107,12 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					}
 					break;
 				case THETA:
-					transformer = new Gamma2XSTSTransformer();
+					if (modelReference instanceof ComponentReference) {
+						transformer = new Gamma2XSTSTransformer();
+					} else /*if (modelReference instanceof ActivityReference)*/ {
+						transformer = new Activity2XSTSTransformer();
+					}
+					
 					break;
 				case XSTS_UPPAAL:
 					transformer = new Gamma2XSTSUppaalTransformer();
@@ -439,6 +447,37 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 					dataflowTestedVariables, dataflowCoverageCriterion);
+			transformer.execute();
+			// Property serialization
+			serializeProperties(fileName);
+			logger.log(Level.INFO, "The XSTS transformation has been finished.");
+		}
+		
+		@Override
+		protected PropertySerializer getPropertySerializer() {
+			return ThetaPropertySerializer.INSTANCE;
+		}
+
+		@Override
+		protected String getQueryFileExtension() {
+			return GammaFileNamer.THETA_QUERY_EXTENSION;
+		}
+	
+	}
+	
+	class Activity2XSTSTransformer extends AnalysisModelTransformer {
+		
+		public void execute(AnalysisModelTransformation transformation) throws IOException {
+			logger.log(Level.INFO, "Starting XSTS transformation.");
+			ActivityReference reference = (ActivityReference) transformation.getModel();
+			NamedActivityDeclaration activity = reference.getActivity();
+			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
+			String fileName = transformation.getFileName().get(0);			
+			
+			Activity2XstsTransformerSerializer transformer = new Activity2XstsTransformerSerializer(
+					activity,
+					reference.getArguments(), targetFolderUri, fileName,
+					schedulingConstraint, transformation.getPropertyPackage());
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);

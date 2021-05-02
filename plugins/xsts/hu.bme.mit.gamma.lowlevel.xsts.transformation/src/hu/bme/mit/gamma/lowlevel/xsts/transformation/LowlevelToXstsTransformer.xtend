@@ -100,7 +100,6 @@ class LowlevelToXstsTransformer {
 	protected final extension ExpressionTransformer expressionTransformer
 	protected final extension VariableDeclarationTransformer variableDeclarationTransformer
 	protected final extension LowlevelTransitionToActionTransformer lowlevelTransitionToActionTransformer
-	protected final extension ActivityToXstsTransformer activityToXstsTransformer
 	protected final extension SimpleTransitionToXTransitionTransformer simpleTransitionToActionTransformer
 	protected final extension PrecursoryTransitionToXTransitionTransformer precursoryTransitionToXTransitionTransformer
 	protected final extension TerminalTransitionToXTransitionTransformer terminalTransitionToXTransitionTransformer
@@ -160,8 +159,6 @@ class LowlevelToXstsTransformer {
 		this.pseudoStateHandler = new PseudoStateHandler(this.engine)
 		this.lowlevelTransitionToActionTransformer = new LowlevelTransitionToActionTransformer(
 			this.engine, this.trace)
-		this.activityToXstsTransformer = new ActivityToXstsTransformer(
-			this.engine, this.xSts, this.trace)
 		this.simpleTransitionToActionTransformer = new SimpleTransitionToXTransitionTransformer(
 			this.engine, this.trace)
 		this.precursoryTransitionToXTransitionTransformer = new PrecursoryTransitionToXTransitionTransformer(
@@ -185,10 +182,7 @@ class LowlevelToXstsTransformer {
 		while (!allRegionsTransformed) {
 			// Transforming subregions one by one in accordance with containment hierarchy
 			getSubregionsRule.fireAllCurrent[!trace.isTraced(it.region) && trace.isTraced(it.parentRegion)]
-		}
-		getNodesRule.fireAllCurrent
-		getFlowsRule.fireAllCurrent
-		
+		}		
 		getComponentParametersRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
 		// Now component parameters come as plain variables (from constants), so TimeoutsRule must follow PlainVariablesRule

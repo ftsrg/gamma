@@ -19,6 +19,7 @@ import "http://www.mit.bme.hu/gamma/trace/Model" as trace
 import "http://www.mit.bme.hu/gamma/property/Model" as property
 import "http://www.mit.bme.hu/gamma/expression/Model" as expression
 import "http://www.mit.bme.hu/gamma/xSTS/Model" as xsts
+import "http://www.mit.bme.hu/gamma/activity/Model" as activity
 
 import "http://www.yakindu.org/sct/sgraph/2.0.0" as sgraph
 import "http://www.yakindu.org/sct/statechart/SText" as stext
@@ -124,7 +125,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 ;
 
 ModelReference returns ModelReference:
-	ComponentReference | XSTSReference
+	ComponentReference | XSTSReference | ActivityReference
 ;
 
 ComponentReference returns ComponentReference:
@@ -133,6 +134,10 @@ ComponentReference returns ComponentReference:
 
 XSTSReference returns XSTSReference:
 	'xsts' ':' xSts=[xsts::XSTS | STRING]
+;
+
+ActivityReference returns ActivityReference:
+	'activity' ':' activity=[activity::NamedActivityDeclaration | STRING]
 ;
 
 Constraint returns Constraint:

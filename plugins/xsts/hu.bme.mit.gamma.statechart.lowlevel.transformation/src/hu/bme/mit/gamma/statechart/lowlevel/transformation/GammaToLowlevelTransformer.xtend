@@ -18,7 +18,9 @@ import hu.bme.mit.gamma.activity.model.ActivityDeclaration
 
 class GammaToLowlevelTransformer {
 	
-	protected final extension StatechartToLowlevelTransformer transformer = new StatechartToLowlevelTransformer
+	protected final Trace trace = new Trace
+	protected final extension StatechartToLowlevelTransformer statechartTransformer = new StatechartToLowlevelTransformer(trace)
+	protected final extension ActivityToLowlevelTransformer activityTransformer = new ActivityToLowlevelTransformer(trace)
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package execute(Package _package) {
 		checkState(!_package.name.nullOrEmpty)
@@ -34,7 +36,7 @@ class GammaToLowlevelTransformer {
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.Package transform(Package _package) {
-		return transformer.execute(_package)
+		return statechartTransformer.execute(_package)
 	}
 	
 	def hu.bme.mit.gamma.statechart.lowlevel.model.StatechartDefinition transform(StatechartDefinition statechart) {

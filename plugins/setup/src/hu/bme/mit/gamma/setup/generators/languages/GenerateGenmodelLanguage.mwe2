@@ -17,6 +17,8 @@ Workflow {
     	registerGeneratedEPackage = "hu.bme.mit.gamma.expression.model.ExpressionModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.action.model/model/action.genmodel"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.action.model.ActionModelPackage"
+    	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.activity.model/model/activity.genmodel"
+    	registerGeneratedEPackage = "hu.bme.mit.gamma.activity.model.ActivityModelPackage"
     	registerGenModelFile = "platform:/resource/hu.bme.mit.gamma.statechart.model/model/statechart.genmodel"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage"
     	registerGeneratedEPackage = "hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage"

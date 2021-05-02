@@ -208,4 +208,7 @@
     <eLiterals name="ALL_C_USE" value="2"/>
     <eLiterals name="ALL_USE" value="3"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityReference" eSuperTypes="#//ModelReference">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="activity" eType="ecore:EClass ../../hu.bme.mit.gamma.activity.model/model/activity.ecore#//NamedActivityDeclaration"/>
+  </eClassifiers>
 </ecore:EPackage>

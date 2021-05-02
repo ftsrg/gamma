@@ -34,7 +34,7 @@ import hu.bme.mit.gamma.activity.model.PseudoActivityNode
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory
 import hu.bme.mit.gamma.util.GammaEcoreUtil
 
-class ActivityTransformer {
+class ActivityToLowlevelTransformer {
 	// Auxiliary objects
 	protected final extension TypeTransformer typeTransformer
 	protected final extension ActionTransformer actionTransformer
@@ -59,6 +59,10 @@ class ActivityTransformer {
 				functionInlining, maxRecursionDepth)
 		this.valueDeclarationTransformer = new ValueDeclarationTransformer(this.trace)
 		this.actionTransformer = new ActionTransformer(this.trace, functionInlining, maxRecursionDepth)
+	}
+	
+	def ActivityDeclaration execute(ActivityDeclaration activity) {		
+		return activity.transform
 	}
 	
 	def ActivityDeclaration transform(ActivityDeclaration activity) {
@@ -223,7 +227,8 @@ class ActivityTransformer {
 		}
 		
 		val newNode = createActionNode => [
-			activityDeclarationReference = node.activityDeclarationReference.transformActivityDeclarationReference
+			name = node.name
+			activityDeclarationReference = node.activityDeclarationReference?.transformActivityDeclarationReference
 		]
 		
 		trace.put(node, newNode)
