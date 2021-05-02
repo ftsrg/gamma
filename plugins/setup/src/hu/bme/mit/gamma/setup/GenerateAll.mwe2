@@ -1,6 +1,0 @@
-module hu.bme.mit.gamma.setup.GenerateAll
-
-Workflow {	
-    component = @GenerateAllModels {}
-    component = @GenerateAllLanguages {} 
-}
