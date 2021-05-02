@@ -471,16 +471,11 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			logger.log(Level.INFO, "Starting XSTS transformation.");
 			ActivityReference reference = (ActivityReference) transformation.getModel();
 			NamedActivityDeclaration activity = reference.getActivity();
-			Integer schedulingConstraint = transformConstraint(transformation.getConstraint());
 			String fileName = transformation.getFileName().get(0);			
 			
-			Activity2XstsTransformerSerializer transformer = new Activity2XstsTransformerSerializer(
-					activity,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage());
+			Activity2XstsTransformerSerializer transformer = new Activity2XstsTransformerSerializer(activity, targetFolderUri, fileName);
 			transformer.execute();
-			// Property serialization
-			serializeProperties(fileName);
+
 			logger.log(Level.INFO, "The XSTS transformation has been finished.");
 		}
 		

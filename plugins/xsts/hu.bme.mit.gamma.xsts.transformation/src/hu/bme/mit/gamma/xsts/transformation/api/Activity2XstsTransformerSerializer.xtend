@@ -11,7 +11,6 @@
 package hu.bme.mit.gamma.xsts.transformation.api
 
 import hu.bme.mit.gamma.activity.model.ActivityDeclaration
-import hu.bme.mit.gamma.property.model.PropertyPackage
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.transformation.util.AnalysisModelPreprocessor
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer
@@ -27,7 +26,6 @@ class Activity2XstsTransformerSerializer {
 	protected final String targetFolderUri
 	protected final String fileName
 	// Slicing
-	protected final PropertyPackage propertyPackage
 	
 	protected final AnalysisModelPreprocessor preprocessor = AnalysisModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -36,18 +34,9 @@ class Activity2XstsTransformerSerializer {
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	
 	new(ActivityDeclaration activity, String targetFolderUri, String fileName) {
-		this(activity, targetFolderUri, fileName, null, null)
-	}
-	
-	new(ActivityDeclaration activity, 
-			String targetFolderUri, String fileName,
-			Integer schedulingConstraint,
-			PropertyPackage propertyPackage) {
 		this.activity = activity
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
-		//
-		this.propertyPackage = propertyPackage
 	}
 	
 	def void execute() {
