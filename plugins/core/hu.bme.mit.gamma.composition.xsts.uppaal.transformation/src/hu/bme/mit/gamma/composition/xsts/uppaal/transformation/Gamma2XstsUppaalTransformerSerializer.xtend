@@ -35,6 +35,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	protected final ComponentInstanceVariableReferences dataflowTestedVariables
 	protected final DataflowCoverageCriterion dataflowCoverageCriterion
+	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
+	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -54,6 +56,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
 			null, null, null, null, null, null, InteractionCoverageCriterion.EVERY_INTERACTION,
 			InteractionCoverageCriterion.EVERY_INTERACTION,
+			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
 	}
 	
@@ -69,7 +72,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion,
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -87,6 +92,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.receiverCoverageCriterion = receiverCoverageCriterion
 		this.dataflowTestedVariables = dataflowTestedVariables
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
+		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
+		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
 	def execute() {
@@ -97,7 +104,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 			testedComponentsForStates, testedComponentsForTransitions,
 			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 			testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-				dataflowTestedVariables, dataflowCoverageCriterion)
+			dataflowTestedVariables, dataflowCoverageCriterion,
+			testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,

@@ -41,9 +41,9 @@ public class ActionSerializer {
 	protected ExpressionSerializer expressionSerializer;
 
 	protected String _serialize(final Block block) {
-		StringBuilder builder = new StringBuilder("{ ");
+		StringBuilder builder = new StringBuilder("{" + System.lineSeparator());
 		for (Action action : block.getActions()) {
-			builder.append(serialize(action) + " ");
+			builder.append("\t" + serialize(action) + System.lineSeparator());
 		}
 		builder.append("}");
 		return builder.toString();
@@ -65,7 +65,7 @@ public class ActionSerializer {
 	protected String _serialize(final ChoiceStatement statement) {
 		StringBuilder builder = new StringBuilder("choice {" + System.lineSeparator());
 		for (Branch branch : statement.getBranches()) {
-			builder.append("branch [" + expressionSerializer.serialize(branch.getGuard()) + "] "
+			builder.append("\tbranch [" + expressionSerializer.serialize(branch.getGuard()) + "] "
 					+ serialize(branch.getAction()) + System.lineSeparator());
 		}
 		builder.append("}");
@@ -97,17 +97,18 @@ public class ActionSerializer {
 
 	protected String _serialize(final ForStatement statement) {
 		StringBuilder builder = new StringBuilder("for (" + statement.getParameter().getName() + " : "
-				+ expressionSerializer.serialize(statement.getRange()) + ")" + System.lineSeparator());
-		builder.append(serialize(statement.getBody()) + System.lineSeparator());
+				+ expressionSerializer.serialize(statement.getRange()) + ") ");
+		builder.append(serialize(statement.getBody()));
 		return builder.toString();
 	}
 
 	protected String _serialize(final SwitchStatement statement) {
 		StringBuilder builder = new StringBuilder("switch ("
-				+ expressionSerializer.serialize(statement.getControlExpression()) + ") {" + System.lineSeparator());
+				+ expressionSerializer.serialize(statement.getControlExpression()) + ") {"  + System.lineSeparator());
 		for (Branch branch : statement.getCases()) {
 			builder.append(
-					"case " + expressionSerializer.serialize(branch.getGuard()) + ":" + serialize(branch.getAction()));
+					"\tcase " + expressionSerializer.serialize(branch.getGuard()) + ":"
+			+ serialize(branch.getAction()) + System.lineSeparator());
 		}
 		builder.append("}");
 		return builder.toString();
@@ -117,7 +118,8 @@ public class ActionSerializer {
 		StringBuilder builder = new StringBuilder();
 		for (Branch branch : statement.getConditionals()) {
 			builder.append(
-					"if (" + expressionSerializer.serialize(branch.getGuard()) + ") " + serialize(branch.getAction()));
+					"if (" + expressionSerializer.serialize(branch.getGuard()) + ") "
+			+ serialize(branch.getAction()) + " ");
 		}
 		return builder.toString();
 	}

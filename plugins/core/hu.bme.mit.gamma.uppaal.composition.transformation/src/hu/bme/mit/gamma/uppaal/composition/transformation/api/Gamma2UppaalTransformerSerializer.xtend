@@ -42,6 +42,8 @@ class Gamma2UppaalTransformerSerializer {
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	protected final ComponentInstanceVariableReferences dataflowTestedVariables
 	protected final DataflowCoverageCriterion dataflowCoverageCriterion
+	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
+	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
 		
 	protected final UppaalModelPreprocessor preprocessor = UppaalModelPreprocessor.INSTANCE
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
@@ -63,6 +65,7 @@ class Gamma2UppaalTransformerSerializer {
 		this(component, arguments, targetFolderUri, fileName, constraint,
 			scheduler, isMinimalElementSet, null, null, null, null, null, null,
 			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
+			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
 	}
 	
@@ -79,7 +82,9 @@ class Gamma2UppaalTransformerSerializer {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion,
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
@@ -99,6 +104,8 @@ class Gamma2UppaalTransformerSerializer {
 		this.receiverCoverageCriterion = receiverCoverageCriterion
 		this.dataflowTestedVariables = dataflowTestedVariables
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
+		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
+		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
 	def void execute() {
@@ -118,6 +125,7 @@ class Gamma2UppaalTransformerSerializer {
 				testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 				testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
 				dataflowTestedVariables, dataflowCoverageCriterion,
+				testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion,
 				targetFolderUri, fileName);
 		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation
