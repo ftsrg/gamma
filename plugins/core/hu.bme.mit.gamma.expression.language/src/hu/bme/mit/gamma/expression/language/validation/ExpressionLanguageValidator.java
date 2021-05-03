@@ -24,6 +24,7 @@ import hu.bme.mit.gamma.expression.model.ElseExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
 import hu.bme.mit.gamma.expression.model.PredicateExpression;
 import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
@@ -189,5 +190,10 @@ public class ExpressionLanguageValidator extends AbstractExpressionLanguageValid
 	@Check
 	public void checkRecordLiteralExpression(RecordLiteralExpression expression) {
 		handleValidationResultMessage(expressionModelValidator.checkRecordLiteralExpression(expression));
+	}
+	
+	@Check
+	public void checkIntegerRangeLiteralExpression(IntegerRangeLiteralExpression expression) {
+		handleValidationResultMessage(expressionModelValidator.checkIntegerRangeLiteralExpression(expression));
 	}
 }

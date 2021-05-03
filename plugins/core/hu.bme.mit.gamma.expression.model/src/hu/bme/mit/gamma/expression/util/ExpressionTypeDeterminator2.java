@@ -133,7 +133,7 @@ public class ExpressionTypeDeterminator2 {
 			return getType(((IfThenElseExpression) expression).getThen());
 		}
 		if (expression instanceof OpaqueExpression) {
-			// ?
+			return factory.createVoidTypeDefinition();
 		}
 		if (expression instanceof UnaryPlusExpression) {
 			return getArithmeticUnaryType((UnaryPlusExpression) expression);

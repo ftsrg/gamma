@@ -199,4 +199,13 @@ const rec0 : rec := # rec { field0 := 0 }
 const rec2 : rec := # rec { field0 := 0, field1 := 1, field0 := 1 }
 
 
+/**
+ * We expect the operands of the integer range be integers!
+ * 
+ * @Check - checkIntegerRangeLiteralExpression
+ */
+const intRange : integer range := <- rec1 .. dir ->
+const intRange1 : integer range := <- dec1 .. 12 ->
+const intRange2 : integer range := <- int1 .. 12.1 ->
+
 

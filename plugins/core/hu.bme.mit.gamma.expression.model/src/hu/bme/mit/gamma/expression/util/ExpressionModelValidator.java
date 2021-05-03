@@ -40,8 +40,11 @@ import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -320,14 +323,13 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
-		// check if the referred object
-		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// check if the referred object
+		Declaration referredDeclaration = expressionUtil.getDeclaration(expression.getOperand());
 		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
-			// TODO check if array type
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The specified object is not selectable!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+				"The specified object is not selectable!", 
+				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
 		if (!(expression.getOperand() instanceof IntegerLiteralExpression || expression.getOperand() instanceof ReferenceExpression)) {
@@ -814,6 +816,25 @@ public class ExpressionModelValidator {
 						"You cannot add value to a field more than once!",
 						new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_LITERAL_EXPRESSION__FIELD_ASSIGNMENTS, null)));
 			}
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkIntegerRangeLiteralExpression(IntegerRangeLiteralExpression expression) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// check left operand
+		if (!typeDeterminator2.isInteger(expression.getLeftOperand())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The operands of the integer range must be integers, but now the left operand is not an integer! The type of the left operand is: " + 
+					typeDeterminator2.getType(expression.getLeftOperand()),
+					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__LEFT_INCLUSIVE, null)));
+		}
+		// check right operand		
+		if (!typeDeterminator2.isInteger(expression.getRightOperand())) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The operands of the integer range must be integers, but now the right operand is not an integer! The type of the right operand is: " + 
+					typeDeterminator2.getType(expression.getRightOperand()),
+					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__RIGHT_INCLUSIVE, null)));
 		}
 		return validationResultMessages;
 	}
