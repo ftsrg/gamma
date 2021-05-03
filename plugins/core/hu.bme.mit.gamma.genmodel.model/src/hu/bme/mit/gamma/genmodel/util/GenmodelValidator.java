@@ -63,6 +63,7 @@ import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstance;
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference;
 import hu.bme.mit.gamma.statechart.composite.CompositeModelPackage;
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -71,6 +72,8 @@ import hu.bme.mit.gamma.statechart.interface_.InterfaceModelPackage;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.interface_.RealizationMode;
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification;
+import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.util.FileUtil;
@@ -169,11 +172,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTasks(Verification verification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		List<AnalysisLanguage> languages = verification.getLanguages();
+		List<AnalysisLanguage> languages = verification.getAnalysisLanguages();
 		if (languages.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single formal language must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__LANGUAGES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES, null)));
 		}
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
@@ -328,7 +331,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					"At most one package name can be specified.",
 					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 		}
-		if (codeGeneration.getLanguage().size() != 1) {
+		if (codeGeneration.getProgrammingLanguages().size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single programming language must be specified.",
 					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
@@ -343,11 +346,37 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					"At most one package name can be specified.",
 					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 		}
-		if (testGeneration.getLanguage().size() != 1) {
+		if (testGeneration.getProgrammingLanguages().size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single programming language must be specified.",
 					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
 		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		ValidationResultMessage validationResultMessage = new ValidationResultMessage(ValidationResult.ERROR, 
+				"In the case of adaptive contract test generation, the referred component must be a statechart"
+				+ "with an @AdaptiveContractAnnotation", 
+				new ReferenceInfo(GenmodelModelPackage.Literals
+						.ADAPTIVE_CONTRACT_TEST_GENERATION__MODEL_TRANSFORMATION));
+		
+		AnalysisModelTransformation analysisModelTransformationTask = testGeneration.getModelTransformation();
+		ModelReference modelReference = analysisModelTransformationTask.getModel();
+		if (modelReference instanceof ComponentReference) {
+			ComponentReference componentReference = (ComponentReference) modelReference;
+			Component component = componentReference.getComponent();
+			if (component instanceof StatechartDefinition) {
+				StatechartDefinition statechartDefinition = (StatechartDefinition) component;
+				StatechartAnnotation statechartAnnotation = statechartDefinition.getAnnotation();
+				if (statechartAnnotation instanceof AdaptiveContractAnnotation) {
+					return validationResultMessages; // Everything is correct, returning with empty list
+				}
+			}
+		}
+		// Something is wrong, returning with an error message
+		validationResultMessages.add(validationResultMessage);
 		return validationResultMessages;
 	}
 	
@@ -361,38 +390,26 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			packageImports.remove(parentPackage);
 		}
 		for (AnalysisModelTransformation analysisModelTransformationTask : javaUtil.filter(genmodel.getTasks(), AnalysisModelTransformation.class)) {
-			ModelReference modelReference = analysisModelTransformationTask.getModel();
-			if (modelReference instanceof ComponentReference) {
-				ComponentReference componentReference = (ComponentReference)modelReference;
-				Component component = componentReference.getComponent();
-				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
-				packageImports.remove(parentPackage);
-			}
-			for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
-				List<ComponentInstanceReference> allCoverages = new ArrayList<ComponentInstanceReference>();
-				allCoverages.addAll(coverage.getInclude());
-				allCoverages.addAll(coverage.getExclude());
-				for (ComponentInstanceReference instance : allCoverages) {
-					Package instanceParentPackage = StatechartModelDerivedFeatures.getContainingPackage(instance);
-					packageImports.remove(instanceParentPackage);
-				}
-			}
+			packageImports.removeAll(getUsedPackages(analysisModelTransformationTask));
 		}
-		for (StatechartCompilation statechartCompilationTask : javaUtil.filter(genmodel.getTasks(), StatechartCompilation.class)) {
+		for (StatechartCompilation statechartCompilationTask :
+				javaUtil.filter(genmodel.getTasks(), StatechartCompilation.class)) {
 			for (InterfaceMapping interfaceMapping : statechartCompilationTask.getInterfaceMappings()) {
 				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(interfaceMapping.getGammaInterface());
 				packageImports.remove(parentPackage);
 			}
 		}
-		for (EventPriorityTransformation eventPriorityTransformationTask : javaUtil.filter(genmodel.getTasks(), EventPriorityTransformation.class)) {
+		for (EventPriorityTransformation eventPriorityTransformationTask :
+				javaUtil.filter(genmodel.getTasks(), EventPriorityTransformation.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(eventPriorityTransformationTask.getStatechart());
 			packageImports.remove(parentPackage);
 		}
-		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask : javaUtil.filter(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
-			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(adaptiveContractTestGenerationTask.getStatechartContract());
-			packageImports.remove(parentPackage);
+		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask :
+				javaUtil.filter(genmodel.getTasks(), AdaptiveContractTestGeneration.class)) {
+			packageImports.removeAll(getUsedPackages(adaptiveContractTestGenerationTask.getModelTransformation()));
 		}
-		for (PhaseStatechartGeneration phaseStatechartGenerationTask : javaUtil.filter(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
+		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
+				javaUtil.filter(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechartGenerationTask.getStatechart());
 			packageImports.remove(parentPackage);
 		}
@@ -404,12 +421,33 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+
+	private Set<Package> getUsedPackages(AnalysisModelTransformation analysisModelTransformationTask) {
+		Set<Package> packageImports = new HashSet<Package>();
+		ModelReference modelReference = analysisModelTransformationTask.getModel();
+		if (modelReference instanceof ComponentReference) {
+			ComponentReference componentReference = (ComponentReference)modelReference;
+			Component component = componentReference.getComponent();
+			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(component);
+			packageImports.add(parentPackage);
+		}
+		for (Coverage coverage : analysisModelTransformationTask.getCoverages()) {
+			List<ComponentInstanceReference> allCoverages = new ArrayList<ComponentInstanceReference>();
+			allCoverages.addAll(coverage.getInclude());
+			allCoverages.addAll(coverage.getExclude());
+			for (ComponentInstanceReference instance : allCoverages) {
+				Package instanceParentPackage = StatechartModelDerivedFeatures.getContainingPackage(instance);
+				packageImports.add(instanceParentPackage);
+			}
+		}
+		return packageImports;
+	}
 	
 	public Collection<ValidationResultMessage> checkYakinduImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
 		for (YakinduCompilation statechartCompilationTask : javaUtil.filter(genmodel.getTasks(), YakinduCompilation.class)) {
-			statechartImports.remove(statechartCompilationTask.getStatechart()); //remove removeAll
+			statechartImports.remove(statechartCompilationTask.getStatechart());
 		}
 		for (Statechart statechartImport : statechartImports) {
 			int index = genmodel.getStatechartImports().indexOf(statechartImport);

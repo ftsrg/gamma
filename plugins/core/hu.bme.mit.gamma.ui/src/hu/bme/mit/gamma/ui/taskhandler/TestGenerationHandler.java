@@ -34,9 +34,9 @@ public class TestGenerationHandler extends TaskHandler {
 		// Setting target folder
 		setTargetFolder(testGeneration);
 		//
-		checkArgument(testGeneration.getLanguage().size() == 1, 
-				"A single programming language must be specified: " + testGeneration.getLanguage());
-		checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
+		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
+				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
+		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
 				"Currently only Java is supported.");
 		setTestGeneration(testGeneration, packageName);
 		ExecutionTrace executionTrace = testGeneration.getExecutionTrace();

@@ -106,9 +106,12 @@ public class ExpressionModelValidator {
 		private EObject source;
 		private Integer index;
 		
+		public ReferenceInfo(EStructuralFeature reference){
+			this(reference, null);
+		}
+		
 		public ReferenceInfo(EStructuralFeature reference, Integer index){
-			this.reference = reference;
-			this.index = index;
+			this(reference, index, null);
 		}
 		
 		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {

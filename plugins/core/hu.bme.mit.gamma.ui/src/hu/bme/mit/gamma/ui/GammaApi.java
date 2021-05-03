@@ -65,7 +65,6 @@ public class GammaApi {
 	 * @throws CoreException 
 	 * @throws IOException 
 	 */
-
 	public void run(String fileWorkspaceRelativePath,
 			ResourceSetCreator resourceSetCreator) throws Exception {
 		URI fileURI = URI.createPlatformResourceURI(fileWorkspaceRelativePath, true);

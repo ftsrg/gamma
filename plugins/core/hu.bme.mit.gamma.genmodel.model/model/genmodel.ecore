@@ -143,12 +143,14 @@
       eSuperTypes="#//Task">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="packageName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="language" lowerBound="1"
-        upperBound="-1" eType="#//ProgrammingLanguage"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="programmingLanguages" upperBound="-1"
+        eType="#//ProgrammingLanguage"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractCodeGeneration ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="statechartContract" lowerBound="1"
-        eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractCodeGeneration">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="modelTransformation" lowerBound="1"
+        eType="#//AnalysisModelTransformation" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="verification" eType="#//Verification"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PhaseStatechartGeneration" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
@@ -157,7 +159,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractCodeGeneration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="svgFileName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="languages" lowerBound="1"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
         upperBound="-1" eType="#//AnalysisLanguage"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="queryFiles" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -207,5 +209,9 @@
     <eLiterals name="ALL_P_USE" value="1"/>
     <eLiterals name="ALL_C_USE" value="2"/>
     <eLiterals name="ALL_USE" value="3"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InteractionDataflowCoverage" eSuperTypes="#//EventCoverage">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="interactionDataflowCoverageCriterion"
+        eType="#//DataflowCoverageCriterion" defaultValueLiteral="ALL_USE"/>
   </eClassifiers>
 </ecore:EPackage>

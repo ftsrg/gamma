@@ -76,7 +76,7 @@ CodeGeneration returns CodeGeneration:
 		(
 			'folder' ':' targetFolder+=STRING |
 			'base-package' ':' packageName+=STRING | // Java base package
-			'language' ':' language+=ProgrammingLanguage
+			'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -88,7 +88,7 @@ TestGeneration returns TestGeneration:
 			'folder' ':' targetFolder+=STRING |
 			'file' ':' fileName+=STRING | // The name of the generated file
 			'base-package' ':' packageName+=STRING | // Java base package
-			'language' ':' language+=ProgrammingLanguage
+			'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
 	'}'
 ;
@@ -192,7 +192,7 @@ enum AnalysisLanguage returns AnalysisLanguage:
 
 Coverage returns Coverage:
 	StateCoverage | TransitionCoverage | TransitionPairCoverage |
-		OutEventCoverage | InteractionCoverage | DataflowCoverage
+		OutEventCoverage | InteractionCoverage | DataflowCoverage | InteractionDataflowCoverage
 ;
 
 StateCoverage returns StateCoverage:
@@ -250,6 +250,15 @@ DataflowCoverage returns DataflowCoverage:
 	'}')?
 ;
 
+InteractionDataflowCoverage returns InteractionDataflowCoverage:
+	{InteractionDataflowCoverage} 'interaction-dataflow-coverage' ('{' 
+		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
+		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
+		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
+		('port-exclude' ':' '[' portExclude+=ComponentInstancePortReference (',' portExclude+=ComponentInstancePortReference)* ']')?
+	'}')?
+;
+
 enum InteractionCoverageCriterion returns InteractionCoverageCriterion:
 	EVERY_INTERACTION = 'every-interaction' | STATES_AND_EVENTS = 'states-and-events' | EVENTS = 'events'
 ;
@@ -264,11 +273,11 @@ Verification returns Verification:
 			'trace-folder' ':' targetFolder+=STRING | // Trace folder
 			'file' ':' fileName+=STRING | // Trace model
 			'svg-file' ':' svgFileName+=STRING | // Trace model
-			'language' ':' languages+=AnalysisLanguage |
+			'language' ':' analysisLanguages+=AnalysisLanguage |
 			'query-file' ':' queryFiles+=STRING | // Queries
 			'property-file' ':' propertyPackages+=[property::PropertyPackage | STRING] | // Property models
 			'base-package' ':' packageName+=STRING  | // Java base package
-			'test-language' ':' language+=ProgrammingLanguage |
+			'test-language' ':' programmingLanguages+=ProgrammingLanguage |
 			'optimize' ':' ('false' | optimize?='true') |
 			'test-folder' ':' testFolder+=STRING
 		)*
@@ -312,12 +321,13 @@ enum RealizationMode returns interface::RealizationMode:
 
 AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 	{AdaptiveContractTestGeneration} 'adaptive-test' '{'
-		'statechart' ':' statechartContract=[statechart::StatechartDefinition] ('(' arguments+=Expression (',' arguments+=Expression)* ')')? 
+		modelTransformation=AnalysisModelTransformation
+		(verification=Verification)?
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING | // The name of the generated file
 		'base-package' ':' packageName+=STRING | // Java base package
-		'language' ':' language+=ProgrammingLanguage
+		'language' ':' programmingLanguages+=ProgrammingLanguage
 		)*
 	'}'
 ;

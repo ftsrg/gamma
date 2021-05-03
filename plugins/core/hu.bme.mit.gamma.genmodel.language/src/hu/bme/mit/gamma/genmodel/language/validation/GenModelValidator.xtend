@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
@@ -95,6 +96,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(TestGeneration testGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
+	}
+	
+	@Check
+	def checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkReferredComponentTasks(testGeneration))
 	}
 	
 	// Additional validation rules

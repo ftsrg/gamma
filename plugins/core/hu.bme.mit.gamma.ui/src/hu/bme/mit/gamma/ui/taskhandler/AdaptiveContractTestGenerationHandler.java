@@ -12,7 +12,6 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
@@ -32,15 +31,16 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		// Setting target folder
 		setTargetFolder(testGeneration);
 		//
-		checkArgument(testGeneration.getLanguage().size() == 1, 
-				"A single programming language must be specified: " + testGeneration.getLanguage());
-		checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
+		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
+				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
+		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
 				"Currently only Java is supported.");
+		
 		setAdaptiveContractTestGeneration(testGeneration, packageName);
 		StatechartToTestTransformer transformer = new StatechartToTestTransformer();
 		String fileName = testGeneration.getFileName().isEmpty() ? null : testGeneration.getFileName().get(0);
-		transformer.execute(testGeneration.getStatechartContract(), testGeneration.getArguments(),
-			new File(containingFile), new File(targetFolderUri), testGeneration.getPackageName().get(0), fileName);
+//		transformer.execute(testGeneration.getStatechartContract(), testGeneration.getArguments(),
+//			new File(containingFile), new File(targetFolderUri), testGeneration.getPackageName().get(0), fileName);
 	}
 	
 	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration, String packageName) {

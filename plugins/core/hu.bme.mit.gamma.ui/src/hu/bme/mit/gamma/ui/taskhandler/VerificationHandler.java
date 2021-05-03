@@ -49,6 +49,7 @@ import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
 	protected String svgFileName; // Set in setVerification
@@ -65,7 +66,7 @@ public class VerificationHandler extends TaskHandler {
 		setTargetFolder(verification);
 		//
 		setVerification(verification);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getLanguages());
+		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getAnalysisLanguages());
 		checkArgument(languagesSet.size() == 1);
 		AbstractVerification verificationTask = null;
 		PropertySerializer propertySerializer = null;
@@ -191,14 +192,16 @@ public class VerificationHandler extends TaskHandler {
 		}
 		
 		// Test
-		String className = testFileName + id;
-		
-		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-		String testCode = testGenerator.execute();
-		String testFolder = testFolderUri;
-		String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-		fileUtil.saveString(testFolder + File.separator + packageUri +
-			File.separator + className + ".java", testCode);
+		if (serializeTest) {
+			String className = testFileName + id;
+			
+			TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+			String testCode = testGenerator.execute();
+			String testFolder = testFolderUri;
+			String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+			fileUtil.saveString(testFolder + File.separator + packageUri +
+				File.separator + className + ".java", testCode);
+		}
 	}
 	
 	private void setVerification(Verification verification) {
@@ -211,8 +214,14 @@ public class VerificationHandler extends TaskHandler {
 		if (!verification.getSvgFileName().isEmpty()) {
 			this.svgFileName = verification.getSvgFileName().get(0);
 		}
-		// Setting the attribute, the test folder is a RELATIVE path now from the project
-		testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
+		if (verification.getProgrammingLanguages().isEmpty()) {
+			this.serializeTest = false;
+		}
+		else {
+			this.serializeTest = true;
+			// Setting the attribute, the test folder is a RELATIVE path now from the project
+			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
+		}
 		File file = ecoreUtil.getFile(verification.eResource()).getParentFile();
 		// Setting the file paths
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
