@@ -319,7 +319,22 @@ public class ExpressionModelValidator {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The index of the accessed element must be of type integer!", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX, null)));
-			return validationResultMessages;
+			
+		}
+		// if index evaluated as integer
+		else {
+			try {
+				// check index and size
+				int index = expressionEvaluator.evaluateInteger(expression.getIndex());
+				int size = expressionEvaluator.evaluateInteger(((ArrayTypeDefinition) referredDeclaration.getType()).getSize()); 
+				if (index >= size || index < 0) {
+					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+							"Index out of bounds!", 
+							new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX, null)));
+				}
+			} catch (Exception exception) {
+				// There is a type error on a lower level, no need to display the error message on this level too
+			}
 		}
 		return validationResultMessages;
 	}
