@@ -75,7 +75,7 @@ public class ExpressionModelValidator {
 		ERROR, INFO, WARNING
 	}
 	
-	static public class ValidationResultMessage{
+	static public class ValidationResultMessage {
 		
 		private ValidationResult result;
 		private String resultText;
@@ -145,6 +145,7 @@ public class ExpressionModelValidator {
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
+	protected final TypeNamePrettyPrinter typePrinter = TypeNamePrettyPrinter.INSTANCE;
 	
 	protected ExpressionTypeDeterminator2 typeDeterminator2 = ExpressionTypeDeterminator2.INSTANCE;
 	
@@ -208,13 +209,14 @@ public class ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator2.isBoolean(expression.getCondition())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The condition of the if-then-else expression must be of type boolean, currently it is: " + typeDeterminator2.getType(expression.getCondition()).toString().toLowerCase(), 
+					"The condition of the if-then-else expression must be of type boolean, currently it is: " + 
+					typePrinter.print(expression.getCondition()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION, null)));
 		}
 		if (!typeDeterminator2.equals(expression.getThen(), expression.getElse())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The return type of the else-branch does not match the type of the then-branch!" +
-					typeDeterminator2.getType(expression.getThen()).toString() + " " + typeDeterminator2.getType(expression.getElse()).toString(), 
+					"The return type of the else-branch does not match the type of the then-branch! " +
+					"Then: " + typePrinter.print(expression.getThen()) + " - Else: " + typePrinter.print(expression.getElse()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__ELSE, null)));
 		}
 		return validationResultMessages;
@@ -407,7 +409,7 @@ public class ExpressionModelValidator {
 				Type rightHandSideExpressionType = typeDeterminator2.getType(rhs);
 				if (!typeDeterminator2.equals(lhs, rhs)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"The left and right hand sides are not compatible: " + leftHandSideExpressionType + " and " + rightHandSideExpressionType, 
+							"The left and right hand sides are not compatible: " + typePrinter.print(leftHandSideExpressionType) + " and " + typePrinter.print(rightHandSideExpressionType), 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
 				}
 				// Additional checks for enums
@@ -440,8 +442,8 @@ public class ExpressionModelValidator {
 		if (!typeDeterminator2.equals(lhs, rhs)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The types of the left hand side and the right hand side are not the same: " +
-									lhs.toString().toLowerCase() + " and " +
-									rhs.toString().toLowerCase() + ".", 
+									typePrinter.print(lhs) + " and " +
+									typePrinter.print(rhs) + ".", 
 					new ReferenceInfo(feature, null)));
 			return validationResultMessages;
 			
@@ -457,8 +459,8 @@ public class ExpressionModelValidator {
 		if (!typeDeterminator2.equals(lhsExpressionType, rhsExpressionType)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The types of the declaration and the assigned expression are not the same: " +
-									lhsExpressionType.toString().toLowerCase() + " and " +
-									rhsExpressionType.toString().toLowerCase() + ".", 
+									typePrinter.print(lhsExpressionType) + " and " +
+									typePrinter.print(rhsExpressionType) + ".", 
 					new ReferenceInfo(feature, null)));
 			return validationResultMessages;
 		}
@@ -504,7 +506,7 @@ public class ExpressionModelValidator {
 		if (lhs != rhs) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The right hand side is not the same type of enumeration as the left hand side."
-					+ lhs.toString() + " " + rhs.toString(), 
+					+ typePrinter.print(lhs) + " " + typePrinter.print(rhs), 
 					new ReferenceInfo(feature, null)));
 		}
 		return validationResultMessages;
@@ -598,8 +600,8 @@ public class ExpressionModelValidator {
 				if (!typeDeterminator2.equals(variableDeclarationType, initialExpressionType)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The types of the declaration and the right hand side expression are not the same: " +
-											variableDeclarationType.toString().toLowerCase() + " and " +
-											initialExpressionType.toString().toLowerCase() + ".", 
+											typePrinter.print(variableDeclarationType) + " and " +
+											typePrinter.print(initialExpressionType) + ".", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
 				}
 				// Additional checks for enumerations
@@ -826,14 +828,14 @@ public class ExpressionModelValidator {
 		if (!typeDeterminator2.isInteger(expression.getLeftOperand())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The operands of the integer range must be integers, but now the left operand is not an integer! The type of the left operand is: " + 
-					typeDeterminator2.getType(expression.getLeftOperand()),
+					typePrinter.print(expression.getLeftOperand()),
 					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__LEFT_INCLUSIVE, null)));
 		}
 		// check right operand		
 		if (!typeDeterminator2.isInteger(expression.getRightOperand())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The operands of the integer range must be integers, but now the right operand is not an integer! The type of the right operand is: " + 
-					typeDeterminator2.getType(expression.getRightOperand()),
+					typePrinter.print(expression.getRightOperand()),
 					new ReferenceInfo(ExpressionModelPackage.Literals.INTEGER_RANGE_LITERAL_EXPRESSION__RIGHT_INCLUSIVE, null)));
 		}
 		return validationResultMessages;
