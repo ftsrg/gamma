@@ -721,25 +721,42 @@ class GammaStatechartAnnotator {
 		
 		switch (INTERACTION_DATAFLOW_COVERAGE_CRITERION) {
 			case ALL_P_USE: {
-				defReferences += pUseMatcher.allValuesOfraiseEventAction
-				useReferences += pUseMatcher.allValuesOfreference
-				connectedPorts += pUseMatcher.allMatches.map[it.outPort -> it.inPort]
+				defReferences += pUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.raiseEventAction]
+				useReferences += pUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.reference]
+				connectedPorts += pUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.outPort -> it.inPort]
 			}
 			case ALL_C_USE: {
-				defReferences += cUseMatcher.allValuesOfraiseEventAction
-				useReferences += cUseMatcher.allValuesOfreference
-				connectedPorts += cUseMatcher.allMatches.map[it.outPort -> it.inPort]
+				defReferences += cUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.raiseEventAction]
+				useReferences += cUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.reference]
+				connectedPorts += cUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.outPort -> it.inPort]
 			}
 			case ALL_USE: {
-				defReferences += allUseMatcher.allValuesOfraiseEventAction
-				useReferences += allUseMatcher.allValuesOfreference
-				connectedPorts += allUseMatcher.allMatches.map[it.outPort -> it.inPort]
+				defReferences += allUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.raiseEventAction]
+				useReferences += allUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.reference]
+				connectedPorts += allUseMatcher.allMatches
+					.filter[it.inPort.areBothPortsConsidered(it.outPort)]
+					.map[it.outPort -> it.inPort]
 			}
 			default: {
 				throw new IllegalArgumentException("No supported mode: " + INTERACTION_DATAFLOW_COVERAGE_CRITERION)
 			}
 		}
-		// Optimization
 		
 		// Creating the variables
 		// Def
@@ -780,6 +797,11 @@ class GammaStatechartAnnotator {
 			interactionDefUses += outPort.createDataflowReferenceMap(parameterDefs) ->
 				inPort.createDataflowReferenceMap(parameterUses)
 		}
+	}
+	
+	protected def areBothPortsConsidered(Port inPort, Port outPort) {
+		return interactionDataflowCoverablePorts.contains(inPort) &&
+			interactionDataflowCoverablePorts.contains(outPort)
 	}
 	
 	protected def createDataflowReferenceMap(Port pivotPort,

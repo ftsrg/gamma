@@ -252,6 +252,7 @@ DataflowCoverage returns DataflowCoverage:
 
 InteractionDataflowCoverage returns InteractionDataflowCoverage:
 	{InteractionDataflowCoverage} 'interaction-dataflow-coverage' ('{' 
+		('coverage-criterion' ':' interactionDataflowCoverageCriterion=DataflowCoverageCriterion)?
 		('include' ':' '[' include+=ComponentInstanceReference (',' include+=ComponentInstanceReference)* ']')?
 		('exclude' ':' '[' exclude+=ComponentInstanceReference (',' exclude+=ComponentInstanceReference)* ']')?
 		('port-include' ':' '[' portInclude+=ComponentInstancePortReference (',' portInclude+=ComponentInstancePortReference)* ']')?
