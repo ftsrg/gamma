@@ -9,7 +9,7 @@ class GammaFileNamer {
 	//
 	
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	
+	//
 	public static final String PACKAGE_EMF_EXTENSION = "gsm";
 	public static final String PACKAGE_XTEXT_EXTENSION = "gcd";
 	
@@ -28,6 +28,7 @@ class GammaFileNamer {
 	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
+	//
 	
 	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
 	

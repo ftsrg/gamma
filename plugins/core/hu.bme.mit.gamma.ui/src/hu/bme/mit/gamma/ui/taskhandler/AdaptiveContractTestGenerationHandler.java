@@ -27,7 +27,11 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AdaptiveContractTestGeneration testGeneration, String containingFile, String packageName) throws IOException {
+	public void execute(AdaptiveContractTestGeneration testGeneration,
+			String containingFile, String packageName) throws IOException {
+		// Setting target folder
+		setTargetFolder(testGeneration);
+		//
 		checkArgument(testGeneration.getLanguage().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getLanguage());
 		checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 

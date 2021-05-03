@@ -31,6 +31,9 @@ public class TestGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(TestGeneration testGeneration, String packageName) throws IOException {
+		// Setting target folder
+		setTargetFolder(testGeneration);
+		//
 		checkArgument(testGeneration.getLanguage().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getLanguage());
 		checkArgument(testGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 

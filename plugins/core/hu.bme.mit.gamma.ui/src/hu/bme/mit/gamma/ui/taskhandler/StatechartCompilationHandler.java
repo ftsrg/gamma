@@ -30,6 +30,9 @@ public class StatechartCompilationHandler extends YakinduCompilationHandler {
 	}
 	
 	public void execute(StatechartCompilation statechartCompilation) throws IOException {
+		// Setting target folder
+		setTargetFolder(statechartCompilation);
+		//
 		setYakinduCompilation(statechartCompilation);
 		setStatechartCompilation(statechartCompilation, statechartCompilation.getStatechart().getName());
 		ModelValidator validator = new ModelValidator(statechartCompilation.getStatechart());

@@ -61,6 +61,9 @@ public class VerificationHandler extends TaskHandler {
 	}
 	
 	public void execute(Verification verification) throws IOException {
+		// Setting target folder
+		setTargetFolder(verification);
+		//
 		setVerification(verification);
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getLanguages());
 		checkArgument(languagesSet.size() == 1);

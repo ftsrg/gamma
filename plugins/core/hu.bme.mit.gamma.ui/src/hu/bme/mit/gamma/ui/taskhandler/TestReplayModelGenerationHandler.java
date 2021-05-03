@@ -36,6 +36,9 @@ public class TestReplayModelGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(TestReplayModelGeneration modelGeneration) throws IOException {
+		// Setting target folder
+		setTargetFolder(modelGeneration);
+		//
 		ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
 		checkArgument(modelGeneration.getFileName().size() == 1 && executionTrace != null);
 		String systemName = modelGeneration.getFileName().get(0);

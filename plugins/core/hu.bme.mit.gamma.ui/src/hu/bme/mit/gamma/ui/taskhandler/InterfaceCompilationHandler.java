@@ -27,6 +27,9 @@ public class InterfaceCompilationHandler extends YakinduCompilationHandler {
 	}
 	
 	public void execute(InterfaceCompilation interfaceCompilation) throws IOException {
+		// Setting target folder
+		setTargetFolder(interfaceCompilation);
+		//
 		setYakinduCompilation(interfaceCompilation);
 		InterfaceTransformer transformer = new InterfaceTransformer(
 				interfaceCompilation.getStatechart(), interfaceCompilation.getPackageName().get(0));

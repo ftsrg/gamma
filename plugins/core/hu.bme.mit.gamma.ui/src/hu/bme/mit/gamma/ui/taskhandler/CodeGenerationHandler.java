@@ -37,6 +37,9 @@ public class CodeGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(CodeGeneration codeGeneration, String packageName) {
+		// Setting target folder
+		setTargetFolder(codeGeneration);
+		//
 		checkArgument(codeGeneration.getLanguage().size() == 1, 
 				"A single programming language must be specified: " + codeGeneration.getLanguage());
 		checkArgument(codeGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 

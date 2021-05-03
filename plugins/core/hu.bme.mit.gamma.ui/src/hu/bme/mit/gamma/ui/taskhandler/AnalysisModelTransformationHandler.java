@@ -85,6 +85,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(AnalysisModelTransformation transformation) throws IOException {
+		// Setting target folder
+		setTargetFolder(transformation);
+		//
 		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(

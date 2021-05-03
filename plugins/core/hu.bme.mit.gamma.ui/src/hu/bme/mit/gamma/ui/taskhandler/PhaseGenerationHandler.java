@@ -29,6 +29,9 @@ public class PhaseGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(PhaseStatechartGeneration phaseStatechartGeneration) throws IOException {
+		// Setting target folder
+		setTargetFolder(phaseStatechartGeneration);
+		//
 		setFileName(phaseStatechartGeneration);
 		StatechartDefinition statechart = phaseStatechartGeneration.getStatechart();
 		PhaseStatechartTransformer transformer = new PhaseStatechartTransformer(statechart);

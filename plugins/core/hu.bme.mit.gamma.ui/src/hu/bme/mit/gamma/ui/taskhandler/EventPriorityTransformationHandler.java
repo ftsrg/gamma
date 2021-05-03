@@ -29,6 +29,9 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(EventPriorityTransformation eventPriorityTransformation) throws IOException {
+		// Setting target folder
+		setTargetFolder(eventPriorityTransformation);
+		///
 		setFileName(eventPriorityTransformation);
 		StatechartDefinition statechart = eventPriorityTransformation.getStatechart();
 		EventPriorityTransformer eventPriorityTransformer = new EventPriorityTransformer(statechart);
