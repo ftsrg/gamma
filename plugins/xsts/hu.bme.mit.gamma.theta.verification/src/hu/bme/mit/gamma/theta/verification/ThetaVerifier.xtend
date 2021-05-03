@@ -101,8 +101,7 @@ class ThetaVerifier extends AbstractVerifier {
 			}
 			val gammaPackage = traceability as Package
 			traceFileScanner = new Scanner(traceFile)
-			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
-			val trace = backAnnotator.execute
+			val trace = gammaPackage.backAnnotate(traceFileScanner)
 			return new Result(result, trace)
 		} finally {
 			if (resultReader !== null) {
@@ -111,6 +110,14 @@ class ThetaVerifier extends AbstractVerifier {
 			if (traceFileScanner !== null) {
 				traceFileScanner.close
 			}
+		}
+	}
+	
+	protected def backAnnotate(Package gammaPackage, Scanner traceFileScanner) {
+		// Must be synchronized due to the non-thread-safe VIATRA engine
+		synchronized (TraceBackAnnotator.getEngineSynchronizationObject) {
+			val backAnnotator = new TraceBackAnnotator(gammaPackage, traceFileScanner)
+			return backAnnotator.execute
 		}
 	}
 	

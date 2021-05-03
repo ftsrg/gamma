@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Gamma project
+ * Copyright (c) 2020-2021 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,13 +12,18 @@ package hu.bme.mit.gamma.ui.taskhandler;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
+import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
+import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
-import hu.bme.mit.gamma.statechart.contract.testgeneration.java.StatechartToTestTransformer;
+import hu.bme.mit.gamma.genmodel.model.Verification;
+import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	
@@ -26,28 +31,75 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		super(file);
 	}
 	
-	public void execute(AdaptiveContractTestGeneration testGeneration,
-			String containingFile, String packageName) throws IOException {
+	public void execute(AdaptiveContractTestGeneration testGeneration) throws IOException {
 		// Setting target folder
 		setTargetFolder(testGeneration);
 		//
 		checkArgument(testGeneration.getProgrammingLanguages().size() == 1, 
 				"A single programming language must be specified: " + testGeneration.getProgrammingLanguages());
 		checkArgument(testGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
-				"Currently only Java is supported.");
+				"Currently only Java is supported.");		
+		setAdaptiveContractTestGeneration(testGeneration);
 		
-		setAdaptiveContractTestGeneration(testGeneration, packageName);
-		StatechartToTestTransformer transformer = new StatechartToTestTransformer();
-		String fileName = testGeneration.getFileName().isEmpty() ? null : testGeneration.getFileName().get(0);
-//		transformer.execute(testGeneration.getStatechartContract(), testGeneration.getArguments(),
-//			new File(containingFile), new File(targetFolderUri), testGeneration.getPackageName().get(0), fileName);
+		AnalysisModelTransformation modelTransformation = testGeneration.getModelTransformation();
+		AnalysisLanguage analysisLanguage = modelTransformation.getLanguages().get(0);
+		AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
+		handler.execute(modelTransformation);
+		
+		String plainFileName = modelTransformation.getFileName().get(0);
+		
+		String modelFileName = null;
+		switch (analysisLanguage) {
+			case THETA:
+				modelFileName = fileNamer.getXtextXStsFileName(plainFileName);
+				break;
+			case UPPAAL:
+				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+				break;
+			case XSTS_UPPAAL:
+				modelFileName = fileNamer.getXmlUppaalFileName(plainFileName);
+				break;
+			default:
+				throw new IllegalArgumentException("Not known language");
+		}
+		String modelFileUri = handler.getTargetFolderUri() + File.separator + modelFileName;
+		
+		String propertyFileName = fileNamer.getHiddenPropertyFileName(plainFileName);
+		PropertyPackage propertyPackage = (PropertyPackage) ecoreUtil.normalLoad(
+				handler.getTargetFolderUri(), propertyFileName);
+		
+		// Temporary trace model folder
+		String temporaryTraceFolderName = ".temporary-trace-folder"; // Checking whether it already exists
+		
+		Verification verification = factory.createVerification();
+		verification.getAnalysisLanguages().add(analysisLanguage);
+		// No programming languages, we do not need temporary test classes
+		verification.getFileName().add(modelFileUri);
+		verification.getPropertyPackages().add(propertyPackage);
+		verification.getTargetFolder().add(temporaryTraceFolderName);
+		
+		VerificationHandler verificationHandler = new VerificationHandler(file);
+		verificationHandler.execute(verification);
+		
+		// Reading the resulting traces and then deleting them
+		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
+		for (File traceFile : temporaryTraceFolder.listFiles()) {
+			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+			System.out.println(trace.getName());
+		}
+		temporaryTraceFolder.delete();
+		
+		// Back-annotating the final states
+		
+		// Extending it with the scenario testing
+		
 	}
 	
-	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration, String packageName) {
+	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration) {
 		checkArgument(testGeneration.getFileName().size() <= 1);
 		checkArgument(testGeneration.getPackageName().size() <= 1);
 		if (testGeneration.getPackageName().isEmpty()) {
-			testGeneration.getPackageName().add(packageName);
+			testGeneration.getPackageName().add(file.getProject().getName().toLowerCase());
 		}
 		// TargetFolder set in setTargetFolder
 	}

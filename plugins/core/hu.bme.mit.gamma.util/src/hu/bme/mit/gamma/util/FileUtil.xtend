@@ -17,6 +17,7 @@ import java.util.ArrayList
 import java.util.Collections
 import java.util.Map
 import java.util.Scanner
+import org.eclipse.core.resources.IResource
 
 class FileUtil {
 	// Singleton
@@ -105,6 +106,10 @@ class FileUtil {
 		} catch (NullPointerException e) {
 			return false
 		}
+	}
+	
+	def toFile(IResource resource) {
+		return resource.fullPath.toFile
 	}
 	
     /**

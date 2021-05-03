@@ -144,7 +144,7 @@ public class GammaApi {
 						else if (task instanceof AdaptiveContractTestGeneration) {
 							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
-							handler.execute(testGeneration, file.getLocation().toString(), projectName);
+							handler.execute(testGeneration);
 							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {

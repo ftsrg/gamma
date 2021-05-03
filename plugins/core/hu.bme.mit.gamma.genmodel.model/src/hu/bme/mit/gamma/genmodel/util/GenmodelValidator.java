@@ -357,7 +357,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		ValidationResultMessage validationResultMessage = new ValidationResultMessage(ValidationResult.ERROR, 
-				"In the case of adaptive contract test generation, the referred component must be a statechart"
+				"In the case of adaptive contract test generation, the referred component must be a statechart "
 				+ "with an @AdaptiveContractAnnotation", 
 				new ReferenceInfo(GenmodelModelPackage.Literals
 						.ADAPTIVE_CONTRACT_TEST_GENERATION__MODEL_TRANSFORMATION));

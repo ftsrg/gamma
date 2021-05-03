@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import hu.bme.mit.gamma.dialog.DialogUtil;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration;
+import hu.bme.mit.gamma.genmodel.model.GenmodelModelFactory;
 import hu.bme.mit.gamma.genmodel.model.Task;
 import hu.bme.mit.gamma.genmodel.model.TestGeneration;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -46,6 +47,8 @@ public abstract class TaskHandler {
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	protected final String projectLocation;
 	protected String targetFolderUri;
+	
+	protected final GenmodelModelFactory factory = GenmodelModelFactory.eINSTANCE;
 	
 	public TaskHandler(IFile file) {
 		this.file = file;
@@ -85,6 +88,10 @@ public abstract class TaskHandler {
 	
 	protected String getContainingFileName(EObject object) {
 		return object.eResource().getURI().lastSegment();
+	}
+	
+	protected String getTargetFolderUri() {
+		return targetFolderUri;
 	}
 	
 	/**

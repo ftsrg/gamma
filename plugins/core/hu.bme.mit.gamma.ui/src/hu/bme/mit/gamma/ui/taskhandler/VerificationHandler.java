@@ -222,7 +222,8 @@ public class VerificationHandler extends TaskHandler {
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
 		}
-		File file = ecoreUtil.getFile(verification.eResource()).getParentFile();
+//		File file = ecoreUtil.getFile(verification.eResource()).getParentFile();
+		File file = fileUtil.toFile(super.file).getParentFile();
 		// Setting the file paths
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths

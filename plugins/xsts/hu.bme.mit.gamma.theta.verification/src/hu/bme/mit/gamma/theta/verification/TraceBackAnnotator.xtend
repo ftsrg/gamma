@@ -48,6 +48,7 @@ class TraceBackAnnotator {
 	
 	protected final Scanner traceScanner
 	protected final ThetaQueryGenerator thetaQueryGenerator
+	protected static final Object engineSynchronizationObject = new Object
 	
 	protected final Package gammaPackage
 	protected final Component component
@@ -81,7 +82,7 @@ class TraceBackAnnotator {
 		}
 	}
 	
-	def synchronized ExecutionTrace execute() {
+	def ExecutionTrace execute() {
 		// Creating the trace component
 		val trace = createExecutionTrace => [
 			it.component = this.component
@@ -346,6 +347,10 @@ class TraceBackAnnotator {
 	
 	protected def boolean isArray(String value) {
 		return value.startsWith("(array ")
+	}
+	
+	def static getEngineSynchronizationObject() {
+		return engineSynchronizationObject
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}
