@@ -25,6 +25,7 @@ import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -222,8 +223,10 @@ public class VerificationHandler extends TaskHandler {
 			// Setting the attribute, the test folder is a RELATIVE path now from the project
 			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
 		}
-//		File file = ecoreUtil.getFile(verification.eResource()).getParentFile();
-		File file = fileUtil.toFile(super.file).getParentFile();
+		Resource resource = verification.eResource();
+		File file = (resource != null) ?
+				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
+					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
 		// Setting the file paths
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths
