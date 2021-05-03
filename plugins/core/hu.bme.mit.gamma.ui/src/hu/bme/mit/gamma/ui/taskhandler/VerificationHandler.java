@@ -110,7 +110,7 @@ public class VerificationHandler extends TaskHandler {
 			String serializedFormula = propertySerializer.serialize(formula);
 			// Saving the string
 			File file = modelFile;
-			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
+			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
 			File queryFile = new File(file.getParentFile().toString() + File.separator + fileName);
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();

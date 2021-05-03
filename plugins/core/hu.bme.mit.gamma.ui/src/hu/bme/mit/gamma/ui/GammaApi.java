@@ -93,7 +93,6 @@ public class GammaApi {
 							logger.log(Level.INFO, "Resource set content for Yakindu to Gamma interface generation: " + resourceSet);
 							InterfaceCompilation interfaceCompilation = (InterfaceCompilation) task;
 							InterfaceCompilationHandler handler = new InterfaceCompilationHandler(file);
-//							handler.setTargetFolder(interfaceCompilation);
 							handler.execute(interfaceCompilation);
 							logger.log(Level.INFO, "The Yakindu-Gamma interface transformation has been finished.");
 						}
@@ -101,7 +100,6 @@ public class GammaApi {
 							logger.log(Level.INFO, "Resource set content Yakindu to Gamma statechart generation: " + resourceSet);
 							StatechartCompilation statechartCompilation = (StatechartCompilation) task;
 							StatechartCompilationHandler handler = new StatechartCompilationHandler(file);
-//							handler.setTargetFolder(statechartCompilation);
 							handler.execute(statechartCompilation);
 							logger.log(Level.INFO, "The Yakindu-Gamma transformation has been finished.");
 						}
@@ -111,63 +109,54 @@ public class GammaApi {
 							CodeGeneration codeGeneration = (CodeGeneration) task;
 							logger.log(Level.INFO, "Resource set content for Java code generation: " + resourceSet);
 							CodeGenerationHandler handler = new CodeGenerationHandler(file);
-//							handler.setTargetFolder(codeGeneration);
 							handler.execute(codeGeneration, projectName);
 							logger.log(Level.INFO, "The Java code generation has been finished.");
 						}
 						else if (task instanceof AnalysisModelTransformation) {
 							AnalysisModelTransformation analysisModelTransformation = (AnalysisModelTransformation) task;
 							AnalysisModelTransformationHandler handler = new AnalysisModelTransformationHandler(file);
-//							handler.setTargetFolder(analysisModelTransformation);
 							handler.execute(analysisModelTransformation);
 							logger.log(Level.INFO, "The composite system transformation has been finished.");
 						}
 						else if (task instanceof TestGeneration) {
 							TestGeneration testGeneration = (TestGeneration) task;
 							TestGenerationHandler handler = new TestGenerationHandler(file);
-//							handler.setTargetFolder(testGeneration);
 							handler.execute(testGeneration, projectName);
 							logger.log(Level.INFO, "The test generation has been finished.");
 						}
 						else if (task instanceof Verification) {
 							Verification verification = (Verification) task;
 							VerificationHandler handler = new VerificationHandler(file);
-//							handler.setTargetFolder(verification);
 							handler.execute(verification);
 							logger.log(Level.INFO, "The verification has been finished.");
 						}
 						else if (task instanceof Slicing) {
 							Slicing slicing = (Slicing) task;
 							SlicingHandler handler = new SlicingHandler(file);
-							// No target folder setting, that is done inside
 							handler.execute(slicing);
 							logger.log(Level.INFO, "The slicing has been finished.");
 						}
 						else if (task instanceof TestReplayModelGeneration) {
 							TestReplayModelGeneration testReplayModelGeneration = (TestReplayModelGeneration) task;
 							TestReplayModelGenerationHandler handler = new TestReplayModelGenerationHandler(file);
-//							handler.setTargetFolder(testReplayModelGeneration);
 							handler.execute(testReplayModelGeneration);
 							logger.log(Level.INFO, "The test replay model generation has been finished.");
 						}
 						else if (task instanceof AdaptiveContractTestGeneration) {
 							AdaptiveContractTestGeneration testGeneration = (AdaptiveContractTestGeneration) task;
 							AdaptiveContractTestGenerationHandler handler = new AdaptiveContractTestGenerationHandler(file);
-//							handler.setTargetFolder(testGeneration);
 							handler.execute(testGeneration, file.getLocation().toString(), projectName);
 							logger.log(Level.INFO, "The adaptive contract test generation has been finished.");
 						}
 						else if (task instanceof EventPriorityTransformation) {
 							EventPriorityTransformation eventPriorityTransformation = (EventPriorityTransformation) task;
 							EventPriorityTransformationHandler handler = new EventPriorityTransformationHandler(file);
-//							handler.setTargetFolder(eventPriorityTransformation);
 							handler.execute(eventPriorityTransformation);
 							logger.log(Level.INFO, "The event priority transformation has been finished.");
 						}
 						else if (task instanceof PhaseStatechartGeneration) {
 							PhaseStatechartGeneration phaseStatechartGeneration = (PhaseStatechartGeneration) task;
 							PhaseGenerationHandler handler = new PhaseGenerationHandler(file);
-//							handler.setTargetFolder(phaseStatechartGeneration);
 							handler.execute(phaseStatechartGeneration);
 							logger.log(Level.INFO, "The phase statechart transformation has been finished.");
 						}
