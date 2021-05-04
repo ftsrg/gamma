@@ -19,20 +19,6 @@ public class TypeNamePrettyPrinter {
 	
 	protected ExpressionTypeDeterminator2 typeDeterminator = ExpressionTypeDeterminator2.INSTANCE;
 	
-	private enum ExpressionType { 
-		BOOLEAN, 
-		INTEGER, 
-		RATIONAL, 
-		DECIMAL, 
-		ENUMERATION, 
-		ARRAY,
-		INTEGER_RANGE,
-		RECORD,
-		VOID, 
-		ERROR,
-		UNKNOWN
-	}
-	
 	public String print(Expression expression) {
 		Type type = typeDeterminator.getType(expression);
 		return print(type);
