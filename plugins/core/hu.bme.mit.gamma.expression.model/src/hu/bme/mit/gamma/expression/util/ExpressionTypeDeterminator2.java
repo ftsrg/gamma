@@ -186,6 +186,9 @@ public class ExpressionTypeDeterminator2 {
 				throw new IllegalArgumentException("The type of the operand of the select expression is not an enumerable type: " + expressionUtil.getDeclaration(expression));
 			}
 		}
+		if (expression == null) {
+			return factory.createVoidTypeDefinition();
+		}
 		throw new IllegalArgumentException("Unknown type!");
 	}
 	

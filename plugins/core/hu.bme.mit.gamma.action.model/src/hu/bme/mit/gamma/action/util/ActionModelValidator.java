@@ -22,16 +22,11 @@ import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
-import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
@@ -40,7 +35,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	// Singleton
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
-	//
 	
 	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -120,43 +114,21 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
-		// check if the referred object is a value declaration
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
-		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
-			return validationResultMessages;
-		}
-		// or an IR literal expression
-		if ((expression.getOperand() instanceof IntegerRangeLiteralExpression)) {
-			return validationResultMessages;
-		}
-		// or a type reference expression
-		if ((expression.getOperand() instanceof ReferenceExpression) && (expression.getOperand() instanceof TypeReferenceExpression)) {
-			return validationResultMessages;
-		}
-		// otherwise throw error
-		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"The specified object is not selectable: " + expression.getOperand().getClass(),
-				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
-		return validationResultMessages;
-	}
-	
 	public Collection<ValidationResultMessage> checkReturnStatementType(ReturnStatement rs) {
-		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		
+		//Type returnStatementType = typeDeterminator2.getType(rs.getExpression());
 		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
 		Type containingProcedureType = null;
-		if(containingProcedure != null) {
-			containingProcedureType = containingProcedure.getType();
+		if (containingProcedure != null) {
+			containingProcedureType = typeDeterminator2.removeTypeReferences(containingProcedure.getType());
 		}
-		if(!typeDeterminator.equals(containingProcedureType, returnStatementType)) {
-			
+		if (!typeDeterminator2.equals(containingProcedureType, rs.getExpression())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The type of the return statement (" + returnStatementType.toString().toLowerCase()
+					"The type of the return statement (" + typePrinter.print(rs.getExpression())
 					+ ") does not match the declared type of the procedure (" 
-					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
-					null));
+					+ typePrinter.print(containingProcedureType) + ").",
+					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION, null)));
 		}
 		return validationResultMessages;
 	}
@@ -165,7 +137,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Currently return statements must be final actions in every possible path.", null));
+					"Currently return statements must be final actions in every possible path.",
+					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY, null)));
 		}
 		return validationResultMessages;
 	}
@@ -179,32 +152,6 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	//TODO extract into util-class
-	public ProcedureDeclaration getContainingProcedure(Action action) {
-		EObject container = action.eContainer();
-		if (container instanceof ProcedureDeclaration) {
-			return (ProcedureDeclaration)container;
-		} else if (container instanceof Branch) {
-			return getContainingProcedure((Branch)container);
-		} else if (container instanceof Block) {
-			return getContainingProcedure((Action)container);
-		} else if (container instanceof ForStatement) {
-			return getContainingProcedure((Action)container);
-		} else {
-			return null;	//Not in a procedure
-		}
-	}
-	
-	//TODO extract into util-class
-	public ProcedureDeclaration getContainingProcedure(Branch branch) {
-		EObject container = branch.eContainer();
-		if (container instanceof Action) {
-			return getContainingProcedure((Action)container);
-		} 
-		throw new IllegalArgumentException("Unknown container for Branch.");
-	}
-	
-//////////////////////////////////////////////////////////////////////
 	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Block is empty
@@ -215,5 +162,31 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+		
 	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//TODO extract into util-class
+		public ProcedureDeclaration getContainingProcedure(Action action) {
+			EObject container = action.eContainer();
+			if (container instanceof ProcedureDeclaration) {
+				return (ProcedureDeclaration)container;
+			} else if (container instanceof Branch) {
+				return getContainingProcedure((Branch)container);
+			} else if (container instanceof Block) {
+				return getContainingProcedure((Action)container);
+			} else if (container instanceof ForStatement) {
+				return getContainingProcedure((Action)container);
+			} else {
+				return null;	//Not in a procedure
+			}
+		}
+		
+		//TODO extract into util-class
+		public ProcedureDeclaration getContainingProcedure(Branch branch) {
+			EObject container = branch.eContainer();
+			if (container instanceof Action) {
+				return getContainingProcedure((Action)container);
+			} 
+			throw new IllegalArgumentException("Unknown container for Branch.");
+		}
 }

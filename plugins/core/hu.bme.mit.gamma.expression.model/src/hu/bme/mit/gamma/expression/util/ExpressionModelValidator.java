@@ -41,8 +41,10 @@ import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
+import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -340,16 +342,18 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// check if the referred object
-		Declaration referredDeclaration = expressionUtil.getDeclaration(expression.getOperand());
-		if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"The specified object is not selectable!", 
-				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
-			return validationResultMessages;
+		if (!(expression.getOperand() instanceof LiteralExpression)) {
+			Declaration referredDeclaration = expressionUtil.getDeclaration(expression.getOperand());
+			if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"The specified object is not selectable! This type is: " + typePrinter.print(expression.getOperand()), 
+					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+				return validationResultMessages;
+			}
 		}
-		if (!(expression.getOperand() instanceof IntegerLiteralExpression || expression.getOperand() instanceof ReferenceExpression)) {
+		if (!(typeDeterminator2.getType(expression.getOperand()) instanceof IntegerLiteralExpression || typeDeterminator2.getType(expression.getOperand()) instanceof IntegerRangeTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The specified object is not selectable!", 
+					"The specified object is not selectable! This type is: " + typePrinter.print(expression.getOperand()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
 			return validationResultMessages;
 		}
