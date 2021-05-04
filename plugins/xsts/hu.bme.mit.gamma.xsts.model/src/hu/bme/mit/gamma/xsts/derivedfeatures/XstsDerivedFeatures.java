@@ -339,7 +339,7 @@ public class XstsDerivedFeatures extends ExpressionModelDerivedFeatures {
 	}
 	
 	public static Set<VariableDeclaration> getReferredVariables(Action action) {
-		Set<VariableDeclaration> referredVariables = getReadVariables(action);
+		Set<VariableDeclaration> referredVariables = new HashSet<>(getReadVariables(action));
 		referredVariables.addAll(getWrittenVariables(action));
 		return referredVariables;
 	}
