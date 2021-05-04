@@ -127,7 +127,8 @@ class ThetaVerifier extends AbstractVerifier {
 	
 	def getTraceFile(File modelFile) {
 		// Thread.currentThread.name is needed to prevent race conditions
-		return modelFile.parent + File.separator + modelFile.extensionlessName + "-" + Thread.currentThread.name + ".cex";
+		return modelFile.parent + File.separator + modelFile.extensionlessName.toHiddenFileName +
+			"-" + Thread.currentThread.name + ".cex";
 	}
 	
 }
