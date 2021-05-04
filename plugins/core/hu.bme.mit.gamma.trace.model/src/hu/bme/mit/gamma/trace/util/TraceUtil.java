@@ -344,6 +344,12 @@ public class TraceUtil extends ExpressionUtil {
 		return false;
 	}
 	
+	public void clearAsserts(ExecutionTrace trace, Class<?> clazz) {
+		for (Step step : trace.getSteps()) {
+			step.getAsserts().removeIf(it -> clazz.isInstance(it));
+		}
+	}
+	
 	public boolean equalsTo(EObject lhs, EObject rhs) {
 		EqualityHelper helper = new EqualityHelper();
 		return helper.equals(lhs, rhs);

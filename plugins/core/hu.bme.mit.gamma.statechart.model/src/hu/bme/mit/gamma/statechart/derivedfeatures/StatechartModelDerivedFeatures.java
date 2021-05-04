@@ -48,6 +48,7 @@ import hu.bme.mit.gamma.statechart.composite.PortBinding;
 import hu.bme.mit.gamma.statechart.composite.SimpleChannel;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponent;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.AdaptiveContractAnnotation;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Event;
 import hu.bme.mit.gamma.statechart.interface_.EventDeclaration;
@@ -78,6 +79,7 @@ import hu.bme.mit.gamma.statechart.statechart.ShallowHistoryState;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StateNode;
+import hu.bme.mit.gamma.statechart.statechart.StatechartAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutDeclaration;
 import hu.bme.mit.gamma.statechart.statechart.TimeoutEventReference;
@@ -1234,6 +1236,15 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 			}
 		}
 		return time;
+	}
+	
+	public static Component getMonitoredComponent(StatechartDefinition adaptiveContract) {
+		StatechartAnnotation annotation = adaptiveContract.getAnnotation();
+		if (annotation instanceof AdaptiveContractAnnotation) {
+			AdaptiveContractAnnotation adaptiveContractAnnotation = (AdaptiveContractAnnotation) annotation;
+			return adaptiveContractAnnotation.getMonitoredComponent();
+		}
+		throw new IllegalArgumentException("Not an adaptive contract statechart: " + adaptiveContract);
 	}
 	
 	public static Collection<ComponentInstance> getReferencingComponentInstances(Component component) {

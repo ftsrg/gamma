@@ -146,17 +146,20 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="programmingLanguages" upperBound="-1"
         eType="#//ProgrammingLanguage"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractCodeGeneration">
+  <eClassifiers xsi:type="ecore:EClass" name="AbstractComplementaryTestGeneration"
+      abstract="true" eSuperTypes="#//AbstractCodeGeneration">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testFolder" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AdaptiveContractTestGeneration" eSuperTypes="#//AbstractComplementaryTestGeneration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="modelTransformation" lowerBound="1"
         eType="#//AnalysisModelTransformation" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="verification" eType="#//Verification"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PhaseStatechartGeneration" eSuperTypes="#//Task ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ArgumentedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="statechart" lowerBound="1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.statechart.model/model/statechart.ecore#//StatechartDefinition"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractCodeGeneration">
+  <eClassifiers xsi:type="ecore:EClass" name="Verification" eSuperTypes="#//AbstractComplementaryTestGeneration">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="svgFileName" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="analysisLanguages" lowerBound="1"
@@ -165,8 +168,6 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="propertyPackages" upperBound="-1"
         eType="ecore:EClass ../../hu.bme.mit.gamma.property.model/model/property.ecore#//PropertyPackage"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="testFolder" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="optimize" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TestReplayModelGeneration" eSuperTypes="#//Task">

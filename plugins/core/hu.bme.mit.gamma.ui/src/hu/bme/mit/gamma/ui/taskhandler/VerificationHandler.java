@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -42,6 +42,7 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
@@ -214,7 +215,7 @@ public class VerificationHandler extends TaskHandler {
 		protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
 		
 		public void serialize(String traceFolderUri, String traceFileName, ExecutionTrace trace) throws IOException {
-			this.serialize(traceFolderUri, traceFileName, null, null, null, null, trace);
+			this.serialize(traceFolderUri, traceFileName, null, null, null, trace);
 		}
 		
 		public void serialize(String traceFolderUri, String traceFileName,
@@ -227,7 +228,7 @@ public class VerificationHandler extends TaskHandler {
 			
 			// Model
 			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
-					traceFileName, "get");
+					traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
 			String fileName = fileNamePair.getKey();
 			Integer id = fileNamePair.getValue();
 			serializer.saveModel(trace, traceFolderUri, fileName);

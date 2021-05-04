@@ -105,10 +105,11 @@ public class GenModelFormatter extends AbstractDeclarativeFormatter {
         c.setLinewrap(1).after(f.getTestGenerationAccess().getPackageNameAssignment_5_2_2());
         c.setLinewrap(1).after(f.getTestGenerationAccess().getProgrammingLanguagesAssignment_5_3_2());
         // Adaptive test generation
-        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getTargetFolderAssignment_5_0_2());
-        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getFileNameAssignment_5_1_2());
-        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getPackageNameAssignment_5_2_2());
-        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getProgrammingLanguagesAssignment_5_3_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getTargetFolderAssignment_4_0_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getTestFolderAssignment_4_4_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getFileNameAssignment_4_1_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getPackageNameAssignment_4_2_2());
+        c.setLinewrap(1).after(f.getAdaptiveContractTestGenerationAccess().getProgrammingLanguagesAssignment_4_3_2());
         // Mission phase generation
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getStatechartAssignment_5());
         c.setLinewrap(1).after(f.getPhaseStatechartGenerationAccess().getTargetFolderAssignment_7_0_2());

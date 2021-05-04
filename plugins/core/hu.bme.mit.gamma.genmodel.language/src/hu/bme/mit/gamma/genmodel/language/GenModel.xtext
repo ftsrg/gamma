@@ -323,12 +323,12 @@ enum RealizationMode returns interface::RealizationMode:
 AdaptiveContractTestGeneration returns AdaptiveContractTestGeneration:
 	{AdaptiveContractTestGeneration} 'adaptive-test' '{'
 		modelTransformation=AnalysisModelTransformation
-		(verification=Verification)?
 		(
 		'folder' ':' targetFolder+=STRING |
 		'file' ':' fileName+=STRING | // The name of the generated file
 		'base-package' ':' packageName+=STRING | // Java base package
-		'language' ':' programmingLanguages+=ProgrammingLanguage
+		'language' ':' programmingLanguages+=ProgrammingLanguage |
+		'test-folder' ':' testFolder+=STRING
 		)*
 	'}'
 ;
@@ -342,4 +342,3 @@ PhaseStatechartGeneration returns PhaseStatechartGeneration:
 		)*
 	'}'
 ;
-

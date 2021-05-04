@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
 import hu.bme.mit.gamma.expression.util.ExpressionType;
+import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
@@ -208,11 +209,16 @@ public class GenmodelValidator extends ExpressionModelValidator {
 						new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, index)));
 			}
 		}
-		List<String> testFolders = verification.getTestFolder();
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkTasks(AbstractComplementaryTestGeneration testGeneration) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		List<String> testFolders = testGeneration.getTestFolder();
 		if (testFolders.size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one test folder can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__TEST_FOLDER, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_COMPLEMENTARY_TEST_GENERATION__TEST_FOLDER)));
 		}
 		return validationResultMessages;
 	}

@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.genmodel.util.GenmodelValidator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 
 /**
  * This class contains custom validation rules. 
@@ -66,6 +67,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(Verification verification) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(verification))
+	}
+	
+	@Check
+	def checkTasks(AbstractComplementaryTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
 	}
 	
 	@Check

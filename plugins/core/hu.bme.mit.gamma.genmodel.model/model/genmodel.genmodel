@@ -112,9 +112,11 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/packageName"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractCodeGeneration/programmingLanguages"/>
     </genClasses>
+    <genClasses ecoreClass="genmodel.ecore#//AbstractComplementaryTestGeneration">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//AbstractComplementaryTestGeneration/testFolder"/>
+    </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//AdaptiveContractTestGeneration">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveContractTestGeneration/modelTransformation"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference genmodel.ecore#//AdaptiveContractTestGeneration/verification"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//PhaseStatechartGeneration">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//PhaseStatechartGeneration/statechart"/>
@@ -124,7 +126,6 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/analysisLanguages"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/queryFiles"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference genmodel.ecore#//Verification/propertyPackages"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/testFolder"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute genmodel.ecore#//Verification/optimize"/>
     </genClasses>
     <genClasses ecoreClass="genmodel.ecore#//TestReplayModelGeneration">

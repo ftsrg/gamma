@@ -34,20 +34,29 @@ import hu.bme.mit.gamma.property.model.PropertyPackage;
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
 import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.interface_.Component;
+import hu.bme.mit.gamma.statechart.interface_.Port;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.InstanceStateConfiguration;
+import hu.bme.mit.gamma.trace.model.InstanceVariableState;
+import hu.bme.mit.gamma.trace.model.RaiseEventAct;
 import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	//
+	protected String packageName;
 	protected String testFolderUri;
-	protected String fileName;
+	protected String traceFileName;
+	protected String testFileName;
 	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
+	protected final TraceUtil traceUtil = TraceUtil.INSTANCE;
 	//
 	public AdaptiveContractTestGenerationHandler(IFile file) {
 		super(file);
@@ -108,21 +117,36 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
 		for (File traceFile : temporaryTraceFolder.listFiles()) {
 			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
+			StatechartDefinition adaptiveContract =
+					(StatechartDefinition) GenmodelDerivedFeatures.getModel(modelTransformation);
+			Component monitoredComponent = StatechartModelDerivedFeatures.getMonitoredComponent(adaptiveContract);
+			
+			// Back-annotating ports: unfolded statechart -> adaptive statechart -> original component
+			for (RaiseEventAct act : ecoreUtil.getAllContentsOfType(trace, RaiseEventAct.class)) {
+				Port newPort = act.getPort();
+				Port originalPort = backAnnotatePort(monitoredComponent, newPort);
+				act.setPort(originalPort);
+			}
+			
+			// Back-annotating the final states: unfolded statechart -> adaptive statechart
+			Set<State> adaptiveStates = new HashSet<State>();
 			Step lastStep = TraceModelDerivedFeatures.getLastStep(trace);
 			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations =
 					TraceModelDerivedFeatures.groupInstanceStateConfigurations(lastStep);
-			
-			// Back-annotating the final states
-			StatechartDefinition adaptiveContract =
-					(StatechartDefinition) GenmodelDerivedFeatures.getModel(modelTransformation);
-			Set<State> originalStates = new HashSet<State>();
 			for (SynchronousComponentInstance instance : instanceStateConfigurations.keySet()) {
 				Set<State> newStates = instanceStateConfigurations.get(instance);
-				originalStates.addAll(backAnnotateStates(adaptiveContract, newStates));
+				adaptiveStates.addAll(backAnnotateStates(adaptiveContract, newStates));
 			}
 			
-			// Extending it with the scenario testing
-			for (State contractState : originalStates) {
+			// Clearing unnecessary data
+			traceUtil.clearAsserts(trace, InstanceStateConfiguration.class);
+			traceUtil.clearAsserts(trace, InstanceVariableState.class);
+			// Targeting the reference to the monitored component
+			trace.setImport(StatechartModelDerivedFeatures.getContainingPackage(monitoredComponent));
+			trace.setComponent(monitoredComponent);
+			
+			// Extending the trace with the scenario testing
+			for (State contractState : adaptiveStates) {
 				// Extending trace of the adaptive contract with tests derived from the contracts of these states
 				StateAnnotation annotation = contractState.getAnnotation();
 				if (annotation instanceof StateContractAnnotation) {
@@ -134,8 +158,8 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 						testsTraces.add(clonedTrace);
 					}
 				}
+				// Branch to be removed: just to test now the workflow
 				else {
-					// To be removed: just to test now the workflow
 					testsTraces.add(ecoreUtil.clone(trace));
 				}
 			}
@@ -144,21 +168,43 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		
 		// Serializing traces
 		for (ExecutionTrace testTrace : testsTraces) {
-			serializer.serialize(targetFolderUri, fileName, testTrace);
+			serializer.serialize(targetFolderUri, traceFileName, testFolderUri, testFileName, packageName, testTrace);
 		}
 	}
+	
+	// Port from unfolded statechart -> adaptive statechart -> original component
+	
+	protected Port backAnnotatePort(Component originalComponent, Port newPort) {
+		for (Port originalPort : StatechartModelDerivedFeatures.getAllPorts(originalComponent)) {
+			if (areEqual(originalPort, newPort)) {
+				return originalPort;
+			}
+		}
+		throw new IllegalArgumentException("Not found port: " + newPort);
+	}
+	
+	protected boolean areEqual(Port originalPort, Port newPort) {
+		return ecoreUtil.helperEquals(originalPort, newPort);
+	}
+	
+	// State from unfolded statechart -> adaptive statechart
 	
 	protected Set<State> backAnnotateStates(StatechartDefinition originalStatechart,
 			Collection<State> newStates) {
 		Set<State> originalStates = new HashSet<State>();
 		for (State newState : newStates) {
-			for (State originalState : StatechartModelDerivedFeatures.getAllStates(originalStatechart)) {
-				if (areEqual(originalState, newState)) {
-					originalStates.add(originalState);
-				}
-			}
+			originalStates.add(backAnnotateState(originalStatechart, newState));
 		}
 		return originalStates;
+	}
+	
+	protected State backAnnotateState(StatechartDefinition originalStatechart,	State newState) {
+		for (State originalState : StatechartModelDerivedFeatures.getAllStates(originalStatechart)) {
+			if (areEqual(originalState, newState)) {
+				return originalState;
+			}
+		}
+		throw new IllegalArgumentException("Not found state: " + newState);
 	}
 	
 	protected boolean areEqual(State originalState, State newState) {
@@ -168,24 +214,28 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		List<State> newAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(newState);
 		String newName = newAncestors.stream().map(it -> it.getName()).reduce("", (a, b) -> a + "-" + b);
 		return originalName.equals(newName);
-
 	}
 	
+	// Settings
+	
 	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration) {
-		checkArgument(testGeneration.getFileName().size() <= 1);
 		checkArgument(testGeneration.getPackageName().size() <= 1);
+		checkArgument(testGeneration.getFileName().size() <= 1);
+		checkArgument(testGeneration.getTestFolder().size() <= 1);
 		if (testGeneration.getPackageName().isEmpty()) {
 			testGeneration.getPackageName().add(file.getProject().getName().toLowerCase());
 		}
 		if (testGeneration.getFileName().isEmpty()) {
 			testGeneration.getFileName().add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);
 		}
-//		if (testGeneration.getTestFolder().isEmpty()) {
-//			testGeneration.getTestFolder().add("test-gen");
-//		}
-//		// Setting the attribute, the test folder is a RELATIVE path now from the project
-//		this.testFolderUri = URI.decode(projectLocation + File.separator + testGeneration.getTestFolder().get(0));
-		this.fileName = testGeneration.getFileName().get(0);
+		if (testGeneration.getTestFolder().isEmpty()) {
+			testGeneration.getTestFolder().add("test-gen");
+		}
+		this.packageName = testGeneration.getPackageName().get(0);
+		this.traceFileName = testGeneration.getFileName().get(0);
+		// Setting the attribute, the test folder is a RELATIVE path now from the project
+		this.testFolderUri = URI.decode(projectLocation + File.separator + testGeneration.getTestFolder().get(0));
+		this.testFileName = traceFileName + "Simulation";
 		// TargetFolder set in setTargetFolder
 	}
 	
