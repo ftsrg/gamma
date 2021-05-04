@@ -204,7 +204,7 @@ public class ExpressionTypeDeterminator2 {
 	    return removeTypeReferences(getType(expression));
 	}
 	
-	public boolean equals (Expression expressionOne, Expression expressionTwo) {
+	public boolean equals(Expression expressionOne, Expression expressionTwo) {
 		Type typeOne = getType(expressionOne);
 		Type typeTwo = getType(expressionTwo);
 		return equals(typeOne, typeTwo);
@@ -226,7 +226,7 @@ public class ExpressionTypeDeterminator2 {
 				typeOne instanceof IntegerTypeDefinition && typeTwo instanceof IntegerTypeDefinition ||
 				typeOne instanceof RationalTypeDefinition && typeTwo instanceof RationalTypeDefinition ||
 				typeOne instanceof DecimalTypeDefinition && typeTwo instanceof DecimalTypeDefinition ||
-				typeOne instanceof EnumerationTypeDefinition && typeTwo instanceof EnumerationTypeDefinition ||
+				typeOne instanceof EnumerationTypeDefinition && typeTwo instanceof EnumerationTypeDefinition && typeOne == typeTwo ||
 				typeOne instanceof ArrayTypeDefinition && typeTwo instanceof ArrayTypeDefinition ||
 				typeOne instanceof IntegerRangeTypeDefinition && typeTwo instanceof IntegerRangeTypeDefinition ||
 				typeOne instanceof RecordTypeDefinition && typeTwo instanceof RecordTypeDefinition ||
