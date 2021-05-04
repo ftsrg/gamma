@@ -122,6 +122,9 @@ class TraceBackAnnotator {
 							if (!trace.steps.contains(step)) {
 								trace.steps += step
 							}
+							// Must be done for last step like in line 259
+							step.checkStates(raisedOutEvents, activatedStates)
+							
 							step = createStep
 							trace.steps += step
 						}
