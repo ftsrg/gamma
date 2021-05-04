@@ -10,6 +10,8 @@ class GammaFileNamer {
 	
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
 	//
+	public static final String EXECUTION_TRACE_FILE_NAME = "ExecutionTrace";
+	//
 	public static final String PACKAGE_EMF_EXTENSION = "gsm";
 	public static final String PACKAGE_XTEXT_EXTENSION = "gcd";
 	

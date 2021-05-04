@@ -44,6 +44,7 @@ public abstract class TaskHandler {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final FileUtil fileUtil = FileUtil.INSTANCE;
 	protected final GammaFileNamer fileNamer = GammaFileNamer.INSTANCE;
+	protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
 	protected final Logger logger = Logger.getLogger("GammaLogger");
 	protected final String projectLocation;
 	protected String targetFolderUri;
@@ -60,13 +61,13 @@ public abstract class TaskHandler {
 		checkArgument(task.getTargetFolder().size() <= 1);
 		if (task.getTargetFolder().isEmpty()) {
 			String targetFolder = null;
-			if (task instanceof Verification) {
+			if (task instanceof Verification || task instanceof AdaptiveContractTestGeneration) {
 				targetFolder = "trace";
 			}
 			else if (task instanceof CodeGeneration) {
 				targetFolder = "src-gen";
 			}
-			else if (task instanceof TestGeneration || task instanceof AdaptiveContractTestGeneration) {
+			else if (task instanceof TestGeneration) {
 				targetFolder = "test-gen";
 			}
 			else {
@@ -94,47 +95,56 @@ public abstract class TaskHandler {
 		return targetFolderUri;
 	}
 	
-	/**
-	 * Responsible for saving the given element into a resource file.
-	 */
-	public void saveModel(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		// A Gamma statechart model
-		try {
-			// Trying to serialize the model
-			if (rootElem instanceof Package) {
-				serializeStatechart(rootElem, parentFolder, fileName);
-				return;
+	public static class ModelSerializer {
+		//
+		public static final ModelSerializer INSTANCE = new ModelSerializer();
+		protected ModelSerializer() {}
+		//
+		protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
+		
+		/**
+		 * Responsible for saving the given element into a resource file.
+		 */
+		public void saveModel(EObject rootElem, String parentFolder, String fileName) throws IOException {
+			// A Gamma statechart model
+			try {
+				// Trying to serialize the model
+				if (rootElem instanceof Package) {
+					serializeStatechart(rootElem, parentFolder, fileName);
+					return;
+				}
+				else if (rootElem instanceof ExecutionTrace) { 
+					serializeTrace(rootElem, parentFolder, fileName);
+					return;
+				}
+				else if (rootElem instanceof PropertyPackage) { 
+					serializeProperty(rootElem, parentFolder, fileName);
+					return;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
 			}
-			else if (rootElem instanceof ExecutionTrace) { 
-				serializeTrace(rootElem, parentFolder, fileName);
-				return;
-			}
-			else if (rootElem instanceof PropertyPackage) { 
-				serializeProperty(rootElem, parentFolder, fileName);
-				return;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			DialogUtil.showErrorWithStackTrace("Model cannot be serialized.", e);
+			new File(parentFolder + File.separator + fileName).delete();
+			// Saving like an EMF model
+			ecoreUtil.normalSave(rootElem, parentFolder, fileName);
 		}
-		new File(parentFolder + File.separator + fileName).delete();
-		// Saving like an EMF model
-		ecoreUtil.normalSave(rootElem, parentFolder, fileName);
-	}
+		
+		private void serializeStatechart(EObject rootElem, String parentFolder, String fileName) throws IOException {
+			StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
+			serializer.serialize(rootElem, parentFolder, fileName);
+		}
+		
+		private void serializeTrace(EObject rootElem, String parentFolder, String fileName) throws IOException {
+			TraceLanguageSerializer serializer = new TraceLanguageSerializer();
+			serializer.serialize(rootElem, parentFolder, fileName);
+		}
+		
+		private void serializeProperty(EObject rootElem, String parentFolder, String fileName) throws IOException {
+			PropertyLanguageSerializer serializer = new PropertyLanguageSerializer();
+			serializer.serialize(rootElem, parentFolder, fileName);
+		}
 	
-	private void serializeStatechart(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		StatechartLanguageSerializer serializer = new StatechartLanguageSerializer();
-		serializer.serialize(rootElem, parentFolder, fileName);
-	}
-	
-	private void serializeTrace(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		TraceLanguageSerializer serializer = new TraceLanguageSerializer();
-		serializer.serialize(rootElem, parentFolder, fileName);
-	}
-	
-	private void serializeProperty(EObject rootElem, String parentFolder, String fileName) throws IOException {
-		PropertyLanguageSerializer serializer = new PropertyLanguageSerializer();
-		serializer.serialize(rootElem, parentFolder, fileName);
 	}
 	
 }

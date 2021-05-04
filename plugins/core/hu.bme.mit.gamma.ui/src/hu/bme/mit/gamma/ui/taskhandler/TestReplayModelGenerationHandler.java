@@ -55,9 +55,9 @@ public class TestReplayModelGenerationHandler extends TaskHandler {
 				systemModel, environmentInstance, lastState);
 		
 		// Serialization
-		saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, executionTrace.getName() + ".gcd");
-		saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
-		saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+		serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, executionTrace.getName() + ".gcd");
+		serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+		serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
 	}
 	
 }

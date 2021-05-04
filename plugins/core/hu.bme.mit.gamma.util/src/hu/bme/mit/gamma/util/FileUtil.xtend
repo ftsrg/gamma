@@ -112,6 +112,15 @@ class FileUtil {
 		return resource.fullPath.toFile
 	}
 	
+	def void forceDelete(File file) {
+		if (file.isDirectory) {
+			for (subfile : file.listFiles) {
+				subfile.forceDelete
+			}
+		}
+		file.delete
+	}
+	
     /**
      * Returns the next valid name for the file that is suffixed by indices.
      */

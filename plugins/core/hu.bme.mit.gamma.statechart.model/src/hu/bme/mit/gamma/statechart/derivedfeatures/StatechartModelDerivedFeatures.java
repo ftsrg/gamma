@@ -807,6 +807,12 @@ public class StatechartModelDerivedFeatures extends ActionModelDerivedFeatures {
 		return new ArrayList<hu.bme.mit.gamma.statechart.statechart.State>();
 	}
 	
+	public static List<hu.bme.mit.gamma.statechart.statechart.State> getAncestorsAndSelf(State node) {
+		List<hu.bme.mit.gamma.statechart.statechart.State> ancestors = getAncestors(node);
+		ancestors.add(node);
+		return ancestors;
+	}
+	
 	public static List<Region> getRegionAncestors(StateNode node) {
 		if (node.eContainer().eContainer() instanceof hu.bme.mit.gamma.statechart.statechart.State) {
 			hu.bme.mit.gamma.statechart.statechart.State parentState = (hu.bme.mit.gamma.statechart.statechart.State) node.eContainer().eContainer();

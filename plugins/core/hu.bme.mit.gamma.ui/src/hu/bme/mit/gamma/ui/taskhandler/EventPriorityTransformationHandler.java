@@ -38,7 +38,7 @@ public class EventPriorityTransformationHandler extends TaskHandler {
 		StatechartDefinition prioritizedTransitionsStatechart = eventPriorityTransformer.execute();
 		Package prioritizedTransitionsStatechartPackage =
 				StatechartModelDerivedFeatures.getContainingPackage(prioritizedTransitionsStatechart);
-		saveModel(prioritizedTransitionsStatechartPackage,
+		serializer.saveModel(prioritizedTransitionsStatechartPackage,
 				targetFolderUri, eventPriorityTransformation.getFileName().get(0) + ".gcd");
 	}
 	

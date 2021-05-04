@@ -159,7 +159,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected void serializeProperties(PropertyPackage propertyPackage, String fileName)
 				throws IOException {
 			if (propertyPackage != null) {
-				saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
+				serializer.saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
 				serializeStringProperties(propertyPackage, fileName);
 			}
 		}

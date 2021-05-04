@@ -14,19 +14,41 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.common.util.URI;
 
+import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
+import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance;
+import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
+import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
+import hu.bme.mit.gamma.statechart.statechart.State;
+import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
+import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
+import hu.bme.mit.gamma.trace.derivedfeatures.TraceModelDerivedFeatures;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
+import hu.bme.mit.gamma.trace.model.Step;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
+import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
-	
+	//
+	protected String testFolderUri;
+	protected String fileName;
+	protected final ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
+	//
 	public AdaptiveContractTestGenerationHandler(IFile file) {
 		super(file);
 	}
@@ -82,17 +104,71 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		verificationHandler.execute(verification);
 		
 		// Reading the resulting traces and then deleting them
+		List<ExecutionTrace> testsTraces = new ArrayList<ExecutionTrace>();
 		File temporaryTraceFolder = new File(verificationHandler.getTargetFolderUri());
 		for (File traceFile : temporaryTraceFolder.listFiles()) {
 			ExecutionTrace trace = (ExecutionTrace) ecoreUtil.normalLoad(traceFile);
-			System.out.println(trace.getName());
+			Step lastStep = TraceModelDerivedFeatures.getLastStep(trace);
+			Map<SynchronousComponentInstance, Set<State>> instanceStateConfigurations =
+					TraceModelDerivedFeatures.groupInstanceStateConfigurations(lastStep);
+			
+			// Back-annotating the final states
+			StatechartDefinition adaptiveContract =
+					(StatechartDefinition) GenmodelDerivedFeatures.getModel(modelTransformation);
+			Set<State> originalStates = new HashSet<State>();
+			for (SynchronousComponentInstance instance : instanceStateConfigurations.keySet()) {
+				Set<State> newStates = instanceStateConfigurations.get(instance);
+				originalStates.addAll(backAnnotateStates(adaptiveContract, newStates));
+			}
+			
+			// Extending it with the scenario testing
+			for (State contractState : originalStates) {
+				// Extending trace of the adaptive contract with tests derived from the contracts of these states
+				StateAnnotation annotation = contractState.getAnnotation();
+				if (annotation instanceof StateContractAnnotation) {
+					StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
+					for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
+						ExecutionTrace clonedTrace = ecoreUtil.clone(trace);
+						// TODO extending clonedTrace...
+						
+						testsTraces.add(clonedTrace);
+					}
+				}
+				else {
+					// To be removed: just to test now the workflow
+					testsTraces.add(ecoreUtil.clone(trace));
+				}
+			}
 		}
-		temporaryTraceFolder.delete();
+		fileUtil.forceDelete(temporaryTraceFolder);
 		
-		// Back-annotating the final states
-		
-		// Extending it with the scenario testing
-		
+		// Serializing traces
+		for (ExecutionTrace testTrace : testsTraces) {
+			serializer.serialize(targetFolderUri, fileName, testTrace);
+		}
+	}
+	
+	protected Set<State> backAnnotateStates(StatechartDefinition originalStatechart,
+			Collection<State> newStates) {
+		Set<State> originalStates = new HashSet<State>();
+		for (State newState : newStates) {
+			for (State originalState : StatechartModelDerivedFeatures.getAllStates(originalStatechart)) {
+				if (areEqual(originalState, newState)) {
+					originalStates.add(originalState);
+				}
+			}
+		}
+		return originalStates;
+	}
+	
+	protected boolean areEqual(State originalState, State newState) {
+		List<State> originalAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(originalState);
+		// Note the - in the string to be a 100% sure, that cannot be contained by state names
+		String originalName = originalAncestors.stream().map(it -> it.getName()).reduce("", (a, b) -> a + "-" + b);
+		List<State> newAncestors = StatechartModelDerivedFeatures.getAncestorsAndSelf(newState);
+		String newName = newAncestors.stream().map(it -> it.getName()).reduce("", (a, b) -> a + "-" + b);
+		return originalName.equals(newName);
+
 	}
 	
 	private void setAdaptiveContractTestGeneration(AdaptiveContractTestGeneration testGeneration) {
@@ -101,6 +177,15 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 		if (testGeneration.getPackageName().isEmpty()) {
 			testGeneration.getPackageName().add(file.getProject().getName().toLowerCase());
 		}
+		if (testGeneration.getFileName().isEmpty()) {
+			testGeneration.getFileName().add(GammaFileNamer.EXECUTION_TRACE_FILE_NAME);
+		}
+//		if (testGeneration.getTestFolder().isEmpty()) {
+//			testGeneration.getTestFolder().add("test-gen");
+//		}
+//		// Setting the attribute, the test folder is a RELATIVE path now from the project
+//		this.testFolderUri = URI.decode(projectLocation + File.separator + testGeneration.getTestFolder().get(0));
+		this.fileName = testGeneration.getFileName().get(0);
 		// TargetFolder set in setTargetFolder
 	}
 	

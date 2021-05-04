@@ -40,8 +40,8 @@ public class StatechartCompilationHandler extends YakinduCompilationHandler {
 		YakinduToGammaTransformer transformer = new YakinduToGammaTransformer(statechartCompilation);
 		SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
 		// Saving Xtext and EMF models
-		saveModel(resultModels.getKey(), targetFolderUri, statechartCompilation.getFileName().get(0) + ".gcd");
-		saveModel(resultModels.getValue(), targetFolderUri, "." + statechartCompilation.getFileName().get(0) + ".y2g");
+		serializer.saveModel(resultModels.getKey(), targetFolderUri, statechartCompilation.getFileName().get(0) + ".gcd");
+		serializer.saveModel(resultModels.getValue(), targetFolderUri, "." + statechartCompilation.getFileName().get(0) + ".y2g");
 		transformer.dispose();
 	}
 
