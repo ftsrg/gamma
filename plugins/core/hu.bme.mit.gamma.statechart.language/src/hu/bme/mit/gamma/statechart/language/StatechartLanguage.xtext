@@ -220,8 +220,13 @@ StatechartContractAnnotation returns StatechartAnnotation:
 ;
 
 ScenarioContractAnnotation returns ContractModel::ScenarioContractAnnotation:
-	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
+	'@ScenarioContractStatechart' '=' monitoredComponent=[InterfaceModel::Component] '(' scenarioType= NotDefinedEventMode')'
 ;
+
+enum NotDefinedEventMode returns ContractModel::NotDefinedEventMode: 
+	PERMISSIVE = 'permissive' |STRICT ='strict'
+;
+
 
 AdaptiveContractAnnotation returns ContractModel::AdaptiveContractAnnotation:
 	'@AdaptiveContractStatechart' '=' monitoredComponent=[InterfaceModel::Component]
