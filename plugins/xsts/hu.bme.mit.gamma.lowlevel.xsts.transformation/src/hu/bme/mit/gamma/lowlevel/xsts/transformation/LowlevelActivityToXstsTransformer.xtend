@@ -41,6 +41,7 @@ import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchT
 import org.eclipse.viatra.transformation.runtime.emf.transformation.batch.BatchTransformationStatements
 
 import static extension hu.bme.mit.gamma.xsts.transformation.util.XstsNamings.*
+import static extension hu.bme.mit.gamma.activity.derivedfeatures.ActivityModelDerivedFeatures.*
 
 class LowlevelActivityToXstsTransformer {
 	extension BatchTransformation transformation
@@ -171,11 +172,12 @@ class LowlevelActivityToXstsTransformer {
 		getTypeDeclarationsRule.fireAllCurrent
 		getPlainVariablesRule.fireAllCurrent
 		
+		getVariableInitializationsRule.fireAllCurrent
+		initializeVariableInitializingAction
+		
 		getNodesRule.fireAllCurrent
 		getFlowsRule.fireAllCurrent
-		
-		getVariableInitializationsRule.fireAllCurrent
-		
+				
 		variableInitializingAction as SequentialAction
 		configurationInitializingAction as SequentialAction
 		entryEventAction as SequentialAction
@@ -189,11 +191,8 @@ class LowlevelActivityToXstsTransformer {
 		if (variableInitializationsRule === null) {
 			variableInitializationsRule = createRule(GlobalVariables.instance).action [
 				val lowlevelVariable = it.variable
-				if (lowlevelVariable.notOptimizable) {
-					val xStsVariable = trace.getXStsVariable(lowlevelVariable)
-					// By now all variables must be traced because of such initializations: var a = b
-					xStsVariable.expression = lowlevelVariable.initialValue.transformExpression
-				}
+				val xStsVariable = trace.getXStsVariable(lowlevelVariable)
+				xStsVariable.expression = lowlevelVariable.initialValue.transformExpression
 			].build
 		}
 		return variableInitializationsRule
@@ -216,14 +215,31 @@ class LowlevelActivityToXstsTransformer {
 		if (plainVariablesRule === null) {
 			plainVariablesRule = createRule(PlainVariables.instance).action [
 				val lowlevelVariable = it.variable
-				if (lowlevelVariable.notOptimizable) {
-					val xStsVariable = lowlevelVariable.transformVariableDeclaration
-					xSts.variableDeclarations += xStsVariable // Target model modification
-					xSts.plainVariableGroup.variables += xStsVariable // Variable group modification
-				}
+				val xStsVariable = lowlevelVariable.transformVariableDeclaration
+				xSts.variableDeclarations += xStsVariable // Target model modification
 			].build
 		}
 		return plainVariablesRule
+	}
+	
+	protected def initializeVariableInitializingAction() {
+		val xStsVariables = newLinkedList
+
+		for (activity : _package.activities) {
+			for (lowlevelVariable : activity.transitiveVariableDeclarations) {
+				xStsVariables += trace.getXStsVariable(lowlevelVariable)
+			}
+		}
+
+		for (xStsVariable : xStsVariables) {
+			// variableInitializingAction as it must be set before setting the configuration
+			variableInitializingAction as SequentialAction => [
+				it.actions += createAssignmentAction => [
+					it.lhs = createDirectReferenceExpression => [it.declaration = xStsVariable]
+					it.rhs = xStsVariable.initialValue
+				]
+			]
+		}
 	}
 
 	protected def getNodesRule() {
@@ -287,13 +303,5 @@ class LowlevelActivityToXstsTransformer {
 		xSts.variableDeclarations += xStsFlowVariable
 		xSts.controlVariables += xStsFlowVariable
 		trace.put(flow, xStsFlowVariable)
-	}
-	
-	protected def isNotOptimizable(EventDeclaration lowlevelEvent) {
-		return !optimize || referredEvents.contains(lowlevelEvent)
-	}
-	
-	protected def isNotOptimizable(VariableDeclaration lowlevelVariable) {
-		return !optimize || referredVariables.contains(lowlevelVariable)
 	}
 }
