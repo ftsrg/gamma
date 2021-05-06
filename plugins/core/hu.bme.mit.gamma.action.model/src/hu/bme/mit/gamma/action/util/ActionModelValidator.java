@@ -115,13 +115,12 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkReturnStatementType(ReturnStatement rs) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
-		//Type returnStatementType = typeDeterminator2.getType(rs.getExpression());
 		ProcedureDeclaration containingProcedure = ecoreUtil.getContainerOfType(rs, ProcedureDeclaration.class);
 		Type containingProcedureType = null;
 		if (containingProcedure != null) {
 			containingProcedureType = typeDeterminator2.removeTypeReferences(containingProcedure.getType());
 		}
-		if (!typeDeterminator2.equals(containingProcedureType, rs.getExpression())) {
+		if (!typeDeterminator2.equalsType(containingProcedureType, rs.getExpression())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The type of the return statement (" + typePrinter.print(rs.getExpression())
 					+ ") does not match the declared type of the procedure (" 

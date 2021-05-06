@@ -37,7 +37,7 @@ const bool3 : boolean := true ? 1 : 1.1
  * @Check - checkArrayLiteralExpression
  */
 const array : [1] integer := #[1.1]
-const array1 : [2] integer := #[int1, dec1]
+const array1 : [2] integer := #[dec1, dec1]
 
 /**
  * We expect the record has with a field with the given name.
@@ -224,5 +224,7 @@ const intRange2 : integer range := <- int1 .. 12.1 ->
 const selectable : integer := 12 -> select
 const selectable1 : integer := int1 -> select
 const selectable2 : decimal := dec1 -> select
+const selectable3 : decimal := dir -> select
+
 
 

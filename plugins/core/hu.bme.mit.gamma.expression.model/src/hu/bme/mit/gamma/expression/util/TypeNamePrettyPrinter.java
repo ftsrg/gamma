@@ -49,7 +49,7 @@ public class TypeNamePrettyPrinter {
 		}
 		if (type instanceof EnumerationTypeDefinition) {
 			return "ENUMERATION, name of enumeration: " + 
-					ExpressionModelDerivedFeatures.getTypeDeclaration(type).getName().toUpperCase();
+					ExpressionModelDerivedFeatures.getTypeDeclaration(type).getName();
 		}
 		if (type instanceof VoidTypeDefinition) {
 			return "VOID";

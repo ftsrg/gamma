@@ -24,7 +24,6 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -54,7 +53,6 @@ import hu.bme.mit.gamma.expression.model.RationalLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordAccessExpression;
 import hu.bme.mit.gamma.expression.model.RecordLiteralExpression;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
-import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
@@ -213,7 +211,7 @@ public class ExpressionModelValidator {
 					typePrinter.print(expression.getCondition()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.IF_THEN_ELSE_EXPRESSION__CONDITION, null)));
 		}
-		if (!typeDeterminator2.equals(expression.getThen(), expression.getElse())) {
+		if (!typeDeterminator2.equalsType(expression.getThen(), expression.getElse())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The return type of the else-branch does not match the type of the then-branch! " +
 					"Then: " + typePrinter.print(expression.getThen()) + " - Else: " + typePrinter.print(expression.getElse()), 
@@ -424,15 +422,10 @@ public class ExpressionModelValidator {
 				Expression rhs = equivalenceExpression.getRightOperand();
 				Type leftHandSideExpressionType = typeDeterminator2.getType(lhs);
 				Type rightHandSideExpressionType = typeDeterminator2.getType(rhs);
-				if (!typeDeterminator2.equals(lhs, rhs)) {
+				if (!typeDeterminator2.equalsType(lhs, rhs)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The left and right hand sides are not compatible: " + typePrinter.print(leftHandSideExpressionType) + " and " + typePrinter.print(rightHandSideExpressionType), 
 							new ReferenceInfo(ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND, null)));
-				}
-				// Additional checks for enums
-				else if (leftHandSideExpressionType instanceof EnumerationTypeDefinition) {
-					validationResultMessages.addAll(checkEnumerationConformance(lhs, rhs, 
-							ExpressionModelPackage.Literals.BINARY_EXPRESSION__RIGHT_OPERAND));
 				}
 			}
 			// Comparison
@@ -463,9 +456,7 @@ public class ExpressionModelValidator {
 									typePrinter.print(rhs) + ".", 
 					new ReferenceInfo(feature, null)));
 			return validationResultMessages;
-			
 		}
-		validationResultMessages.addAll(checkEnumerationConformance(lhs, rhs, feature));
 		return validationResultMessages;
 	}
 	
@@ -482,53 +473,9 @@ public class ExpressionModelValidator {
 			return validationResultMessages;
 		}
 
-		validationResultMessages.addAll(checkEnumerationConformance(lhsExpressionType, rhs, feature));
 		return validationResultMessages;
 	}
-	
-	public Collection<ValidationResultMessage> checkEnumerationConformance(Type lhs, Type rhs, EStructuralFeature feature) {
-		//addAll is used to add possible errors to the list
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		EnumerationTypeDefinition enumType = typeDeterminator2.getEnumerationType(lhs);
-		if (enumType != null) {
-			final EnumerationTypeDefinition rhsType = typeDeterminator2.getEnumerationType(rhs);
-			validationResultMessages.addAll(checkEnumerationConformance(enumType, rhsType, feature));
-		}
-		return validationResultMessages;
-	}
-
-	public Collection<ValidationResultMessage> checkEnumerationConformance(Type type, Expression rhs, EStructuralFeature feature) {
-		//addAll is used to add possible errors to the list
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		EnumerationTypeDefinition enumType = typeDeterminator2.getEnumerationType(type);
-		if (enumType != null) {
-			final EnumerationTypeDefinition rhsType = typeDeterminator2.getEnumerationType(rhs);
-			validationResultMessages.addAll(checkEnumerationConformance(enumType, rhsType, feature));
-		}
-		return validationResultMessages;
-	}
-	
-	public Collection<ValidationResultMessage> checkEnumerationConformance(Expression lhs, Expression rhs, EStructuralFeature feature) {
-		//addAll is used to add possible errors to the list
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		EnumerationTypeDefinition lhsType = typeDeterminator2.getEnumerationType(lhs);
-		EnumerationTypeDefinition rhsType = typeDeterminator2.getEnumerationType(rhs);
-		validationResultMessages.addAll(checkEnumerationConformance(lhsType, rhsType, feature));
-		return validationResultMessages;
-	}
-	
-	public Collection<ValidationResultMessage> checkEnumerationConformance(EnumerationTypeDefinition lhs, EnumerationTypeDefinition rhs,
-			EStructuralFeature feature) {
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (lhs != rhs) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The right hand side is not the same type of enumeration as the left hand side."
-					+ typePrinter.print(lhs) + " " + typePrinter.print(rhs), 
-					new ReferenceInfo(feature, null)));
-		}
-		return validationResultMessages;
-	}
-	
+		
 	public Collection<ValidationResultMessage> checkArithmeticExpression(ArithmeticExpression expression) {
 		
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -617,12 +564,10 @@ public class ExpressionModelValidator {
 				if (!typeDeterminator2.equals(variableDeclarationType, initialExpressionType)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"The types of the declaration and the right hand side expression are not the same: " +
-											typePrinter.print(variableDeclarationType) + " and " +
-											typePrinter.print(initialExpressionType) + ".", 
+									typePrinter.print(variableDeclarationType) + " and " +
+									typePrinter.print(initialExpressionType) + ".", 
 							new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION, null)));
 				}
-				// Additional checks for enumerations
-				validationResultMessages.addAll(checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION));
 				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
 				if (ExpressionModelDerivedFeatures.getTypeDefinition(declaration) instanceof ArrayTypeDefinition) {
