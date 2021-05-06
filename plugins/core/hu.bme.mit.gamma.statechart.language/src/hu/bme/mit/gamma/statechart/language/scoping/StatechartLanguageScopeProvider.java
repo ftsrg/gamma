@@ -29,6 +29,9 @@ import com.google.common.collect.Lists;
 
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
+import hu.bme.mit.gamma.activity.model.ActivityDeclaration;
+import hu.bme.mit.gamma.activity.model.ActivityDefinition;
+import hu.bme.mit.gamma.activity.derivedfeatures.*;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralDefinition;
 import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
@@ -302,8 +305,12 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 						declarations.addAll(statechart.getVariableDeclarations());
 						declarations.addAll(statechart.getFunctionDeclarations());
 						scope = Scopes.scopeFor(declarations, parentScope);
-					}
-					else {
+					} else if (element instanceof ActivityDeclaration) {
+						ActivityDeclaration activity = (ActivityDeclaration) element;
+						Collection<Declaration> declarations = new ArrayList<Declaration>();
+						declarations.addAll(ActivityModelDerivedFeatures.getTransitiveVariableDeclarations(activity));
+						scope = Scopes.scopeFor(declarations, parentScope);
+					} else {
 						scope = parentScope;
 					}
 				}

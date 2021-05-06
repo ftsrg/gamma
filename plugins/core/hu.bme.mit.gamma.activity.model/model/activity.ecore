@@ -50,7 +50,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Definition" abstract="true"/>
   <eClassifiers xsi:type="ecore:EClass" name="NamedActivityDeclaration" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//NamedElement #//ActivityDeclaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="InlineActivityDeclaration" eSuperTypes="#//ActivityDeclaration #//ActivityDeclarationReference"/>
-  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclaration" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="ActivityDeclaration" abstract="true"
+      eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ParametricElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="definition" lowerBound="1"
         eType="#//Definition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="pins" upperBound="-1" eType="#//Pin"
