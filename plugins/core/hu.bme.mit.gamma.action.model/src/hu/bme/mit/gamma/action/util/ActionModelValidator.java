@@ -12,7 +12,6 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
-import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.BreakStatement;
 import hu.bme.mit.gamma.action.model.ChoiceStatement;
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
@@ -29,7 +28,6 @@ import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 public class ActionModelValidator extends ExpressionModelValidator {
 	// Singleton
@@ -118,7 +116,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		
 		//Type returnStatementType = typeDeterminator2.getType(rs.getExpression());
-		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
+		ProcedureDeclaration containingProcedure = ecoreUtil.getContainerOfType(rs, ProcedureDeclaration.class);
 		Type containingProcedureType = null;
 		if (containingProcedure != null) {
 			containingProcedureType = typeDeterminator2.removeTypeReferences(containingProcedure.getType());
@@ -162,31 +160,4 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
-		
-	
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//TODO extract into util-class
-		public ProcedureDeclaration getContainingProcedure(Action action) {
-			EObject container = action.eContainer();
-			if (container instanceof ProcedureDeclaration) {
-				return (ProcedureDeclaration)container;
-			} else if (container instanceof Branch) {
-				return getContainingProcedure((Branch)container);
-			} else if (container instanceof Block) {
-				return getContainingProcedure((Action)container);
-			} else if (container instanceof ForStatement) {
-				return getContainingProcedure((Action)container);
-			} else {
-				return null;	//Not in a procedure
-			}
-		}
-		
-		//TODO extract into util-class
-		public ProcedureDeclaration getContainingProcedure(Branch branch) {
-			EObject container = branch.eContainer();
-			if (container instanceof Action) {
-				return getContainingProcedure((Action)container);
-			} 
-			throw new IllegalArgumentException("Unknown container for Branch.");
-		}
 }

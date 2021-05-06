@@ -625,12 +625,8 @@ public class ExpressionModelValidator {
 				validationResultMessages.addAll(checkEnumerationConformance(variableDeclarationType, initialExpression, ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION));
 				// Additional checks for arrays
 				ArrayTypeDefinition arrayType = null;
-				if (declaration.getType() instanceof ArrayTypeDefinition) {
+				if (ExpressionModelDerivedFeatures.getTypeDefinition(declaration) instanceof ArrayTypeDefinition) {
 					arrayType = (ArrayTypeDefinition) declaration.getType();
-				}
-				else if (declaration.getType() instanceof TypeReference &&
-						((TypeReference) declaration.getType()).getReference().getType() instanceof ArrayTypeDefinition) {
-					arrayType = (ArrayTypeDefinition) ((TypeReference) declaration.getType()).getReference().getType();
 				}
 				if (arrayType != null) {	
 					if (initialExpression instanceof ArrayLiteralExpression) {

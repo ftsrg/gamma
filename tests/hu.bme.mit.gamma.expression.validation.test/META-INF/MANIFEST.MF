@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: hu.bme.mit.gamma.expression.validation.test
+Bundle-Name: Expression Validation Test
 Bundle-SymbolicName: hu.bme.mit.gamma.expression.validation.test; singleton:=true
-Bundle-Version: 0.1.0.qualifier
+Bundle-Version: 2.5.0.qualifier
 Require-Bundle: org.eclipse.emf.ecore

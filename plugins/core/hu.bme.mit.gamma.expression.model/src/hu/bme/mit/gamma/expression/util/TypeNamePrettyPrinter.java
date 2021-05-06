@@ -11,6 +11,7 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RationalTypeDefinition;
 import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VoidTypeDefinition;
 
 public class TypeNamePrettyPrinter {
@@ -53,6 +54,9 @@ public class TypeNamePrettyPrinter {
 		if (type instanceof VoidTypeDefinition) {
 			return "VOID";
 		}
-		return "not know type";
+		if (type instanceof TypeReference) {
+			return print(((TypeReference) type).getReference().getType());
+		}
+		throw new IllegalArgumentException("Unknown type!");
 	}
 }

@@ -71,6 +71,7 @@ public class ExpressionTypeDeterminator2 {
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 	protected final ExpressionModelFactory factory = ExpressionModelFactory.eINSTANCE;
+	protected final TypeNamePrettyPrinter typePrinter = TypeNamePrettyPrinter.INSTANCE;
 	
 	public Type getType(Expression expression) {
 		if (expression instanceof BooleanLiteralExpression || expression instanceof BooleanExpression) {
@@ -162,7 +163,7 @@ public class ExpressionTypeDeterminator2 {
 		}
 		if (expression instanceof FunctionAccessExpression) {
 			Type declarationType = expressionUtil.getDeclaration(expression).getType();
-			return ExpressionModelDerivedFeatures.getTypeDefinition(declarationType);
+			return ecoreUtil.clone(declarationType);
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;
@@ -186,6 +187,7 @@ public class ExpressionTypeDeterminator2 {
 				throw new IllegalArgumentException("The type of the operand of the select expression is not an enumerable type: " + expressionUtil.getDeclaration(expression));
 			}
 		}
+		// if expression is null (e.g. return;) we add back void
 		if (expression == null) {
 			return factory.createVoidTypeDefinition();
 		}
@@ -266,7 +268,7 @@ public class ExpressionTypeDeterminator2 {
 		if (isNumber(type)) {
 			return type;
 		}
-		throw new IllegalArgumentException("Type is not suitable type for expression: " + type + System.lineSeparator() + expression);
+		throw new IllegalArgumentException("Type is not suitable type for expression: " + typePrinter.print(type) + " expression: " + expression);
 	}
 	
 	// Binary
@@ -289,7 +291,7 @@ public class ExpressionTypeDeterminator2 {
 		if (type instanceof IntegerTypeDefinition) {
 			return type;
 		}
-		throw new IllegalArgumentException("Type is not suitable type for expression: " + type + System.lineSeparator() + expression);
+		throw new IllegalArgumentException("Type is not suitable type for expression: " + typePrinter.print(type) + " expression: " + expression);
 	}
 	
 	// Multiary
@@ -318,23 +320,13 @@ public class ExpressionTypeDeterminator2 {
 	// Type is boolean.
 	
 	public boolean isBoolean(Expression expression) {
-		if (getType(expression) instanceof BooleanTypeDefinition) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return getType(expression) instanceof BooleanTypeDefinition;
 	}
 
 	// Type is integer.
 	
 	public boolean isInteger(Expression expression) {
-		if (getType(expression) instanceof IntegerTypeDefinition) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return getType(expression) instanceof IntegerTypeDefinition;
 	}
 	
 	// Enumerations
