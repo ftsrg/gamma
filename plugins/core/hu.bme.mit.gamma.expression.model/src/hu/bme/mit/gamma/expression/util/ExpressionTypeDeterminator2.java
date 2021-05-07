@@ -35,6 +35,8 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression;
 import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelFactory;
+import hu.bme.mit.gamma.expression.model.FieldDeclaration;
+import hu.bme.mit.gamma.expression.model.FieldReferenceExpression;
 import hu.bme.mit.gamma.expression.model.FunctionAccessExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
@@ -170,6 +172,12 @@ public class ExpressionTypeDeterminator2 {
 		if (expression instanceof FunctionAccessExpression) {
 			Type declarationType = expressionUtil.getDeclaration(expression).getType();
 			return ecoreUtil.clone(declarationType);
+		}
+		if (expression instanceof FieldReferenceExpression) {
+			FieldReferenceExpression fieldReferenceExpression = (FieldReferenceExpression) expression;
+			FieldDeclaration fieldDeclaration = fieldReferenceExpression.getFieldDeclaration();
+			Type type = fieldDeclaration.getType();
+			return ecoreUtil.clone(type);
 		}
 		if (expression instanceof RecordAccessExpression) {
 			RecordAccessExpression recordAccessExpression = (RecordAccessExpression) expression;

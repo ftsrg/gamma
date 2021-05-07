@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
@@ -66,6 +65,7 @@ import hu.bme.mit.gamma.expression.model.RecordTypeDefinition;
 import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDeclaration;
+import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
 import hu.bme.mit.gamma.expression.model.ValueDeclaration;
@@ -179,23 +179,24 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccessExpression) {
-		Declaration accessedDeclaration = expressionUtil.getAccessedDeclaration(recordAccessExpression);
-		RecordTypeDefinition recordType = (RecordTypeDefinition) ExpressionModelDerivedFeatures.getTypeDefinition(accessedDeclaration);
+	public Collection<ValidationResultMessage> checkRecordAccessExpression(RecordAccessExpression recordAccess) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!(accessedDeclaration instanceof ValueDeclaration)) {
+		Expression operand = recordAccess.getOperand();
+		TypeDefinition type = typeDeterminator2.getTypeDefinition(operand);
+		if (!(type instanceof RecordTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as a record!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
+					"The referred declaration is not accessible as a record", 
+					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 			return validationResultMessages;
 		}
 		// Check if the referred field exists
+		RecordTypeDefinition recordType = (RecordTypeDefinition) type;
 		List<FieldDeclaration> fieldDeclarations = recordType.getFieldDeclarations();
-		Declaration referredField = recordAccessExpression.getFieldReference().getFieldDeclaration();
+		Declaration referredField = recordAccess.getFieldReference().getFieldDeclaration();
 		if (!fieldDeclarations.contains(referredField)){
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The record type does not contain any fields with the given name.", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE, null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.RECORD_ACCESS_EXPRESSION__FIELD_REFERENCE)));
 		}
 		return validationResultMessages;
 	}
@@ -485,10 +486,10 @@ public class ExpressionModelValidator {
 			if (elem instanceof Declaration) {
 				Declaration declaration = (Declaration) elem;
 				for (VariableDeclaration variableDeclaration : expressionUtil.getReferredVariables(initialExpression)) {
-					if (container == variableDeclaration.eContainer()) {
-						final EList<EObject> eContents = container.eContents();
-						int elemIndex = eContents.indexOf(elem);
-						int variableIndex = eContents.indexOf(variableDeclaration);
+					if (container == variableDeclaration.eContainer() &&
+							container.eContainmentFeature() == variableDeclaration.eContainmentFeature()) {
+						int elemIndex = ecoreUtil.getIndex(elem);
+						int variableIndex = ecoreUtil.getIndex(variableDeclaration);
 						if (variableIndex >= elemIndex) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 									"The declarations referenced in the initial value must be declared before the variable declaration.", 
