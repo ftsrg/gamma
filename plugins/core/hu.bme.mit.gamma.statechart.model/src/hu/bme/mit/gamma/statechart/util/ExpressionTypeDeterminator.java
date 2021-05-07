@@ -13,10 +13,11 @@ package hu.bme.mit.gamma.statechart.util;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2;
 import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression;
 import hu.bme.mit.gamma.statechart.statechart.StateReferenceExpression;
 
-public class ExpressionTypeDeterminator extends hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2 {
+public class ExpressionTypeDeterminator extends ExpressionTypeDeterminator2 {
 	// Singleton
 	public static final ExpressionTypeDeterminator INSTANCE = new ExpressionTypeDeterminator();
 	protected ExpressionTypeDeterminator() {

@@ -19,7 +19,6 @@ import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
-import hu.bme.mit.gamma.expression.model.SelectExpression;
 
 /**
  * This class contains custom validation rules. 
