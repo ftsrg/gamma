@@ -1,0 +1,62 @@
+package actionlanguage
+
+import "Types/Types.gcd"
+
+const int1 : int
+const dec1 : dec
+const rec1 : rec
+
+const dir : Direction
+const cPoint : CardianalPoints
+
+const bool : boolean
+
+
+// ERROR
+
+
+/**
+ * We expect the type of procedure and the type of return statement to be the same.
+ * 
+ * @Check - checkReturnStatementType
+ */
+procedure proc0 () : integer { return 1.1; }
+procedure proc1 () : decimal { return int1; }
+procedure proc2 () : int { return rec1; }
+procedure proc3 () : rational { return; }
+procedure proc4 () : Direction { return cPoint; }
+procedure proc5 () : Direction { return ::NORTH; }
+
+
+/**
+ * We expect return statements to be final operations on all possible paths.
+ * 
+ * @Check - checkReturnStatementPositions
+ */
+procedure proc6 () : integer {
+	return 1;
+	var a : integer;
+}
+
+
+
+procedure exampleProc () : void {
+	/**
+	 * We expect the names of the variables to be unique.
+	 * 
+	 * @Check - checkDuplicateVariableDeclarationStatements
+	 */ 
+	var a : integer;
+	var a : decimal;
+	
+	
+	/**
+	 * We expect that no new values can be assigned to the constants.
+	 * 
+	 * @Check - checkAssignmentActions
+	 */
+	int1 := 12;
+	
+	return;
+}
+
