@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.util;
 
 import java.io.File;
@@ -12,7 +22,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.yakindu.base.types.Direction;
 import org.yakindu.base.types.Event;
@@ -28,7 +37,6 @@ import hu.bme.mit.gamma.expression.model.IntegerTypeDefinition;
 import hu.bme.mit.gamma.expression.model.ParameterDeclaration;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
@@ -95,12 +103,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (task.getFileName().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one file name can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		if (task.getTargetFolder().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one target folder can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)));
 		}
 		return validationResultMessages;
 	}
@@ -110,7 +118,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (yakinduCompilation.getPackageName().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one package name can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__PACKAGE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__PACKAGE_NAME)));
 		}
 		return validationResultMessages;
 	}
@@ -120,7 +128,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (statechartCompilation.getStatechartName().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one statechart name can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.STATECHART_COMPILATION__STATECHART_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.STATECHART_COMPILATION__STATECHART_NAME)));
 		}
 		return validationResultMessages;
 	}
@@ -130,31 +138,31 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (analysisModelTransformation.getScheduler().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one scheduler type can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__SCHEDULER)));
 		}
 		List<AnalysisLanguage> languages = analysisModelTransformation.getLanguages();
 		if (languages.size() != languages.stream().collect(Collectors.toSet()).size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single formal language can be specified only once.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)));
 		}
 		ModelReference modelReference = analysisModelTransformation.getModel();
 		if (modelReference instanceof XSTSReference) {
 			if (languages.stream().anyMatch(it -> it != AnalysisLanguage.UPPAAL)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"XSTS models can be transformed only to UPPAAL",
-						new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES, null)));
+						new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__LANGUAGES)));
 			}
 		}
 		if (analysisModelTransformation.getCoverages().stream().filter(it -> it instanceof TransitionCoverage).count() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single transition coverage task can be defined.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)));
 		}
 		if (analysisModelTransformation.getCoverages().stream().filter(it -> it instanceof StateCoverage).count() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single state coverage task can be defined.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__COVERAGES)));
 		}
 		Constraint constraint = analysisModelTransformation.getConstraint();
 		if (constraint != null) {
@@ -163,8 +171,9 @@ public class GenmodelValidator extends ExpressionModelValidator {
 				Component component = componentReference.getComponent();
 				if (component instanceof AsynchronousComponent && constraint instanceof OrchestratingConstraint) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Asynchronous component constraints must contain either a 'top' keyword or references to the contained instances.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT, null)));
+						"Asynchronous component constraints must contain either "
+							+ "a 'top' keyword or references to the contained instances.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ANALYSIS_MODEL_TRANSFORMATION__CONSTRAINT)));
 				}
 			}
 		}
@@ -177,14 +186,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (languages.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single formal language must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__ANALYSIS_LANGUAGES)));
 		}
 		File resourceFile = ecoreUtil.getFile(verification.eResource());
 		List<String> modelFiles = verification.getFileName();
 		if (modelFiles.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single model file must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		for (String modelFile : modelFiles) {
 			if (!fileUtil.isValidRelativeFile(resourceFile, modelFile)) {
@@ -199,7 +208,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (queryFiles.size() + propertyPackages.size() < 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At least one query file must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.VERIFICATION__QUERY_FILES)));
 		}
 		for (String queryFile : queryFiles) {
 			if (!fileUtil.isValidRelativeFile(resourceFile, queryFile)) {
@@ -229,74 +238,77 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (systemFileNames.size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single system file name must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__FILE_NAME)));
 		}
 		List<String> targetFolders = modelGeneration.getTargetFolder();
 		if (targetFolders.size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one test folder can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.TASK__TARGET_FOLDER)));
 		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
+		if (!typeDeterminator2.isInteger(timeSpecification.getValue())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Time values must be of type integer.",
-					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE, null)));
+					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)));
 		}
 		return validationResultMessages;
 	}
 	
 	public Collection<ValidationResultMessage> checkConstraint(AsynchronousInstanceConstraint constraint) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		AnalysisModelTransformation analysisModelTransformation = EcoreUtil2.getContainerOfType(constraint, AnalysisModelTransformation.class);
+		AnalysisModelTransformation analysisModelTransformation = ecoreUtil.getContainerOfType(constraint, AnalysisModelTransformation.class);
 		ModelReference modelReference = analysisModelTransformation.getModel();
 		if (modelReference instanceof ComponentReference) {
 			ComponentReference componentReference = (ComponentReference)modelReference;
 			Component component = componentReference.getComponent();
 			if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(component)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Asynchronous component constraints must refer to an asynchronous component.",
-						new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT, null)));
+					"Asynchronous component constraints must refer to an asynchronous component.",
+						new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)));
 				return validationResultMessages;
 			}
-			SchedulingConstraint scheduling = EcoreUtil2.getContainerOfType(constraint, SchedulingConstraint.class);
+			SchedulingConstraint scheduling = ecoreUtil.getContainerOfType(constraint, SchedulingConstraint.class);
 			ComponentInstanceReference instance = constraint.getInstance();
 			if (instance != null) {
-				ComponentInstance lastInstance = instance.getComponentInstanceHierarchy().get(instance.getComponentInstanceHierarchy().size() - 1);
+				ComponentInstance lastInstance = instance.getComponentInstanceHierarchy()
+						.get(instance.getComponentInstanceHierarchy().size() - 1);
 				if (!hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.isAsynchronous(lastInstance)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Asynchronous component constraints must contain a reference to a contained asynchronous instance.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
+						"Asynchronous component constraints must contain a reference to a contained asynchronous instance.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)));
 				}
 			}
 			if (component instanceof AsynchronousCompositeComponent) {
 				if (instance == null) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Asynchronous component constraints must contain a reference to a contained instance.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
+						"Asynchronous component constraints must contain a reference to a contained instance.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)));
 				}
-				if (scheduling.getInstanceConstraint().stream().filter(it -> ecoreUtil.helperEquals(it.getInstance(), instance)).count() > 1) {
+				if (scheduling.getInstanceConstraint().stream()
+						.filter(it -> ecoreUtil.helperEquals(it.getInstance(), instance)).count() > 1) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"The scheduling constraints for a certain asynchronous component can be defined at most once.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE, null)));
+						"The scheduling constraints for a certain asynchronous component can be defined at most once.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__INSTANCE)));
 				}
 			}
 			if (component instanceof AsynchronousAdapter) {
 				if (scheduling.getInstanceConstraint().size() > 1) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Asynchronous adapters can contain at most one constraint.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT, null)));
+						"Asynchronous adapters can contain at most one constraint.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.ASYNCHRONOUS_INSTANCE_CONSTRAINT__ORCHESTRATING_CONSTRAINT)));
 				}
 			}
 		}
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkMinimumMaximumOrchestrationPeriodValues(OrchestratingConstraint orchestratingConstraint) {
+	public Collection<ValidationResultMessage> checkMinimumMaximumOrchestrationPeriodValues(
+				OrchestratingConstraint orchestratingConstraint) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		try {
 			TimeSpecification minimum = orchestratingConstraint.getMinimumPeriod();
@@ -308,24 +320,24 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					if (minimumIntegerValue < 0) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 								"Time value must be positive.",
-								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
+								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)));
 					}
 					if (maximumIntegerValue < 0) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 								"Time value must be positive.",
-								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD, null)));
+								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MAXIMUM_PERIOD)));
 					}
 					if (maximumIntegerValue < minimumIntegerValue) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-								"The minimum orchestrating period value must be greater than the maximum orchestrating period value.",
-								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
+							"The minimum orchestrating period value must be greater than the maximum orchestrating period value.",
+								new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)));
 					}
 				}
 			}
 		} catch (IllegalArgumentException e) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Both the minimum and maximum values must be of type integer.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ORCHESTRATING_CONSTRAINT__MINIMUM_PERIOD)));
 		}
 		return validationResultMessages;
 	}
@@ -335,12 +347,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (codeGeneration.getPackageName().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one package name can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)));
 		}
 		if (codeGeneration.getProgrammingLanguages().size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single programming language must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)));
 		}
 		return validationResultMessages;
 	}
@@ -350,12 +362,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (testGeneration.getPackageName().size() > 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"At most one package name can be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)));
 		}
 		if (testGeneration.getProgrammingLanguages().size() != 1) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"A single programming language must be specified.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.ABSTRACT_CODE_GENERATION__PACKAGE_NAME)));
 		}
 		return validationResultMessages;
 	}
@@ -395,7 +407,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(codeGenerationTask.getComponent());
 			packageImports.remove(parentPackage);
 		}
-		for (AnalysisModelTransformation analysisModelTransformationTask : javaUtil.filter(genmodel.getTasks(), AnalysisModelTransformation.class)) {
+		for (AnalysisModelTransformation analysisModelTransformationTask :
+				javaUtil.filter(genmodel.getTasks(), AnalysisModelTransformation.class)) {
 			packageImports.removeAll(getUsedPackages(analysisModelTransformationTask));
 		}
 		for (StatechartCompilation statechartCompilationTask :
@@ -488,7 +501,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		if (componentReference.getArguments().size() != type.getParameterDeclarations().size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"The number of arguments is wrong.",
-					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, null)));
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)));
 		}
 		return validationResultMessages;
 	}
@@ -505,12 +518,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					ParameterDeclaration parameter = parameters.get(i);
 					Expression argument = modelReference.getArguments().get(i);
 					Type declarationType = parameter.getType();
-					ExpressionType argumentType = typeDeterminator.getType(argument);
-					if (!typeDeterminator.equals(declarationType, argumentType)) {
+					if (!typeDeterminator2.equalsType(declarationType, argument)) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 								"The types of the declaration and the right hand side expression are not the same: " +
-								typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
-								argumentType.toString().toLowerCase() + ".", new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
+								typePrinter.print(declarationType) + " and " + typePrinter.print(argument),
+								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 					} 
 				}
 			}
@@ -522,30 +534,32 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkIfAllInterfacesMapped(StatechartCompilation statechartCompilation) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();//(Set<InterfaceScope>)statechartCompilation.getStatechart().getScopes().stream().filter(it -> it instanceof InterfaceScope).collect(Collectors.toSet());
+		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
 		EList<Scope> scopes = statechartCompilation.getStatechart().getScopes();
 		interfaces = javaUtil.filter(scopes, InterfaceScope.class).stream().collect(Collectors.toSet());
 
-		Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();//statechartCompilation.getInterfaceMappings().stream().map(it -> it.get);///.map(it -> it.getYakinduInterface()).collect(Collectors.toSet());
+		Set<InterfaceScope> mappedInterfaces = new HashSet<InterfaceScope>();
 		for (InterfaceMapping interfaceMapping: statechartCompilation.getInterfaceMappings()) {
 			mappedInterfaces.add(interfaceMapping.getYakinduInterface());
 		}
 		interfaces.removeAll(mappedInterfaces);
 		if (!interfaces.isEmpty()) {
-			Set<InterfaceScope> interfacesWithEvents = interfaces.stream().filter(it -> !it.getEvents().isEmpty()).collect(Collectors.toSet());
-			Set<InterfaceScope> interfacesWithoutEvents = interfaces.stream().filter(it -> it.getEvents().isEmpty()).collect(Collectors.toSet());
+			Set<InterfaceScope> interfacesWithEvents = interfaces.stream()
+					.filter(it -> !it.getEvents().isEmpty()).collect(Collectors.toSet());
+			Set<InterfaceScope> interfacesWithoutEvents = interfaces.stream()
+					.filter(it -> it.getEvents().isEmpty()).collect(Collectors.toSet());
 			if (!interfacesWithEvents.isEmpty()) {
 				for (InterfaceScope interfacesWithEventsMap : interfacesWithEvents) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"The following interfaces with events are not mapped: " + interfacesWithEventsMap.getName() + ".",
-							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART, null)));
+							"The following interfaces with events are not mapped: " + interfacesWithEventsMap.getName(),
+							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
 				}
 			}
 			if (!interfacesWithoutEvents.isEmpty()) {
 				for (InterfaceScope interfacesWithoutEventsMap : interfacesWithoutEvents) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.INFO, 
-							"The following interfaces without events are not mapped: " + interfacesWithoutEventsMap.getName() + ".",
-							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART, null)));
+							"The following interfaces without events are not mapped: " + interfacesWithoutEventsMap.getName(),
+							new ReferenceInfo(GenmodelModelPackage.Literals.YAKINDU_COMPILATION__STATECHART)));
 				}
 			}
 		}
@@ -559,13 +573,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			switch (realizationMode) {
 				case PROVIDED:
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of provided realization mode number of in/out events must equal to the number of in/out events in the Gamma interface and vice versa.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+							"In case of provided realization mode number of in/out events must equal to "
+							+ "the number of in/out events in the Gamma interface and vice versa.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 					break;
 				case REQUIRED:
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of required realization mode number of in/out events must equal to the number of out/in events in the Gamma interface and vice versa",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+							"In case of required realization mode number of in/out events must equal to "
+							+ "the number of out/in events in the Gamma interface and vice versa",
+							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 					break;
 				default:
 					throw new IllegalArgumentException("Such interface realization mode is not supported: " + realizationMode);
@@ -598,7 +614,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			if (!(mapping.getGammaInterface().getEvents().stream().filter(it -> it.getDirection() == EventDirection.INOUT).count() == 0)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"The Gamma interface has in-out events, thus an automatic mapping is not possible",
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 				return validationResultMessages;
 			}
 			for (Event yakinduEvent : mapping.getYakinduInterface().getEvents()) {
@@ -614,16 +630,14 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					} else {
 						typeName = "";
 					}
-						
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Interface mapping without event mapping is only possible if the names and types of the events of the interfaces are equal. " 
+							"Interface mapping without event mapping is only possible if the "
+							+ "names and types of the events of the interfaces are equal. " 
 							+ yakinduEvent.getName() + typeName + " has no equivalent event in the Gamma interface.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 					}
-					
 				}			
 			}
-	
 		return validationResultMessages;
 	}
 	
@@ -647,10 +661,11 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkMappingCount(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Check only if the interface mapping is not trivial (size != 0)
-		if (mapping.getEventMappings().size() != 0 && mapping.getYakinduInterface().getEvents().size() != mapping.getEventMappings().size()) {
+		if (mapping.getEventMappings().size() != 0 &&
+				mapping.getYakinduInterface().getEvents().size() != mapping.getEventMappings().size()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Each Yakindu event has to be mapped exactly once.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+					new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 		}
 		return validationResultMessages;
 	}
@@ -659,11 +674,12 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<InterfaceScope> interfaces = new HashSet<InterfaceScope>();
 		StatechartCompilation statechartCompilation = (StatechartCompilation)mapping.eContainer();
-		for (InterfaceScope interface_ : statechartCompilation.getInterfaceMappings().stream().map(it -> it.getYakinduInterface()).collect(Collectors.toList())) {
+		for (InterfaceScope interface_ : statechartCompilation.getInterfaceMappings().stream()
+				.map(it -> it.getYakinduInterface()).collect(Collectors.toList())) {
 			if (interfaces.contains(interface_)){
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"Each Yakindu event has to be mapped exactly once.",
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE, null)));
+						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE)));
 			}
 			else {
 				interfaces.add(interface_);
@@ -675,15 +691,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkEventMappingCount(InterfaceMapping mapping) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Event> mappedYakinduEvents = new HashSet<Event>();
-		Map<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>> mappedGammaEvents = new HashMap<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>>();
+		Map<hu.bme.mit.gamma.statechart.interface_.Event, Set<Event>> mappedGammaEvents = new HashMap<>();
 		for (EventMapping eventMapping : mapping.getEventMappings()) {
 			org.yakindu.base.types.Event yakinduEvent = eventMapping.getYakinduEvent();
 			hu.bme.mit.gamma.statechart.interface_.Event gammaEvent = eventMapping.getGammaEvent();
 			// Yakindu validation
 			if (mappedYakinduEvents.contains(yakinduEvent)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"This event is mapped multiple times: " + yakinduEvent.getName() + ".",
-						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS, null)));
+						"This event is mapped multiple times: " + yakinduEvent.getName(),
+						new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
 			}
 			else {
 				mappedYakinduEvents.add(yakinduEvent);			
@@ -698,15 +714,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					if (!(yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.IN).count() == 1 &&
 							yakinduEventSet.stream().filter(it -> it.getDirection() == Direction.OUT).count() == 1)) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-								"A single in and a single out event has to be mapped onto this Gamma event: " + gammaEvent.getName() + ".",
-								new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS, null)));
+							"A single in and a single out event has to be mapped onto this Gamma event: " + gammaEvent.getName(),
+								new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
 					}
 				}
 				else {
 					// Not an in-out event
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.getName() + ".",
-							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS, null)));
+							"Multiple Yakindu events are mapped to this Gamma event: " + gammaEvent.getName(),
+							new ReferenceInfo(GenmodelModelPackage.Literals.INTERFACE_MAPPING__EVENT_MAPPINGS)));
 				}
 			}
 			else {
@@ -724,13 +740,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 			switch (ifReal.getRealizationMode()) {
 				case PROVIDED:
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of provided realization mode Yakindu events must have the same direction and parameter as Gamma events.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT, null)));
+							"In case of provided realization mode Yakindu events must have "
+							+ "the same direction and parameter as Gamma events.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
 					break;
 				case REQUIRED:	
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-							"In case of required realization mode Yakindu events must have the opposite direction and same parameter of Gamma events.",
-							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT, null)));
+							"In case of required realization mode Yakindu events must have "
+							+ "the opposite direction and same parameter of Gamma events.",
+							new ReferenceInfo(GenmodelModelPackage.Literals.EVENT_MAPPING__YAKINDU_EVENT)));
 					break;
 				default:
 				throw new IllegalArgumentException("Such interface realization mode is not supported: " + ifReal.getRealizationMode());				
@@ -756,9 +774,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		usedInterfaces.retainAll(transformedInterfaces);
 		if (!usedInterfaces.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING, 
-					"This trace depends on interfaces " + usedInterfaces + ", which seem to be about to be recompiled. " + 
-							"The recompilation of interfaces just before the generation of tests might cause a break in the generated test suite.",
-					new ReferenceInfo(GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE, null)));
+					"This trace depends on interfaces " + usedInterfaces + ", which are about to be recompiled. " + 
+						"The recompilation of interfaces just before the generation of "
+						+ "tests might cause a break in the generated test suite.",
+					new ReferenceInfo(GenmodelModelPackage.Literals.TEST_GENERATION__EXECUTION_TRACE)));
 		}
 		return validationResultMessages;
 	}
@@ -775,11 +794,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		switch (realMode) {
 			 // Regarding in-out events
 			case PROVIDED:
-				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT && checkParameters(yEvent, gEvent.getEvent()) ||
-					yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN && checkParameters(yEvent, gEvent.getEvent());
+				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.OUT &&
+					checkParameters(yEvent, gEvent.getEvent()) ||
+							yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.IN &&
+								checkParameters(yEvent, gEvent.getEvent());
 			case REQUIRED:
-				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN && checkParameters(yEvent, gEvent.getEvent()) ||
-					yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT && checkParameters(yEvent, gEvent.getEvent());
+				return yEvent.getDirection() == Direction.IN && gEvent.getDirection() != EventDirection.IN &&
+					checkParameters(yEvent, gEvent.getEvent()) ||
+						yEvent.getDirection() == Direction.OUT && gEvent.getDirection() != EventDirection.OUT &&
+							checkParameters(yEvent, gEvent.getEvent());
 			default:
 				throw new IllegalArgumentException("Such interface realization mode is not supported: " + realMode);				
 		}

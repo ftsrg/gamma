@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.expression.util;
 
 import java.util.ArrayList;
@@ -67,88 +77,15 @@ public class ExpressionModelValidator {
 	// Singleton
 	public static final ExpressionModelValidator INSTANCE = new ExpressionModelValidator();
 	protected ExpressionModelValidator() {}
-	
-	public enum ValidationResult{
-		// Enum literals that determine the type of the message: error, info, warning.
-		ERROR, INFO, WARNING
-	}
-	
-	static public class ValidationResultMessage {
-		
-		private ValidationResult result;
-		private String resultText;
-		private ReferenceInfo referenceInfo;
-		
-		public ValidationResultMessage(ValidationResult result, String resultText,
-				ReferenceInfo referenceInfo){
-			this.result = result;
-			this.resultText = resultText;
-			this.referenceInfo = referenceInfo;
-		}
-		
-		public ValidationResult getResult() {
-			return result;
-		}
-		
-		public String getResultText() {
-			return resultText;
-		}
-		
-		public ReferenceInfo getReferenceInfo() {
-			return referenceInfo;
-		}
-		
-	}
-	
-	static public class ReferenceInfo{
-		
-		private EStructuralFeature reference;
-		private EObject source;
-		private Integer index;
-		
-		public ReferenceInfo(EStructuralFeature reference){
-			this(reference, null);
-		}
-		
-		public ReferenceInfo(EStructuralFeature reference, Integer index){
-			this(reference, index, null);
-		}
-		
-		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {
-			this.reference = reference;
-			this.index = index;
-			this.source = source;
-		}
-		
-		public boolean hasSource() {
-			return source != null;
-		}
-		
-		public boolean hasInteger() {
-			return index != null;
-		}
-		
-		public EObject getSource() {
-			return source;
-		}
-		
-		public int getIndex() {
-			return index;
-		}
-		
-		public EStructuralFeature getReference() {
-			return reference;
-		}
-	}
+	//
 	
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE; // Redefinable
-	protected ExpressionTypeDeterminator typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // Redefinable
+	protected ExpressionTypeDeterminator2 typeDeterminator2 = ExpressionTypeDeterminator2.INSTANCE;  // Redefinable
 	protected final ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE;
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 	protected final JavaUtil javaUtil = JavaUtil.INSTANCE;
 	protected final TypeNamePrettyPrinter typePrinter = TypeNamePrettyPrinter.INSTANCE;
-	
-	protected ExpressionTypeDeterminator2 typeDeterminator2 = ExpressionTypeDeterminator2.INSTANCE;
+	//
 	
 	public Collection<ValidationResultMessage> checkNameUniqueness(EObject root) {
 		return checkNameUniqueness(ecoreUtil.getContentsOfType(root, NamedElement.class));
@@ -801,4 +738,80 @@ public class ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+	
+	// Internal classes for validation result
+	
+	public enum ValidationResult {
+		// Enum literals that determine the type of the message: error, info, warning.
+		ERROR, INFO, WARNING
+	}
+	
+	static public class ValidationResultMessage {
+		
+		private ValidationResult result;
+		private String resultText;
+		private ReferenceInfo referenceInfo;
+		
+		public ValidationResultMessage(ValidationResult result, String resultText,
+				ReferenceInfo referenceInfo){
+			this.result = result;
+			this.resultText = resultText;
+			this.referenceInfo = referenceInfo;
+		}
+		
+		public ValidationResult getResult() {
+			return result;
+		}
+		
+		public String getResultText() {
+			return resultText;
+		}
+		
+		public ReferenceInfo getReferenceInfo() {
+			return referenceInfo;
+		}
+		
+	}
+	
+	static public class ReferenceInfo{
+		
+		private EStructuralFeature reference;
+		private EObject source;
+		private Integer index;
+		
+		public ReferenceInfo(EStructuralFeature reference){
+			this(reference, null);
+		}
+		
+		public ReferenceInfo(EStructuralFeature reference, Integer index){
+			this(reference, index, null);
+		}
+		
+		public ReferenceInfo(EStructuralFeature reference, Integer index, EObject source) {
+			this.reference = reference;
+			this.index = index;
+			this.source = source;
+		}
+		
+		public boolean hasSource() {
+			return source != null;
+		}
+		
+		public boolean hasInteger() {
+			return index != null;
+		}
+		
+		public EObject getSource() {
+			return source;
+		}
+		
+		public int getIndex() {
+			return index;
+		}
+		
+		public EStructuralFeature getReference() {
+			return reference;
+		}
+	}
+	
 }

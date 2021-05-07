@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.statechart.util;
 
 import java.math.BigInteger;
@@ -43,7 +53,6 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
 import hu.bme.mit.gamma.statechart.composite.AbstractSynchronousCompositeComponent;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousAdapter;
 import hu.bme.mit.gamma.statechart.composite.AsynchronousComponent;
@@ -118,7 +127,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	// Singleton
 	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
 	protected StatechartModelValidator() {
-		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
+		super.typeDeterminator2 = ExpressionTypeDeterminator.INSTANCE; // For state reference
 		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
 	}
 	//
@@ -611,7 +620,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (transition.getGuard() != null) {
 			Expression guard = transition.getGuard();
-			if (!typeDeterminator.isBoolean(guard)) {
+			if (!typeDeterminator2.isBoolean(guard)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This guard is not a boolean expression.",
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
@@ -1218,7 +1227,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
+		if (!typeDeterminator2.isInteger(timeSpecification.getValue())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Time values must be of type integer.",
 					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)));
@@ -1304,12 +1313,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 				ParameterDeclaration parameter = parameters.get(i);
 				Expression argument = instance.getArguments().get(i);
 				Type declarationType = parameter.getType();
-				ExpressionType argumentType = typeDeterminator.getType(argument);
-				if (!typeDeterminator.equals(declarationType, argumentType)) {
+				if (!typeDeterminator2.equalsType(declarationType, argument)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The types of the declaration and the right hand side expression are not the same: " +
-							typeDeterminator.transform(declarationType).toString().toLowerCase() + " and " +
-							argumentType.toString().toLowerCase() + ".",
+							typePrinter.print(declarationType) + " and " + typePrinter.print(argument),
 							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 				} 
 			}
@@ -1414,7 +1421,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<Port> ports = StatechartModelDerivedFeatures.getAllPorts(type);
 		if (!ports.contains(port)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"The specified port is not on instance " + instance.getName() + ".",
+					"The specified port is not on instance " + instance.getName(),
 					new ReferenceInfo(CompositeModelPackage.Literals.INSTANCE_PORT_REFERENCE__PORT)));
 		}
 		return validationResultMessages;
@@ -1569,8 +1576,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Interface requiredInterface = channel.getRequiredPort().getPort().getInterfaceRealization().getInterface();
 		if (providedInterface != requiredInterface) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"Ports connected with a channel must have the same interface! This is not realized in this case. The provided interface: " + providedInterface.getName() +
-					". The required interface: " + requiredInterface.getName() + ".", 
+				"Ports connected with a channel must have the same interface!"
+					+ "This is not realized in this case. The provided interface: " + providedInterface.getName() +
+						". The required interface: " + requiredInterface.getName(), 
 					new ReferenceInfo(CompositeModelPackage.Literals.SIMPLE_CHANNEL__REQUIRED_PORT)));
 		}
 		return validationResultMessages;
@@ -1595,8 +1603,9 @@ public class StatechartModelValidator extends ActionModelValidator {
 			Interface providedInterface = channel.getProvidedPort().getPort().getInterfaceRealization().getInterface();
 			if (providedInterface != requiredInterface) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-						"Ports connected with a broadcast channel must have the same interface! This is not realized in this case. The provided interface: "
-						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName() + ".", 
+						"Ports connected with a broadcast channel must have the same interface. "
+						+ "This is not realized in this case. The provided interface: "
+						+ providedInterface.getName() + ". The required interface: " + requiredInterface.getName(), 
 						new ReferenceInfo(CompositeModelPackage.Literals.BROADCAST_CHANNEL__REQUIRED_PORTS)));
 			}
 		}
@@ -1944,7 +1953,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		containedInstances.removeAll(cascade.getExecutionList());
 		if (!containedInstances.isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-					"The following instances are never executed: " + containedInstances.stream().map(it -> it.getName()).collect(Collectors.toSet()) + ".", 
+					"The following instances are never executed: " + containedInstances.stream().map(it -> it.getName()).collect(Collectors.toSet()), 
 					new ReferenceInfo(CompositeModelPackage.Literals.CASCADE_COMPOSITE_COMPONENT__EXECUTION_LIST)));
 		}
 		return validationResultMessages;
