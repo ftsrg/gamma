@@ -25,9 +25,9 @@ contains EMF and Xtext so only VIATRA and Yakindu need to be downloaded.
 	- _YAKINDU Statechart Tools Java Code Generator_ and
 	- _YAKINDU License Integration For Standard Edition_ subpackages.
 	
-Furthermore, it is necessary to setup the environment for the *PlantUML* visualization plugins located in the `vis` folder. The instructions are described in the README file of the folder.
+Furthermore, it is necessary to setup the environment for the *PlantUML* visualization plugins located in the [`vis`](plugins/vis) folder. The instructions are described in the README file of the folder.
 
-If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the `xsts` folder. The instructions are described in the README file of the folder.
+If you want to use the *XSTS* formalism for formal verification (via *Theta*) and code generation for standalone statecharts, you will have to setup the plugins located in the [`xsts`](plugins/xsts) folder. The instructions are described in the README file of the folder.
 
 If you want to use *UPPAAL* for formal verification, download and extract UPPAAL 4.1.24. In order to let Gamma find the UPPAAL executables, add the `bin-Win32` or `bin-Linux` folder to the path environment variable (depending on the operating system being used).
 
