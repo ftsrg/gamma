@@ -67,7 +67,8 @@ Supporters of the Gamma project:
 * [Új Nemzeti Kiválóság Program (ÚNKP) 2019-2020](http://unkp.gov.hu),
 * [Új Nemzeti Kiválóság Program (ÚNKP) 2020-2021](http://www.unkp.gov.hu/palyazatok/felsooktatasi-doktori-hallgatoi-doktorjelolti-kutatoi-osztondij/felsooktatasi-doktori),
 * [Emberi Erőforrás Fejlesztési Operatív Program (EFOP)](http://www.eit.bme.hu/news/20170927-palyazati-felhivas-szakmai-osztondij?language=en) (EFOP-3.6.2-16-2017-00013),
-* [NRDI Fund of Hungary](https://itea3.org/project/embrace.html) (2019-2.1.1-EUREKA-2019-00001 EMBrACE project).
+* [NRDI Fund of Hungary](https://itea3.org/project/embrace.html) (2019-2.1.1-EUREKA-2019-00001 EMBrACE project),
+* [EU ECSEL and NRDI Fund of Hungary](https://www.arrowhead.eu/arrowheadtools) (EU ECSEL 826452 and NRDI Fund 2019-2.1.3-NEMZ_ECSEL-2019-00003 Arrowhead Tools project).
 
 Special thanks to: 
 
