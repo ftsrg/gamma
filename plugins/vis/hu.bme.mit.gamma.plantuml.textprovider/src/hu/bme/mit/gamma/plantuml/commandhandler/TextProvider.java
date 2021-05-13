@@ -10,7 +10,9 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.plantuml.commandhandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,9 +20,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorInput;
@@ -36,15 +40,20 @@ import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import net.sourceforge.plantuml.eclipse.utils.DiagramTextProvider2;
-import net.sourceforge.plantuml.text.AbstractDiagramTextProvider;
+import net.sourceforge.plantuml.eclipse.utils.WorkbenchPartDiagramIntentProviderContext;
+import net.sourceforge.plantuml.text.AbstractDiagramIntentProvider;
+import net.sourceforge.plantuml.text.AbstractTextDiagramIntentProvider;
+import net.sourceforge.plantuml.util.AbstractDiagramIntent;
+import net.sourceforge.plantuml.util.DiagramIntent;
+import net.sourceforge.plantuml.util.DiagramIntentProvider;
 
-public class TextProvider extends AbstractDiagramTextProvider implements DiagramTextProvider2 {
+public class TextProvider extends AbstractDiagramIntentProvider{
 
 	private String plantumlModel;
 	private List<String> supportedExtensions = Arrays.asList("gcd", "get");
 
 	@Override
-	public boolean supportsSelection(ISelection sel) {
+	public Boolean supportsSelection(ISelection sel) {
 		if (sel instanceof IStructuredSelection) {
 			IStructuredSelection selection = (IStructuredSelection) sel;
 			if (selection.size() == 1) {
@@ -96,8 +105,40 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 			plantumlModel = transformer.execute();
 		}
 	}
-
+	
 	@Override
+	protected Collection<? extends DiagramIntent> getDiagramInfos(final WorkbenchPartDiagramIntentProviderContext context) {
+		if(context.getSelection() instanceof IStructuredSelection) {
+			IStructuredSelection selection = (IStructuredSelection) context.getSelection();
+			if(selection.size() == 1) {
+				if(selection.getFirstElement() instanceof IFile) {
+					IFile file = (IFile) selection.getFirstElement();
+					String fileExtension = file.getFileExtension();
+					if(fileExtension.equals("gcd")) {
+						IPath path = file.getFullPath();
+						getComponentPlantUMLCode(getResource(path));
+						GammaPlantUMLDiagramIntent gammaIntent = new GammaPlantUMLDiagramIntent(plantumlModel);
+						gammaIntent.setDiagramText(plantumlModel);
+						Collection<AbstractDiagramIntent<?>> diagrams = new ArrayList<>();
+						diagrams.add(gammaIntent);
+						return diagrams;
+					}
+					if(fileExtension.equals("get")) {
+						IPath path = file.getFullPath();
+						getTracePlantUMLCode(getResource(path));
+						GammaPlantUMLDiagramIntent gammaIntent = new GammaPlantUMLDiagramIntent(plantumlModel);
+						gammaIntent.setDiagramText(plantumlModel);
+						Collection<AbstractDiagramIntent<?>> diagrams = new ArrayList<>();
+						diagrams.add(gammaIntent);
+						return diagrams;
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
 	public String getDiagramText(IPath path) {
 		final String fileExtension = path.getFileExtension();
 		if (fileExtension.equals("gcd")) {
@@ -111,7 +152,6 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 		return null; // "" would prevent other visualizations (Java class diagram)
 	}
 
-	@Override
 	public String getDiagramText(IEditorPart editorPart, ISelection arg1, Map<String, Object> arg2) {
 		IEditorInput input = editorPart.getEditorInput();
 		IFile file = ResourceUtil.getFile(input);
@@ -121,9 +161,12 @@ public class TextProvider extends AbstractDiagramTextProvider implements Diagram
 		}
 		return null; // "" would prevent other visualizations (Java class diagram)
 	}
+	
+	
+
 
 	@Override
-	public boolean supportsPath(IPath arg0) {
+	public Boolean supportsPath(IPath arg0) {
 		return supportedExtensions.contains(arg0.getFileExtension());
 	}
 
