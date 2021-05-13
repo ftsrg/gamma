@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension point="org.eclipse.ui.commands">
+    <command id="hu.bme.mit.gamma.scenario.trace" name="Generate Command"/>
+  </extension>
+  <extension point="org.eclipse.ui.menus">
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu">
+		    <command commandId="hu.bme.mit.gamma.scenario.trace" label="Generate Trace" style="push">
+           	<visibleWhen checkEnabled="false">
+              <iterate ifEmpty="false" operator="or">
+                 <test property="org.eclipse.core.resources.name" value="*.gcd">
+                 </test>
+              </iterate>
+           	</visibleWhen>
+          </command>
+    </menuContribution>
+    <menuContribution allPopups="false" locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+    <menu label="Gamma Menu" id="gamma-menu-package">      	
+	   	<menu label="Gamma Submenu" id="gamma-submenu-package">
+		    <command commandId="hu.bme.mit.gamma.scenario.trace" label="Start Transformation" style="push">
+		    	<visibleWhen checkEnabled="false">
+	            	<iterate ifEmpty="false" operator="or">
+						<test property="org.eclipse.core.resources.name" value="*.gcd">
+					    </test>
+	    			</iterate>
+	            </visibleWhen>
+		    </command>
+	    </menu>
+      </menu>
+    </menuContribution>
+  </extension>
+  <extension point="org.eclipse.ui.handlers"> 
+  	<handler class="hu.bme.mit.gamma.scenario.trace.commandhandler.CommandHandler" commandId="hu.bme.mit.gamma.scenario.trace"/>
+  </extension>
+</plugin>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><plugin>
+  <extension id="hu.bme.mit.gamma.scenario.model.validation.ValidationPatterns" point="org.eclipse.viatra.query.runtime.queryspecification">
+    <group group="org.eclipse.viatra.query.runtime.extensibility.SingletonExtensionFactory:hu.bme.mit.gamma.scenario.model.validation.ValidationPatterns" id="hu.bme.mit.gamma.scenario.model.validation.ValidationPatterns">
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.portDoesNotRealizeInterface"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.eventDoesNotBelongToInterface"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.scenarioNamesAreNotUnique"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.mainchartDoesNotIncludeHotInteraction"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.scenariosAreTheSame"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.portCannotSendSignal"/>
+      <query-specification fqn="hu.bme.mit.gamma.scenario.model.validation.portCannotReceiveSignal"/>
+    </group>
+  </extension>
+</plugin>

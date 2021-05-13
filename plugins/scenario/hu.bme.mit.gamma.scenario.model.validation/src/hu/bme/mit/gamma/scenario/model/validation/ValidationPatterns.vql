@@ -1,0 +1,142 @@
+package hu.bme.mit.gamma.scenario.model.validation
+
+import "http://www.mit.bme.hu/gamma/scenario/Model"
+import "http://www.mit.bme.hu/gamma/expression/Model"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Interface"
+import "http://www.mit.bme.hu/gamma/statechart/Model/Statechart"
+
+// TODO checkFirstInteractionsModalityIsTheSame
+// TODO combinedFragmentsDoNotContainRedundantFragments
+// TODO everyPairwiseContinuationHaveTheSameModality
+// these patterns cannot be expressed by IncQuery, thus their Java/Xtend implementations should be used instead
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Port does not realizes interface", severity = "error", key = {
+	port, interface })
+pattern portDoesNotRealizeInterface(port : Port, interface : Interface) {
+	neg find portRealizesInterfaceWithMode(port, interface, _);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Event does not belong to interface", severity = "error", key = {
+	event, interface })
+pattern eventDoesNotBelongToInterface(event : Event, interface : Interface) {
+	neg find interfaceHasEvent(interface, event);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Scenario names are not unique", severity = "error", key = {
+	scenario1, scenario2 })
+pattern
+scenarioNamesAreNotUnique(scenario1 : ScenarioDefinition, scenario2 : ScenarioDefinition) {
+	find scenarioInDeclaration(scenario1, declaration);
+	find scenarioInDeclaration(scenario2, declaration);
+	ScenarioDefinition.name(scenario1, name);
+	ScenarioDefinition.name(scenario2, name);
+	scenario1 != scenario2;
+}
+
+
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Chart should contain at least one hot interaction", severity = "error", key = {
+	mainchart })
+pattern mainchartDoesNotIncludeHotInteraction(mainchart : Chart) {
+	neg find thereIsAHotInteractionInChart(mainchart, _);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Scenario definitions are the same (except from their name)", severity = "error", key = {
+	scenario1, scenario2 })
+pattern
+scenariosAreTheSame(scenario1 : ScenarioDefinition, scenario2 : ScenarioDefinition) {
+	ScenarioDefinition.chart(scenario1, chart);
+	ScenarioDefinition.chart(scenario2, chart);
+
+	ScenarioDefinition.name(scenario1, name1);
+	ScenarioDefinition.name(scenario2, name2);
+	name1 != name2;
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Port cannot send signal", severity = "error", key = {
+	port, signal })
+pattern portCannotSendSignal(port : Port, signal : Signal) {
+	find
+	signalEventInterfaceAndDirection(signal, _, _, InteractionDirection::SEND);
+	find
+	interfaceRealizationAndEventDirectionAreCorrect(port, signal, RealizationMode::PROVIDED, EventDirection::IN);
+} or {
+	find
+	signalEventInterfaceAndDirection(signal, _, _, InteractionDirection::SEND);
+	find
+	interfaceRealizationAndEventDirectionAreCorrect(port, signal, RealizationMode::REQUIRED, EventDirection::OUT);
+}
+
+@Constraint(targetEditorId = "hu.bme.mit.gamma.scenario.model.presentation.ScenarioModelEditorID", message = "Port cannot receive signal", severity = "error", key = {
+	port, signal })
+pattern
+portCannotReceiveSignal(port : Port, signal : Signal) {
+	find
+	signalEventInterfaceAndDirection(signal, _, _, InteractionDirection::RECEIVE);
+	find
+	interfaceRealizationAndEventDirectionAreCorrect(port, signal, RealizationMode::PROVIDED, EventDirection::OUT);
+} or {
+	find
+	signalEventInterfaceAndDirection(signal, _, _, InteractionDirection::RECEIVE);
+	find
+	interfaceRealizationAndEventDirectionAreCorrect(port, signal, RealizationMode::REQUIRED, EventDirection::IN);
+}
+
+private pattern
+interfaceRealizationAndEventDirectionAreCorrect(port : Port, signal : Signal, mode : RealizationMode, eventDirection : EventDirection) {
+	find portRealizesInterfaceWithMode(port, interface, mode);
+	find signalEventInterfaceAndDirection(signal, event, interface, _);
+	Interface.events(interface, eventDeclaration);
+	EventDeclaration.event(eventDeclaration, event);
+	EventDeclaration.direction(eventDeclaration, eventDirection);
+}
+
+private pattern
+signalEventInterfaceAndDirection(signal : Signal, event : Event, interface : Interface, direction : InteractionDirection) {
+	Signal.port.interfaceRealization.interface(signal, interface);
+	Signal.event(signal, event);
+	Signal.direction(signal, direction);
+}
+
+private pattern
+portRealizesInterfaceWithMode(port : Port, interface : Interface, mode : RealizationMode) {
+	Port.interfaceRealization(port, realization);
+	InterfaceRealization.interface(realization, interface);
+	InterfaceRealization.realizationMode(realization, mode);
+}
+
+private pattern
+scenarioInDeclaration(scenario : ScenarioDefinition, declaration : ScenarioDeclaration) {
+	ScenarioDeclaration.scenarios(declaration, scenario);
+}
+
+private pattern interfaceHasEvent(interface : Interface, event : Event) {
+	Interface.events(interface, declaration);
+	EventDeclaration.event(declaration, event);
+}
+
+private pattern
+thereIsAHotInteractionInChart(chart : Chart, interaction : ModalInteraction) {
+	Chart.fragment(chart, fragment);
+	find
+	fragmentContainsInteractionWithModality(fragment, interaction, ModalityType::HOT);
+}
+
+private pattern
+fragmentContainsInteractionWithModality(ancestor : InteractionFragment, interaction : ModalInteraction, modality : ModalityType) {
+	find hasModalInteraction(ancestor, interaction, modality);
+} or {
+	find containsFragment +(ancestor, parent);
+	find hasModalInteraction(parent, interaction, modality);
+}
+
+private pattern
+containsFragment(parent : InteractionFragment, child : InteractionFragment) {
+	InteractionFragment.interactions(parent, interaction);
+	CombinedFragment.fragments(interaction, child);
+}
+
+private pattern
+hasModalInteraction(fragment : InteractionFragment, interaction : ModalInteraction, modality : ModalityType) {
+	InteractionFragment.interactions(fragment, interaction);
+	ModalInteraction.modality(interaction, modality);
+}

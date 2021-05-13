@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Simplify
+Bundle-SymbolicName: hu.bme.mit.gamma.scenario.reduction
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: hu.bme.mit.gamma.scenario.simplify
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: hu.bme.mit.gamma.scenario.model;bundle-version="2.3.1"
+Export-Package: hu.bme.mit.gamma.scenario.reduction
