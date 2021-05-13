@@ -128,7 +128,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		ProcedureDeclaration containingProcedure = ecoreUtil.getContainerOfType(rs, ProcedureDeclaration.class);
 		Type containingProcedureType = null;
 		if (containingProcedure != null) {
-			containingProcedureType = typeDeterminator.removeTypeReferences(containingProcedure.getType());
+			containingProcedureType = containingProcedure.getType();
 		}
 		if (!typeDeterminator.equalsType(containingProcedureType, rs.getExpression())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,

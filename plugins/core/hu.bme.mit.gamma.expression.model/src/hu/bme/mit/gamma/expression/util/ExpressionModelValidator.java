@@ -246,19 +246,20 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkArrayAccessExpression(ArrayAccessExpression expression) {
-		// check if the referred declaration is accessible
-		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!(referredDeclaration instanceof ValueDeclaration)) {
+		Expression operand = expression.getOperand();
+		TypeDefinition typeDefinition = typeDeterminator.getTypeDefinition(operand);
+		if (!(typeDefinition instanceof ArrayTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The referred declaration is not accessible as an array!", 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
+					"The accessed operand is not of type array", 
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			return validationResultMessages;
 		}
+		ArrayTypeDefinition type = (ArrayTypeDefinition) typeDefinition;
 		// check if the argument expression can be evaluated as integer
 		if (!typeDeterminator.isInteger(expression.getIndex())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The index of the accessed element must be of type integer!", 
+					"The index of the accessed element must be of type integer", 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 			
 		}
@@ -267,10 +268,10 @@ public class ExpressionModelValidator {
 			try {
 				// check index and size
 				int index = expressionEvaluator.evaluateInteger(expression.getIndex());
-				int size = expressionEvaluator.evaluateInteger(((ArrayTypeDefinition) referredDeclaration.getType()).getSize()); 
+				int size = expressionEvaluator.evaluateInteger(type.getSize()); 
 				if (index >= size || index < 0) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"Index out of bounds!", 
+							"Index out of bounds with index " + index + " to size " + size, 
 							new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_ACCESS_EXPRESSION__INDEX)));
 				}
 			} catch (Exception exception) {
@@ -292,7 +293,8 @@ public class ExpressionModelValidator {
 				return validationResultMessages;
 			}
 		}
-		if (!(typeDeterminator.getType(expression.getOperand()) instanceof IntegerLiteralExpression || typeDeterminator.getType(expression.getOperand()) instanceof IntegerRangeTypeDefinition)) {
+		if (!(typeDeterminator.getType(expression.getOperand()) instanceof IntegerLiteralExpression ||
+				typeDeterminator.getType(expression.getOperand()) instanceof IntegerRangeTypeDefinition)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"The specified object is not selectable! This type is: " + typeDeterminator.print(expression.getOperand()), 
 					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
@@ -517,18 +519,18 @@ public class ExpressionModelValidator {
 				if (arrayType != null) {	
 					if (initialExpression instanceof ArrayLiteralExpression) {
 						ArrayLiteralExpression rhs = (ArrayLiteralExpression) initialExpression;
-						Type elementType = typeDeterminator.removeTypeReferences(arrayType.getElementType());
-						for (Expression e : rhs.getOperands()) {
-							if (!typeDeterminator.equals(elementType, typeDeterminator.getType(e))) {
+						Type elementType = arrayType.getElementType();
+						for (Expression element : rhs.getOperands()) {
+							if (!typeDeterminator.equals(elementType, typeDeterminator.getType(element))) {
 								validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-										"The elements on the right hand side must be of the declared type of the array.", 
+									"The elements on the right hand side must be of the declared type of the array.", 
 										new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 							}
 						}
 						// Array size must equal with number of array literal's elements
 						if (rhs.getOperands().size() != expressionEvaluator.evaluateInteger(arrayType.getSize())) {
 							validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-									"The number of the elements on the right hand side must be equal then the size of the array.",
+								"The number of the elements on the right hand side must be equal to the size of the array.",
 									new ReferenceInfo(ExpressionModelPackage.Literals.INITIALIZABLE_ELEMENT__EXPRESSION)));
 						}						
 					}

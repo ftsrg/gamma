@@ -79,6 +79,8 @@ public class ExpressionModelDerivedFeatures {
 				.anyMatch(it -> it instanceof ResetableVariableDeclarationAnnotation);
 	}
 	
+	// Types
+	
 	public static boolean isPrimitive(Type type) {
 		TypeDefinition typeDefinition = getTypeDefinition(type);
 		return typeDefinition instanceof BooleanTypeDefinition || typeDefinition instanceof IntegerTypeDefinition ||
@@ -136,6 +138,26 @@ public class ExpressionModelDerivedFeatures {
 		}
 		return declaration;
 	}
+	
+	// Type references
+	
+	public static boolean refersToAnAlias(TypeReference typeReference) {
+		TypeDeclaration typeDeclaration = typeReference.getReference();
+		Type type = typeDeclaration.getType();
+		return type instanceof TypeReference;
+	}
+	
+	public static TypeReference getFinalTypeReference(TypeReference typeReference) {
+		if (refersToAnAlias(typeReference)) {
+			TypeDeclaration typeDeclaration = typeReference.getReference();
+			Type type = typeDeclaration.getType();
+			TypeReference aliasReference = (TypeReference) type;
+			return getFinalTypeReference(aliasReference);
+		}
+		return typeReference;
+	}
+	
+	//
 	
 	public static Expression getDefaultExpression(Type type) {
 		return expressionUtil.getInitialValueOfType(type);

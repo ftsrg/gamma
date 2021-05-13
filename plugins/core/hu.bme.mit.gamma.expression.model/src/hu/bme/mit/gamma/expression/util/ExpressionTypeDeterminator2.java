@@ -103,10 +103,11 @@ public class ExpressionTypeDeterminator2 {
 			TypeReference typeReference = factory.createTypeReference();
 			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) expression;
 			typeReference.setReference(recordLiteralExpression.getTypeDeclaration());
-			return typeReference;
+			return getAliaslessTypeTree(typeReference);
 		}
 		if (expression instanceof ArrayLiteralExpression) {
-			List<Expression> operands = ((ArrayLiteralExpression) expression).getOperands();
+			ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) expression;
+			List<Expression> operands = arrayLiteralExpression.getOperands();
 			if (operands.isEmpty()) {
 				// Maybe this should be changed to VoidTypeDefinition, as empty array literals could be useful
 				throw new IllegalArgumentException();
@@ -165,10 +166,15 @@ public class ExpressionTypeDeterminator2 {
 			return getArithmeticMultiaryType((MultiplyExpression) expression);
 		}
 		if (expression instanceof ArrayAccessExpression) {
-			Expression tmpExpression = ((ArrayAccessExpression) expression).getOperand();
-			Type declarationType = expressionUtil.getDeclaration(tmpExpression).getType();
-			if (declarationType instanceof ArrayTypeDefinition) {
-				return ((ArrayTypeDefinition) declarationType).getElementType();
+			ArrayAccessExpression arrayAccessExpression = (ArrayAccessExpression) expression;
+			Expression operand = arrayAccessExpression.getOperand();
+			Type type = getTypeDefinition(operand);
+			if (type instanceof ArrayTypeDefinition) {
+				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) type;
+				return arrayTypeDefinition.getElementType();
+			}
+			else {
+				throw new IllegalArgumentException("Not known type: " + type);
 			}
 		}
 		if (expression instanceof FunctionAccessExpression) {
@@ -186,23 +192,23 @@ public class ExpressionTypeDeterminator2 {
 			return getType(recordAccessExpression.getFieldReference());
 		}
 		if (expression instanceof SelectExpression) {
-			Expression tmpExpression = ((SelectExpression) expression).getOperand();
-			Type declarationType = expressionUtil.getDeclaration(tmpExpression).getType();
-			TypeDefinition typeDefinition = removeTypeReferences(declarationType);
+			SelectExpression selectExpression = (SelectExpression) expression;
+			Expression operand = selectExpression.getOperand();
+			Type operandType = getType(operand);
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
 			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
-				return removeTypeReferences(arrayTypeDefinition.getElementType());
+				return getAliaslessTypeTree(arrayTypeDefinition.getElementType());
 			}
 			else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
 				return factory.createIntegerTypeDefinition();
 			}
 			else if (typeDefinition instanceof EnumerationTypeDefinition) {
-				return typeDefinition;
+				return operandType;
 			}
 			else {
 				throw new IllegalArgumentException(
-					"The type of the operand of the select expression is not an enumerable type: " +
-						expressionUtil.getDeclaration(expression));
+					"The type of the operand of the select expression is not an enumerable type: " + typeDefinition);
 			}
 		}
 		// Some expressions are expected to return an empty value, for example:
@@ -213,30 +219,35 @@ public class ExpressionTypeDeterminator2 {
 		throw new IllegalArgumentException("Unknown type: " + expression);
 	}
 	
-	// TypeReference
-	
-	public TypeDefinition removeTypeReferences(Type type) {
-		TypeDefinition cloneTypeDefinition = null;
-		try {
-			cloneTypeDefinition = ecoreUtil.clone(ExpressionModelDerivedFeatures.getTypeDefinition(type));
-		} catch (IllegalArgumentException e) {
-			return null; // During parsing, there can be null typeDefinitions
-		}
-		List<TypeReference> typeReferences = ecoreUtil.getAllContentsOfType(cloneTypeDefinition, TypeReference.class);
-		while (!typeReferences.isEmpty()) {
-			for (TypeReference reference : typeReferences) {
-				TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(reference);
-				TypeDefinition tmpDef = ecoreUtil.clone(typeDefinition);
-				ecoreUtil.replace(tmpDef, reference);
-			}
-			// By inlining type references, new contained elements appear that have to be checked too
-			typeReferences = ecoreUtil.getAllContentsOfType(cloneTypeDefinition, TypeReference.class);
-		}
-		return cloneTypeDefinition;
+	public TypeDefinition getTypeDefinition(Expression expression) {
+		return ExpressionModelDerivedFeatures.getTypeDefinition(getType(expression));
 	}
 	
-	public TypeDefinition getTypeDefinition(Expression expression) {
-	    return removeTypeReferences(getType(expression));
+	// TypeReference handling auxiliary methods
+	
+	private Type getAliaslessTypeTree(Type type) {
+		if (type instanceof TypeReference) {
+			TypeReference finalTypeReference = ExpressionModelDerivedFeatures.getFinalTypeReference(
+					(TypeReference) type);
+			TypeReference clonedFinalTypeReference = ecoreUtil.clone(finalTypeReference);
+			TypeDeclaration typeDeclaration = finalTypeReference.getReference();
+			Type typeDefinition = typeDeclaration.getType();
+			if (typeDefinition instanceof EnumerationTypeDefinition) {
+				return clonedFinalTypeReference; // Optimization: enums do not have to be cloned
+			}
+			TypeDeclaration clonedTypeDeclaration = ecoreUtil.clone(typeDeclaration);
+			clonedFinalTypeReference.setReference(clonedTypeDeclaration);
+			Type clonedType = clonedTypeDeclaration.getType();
+			clonedTypeDeclaration.setType(getAliaslessTypeTree(clonedType));
+			return clonedFinalTypeReference;
+		}
+		Type clonedType = ecoreUtil.clone(type); // type instanceof TypeDefinition
+		List<TypeReference> typeReferences = ecoreUtil.getAllContentsOfType(clonedType, TypeReference.class);
+		for (TypeReference reference : typeReferences) {
+			Type clonedFinalTypeReference = getAliaslessTypeTree(reference);
+			ecoreUtil.replace(clonedFinalTypeReference, reference);
+		}
+		return clonedType;
 	}
 	
 	// Equals
@@ -253,8 +264,8 @@ public class ExpressionTypeDeterminator2 {
 	}
 	
 	public boolean equals(Type typeOne, Type typeTwo) {
-		Type typeOneRemovedReferences = removeTypeReferences(typeOne);
-		Type typeTwoRemovedReferences = removeTypeReferences(typeTwo);
+		Type typeOneRemovedReferences = getAliaslessTypeTree(typeOne);
+		Type typeTwoRemovedReferences = getAliaslessTypeTree(typeTwo);
 		return ecoreUtil.helperEquals(typeOneRemovedReferences, typeTwoRemovedReferences);
 	}
 	
@@ -268,10 +279,12 @@ public class ExpressionTypeDeterminator2 {
 			throw new IllegalArgumentException("Type is not suitable for arithmetic operations: " + collection);
 		}
 		// All types are numbers
-		if (collection.stream().anyMatch(it -> removeTypeReferences(it) instanceof DecimalTypeDefinition)) {
+		if (collection.stream().anyMatch(it ->
+				ExpressionModelDerivedFeatures.getTypeDefinition(it) instanceof DecimalTypeDefinition)) {
 			return factory.createDecimalTypeDefinition();
 		}
-		if (collection.stream().anyMatch(it -> removeTypeReferences(it) instanceof RationalLiteralExpression)) {
+		if (collection.stream().anyMatch(it ->
+				ExpressionModelDerivedFeatures.getTypeDefinition(it) instanceof RationalLiteralExpression)) {
 			return factory.createRationalTypeDefinition();
 		}
 		return factory.createIntegerTypeDefinition();
@@ -314,7 +327,7 @@ public class ExpressionTypeDeterminator2 {
 	
 	// Multiary
 	
-	// Add and multiply.
+	// Add and multiply
 	
 	private <T extends ArithmeticExpression & MultiaryExpression> Type getArithmeticMultiaryType(T expression) {
 		Collection<Type> types = expression.getOperands().stream()
@@ -322,25 +335,25 @@ public class ExpressionTypeDeterminator2 {
 		return getArithmeticType(types);
 	}
 	
-	// Type is number.
+	// Type is number
 	
 	private boolean isNumber(Type type) {
-		return removeTypeReferences(type) instanceof DecimalTypeDefinition ||
-				removeTypeReferences(type) instanceof IntegerTypeDefinition ||
-				removeTypeReferences(type) instanceof RationalTypeDefinition;
+		return ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof DecimalTypeDefinition ||
+				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition ||
+				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof RationalTypeDefinition;
 	}
 	
 	public boolean isNumber(Expression expression) {
 		return isNumber(getType(expression));
 	}
 	
-	// Type is boolean.
+	// Type is boolean
 	
 	public boolean isBoolean(Expression expression) {
 		return getTypeDefinition(expression) instanceof BooleanTypeDefinition;
 	}
 	
-	// Type is integer.
+	// Type is integer
 	
 	public boolean isInteger(Expression expression) {
 		return getTypeDefinition(expression) instanceof IntegerTypeDefinition;
@@ -383,8 +396,11 @@ public class ExpressionTypeDeterminator2 {
 			return "RECORD, with fields: " + fieldsNames;
 		}
 		if (type instanceof EnumerationTypeDefinition) {
-			String name = ExpressionModelDerivedFeatures.getTypeDeclaration(type).getName();
-			return "ENUMERATION, name of enumeration: " + name;
+			EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
+			String literalNames = enumerationTypeDefinition.getLiterals().stream()
+					.map(it -> it.getName())
+					.reduce((lhs, rhs) -> lhs + ", " + rhs).orElse("");
+			return "ENUMERATION, with literals: " + literalNames;
 		}
 		if (type instanceof VoidTypeDefinition) {
 			return "VOID";
@@ -393,7 +409,7 @@ public class ExpressionTypeDeterminator2 {
 			TypeReference typeReference = (TypeReference) type;
 			TypeDeclaration reference = typeReference.getReference();
 			Type referenceType = reference.getType();
-			return print(referenceType);
+			return reference.getName() + ": " + print(referenceType);
 		}
 		return "Unknown type: " + type; // During parsing, there can be null typeDefinitions
 	}
