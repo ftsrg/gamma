@@ -251,7 +251,7 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator2.isInteger(timeSpecification.getValue())) {
+		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Time values must be of type integer.",
 					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)));
@@ -414,13 +414,15 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (StatechartCompilation statechartCompilationTask :
 				javaUtil.filter(genmodel.getTasks(), StatechartCompilation.class)) {
 			for (InterfaceMapping interfaceMapping : statechartCompilationTask.getInterfaceMappings()) {
-				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(interfaceMapping.getGammaInterface());
+				Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
+						interfaceMapping.getGammaInterface());
 				packageImports.remove(parentPackage);
 			}
 		}
 		for (EventPriorityTransformation eventPriorityTransformationTask :
 				javaUtil.filter(genmodel.getTasks(), EventPriorityTransformation.class)) {
-			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(eventPriorityTransformationTask.getStatechart());
+			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
+					eventPriorityTransformationTask.getStatechart());
 			packageImports.remove(parentPackage);
 		}
 		for (AdaptiveContractTestGeneration adaptiveContractTestGenerationTask :
@@ -429,7 +431,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		}
 		for (PhaseStatechartGeneration phaseStatechartGenerationTask :
 				javaUtil.filter(genmodel.getTasks(), PhaseStatechartGeneration.class)) {
-			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(phaseStatechartGenerationTask.getStatechart());
+			Package parentPackage = StatechartModelDerivedFeatures.getContainingPackage(
+					phaseStatechartGenerationTask.getStatechart());
 			packageImports.remove(parentPackage);
 		}
 		for (Package packageImport : packageImports) {
@@ -465,7 +468,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkYakinduImports(GenModel genmodel) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		Set<Statechart> statechartImports = genmodel.getStatechartImports().stream().collect(Collectors.toSet());
-		for (YakinduCompilation statechartCompilationTask : javaUtil.filter(genmodel.getTasks(), YakinduCompilation.class)) {
+		for (YakinduCompilation statechartCompilationTask : javaUtil.filter(
+				genmodel.getTasks(), YakinduCompilation.class)) {
 			statechartImports.remove(statechartCompilationTask.getStatechart());
 		}
 		for (Statechart statechartImport : statechartImports) {
@@ -483,7 +487,8 @@ public class GenmodelValidator extends ExpressionModelValidator {
 		for (TestGeneration testGenerationTask : javaUtil.filter(genmodel.getTasks(), TestGeneration.class)) {
 			traceImports.remove(testGenerationTask.getExecutionTrace());
 		}
-		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filter(genmodel.getTasks(), TestReplayModelGeneration.class)) {
+		for (TestReplayModelGeneration testReplayModelGeneration : javaUtil.filter(
+				genmodel.getTasks(), TestReplayModelGeneration.class)) {
 			traceImports.remove(testReplayModelGeneration.getExecutionTrace());
 		}
 		for (ExecutionTrace traceImport : traceImports) {
@@ -518,10 +523,10 @@ public class GenmodelValidator extends ExpressionModelValidator {
 					ParameterDeclaration parameter = parameters.get(i);
 					Expression argument = modelReference.getArguments().get(i);
 					Type declarationType = parameter.getType();
-					if (!typeDeterminator2.equalsType(declarationType, argument)) {
+					if (!typeDeterminator.equalsType(declarationType, argument)) {
 						validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
-								"The types of the declaration and the right hand side expression are not the same: " +
-								typePrinter.print(declarationType) + " and " + typePrinter.print(argument),
+							"The types of the declaration and the right hand side expression are not the same: " +
+								typeDeterminator.print(declarationType) + " and " + typeDeterminator.print(argument),
 								new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 					} 
 				}

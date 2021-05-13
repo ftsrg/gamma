@@ -29,7 +29,7 @@ public class PropertyModelValidator extends StatechartModelValidator {
 	// Singleton
 	public static final PropertyModelValidator INSTANCE = new PropertyModelValidator();
 	protected PropertyModelValidator() {
-		super.typeDeterminator2 = ExpressionTypeDeterminator.INSTANCE;
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE;
 	}
 	//
 	

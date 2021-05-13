@@ -82,7 +82,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		if (declaration instanceof ConstantDeclaration) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 				"Constants cannot be assigned new values.",
-				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS, null)));
+				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
 		}
 		
 		// Other assignment type checking
@@ -115,7 +115,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				if (name.equals(newName)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", 
-							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION,null)));
+							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION)));
 				}
 			}
 		}
@@ -128,14 +128,14 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		ProcedureDeclaration containingProcedure = ecoreUtil.getContainerOfType(rs, ProcedureDeclaration.class);
 		Type containingProcedureType = null;
 		if (containingProcedure != null) {
-			containingProcedureType = typeDeterminator2.removeTypeReferences(containingProcedure.getType());
+			containingProcedureType = typeDeterminator.removeTypeReferences(containingProcedure.getType());
 		}
-		if (!typeDeterminator2.equalsType(containingProcedureType, rs.getExpression())) {
+		if (!typeDeterminator.equalsType(containingProcedureType, rs.getExpression())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The type of the return statement (" + typePrinter.print(rs.getExpression())
+				"The type of the return statement (" + typeDeterminator.print(rs.getExpression())
 					+ ") does not match the declared type of the procedure (" 
-					+ typePrinter.print(containingProcedureType) + ").",
-					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION, null)));
+					+ typeDeterminator.print(containingProcedureType) + ")",
+					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION)));
 		}
 		return validationResultMessages;
 	}
@@ -145,7 +145,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Currently return statements must be final actions in every possible path.",
-					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY, null)));
+					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY)));
 		}
 		return validationResultMessages;
 	}
@@ -165,7 +165,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		if (block.getActions().isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
 					"The block is empty!",
-					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));
+					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS)));
 		}
 		return validationResultMessages;
 	}

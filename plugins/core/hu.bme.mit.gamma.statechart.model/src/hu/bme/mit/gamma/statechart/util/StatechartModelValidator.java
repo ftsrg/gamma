@@ -127,7 +127,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	// Singleton
 	public static final StatechartModelValidator INSTANCE = new StatechartModelValidator();
 	protected StatechartModelValidator() {
-		super.typeDeterminator2 = ExpressionTypeDeterminator.INSTANCE; // For state reference
+		super.typeDeterminator = ExpressionTypeDeterminator.INSTANCE; // For state reference
 		super.expressionUtil = StatechartUtil.INSTANCE; // For getDeclaration
 	}
 	//
@@ -620,7 +620,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (transition.getGuard() != null) {
 			Expression guard = transition.getGuard();
-			if (!typeDeterminator2.isBoolean(guard)) {
+			if (!typeDeterminator.isBoolean(guard)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 						"This guard is not a boolean expression.",
 						new ReferenceInfo(StatechartModelPackage.Literals.TRANSITION__GUARD)));
@@ -1227,7 +1227,7 @@ public class StatechartModelValidator extends ActionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkTimeSpecification(TimeSpecification timeSpecification) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		if (!typeDeterminator2.isInteger(timeSpecification.getValue())) {
+		if (!typeDeterminator.isInteger(timeSpecification.getValue())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 					"Time values must be of type integer.",
 					new ReferenceInfo(InterfaceModelPackage.Literals.TIME_SPECIFICATION__VALUE)));
@@ -1313,10 +1313,10 @@ public class StatechartModelValidator extends ActionModelValidator {
 				ParameterDeclaration parameter = parameters.get(i);
 				Expression argument = instance.getArguments().get(i);
 				Type declarationType = parameter.getType();
-				if (!typeDeterminator2.equalsType(declarationType, argument)) {
+				if (!typeDeterminator.equalsType(declarationType, argument)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 
 							"The types of the declaration and the right hand side expression are not the same: " +
-							typePrinter.print(declarationType) + " and " + typePrinter.print(argument),
+							typeDeterminator.print(declarationType) + " and " + typeDeterminator.print(argument),
 							new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 				} 
 			}
