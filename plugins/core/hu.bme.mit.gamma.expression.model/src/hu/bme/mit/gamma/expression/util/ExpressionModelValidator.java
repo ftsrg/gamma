@@ -309,7 +309,7 @@ public class ExpressionModelValidator {
 		if (container instanceof Expression) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
 					"Else expressions must not be contained by composite expressions.", 
-					new ReferenceInfo(expression.eContainingFeature())));
+					new ReferenceInfo(expression.eContainingFeature(), null, expression.eContainer())));
 		}
 		return validationResultMessages;
 	}

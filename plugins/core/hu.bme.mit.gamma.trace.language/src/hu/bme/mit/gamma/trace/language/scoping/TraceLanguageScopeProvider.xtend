@@ -34,12 +34,6 @@ import org.eclipse.xtext.scoping.Scopes
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 
 	new() {

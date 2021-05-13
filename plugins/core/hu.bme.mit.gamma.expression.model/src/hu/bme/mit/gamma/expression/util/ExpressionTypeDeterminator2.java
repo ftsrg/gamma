@@ -103,7 +103,7 @@ public class ExpressionTypeDeterminator2 {
 			TypeReference typeReference = factory.createTypeReference();
 			RecordLiteralExpression recordLiteralExpression = (RecordLiteralExpression) expression;
 			typeReference.setReference(recordLiteralExpression.getTypeDeclaration());
-			return getAliaslessTypeTree(typeReference);
+			return typeReference;
 		}
 		if (expression instanceof ArrayLiteralExpression) {
 			ArrayLiteralExpression arrayLiteralExpression = (ArrayLiteralExpression) expression;
@@ -171,7 +171,7 @@ public class ExpressionTypeDeterminator2 {
 			Type type = getTypeDefinition(operand);
 			if (type instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) type;
-				return arrayTypeDefinition.getElementType();
+				return ecoreUtil.clone(arrayTypeDefinition.getElementType());
 			}
 			else {
 				throw new IllegalArgumentException("Not known type: " + type);
@@ -198,7 +198,7 @@ public class ExpressionTypeDeterminator2 {
 			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(operandType);
 			if (typeDefinition instanceof ArrayTypeDefinition) {
 				ArrayTypeDefinition arrayTypeDefinition = (ArrayTypeDefinition) typeDefinition;
-				return getAliaslessTypeTree(arrayTypeDefinition.getElementType());
+				return ecoreUtil.clone(arrayTypeDefinition.getElementType());
 			}
 			else if (typeDefinition instanceof IntegerRangeTypeDefinition) {
 				return factory.createIntegerTypeDefinition();
@@ -292,7 +292,7 @@ public class ExpressionTypeDeterminator2 {
 	
 	// Unary
 	
-	// Unary plus and minus.
+	// Unary plus and minus
 	
 	private <T extends ArithmeticExpression & UnaryExpression> Type getArithmeticUnaryType(T expression) {
 		Type type = getType(expression.getOperand());
@@ -305,7 +305,7 @@ public class ExpressionTypeDeterminator2 {
 	
 	// Binary
 	
-	// Subtract and divide.
+	// Subtract and divide
 	
 	private <T extends ArithmeticExpression & BinaryExpression> Type getArithmeticBinaryType(T expression) {
 		List<Type> types = new ArrayList<Type>();
@@ -338,9 +338,14 @@ public class ExpressionTypeDeterminator2 {
 	// Type is number
 	
 	private boolean isNumber(Type type) {
-		return ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof DecimalTypeDefinition ||
-				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof IntegerTypeDefinition ||
-				ExpressionModelDerivedFeatures.getTypeDefinition(type) instanceof RationalTypeDefinition;
+		try {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			return typeDefinition instanceof DecimalTypeDefinition ||
+				typeDefinition instanceof IntegerTypeDefinition ||
+				typeDefinition instanceof RationalTypeDefinition;
+		} catch (IllegalArgumentException e ) {
+			return false; // Might be the result of inconsistent Xtext type reference (reference is null)
+		}
 	}
 	
 	public boolean isNumber(Expression expression) {

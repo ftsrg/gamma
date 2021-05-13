@@ -76,13 +76,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartModelPackage;
 import hu.bme.mit.gamma.statechart.statechart.Transition;
 import hu.bme.mit.gamma.statechart.util.StatechartUtil;
 
-/**
- * This class contains custom scoping description.
- *
- * See
- * https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageScopeProvider {
 
 	public StatechartLanguageScopeProvider() {
@@ -157,10 +150,18 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 			}
 			if (context instanceof EnumerationLiteralExpression && 
 					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-				Package root = (Package) EcoreUtil2.getRootContainer(context, true);
-				Collection<EnumerationLiteralDefinition> enumLiterals = EcoreUtil2.getAllContentsOfType(root, EnumerationLiteralDefinition.class);
+				// Getting literals only from the exact enumeration type
+				IScope parentScope = super.getScope(context, reference);
+				if (!parentScope.equals(IScope.NULLSCOPE)) {
+					return parentScope;
+				}
+				// Getting all global enumeration types (could be filtered to raise event actions first)
+				Package root = StatechartModelDerivedFeatures.getContainingPackage(context);
+				Collection<EnumerationLiteralDefinition> enumLiterals = ecoreUtil.getAllContentsOfType(
+						root, EnumerationLiteralDefinition.class);
 				for (Package imported : root.getImports()) {
-					enumLiterals.addAll(EcoreUtil2.getAllContentsOfType(imported, EnumerationLiteralDefinition.class));
+					enumLiterals.addAll(ecoreUtil.getAllContentsOfType(
+							imported, EnumerationLiteralDefinition.class));
 				}
 				return Scopes.scopeFor(enumLiterals);
 			}

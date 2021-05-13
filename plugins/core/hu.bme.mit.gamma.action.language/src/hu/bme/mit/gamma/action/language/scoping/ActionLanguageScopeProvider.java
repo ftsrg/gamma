@@ -29,6 +29,7 @@ import hu.bme.mit.gamma.expression.model.ArrayAccessExpression;
 import hu.bme.mit.gamma.expression.model.ArrayTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Declaration;
 import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
+import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition;
 import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
 import hu.bme.mit.gamma.expression.model.FieldDeclaration;
@@ -40,15 +41,11 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProvider {
 
-	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
+	public ActionLanguageScopeProvider() {
+		super.util = ActionUtil.INSTANCE;
+	}
 	
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {
@@ -79,6 +76,19 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 				return Scopes.scopeFor(List.of(forStatement.getParameter()), parentScope);
 			}
 			return parentScope;
+		}
+		// Enums
+		if (reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
+			ActionUtil actionUtil = (ActionUtil) util;
+			Declaration declaration = actionUtil.getLhsDeclaration(context);
+			if (declaration != null) {
+				TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(declaration.getType());
+				if (type instanceof EnumerationTypeDefinition) {
+					EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
+					return Scopes.scopeFor(enumerationTypeDefinition.getLiterals());
+				}
+			}
+			return IScope.NULLSCOPE;
 		}
 		return super.getScope(context, reference);
 	}

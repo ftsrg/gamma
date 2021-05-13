@@ -22,6 +22,7 @@ import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.ActionModelPackage;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.Branch;
 import hu.bme.mit.gamma.action.model.BreakStatement;
 import hu.bme.mit.gamma.action.model.ChoiceStatement;
 import hu.bme.mit.gamma.action.model.ConstantDeclarationStatement;
@@ -34,6 +35,7 @@ import hu.bme.mit.gamma.action.model.SwitchStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
 import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
@@ -169,4 +171,17 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		}
 		return validationResultMessages;
 	}
+	
+	public Collection<ValidationResultMessage> checkBranch(Branch branch) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// Block is empty
+		Expression guard = branch.getGuard();
+		if (!typeDeterminator.isBoolean(guard)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Brach conditions must be of type boolean",
+					new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+		}
+		return validationResultMessages;
+	}
+	
 }

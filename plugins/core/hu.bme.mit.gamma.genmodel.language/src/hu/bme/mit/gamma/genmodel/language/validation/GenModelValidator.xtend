@@ -31,11 +31,6 @@ import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
 import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 
-/**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 class GenModelValidator extends AbstractGenModelValidator {
 	
 	protected final GenmodelValidator genmodelValidator = GenmodelValidator.INSTANCE

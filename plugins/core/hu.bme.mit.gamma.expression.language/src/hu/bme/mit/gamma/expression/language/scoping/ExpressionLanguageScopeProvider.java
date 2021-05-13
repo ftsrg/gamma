@@ -28,12 +28,6 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionUtil;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class ExpressionLanguageScopeProvider extends AbstractExpressionLanguageScopeProvider {
 
 	protected final GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
