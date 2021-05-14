@@ -144,23 +144,6 @@ public class StatechartLanguageScopeProvider extends AbstractStatechartLanguageS
 				// Not only in events are returned as less-aware users tend to write in events on actions
 				return Scopes.scopeFor(StatechartModelDerivedFeatures.getAllEvents(_interface));
 			}
-//			if (context instanceof EnumerationLiteralExpression && 
-//					reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-//				// Getting literals only from the exact enumeration type
-//				IScope parentScope = super.getScope(context, reference);
-//				if (!parentScope.equals(IScope.NULLSCOPE)) {
-//					return parentScope;
-//				}
-//				// Getting all global enumeration types (could be filtered to raise event actions first)
-//				Package root = StatechartModelDerivedFeatures.getContainingPackage(context);
-//				Collection<EnumerationLiteralDefinition> enumLiterals = ecoreUtil.getAllContentsOfType(
-//						root, EnumerationLiteralDefinition.class);
-//				for (Package imported : root.getImports()) {
-//					enumLiterals.addAll(ecoreUtil.getAllContentsOfType(
-//							imported, EnumerationLiteralDefinition.class));
-//				}
-//				return Scopes.scopeFor(enumLiterals);
-//			}
 			/* Without such scoping rules, the following exception is thrown:
 			 * Caused By: org.eclipse.xtext.conversion.ValueConverterException: ID 'Test.testIn.testInValue'
 			 * contains invalid characters: '.' (0x2e) */

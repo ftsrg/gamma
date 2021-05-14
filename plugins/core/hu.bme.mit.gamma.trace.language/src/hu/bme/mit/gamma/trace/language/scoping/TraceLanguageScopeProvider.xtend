@@ -108,12 +108,6 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
 		}
-//		if (context instanceof EnumerationLiteralExpression) {
-//			val typeDeclarations = util.getTypeDeclarations(context)
-//			val enumTypes = typeDeclarations.map[it.typeDefinition].filter(EnumerationTypeDefinition)
-//			val literals = enumTypes.map[it.literals].flatten
-//			return Scopes.scopeFor(literals)
-//		}
 		super.getScope(context, reference)
 	}
 
