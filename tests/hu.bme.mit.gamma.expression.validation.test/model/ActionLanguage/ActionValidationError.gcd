@@ -25,7 +25,7 @@ procedure proc1 () : decimal { return int1; }
 procedure proc2 () : int { return rec1; }
 procedure proc3 () : rational { return; }
 procedure proc4 () : Direction { return cPoint; }
-procedure proc5 () : Direction { return ::NORTH; }
+procedure proc5 () : Direction { return CardianalPoints::NORTH; }
 
 
 /**

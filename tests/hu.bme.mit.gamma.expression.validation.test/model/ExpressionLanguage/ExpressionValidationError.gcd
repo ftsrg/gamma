@@ -150,7 +150,7 @@ const int8 : integer := 1.1
 const array2 : [2] integer := #[1.1, 1]
 const array3 : [1] dec := #[int1]
 const array4 : [1] int := #[1.1]
-const dir1 : Direction := ::NORTH
+const dir1 : Direction := CardianalPoints::NORTH
 
 
 /**
