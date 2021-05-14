@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Scenario Metamodel Utils
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.model.util
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.google.guava,
  org.eclipse.xtext.xbase.lib,
  org.eclipse.xtend.lib,
  org.eclipse.xtend.lib.macro,
- org.eclipse.xtext;bundle-version="2.12.0",
+ org.eclipse.xtext,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.util,
  hu.bme.mit.gamma.scenario.language

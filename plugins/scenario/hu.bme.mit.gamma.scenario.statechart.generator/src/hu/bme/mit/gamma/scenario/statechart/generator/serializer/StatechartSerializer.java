@@ -18,14 +18,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.ecore.EObject;
 
 import hu.bme.mit.gamma.statechart.contract.ScenarioContractAnnotation;
-import hu.bme.mit.gamma.statechart.interface_.EventTrigger;
 import hu.bme.mit.gamma.statechart.interface_.Interface;
 import hu.bme.mit.gamma.statechart.interface_.InterfaceModelFactory;
 import hu.bme.mit.gamma.statechart.interface_.Package;
 import hu.bme.mit.gamma.statechart.language.ui.serializer.StatechartLanguageSerializer;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 import hu.bme.mit.gamma.statechart.statechart.StatechartModelFactory;
-import hu.bme.mit.gamma.statechart.statechart.Transition;
 
 public class StatechartSerializer {
 
@@ -54,11 +52,11 @@ public class StatechartSerializer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Package saveInterfaces(ArrayList<Interface> interfaces, String path, String name) {
 		Package p2 = interfacefactory.createPackage();
 		p2.getInterfaces().addAll(interfaces);
-		p2.setName(name.toLowerCase()+"contractinterface");		
+		p2.setName(name.toLowerCase() + "contractinterface");
 		try {
 			saveModel(p2, path, name + "Interfaces.gcd");
 		} catch (IOException e) {
@@ -66,8 +64,6 @@ public class StatechartSerializer {
 		}
 		return p2;
 	}
-	
-	
 
 	public void saveModel(EObject rootElem, String parentFolder, String fileName) throws IOException {
 		try {

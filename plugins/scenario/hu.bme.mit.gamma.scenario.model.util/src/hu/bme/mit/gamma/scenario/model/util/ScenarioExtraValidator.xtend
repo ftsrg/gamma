@@ -17,6 +17,7 @@ import hu.bme.mit.gamma.scenario.model.InteractionFragment
 import hu.bme.mit.gamma.scenario.model.ModalInteraction
 import hu.bme.mit.gamma.scenario.model.ScenarioDeclaration
 import hu.bme.mit.gamma.scenario.model.ScenarioModelPackage
+import hu.bme.mit.gamma.util.GammaEcoreUtil
 import java.util.AbstractMap.SimpleEntry
 import java.util.List
 import java.util.Map
@@ -29,17 +30,23 @@ import static extension hu.bme.mit.gamma.scenario.util.CollectionUtil.myGetListI
 import static extension hu.bme.mit.gamma.scenario.util.StructuralValidator.equalsTo
 
 class ScenarioExtraValidator {
-
+	
+	val static ecoreUtil = GammaEcoreUtil.INSTANCE
+	
 	static def boolean isValid(ScenarioDeclaration scenarioDeclaration) {
 		scenarioDeclaration.doesNotContainRedundantScenarios && scenarioDeclaration.combinedFragmentsDoNotContainRedundantFragments && scenarioDeclaration.everyPairwiseContinuationHaveTheSameModality
 	}
 
 	private static def boolean combinedFragmentsDoNotContainRedundantFragments(ScenarioDeclaration scenarioDeclaration) {
-		scenarioDeclaration.eAllContents.filter(CombinedFragment).forall[doestNotContainRedundantFragments]
+		
+		ecoreUtil.getAllContentsOfType(scenarioDeclaration,CombinedFragment).forall[doestNotContainRedundantFragments]
+//		scenarioDeclaration.eAllContents.filter(CombinedFragment).forall[doestNotContainRedundantFragments]
+	
 	}
 
 	private static def boolean everyPairwiseContinuationHaveTheSameModality(ScenarioDeclaration scenarioDeclaration) {
-		scenarioDeclaration.eAllContents.filter(AlternativeCombinedFragment).forall[everyPairwiseContinuationHaveTheSameModality]
+//		scenarioDeclaration.eAllContents.filter(AlternativeCombinedFragment).forall[everyPairwiseContinuationHaveTheSameModality]
+		ecoreUtil.getAllContentsOfType(scenarioDeclaration,AlternativeCombinedFragment).forall[everyPairwiseContinuationHaveTheSameModality]
 	}
 
 	private static def boolean doestNotContainRedundantFragments(CombinedFragment combinedFragment) {
@@ -53,8 +60,8 @@ class ScenarioExtraValidator {
 			val firstIndex = it.key
 			val secondIndex = it.value
 
-			ValidationMarkerUtil::addWarningMarker('''Interaction fragment is the same as #�secondIndex + 1� element.''', combinedFragment, ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS, firstIndex)
-			ValidationMarkerUtil::addWarningMarker('''Interaction fragment is the same as #�firstIndex + 1� element.''', combinedFragment, ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS, secondIndex)
+			ValidationMarkerUtil::addWarningMarker('''Interaction fragment is the same as #«secondIndex + 1» element.''', combinedFragment, ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS, firstIndex)
+			ValidationMarkerUtil::addWarningMarker('''Interaction fragment is the same as #«secondIndex + 1» element.''', combinedFragment, ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS, secondIndex)
 		]
 		redundantFragments.nullOrEmpty
 	}
@@ -67,8 +74,8 @@ class ScenarioExtraValidator {
 
 			val firstIndex = scenarioDeclaration.scenarios.indexOf(scenarioDeclaration.scenarios.findFirst[it.name == oneScenarioName])
 			val secondIndex = scenarioDeclaration.scenarios.indexOf(scenarioDeclaration.scenarios.findFirst[it.name == otherScenarioName])
-			ValidationMarkerUtil::addWarningMarker('''Scenario definition is the same as �otherScenarioName�.''', scenarioDeclaration, ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, firstIndex)
-			ValidationMarkerUtil::addWarningMarker('''Scenario definition is the same as �oneScenarioName�.''', scenarioDeclaration, ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, secondIndex)
+			ValidationMarkerUtil::addWarningMarker('''Scenario definition is the same as «otherScenarioName».''', scenarioDeclaration, ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, firstIndex)
+			ValidationMarkerUtil::addWarningMarker('''Scenario definition is the same as «oneScenarioName».''', scenarioDeclaration, ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, secondIndex)
 		]
 		redundantScenarios.nullOrEmpty
 	}

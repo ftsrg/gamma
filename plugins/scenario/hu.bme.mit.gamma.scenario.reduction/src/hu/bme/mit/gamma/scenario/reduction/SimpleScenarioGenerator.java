@@ -28,12 +28,10 @@ import hu.bme.mit.gamma.scenario.model.ModalInteractionSet;
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegatedModalInteraction;
-import hu.bme.mit.gamma.scenario.model.NegatedTestAnnotation;
 import hu.bme.mit.gamma.scenario.model.NegatedWaitAnnotation;
 import hu.bme.mit.gamma.scenario.model.OptionalCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.ParallelCombinedFragment;
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation;
-import hu.bme.mit.gamma.scenario.model.PonatedTestAnnotation;
 import hu.bme.mit.gamma.scenario.model.Reset;
 import hu.bme.mit.gamma.scenario.model.ScenarioDefinition;
 import hu.bme.mit.gamma.scenario.model.ScenarioModelFactory;
@@ -52,7 +50,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	
 	//Needs to be saved and reset after handling a new InteractionFragment, needs to be kept for transformation of loop fragment
 	private InteractionFragment previousFragment = null;
-	GammaEcoreUtil ecureUtil = GammaEcoreUtil.INSTANCE;
+	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
 	public ScenarioDefinition generateSimple(ScenarioDefinition def) {
 		base = def;
@@ -320,7 +318,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		s.setEvent(object.getEvent());
 		s.setPort(object.getPort());
 		for (Expression a : object.getArguments()) {
-			s.getArguments().add(ecureUtil.clone(a));
+			s.getArguments().add(ecoreUtil.clone(a));
 		}
 		return s;
 	}
@@ -340,10 +338,10 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		d.setModality(object.getModality());
 		if (object.getMaximum() == null)
 
-			d.setMaximum(ecureUtil.clone(object.getMinimum()));
+			d.setMaximum(ecoreUtil.clone(object.getMinimum()));
 		else
-			d.setMaximum(ecureUtil.clone(object.getMaximum()));
-		d.setMinimum(ecureUtil.clone(object.getMinimum()));
+			d.setMaximum(ecoreUtil.clone(object.getMaximum()));
+		d.setMinimum(ecoreUtil.clone(object.getMinimum()));
 		return d;
 	}
 

@@ -2,24 +2,24 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Gamma Scenario Language Grammar
 Bundle-Vendor: BME-FTSRG
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-SymbolicName: hu.bme.mit.gamma.scenario.language; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.eclipse.equinox.common;bundle-version="3.5.0",
- org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.equinox.common,
+ org.eclipse.xtext.xbase.lib,
  org.antlr.runtime;bundle-version="[3.2.0,3.2.1)",
  org.eclipse.xtext.util,
- org.eclipse.xtend.lib;bundle-version="2.14.0",
+ org.eclipse.xtend.lib,
  hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.util,
  hu.bme.mit.gamma.expression.language,
- hu.bme.mit.gamma.scenario.statechart.generator;bundle-version="1.0.0",
+ hu.bme.mit.gamma.scenario.statechart.generator,
  hu.bme.mit.gamma.scenario.reduction,
- org.eclipse.core.resources;bundle-version="3.13.700",
- hu.bme.mit.gamma.statechart.language;bundle-version="2.3.1",
- hu.bme.mit.gamma.ui;bundle-version="2.3.1"
+ org.eclipse.core.resources,
+ hu.bme.mit.gamma.statechart.language,
+ hu.bme.mit.gamma.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.scenario.language,
  hu.bme.mit.gamma.scenario.language.formatting,
