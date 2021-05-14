@@ -6,6 +6,14 @@ const int1 : int
 const dec1 : dec
 const rec1 : rec
 
+type MyEnum : enum {
+	A, B, C
+}
+
+type MyEnum2 : enum {
+	A, B, C
+}
+
 const dir : Direction
 const cPoint : CardianalPoints
 
@@ -41,6 +49,11 @@ procedure proc6 () : integer {
 
 
 procedure exampleProc () : void {
+	
+	var b : MyEnum;
+	var bb : MyEnum2;
+	b := bb;
+	
 	/**
 	 * We expect the names of the variables to be unique.
 	 * 
@@ -60,3 +73,7 @@ procedure exampleProc () : void {
 	return;
 }
 
+procedure vmi () : void {
+	
+	return;
+}
