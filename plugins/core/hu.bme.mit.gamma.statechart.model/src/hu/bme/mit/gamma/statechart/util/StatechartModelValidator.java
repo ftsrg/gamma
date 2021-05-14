@@ -665,7 +665,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
-				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(), arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(),
+						arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
 			}
 		}
 		return validationResultMessages;
@@ -1480,7 +1481,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		Collection<InstancePortReference> instancePortReferences = ecoreUtil.
 				getAllContentsOfType(root, InstancePortReference.class);
 		for (InstancePortReference instancePortReference : instancePortReferences.stream()
-						.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel).collect(Collectors.toList())) {
+						.filter(it -> it != channel.getProvidedPort() && it.eContainer() instanceof Channel)
+						.collect(Collectors.toList())) {
 			// Broadcast ports are also restricted to be used only in a single channel (restriction on syntax only)
 			if (equals(instancePortReference, channel.getProvidedPort())) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR, 

@@ -227,14 +227,24 @@ public class ExpressionTypeDeterminator2 {
 	
 	private Type getAliaslessTypeTree(Type type) {
 		if (type instanceof TypeReference) {
+			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			if (ExpressionModelDerivedFeatures.isPrimitive(typeDefinition)) {
+				return typeDefinition; // We do no distinguish between aliases and primitive types
+			}
+			if (ExpressionModelDerivedFeatures.isArray(typeDefinition)) {
+				return getAliaslessTypeTree(typeDefinition); // We do no distinguish between aliases and arrays
+			}
+			// Enum or record
 			TypeReference finalTypeReference = ExpressionModelDerivedFeatures.getFinalTypeReference(
 					(TypeReference) type);
 			TypeReference clonedFinalTypeReference = ecoreUtil.clone(finalTypeReference);
 			TypeDeclaration typeDeclaration = finalTypeReference.getReference();
-			Type typeDefinition = typeDeclaration.getType();
-			if (typeDefinition instanceof EnumerationTypeDefinition) {
+			// Optimization possibility
+			Type declaredTypeDefinition = typeDeclaration.getType();
+			if (declaredTypeDefinition instanceof EnumerationTypeDefinition) {
 				return clonedFinalTypeReference; // Optimization: enums do not have to be cloned
 			}
+			// Record
 			TypeDeclaration clonedTypeDeclaration = ecoreUtil.clone(typeDeclaration);
 			clonedFinalTypeReference.setReference(clonedTypeDeclaration);
 			Type clonedType = clonedTypeDeclaration.getType();

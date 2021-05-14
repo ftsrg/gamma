@@ -406,7 +406,6 @@ public class ExpressionModelValidator {
 	}
 	
 	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(Type lhsExpressionType, Expression rhs, EStructuralFeature feature) {
-		//ExpressionType lhsExpressionType = typeDeterminator.transform(type);
 		Type rhsExpressionType = typeDeterminator.getType(rhs);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator.equals(lhsExpressionType, rhsExpressionType)) {
