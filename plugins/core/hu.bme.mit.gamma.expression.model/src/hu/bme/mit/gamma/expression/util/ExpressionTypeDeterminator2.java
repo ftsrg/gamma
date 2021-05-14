@@ -227,9 +227,15 @@ public class ExpressionTypeDeterminator2 {
 	
 	private Type getAliaslessTypeTree(Type type) {
 		if (type instanceof TypeReference) {
-			TypeDefinition typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			TypeDefinition typeDefinition = null;
+			try {
+				typeDefinition = ExpressionModelDerivedFeatures.getTypeDefinition(type);
+			} catch (IllegalArgumentException e) {
+				return null; // // Might be the result of inconsistent Xtext type reference (reference is null)
+			}
+			// Valid type reference, we can move on
 			if (ExpressionModelDerivedFeatures.isPrimitive(typeDefinition)) {
-				return typeDefinition; // We do no distinguish between aliases and primitive types
+				return ecoreUtil.clone(typeDefinition); // We do no distinguish between aliases and primitive types
 			}
 			if (ExpressionModelDerivedFeatures.isArray(typeDefinition)) {
 				return getAliaslessTypeTree(typeDefinition); // We do no distinguish between aliases and arrays
@@ -254,6 +260,7 @@ public class ExpressionTypeDeterminator2 {
 		Type clonedType = ecoreUtil.clone(type); // type instanceof TypeDefinition
 		List<TypeReference> typeReferences = ecoreUtil.getAllContentsOfType(clonedType, TypeReference.class);
 		for (TypeReference reference : typeReferences) {
+			// The method must return a cloned type along every path!
 			Type clonedFinalTypeReference = getAliaslessTypeTree(reference);
 			ecoreUtil.replace(clonedFinalTypeReference, reference);
 		}
@@ -383,24 +390,24 @@ public class ExpressionTypeDeterminator2 {
 	
 	public String print(Type type) {
 		if (type instanceof IntegerTypeDefinition) {
-			return "INTEGER";
+			return "Integer";
 		}
 		if (type instanceof IntegerRangeTypeDefinition) {
-			return "INTEGER RANGE";
+			return "Integer range";
 		}
 		if (type instanceof DecimalTypeDefinition) {
-			return "DECIMAL";
+			return "Decimal";
 		}
 		if (type instanceof BooleanTypeDefinition) {
-			return "BOOLEAN";
+			return "Boolean";
 		}
 		if (type instanceof RationalTypeDefinition) {
-			return "RATIONAL";
+			return "Rational";
 		}
 		if (type instanceof ArrayTypeDefinition) {
 			ArrayTypeDefinition arrayType = (ArrayTypeDefinition) type;
 			Type elementType = arrayType.getElementType();
-			return "ARRAY, type of elements: " + print(elementType);
+			return "Array, type of elements: " + print(elementType);
 		}
 		if (type instanceof RecordTypeDefinition) {
 			RecordTypeDefinition recordTypeDefinition = (RecordTypeDefinition) type;
@@ -408,17 +415,17 @@ public class ExpressionTypeDeterminator2 {
 			String fieldsNames = fields.stream()
 					.map(it -> it.getName())
 					.reduce((lhs, rhs) -> lhs + ", " + rhs).orElse("");
-			return "RECORD, with fields: " + fieldsNames;
+			return "Record, with fields: " + fieldsNames;
 		}
 		if (type instanceof EnumerationTypeDefinition) {
 			EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
 			String literalNames = enumerationTypeDefinition.getLiterals().stream()
 					.map(it -> it.getName())
 					.reduce((lhs, rhs) -> lhs + ", " + rhs).orElse("");
-			return "ENUMERATION, with literals: " + literalNames;
+			return "Enumeration, with literals: " + literalNames;
 		}
 		if (type instanceof VoidTypeDefinition) {
-			return "VOID";
+			return "Void";
 		}
 		if (type instanceof TypeReference) {
 			TypeReference typeReference = (TypeReference) type;

@@ -33,6 +33,7 @@ import hu.bme.mit.gamma.expression.model.DirectReferenceExpression;
 import hu.bme.mit.gamma.expression.model.DivExpression;
 import hu.bme.mit.gamma.expression.model.DivideExpression;
 import hu.bme.mit.gamma.expression.model.ElseExpression;
+import hu.bme.mit.gamma.expression.model.EnumerableTypeDefinition;
 import hu.bme.mit.gamma.expression.model.EqualityExpression;
 import hu.bme.mit.gamma.expression.model.EquivalenceExpression;
 import hu.bme.mit.gamma.expression.model.Expression;
@@ -47,12 +48,9 @@ import hu.bme.mit.gamma.expression.model.GreaterExpression;
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression;
 import hu.bme.mit.gamma.expression.model.InequalityExpression;
 import hu.bme.mit.gamma.expression.model.InitializableElement;
-import hu.bme.mit.gamma.expression.model.IntegerLiteralExpression;
 import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
-import hu.bme.mit.gamma.expression.model.IntegerRangeTypeDefinition;
 import hu.bme.mit.gamma.expression.model.LessEqualExpression;
 import hu.bme.mit.gamma.expression.model.LessExpression;
-import hu.bme.mit.gamma.expression.model.LiteralExpression;
 import hu.bme.mit.gamma.expression.model.ModExpression;
 import hu.bme.mit.gamma.expression.model.MultiaryExpression;
 import hu.bme.mit.gamma.expression.model.NamedElement;
@@ -68,7 +66,6 @@ import hu.bme.mit.gamma.expression.model.TypeDeclaration;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.TypeReference;
 import hu.bme.mit.gamma.expression.model.UnaryExpression;
-import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.util.GammaEcoreUtil;
 import hu.bme.mit.gamma.util.JavaUtil;
@@ -284,22 +281,14 @@ public class ExpressionModelValidator {
 	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// check if the referred object
-		if (!(expression.getOperand() instanceof LiteralExpression)) {
-			Declaration referredDeclaration = expressionUtil.getDeclaration(expression.getOperand());
-			if ((referredDeclaration != null) && !(referredDeclaration instanceof ValueDeclaration)) {
-				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The specified object is not selectable! This type is: " + typeDeterminator.print(expression.getOperand()), 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
-				return validationResultMessages;
-			}
+		Expression operand = expression.getOperand();
+		TypeDefinition type = typeDeterminator.getTypeDefinition(operand);
+		if (type instanceof EnumerableTypeDefinition) {
+			return validationResultMessages; // All good
 		}
-		if (!(typeDeterminator.getType(expression.getOperand()) instanceof IntegerLiteralExpression ||
-				typeDeterminator.getType(expression.getOperand()) instanceof IntegerRangeTypeDefinition)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The specified object is not selectable! This type is: " + typeDeterminator.print(expression.getOperand()), 
-					new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
-			return validationResultMessages;
-		}
+		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+			"The specified object is not selectable! This type is: " + typeDeterminator.print(operand), 
+				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND)));
 		return validationResultMessages;
 	}
 	
@@ -555,10 +544,10 @@ public class ExpressionModelValidator {
 						"The size of the array must be given as an integer.",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
-			// Array init size must be greater then 0
+			// Array init size must be greater than 0
 			if (expressionEvaluator.evaluateInteger(arrayType.getSize()) <= 0) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"The size of the array must be greater then 0.",
+						"The size of the array must be greater than 0.",
 						new ReferenceInfo(ExpressionModelPackage.Literals.ARRAY_TYPE_DEFINITION__SIZE)));
 			}
 		} catch (Exception exception) {
