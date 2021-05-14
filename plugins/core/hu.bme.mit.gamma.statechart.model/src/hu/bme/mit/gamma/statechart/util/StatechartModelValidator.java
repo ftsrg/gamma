@@ -665,8 +665,8 @@ public class StatechartModelValidator extends ActionModelValidator {
 		}
 		if (!arguments.isEmpty() && !parameterDeclarations.isEmpty()) {
 			for (int i = 0; i < arguments.size() && i < parameterDeclarations.size(); ++i) {
-				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(),
-						arguments.get(i), ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS);
+				checkTypeAndExpressionConformance(parameterDeclarations.get(i).getType(), arguments.get(i),
+						new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i));
 			}
 		}
 		return validationResultMessages;

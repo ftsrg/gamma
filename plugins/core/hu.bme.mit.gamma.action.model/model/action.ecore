@@ -70,7 +70,4 @@
         eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceExpression" eSuperTypes="../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//ReferenceExpression">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="declaration" eType="ecore:EClass ../../hu.bme.mit.gamma.expression.model/model/expression.ecore#//TypeDeclaration"/>
-  </eClassifiers>
 </ecore:EPackage>

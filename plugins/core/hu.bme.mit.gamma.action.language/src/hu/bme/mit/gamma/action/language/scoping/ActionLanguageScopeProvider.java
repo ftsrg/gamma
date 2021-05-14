@@ -78,18 +78,18 @@ public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProv
 			return parentScope;
 		}
 		// Enums
-		if (reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
-			ActionUtil actionUtil = (ActionUtil) util;
-			Declaration declaration = actionUtil.getLhsDeclaration(context);
-			if (declaration != null) {
-				TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(declaration.getType());
-				if (type instanceof EnumerationTypeDefinition) {
-					EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
-					return Scopes.scopeFor(enumerationTypeDefinition.getLiterals());
-				}
-			}
-			return IScope.NULLSCOPE;
-		}
+//		if (reference == ExpressionModelPackage.Literals.ENUMERATION_LITERAL_EXPRESSION__REFERENCE) {
+//			ActionUtil actionUtil = (ActionUtil) util;
+//			Declaration declaration = actionUtil.getLhsDeclaration(context);
+//			if (declaration != null) {
+//				TypeDefinition type = ExpressionModelDerivedFeatures.getTypeDefinition(declaration.getType());
+//				if (type instanceof EnumerationTypeDefinition) {
+//					EnumerationTypeDefinition enumerationTypeDefinition = (EnumerationTypeDefinition) type;
+//					return Scopes.scopeFor(enumerationTypeDefinition.getLiterals());
+//				}
+//			}
+//			return IScope.NULLSCOPE;
+//		}
 		return super.getScope(context, reference);
 	}
 	

@@ -131,6 +131,7 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//RecordLiteralExpression/fieldAssignments"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//EnumerationLiteralExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference expression.ecore#//EnumerationLiteralExpression/typeReference"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference expression.ecore#//EnumerationLiteralExpression/reference"/>
     </genClasses>
     <genClasses ecoreClass="expression.ecore#//FieldAssignment">

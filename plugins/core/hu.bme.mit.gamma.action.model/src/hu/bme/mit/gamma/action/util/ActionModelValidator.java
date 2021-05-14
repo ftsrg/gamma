@@ -78,26 +78,22 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		ReferenceExpression lhs = assignment.getLhs();
 		Declaration declaration = expressionUtil.getDeclaration(lhs);
 		if (declaration instanceof ConstantDeclaration) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"Constants cannot be assigned new values.",
+				"Constants cannot be assigned new values",
 				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
+			return validationResultMessages;
 		}
-		
 		// Other assignment type checking
-		if (declaration instanceof VariableDeclaration) {
-			VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
-			try {
-				Type variableDeclarationType = variableDeclaration.getType();
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(variableDeclarationType, 
-						assignment.getRhs(), 
-						ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS));
-			} catch (Exception exception) {
-				// There is a type error on a lower level, no need to display the error message on this level too
-			}
+		try {
+			Type variableDeclarationType = declaration.getType();
+			validationResultMessages.addAll(checkTypeAndExpressionConformance(
+					variableDeclarationType, assignment.getRhs(),
+					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
 		}
 		
 		return validationResultMessages;
@@ -116,7 +112,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", 
+							"This variable cannot be named " + newName + " as it would enshadow a previous local variable", 
 							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION)));
 				}
 			}
@@ -146,7 +142,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Currently return statements must be final actions in every possible path.",
+					"Currently return statements must be final actions in every possible path",
 					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY)));
 		}
 		return validationResultMessages;
@@ -166,7 +162,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		// Block is empty
 		if (block.getActions().isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-					"The block is empty!",
+					"The block is empty",
 					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS)));
 		}
 		return validationResultMessages;

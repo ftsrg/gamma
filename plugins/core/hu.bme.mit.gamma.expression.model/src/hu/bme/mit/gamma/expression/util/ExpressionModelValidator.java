@@ -133,7 +133,7 @@ public class ExpressionModelValidator {
 				ParameterDeclaration parameter = parameterDeclarations.get(i);
 				Expression argument = arguments.get(i);
 				validationResultMessages.addAll(checkTypeAndExpressionConformance(parameter.getType(), argument, 
-						ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS));
+					new ReferenceInfo(ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS, i)));
 			}
 		}
 		return validationResultMessages;
@@ -394,14 +394,15 @@ public class ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(Type lhsExpressionType, Expression rhs, EStructuralFeature feature) {
+	public Collection<ValidationResultMessage> checkTypeAndExpressionConformance(
+			Type lhsExpressionType, Expression rhs, ReferenceInfo referenceInfo) {
 		Type rhsExpressionType = typeDeterminator.getType(rhs);
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!typeDeterminator.equals(lhsExpressionType, rhsExpressionType)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The types of the declaration and the assigned expression are not the same: " +
-						typeDeterminator.print(lhsExpressionType) + " and " + typeDeterminator.print(rhsExpressionType), 
-					new ReferenceInfo(feature)));
+				"The types of the declaration and the assigned expression are not the same: " +
+					typeDeterminator.print(lhsExpressionType) + " and " + typeDeterminator.print(rhsExpressionType), 
+					referenceInfo));
 			return validationResultMessages;
 		}
 

@@ -35,7 +35,7 @@ public class ExpressionLanguageFormatterUtil {
 
 	protected void setDoubleColons(FormattingConfig c, AbstractGrammarElementFinder f) {
 		for (Keyword dot : f.findKeywords("::")) {
-			c.setNoSpace().after(dot);
+			c.setNoSpace().around(dot);
 		}
 	}
 

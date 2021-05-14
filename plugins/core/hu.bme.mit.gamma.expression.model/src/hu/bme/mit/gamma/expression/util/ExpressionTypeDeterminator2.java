@@ -90,10 +90,8 @@ public class ExpressionTypeDeterminator2 {
 			return factory.createDecimalTypeDefinition();
 		}
 		if (expression instanceof EnumerationLiteralExpression) {
-			TypeReference typeReference = factory.createTypeReference();
 			EnumerationLiteralExpression enumerationLiteralExpression = (EnumerationLiteralExpression) expression;
-			typeReference.setReference(ExpressionModelDerivedFeatures.getTypeDeclaration(
-					enumerationLiteralExpression.getReference()));
+			TypeReference typeReference = ecoreUtil.clone(enumerationLiteralExpression.getTypeReference());
 			return typeReference;
 		}
 		if (expression instanceof IntegerRangeLiteralExpression) {
