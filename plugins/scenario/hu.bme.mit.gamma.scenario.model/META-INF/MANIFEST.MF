@@ -9,7 +9,8 @@ Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: hu.bme.mit.gamma.scenario.model,
  hu.bme.mit.gamma.scenario.model.impl,
- hu.bme.mit.gamma.scenario.model.util
+ hu.bme.mit.gamma.scenario.model.util,
+ hu.bme.mit.gamma.scenario.util
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
  hu.bme.mit.gamma.expression.model;visibility:=reexport,
@@ -17,3 +18,4 @@ Require-Bundle: org.eclipse.core.runtime,
  hu.bme.mit.gamma.statechart.model;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.model
+

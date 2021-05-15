@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2020-2021 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.language.validation
@@ -54,6 +54,7 @@ import hu.bme.mit.gamma.scenario.model.StrictAnnotation
 import hu.bme.mit.gamma.scenario.model.PermissiveAnnotation
 import hu.bme.mit.gamma.scenario.model.NegStrictAnnotation
 import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation
+import hu.bme.mit.gamma.scenario.util.ScenarioModelValidator
 
 /**
  * This class contains custom validation rules. 
@@ -63,6 +64,8 @@ import hu.bme.mit.gamma.scenario.model.NegPermissiveAnnotation
 class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE
+
+	protected ScenarioModelValidator validator = ScenarioModelValidator.INSTANCE
 
 	static enum MarkerLevel {
 		WARNING,
@@ -104,36 +107,17 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	@Check(NORMAL)
 	def void checkIncompatibleAnnotations(ScenarioDefinition s) {
-		var strictPresent = false
-		var permissivePresent = false
-		var negstrictPresent = false
-		var negpermissivePresent = false
-		for (a : s.annotation) {
-			if (a instanceof StrictAnnotation)
-				strictPresent = true
-			else if (a instanceof PermissiveAnnotation)
-				permissivePresent = true
-			if (a instanceof NegStrictAnnotation)
-				negstrictPresent = true
-			else if (a instanceof NegPermissiveAnnotation)
-				negpermissivePresent = true
-		}
-		if (permissivePresent && strictPresent)
-			error('''A scenario should be annotated with either a permissive or strict annotation.''',
-				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
-		if (negpermissivePresent && negstrictPresent)
-			error('''A scenario should be annotated with either a permissive or strict annotation with respect to negated sends blocks.''',
-				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
+		handleValidationResultMessage(validator.checkIncompatibleAnnotations(s))
 	}
 
 	@Check(NORMAL)
 	def void clearCustomMarkers(EObject target) {
-		markerMessages.myRemove(target)
+//		markerMessages.myRemove(target)
 	}
 
 	@Check
 	def void checkCustomMarkers(EObject target) {
-		markerMessages.myGet(target)?.forEach[showMarker]
+//		markerMessages.myGet(target)?.forEach[showMarker]
 	}
 
 	private def void showMarker(MarkerContext ctx) {
@@ -146,221 +130,146 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 
 	@Check
 	def void checkScenarioNamesAreUnique(ScenarioDeclaration scenarioDeclaration) {
-		val duplicateScenarioNames = scenarioDeclaration.scenarios.map[it.name].stream.collect(Collectors::groupingBy([
-			it
-		], Collectors::counting)).filter[_key, value|value > 1].entrySet.map[it.key].toSet
-
-		if (!duplicateScenarioNames.isEmpty) {
-			scenarioDeclaration.scenarios.forEach [
-				if (duplicateScenarioNames.contains(it.name)) {
-					val index = scenarioDeclaration.scenarios.indexOf(it)
-					error('''Scenario names should be unique.''',
-						ScenarioModelPackage.Literals.SCENARIO_DECLARATION__SCENARIOS, index)
-				}
-			]
-		}
+		handleValidationResultMessage(validator.checkScenarioNamesAreUnique(scenarioDeclaration))
 	}
 
 	@Check
-	def void checkAtLeastOneHotSignalInMainchart(ScenarioDefinition scenario) {
-		val noHotSignal = everyInteractionIsCold(scenario.chart)
-		if (noHotSignal) {
-			warning(
-				'''There should be at least one hot signal in chart.''',
-				ScenarioModelPackage.Literals.SCENARIO_DEFINITION__CHART
-			)
-		}
+	def void checkAtLeastOneHotSignalInChart(ScenarioDefinition scenario) {
+		handleValidationResultMessage(validator.checkAtLeastOneHotSignalInChart(scenario))
 	}
 
 	@Check
 	def void checkModalInteractionSets(ModalInteractionSet modalInteractionSet) {
-		val scenario = EcoreUtil2.getRootContainer(modalInteractionSet) as ScenarioDeclaration
-		val component = scenario.component
-		val container = modalInteractionSet.eContainer
-		if (component instanceof SynchronousComponent) {
-			val containedModalInteractionSets = modalInteractionSet.modalInteractions.filter(ModalInteractionSet)
-			if (!containedModalInteractionSets.empty) {
-				// Just to make sure, in the current grammar this is impossible
-				error('''Modal interaction sets cannot contain modal interaction sets.''', container,
-					modalInteractionSet.eContainingFeature, modalInteractionSet.index)
-			}
-		} else {
-			error('''Scenarios with respect to asynchronous components cannot contain modal interaction sets.''',
-				container, modalInteractionSet.eContainingFeature, modalInteractionSet.index)
-		}
+		handleValidationResultMessage(validator.checkModalInteractionSets(modalInteractionSet))
+
+//		val scenario = EcoreUtil2.getRootContainer(modalInteractionSet) as ScenarioDeclaration
+//		val component = scenario.component
+//		val container = modalInteractionSet.eContainer
+//		if (component instanceof SynchronousComponent) {
+//			val containedModalInteractionSets = modalInteractionSet.modalInteractions.filter(ModalInteractionSet)
+//			if (!containedModalInteractionSets.empty) {
+//				// Just to make sure, in the current grammar this is impossible
+//				error('''Modal interaction sets cannot contain modal interaction sets.''', container,
+//					modalInteractionSet.eContainingFeature, modalInteractionSet.index)
+//			}
+//		} else {
+//			error('''Scenarios with respect to asynchronous components cannot contain modal interaction sets.''',
+//				container, modalInteractionSet.eContainingFeature, modalInteractionSet.index)
+//		}
 	}
 
 	@Check
 	def void checkModalInteractionsInSynchronousComponents(ModalInteraction interaction) {
-		val scenario = EcoreUtil2.getRootContainer(interaction) as ScenarioDeclaration
-		val component = scenario.component
-		val container = interaction.eContainer
-		if (component instanceof SynchronousComponent) {
-			val definition = interaction
-			if (definition instanceof ModalInteractionSet || definition instanceof Delay ||
-				definition instanceof Reset) {
-				// Delays and resets cannot be contained by modal interaction sets
-				return
-			} // Resets and normal signals must be contained by modal interaction sets 
-			else if (!(container instanceof ModalInteractionSet) && !(container instanceof NegatedModalInteraction &&
-				container.eContainer instanceof ModalInteractionSet)) {
-				error('''Modal interactions in scenarios with respect to synchronous components must be contained by modal interaction sets.''',
-					container, interaction.eContainingFeature, interaction.index)
-			}
-		}
+		handleValidationResultMessage(validator.checkModalInteractionsInSynchronousComponents(interaction))
 	}
 
 	@Check
 	def void checkModalInteractionsInSynchronousComponents(Reset reset) {
-		val container = reset.eContainer
-		if (container instanceof ModalInteractionSet) {
-			val index = container.index
-			if (index != 0) {
-				val containerContainer = container.eContainer
-				error('''Resets must be specified as the first element in a containing set.''', containerContainer,
-					container.eContainingFeature, index)
-			}
-		}
+		handleValidationResultMessage(validator.checkModalInteractionsInSynchronousComponents(reset))
 	}
 
-	private def getIndex(EObject object) {
-		val container = object.eContainer
-		if (container instanceof NegatedModalInteraction)
-			return 0;
-		val feature = object.eContainingFeature
-		val index = (container.eGet(feature) as EList<? extends EObject>).indexOf(object)
-		return index
-	}
+//	private def getIndex(EObject object) {
+//		val container = object.eContainer
+//		if (container instanceof NegatedModalInteraction)
+//			return 0;
+//		val feature = object.eContainingFeature
+//		val index = (container.eGet(feature) as EList<? extends EObject>).indexOf(object)
+//		return index 
+//	}
+//
+//	private def boolean everyInteractionIsCold(Chart chart) {
+//		chart.fragment.interactions.forall[interactionIsCold]
+//	}
 
-	private def boolean everyInteractionIsCold(Chart chart) {
-		chart.fragment.interactions.forall[interactionIsCold]
-	}
-
-	private def boolean interactionIsCold(Interaction interaction) {
-		switch (interaction) {
-			ModalInteractionSet: interaction.modalInteractions.forall[it.interactionIsCold]
-			Delay: true
-			Reset: true
-			ModalInteraction: interaction.modality == ModalityType.COLD
-			CombinedFragment: interaction.fragments.forall[interactions.forall[interactionIsCold]]
-			default: false
-		}
-	}
+//	private def boolean interactionIsCold(Interaction interaction) {
+//		switch (interaction) {
+//			ModalInteractionSet: interaction.modalInteractions.forall[it.interactionIsCold]
+//			Delay: true
+//			Reset: true
+//			ModalInteraction: interaction.modality == ModalityType.COLD
+//			CombinedFragment: interaction.fragments.forall[interactions.forall[interactionIsCold]]
+//			default: false
+//		}
+//	}
 
 	@Check
 	def void checkFirstInteractionsModalityIsTheSame(CombinedFragment combinedFragment) {
-		if (combinedFragment.fragments.size > 1) {
-			val fragments = combinedFragment.fragments
-			val referenceModality = fragments.head.interactions.firstInteractionsModality
-			val modalityIsDifferent = !fragments.forall[referenceModality == it.interactions.firstInteractionsModality]
-			if (modalityIsDifferent) {
-				error('''First interaction's modality should be the same in each fragment belonging to the same combined fragment.''',
-					ScenarioModelPackage.Literals.COMBINED_FRAGMENT__FRAGMENTS)
-			}
-		}
+		handleValidationResultMessage(validator.checkFirstInteractionsModalityIsTheSame(combinedFragment))
 	}
 
-	private def ModalityType getFirstInteractionsModality(List<Interaction> interaction) {
-		val first = interaction.head
-		switch (first) {
-			ModalInteraction: first.modality
-			CombinedFragment: first.fragments.head.interactions.firstInteractionsModality
-		}
-	}
+//	private def ModalityType getFirstInteractionsModality(List<Interaction> interaction) {
+//		val first = interaction.head
+//		switch (first) {
+//			ModalInteraction: first.modality
+//			CombinedFragment: first.fragments.head.interactions.firstInteractionsModality
+//		}
+//	}
 
 	@Check
 	def void checkPortCanSendSignal(Signal signal) {
-		if (signal.direction != InteractionDirection.SEND) {
-			return
-		}
-
-		val errorMessagePrefix = '''Port cannot send'''
-		// PROVIDED -> IN is IN, OUT is OUT; REQUIRED -> IN is OUT, OUT is IN  
-		val expectedDirections = #{RealizationMode.PROVIDED -> EventDirection.OUT,
-			RealizationMode.REQUIRED -> EventDirection.IN}
-
-		checkEventDirections(signal, expectedDirections, errorMessagePrefix)
+		handleValidationResultMessage(validator.checkPortCanSendSignal(signal))
 	}
 
 	@Check
-	def void checkPortCanReceiveSignal(Signal signal) {
-		if (signal.direction != InteractionDirection.RECEIVE) {
-			return
-		}
-
-		val errorMessagePrefix = '''Port cannot receive'''
-		// PROVIDED -> IN is IN, OUT is OUT; REQUIRED -> IN is OUT, OUT is IN
-		val expectedDirections = #{RealizationMode.PROVIDED -> EventDirection.IN,
-			RealizationMode.REQUIRED -> EventDirection.OUT}
-
-		checkEventDirections(signal, expectedDirections, errorMessagePrefix)
+	def void checkPortCanReceiveSignal(Signal signal) { 
+		handleValidationResultMessage(validator.checkPortCanReceiveSignal(signal))
 	}
 
 	@Check(NORMAL)
 	def void negatedReceives(NegatedModalInteraction nmi) {
-		var mi = nmi.modalinteraction
-		if (mi instanceof Signal) {
-			if (mi.direction == InteractionDirection.RECEIVE)
-				info('''Currently negated interactions received by the component are not processed''',
-					ScenarioModelPackage.Literals.NEGATED_MODAL_INTERACTION__MODALINTERACTION)
-		}
+		handleValidationResultMessage(validator.negatedReceives(nmi))
 	}
 
 	@Check
 	def void checkParallelCombinedFragmentExists(ParallelCombinedFragment fragment) {
-		val parent = (fragment.eContainer as InteractionFragment)
-		val index = parent.interactions.indexOf(fragment)
-		info('''Beware that a parallel combined fragment will introduce every possible partial orderings of its fragments. It may have a significant impact on the performance.''',
-			parent, ScenarioModelPackage.Literals.INTERACTION_FRAGMENT__INTERACTIONS, index)
+		handleValidationResultMessage(validator.checkParallelCombinedFragmentExists(fragment))
 	}
 
-	private def void checkEventDirections(Signal signal, Map<RealizationMode, EventDirection> directionByMode,
-		String errorMessagePrefix) {
-		val portRealizationMode = signal.port.interfaceRealization.realizationMode
-
-		val signalInterf = signal.port.interfaceRealization.interface
-		val signalEvent = signal.event
-
-		val interfaceEventDeclarations = StatechartLanguageUtil::collectInterfaceEventDeclarations(signalInterf)
-		val signalEventDeclarations = interfaceEventDeclarations.filter[it.event == signalEvent]
-
-		val expectedDirection = directionByMode.get(portRealizationMode)
-		val expectedDirections = #[expectedDirection, EventDirection.INOUT]
-
-		val eventDirectionIsWrong = signalEventDeclarations.findFirst[expectedDirections.contains(it.direction)]
-		if (isNull(eventDirectionIsWrong)) {
-			error('''«errorMessagePrefix» this event, because of incompatible port mode. Should the port be «RealizationMode.PROVIDED», set the event to be «directionByMode.get(RealizationMode.PROVIDED)»; should the port be «RealizationMode.REQUIRED», set the event to be «directionByMode.get(RealizationMode.REQUIRED)».''',
-				ScenarioModelPackage.Literals.SIGNAL__EVENT)
-		}
-	}
-
+//	private def void checkEventDirections(Signal signal, Map<RealizationMode, EventDirection> directionByMode,
+//		String errorMessagePrefix) {
+//		val portRealizationMode = signal.port.interfaceRealization.realizationMode
+//
+//		val signalInterf = signal.port.interfaceRealization.interface
+//		val signalEvent = signal.event
+//
+//		val interfaceEventDeclarations = StatechartLanguageUtil::collectInterfaceEventDeclarations(signalInterf)
+//		val signalEventDeclarations = interfaceEventDeclarations.filter[it.event == signalEvent]
+//
+//		val expectedDirection = directionByMode.get(portRealizationMode)
+//		val expectedDirections = #[expectedDirection, EventDirection.INOUT]
+//
+//		val eventDirectionIsWrong = signalEventDeclarations.findFirst[expectedDirections.contains(it.direction)]
+//		if (isNull(eventDirectionIsWrong)) {
+//			error('''ï¿½errorMessagePrefixï¿½ this event, because of incompatible port mode. Should the port be ï¿½RealizationMode.PROVIDEDï¿½, set the event to be ï¿½directionByMode.get(RealizationMode.PROVIDED)ï¿½; should the port be ï¿½RealizationMode.REQUIREDï¿½, set the event to be ï¿½directionByMode.get(RealizationMode.REQUIRED)ï¿½.''',
+//				ScenarioModelPackage.Literals.SIGNAL__EVENT)
+//		}
+//	}
 	@Check
 	def void checkIntervals(LoopCombinedFragment loop) {
-		checkIntervals(loop.minimum, loop.maximum, ScenarioModelPackage.Literals.LOOP_COMBINED_FRAGMENT__MINIMUM)
+		handleValidationResultMessage(validator.checkIntervals(loop))
 	}
 
 	@Check
 	def void checkIntervals(Delay delay) {
-		checkIntervals(delay.minimum, delay.maximum, ScenarioModelPackage.Literals.DELAY__MINIMUM)
+		handleValidationResultMessage(validator.checkIntervals(delay))
 	}
 
-	private def checkIntervals(Expression minimum, Expression maximum, EStructuralFeature feature) {
-		try {
-			val min = minimum.evaluateInteger
-			if (min < 0) {
-				error('''The minimum value must be greater than or equals to 0.''', feature)
-			}
-			if (maximum !== null) {
-				val max = maximum.evaluateInteger
-				if (min > max) {
-					error('''The minimum value must not be greater than the maximum value.''', feature)
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			error('''Both the minimum and maximum values must be of type integer.''', feature)
-		}
-	}
-
+//	private def checkIntervals(Expression minimum, Expression maximum, EStructuralFeature feature) {
+//		try {
+//			val min = minimum.evaluateInteger
+//			if (min < 0) {
+//				error('''The minimum value must be greater than or equals to 0.''', feature)
+//			}
+//			if (maximum !== null) {
+//				val max = maximum.evaluateInteger
+//				if (min > max) {
+//					error('''The minimum value must not be greater than the maximum value.''', feature)
+//				}
+//			}
+//		} catch (IllegalArgumentException e) {
+//			error('''Both the minimum and maximum values must be of type integer.''', feature)
+//		}
+//	}
 //	@Check
 //	def void checkArgumentTypes(Signal signal) {
 //		val arguments = signal.arguments
@@ -378,16 +287,15 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 //		}
 //	}
 
-	@Check
-	def void checkUnsupportedElementsForCompatibility(ScenarioDefinition scenario) {
-		if (EcoreUtil2.getAllContentsOfType(scenario, Signal).exists[!it.arguments.empty]) {
-			info("Compatibility decision is not supported if the scenario contains argumented signals.",
-				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
-		}
-		if (!EcoreUtil2.getAllContentsOfType(scenario, Delay).empty) {
-			info("Compatibility decision is not supported if the scenario contains delays.",
-				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
-		}
-	}
-
+//	@Check
+//	def void checkUnsupportedElementsForCompatibility(ScenarioDefinition scenario) {
+//		if (EcoreUtil2.getAllContentsOfType(scenario, Signal).exists[!it.arguments.empty]) {
+//			info("Compatibility decision is not supported if the scenario contains argumented signals.",
+//				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
+//		}
+//		if (!EcoreUtil2.getAllContentsOfType(scenario, Delay).empty) {
+//			info("Compatibility decision is not supported if the scenario contains delays.",
+//				ExpressionModelPackage.Literals.NAMED_ELEMENT__NAME)
+//		}
+//	}
 }

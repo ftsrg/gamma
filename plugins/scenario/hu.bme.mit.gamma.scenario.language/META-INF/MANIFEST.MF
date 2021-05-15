@@ -29,6 +29,7 @@ Export-Package: hu.bme.mit.gamma.scenario.language,
  hu.bme.mit.gamma.scenario.language.scoping,
  hu.bme.mit.gamma.scenario.language.serializer,
  hu.bme.mit.gamma.scenario.language.services,
+ hu.bme.mit.gamma.scenario.language.util,
  hu.bme.mit.gamma.scenario.language.validation
 Import-Package: org.apache.log4j
 Automatic-Module-Name: hu.bme.mit.gamma.scenario.language
