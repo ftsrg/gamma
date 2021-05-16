@@ -47,16 +47,22 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 	private ScenarioDefinition base = null;
 	private ScenarioDefinition simple = null;
 	private ScenarioModelFactory factory = null;
-	
-	//Needs to be saved and reset after handling a new InteractionFragment, needs to be kept for transformation of loop fragment
+	private boolean transformLoopFragments = false;
+
+	public SimpleScenarioGenerator(ScenarioDefinition base, boolean transformLoopFragments) {
+		this.base = base;
+		this.transformLoopFragments = transformLoopFragments;
+	}
+
+	// Needs to be saved and reset after handling a new InteractionFragment, needs
+	// to be kept for transformation of loop fragment
 	private InteractionFragment previousFragment = null;
 	GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE;
 
-	public ScenarioDefinition generateSimple(ScenarioDefinition def) {
-		base = def;
+	public ScenarioDefinition execute() {
 		factory = ScenarioModelFactory.eINSTANCE;
 		simple = factory.createScenarioDefinition();
-		simple.setName(def.getName());
+		simple.setName(base.getName());
 		simple.setChart(factory.createChart());
 		simple.getChart().setFragment(factory.createInteractionFragment());
 		for (Annotation a : base.getAnnotation()) {
@@ -68,7 +74,7 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 		}
 		return simple;
 	}
-	
+
 	@Override
 	public EObject caseStrictAnnotation(StrictAnnotation object) {
 		return factory.createStrictAnnotation();
@@ -128,6 +134,20 @@ public class SimpleScenarioGenerator extends ScenarioModelSwitch<EObject> {
 
 	@Override
 	public EObject caseLoopCombinedFragment(LoopCombinedFragment object) {
+		if (!transformLoopFragments) {
+			LoopCombinedFragment loop = factory.createLoopCombinedFragment();
+			loop.setMaximum(object.getMaximum());
+			loop.setMinimum(object.getMinimum());
+			InteractionFragment fragment = factory.createInteractionFragment();
+			loop.getFragments().add(fragment);
+			
+			for(Interaction i: object.getFragments().get(0).getInteractions()) {
+				fragment.getInteractions().add((Interaction) this.doSwitch(i));
+			}
+			
+			
+			return loop;
+		}
 		InteractionFragment prev = previousFragment;
 		AlternativeCombinedFragment alt = factory.createAlternativeCombinedFragment();
 		ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;

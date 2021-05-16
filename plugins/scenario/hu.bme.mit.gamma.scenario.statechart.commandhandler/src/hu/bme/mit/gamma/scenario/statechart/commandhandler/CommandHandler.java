@@ -36,6 +36,8 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
 
 public class CommandHandler extends AbstractHandler {
 
+	private static final boolean transformLoopFragments = false;
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		ISelection sel = HandlerUtil.getActiveMenuSelection(event);
@@ -60,10 +62,10 @@ public class CommandHandler extends AbstractHandler {
 					hu.bme.mit.gamma.statechart.interface_.Package interfaces = statechartSerializer.saveInterfaces(is,
 							firstElement.getParent().getLocation().toString(), comp.getName());
 					for (int i = 0; i < scenariodekl.getScenarios().size(); i++) {
-						SimpleScenarioGenerator simpleGenerator = new SimpleScenarioGenerator();
-						ScenarioDefinition sdef = simpleGenerator.generateSimple(scenariodekl.getScenarios().get(i));
-						StatechartGenerator statechartGenerator = new StatechartGenerator(true);
-						StatechartDefinition statechart = statechartGenerator.generateStatechart(sdef, comp);
+						SimpleScenarioGenerator simpleGenerator = new SimpleScenarioGenerator(scenariodekl.getScenarios().get(i),transformLoopFragments);
+						ScenarioDefinition sdef = simpleGenerator.execute();
+						StatechartGenerator statechartGenerator = new StatechartGenerator(true,sdef, comp);
+						StatechartDefinition statechart = statechartGenerator.execute();
 						statechartSerializer.saveStatechart(statechart, interfaces,
 								firstElement.getParent().getLocation().toString());
 					}

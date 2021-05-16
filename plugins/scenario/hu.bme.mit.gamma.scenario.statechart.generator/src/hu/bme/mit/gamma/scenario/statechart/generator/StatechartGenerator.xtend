@@ -1,11 +1,11 @@
 /********************************************************************************
  * Copyright (c) 2020-2021 Contributors to the Gamma project
- *
+ * 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * 
  * SPDX-License-Identifier: EPL-1.0
  ********************************************************************************/
 package hu.bme.mit.gamma.scenario.statechart.generator
@@ -65,6 +65,8 @@ import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EObject
 
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
+import hu.bme.mit.gamma.scenario.model.LoopCombinedFragment
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
 
 class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val extension StatechartModelFactory statechartfactory = StatechartModelFactory.eINSTANCE
@@ -75,6 +77,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	val extension GammaEcoreUtil ecureUtil = GammaEcoreUtil.INSTANCE
 	val ScenarioStatechartUtil scenarioStatechartUtil = ScenarioStatechartUtil.INSTANCE
 
+	var Component component = null
+	var ScenarioDefinition scenario = null
 	var StatechartDefinition statechart = null
 	var allowedGlobalWaitMax = 0
 	var allowedGlobalWaitMin = 0
@@ -90,11 +94,13 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	var nonDeclaredNegMessageMode = 1
 	var coldViolationExisits = true
 
-	new(boolean coldViolationExisits) {
+	new(boolean coldViolationExisits, ScenarioDefinition scenario, Component component) {
+		this.component = component
+		this.scenario = scenario
 		this.coldViolationExisits = coldViolationExisits
 	}
 
-	def StatechartDefinition generateStatechart(ScenarioDefinition scenario, Component component) {
+	def StatechartDefinition execute() {
 		statechart = createStatechartDefinition
 		initializeStateChart(scenario.name)
 		addPorts(component)
@@ -142,7 +148,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 		var a = createScenarioContractAnnotation
 		a.monitoredComponent = component
-		a.scenarioType = nonDeclaredMessageMode==1?NotDefinedEventMode.STRICT: NotDefinedEventMode.PERMISSIVE
+		a.scenarioType = nonDeclaredMessageMode == 1 ? NotDefinedEventMode.STRICT : NotDefinedEventMode.PERMISSIVE
 		statechart.annotation = a
 		return statechart
 	}
@@ -234,6 +240,42 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		statechart.regions.get(0).stateNodes.add(merg)
 		previousState = merg
 		return null
+	}
+
+	def dispatch Interaction process(LoopCombinedFragment loop) {
+
+		val prevprev = previousState
+		for (i : loop.fragments.get(0).interactions) {
+			i.process
+		}
+		var choice = addChoiceState
+		for (t : statechart.transitions) {
+			if (t.targetState.equals(previousState))
+				t.targetState = choice
+		}
+		statechart.regions.get(0).stateNodes.remove(previousState)
+		statechart.regions.get(0).stateNodes.add(choice)
+		var stateNew = createNewState("state" + String.valueOf(stateCount++))
+		previousState = stateNew
+		statechart.regions.get(0).stateNodes.add(stateNew)
+		var t1 = createTransition
+		var t2 = createTransition
+		t1.sourceState = choice
+		t2.sourceState = choice
+		t1.targetState = stateNew
+		t2.targetState = prevprev
+		statechart.transitions.add(t1)
+		statechart.transitions.add(t2)
+		
+		val evaluator = ExpressionEvaluator.INSTANCE;
+		t1.guard = getMinCheck(2,evaluator.evaluateInteger(loop.minimum))
+		t2.guard = getMaxCheck(2,evaluator.evaluateInteger(loop.maximum))
+		
+		t2.effects+=incrementVar(2)
+		t1.effects+=setIntVariable(2,0)
+		
+		return null;
+
 	}
 
 	def dispatch Interaction process(OptionalCombinedFragment ocf) {
@@ -614,7 +656,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def protected Expression getMaxCheck(int variableNumber, int maxV) {
 		var maxCheck = createLessEqualExpression
 		var ref1 = createDirectReferenceExpression
-		ref1.declaration = statechart.variableDeclarations.get(1)
+		ref1.declaration = statechart.variableDeclarations.get(variableNumber)
 		maxCheck.leftOperand = ref1
 		var max = createIntegerLiteralExpression
 		max.value = BigInteger.valueOf(maxV)
@@ -625,7 +667,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 	def protected Expression getMinCheck(int variableNumber, int minV) {
 		var minCheck = createGreaterEqualExpression
 		var ref2 = createDirectReferenceExpression
-		ref2.declaration = statechart.variableDeclarations.get(1)
+		ref2.declaration = statechart.variableDeclarations.get(variableNumber)
 		minCheck.leftOperand = ref2
 		var min = createIntegerLiteralExpression
 		min.value = BigInteger.valueOf(minV)
@@ -849,6 +891,7 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 
 		statechart.variableDeclarations.add(createIntegerVariable("result"))
 		statechart.variableDeclarations.add(createIntegerVariable("IteratingVariable"))
+		statechart.variableDeclarations.add(createIntegerVariable("LoopIteratingVariable"))
 
 		var initial = createInitialState
 		initial.name = scenarioStatechartUtil.initial
