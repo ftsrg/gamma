@@ -24,6 +24,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final String fileName
 	protected final Integer schedulingConstraint
 	// Slicing
+	protected final boolean optimize
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final ComponentInstanceReferences testedComponentsForStates
@@ -54,8 +55,9 @@ class Gamma2XstsUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			null, null, null, null, null, null, InteractionCoverageCriterion.EVERY_INTERACTION,
-			InteractionCoverageCriterion.EVERY_INTERACTION,
+			true, null,
+			null, null, null, null, null,
+			InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
 			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
 	}
@@ -63,7 +65,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			PropertyPackage propertyPackage,
+			boolean optimize, PropertyPackage propertyPackage,
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
@@ -81,6 +83,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.fileName = fileName
 		this.schedulingConstraint = schedulingConstraint
 		//
+		this.optimize = optimize
 		this.propertyPackage = propertyPackage
 		//
 		this.testedComponentsForStates = testedComponentsForStates
@@ -100,7 +103,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
-			propertyPackage,
+			optimize, propertyPackage,
 			testedComponentsForStates, testedComponentsForTransitions,
 			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 			testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,

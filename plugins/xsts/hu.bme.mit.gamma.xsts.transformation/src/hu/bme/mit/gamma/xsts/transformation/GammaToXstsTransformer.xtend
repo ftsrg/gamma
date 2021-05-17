@@ -108,7 +108,7 @@ class GammaToXstsTransformer {
 
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			String targetFolderUri, String fileName) {
-		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName)
+		val component = modelPreprocessor.preprocess(_package, #[], targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}
@@ -116,7 +116,7 @@ class GammaToXstsTransformer {
 	def preprocessAndExecute(hu.bme.mit.gamma.statechart.interface_.Package _package,
 			List<Expression> topComponentArguments, String targetFolderUri, String fileName) {
 		val component = modelPreprocessor.preprocess(_package, topComponentArguments,
-			targetFolderUri, fileName)
+			targetFolderUri, fileName, optimize)
 		val newPackage = component.containingPackage
 		return newPackage.execute
 	}

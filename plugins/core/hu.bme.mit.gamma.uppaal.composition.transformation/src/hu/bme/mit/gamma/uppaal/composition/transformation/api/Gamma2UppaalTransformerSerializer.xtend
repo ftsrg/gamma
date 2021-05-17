@@ -29,8 +29,8 @@ class Gamma2UppaalTransformerSerializer {
 	protected final String fileName
 	protected final Constraint constraint
 	protected final Scheduler scheduler
-	protected final boolean isMinimalElementSet
 	// Slicing
+	protected final boolean optimize
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final ComponentInstanceReferences testedComponentsForStates
@@ -61,9 +61,9 @@ class Gamma2UppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Constraint constraint, Scheduler scheduler,
-			boolean isMinimalElementSet) {
+			boolean optimize) {
 		this(component, arguments, targetFolderUri, fileName, constraint,
-			scheduler, isMinimalElementSet, null, null, null, null, null, null,
+			scheduler, optimize, null, null, null, null, null, null,
 			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
@@ -72,8 +72,7 @@ class Gamma2UppaalTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Constraint constraint, Scheduler scheduler,
-			boolean isMinimalElementSet,
-			PropertyPackage propertyPackage,
+			boolean optimize, PropertyPackage propertyPackage,
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
@@ -91,8 +90,8 @@ class Gamma2UppaalTransformerSerializer {
 		this.fileName = fileName
 		this.constraint = constraint
 		this.scheduler = scheduler
-		this.isMinimalElementSet = isMinimalElementSet
 		//
+		this.optimize = optimize
 		this.propertyPackage = propertyPackage
 		//
 		this.testedComponentsForStates = testedComponentsForStates
@@ -112,7 +111,7 @@ class Gamma2UppaalTransformerSerializer {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
 		
 		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments,
-			targetFolderUri, fileName)
+			targetFolderUri, fileName, optimize)
 		// Top component arguments are now be contained by the Package (preprocess)
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(newTopComponent, false)
@@ -130,10 +129,7 @@ class Gamma2UppaalTransformerSerializer {
 		slicerAnnotatorAndPropertyGenerator.execute
 		// Normal transformation
 		val transformer = new CompositeToUppaalTransformer(
-			newTopComponent,
-			scheduler,
-			constraint,
-			isMinimalElementSet) 
+			newTopComponent, scheduler, constraint) 
 		val resultModels = transformer.execute
 		val nta = resultModels.getKey
 		val trace = resultModels.value

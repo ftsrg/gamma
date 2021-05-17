@@ -115,7 +115,7 @@ AnalysisModelTransformation returns AnalysisModelTransformation:
 			'file' ':' fileName+=STRING |
 			'language' ':' languages+=AnalysisLanguage |
 			'property-file' ':' propertyPackage=[property::PropertyPackage | STRING] | // Property models
-			'minimal-element-set' ':' ('false' | minimalElementSet?='true') |
+			'optimize' ':' optimize=BOOLEAN |
 			'scheduler' ':' scheduler+=Scheduler |
 			'constraint' ':' constraint=Constraint |
 			coverages+=Coverage

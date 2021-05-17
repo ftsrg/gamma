@@ -355,12 +355,10 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			
 			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
 			Scheduler scheduler = getGammaScheduler(transformation.getScheduler().get(0));
-			boolean isMinimalSet = transformation.isMinimalElementSet();
 			Gamma2UppaalTransformerSerializer transformer = new Gamma2UppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					constraint, scheduler, isMinimalSet,
-					transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, constraint, scheduler,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
@@ -455,9 +453,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
@@ -542,9 +540,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,

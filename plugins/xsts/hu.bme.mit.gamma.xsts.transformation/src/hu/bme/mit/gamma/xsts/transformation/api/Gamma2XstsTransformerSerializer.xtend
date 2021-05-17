@@ -38,6 +38,7 @@ class Gamma2XstsTransformerSerializer {
 	protected final String fileName
 	protected final Integer schedulingConstraint
 	// Slicing
+	protected final boolean optimize
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final ComponentInstanceReferences testedComponentsForStates
@@ -71,8 +72,9 @@ class Gamma2XstsTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			null, null, null, null, null, null,InteractionCoverageCriterion.EVERY_INTERACTION,
-			InteractionCoverageCriterion.EVERY_INTERACTION,
+			true, null,
+			null, null, null, null, null,
+			InteractionCoverageCriterion.EVERY_INTERACTION, InteractionCoverageCriterion.EVERY_INTERACTION,
 			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
 	}
@@ -80,7 +82,7 @@ class Gamma2XstsTransformerSerializer {
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			PropertyPackage propertyPackage,
+			boolean optimize, PropertyPackage propertyPackage,
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
@@ -98,6 +100,7 @@ class Gamma2XstsTransformerSerializer {
 		this.fileName = fileName
 		this.schedulingConstraint = schedulingConstraint
 		//
+		this.optimize = optimize
 		this.propertyPackage = propertyPackage
 		//
 		this.testedComponentsForStates = testedComponentsForStates
@@ -116,7 +119,7 @@ class Gamma2XstsTransformerSerializer {
 	def void execute() {
 		val gammaPackage = StatechartModelDerivedFeatures.getContainingPackage(component)
 		// Preprocessing
-		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName)
+		val newTopComponent = preprocessor.preprocess(gammaPackage, arguments, targetFolderUri, fileName, optimize)
 		val newGammaPackage = StatechartModelDerivedFeatures.getContainingPackage(newTopComponent)
 		// Slicing and Property generation
 		val slicerAnnotatorAndPropertyGenerator = new ModelSlicerModelAnnotatorPropertyGenerator(
