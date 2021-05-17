@@ -46,14 +46,14 @@ class ScenarioStatechartTraceGenerator {
 
 	Package _package
 
-	new(StatechartDefinition sd, String absoluteParentFolder) {
+	new(StatechartDefinition sd) {
 		this.statechart = sd
-		this.absoluteParentFolder = absoluteParentFolder
 		this._package = ecoreUtil.getContainerOfType(statechart, Package)
 	}
 
 	def List<ExecutionTrace> execute() {
 		var Component c = statechart;
+		absoluteParentFolder = (statechart.eResource.file).parentFile.absolutePath
 		var result = <ExecutionTrace>newArrayList
 		if (statechart.getAnnotation() instanceof ScenarioContractAnnotation && testOriginal) {
 			c = ( statechart.getAnnotation() as ScenarioContractAnnotation).getMonitoredComponent();

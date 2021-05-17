@@ -266,14 +266,22 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		t2.targetState = prevprev
 		statechart.transitions.add(t1)
 		statechart.transitions.add(t2)
-		
+
 		val evaluator = ExpressionEvaluator.INSTANCE;
-		t1.guard = getMinCheck(2,evaluator.evaluateInteger(loop.minimum))
-		t2.guard = getMaxCheck(2,evaluator.evaluateInteger(loop.maximum))
-		
-		t2.effects+=incrementVar(2)
-		t1.effects+=setIntVariable(2,0)
-		
+		t1.guard = getMinCheck(2, evaluator.evaluateInteger(loop.minimum))
+//		t2.guard = getMaxCheck(2,evaluator.evaluateInteger(loop.maximum))
+		var maxCheck = createLessExpression
+		var ref1 = createDirectReferenceExpression
+		ref1.declaration = statechart.variableDeclarations.get(2)
+		maxCheck.leftOperand = ref1
+		var max = createIntegerLiteralExpression
+		max.value = BigInteger.valueOf(evaluator.evaluateInteger(loop.maximum))
+		maxCheck.rightOperand = max
+		t2.guard = maxCheck
+
+		t2.effects += incrementVar(2)
+		t1.effects += setIntVariable(2, 1)
+
 		return null;
 
 	}
@@ -526,15 +534,17 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var allPorts = statechart.ports.filter[!it.inputEvents.empty]
 		for (s : set.modalInteractions) {
 			if (s instanceof Signal) {
-				val portName = s.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-						getTurnedOutPortName(s.port) : s.port.name
+				val portName = s.direction == InteractionDirection.SEND
+						? scenarioStatechartUtil.getTurnedOutPortName(s.port)
+						: s.port.name
 				ports.add(getPort(portName))
 				events.add(getEvent(s.event.name, getPort(portName)))
 			} else if (s instanceof NegatedModalInteraction) {
 				val m = s.modalinteraction
 				if (m instanceof Signal) {
-					val portName = m.direction == InteractionDirection.SEND ? scenarioStatechartUtil.
-							getTurnedOutPortName(m.port) : m.port.name
+					val portName = m.direction == InteractionDirection.SEND
+							? scenarioStatechartUtil.getTurnedOutPortName(m.port)
+							: m.port.name
 					ports.add(getPort(portName))
 					events.add(getEvent(m.event.name, getPort(portName)))
 				}
@@ -905,7 +915,8 @@ class StatechartGenerator extends ScenarioModelSwitch<EObject> {
 		var t = createTransition
 		t.sourceState = initial
 		t.targetState = s
-		t.effects.add(setIntVariable(0, 1))
+		t.effects += setIntVariable(0, 1)
+		t.effects += setIntVariable(2, 1)
 		statechart.transitions.add(t)
 
 		var tmp = createNewState(scenarioStatechartUtil.hotViolation)
