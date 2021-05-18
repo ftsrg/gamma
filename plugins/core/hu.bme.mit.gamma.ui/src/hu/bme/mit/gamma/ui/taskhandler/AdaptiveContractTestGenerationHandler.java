@@ -24,10 +24,13 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 
+import hu.bme.mit.gamma.expression.util.ExpressionEvaluator;
 import hu.bme.mit.gamma.genmodel.derivedfeatures.GenmodelDerivedFeatures;
 import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration;
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation;
+import hu.bme.mit.gamma.genmodel.model.Constraint;
+import hu.bme.mit.gamma.genmodel.model.OrchestratingConstraint;
 import hu.bme.mit.gamma.genmodel.model.ProgrammingLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
 import hu.bme.mit.gamma.property.model.PropertyPackage;
@@ -37,6 +40,7 @@ import hu.bme.mit.gamma.statechart.contract.StateContractAnnotation;
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures;
 import hu.bme.mit.gamma.statechart.interface_.Component;
 import hu.bme.mit.gamma.statechart.interface_.Port;
+import hu.bme.mit.gamma.statechart.interface_.TimeUnit;
 import hu.bme.mit.gamma.statechart.statechart.State;
 import hu.bme.mit.gamma.statechart.statechart.StateAnnotation;
 import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition;
@@ -49,7 +53,6 @@ import hu.bme.mit.gamma.trace.model.Step;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
 import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.ui.taskhandler.VerificationHandler.ExecutionTraceSerializer;
-import hu.bme.mit.gamma.util.GammaEcoreUtil;
 
 public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 	//
@@ -158,8 +161,16 @@ public class AdaptiveContractTestGenerationHandler extends TaskHandler {
 					StateContractAnnotation stateContractAnnotation = (StateContractAnnotation) annotation;
 					for (StatechartDefinition contract : stateContractAnnotation.getContractStatecharts()) {
 						ExecutionTrace clonedTrace = ecoreUtil.clone(trace);
-						// TODO extending clonedTrace... 
-						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(contract);
+						Constraint constraint = testGeneration.getModelTransformation().getConstraint();
+						int schedulingConstraint = 0;
+						ExpressionEvaluator evaluator = ExpressionEvaluator.INSTANCE;
+						if(constraint instanceof OrchestratingConstraint) {
+							schedulingConstraint =  evaluator.evaluate(((OrchestratingConstraint) constraint).getMinimumPeriod().getValue());
+							if(((OrchestratingConstraint) constraint).getMinimumPeriod().getUnit().equals(TimeUnit.SECOND) ) {
+								schedulingConstraint*=1000;
+							}
+						}
+						ScenarioStatechartTraceGenerator traceGenerator = new ScenarioStatechartTraceGenerator(contract,schedulingConstraint);
 						List<ExecutionTrace> traces = traceGenerator.execute();
 						for (ExecutionTrace e : traces) {						
 						    ExecutionTrace tmp = ecoreUtil.clone(clonedTrace);

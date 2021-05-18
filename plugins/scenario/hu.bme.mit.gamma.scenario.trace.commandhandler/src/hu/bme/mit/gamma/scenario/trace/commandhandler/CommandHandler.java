@@ -46,7 +46,7 @@ public class CommandHandler extends AbstractHandler {
 					Package p = (Package) resource.getContents().get(0);
 					StatechartDefinition scd = (StatechartDefinition) p.getComponents().get(0);
 					String absoluteParentFolder = firstElement.getParent().getLocation().toString();
-					ScenarioStatechartTraceGenerator validator = new ScenarioStatechartTraceGenerator(scd);
+					ScenarioStatechartTraceGenerator validator = new ScenarioStatechartTraceGenerator(scd,0);
 					List<ExecutionTrace> result = validator.execute();
 					for (ExecutionTrace e : result) {
 						URI uri = URI.createFileURI(URI.decode(absoluteParentFolder + File.separator + "trace"

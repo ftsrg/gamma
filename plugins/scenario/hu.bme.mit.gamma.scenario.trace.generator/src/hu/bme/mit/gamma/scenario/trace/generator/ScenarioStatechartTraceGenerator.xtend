@@ -41,12 +41,15 @@ class ScenarioStatechartTraceGenerator {
 	StatechartDefinition statechart = null
 
 	val boolean testOriginal = true
+	
+	var int schedulingConstraint=0
 
 	String absoluteParentFolder
 
 	Package _package
 
-	new(StatechartDefinition sd) {
+	new(StatechartDefinition sd, int schedulingConstraint) {
+		this.schedulingConstraint=schedulingConstraint
 		this.statechart = sd
 		this._package = ecoreUtil.getContainerOfType(statechart, Package)
 	}
@@ -59,7 +62,13 @@ class ScenarioStatechartTraceGenerator {
 			c = ( statechart.getAnnotation() as ScenarioContractAnnotation).getMonitoredComponent();
 		}
 
-		val gammaToXSTSTransformer = new GammaToXstsTransformer();
+	var GammaToXstsTransformer gammaToXSTSTransformer =null
+	if(schedulingConstraint >0){
+		 gammaToXSTSTransformer = new GammaToXstsTransformer(schedulingConstraint,true,true);
+	} else {
+		 gammaToXSTSTransformer = new GammaToXstsTransformer();
+	}
+		
 		val xStsFile = new File(absoluteParentFolder + File.separator +
 			fileNamer.getXtextXStsFileName(statechart.getName()));
 		val xStsString = gammaToXSTSTransformer.preprocessAndExecuteAndSerialize(_package, absoluteParentFolder,
