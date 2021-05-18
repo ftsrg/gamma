@@ -37,9 +37,12 @@ public class CodeGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(CodeGeneration codeGeneration, String packageName) {
-		checkArgument(codeGeneration.getLanguage().size() == 1, 
-				"A single programming language must be specified: " + codeGeneration.getLanguage());
-		checkArgument(codeGeneration.getLanguage().get(0) == ProgrammingLanguage.JAVA, 
+		// Setting target folder
+		setTargetFolder(codeGeneration);
+		//
+		checkArgument(codeGeneration.getProgrammingLanguages().size() == 1, 
+				"A single programming language must be specified: " + codeGeneration.getProgrammingLanguages());
+		checkArgument(codeGeneration.getProgrammingLanguages().get(0) == ProgrammingLanguage.JAVA, 
 				"Currently only Java is supported.");
 		setCodeGeneration(codeGeneration, packageName);
 		Component component = codeGeneration.getComponent();

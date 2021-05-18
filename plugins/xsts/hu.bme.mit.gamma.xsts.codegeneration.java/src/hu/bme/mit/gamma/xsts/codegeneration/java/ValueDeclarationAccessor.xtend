@@ -9,7 +9,7 @@ import hu.bme.mit.gamma.expression.model.ValueDeclaration
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.expression.util.ComplexTypeUtil
 import hu.bme.mit.gamma.expression.util.ExpressionEvaluator
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator3
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.expression.util.FieldHierarchy
 import hu.bme.mit.gamma.expression.util.IndexHierarchy
 import hu.bme.mit.gamma.statechart.interface_.Port
@@ -25,7 +25,7 @@ class ValueDeclarationAccessor {
 	public static final ValueDeclarationAccessor INSTANCE = new ValueDeclarationAccessor
 	protected new() {}
 	//
-	protected final extension ExpressionTypeDeterminator3 expressionTypeDeterminator = ExpressionTypeDeterminator3.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	protected final extension ComplexTypeUtil complexTypeUtil = ComplexTypeUtil.INSTANCE
 	protected final extension ExpressionSerializer expressionSerializer = ExpressionSerializer.INSTANCE
 	protected final extension ExpressionEvaluator expressionEvaluator = ExpressionEvaluator.INSTANCE

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Gamma project
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -25,6 +25,7 @@ import java.util.logging.Level;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 
 import hu.bme.mit.gamma.genmodel.model.AnalysisLanguage;
 import hu.bme.mit.gamma.genmodel.model.Verification;
@@ -41,28 +42,35 @@ import hu.bme.mit.gamma.theta.verification.ThetaVerification;
 import hu.bme.mit.gamma.trace.model.ExecutionTrace;
 import hu.bme.mit.gamma.trace.testgeneration.java.TestGenerator;
 import hu.bme.mit.gamma.trace.util.TraceUtil;
+import hu.bme.mit.gamma.transformation.util.GammaFileNamer;
 import hu.bme.mit.gamma.transformation.util.reducer.CoveredPropertyReducer;
 import hu.bme.mit.gamma.uppaal.verification.UppaalVerification;
 import hu.bme.mit.gamma.uppaal.verification.XstsUppaalVerification;
+import hu.bme.mit.gamma.util.FileUtil;
 import hu.bme.mit.gamma.verification.util.AbstractVerification;
 import hu.bme.mit.gamma.verification.util.AbstractVerifier.Result;
 
 public class VerificationHandler extends TaskHandler {
 
+	protected boolean serializeTest; // Denotes whether test code is generated
 	protected String testFolderUri;
 	// targetFolderUri is traceFolderUri 
 	protected String svgFileName; // Set in setVerification
 	protected final String traceFileName = "ExecutionTrace";
 	protected final String testFileName = traceFileName + "Simulation";
 	protected TraceUtil traceUtil = TraceUtil.INSTANCE;
+	protected ExecutionTraceSerializer serializer = ExecutionTraceSerializer.INSTANCE;
 	
 	public VerificationHandler(IFile file) {
 		super(file);
 	}
 	
 	public void execute(Verification verification) throws IOException {
+		// Setting target folder
+		setTargetFolder(verification);
+		//
 		setVerification(verification);
-		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getLanguages());
+		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(verification.getAnalysisLanguages());
 		checkArgument(languagesSet.size() == 1);
 		AbstractVerification verificationTask = null;
 		PropertySerializer propertySerializer = null;
@@ -107,7 +115,7 @@ public class VerificationHandler extends TaskHandler {
 			String serializedFormula = propertySerializer.serialize(formula);
 			// Saving the string
 			File file = modelFile;
-			String fileName = fileUtil.toHiddenFileName(fileUtil.changeExtension(file.getName(), "pd"));
+			String fileName = fileNamer.getHiddenSerializedPropertyFileName(file.getName());
 			File queryFile = new File(file.getParentFile().toString() + File.separator + fileName);
 			fileUtil.saveString(queryFile, serializedFormula);
 			queryFile.deleteOnExit();
@@ -139,8 +147,11 @@ public class VerificationHandler extends TaskHandler {
 			traceUtil.removeCoveredExecutionTraces(retrievedTraces);
 		}
 		// Serializing
+		String testFolderUri = serializeTest ? this.testFolderUri : null;
+		String testFileName = serializeTest ? this.testFileName : null;
 		for (ExecutionTrace trace : retrievedTraces) {
-			serializeTest(trace, packageName);
+			serializer.serialize(targetFolderUri, traceFileName, svgFileName,
+					testFolderUri, testFileName, packageName, trace);
 		}
 	}
 
@@ -167,37 +178,6 @@ public class VerificationHandler extends TaskHandler {
 		return trace;
 	}
 	
-	protected void serializeTest(ExecutionTrace trace, String basePackage) throws IOException {
-		String traceFolder = targetFolderUri;
-		
-		// Model
-		Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolder),
-				traceFileName, "get");
-		String fileName = fileNamePair.getKey();
-		Integer id = fileNamePair.getValue();
-		saveModel(trace, traceFolder, fileName);
-		
-		// SVG
-		if (svgFileName != null) {
-			TraceToPlantUmlTransformer transformer = new TraceToPlantUmlTransformer(trace);
-			String plantUmlString = transformer.execute();
-			SvgSerializer serializer = SvgSerializer.INSTANCE;
-			String svg = serializer.serialize(plantUmlString);
-			String svgFileNameWithId = svgFileName + id;
-			fileUtil.saveString(traceFolder + File.separator + svgFileNameWithId + ".svg", svg);
-		}
-		
-		// Test
-		String className = testFileName + id;
-		
-		TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
-		String testCode = testGenerator.execute();
-		String testFolder = testFolderUri;
-		String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
-		fileUtil.saveString(testFolder + File.separator + packageUri +
-			File.separator + className + ".java", testCode);
-	}
-	
 	private void setVerification(Verification verification) {
 		if (verification.getPackageName().isEmpty()) {
 			verification.getPackageName().add(file.getProject().getName().toLowerCase());
@@ -208,13 +188,74 @@ public class VerificationHandler extends TaskHandler {
 		if (!verification.getSvgFileName().isEmpty()) {
 			this.svgFileName = verification.getSvgFileName().get(0);
 		}
-		// Setting the attribute, the test folder is a RELATIVE path now from the project
-		testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
-		File file = ecoreUtil.getFile(verification.eResource()).getParentFile();
+		if (verification.getProgrammingLanguages().isEmpty()) {
+			this.serializeTest = false;
+		}
+		else {
+			this.serializeTest = true;
+			// Setting the attribute, the test folder is a RELATIVE path now from the project
+			this.testFolderUri = URI.decode(projectLocation + File.separator + verification.getTestFolder().get(0));
+		}
+		Resource resource = verification.eResource();
+		File file = (resource != null) ?
+				ecoreUtil.getFile(resource).getParentFile() : // If Verification is contained in a resource
+					fileUtil.toFile(super.file).getParentFile(); // If Verification is created in Java
 		// Setting the file paths
 		verification.getFileName().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
 		// Setting the query paths
 		verification.getQueryFiles().replaceAll(it -> fileUtil.exploreRelativeFile(file, it).toString());
+	}
+	
+	public static class ExecutionTraceSerializer {
+		//
+		public static ExecutionTraceSerializer INSTANCE = new ExecutionTraceSerializer();
+		protected ExecutionTraceSerializer() {}
+		//
+		protected final FileUtil fileUtil = FileUtil.INSTANCE;
+		protected final ModelSerializer serializer = ModelSerializer.INSTANCE;
+		
+		public void serialize(String traceFolderUri, String traceFileName, ExecutionTrace trace) throws IOException {
+			this.serialize(traceFolderUri, traceFileName, null, null, null, trace);
+		}
+		
+		public void serialize(String traceFolderUri, String traceFileName,
+				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
+			this.serialize(traceFolderUri, traceFileName, null, testFolderUri, testFileName, basePackage, trace);
+		}
+		
+		public void serialize(String traceFolderUri, String traceFileName, String svgFileName,
+				String testFolderUri, String testFileName, String basePackage, ExecutionTrace trace) throws IOException {
+			
+			// Model
+			Entry<String, Integer> fileNamePair = fileUtil.getFileName(new File(traceFolderUri),
+					traceFileName, GammaFileNamer.EXECUTION_XTEXT_EXTENSION);
+			String fileName = fileNamePair.getKey();
+			Integer id = fileNamePair.getValue();
+			serializer.saveModel(trace, traceFolderUri, fileName);
+			
+			// SVG
+			if (svgFileName != null) {
+				TraceToPlantUmlTransformer transformer = new TraceToPlantUmlTransformer(trace);
+				String plantUmlString = transformer.execute();
+				SvgSerializer serializer = SvgSerializer.INSTANCE;
+				String svg = serializer.serialize(plantUmlString);
+				String svgFileNameWithId = svgFileName + id;
+				fileUtil.saveString(traceFolderUri + File.separator + svgFileNameWithId + ".svg", svg);
+			}
+			
+			// Test
+			boolean serializeTest = testFolderUri != null && testFileName != null && basePackage != null;
+			if (serializeTest) {
+				String className = testFileName + id;
+				
+				TestGenerator testGenerator = new TestGenerator(trace, basePackage, className);
+				String testCode = testGenerator.execute();
+				String packageUri = testGenerator.getPackageName().replaceAll("\\.", "/");
+				fileUtil.saveString(testFolderUri + File.separator + packageUri +
+					File.separator + className + ".java", testCode);
+			}
+		}
+		
 	}
 	
 }

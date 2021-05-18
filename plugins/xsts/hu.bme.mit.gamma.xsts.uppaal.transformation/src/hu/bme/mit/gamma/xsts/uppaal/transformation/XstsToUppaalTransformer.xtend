@@ -28,6 +28,7 @@ import hu.bme.mit.gamma.xsts.util.XstsActionUtil
 import java.util.List
 import java.util.Set
 import uppaal.NTA
+import uppaal.declarations.DataVariablePrefix
 import uppaal.declarations.ValueIndex
 import uppaal.declarations.VariableContainer
 import uppaal.expressions.Expression
@@ -35,9 +36,10 @@ import uppaal.templates.Edge
 import uppaal.templates.Location
 import uppaal.templates.LocationKind
 
+import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
+import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.uppaal.util.XstsNamings.*
 import static extension hu.bme.mit.gamma.xsts.derivedfeatures.XstsDerivedFeatures.*
-import static extension de.uni_paderborn.uppaal.derivedfeatures.UppaalModelDerivedFeatures.*
 
 class XstsToUppaalTransformer {
 	
@@ -171,6 +173,7 @@ class XstsToUppaalTransformer {
 	protected def dispatch Location transformAction(VariableDeclarationAction action, Location source) {
 		val xStsVariable = action.variableDeclaration
 		val uppaalVariable = xStsVariable.transformAndTraceVariable
+		uppaalVariable.prefix = DataVariablePrefix.META // Works if local variable assignments are deterministic
 		uppaalVariable.extendNameWithHash // Needed for local declarations
 		transientVariables += uppaalVariable
 		val xStsInitialValue = xStsVariable.initialValue

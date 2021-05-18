@@ -15,10 +15,11 @@ import org.eclipse.xtext.validation.Check;
 import hu.bme.mit.gamma.action.model.Action;
 import hu.bme.mit.gamma.action.model.AssignmentStatement;
 import hu.bme.mit.gamma.action.model.Block;
+import hu.bme.mit.gamma.action.model.Branch;
+import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.action.util.ActionModelValidator;
-import hu.bme.mit.gamma.expression.model.SelectExpression;
 
 /**
  * This class contains custom validation rules. 
@@ -47,21 +48,25 @@ public class ActionLanguageValidator extends AbstractActionLanguageValidator {
 	public void checkDuplicateVariableDeclarationStatements(VariableDeclarationStatement statement) {
 		handleValidationResultMessage(actionModelValidator.checkDuplicateVariableDeclarationStatements(statement));
 	}
-	
-	@Check
-	public void checkSelectExpression(SelectExpression expression){
-		handleValidationResultMessage(actionModelValidator.checkSelectExpression(expression));
-	}
 
 	@Check
-	public void CheckReturnStatementType(ReturnStatement rs) {
+	public void checkReturnStatementType(ReturnStatement rs) {
 		handleValidationResultMessage(actionModelValidator.checkReturnStatementType(rs));
 	}
 	
-//////////////////////////////////////////////////////////////////////
+	@Check
+	public void checkReturnStatementPositions(ProcedureDeclaration procedure) {
+		handleValidationResultMessage(actionModelValidator.checkReturnStatementPositions(procedure));
+	}
 	
 	@Check
 	public void checkBlockIsEmpty(Block block) {
 		handleValidationResultMessage(actionModelValidator.checkBlockIsEmpty(block));
 	}
+	
+	@Check
+	public void checkBranch(Branch branch) {
+		handleValidationResultMessage(actionModelValidator.checkBranch(branch));
+	}
+	
 }

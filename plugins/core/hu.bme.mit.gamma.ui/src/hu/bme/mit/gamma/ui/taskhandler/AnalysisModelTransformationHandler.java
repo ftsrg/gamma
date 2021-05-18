@@ -36,6 +36,7 @@ import hu.bme.mit.gamma.genmodel.model.Coverage;
 import hu.bme.mit.gamma.genmodel.model.DataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.EventCoverage;
 import hu.bme.mit.gamma.genmodel.model.InteractionCoverage;
+import hu.bme.mit.gamma.genmodel.model.InteractionDataflowCoverage;
 import hu.bme.mit.gamma.genmodel.model.ModelReference;
 import hu.bme.mit.gamma.genmodel.model.OutEventCoverage;
 import hu.bme.mit.gamma.genmodel.model.StateCoverage;
@@ -85,6 +86,9 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 	}
 	
 	public void execute(AnalysisModelTransformation transformation) throws IOException {
+		// Setting target folder
+		setTargetFolder(transformation);
+		//
 		ModelReference modelReference = transformation.getModel();
 		setAnalysisModelTransformation(transformation);
 		Set<AnalysisLanguage> languagesSet = new HashSet<AnalysisLanguage>(
@@ -155,7 +159,7 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 		protected void serializeProperties(PropertyPackage propertyPackage, String fileName)
 				throws IOException {
 			if (propertyPackage != null) {
-				saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
+				serializer.saveModel(propertyPackage, targetFolderUri, fileNamer.getHiddenPropertyFileName(fileName));
 				serializeStringProperties(propertyPackage, fileName);
 			}
 		}
@@ -255,6 +259,16 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			return transformCoverageCriterion(notNullCoverage.getDataflowCoverageCriterion());
 		}
 		
+		protected DataflowCoverageCriterion getInteractionDataflowCoverageCriterion(
+				Collection<? extends Coverage> coverages) {
+			Optional<?> coverage = coverages.stream().filter(it -> it instanceof InteractionDataflowCoverage).findFirst();
+			if (coverage.isEmpty()) {
+				return null;
+			}
+			InteractionDataflowCoverage notNullCoverage = (InteractionDataflowCoverage) coverage.get();
+			return transformCoverageCriterion(notNullCoverage.getInteractionDataflowCoverageCriterion());
+		}
+				
 		protected Integer transformConstraint(hu.bme.mit.gamma.genmodel.model.Constraint constraint) {
 			if (constraint == null) {
 				return null;
@@ -334,19 +348,22 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Constraint constraint = transformSchedulingConstraint(transformation.getConstraint());
 			Scheduler scheduler = getGammaScheduler(transformation.getScheduler().get(0));
-			boolean isMinimalSet = transformation.isMinimalElementSet();
 			Gamma2UppaalTransformerSerializer transformer = new Gamma2UppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					constraint, scheduler, isMinimalSet,
-					transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, constraint, scheduler,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -430,15 +447,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsTransformerSerializer transformer = new Gamma2XstsTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);
@@ -512,15 +534,20 @@ public class AnalysisModelTransformationHandler extends TaskHandler {
 			ComponentInstanceVariableReferences dataflowTestedVariables = getDataflowCoverageVariables(
 					coverages, DataflowCoverage.class);
 			DataflowCoverageCriterion dataflowCoverageCriterion = getDataflowCoverageCriterion(coverages);
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow = getCoveragePorts(
+					coverages, InteractionDataflowCoverage.class);
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion =
+				getInteractionDataflowCoverageCriterion(coverages);
 			
 			Gamma2XstsUppaalTransformerSerializer transformer = new Gamma2XstsUppaalTransformerSerializer(
-					component,
-					reference.getArguments(), targetFolderUri, fileName,
-					schedulingConstraint, transformation.getPropertyPackage(),
+					component, reference.getArguments(),
+					targetFolderUri, fileName, schedulingConstraint,
+					transformation.isOptimize(), transformation.getPropertyPackage(),
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
 			transformer.execute();
 			// Property serialization
 			serializeProperties(fileName);

@@ -124,10 +124,8 @@ SwitchStatement returns ActionModel::SwitchStatement:
 ;
 
 ForStatement returns ActionModel::ForStatement:
-	'for' '(' parameter=ParameterDeclaration'in' range=(Expression | TypeReferenceExpression)
-		 ')'
+	'for' '(' parameter=ParameterDeclaration 'in' range=Expression ')'
 	(=> body=Action)
-	(=> 'then' then=Action)?
 ;
 
 ReturnStatement returns ActionModel::ReturnStatement:
@@ -154,7 +152,6 @@ AssertionStatement returns ActionModel::AssertionStatement:
 	'assert' '(' assertion=Expression ')'
 ;
 
-
 //Lvalue expression rules based on the constraint model
 
 AssignableAccessExpression returns ConstraintModel::ReferenceExpression:
@@ -171,18 +168,4 @@ AssignablePrimaryExpression returns ConstraintModel::ReferenceExpression:
 
 AssignableDirectReferenceExpression returns ConstraintModel::ReferenceExpression:
 		{ConstraintModel::DirectReferenceExpression} declaration=[ConstraintModel::ValueDeclaration]
-;
-
-TypeReferenceExpression returns ConstraintModel::Expression: 
-	  '«' {ActionModel::TypeReferenceExpression} declaration=[ConstraintModel::TypeDeclaration] '»'
-;
-
-@Override
-PrimaryExpression returns ConstraintModel::Expression:
-		super | 
-		TypeSelectExpression
-;
-
-TypeSelectExpression returns ConstraintModel::Expression: 
-	{ConstraintModel::SelectExpression} operand=TypeReferenceExpression '->' 'select'
 ;

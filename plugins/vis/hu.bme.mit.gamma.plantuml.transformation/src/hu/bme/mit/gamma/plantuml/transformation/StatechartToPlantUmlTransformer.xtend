@@ -177,7 +177,7 @@ class StatechartToPlantUmlTransformer {
 	// Handling the different instances of actions
 	
 	protected def transformAction(Action action) {
-		return action.serialize
+		return action.serialize.replaceAll(System.lineSeparator, "\\\\n") // PlantUML needs \\n
 	}
 
 	

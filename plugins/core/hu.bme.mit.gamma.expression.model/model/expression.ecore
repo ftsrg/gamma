@@ -159,6 +159,8 @@
         eType="#//FieldAssignment" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumerationLiteralExpression" eSuperTypes="#//NullaryExpression #//LiteralExpression">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeReference" lowerBound="1"
+        eType="#//TypeReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="reference" lowerBound="1"
         eType="#//EnumerationLiteralDefinition"/>
   </eClassifiers>

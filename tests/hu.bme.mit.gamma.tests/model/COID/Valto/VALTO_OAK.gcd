@@ -39,13 +39,13 @@ statechart VALTO_OAK(P_OAK : boolean) [
 		StateMachine_Port.POS_NYUGTA;
 	region main_region_of_VALTO_OAK {
 		state Oldalvedelem_athelyezes_nem_kenyszeritheto_0 {
-			entry / RS_OAK := ::NINCS_KENYSZERITVE; a := 314;
+			entry / RS_OAK := Kenyszeritett::NINCS_KENYSZERITVE; a := 314;
 		}
 		state Oldalvedelem_athelyezes_nincs_kenyszeritve_1 {
-			entry / RS_OAK := ::NINCS_KENYSZERITVE; O_OAK := 0;
+			entry / RS_OAK := Kenyszeritett::NINCS_KENYSZERITVE; O_OAK := 0;
 		}
 		state Oldalvedelem_athelyezes_kenyszeritve_2 {
-			entry / RS_OAK := ::KENYSZERITVE; O_OAK := 1;
+			entry / RS_OAK := Kenyszeritett::KENYSZERITVE; O_OAK := 1;
 		}
 		choice choice_5_in_main_region_of_VALTO_OAK
 		initial init_6_in_main_region_of_VALTO_OAK

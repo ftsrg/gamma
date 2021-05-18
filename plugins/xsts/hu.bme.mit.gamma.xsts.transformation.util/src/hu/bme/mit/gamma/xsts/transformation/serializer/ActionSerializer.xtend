@@ -63,7 +63,7 @@ class ActionSerializer {
 	def dispatch String serialize(LoopAction action) {
 		val name = action.iterationParameterDeclaration.name
 		val left = action.range.getLeft(true)
-		val right = action.range.getRight(true)
+		val right = action.range.getRight(false)
 		return '''
 			for «name» from «left.serialize» to «right.serialize» do {
 				«action.action.serialize»

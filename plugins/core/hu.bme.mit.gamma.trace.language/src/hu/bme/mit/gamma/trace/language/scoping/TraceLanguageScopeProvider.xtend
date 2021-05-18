@@ -10,8 +10,6 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.trace.language.scoping
 
-import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
-import hu.bme.mit.gamma.expression.model.EnumerationTypeDefinition
 import hu.bme.mit.gamma.expression.model.ExpressionModelPackage
 import hu.bme.mit.gamma.expression.model.VariableDeclaration
 import hu.bme.mit.gamma.statechart.composite.AsynchronousCompositeComponent
@@ -31,15 +29,8 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 
-import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
 import static extension hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures.*
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 
 	new() {
@@ -116,12 +107,6 @@ class TraceLanguageScopeProvider extends AbstractTraceLanguageScopeProvider {
 			}
 			val variables = EcoreUtil2.getAllContentsOfType(instanceType, VariableDeclaration)
 			return Scopes.scopeFor(variables)
-		}
-		if (context instanceof EnumerationLiteralExpression) {
-			val typeDeclarations = util.getTypeDeclarations(context)
-			val enumTypes = typeDeclarations.map[it.typeDefinition].filter(EnumerationTypeDefinition)
-			val literals = enumTypes.map[it.literals].flatten
-			return Scopes.scopeFor(literals)
 		}
 		super.getScope(context, reference)
 	}

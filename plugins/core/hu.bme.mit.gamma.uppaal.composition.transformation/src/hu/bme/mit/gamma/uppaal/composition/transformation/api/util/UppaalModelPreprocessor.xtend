@@ -26,8 +26,9 @@ class UppaalModelPreprocessor extends AnalysisModelPreprocessor {
 	//
 	
 	override preprocess(Package gammaPackage, List<Expression> topComponentArguments,
-			String targetFolderUri, String fileName) {
-		val topComponent = super.preprocess(gammaPackage, topComponentArguments, targetFolderUri, fileName)
+			String targetFolderUri, String fileName, boolean optimize) {
+		val topComponent = super.preprocess(gammaPackage, topComponentArguments,
+			targetFolderUri, fileName, optimize)
 		val resource = topComponent.eResource
 		val _package = topComponent.getContainingPackage
 		// Transforming unhandled transitions to two transitions connected by a choice

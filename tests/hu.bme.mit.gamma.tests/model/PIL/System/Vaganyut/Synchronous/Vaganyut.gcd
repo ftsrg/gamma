@@ -13,13 +13,13 @@ sync Vaganyut [
 	port Also_Valto1 : requires Valto_Also
 	port Also_Valto2 : requires Valto_Also
 ] {
-	component fojelzo : Jelzo(::FOJELZO, 0, 0)
-	component valto0 : Valto(::BAL, 0, 0, 0, 0, 0, 10)
-	component tolatasjelzo : Jelzo(::TOLATASJELZO, 0, 1)
-	component valto1 : Valto(::BAL, 0, 0, 0, 0, 0, 11)
-	component valto2 : Valto(::BAL, 0, 0, 0, 0, 0, 12)
-	component atmenetjelzo : Jelzo(::EGYESITETT, 0, 2)
-	component celjelzo : Jelzo(::EGYESITETT, 0, 3)
+	component fojelzo : Jelzo(J_tipus_t::FOJELZO, 0, 0)
+	component valto0 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 10)
+	component tolatasjelzo : Jelzo(J_tipus_t::TOLATASJELZO, 0, 1)
+	component valto1 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 11)
+	component valto2 : Valto(V_vezer_t::BAL, 0, 0, 0, 0, 0, 12)
+	component atmenetjelzo : Jelzo(J_tipus_t::EGYESITETT, 0, 2)
+	component celjelzo : Jelzo(J_tipus_t::EGYESITETT, 0, 3)
 
 	bind Felso_Fojelzo -> fojelzo.F_VU_lez
 	bind Also_Fojelzo -> fojelzo.A

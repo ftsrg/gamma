@@ -10,6 +10,7 @@
  ********************************************************************************/
 package hu.bme.mit.gamma.genmodel.language.validation
 
+import hu.bme.mit.gamma.genmodel.model.AdaptiveContractTestGeneration
 import hu.bme.mit.gamma.genmodel.model.AnalysisModelTransformation
 import hu.bme.mit.gamma.genmodel.model.AsynchronousInstanceConstraint
 import hu.bme.mit.gamma.genmodel.model.CodeGeneration
@@ -28,12 +29,8 @@ import hu.bme.mit.gamma.genmodel.util.GenmodelValidator
 import hu.bme.mit.gamma.statechart.composite.ComponentInstanceReference
 import hu.bme.mit.gamma.statechart.interface_.TimeSpecification
 import org.eclipse.xtext.validation.Check
+import hu.bme.mit.gamma.genmodel.model.AbstractComplementaryTestGeneration
 
-/**
- * This class contains custom validation rules. 
- *
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
- */
 class GenModelValidator extends AbstractGenModelValidator {
 	
 	protected final GenmodelValidator genmodelValidator = GenmodelValidator.INSTANCE
@@ -68,6 +65,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	}
 	
 	@Check
+	def checkTasks(AbstractComplementaryTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
+	}
+	
+	@Check
 	def checkTasks(TestReplayModelGeneration modelGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(modelGeneration))
 	}
@@ -95,6 +97,11 @@ class GenModelValidator extends AbstractGenModelValidator {
 	@Check
 	def checkTasks(TestGeneration testGeneration) {
 		handleValidationResultMessage(genmodelValidator.checkTasks(testGeneration))
+	}
+	
+	@Check
+	def checkReferredComponentTasks(AdaptiveContractTestGeneration testGeneration) {
+		handleValidationResultMessage(genmodelValidator.checkReferredComponentTasks(testGeneration))
 	}
 	
 	// Additional validation rules

@@ -48,12 +48,12 @@ class AnalysisModelPreprocessor {
 	protected final extension InterfaceModelFactory interfaceModelFactory = InterfaceModelFactory.eINSTANCE
 	
 	
-	def preprocess(Package gammaPackage, String targetFolderUri, String fileName) {
-		return gammaPackage.preprocess(#[], targetFolderUri, fileName)
+	def preprocess(Package gammaPackage, String targetFolderUri, String fileName, boolean optimize) {
+		return gammaPackage.preprocess(#[], targetFolderUri, fileName, optimize)
 	}
 	
 	def preprocess(Package gammaPackage, List<Expression> topComponentArguments,
-			String targetFolderUri, String fileName) {
+			String targetFolderUri, String fileName, boolean optimize) {
 		val fileNameExtensionless = fileName.extensionlessName
 		// Unfolding the given system
 		val modelUnfolder = new ModelUnfolder(gammaPackage)
@@ -76,8 +76,10 @@ class AnalysisModelPreprocessor {
 		val resource = _package.eResource
 		val resourceSet = resource.resourceSet
 		// Optimizing - removing unfireable transitions
-		val transitionOptimizer = new SystemReducer(resourceSet)
-		transitionOptimizer.execute
+		if (optimize) {
+			val transitionOptimizer = new SystemReducer(resourceSet)
+			transitionOptimizer.execute
+		}
 		// Saving the Package of the unfolded model
 		resource.save(Collections.EMPTY_MAP)
 		return _package.components.head

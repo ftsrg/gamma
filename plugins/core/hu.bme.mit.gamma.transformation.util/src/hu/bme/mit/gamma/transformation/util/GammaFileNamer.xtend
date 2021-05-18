@@ -9,12 +9,15 @@ class GammaFileNamer {
 	//
 	
 	protected final extension FileUtil fileUtil = FileUtil.INSTANCE
-	
+	//
+	public static final String EXECUTION_TRACE_FILE_NAME = "ExecutionTrace";
+	//
 	public static final String PACKAGE_EMF_EXTENSION = "gsm";
 	public static final String PACKAGE_XTEXT_EXTENSION = "gcd";
 	
 	public static final String PROPERTY_XTEXT_EXTENSION = "gpd";
 	public static final String PROPERTY_EMF_EXTENSION = "gpm";
+	public static final String PROPERTY_SERIALIZED_EXTENSION = "pd"; // Both UPPAAL and Theta
 	
 	public static final String EXECUTION_XTEXT_EXTENSION = "get";
 	
@@ -28,6 +31,7 @@ class GammaFileNamer {
 	
 	public static final String UPPAAL_QUERY_EXTENSION = "q";
 	public static final String THETA_QUERY_EXTENSION = "prop";
+	//
 	
 	def String getPackageFileName(String fileName) '''«fileName.extensionlessName».«PACKAGE_XTEXT_EXTENSION»'''
 	
@@ -42,6 +46,8 @@ class GammaFileNamer {
 	def String getHiddenPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_XTEXT_EXTENSION»'''
 	
 	def String getHiddenEmfPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_EMF_EXTENSION»'''
+	
+	def String getHiddenSerializedPropertyFileName(String fileName) '''«fileName.extensionlessName.toHiddenFileName».«PROPERTY_SERIALIZED_EXTENSION»'''
 	
 	def String getXmlUppaalFileName(String fileName) '''«fileName.extensionlessName».«UPPAAL_MODEL_EXTENSION»'''
 	

@@ -1,3 +1,13 @@
+/********************************************************************************
+ * Copyright (c) 2018-2021 Contributors to the Gamma project
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * SPDX-License-Identifier: EPL-1.0
+ ********************************************************************************/
 package hu.bme.mit.gamma.action.util;
 
 import java.util.ArrayList;
@@ -22,25 +32,19 @@ import hu.bme.mit.gamma.action.model.IfStatement;
 import hu.bme.mit.gamma.action.model.ProcedureDeclaration;
 import hu.bme.mit.gamma.action.model.ReturnStatement;
 import hu.bme.mit.gamma.action.model.SwitchStatement;
-import hu.bme.mit.gamma.action.model.TypeReferenceExpression;
 import hu.bme.mit.gamma.action.model.VariableDeclarationStatement;
 import hu.bme.mit.gamma.expression.model.ConstantDeclaration;
 import hu.bme.mit.gamma.expression.model.Declaration;
-import hu.bme.mit.gamma.expression.model.ExpressionModelPackage;
-import hu.bme.mit.gamma.expression.model.IntegerRangeLiteralExpression;
+import hu.bme.mit.gamma.expression.model.Expression;
 import hu.bme.mit.gamma.expression.model.ReferenceExpression;
-import hu.bme.mit.gamma.expression.model.SelectExpression;
 import hu.bme.mit.gamma.expression.model.Type;
-import hu.bme.mit.gamma.expression.model.ValueDeclaration;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 import hu.bme.mit.gamma.expression.util.ExpressionModelValidator;
-import hu.bme.mit.gamma.expression.util.ExpressionType;
 
 public class ActionModelValidator extends ExpressionModelValidator {
 	// Singleton
 	public static final ActionModelValidator INSTANCE = new ActionModelValidator();
 	protected ActionModelValidator() {}
-	//
 	
 	public Collection<ValidationResultMessage> checkUnsupportedActions(Action action) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
@@ -74,26 +78,22 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public 	Collection<ValidationResultMessage> checkAssignmentActions(AssignmentStatement assignment) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		
 		ReferenceExpression lhs = assignment.getLhs();
 		Declaration declaration = expressionUtil.getDeclaration(lhs);
 		if (declaration instanceof ConstantDeclaration) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"Constants cannot be assigned new values.",
-				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS, null)));
+				"Constants cannot be assigned new values",
+				new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__LHS)));
+			return validationResultMessages;
 		}
-		
 		// Other assignment type checking
-		if (declaration instanceof VariableDeclaration) {
-			VariableDeclaration variableDeclaration = (VariableDeclaration) declaration;
-			try {
-				Type variableDeclarationType = variableDeclaration.getType();
-				validationResultMessages.addAll(checkTypeAndExpressionConformance(variableDeclarationType, 
-						assignment.getRhs(), 
-						ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS));
-			} catch (Exception exception) {
-				// There is a type error on a lower level, no need to display the error message on this level too
-			}
+		try {
+			Type variableDeclarationType = declaration.getType();
+			validationResultMessages.addAll(checkTypeAndExpressionConformance(
+					variableDeclarationType, assignment.getRhs(),
+					new ReferenceInfo(ActionModelPackage.Literals.ASSIGNMENT_STATEMENT__RHS)));
+		} catch (Exception exception) {
+			// There is a type error on a lower level, no need to display the error message on this level too
 		}
 		
 		return validationResultMessages;
@@ -112,51 +112,28 @@ public class ActionModelValidator extends ExpressionModelValidator {
 				String newName = precedingVariableDeclaration.getName();
 				if (name.equals(newName)) {
 					validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-							"This variable cannot be named " + newName + " as it would enshadow a previous local variable.", 
-							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION,null)));
+							"This variable cannot be named " + newName + " as it would enshadow a previous local variable", 
+							new ReferenceInfo(ActionModelPackage.Literals.VARIABLE_DECLARATION_STATEMENT__VARIABLE_DECLARATION)));
 				}
 			}
 		}
 		return validationResultMessages;
 	}
 	
-	public Collection<ValidationResultMessage> checkSelectExpression(SelectExpression expression){
-		// check if the referred object is a value declaration
-		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		Declaration referredDeclaration = expressionUtil.getDeclaration(expression);
-		if ((referredDeclaration != null) && (referredDeclaration instanceof ValueDeclaration)) {
-			return validationResultMessages;
-		}
-		// or an IR literal expression
-		if ((expression.getOperand() instanceof IntegerRangeLiteralExpression)) {
-			return validationResultMessages;
-		}
-		// or a type reference expression
-		if ((expression.getOperand() instanceof ReferenceExpression) && (expression.getOperand() instanceof TypeReferenceExpression)) {
-			return validationResultMessages;
-		}
-		// otherwise throw error
-		validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-				"The specified object is not selectable: " + expression.getOperand().getClass(),
-				new ReferenceInfo(ExpressionModelPackage.Literals.ACCESS_EXPRESSION__OPERAND, null)));
-		return validationResultMessages;
-	}
-	
 	public Collection<ValidationResultMessage> checkReturnStatementType(ReturnStatement rs) {
-		ExpressionType returnStatementType = typeDeterminator.getType(rs.getExpression());
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		ProcedureDeclaration containingProcedure = getContainingProcedure(rs);
+		
+		ProcedureDeclaration containingProcedure = ecoreUtil.getContainerOfType(rs, ProcedureDeclaration.class);
 		Type containingProcedureType = null;
-		if(containingProcedure != null) {
+		if (containingProcedure != null) {
 			containingProcedureType = containingProcedure.getType();
 		}
-		if(!typeDeterminator.equals(containingProcedureType, returnStatementType)) {
-			
+		if (!typeDeterminator.equalsType(containingProcedureType, rs.getExpression())) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"The type of the return statement (" + returnStatementType.toString().toLowerCase()
+				"The type of the return statement (" + typeDeterminator.print(rs.getExpression())
 					+ ") does not match the declared type of the procedure (" 
-					+ typeDeterminator.transform(containingProcedureType).toString().toLowerCase() + ").",
-					null));
+					+ typeDeterminator.print(containingProcedureType) + ")",
+					new ReferenceInfo(ActionModelPackage.Literals.RETURN_STATEMENT__EXPRESSION)));
 		}
 		return validationResultMessages;
 	}
@@ -165,7 +142,8 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		if (!ActionModelDerivedFeatures.isRecursivelyFinalAction(statement)) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Currently return statements must be final actions in every possible path.", null));
+					"Currently return statements must be final actions in every possible path",
+					new ReferenceInfo(ActionModelPackage.Literals.PROCEDURE_DECLARATION__BODY)));
 		}
 		return validationResultMessages;
 	}
@@ -179,39 +157,25 @@ public class ActionModelValidator extends ExpressionModelValidator {
 		return validationResultMessages;
 	}
 	
-	//TODO extract into util-class
-	public ProcedureDeclaration getContainingProcedure(Action action) {
-		EObject container = action.eContainer();
-		if (container instanceof ProcedureDeclaration) {
-			return (ProcedureDeclaration)container;
-		} else if (container instanceof Branch) {
-			return getContainingProcedure((Branch)container);
-		} else if (container instanceof Block) {
-			return getContainingProcedure((Action)container);
-		} else if (container instanceof ForStatement) {
-			return getContainingProcedure((Action)container);
-		} else {
-			return null;	//Not in a procedure
-		}
-	}
-	
-	//TODO extract into util-class
-	public ProcedureDeclaration getContainingProcedure(Branch branch) {
-		EObject container = branch.eContainer();
-		if (container instanceof Action) {
-			return getContainingProcedure((Action)container);
-		} 
-		throw new IllegalArgumentException("Unknown container for Branch.");
-	}
-	
-//////////////////////////////////////////////////////////////////////
 	public Collection<ValidationResultMessage> checkBlockIsEmpty(Block block) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
 		// Block is empty
 		if (block.getActions().isEmpty()) {
 			validationResultMessages.add(new ValidationResultMessage(ValidationResult.WARNING,
-					"The block is empty!",
-					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS, null)));
+					"The block is empty",
+					new ReferenceInfo(ActionModelPackage.Literals.BLOCK__ACTIONS)));
+		}
+		return validationResultMessages;
+	}
+	
+	public Collection<ValidationResultMessage> checkBranch(Branch branch) {
+		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
+		// Block is empty
+		Expression guard = branch.getGuard();
+		if (!typeDeterminator.isBoolean(guard)) {
+			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+					"Brach conditions must be of type boolean",
+					new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
 		}
 		return validationResultMessages;
 	}

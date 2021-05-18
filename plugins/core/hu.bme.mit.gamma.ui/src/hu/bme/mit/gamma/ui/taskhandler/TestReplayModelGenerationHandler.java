@@ -36,6 +36,9 @@ public class TestReplayModelGenerationHandler extends TaskHandler {
 	}
 	
 	public void execute(TestReplayModelGeneration modelGeneration) throws IOException {
+		// Setting target folder
+		setTargetFolder(modelGeneration);
+		//
 		ExecutionTrace executionTrace = modelGeneration.getExecutionTrace();
 		checkArgument(modelGeneration.getFileName().size() == 1 && executionTrace != null);
 		String systemName = modelGeneration.getFileName().get(0);
@@ -52,9 +55,9 @@ public class TestReplayModelGenerationHandler extends TaskHandler {
 				systemModel, environmentInstance, lastState);
 		
 		// Serialization
-		saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, executionTrace.getName() + ".gcd");
-		saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
-		saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
+		serializer.saveModel(ecoreUtil.getRoot(environmentModel), targetFolderUri, executionTrace.getName() + ".gcd");
+		serializer.saveModel(ecoreUtil.getRoot(systemModel), targetFolderUri, systemName + ".gcd");
+		serializer.saveModel(ecoreUtil.getRoot(propertyPackage), targetFolderUri, systemName + ".gpd");
 	}
 	
 }

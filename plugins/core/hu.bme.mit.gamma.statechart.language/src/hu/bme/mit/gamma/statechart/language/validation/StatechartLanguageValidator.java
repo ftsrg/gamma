@@ -164,9 +164,10 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 		handleValidationResultMessage(statechartModelValidator.checkRegionEntries(region));
 	}
 	
-//	@Check
-//	public void checkUnusedDeclarations(Declaration declaration) {
-//	}
+	@Check
+	public void checkUnusedDeclarations(Component component) {
+		handleValidationResultMessage(statechartModelValidator.checkUnusedDeclarations(component));
+	}
 	
 	@Check
 	public void checkUnusedTimeoutDeclarations(TimeoutDeclaration declaration) {
@@ -205,7 +206,7 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkTransitionEventTriggers(PortEventReference portEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkTransitionEventRaisings(null));
+		handleValidationResultMessage(statechartModelValidator.checkTransitionEventTriggers(portEventReference));
 	}
 	
 	@Check
@@ -419,7 +420,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkSynchronousComponentWrapperMultipleEventContainment(AsynchronousAdapter wrapper) {
-		handleValidationResultMessage(statechartModelValidator.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
+		handleValidationResultMessage(statechartModelValidator
+				.checkSynchronousComponentWrapperMultipleEventContainment(wrapper));
 	}
 	
 	@Check
@@ -454,7 +456,8 @@ public class StatechartLanguageValidator extends AbstractStatechartLanguageValid
 	
 	@Check
 	public void checkMessageQueueAnyEventReferences(AnyPortEventReference anyPortEventReference) {
-		handleValidationResultMessage(statechartModelValidator.checkMessageQueueAnyEventReferences(anyPortEventReference));
+		handleValidationResultMessage(statechartModelValidator
+				.checkMessageQueueAnyEventReferences(anyPortEventReference));
 	}
 	
 	@Check

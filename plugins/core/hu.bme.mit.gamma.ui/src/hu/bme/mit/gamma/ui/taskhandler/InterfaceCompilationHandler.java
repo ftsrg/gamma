@@ -27,12 +27,15 @@ public class InterfaceCompilationHandler extends YakinduCompilationHandler {
 	}
 	
 	public void execute(InterfaceCompilation interfaceCompilation) throws IOException {
+		// Setting target folder
+		setTargetFolder(interfaceCompilation);
+		//
 		setYakinduCompilation(interfaceCompilation);
 		InterfaceTransformer transformer = new InterfaceTransformer(
 				interfaceCompilation.getStatechart(), interfaceCompilation.getPackageName().get(0));
 		SimpleEntry<Package, Y2GTrace> resultModels = transformer.execute();
-		saveModel(resultModels.getKey(), targetFolderUri, interfaceCompilation.getFileName().get(0) + ".gcd");
-		saveModel(resultModels.getValue(), targetFolderUri, "." + interfaceCompilation.getFileName().get(0)  + ".y2g");
+		serializer.saveModel(resultModels.getKey(), targetFolderUri, interfaceCompilation.getFileName().get(0) + ".gcd");
+		serializer.saveModel(resultModels.getValue(), targetFolderUri, "." + interfaceCompilation.getFileName().get(0)  + ".y2g");
 	}
 
 }

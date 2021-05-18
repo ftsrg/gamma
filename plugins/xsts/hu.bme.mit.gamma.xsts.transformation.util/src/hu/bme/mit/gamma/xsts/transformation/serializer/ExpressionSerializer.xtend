@@ -19,7 +19,7 @@ import hu.bme.mit.gamma.expression.model.EnumerationLiteralExpression
 import hu.bme.mit.gamma.expression.model.IfThenElseExpression
 import hu.bme.mit.gamma.expression.model.ModExpression
 import hu.bme.mit.gamma.expression.model.NotExpression
-import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator3
+import hu.bme.mit.gamma.expression.util.ExpressionTypeDeterminator2
 import hu.bme.mit.gamma.xsts.model.PrimedVariable
 
 import static extension hu.bme.mit.gamma.expression.derivedfeatures.ExpressionModelDerivedFeatures.*
@@ -30,7 +30,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	public static final ExpressionSerializer INSTANCE = new ExpressionSerializer
 	protected new() {}
 	//
-	protected final extension ExpressionTypeDeterminator3 expressionTypeDeterminator = ExpressionTypeDeterminator3.INSTANCE
+	protected final extension ExpressionTypeDeterminator2 expressionTypeDeterminator = ExpressionTypeDeterminator2.INSTANCE
 	
 	override String _serialize(ElseExpression expression) {
 		// No op, this cannot be transformed on this level
@@ -48,7 +48,7 @@ class ExpressionSerializer extends hu.bme.mit.gamma.expression.util.ExpressionSe
 	override String _serialize(NotExpression expression) '''(«super._serialize(expression)»)'''
 	
 	override String _serialize(ArrayAccessExpression expression) '''«expression.operand.serialize»[«expression.index.serialize»]'''
-	// TODO The default branch has to contain the default value of the type: crucial for back-annotation
+	// The default branch has to contain the default value of the type: crucial for back-annotation
 	override String _serialize(ArrayLiteralExpression expression) '''[«FOR i : 0 ..< expression.operands.size SEPARATOR ', '»«i» <- «expression.operands.get(i).serialize»«ENDFOR», default <- «expression.operands.head.type.defaultExpression.serialize»]'''
 	
 	override String _serialize(DirectReferenceExpression expression) {

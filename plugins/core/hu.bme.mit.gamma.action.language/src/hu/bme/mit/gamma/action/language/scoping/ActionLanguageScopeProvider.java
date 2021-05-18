@@ -40,15 +40,11 @@ import hu.bme.mit.gamma.expression.model.Type;
 import hu.bme.mit.gamma.expression.model.TypeDefinition;
 import hu.bme.mit.gamma.expression.model.VariableDeclaration;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
 public class ActionLanguageScopeProvider extends AbstractActionLanguageScopeProvider {
 
-	protected final ActionUtil actionUtil = ActionUtil.INSTANCE;
+	public ActionLanguageScopeProvider() {
+		super.util = ActionUtil.INSTANCE;
+	}
 	
 	@Override
 	public IScope getScope(final EObject context, final EReference reference) {

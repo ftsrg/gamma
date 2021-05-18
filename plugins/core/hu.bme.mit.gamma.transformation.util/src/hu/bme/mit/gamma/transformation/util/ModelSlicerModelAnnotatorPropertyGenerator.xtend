@@ -28,6 +28,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	protected final ComponentInstanceVariableReferences dataflowTestedVariables
 	protected final DataflowCoverageCriterion dataflowCoverageCriterion
+	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
+	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -42,6 +44,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
 			DataflowCoverageCriterion dataflowCoverageCriterion,
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion,
 			String targetFolderUri, String fileName) {
 		this.newTopComponent = newTopComponent
 		this.targetFolderUri = targetFolderUri
@@ -58,6 +62,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 		this.receiverCoverageCriterion = receiverCoverageCriterion
 		this.dataflowTestedVariables = dataflowTestedVariables
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
+		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
+		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
 	def execute() {
@@ -70,7 +76,8 @@ class ModelSlicerModelAnnotatorPropertyGenerator {
 					testedComponentsForStates, testedComponentsForTransitions,
 					testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 					testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion);
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion);
 		val result = annotatorAndPropertyGenerator.execute
 		val propertyPackage = result.generatedPropertyPackage
 		if (propertyPackage !== null) {

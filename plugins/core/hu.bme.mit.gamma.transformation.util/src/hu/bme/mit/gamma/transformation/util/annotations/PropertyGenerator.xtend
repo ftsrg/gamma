@@ -26,6 +26,7 @@ import hu.bme.mit.gamma.statechart.composite.CompositeModelFactory
 import hu.bme.mit.gamma.statechart.composite.SynchronousComponentInstance
 import hu.bme.mit.gamma.statechart.derivedfeatures.StatechartModelDerivedFeatures
 import hu.bme.mit.gamma.statechart.interface_.Component
+import hu.bme.mit.gamma.statechart.interface_.EventParameterReferenceExpression
 import hu.bme.mit.gamma.statechart.interface_.Package
 import hu.bme.mit.gamma.statechart.interface_.Port
 import hu.bme.mit.gamma.statechart.statechart.RaiseEventAction
@@ -288,22 +289,7 @@ class PropertyGenerator {
 				val defExpression = expressionFactory.createAndExpression => [
 					it.operands += auxiliaryVariable.createVariableReference
 				]
-				// Not necessary as the annotated assignments ensure that only one is true
-//				val defExpression = expressionFactory.createAndExpression
-//				for (var j = 0; j < size; j++) {
-//					val auxiliaryDefReference = auxiliaryDefReferences.get(j)
-//					val auxiliaryVariable = auxiliaryDefReference.defUseVariable
-//					val expression = 
-//					if (i != j) {
-//						expressionFactory.createNotExpression => [
-//							it.operand = auxiliaryVariable.createVariableReference
-//						]
-//					}
-//					else {
-//						auxiliaryVariable.createVariableReference
-//					}
-//					defExpression.operands += expression
-//				}
+				// Not necessary to negate the other defs as the annotated assignments ensure that only one is true
 				// Def-comment
 				val originalReference = ponatedReference.originalVariableReference
 				val defComment = originalReference.id
@@ -330,7 +316,8 @@ class PropertyGenerator {
 						and.operands += auxiliaryUseVariable.createVariableReference
 					}
 					
-					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference].toSet
+					val originalUseReferences = auxiliaryUseReferences.map[it.originalVariableReference]
+							.filter(Expression).toSet // Uses are almost DirectReferenceExpressions
 					val useComment = originalUseReferences.ids
 					val stateFormula = propertyUtil.createEF(propertyUtil.createAtomicFormula(and))
 					formulas += propertyUtil.createCommentableStateFormula(
@@ -351,6 +338,17 @@ class PropertyGenerator {
 			}
 		}
 		return formulas
+	}
+	
+	def List<CommentableStateFormula> createInteractionDataflowReachability(
+			List<Pair<DefUseReferences, DefUseReferences>> interactionDefUses, DataflowCoverageCriterion criterion) {
+		val stateFormulas = newArrayList
+		for (interactionDefUse : interactionDefUses) {
+			val defs = interactionDefUse.key
+			val uses = interactionDefUse.value
+			stateFormulas += defs.createDataflowReachability(uses, criterion)
+		}
+		return stateFormulas
 	}
 	
 	def protected ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
@@ -401,7 +399,15 @@ class PropertyGenerator {
 		return '''«transitionOrState.id»::«variable.name»'''
 	}
 	
-	def protected String getIds(Collection<DirectReferenceExpression> references) {
+	def dispatch protected String getId(EventParameterReferenceExpression reference) {
+		val transitionOrState = reference.containingTransitionOrState
+		val port = reference.port
+		val event = reference.event
+		val parameter = reference.parameter
+		return '''«transitionOrState.id»::«port.name».«event.name»::«parameter.name»'''
+	}
+	
+	def protected String getIds(Collection<? extends Expression> references) {
 		return '''«FOR reference : references SEPARATOR ' | '»«reference.id»«ENDFOR»'''
 	}
 	

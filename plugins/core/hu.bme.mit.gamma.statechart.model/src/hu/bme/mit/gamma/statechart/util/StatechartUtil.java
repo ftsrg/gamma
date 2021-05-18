@@ -67,6 +67,8 @@ public class StatechartUtil extends ActionUtil {
 	
 	protected ExpressionUtil expressionUtil = ExpressionUtil.INSTANCE;
 
+	// Extending super methods
+	
 	@Override
 	public Declaration getDeclaration(Expression expression) {
 		if (expression instanceof EventParameterReferenceExpression) {
@@ -104,6 +106,8 @@ public class StatechartUtil extends ActionUtil {
 		types.addAll(_package.getTypeDeclarations());
 		return types;
 	}
+	
+	//
 	
 	public ComponentInstanceReference createInstanceReference(ComponentInstance instance) {
 		ComponentInstanceReference instanceReference = compositeFactory.createComponentInstanceReference();

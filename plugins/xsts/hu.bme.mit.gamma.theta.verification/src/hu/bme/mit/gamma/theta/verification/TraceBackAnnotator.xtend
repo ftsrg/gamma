@@ -48,6 +48,7 @@ class TraceBackAnnotator {
 	
 	protected final Scanner traceScanner
 	protected final ThetaQueryGenerator thetaQueryGenerator
+	protected static final Object engineSynchronizationObject = new Object
 	
 	protected final Package gammaPackage
 	protected final Component component
@@ -121,6 +122,9 @@ class TraceBackAnnotator {
 							if (!trace.steps.contains(step)) {
 								trace.steps += step
 							}
+							// Must be done for last step like in line 259
+							step.checkStates(raisedOutEvents, activatedStates)
+							
 							step = createStep
 							trace.steps += step
 						}
@@ -346,6 +350,10 @@ class TraceBackAnnotator {
 	
 	protected def boolean isArray(String value) {
 		return value.startsWith("(array ")
+	}
+	
+	def static getEngineSynchronizationObject() {
+		return engineSynchronizationObject
 	}
 	
 	enum BackAnnotatorState {INIT, STATE_CHECK, ENVIRONMENT_CHECK}

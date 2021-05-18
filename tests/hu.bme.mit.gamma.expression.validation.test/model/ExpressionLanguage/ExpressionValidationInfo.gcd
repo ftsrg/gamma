@@ -1,0 +1,18 @@
+package expressionlanguage
+
+const bool0 : boolean := true
+const bool1 : boolean := false
+const int0 : integer := 0
+const int1 : integer := 1
+
+// INFO
+
+/**
+ * @Check - SelfComparison
+ */
+const bool2 : boolean := true == true
+const bool3 : boolean := bool0 != bool0
+const bool4 : boolean := int0 > int0
+const bool5 : boolean := int0 < int0
+const bool6 : boolean := int0 >= int0
+const bool7 : boolean := int0 <= int0

@@ -31,7 +31,6 @@ import java.util.Collection
 import java.util.logging.Level
 import java.util.logging.Logger
 import org.eclipse.emf.ecore.resource.ResourceSet
-import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.viatra.query.runtime.api.ViatraQueryEngine
 import org.eclipse.viatra.query.runtime.emf.EMFScope
 
@@ -96,7 +95,7 @@ class SystemReducer implements Reducer {
 					target.containingStatechart
 				} catch (NullPointerException exception) {
 					log(Level.INFO, "Removing transition as source or target is deleted: " + source.name + " -> " + target.name)
-					EcoreUtil.delete(transition)
+					transition.delete
 				}
 			}
 		}

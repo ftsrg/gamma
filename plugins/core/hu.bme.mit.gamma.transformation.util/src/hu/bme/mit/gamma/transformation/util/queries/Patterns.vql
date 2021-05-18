@@ -366,6 +366,11 @@ pattern raiseTopSystemEventStateEntryActions(component : SynchronousComponent, s
 
 // State exit event raisings
 
+private pattern raiseEventActions(action : RaiseEventAction, port : Port, event : Event) {
+	RaiseEventAction.event(action, event);
+	RaiseEventAction.port(action, port);
+}
+
 private pattern raiseEventExitActions(state : State, exitAction : RaiseEventAction, raisedEvent : Event, port : Port) {
 	State.exitActions(state, exitAction);
 	RaiseEventAction.event(exitAction, raisedEvent);
@@ -744,7 +749,7 @@ pattern raiseInstanceEvents(raiseEventAction : RaiseEventAction, outInstance : S
 	find transitionOrEventTrigger(receivingTransition, inPort, raisedEvent);
 }
 
-// Data-flow coverage
+// Dataflow coverage
 
 pattern expressionToExpression(from : Expression, to : Expression) {
 	UnaryExpression.operand(from, to);
@@ -778,4 +783,33 @@ pattern variableUses(reference : DirectReferenceExpression, variable : VariableD
 	find variableCUses(reference, variable);
 } or {
 	find variablePUses(reference, variable);
+}
+
+// Interaction dataflow coverage
+
+pattern interactionCUses(raiseEventAction : RaiseEventAction, outPort : Port, inPort : Port, 
+		reference : EventParameterReferenceExpression) {
+	find raiseEventActions(raiseEventAction, outPort, event);
+	find simpleInstanceChannelEndings(_, _, outPort, event, _, inPort);
+	// The event raise does not have to be connected to a transition 
+	AssignmentStatement.rhs(_assignment, rhs);
+	find expressionToExpression*(rhs, reference);
+	EventParameterReferenceExpression.port(reference, inPort);
+	EventParameterReferenceExpression.event(reference, event);
+}
+
+pattern interactionPUses(raiseEventAction : RaiseEventAction, outPort : Port, inPort : Port, 
+		reference : EventParameterReferenceExpression) {
+	find raiseEventActions(raiseEventAction, outPort, event);
+	find simpleInstanceChannelEndings(_, _, outPort, event, _, inPort);
+	neg find interactionCUses(raiseEventAction, outPort, inPort, reference); // Not a c-use, so it must be a p-use
+	EventParameterReferenceExpression.port(reference, inPort);
+	EventParameterReferenceExpression.event(reference, event);
+}
+
+pattern interactionUses(raiseEventAction : RaiseEventAction, outPort : Port, inPort : Port, 
+		reference : EventParameterReferenceExpression) {
+	find interactionCUses(raiseEventAction, outPort, inPort, reference);
+} or {
+	find interactionPUses(raiseEventAction, outPort, inPort, reference);
 }

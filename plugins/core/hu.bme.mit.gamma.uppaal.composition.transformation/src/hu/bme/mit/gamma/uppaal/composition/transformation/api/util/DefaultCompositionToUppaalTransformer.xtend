@@ -42,7 +42,7 @@ class DefaultCompositionToUppaalTransformer {
 		val fileNameExtensionless = fileName.extensionlessName
 		val modelPreprocessor = new UppaalModelPreprocessor
 		val topComponent = modelPreprocessor.preprocess(gammaPackage, topComponentArguments,
-			targetFolderUri, fileName)
+			targetFolderUri, fileName, true)
 
 		// Checking the model whether it contains forbidden elements
 		val validator = new ModelValidator(topComponent)

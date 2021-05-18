@@ -27,7 +27,6 @@ import hu.bme.mit.gamma.statechart.statechart.StatechartDefinition
 import hu.bme.mit.gamma.statechart.statechart.TransitionIdAnnotation
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EReference
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.scoping.Scopes
 import org.yakindu.sct.model.stext.stext.InterfaceScope
 
@@ -125,10 +124,6 @@ class GenModelScopeProvider extends AbstractGenModelScopeProvider {
 				reference == GenmodelModelPackage.Literals.TEST_REPLAY_MODEL_GENERATION__EXECUTION_TRACE) {
 			val genmodel = context.eContainer as GenModel
 			return Scopes.scopeFor(genmodel.traceImports)
-		}
-		if (reference == GenmodelModelPackage.Literals.ADAPTIVE_CONTRACT_TEST_GENERATION__STATECHART_CONTRACT) {
-			val genModel = EcoreUtil2.getRootContainer(context) as GenModel
-			return Scopes.scopeFor(genModel.packageImports.map[it.components.filter(StatechartDefinition)].flatten)
 		}
 		if (context instanceof InterfaceMapping &&
 			reference == GenmodelModelPackage.Literals.INTERFACE_MAPPING__YAKINDU_INTERFACE) {

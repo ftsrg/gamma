@@ -44,5 +44,5 @@ public abstract class GammaLanguageCrossReferenceSerializer extends CrossReferen
 	
     public abstract Class<? extends EObject> getContext();
     public abstract Class<? extends EObject> getTarget();
-	
+    
 }

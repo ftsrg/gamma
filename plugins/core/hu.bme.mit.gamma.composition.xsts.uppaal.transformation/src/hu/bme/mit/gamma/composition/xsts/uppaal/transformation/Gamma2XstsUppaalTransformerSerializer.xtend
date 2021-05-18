@@ -24,6 +24,7 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final String fileName
 	protected final Integer schedulingConstraint
 	// Slicing
+	protected final boolean optimize
 	protected final PropertyPackage propertyPackage
 	// Annotation
 	protected final ComponentInstanceReferences testedComponentsForStates
@@ -35,6 +36,8 @@ class Gamma2XstsUppaalTransformerSerializer {
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	protected final ComponentInstanceVariableReferences dataflowTestedVariables
 	protected final DataflowCoverageCriterion dataflowCoverageCriterion
+	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
+	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension GammaFileNamer fileNamer = GammaFileNamer.INSTANCE
@@ -52,15 +55,17 @@ class Gamma2XstsUppaalTransformerSerializer {
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint) {
 		this(component, arguments, targetFolderUri, fileName, schedulingConstraint,
-			null, null, null, null, null, null, InteractionCoverageCriterion.EVERY_INTERACTION,
-			InteractionCoverageCriterion.EVERY_INTERACTION,
+			true, null,
+			null, null, null, null, null,
+			InteractionCoverageCriterion.EVERY_INTERACTION,	InteractionCoverageCriterion.EVERY_INTERACTION,
+			null, DataflowCoverageCriterion.ALL_USE,
 			null, DataflowCoverageCriterion.ALL_USE)
 	}
 	
 	new(Component component, List<Expression> arguments,
 			String targetFolderUri, String fileName,
 			Integer schedulingConstraint,
-			PropertyPackage propertyPackage,
+			boolean optimize, PropertyPackage propertyPackage,
 			ComponentInstanceReferences testedComponentsForStates,
 			ComponentInstanceReferences testedComponentsForTransitions,
 			ComponentInstanceReferences testedComponentsForTransitionPairs,
@@ -69,13 +74,16 @@ class Gamma2XstsUppaalTransformerSerializer {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion,
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.component = component
 		this.arguments = arguments
 		this.targetFolderUri = targetFolderUri
 		this.fileName = fileName
 		this.schedulingConstraint = schedulingConstraint
 		//
+		this.optimize = optimize
 		this.propertyPackage = propertyPackage
 		//
 		this.testedComponentsForStates = testedComponentsForStates
@@ -87,17 +95,20 @@ class Gamma2XstsUppaalTransformerSerializer {
 		this.receiverCoverageCriterion = receiverCoverageCriterion
 		this.dataflowTestedVariables = dataflowTestedVariables
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
+		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
+		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
 	def execute() {
 		val xStsTransformer = new Gamma2XstsTransformerSerializer(component,
 			arguments, targetFolderUri,
 			fileName, schedulingConstraint,
-			propertyPackage,
+			optimize, propertyPackage,
 			testedComponentsForStates, testedComponentsForTransitions,
 			testedComponentsForTransitionPairs, testedComponentsForOutEvents,
 			testedInteractions, senderCoverageCriterion, receiverCoverageCriterion,
-				dataflowTestedVariables, dataflowCoverageCriterion)
+			dataflowTestedVariables, dataflowCoverageCriterion,
+			testedComponentsForInteractionDataflow, interactionDataflowCoverageCriterion)
 		xStsTransformer.execute
 		val xSts = targetFolderUri.normalLoad(fileName.emfXStsFileName) as XSTS
 		val uppaalTransformer = new Xsts2UppaalTransformerSerializer(xSts,

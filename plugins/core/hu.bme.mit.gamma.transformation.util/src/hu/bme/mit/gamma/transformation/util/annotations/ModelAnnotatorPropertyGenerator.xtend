@@ -33,6 +33,8 @@ class ModelAnnotatorPropertyGenerator {
 	protected final InteractionCoverageCriterion receiverCoverageCriterion
 	protected final ComponentInstanceVariableReferences dataflowTestedVariables
 	protected final DataflowCoverageCriterion dataflowCoverageCriterion
+	protected final ComponentInstancePortReferences testedComponentsForInteractionDataflow
+	protected final DataflowCoverageCriterion interactionDataflowCoverageCriterion
 	
 	protected final extension GammaEcoreUtil ecoreUtil = GammaEcoreUtil.INSTANCE
 	protected final extension SimpleInstanceHandler simpleInstanceHandler = SimpleInstanceHandler.INSTANCE
@@ -46,7 +48,9 @@ class ModelAnnotatorPropertyGenerator {
 			InteractionCoverageCriterion senderCoverageCriterion,
 			InteractionCoverageCriterion receiverCoverageCriterion,
 			ComponentInstanceVariableReferences dataflowTestedVariables,
-			DataflowCoverageCriterion dataflowCoverageCriterion) {
+			DataflowCoverageCriterion dataflowCoverageCriterion,
+			ComponentInstancePortReferences testedComponentsForInteractionDataflow,
+			DataflowCoverageCriterion interactionDataflowCoverageCriterion) {
 		this.newTopComponent = newTopComponent
 		this.testedComponentsForStates = testedComponentsForStates
 		this.testedComponentsForTransitions = testedComponentsForTransitions
@@ -57,6 +61,8 @@ class ModelAnnotatorPropertyGenerator {
 		this.receiverCoverageCriterion = receiverCoverageCriterion
 		this.dataflowTestedVariables = dataflowTestedVariables
 		this.dataflowCoverageCriterion = dataflowCoverageCriterion
+		this.testedComponentsForInteractionDataflow = testedComponentsForInteractionDataflow
+		this.interactionDataflowCoverageCriterion = interactionDataflowCoverageCriterion
 	}
 	
 	def execute() {
@@ -90,18 +96,23 @@ class ModelAnnotatorPropertyGenerator {
 		// Dataflow coverage
 		val dataflowTestedVariables = getIncludedSynchronousInstanceVariables(
 				dataflowTestedVariables, newTopComponent)
+		// Interaction dataflow coverage
+		val testedPortsForInteractionDataflow = getIncludedSynchronousInstancePorts(
+				testedComponentsForInteractionDataflow, newTopComponent)
 		
 		if (!testedComponentsForStates.nullOrEmpty || !testedComponentsForTransitions.nullOrEmpty ||
 				!testedComponentsForTransitionPairs.nullOrEmpty || !testedPortsForOutEvents.nullOrEmpty ||
 				!testedPortsForInteractions.nullOrEmpty || !testedStatesForInteractions.nullOrEmpty ||
 				!testedTransitionsForInteractions.nullOrEmpty ||
-				!dataflowTestedVariables.nullOrEmpty) {
+				!dataflowTestedVariables.nullOrEmpty ||
+				!testedPortsForInteractionDataflow.nullOrEmpty) {
 			val annotator = new GammaStatechartAnnotator(newPackage,
 					testedComponentsForTransitions, testedComponentsForTransitionPairs,
 					testedPortsForInteractions, testedStatesForInteractions,
 					testedTransitionsForInteractions,
 					senderCoverageCriterion, receiverCoverageCriterion,
-					dataflowTestedVariables, dataflowCoverageCriterion)
+					dataflowTestedVariables, dataflowCoverageCriterion,
+					testedPortsForInteractionDataflow, interactionDataflowCoverageCriterion)
 			annotator.annotateModel
 			newPackage.save // It must be saved so the property package can be serialized
 			
@@ -112,7 +123,7 @@ class ModelAnnotatorPropertyGenerator {
 			formulas += propertyGenerator.createTransitionReachability(
 							annotator.getTransitionVariables)
 			formulas += propertyGenerator.createTransitionPairReachability(
-							annotator.transitionPairAnnotations)
+							annotator.getTransitionPairAnnotations)
 			formulas += propertyGenerator.createInteractionReachability(
 							annotator.getInteractions)
 			formulas += propertyGenerator.createStateReachability(testedComponentsForStates)
@@ -121,6 +132,8 @@ class ModelAnnotatorPropertyGenerator {
 			
 			formulas += propertyGenerator.createDataflowReachability(annotator.getVariableDefs,
 							annotator.getVariableUses, annotator.dataflowCoverageCriterion)
+			formulas += propertyGenerator.createInteractionDataflowReachability(
+							annotator.getInteractionDefUses, annotator.interactionDataflowCoverageCriterion)
 			// Saving the property package and serializing the properties has to be done by the caller!
 		}
 		return new Result(generatedPropertyPackage)

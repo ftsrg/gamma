@@ -1,0 +1,13 @@
+package actionlanguage
+
+// WARNING
+
+
+/**
+ * 
+ * 
+ * @Check - checkBlockIsEmpty
+ */
+procedure example () : void {
+	
+}
