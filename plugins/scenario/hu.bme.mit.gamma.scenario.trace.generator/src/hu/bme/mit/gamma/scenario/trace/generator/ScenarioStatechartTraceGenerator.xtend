@@ -69,9 +69,12 @@ class ScenarioStatechartTraceGenerator {
 		val verifier = new ThetaVerifier();
 		val modelFile = new File(xStsFile.getAbsolutePath());
 		val fileName = modelFile.getName();
+		val regionName = statechart.regions.get(0).name
+		val statechartName = statechart.name.toFirstUpper
+		
 		val packageFileName = fileNamer.getUnfoldedPackageFileName(fileName);
 		val parameters = "--refinement \"MULTI_SEQ\" --domain \"EXPL\" --initprec \"ALLVARS\"";
-		val query = "E<> ((region_Test == " + scenarioStatechartUtil.getAccepting() + "))";
+		val query = "E<> (("+regionName+"_"+statechartName+" == " + scenarioStatechartUtil.getAccepting() + "))";
 		val gammaPackage = ecoreUtil.normalLoad(modelFile.getParent(), packageFileName);
 
 		val r = verifier.verifyQuery(gammaPackage, parameters, modelFile, query, true, true);

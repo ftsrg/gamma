@@ -279,7 +279,7 @@ class ScenarioLanguageValidator extends AbstractScenarioLanguageValidator {
 //				ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)
 //			return
 //		}
-//		if (!arguments.empty && !parameterDeclarations.empty) {
+//		if (!arguments.empty && !parameterDeclarations.empty) { 
 //			for (var i = 0; i < arguments.size && i < parameterDeclarations.size; i++) {
 //				checkTypeAndExpressionConformance(parameterDeclarations.get(i).type, arguments.get(i),
 //					ExpressionModelPackage.Literals.ARGUMENTED_ELEMENT__ARGUMENTS)

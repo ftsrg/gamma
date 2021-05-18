@@ -27,7 +27,7 @@ public class ScenarioStatechartUtil {
 
 	private final String Accepting = "AcceptingState";
 
-	private final String initial = "init";
+	private final String initial = "Initial";
 
 	public boolean isTurnedOut(Port p) {
 		return p.getName().endsWith(reversed);

@@ -41,3 +41,4 @@ Require-Bundle: org.eclipse.equinox.registry,
  hu.bme.mit.gamma.statechart.plantuml.transformation
 Export-Package: hu.bme.mit.gamma.ui,
  hu.bme.mit.gamma.ui.taskhandler
+Import-Package: hu.bme.mit.gamma.scenario.trace.generator
