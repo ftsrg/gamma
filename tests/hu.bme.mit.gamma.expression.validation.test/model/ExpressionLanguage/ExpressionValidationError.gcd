@@ -224,13 +224,12 @@ const intRange3 : integer range := <- 13 .. 12 ->
 
 
 /**
- * We expect the operand of the select expression to be integer range * 
+ * We expect the operand of the select expression to be integer range *
+ *  
  * @Check - checkSelectExpression
  */
 const selectable : integer := 12 -> select
 const selectable1 : integer := int1 -> select
 const selectable2 : decimal := dec1 -> select
 const selectable3 : decimal := dir -> select
-
-
 

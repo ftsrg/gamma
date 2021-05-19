@@ -174,14 +174,25 @@ public class ActionModelValidator extends ExpressionModelValidator {
 	
 	public Collection<ValidationResultMessage> checkBranch(Branch branch) {
 		Collection<ValidationResultMessage> validationResultMessages = new ArrayList<ValidationResultMessage>();
-		// Block is empty
 		Expression guard = branch.getGuard();
-		if (!typeDeterminator.isBoolean(guard)) {
-			validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-					"Brach conditions must be of type boolean",
-					new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+		EObject container = branch.eContainer();
+		if (container instanceof SwitchStatement) {
+			SwitchStatement switchStatement = (SwitchStatement) container;
+			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"SwitchBrach type of control expression must be same type of guard!",
+						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+			}
+		}
+		else {
+			if (!typeDeterminator.isBoolean(guard)) {
+				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
+						"Brach conditions must be of type boolean!",
+						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
+			}
 		}
 		return validationResultMessages;
 	}
+	
 	
 }

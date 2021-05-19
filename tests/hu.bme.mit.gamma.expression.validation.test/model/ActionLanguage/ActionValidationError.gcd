@@ -50,7 +50,12 @@ procedure proc6 () : integer {
 
 procedure exampleProc () : void {
 	
-	var b : MyEnum;
+	/**
+	 * We expect the type of left hand expression be the same as the type of right hand expression
+	 * 
+ 	 * @Check - checkAssignmentActions
+ 	 */
+ 	var b : MyEnum;
 	var bb : MyEnum2;
 	b := bb;
 	
@@ -69,6 +74,36 @@ procedure exampleProc () : void {
 	 * @Check - checkAssignmentActions
 	 */
 	int1 := 12;
+	
+	
+	/**
+	 * We expect type of control expression must be same type of guard
+	 * 
+	 * @Check - checkBranch
+	 */
+	switch (dir) {
+		case ::NORTH: 
+			a = 12;
+	}
+	
+	/**
+	 * We expect type of conditions must be of type boolean
+	 * 
+	 * @Check - checkBranch
+	 */
+	if(int1) {
+		a = 1;
+	}
+	elseif(12) {
+		a = 2;
+	}
+	
+	choice
+	{
+		branch [int1] a = 1;
+		branch [dir] a = 2;
+	}
+	
 	
 	return;
 }
