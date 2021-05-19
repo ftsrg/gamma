@@ -84,7 +84,9 @@ procedure exampleProc () : void {
 	 * @Check - checkBranch
 	 */
 	switch (dir) {
-		case ::NORTH: 
+		case 12:
+			a = 12;
+		case int1:
 			a = 12;
 	}
 	
@@ -124,7 +126,6 @@ procedure exampleProc () : void {
 	for ( i : int in dec1) {
 		var b : integer;
 	}
-	
 	
 	return;
 }

@@ -1,3 +1,24 @@
 package actionlanguage
 
+import "Types/Types.gcd"
+
+const dir : Direction
+
 // INFO
+
+procedure exampleProc () : void {
+	var a : integer;
+	
+	
+	/**
+	 * &Check - checkSwitchStatement
+	 */
+	switch (dir) {
+		case ::RIGHT:
+			a = 12;
+		case ::LEFT:
+			a = 12;
+		default:
+			break;
+	}
+}	
