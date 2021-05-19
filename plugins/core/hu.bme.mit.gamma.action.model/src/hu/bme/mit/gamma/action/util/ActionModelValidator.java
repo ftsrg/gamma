@@ -192,7 +192,7 @@ public class ActionModelValidator extends ExpressionModelValidator {
 			SwitchStatement switchStatement = (SwitchStatement) container;
 			if (!typeDeterminator.equalsType(switchStatement.getControlExpression(), guard) && !(branch.getGuard() instanceof DefaultExpression)) {
 				validationResultMessages.add(new ValidationResultMessage(ValidationResult.ERROR,
-						"SwitchBrach type of control expression must be same type of guard!",
+						"Type of control expression must be same type of guard in a SwitchStatement!",
 						new ReferenceInfo(ActionModelPackage.Literals.BRANCH__GUARD)));
 			}
 		}
